@@ -1156,6 +1156,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // shared extent after body-first/signature-first phase condition 238/234; direct total conversion
 // on the grouped body-first/signature-first and conditional forms 167/125/238.
 // The body-first group gets the entry EDX total and ECX extent, then changes phase layout and seek registers.
+// M3 lane 13 r107 (fast with 0x2adb10 and 0x2ada70, both MATCH in each; control 34, difflib-aligned 23): the direct arm's size as
+// two statements (`size = body_size; size -= body_offset;`) 34, its buffer as `&body[body_offset]` 34, a `const dword` total 34,
+// the body position written offset first 34, a `*const` parameters pointer 34 (all five the same code); the scratch clamp as
+// `if (body_size - body_offset < size) size = body_size - body_offset;` 35. Reading kept from this round: retail loads body_size
+// into ECX at the head of the body case and of the signature case alike (the two identical loads are what merge above the `je`)
+// and forms every sum that has body_size on its left in another register (entry EDX, signature ESI through `lea`, the direct
+// arm's count in ECX then `mov edi, ecx`), while the one sum with header_size on its left (the body position) adds in place;
+// the matched sibling 0x2adb10 adds its signature position in place. Body unchanged.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

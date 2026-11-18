@@ -556,6 +556,12 @@ struct s_ai_scene_assignment
 // *assignment_count;` at every use) on the int copy 12 (same code), on the direct maximum 59 (350 bytes); the stores
 // through a reference to the assignment row 12 (same code); the stores ordered name, score, variant, actor 17; actor, name,
 // variant, score 14; re-measured, not counted: the maximum bound by reference on the direct form 59.
+// M3 lane 11 r114 (fast with 0x291b40): on the direct maximum (59 at 350 bytes) the scorer given `(short)role_index` 59;
+// `__assume(role_index >= 0)` after the last-role flag 59; on the copy, an `unsigned short` copy 59 (propagated, as the
+// short copy); the maximum parameter 32-bit with a copy of the other signedness (`unsigned long` with an int copy, `long`
+// with an `unsigned long` copy, `dword` with a long copy) 59 each (every same-width copy is propagated, so the maximum
+// loses ESI to the role as on the direct form). Diagnostic, restored: the role index as a one-member aggregate by value
+// 94 (359 bytes; 0x291b40 173).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

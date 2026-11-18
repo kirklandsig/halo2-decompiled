@@ -285,6 +285,16 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // calls through `.` and `&`) 20/20 compile-only. The centre parameter declared last (fast, all callers edited): 10 here
 // (only its stack offsets differ) but it pushes the centre first, so every caller breaks (0x1b0400 16, 0x1b2770 11,
 // 0x1be120 7, 0x25f7b0 8); not keepable (and 0x264b50's calls are a contributor's).
+// M3 lane 10 r117: a compile-only build of this file (/O2 /arch:SSE /Gr) reproduces the x row exactly. Diagnostics there:
+// the plus row folds its centre read when it reads arg_4->x or arg_1->y, but arg_1->x never folds in the x or y row,
+// even with every other use of arg_1 (both direction helpers, the probe call, the mode-2 calls, the side vector's x read)
+// moved to arg_4; `(&arg_1->x)[0]`, `*(real const *)arg_1`, a vector view and a pointer copy all load. Forms: the side
+// vector through vector3f_assign 20 (fast, same code); both mode-1 points through real_point3d_set 20; both together 20;
+// the plus point through vector3f_add_scaled 20 (fast, same code; both points through it, -spacing, 31 compile-only); hit
+// declared ahead of the side vector with the clear flag ahead of the collision record 20 (fast); compile-only
+// grids of side-vector order or helper, spacing literal or named, product and sum operand orders and row orders (224),
+// declaration places of the top locals, hit, the two points, spacing and the clear flag (144), and named product or
+// centre leaves (205): none folds the x row.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

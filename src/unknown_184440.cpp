@@ -201,7 +201,8 @@ __forceinline bool function_184448(long arg_0)
 // two type changes retail's bytes show (the axis values reloaded from g_440b94 and the full-width vertex counters)
 // were measured at 976 last round, above the score here, so they were not taken again; the length is retail's 4590
 // bytes, so only the block layout and the stack homes differ.
-// score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
+// score 965 (was 977): the frame is 0x11d4 versus retail 0x11cc, and the scene and surface homes differ.
+// A statement walk found no behaviour difference. Every condition, field,
 // callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
 // reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in
 // the vertex loop (0x1847e2); (2) full-width vertex counters (retail's count at [esp+0xb8] is a dword, pushed whole at
@@ -416,8 +417,13 @@ __forceinline bool function_184448(long arg_0)
 // its entry-then-count stores; a moved declaration, so match-only), the same with the count assigned before the entry 958
 // (same code); that with the lookup as one `&&` test and the table pointer declared first 955 [543] (the table load then
 // sits above the tests where retail loads it after them), with the table global written at both uses 971 [542].
-// @retail 0x184440
 // MiniMax C (11-17): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the worklist array and every later slot sit at a different offset, and the scene and geometry homes are rotated (retail carries the surface pointer in edi and the surface list in ecx, where this build carries them in esi and ebx); the earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters) scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
+// 463: shared two-axis projection at vertices/samples/both 1034/1056/1033, or with long
+// vertex traversal 1037/1083/1037. Both with Boolean orientation 1037, direct table
+// reads through the coordinate setter 1007, advancing 3D vertex pointer with direct
+// reads/shared projection 992/1033. NOT kept: the 992 form recovers the frame but
+// shortens the body and loses a caller match in the reduced image. All scores regress.
+// @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
     long local_0[1024];

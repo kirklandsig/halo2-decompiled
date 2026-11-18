@@ -83,7 +83,8 @@ __forceinline void gather_overlaps_2e1090(class_2e1090 *sweep, long *first_owner
 #define SEARCH_TEST_2E1090(k) \
 				if (found_bits & (1 << k)) \
 				{ \
-					unsigned long const apart = apart_yz_2e1090(other[k], range); \
+					unsigned long apart; \
+					apart_yz_2e1090(other[k], range, apart); \
 					if (!apart && (other[k].owner & 1) == 0) \
 					{ \
 						if (mode == SEARCH_REPORT_PAIRS_2E1090) \

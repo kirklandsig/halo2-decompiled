@@ -36,7 +36,7 @@ char const *error_handler_2d8030::file_name(char const *path) const
 }
 
 // @retail 0x2d7fb0
-void path_2d7f70::function_2d7fb0(char const *text) const
+void error_handler_2d8030::function_2d7fb0(char const *text) const
 {
 	reporter_2d7fb0 *reporter = (reporter_2d7fb0 *)g_48017c;
 	function_2d9070((class_2d9070 *)reporter->slot_2()->function_2d8f10(text));

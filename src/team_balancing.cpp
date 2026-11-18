@@ -958,6 +958,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // BLOCKED-BY the caller.
 // M405: First/last extra slot seeded, then loop/standard fill/counted fill/scalar copy from it.
 // Scores 80/61/61/80/80/74/61/80. NOT kept: ties or regressions; original body restored.
+// MiniMax A (11-17): no new form tried this round, no lower score (34): the two counts still swap roles (this build tests edx and keeps the running count in eax where retail tests eax and keeps it in edx); both arrive in those registers from the caller 0x7e210, whose body lives in src/unknown_07a9a0.cpp, which this lane may not edit. BLOCKED-BY 0x7e210.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

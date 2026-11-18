@@ -909,6 +909,11 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // as references to their fields 9; the two locals bound by reference with the mask unbound 16 (the font back in EBX).
 // Whenever the mask is a named, reference-bound variable it outranks the bitmap and the count (mask ESI, bitmap EDI,
 // count EBX, font EBP); unbound it is coloured after the font. Retail's order (bitmap, count, mask, font) sits between.
+// M3 lane 11 r114 (fast with 0x13eeb0, which matched in each): a `register long` font copy in the not-found branch for the
+// test and the store 14; the font bound by a const reference to its wrapper at its three uses 14; the character likewise
+// 14; both 14; a long font copy at the function top for the test and the store 14 (all the same code). Diagnostic: a
+// compile-only build of this file with and without the SSE architecture flag gives the same register choice for the
+// body (that build passes the header call's arguments in registers, so it is only a weak lead).
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

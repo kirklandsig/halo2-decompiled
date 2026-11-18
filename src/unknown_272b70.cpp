@@ -1648,6 +1648,8 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Shared parent alone/with split gates 32/32. Selected seat bound after departure 93.
 // Full-byte busy field with nested gates/shared parent 29/29, first +0x255 at 846 bytes.
 // NOT kept: three-point prefix gain only. Departure type registers and request/slot stores remain.
+// DH397: Separate short append ordinal using indexed mutable/const, row reference/pointer, with original observations and one shared iterator handle 32/32/150/150/32/32/150/150.
+// NOT kept: The indexed forms tie; row aliases move the first difference earlier and regress, with the 846-byte extent intact. The iterator handle, departure selector and request/slot schedules remain. The original body is restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -3023,6 +3025,8 @@ struct s_scenario_scripting_view
 // DH393: Unsigned word range/sign-bit admission with admitted selector or original high bits
 // 89/79 and 97/91. Dword counterparts 89/95 and 98/98.
 // NOT kept: 79 grows to 372 bytes and loses the exact wrapper. Actor, counter and selector homes remain.
+// DH397: Encoded set portion at decode/admission/selection/inside lower bound, each with final OR/sum 76/76/60/60/102/102/75/75.
+// NOT kept: The 60-point admissions spill the encoded value at retail length and preserve the wrapper, but shift before the search where retail shifts at submission. They also keep the actor in EBX and the counter in EBP. The original body is restored at 80.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
