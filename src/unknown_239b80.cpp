@@ -730,6 +730,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // (same code); the pass loop tested on `(short)hull_count < count` with the pass counter kept for the index 250 (795 B); a
 // `point2f const *point` for the lowest scan's six reads 144 (same code). Retail's outer region caches the hull count in EBX
 // (its home +0x10 reloaded after the candidate scan, which leaves EBX unused); ours caches the count there instead.
+// Duplicate scan from the second index 265, with cached key 265, search before
+// the suffix move 222. A short suffix count 144, with a short hull-pass ordinal
+// 249. Current after the successor transfer 144, heading published on
+// continuation 177, both index and heading published on continuation 253.
+// NOT kept: the 144 forms leave the extra frame word and the departure home.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

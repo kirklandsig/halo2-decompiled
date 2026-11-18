@@ -612,6 +612,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // and center, forward input and center, or all three 660/661/699/656/691/655/675.
 // Direct copy initialization of the retained input and center 558. The success, input and hit
 // homes remain different with the original copies.
+// Individual up/left/down/right branch-local response roots 559/559/559/559;
+// positive, negative and vertical branch-local pairs 558/558/558; root scratch
+// shared per opposing axis 559. The success byte remains at +0x13. Restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

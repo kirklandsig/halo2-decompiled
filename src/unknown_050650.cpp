@@ -1391,6 +1391,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 255, on the 166 form 166 (same code); cases 1 and 6 through a shared object-point inline helper: plain inline 392
 // (1300 bytes, kept out of line), forceinline 255, forceinline with the NONE-first test 166. None kept: each gain rests
 // on forms kept only with a match.
+// Round 415. case 2 state-admitted presence 278, case 1 state-admitted presence 265, both state-admitted 278, case
+// 2 point-write presence 375, case 1 point-write presence 102, both point-written 390, case 1 point-written with
+// case 2 state-admitted 213, case 1 state-admitted with case 2 point-written 348, case 1 reference-state snapshot
+// 263, both reference-state snapshots 263. NOT kept: the two lower previews publish presence after the point calls
+// instead of at the state test. The 102 form also falls short of retail length.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

@@ -1434,6 +1434,10 @@ PRIVATE inline long score_string_list_1608e0()
 // and advance copied row 724/724/724. Early near edges in title rectangle 670, with far edges before title text
 // 670, row copy after title initialization 670, and far edges at coordinate producers 670. NOT kept: those
 // forms restore the 0x79c frame and viewer EBX by using title fields for the separate origin retail stores at +0x10.
+// The separate early origin and viewer homes remain. Early horizontal cursor store 677;
+// vertical cursor and advance 698; direct horizontal cursor 675; direct coordinate pair 689;
+// aggregate cursor 698; title edges from cursor 698; early title bounds 689;
+// caption from title top 689. NOT kept: best gain four, with the frame still 0x798.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
