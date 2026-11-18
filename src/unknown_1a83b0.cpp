@@ -630,6 +630,9 @@ s_1a8a10 g_4453c0[] =
 // actor_get lookup 140 (556 bytes: the lookup is not merged); the negated j named between the copy's i and j, sums in
 // retail's term order 17 (same code); the copy and the sums in their own block scope 17 (same code). Re-measured: the
 // round-115 frame-transform lead (perpendicular local, identifier/index/score order, [2], [3], [0], [1] stores) 31 here.
+// Round 210 (m3 lane 4, fast; control 17): the switch writing the rotated point through a reference-bound local 91, that
+// reference also read by both sums 91 (j still folded); a reference bound to the facing copy for the sums 17 (same code);
+// each product cast to real inside both sums 17, with retail's term orders (i*y and j*y first) 17 (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

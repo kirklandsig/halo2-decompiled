@@ -476,6 +476,22 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 
 // score 218 (was 218; 219 before): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
+// M3 lane 11 r113 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 76): actor_index declared first (the stack
+// order and register arguments unchanged; definition, declaration in src/path.cpp and the call together) with corners a, b,
+// c, d gives retail's entry byte for byte (pathfinding arrives in EAX and is copied to EBX, the actor loaded into EAX, out
+// in EBP): 281 (1284 B, first difference +0x3 -> +0x27, aligned 60); with case 5's position read before its direction,
+// cases 2 and 5 then agree too: 283 (1284 B, aligned 43). Left there, all in case 1: the first projection sums k before j
+// (retail j before k, so the edge vector's j/k take xmm4/xmm3 against retail's xmm3/xmm4), the 1.0 constant sits in xmm7
+// (retail xmm6), and the margin loads the radius into a fresh register (`movss; mulss xmm6, xmm2`) where retail multiplies
+// the inverse in place (`mulss xmm2, [eax]`): the 4 extra bytes. On that form all 283 / aligned 43 (same code): margin as
+// radius * inverse, the inverse written at each use, the fraction's product reversed, the radius compare swapped or as
+// 2 * radius, the inverse before the dots, dot3f arguments swapped, the origin dot first, the clamp as one conditional
+// expression, the vectors declared separately or the other way round or before the corners, margin/distances/second
+// length declared early, and a 47-form random mix of those; the entry parameter declared mutable (no const_cast local)
+// 291 (aligned 45); the 23 other corner orders 265-357 (only a, b, c, d keeps the entry). Diagnostics (reverted): a
+// volatile radius read for the margin, same code (register colouring, not CSE); no-code mentions of the edge vector's
+// fields 286-292. Without a, b, c, d the actor-first order alone 265 (the actor is not loaded at entry). Reference-bound
+// radius, edge vector or inverse on that form 283 each (same code).
 // MiniMax R (11-16): no new form, no lower score (218): retail copies the pathfinding root into EBX and takes the actor value from a stack slot at the entry, where this build keeps the root in EAX and reads the actor in the case body, so the vertex loads and the cross product's float schedule follow that allocation.
 // MiniMax R (11-15): no new form, no lower score (218): the entry still hands the pathfinding root over in the register the compiler picks instead of saving it in ebx, and the actor index is still not read into eax before the dispatch; the paired-edge block still keeps the vector's j and k in the other two xmm registers (retail: xmm3 = j, xmm4 = k and the 1.0f in xmm6; here xmm3 = k, xmm4 = j and the constant in xmm7); ten new spellings of the root local, the actor local, the case-5 statement order and the projection operand order all scored 218 or worse.
 // MiniMax A (11-14): no new form, no lower score (218): the entry still differs - retail copies the pathfinding

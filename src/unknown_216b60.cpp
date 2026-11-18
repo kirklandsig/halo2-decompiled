@@ -2,6 +2,7 @@
 /* UNKNOWN_216B60.CPP: saved game file types */
 
 #include "unknown_11c920.h"
+#include "saved_game_storage.h"
 #include <string.h>
 #include <xtl.h>
 
@@ -15,16 +16,6 @@ struct s_saved_game_drive
 {
 	word utility_drive : 1;
 	word unused : 15;
-};
-
-struct s_saved_game_name
-{
-	word text[128];
-
-	bool fill(long type, word const *display_name, long language)
-	{
-		return function_216da0(type, text, display_name, language);
-	}
 };
 
 extern s_saved_game_drive g_4e61c0;

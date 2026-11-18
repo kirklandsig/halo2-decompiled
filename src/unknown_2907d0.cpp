@@ -159,6 +159,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // 19 and `return arg_3->field2e != 0` 19 (both fold, same code); field2e set through a forced-inline member setter 19.
 // Matched 0x1b1f70 (`x = 1; return true;`) shares the constant as ours does; the only matched non-sharing word store
 // found (0x26ed40) has EAX busy as the store's base.
+// M3 lane 11 r114 (fast): the else arm's point and vector copies as memcpy 19, the point alone 19 (same code); the node
+// matrix through the existing 0xb8bd0 after 0xb8c00 gives the count 146 (451 bytes); the bound test as `node_count <=
+// arg_1` 21 (the compare's operands swap); the initial point copied through a const reference to the global 127 (452
+// bytes). The transform still takes EBX and the point's y EBP, and the constant 1 stays shared.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

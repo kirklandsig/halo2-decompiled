@@ -323,6 +323,18 @@ extern long g_55c154;
 // half's top 191/192 (round 55's probe does not reproduce). In every two-arm body EBX takes `saved` (the constant 1
 // before it) and `this` takes ESI or EDI, so `this` spills around the rep movsd, and each arm hoists `mov ebx,
 // &g_54e4a0` even with two register uses; retail has `this` EBX, entry ESI, saved EDI and no hoist.
+// m3 lane 5 r195 (fast with 0x13fac0/0x212bc0/0x238c69, all matched; one-load body 61, aligned 40; two load arms as control
+// 174 at 595 bytes, aligned 78). Retail's selected arm pushes the 0x20 count ahead of its copy into g_54e4a0, as if the
+// copy ran inside the request call's argument list, so that was tried on two arms with a same-file forceinline publish
+// helper (stores the saved index, copies, returns the variant's address): the selected arm's file type taken from the
+// helper's result, with the default-flag clear as a second helper on that result, 174 (same code as the control); the
+// default arm's build call taking the helper's result too 174 (same code); that with a count named in the default arm
+// for the copy and the request 179 (580 bytes, aligned 76: 0x13fac0 is then called as in retail); the flag cleared
+// through the variant's own address 174 (same code). Every form keeps `mov ebp, esp` at +0x1. In our two-arm build
+// `this` sits in EDI and is spilled round the copies while EBX holds the hoisted constant 1, then `saved`, then the
+// g_54e4a0 address; retail has `this` in EBX, so nothing is left to hoist the address into. The controller mask named
+// once at the top of the first half (one use of the constant 1 in place of three), on two arms, 176 (581 bytes, aligned
+// 85): `this` still leaves EBX. Body unchanged.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

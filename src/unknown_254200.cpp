@@ -231,6 +231,9 @@ void function_254200(void)
 // colour helper plain `inline` 339 (985 B, out of line). Reading: retail reloads the depth constant and y + size in the
 // order they are first computed (call arguments right to left: the constant first), ours in the reverse order; the
 // colour helper's three products reload in declaration order in both builds.
+// Round 98 (m3 lane 2, single-address fast, control 4): descriptive names, to test a name-hash tie: the point copy
+// and size as center/size 4; the three bitmap pointers as first/second/bitmap 4; the dimension locals as height/width
+// 4; all seven together 4; the five parameters named 4 (all the same code: the reload pair does not follow names).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
