@@ -387,6 +387,11 @@ void c_window_channel::v9()
 // type cleared before the declaration with a base-type reference for all three uses 5; re-measured by mistake, the load
 // result straight to set_next 25 (round 152); an early return with the clear first and the load result straight to set_next
 // 24 (76 bytes). Still HELD on round 100's member-builder lead (BLOCKED-BY 0x149f49's free-function form).
+// M3 lane 15 r96 (fast with v9, 0x2354aa and 0x2358c3, which stay matched): v10 placed above v9 in the file 3; the builder's
+// message argument through a typed cast 3; the id as the cast array and the load procedure through a typed cast 3; an
+// early return with the type clear ahead of the declaration and the load result passed straight to set_next 24 (76 bytes);
+// the builder's user flags, a, b and load procedure read into named locals after the type clear 3. Still HELD on round 100's
+// member-builder lead (BLOCKED-BY 0x149f49's free-function form).
 // @retail 0x23531c
 void c_window_channel::v10()
 {

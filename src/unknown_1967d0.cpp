@@ -913,6 +913,10 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
+// score 191 (was 191): The flag read precedes the configuration copy, and the final score query expands. Tried:
+// existing score clamp 192; separate clamp stores 147; inline score clamp 100; existing score on lower/upper
+// test 223/216; statistics pointer retained 191; shared active-team query 138; reversed clamp tests 210. NOT
+// kept: 100 and 138 differ at the score or active-team call boundary; 147 grows farther from retail.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

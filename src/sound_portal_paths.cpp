@@ -3,6 +3,7 @@
 #include "unknown_0259d0.h"
 #include <float.h>
 #include <math.h>
+#include <string.h>
 
 struct s_portal_path_portal
 {
@@ -115,17 +116,22 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
+// score 311 (was 371): Frame 0x42c versus 0x428; the starting-cluster register and BSP table lifetimes differ.
+// Tried: const portal 371; const views 371; endpoint mask before shift 371; const portal and mask 371; shared
+// seed array index with separate bit read 373; validity memset 311 kept (plain); path ordinal in while 371;
+// index test before closest distance 371.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
 {
 	s_portal_path_cluster *cluster = &bsp->clusters[cluster_index];
-	dword valid[2] = { 0, 0 };
+	dword valid[2];
 	real distances[64];
 	long nearest_portals[64];
 	long order[64];
 	long nearest_clusters[64];
 	real nearest_distance = FLT_MAX;
+	memset(valid, 0, sizeof(valid));
 	if (cluster->sound_index != NONE)
 	{
 		nearest_clusters[cluster->sound_index] = cluster_index;
@@ -210,6 +216,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
+// score 354 (was 354): Frame 0x430 versus 0x428; the starting-cluster register and portal and cluster table
+// lifetimes differ. Tried: const portal 354; const views 354; endpoint mask before shift 354; const portal and
+// mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
+// path increment 371; index test before closest distance 354.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

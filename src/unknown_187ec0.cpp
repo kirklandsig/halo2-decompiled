@@ -827,6 +827,10 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // src/projectiles.cpp and name the old parameter types, so the effect point and the velocity forms
 // that were measured (77 each) leave the body as it is.
 // MiniMax R (11-11): no new form, no lower score (46): retail's second scan keeps a dword index in EDI and the scale in EBP, ours strength-reduces the scan into a pointer walk with a countdown in EBP; a 32-bit index gives retail's index form but rotates the other homes.
+// MiniMax I (11-17): no new form, no lower score (165): the difference is still that this build expands 0x1765e0
+// into the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body
+// is in src/unknown_175bd0.cpp; the flag-line lever of the earlier round reaches no further, because the threshold
+// that decides the inline comes from the generated ballast and not from this file: BLOCKED-BY that file.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	c_type_47f957 entry_element_index, long effect_value, s_location const *location, real scale)
