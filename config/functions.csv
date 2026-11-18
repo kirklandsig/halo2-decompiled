@@ -11617,8 +11617,8 @@ va,size,owner,style,evidence,name,object,calls,source,status
 002d8380,132,third:havok,speed,a16 pad,,,002d8410 002d8460,src/unknown_2d8030.cpp,matched
 002d8410,80,third:havok,speed,a16 pad,,,,src/unknown_2d8280.cpp,matched
 002d8460,114,third:havok,unknown,a16,,,002d9160,src/unknown_2d8280.cpp,matched
-002d84e0,40,third:havok,speed,a16 pad,,,002d8510,src/unknown_2d8030.cpp,matched
-002d8510,135,third:havok,speed,a16 pad,,,,src/unknown_2d8030.cpp,todo
+002d84e0,40,third:havok,speed,a16 pad,,,002d8510,src/unknown_2d8780.cpp,matched
+002d8510,135,third:havok,speed,a16 pad,,,,src/unknown_2d8780.cpp,matched
 002d85a0,152,third:havok,speed,a16 pad,,,002d8ce0 002d9160,src/unknown_2d8280.cpp,matched
 002d8640,95,third:havok,speed,a16 pad,,,002d8280 002d85a0,src/unknown_2d8030.cpp,matched
 002d86a0,91,third:havok,speed,a16 pad,,,002d8280 002d85a0 002d8700,src/unknown_2d8030.cpp,matched
