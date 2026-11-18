@@ -525,6 +525,15 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // inline rotation (either parameter order, four row orders, with none, one or both trig locals): none starts the y row
 // before the sine's branch. Left as before: the short count (blocked by the EBX convention above), the constant's
 // XMM1/XMM2 and the near arm's order.
+// The cosine and unity still use different homes, and the candidate ordinal and far cursor keep their
+// opening widths.
+// Tried fixed turns retain their y input between both products 413, fixed turns snapshot their headings
+// after angle publication 386, fixed turns name the wide cosine contribution to x 349, fixed turns select
+// the sine result after the staged y product 405, distant arm first with a complementary distance test
+// 354, distant arm exits the endpoint before fixed turns 354, distant arm first with retail candidate
+// width 480, orientation tests reuse the shared endpoint side 364.
+// NOT kept: The wide cosine term grows the body and leaves the first unity load different. The distant-
+// first form with a signed candidate also changes the matched caller convention.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

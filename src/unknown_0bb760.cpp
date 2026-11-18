@@ -534,7 +534,8 @@ void function_3dd10(long object_index, bool force);
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 123 (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
+// score 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
+// Earlier opening state (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
 // and the variant byte is read before the second remainder. The first scan's `!=` exits
 // differ from retail's signed `<` loop (unrolled by 4 in every
 // The 0x54 frame and 1034-byte extent agree. The first difference is an outer exit
@@ -719,6 +720,15 @@ void function_3dd10(long object_index, bool force);
 // registers and CL comparison, but puts the blend store after the entire lookup and shortens to 1019 bytes.
 // The conditional key ties 123 at 1035 bytes and puts the blend in a different slot. The signed scan exits
 // remain different. The opening executable source is restored.
+// The object and tint-table saves still trade ESI and EDI, and the blend spill precedes the byte test.
+// Tried unsigned variant byte before the remainder and signed index at lookup 147, unsigned variant byte
+// after the remainder and signed index at lookup 97, shared vertical position input for both seeds 254,
+// shared vertical seed input with the variant read after the remainder 230, shared vertical seed input
+// with the unsigned late variant byte 230, ordinal conversion at each seed expression 123, ordinal
+// conversion in both seeds with the late variant read 134, ordinal conversion in both seeds with the
+// unsigned late variant byte 97.
+// Kept the late unsigned byte with signed decoding at the index calculation. The byte compare gates the
+// lookup and the index sign-extends at use as in retail. The 0x54 frame and 1034-byte length agree.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
@@ -746,13 +756,13 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                 real seed = (real)fabs((*(real *)(object + 0x6c) * 744.1241455078125f + *(real *)(object + 0x64) * 315.89312744140625f + index * 431.1289367675781f) + *(real *)(object + 0x68) * 587.1294555664062f);
                 real selection = (real)fmod((double)seed, 1.0);
                 seed = (real)fabs(index * 0.7121099829673767f + *(real *)(object + 0x68));
-                char variant_index = *(char *)(object + 0xb1);
                 real blend = (real)fmod((double)seed, 1.0);
+                byte variant_index = *(byte *)(object + 0xb1);
 
-                if (variant_index != NONE && definition->model_tag_index != NONE)
+                if (variant_index != 0xff && definition->model_tag_index != NONE)
                 {
                     byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
-                    variant = *(long *)(*(byte **)(model + 0x54) + variant_index * 0x38);
+                    variant = *(long *)(*(byte **)(model + 0x54) + (signed char)variant_index * 0x38);
                 }
 
                 long j = 0;
