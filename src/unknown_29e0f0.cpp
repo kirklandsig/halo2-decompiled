@@ -627,6 +627,16 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH398: Capture the signed reference index as short or long after root admission, before its
 // validation, after selected defaults, or at entry 382/382/382/382, 427/451/438/438.
 // NOT kept: All short captures reproduce the baseline. The long captures regress, and the selected-index homes remain different. The original reference field reads are restored.
+// Selected defaults omitted singly or in pairs, with a retained sentinel first:
+// 438/438/475/441/477/477. Omitting the point test too 456; one success state
+// plus the endpoint test 477. NOT kept: the three native default homes are
+// still missing, and the two-default and success-state forms shorten the body.
+// The 0x64 frame agrees; the selected indices still occupy different homes. Changing their publication
+// lifetimes or feeding the short validator result to the pass flag left the first difference at +0x11.
+// terminal point after walk 474; indexed terminal point after walk 491; count from inclusive point span
+// 399; indexed count from inclusive span 413; endpoint in loop condition 395; short validator result for
+// pass 420; boolean validator result for pass 385; validator comparison for pass 420. NOT kept: all
+// forms scored above the opening body.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

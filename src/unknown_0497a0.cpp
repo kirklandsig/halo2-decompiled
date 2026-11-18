@@ -478,6 +478,10 @@
 // double or real factors and a three-factor third component 636/636, with the dead store first 636/636. On the 629 form:
 // the first cross written into w and reused 626 (staged) / 626 (plain), both crosses staged 629, the wave vector
 // declared ahead of the cross vector 629.
+// Opposing cross products shared as three retained terms, component-by-component,
+// paired terms, or separate product families 638/649/646/640. Moving the short
+// wave before those forms gives the same four scores. NOT kept: every form
+// shortens the body and leaves the frame and rounded-wave homes different.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

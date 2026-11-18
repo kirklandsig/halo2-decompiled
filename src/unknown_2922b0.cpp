@@ -619,6 +619,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // The three with the shared scale helper 608/579/603.
 // Reuse the side axis or both with the staged cross 599/600.
 // NOT kept: The success byte stays at +0x13 and the body shortens. The separate projection workspaces are restored.
+// Frame 0x108 agrees. The success byte is four bytes below retail. Scoping the collision query did not
+// move it; the for count narrowed the extent gap by four bytes. query workspace scope 558; count and ray
+// in for scope 558; count and ray in exclusive scope 558; preincremented ray ordinal 667; query scope
+// with for count 558; staged hit distance 563; query writes hit flag 559; collision displacement inner
+// scope 566. NOT kept: the scored forms tied or regressed.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

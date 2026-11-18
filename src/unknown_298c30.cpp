@@ -498,6 +498,18 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // positive-endpoint Boolean: four-way assignments 305/314, initial angle with
 // quadrant adjustments 307/322, endpoint-first conditional initializer 305/314,
 // facing-first conditional initializer 322/319. Unity remains in XMM1.
+// Lane N round 411 (fast control 305).
+// Shared displacement input 396.
+// Sum from displacement copy 438.
+// Componentwise displacement use 419.
+// Shared input before object 368 (NOT kept: matched caller rose to 2 in the reduced image).
+// Named facing projection 305.
+// Projections before endpoints 379 (NOT kept: entry repaired through +0x9e but body score and extent regressed).
+// Angle pair then wrap 304 (NOT kept: one-point gain without a match).
+// Far endpoint workspace 368.
+// Facing before endpoints 333.
+// Facing between endpoints 336.
+// Facing after first coordinate 332.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

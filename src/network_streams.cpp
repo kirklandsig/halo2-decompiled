@@ -1111,6 +1111,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // compiler-setting trial); `__assume((flags & 1) != 0)` closing the found path 89 (no effect); a local `flags |= 2;`
 // after or ahead of the memory `|=`, or `flags = message->flags;` after it, 89 each (removed before allocation, so
 // the member form's code).
+// Count-based bound with the index helper through pointer/member/reference or
+// the message getter: reconstructed newest 88/91/88/91; wide distance from
+// oldest 172/165/172/165. NOT kept: native loads and single cursor remain
+// different, and all eight extents move away from 225 bytes.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -3569,6 +3569,11 @@ static inline short sound_voice_find_available_channel(char type)
 // Assigned-channel bypass with separate, nested, compound or named buffer checks, each with
 // direct or cleanup-scoped rejection return: eight 135s. NOT kept: eight-byte frame recovered,
 // but entry AL, pre-call failure in BL and the shared failure return still differ.
+// Retail uses a register result and an eight-byte frame. The result from the admission tests recovers
+// retail length and frame size with a different entry and failure join. status assigns buffer 122;
+// driver assigns buffer 123; both arms assign buffer 122; result from both tests 135; byte from both
+// tests 177; result guards cleanup 135; cleanup at common exit 135; failure from missing channel or
+// buffer 134. NOT kept: all forms scored above the opening body.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
