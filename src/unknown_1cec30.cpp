@@ -933,6 +933,10 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// MiniMax B (11-18): no new form, no lower score (65): the transform copy is still a block copy here where retail
+// stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX;
+// the memberwise set form measures 90 (worse), and the component's home is decided across the
+// 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 call cycle, whose bodies are in other files: BLOCKED-BY 0x1d1260.
 // MiniMax S (11-17): no new form, no lower score (65): the frame is 0x84 against retail's 0x88, the index and the component arrive on the stack where retail keeps them in ecx and ebx, and the entry copy is a block copy where retail stores the four members separately; the component's home is decided across the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 call cycle, whose bodies are in other files.
 // MiniMax A (11-12): no new form, no lower score (65); the component still arrives on the stack
 // where retail hands it over in EBX, so the frame is 0x84 against retail's 0x88 and the transform
@@ -1184,6 +1188,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// MiniMax B (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
+// component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided
+// across a call cycle whose other bodies are in other files: BLOCKED-BY 0x1d0cf0.
 // score 38 (was 38): The transform setter receives stack arguments where retail uses registers, including EBX for the component.
 // MiniMax A (11-12): no new form, no lower score (38); every difference is still the frame (0x50
 // against retail's 0x5c) and the callee's convention, which hands the component over in ebx where
@@ -1701,6 +1708,11 @@ PRIVATE __forceinline real const &component_time_step()
 // `add eax, 4`, ours loads the step into XMM0 and multiplies it by the same memory operand), retail's second product
 // multiplies by the base field while ours keeps the field at +4, and the zero register is XMM3 in retail and XMM2
 // here; the step's own value still sits in a register instead of the memory multiply retail uses.
+// score 26 (was 43): the scaled acceleration still lands in XMM1 where retail has XMM0, and the time step is
+// loaded into a register where retail multiplies it from memory.
+// MiniMax B (11-18): score 43 -> 26: the stop test compares the target with the step before the stop distance
+// (the step-predicate-first form earlier rounds measured at 26); the acceleration register and the memory time
+// step still differ.
 // score 43 (was 26): retail's stop-first test order, see b13C below; earlier 43; Acceleration XMM0/memory
 // timestep prefix and stop-test schedule still differ;
 // negative-target guard 50; stopping branch first 106; step predicate first 26 (kept, plain 26);
@@ -1781,7 +1793,7 @@ real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real tar
 		else
 		{
 			real stop_distance = (velocity / step + 1.0f) * (velocity * delta_time) * 0.5f;
-			if (target > stop_distance && target > step)
+			if (target > step && target > stop_distance)
 				next_velocity = velocity + step;
 			else if (target < 0.0f)
 				next_velocity = velocity;
@@ -2470,6 +2482,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// MiniMax B (11-18): no new form, no lower score (91): the whole remaining difference is the surface length's
+// normalisation, where retail reloads the normal's j and k into xmm2/xmm3 around the x87 length chain and scales
+// them in registers, where this build folds the loads into the scaling multiplies and uses xmm1 for i*scale; the
+// length helper's own form and the shared header's helper are not this lane's to change.
 // MiniMax R (11-16): no new form, no lower score (91): the whole remaining difference is the velocity
 // normalisation, where retail hoists the velocity's j and k into xmm2/xmm3 ahead of the length branch and
 // scales them in place, and the shared header helper (not mine to change) does not; forms tried here: the
