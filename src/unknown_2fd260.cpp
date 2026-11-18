@@ -38,7 +38,9 @@ public:
 // The remaining four differences are the x/z scalar transfers for direction.
 // the vertex furthest along a direction, with its index in the fourth term
 // tagged with the bits of 0.5
-// score 7 (was 7): x/z transfers and final coordinate/tag schedule remain.
+// Matched: the direction's three components are named _mm_set_ss singles declared in
+// x, y, z order and then spread, which sets both the load order and the xmm registers.
+// Before, 7 (was 7): x/z transfers and final coordinate/tag schedule remain.
 // Scalar loads 159; direct/shared vector shuffles 157/157; dot accumulator 7;
 // wide selected scalar 7; output vector 86; coordinate-array loop 4; indexed blocks 166;
 // coordinate loop with scalar-value/shared broadcasts 4/4.
@@ -54,9 +56,12 @@ void convex_vertices_2fd260::function_2fd260(__m128 const *direction, __m128 *su
 	vertex_block_2fd260 const *block = blocks;
 	for (int i = 0; i < vertex_count; i += 4)
 	{
-		__m128 const direction_z = _mm_set_ps1(direction->m128_f32[2]);
-		__m128 const direction_y = _mm_set_ps1(direction->m128_f32[1]);
-		__m128 const direction_x = _mm_set_ps1(direction->m128_f32[0]);
+		__m128 const scalar_x = _mm_set_ss(direction->m128_f32[0]);
+		__m128 const scalar_y = _mm_set_ss(direction->m128_f32[1]);
+		__m128 const scalar_z = _mm_set_ss(direction->m128_f32[2]);
+		__m128 const direction_x = _mm_shuffle_ps(scalar_x, scalar_x, 0);
+		__m128 const direction_y = _mm_shuffle_ps(scalar_y, scalar_y, 0);
+		__m128 const direction_z = _mm_shuffle_ps(scalar_z, scalar_z, 0);
 		__m128 const z = _mm_mul_ps(direction_z, block->coordinates[2]);
 		__m128 const y = _mm_mul_ps(direction_y, block->coordinates[1]);
 		__m128 const x = _mm_mul_ps(direction_x, block->coordinates[0]);
