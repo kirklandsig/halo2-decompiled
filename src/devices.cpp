@@ -2456,6 +2456,10 @@ bool function_0b6760(s_index_pair const *pair);
 // without a byte match; retail loads the global pointer once and takes the rate from it for both the delay test and the call,
 // a two-use rate local at the outer else top measures 276 and 278, and dropping the volatile on the definition alone measures
 // 380, so the qualifier and the body stay.
+// MiniMax I (11-17): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes
+// the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off and the body is
+// sixteen bytes short of retail's 1495; the only form under 250 needs a one-use rate local (58/60), a form the coordinator
+// ruled out without a byte match, and dropping the volatile on the definition alone measures 386.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
