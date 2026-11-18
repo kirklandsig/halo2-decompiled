@@ -1044,6 +1044,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // both plane dots with normal as first input 152.
 // NOT kept: The shared dot can advance the x load, but changes its register and the surrounding
 // coefficient schedule. All eight forms raise the score.
+// M3 lane 7 r177 (fast with 0x1648d0/0x320b0, both MATCH; control 115, aligned 73): the projection's output pointer
+// advanced at the inner loop's tail 249 (1867 B); `total` declared ahead of segment/segment_count 115 (aligned 71). Lane
+// 16 r72's 19 form rebuilt on current main 19 (aligned 22; match-only); on it the classification and distance j terms
+// point-first 19 (same code), the denominator staged i, k, j 33, `total += 2` ahead of `culled = false` 19 (same code).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

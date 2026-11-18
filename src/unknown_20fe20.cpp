@@ -2742,6 +2742,10 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // declared at function scope and assigned after the helper 3 (same code); a three-scalar sum helper taking the differences
 // as call arguments, parameters z, x, y 19 (arguments evaluate right to left: retail's y-first schedule, y XMM1 and z XMM3,
 // the listed y, x, z statement order), parameters y, x, z 3 (evaluation z, x, y: the body's code).
+// M3 lane 7 r177 (fast; control 3): the helper's y difference written in its sum term (no dy local) 3 (same code); the
+// helper with no locals, a staged z, y, x sum of repeated differences 14; the helper's z difference as a load and a later
+// `-=` (z only) 420 (1944 B); cases 8 and 9 placed before cases 6 and 7 (probe) 90 (layout moves, schedule unchanged);
+// the outer x, y, z bound as `real const &` 32.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

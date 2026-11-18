@@ -853,6 +853,10 @@ real function_30bf0(vector3f *vector);
 // countdown with postincremented input 187, indexed count with postincremented input 185. Primary fallback
 // first with selected 3/2 tier 84, four-way result select 153, explicit zero in the primary fallback 153.
 // NOT kept: the two-sided clip and cursor forms reach 1308 bytes but keep the wrong result home and raise the score.
+// M3 lane 7 r177 (fast with 0x263740/0x25c9d0/0x26d370/0x263d70, all MATCH; control 84, aligned 57): a redundant
+// `if (0 < count)` guard around the seat loop 148 (1315 B); the seat element copied into a local for the occupant lookup
+// 150 (the frame moves); the seat element bound as a const reference 90 (1308 B, aligned 70); the occupant's forward
+// bound as `vector3f const &` 84 (same code); the second probe's outputs and maxima in their own block 84 (same code).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2658,6 +2662,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the prologue and the frame (0x80 in both) match instruction for instruction and the first difference is the inlined 0x26be00
 // reading [eax+ecx+0x58] where retail reads [ecx+eax+0x58] (the same address, the two registers swapped), and the player loop
 // further down allocates the table base and the index to different registers.
+// M3 lane 7 r177 (fast with 0x25d810/0x26be00/0x25d740/0x26be30/0x2662f0/0x266540, all MATCH; control 168, aligned
+// 107): the slot search's counter long 169; 0x26be00 in the array-index form 168 (same code); the score through a
+// reference-bound local 168 (same code); the decay read into a named short before its store 168 (same code); the
+// relative vector ahead of the velocity copy 266 (695 instructions, aligned 122).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
