@@ -1198,6 +1198,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // squared length as the zero arm or factor default 378/378; conditional
 // factor at the scaled add 126; distance before the test or length 411/411;
 // complete plane aggregate 440. Direction-j preload and zero home remain.
+// Round 624: transform reference/pointer through both point subcases 461/461; projection-case
+// reference/pointer 473/473; rotation subobject reference 438; transform and point-state references 461;
+// transform pointer with staged scale 461; staged signed distance, quotient and factor 126. The direction-j
+// preload and zero register remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
