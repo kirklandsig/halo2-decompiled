@@ -588,6 +588,7 @@ struct s_item_collision_bsp
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
 // MiniMax E (11-16): the transformed-plane rows written as accumulating statements score 176 (the compiled tree then matches retail's (up*k + left*j) + forward*i) but that is under the keep threshold, so the body stands; a double spin scale keeps it in x87 but grows the frame to 0xa4 (238), so the scale still sits in a stack slot where retail holds it in st(1).
+// MiniMax B (11-18): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the plane-normal and spin/speed homes remain; the shared receiver gains six points and the transformed-plane rows 22, both under the eight-point minimum, so the body stands.
 // score 198 (was 200): frame 0xa0 agrees; instance indexing, plane-normal and spin/speed homes remain.
 // Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
