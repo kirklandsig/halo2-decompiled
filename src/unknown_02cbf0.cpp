@@ -365,6 +365,19 @@ static __forceinline long floor_to_long_inline(real value)
 // MiniMax C (11-16): leave the bytes unchanged.
 // MiniMax R (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, and the kind word's shift still lands in esi before the copy where retail shifts eax and copies it.
 // MiniMax S (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, and the kind word's shift still lands in esi before the copy where retail shifts eax and copies it.
+// b16B (11-17) walk against retail, fast build on r852: no new form, no lower score (10). Outside pieces tried, each
+// compiled and fast-checked: the s_44940_entry fields as typed members (object/pool/mask/mode/level/context): bytes
+// unchanged (10); function_2d000's return as dword (declaration here and definition in unknown_03f2b0.cpp, 0x2d000
+// stays MATCH): 10, as byte/short/bool: 22 (adds movzx/movsx after the call, retail has none); `flags` as long: 11
+// (sar for the bit-12 test, retail shr at 0x2cee6, so flags is a dword); the two register parameters swapped
+// (instance and category, every declaration and call updated): 2cbf0 stays 10 and 0x133390 becomes MATCH (2 -> 0, its
+// `or ecx, -1` then `xor edx, edx` order) but matched 0x133f70 drops to 8; retail 0x1341b9 loads category (edx) before
+// 0x1341c8 loads instance (cx) there, i.e. the present order, so no retail evidence for the swap and it was not kept
+// (0x133520 stays 24). Also no change (10): pool local at the state load, old word as a local at the top or beside
+// the word, flags/category locals at the top, `>> 29 << 29` / `~0x1fffffff` / `<< 11 >> 11` spellings of the masks,
+// entry declared first/last, short index local, ptr-arith entry. A volatile read of the old word puts it last as
+// retail does but costs 81 (scheduling changes everywhere). Lead: retail's tree is (cat | flags) | old, ours
+// (cat | old) | flags; only the global-array read of the old word reaches it (11, `lea` entry, second word flips).
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,

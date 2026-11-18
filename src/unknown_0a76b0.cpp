@@ -2409,6 +2409,10 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax I (11-17, run 103): no new form, no lower score (234): retail still keeps the pool global in EBP with the unit
+// index in EDI and compares the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this
+// build keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
+// scores 297 and the sentinel declared ahead of it 298, so the body stands.
 // score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four

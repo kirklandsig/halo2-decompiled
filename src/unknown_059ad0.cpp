@@ -4651,6 +4651,11 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // retail's +0xb, its identity byte at +0x9 against retail's +0xa, and its third byte at +0xb against retail's +0x9),
 // retail reads the acceptance byte back where this build folds it to a constant, and this build zeroes its pair of peer
 // bytes at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12.
+// m3 lane 16 r132 (fast with 0x5e3f0; base 305): `return result;` in place of `goto done;` after the disconnect 301
+// (1264 B, retail's length; a four-point gain, not kept); `return result;` for the same/better exit 313 (1273 B); `result =
+// true;` set before the pending/failed bit block 337 (1232 B); `if (!same && !better) goto disconnected; ... goto done;`
+// 305; `bool better = false, same = false;` 305. The acknowledgement as a forceinline helper at both sites re-measured 506
+// (round 30's form: the inline_depth(0) region keeps it a call). Still BLOCKED-BY 0x769a0 for the timeout spill.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

@@ -2049,6 +2049,13 @@ void function_27dd10(void)
 // &count = node_count;` 2 (0x281b60 39, 0x288570 3, 0x289580 78); the group end bound to a `long &` 2 (0x288570
 // 120); the destination index bound to a `long &` 2 (0x288570 120); the walk's count parameter as `long &` 2
 // (0x281b60 2, the five matched users keep). All restored.
+// M3 lane 13 r106 (fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0): in function_288572 the
+// three counter increments through a forceinline (component) step helper 2 (0x281b60 2); the empty-group test as `!= 0`
+// with the arms swapped 377 (1735 bytes; 0x281b60 352, every walk user regresses); in function_288571 the counter resets
+// as one chained assignment 2 (0x281b60 2, 0x288570 120); the node index zeroed in the wrapper before each pass instead of
+// in the walk's for 6 (0x281b60 6, 0x285750 4, 0x288570 2, 0x289580 5). Diagnostics (semantics changed): the empty
+// group's step or the group end's `+ 8` as 9 or 7, the bit test as `& 3`: the pair stays reversed in both functions.
+// Also the interpolation's three frame-state restores in reverse order 14 (0x281b60 14, 0x285750 12, 0x288570 19).
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2191,6 +2198,9 @@ void function_2818e0(void)
 // compute_orientations_split_index_last 62; compute_orientations 4; the scale pass's count from the settings
 // global (diagnostic) 152 (1680 bytes); the wrapper's count through a reference-bound local 39; the group end or
 // the destination index bound to a `long &` 2/2; the walk's count parameter as `long &` 2. All restored.
+// M3 lane 13 r106 (the shared-walk trials listed above 0x27dff0): counter step helper 2; empty-group arms swapped 352;
+// chained counter resets 2; the node index zeroed in the wrapper 6; the frame-state restores reversed 14; constant-change
+// diagnostics leave the pair reversed.
 // @retail 0x281b60
 void function_281b60(void)
 {

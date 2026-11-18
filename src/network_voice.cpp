@@ -1484,6 +1484,19 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // the compiler unroll the loop four times, which reaches retail's length (347) and its four blocks at 0, 0x170, 0x2e0 and 0x450
 // with the 0x5c0 step, but the identity flag still takes bl and the channels pointer still takes ebp, so the score is 109; the
 // flag read before the total measures 112, and four written-out blocks in a four-group loop are unrolled away into 1020 bytes.
+// b16H (11-17) walk against retail, fast build on r852: every statement matches retail (initialized byte [ebx], call
+// 0x56160 with ecx=player edx=channels, getter 0x4c99b8/0x476fcc/0x4c9878 then cmp eax,esi; sete, 2, 16 channels at +4
+// step 0x170, mask word +8, values +0x130, 11 + 2 * flag, + 2): no behaviour difference; the 94 is all allocation.
+// Retail's flag takes al (channels still in ebx when the flag is made, so A/B land in cl and the mask in ebx); ours
+// puts the flag in bl because the lea of the cursor is scheduled before the compare. Retail also loads the value into
+// ebp, then imul ecx,ebp; add ecx,2; add edi,ecx (ours: imul ecx,[mem]; lea edi,[edi+ecx+2]); three more spellings of
+// the add (bandwidth local, total += 2 then product, value/size locals) 94 each. New, all worse: flag, cursor, total 93
+// (350 bytes: channels in edi, the early-exit zero in ebx); total, flag, cursor 108 (channels in ebp from the stack,
+// `ret 4`); indexed `&channels->channels[i]` 109 (IV biased to channel 1's mask at +0x17c, bl flag, stack argument);
+// four `channel[k]` blocks per pass, i += 4 110 (second IV, player lands in ecx); a loop-level inline helper taking the
+// flag is not inlined (182/287); do/while `++i < 16` 287. Outside piece voice_get_unknown00 (ternary / early-return
+// body) 96 each, not kept. Lead: the unbiased IV and one 0x5c0 step in retail need the flag made while channels is
+// still in ebx; every order that does that makes the allocator move channels to ebp or edi instead of the flag.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -4069,6 +4082,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the channel bound as `s_voice_channel &` for every index read 164 (same code); an `if (0 < data[1])` guard around the
 // loop 166 (494 B: the clamp's count takes EBP instead); the cursor, consumed and size advances in the order cursor,
 // consumed, size 167. Body unchanged.
+// MiniMax C (11-17): no new form, no lower score (139): retail still takes the channel in ebp from the entry and spills the member, where this build keeps the member in ebp and the channel in a register; the member's life across the three calls is what wins it ebp here, and clearing the bit before the talker call measures 161, so the body stands.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
