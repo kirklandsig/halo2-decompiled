@@ -2488,6 +2488,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Round 623: interpolate then scale size 492, compound size interpolation 492; opacity named and
 // clamped 563, compound opacity 563, ordered opacity clamp 563, both compound interpolations 563;
 // opacity gate before size 491, size gate before opacity 492. NOT kept: the one-point lead is below the keep threshold.
+// Round 422: Scaled point then translated 492; named displacement products with field/aggregate stores 492/492;
+// displacement vector with field/aggregate/scoped field stores 492/492/492;
+// named final coordinates 492; displacement vector and point setter 492.
+// The 0x90 frame and the overlapping direction and draw-point homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4221,6 +4225,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Separate projection input and scaled ordinates, scaling/identity arm first, whole point input,
 // or whole scaled point output, with field reads/one scale sample: 530/518, 515/505,
 // 576/552, 530/510. Frame 0x5c except whole input 0x7c; velocity reloads still differ.
+// Round 422: Scalar previous camera / element / both snapshots 491/491/528;
+// camera readback 530, moved point initialized from previous coordinates 551, both 523,
+// camera displacement with original/scalar element capture 500/489.
+// The shared previous-position home, frame and independent velocity reloads remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5206,6 +5214,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // one UV and depth binding table 501, automatic UV table with completed depths 618.
 // With the four-channel color 640/493/505/605. NOT kept: both scalar-alpha table forms with explicit depth
 // owners reach frame 0xe0, but all eight forms shorten and raise the score.
+// Round 422: Explicit depth on corners 0 and 3, scalar alpha/four-channel color: in-place depth 231/225,
+// conditional depth bias 231/225, separate rotated displacement 390/372,
+// aggregate rotated displacement 390/372.
+// NOT kept: the six-point color gains grow to 1826 bytes. The 0xe0 frame and radius/zero homes still diverge.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

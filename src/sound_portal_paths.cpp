@@ -135,6 +135,9 @@ __forceinline long portal_path_gain(real distance, real range)
 // Seed-and-walk cluster scope 298; early closest distance 296; signed starting sound at the
 // closest test 296; signed destination through range/bitmap 317, with shared test 317.
 // Closest distance, valid bitmap and starting distance names 296/296/296.
+// Round 422: Explicit portal table / cluster table / both / pointer addition 296/296/296/296.
+// Sort-preparation count snapshot 296, capacity-first limit 296, selected comparison distance 296,
+// default range with an override 351. The table spills, starting-cluster and validity homes remain.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

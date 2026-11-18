@@ -226,7 +226,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
+// score 49 (was 49): The entry saves EBP instead of EBX for the byte result. The header flag and object reads
+// share a scaled index and data load where retail forms each address independently.
+// Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
 // remains (retail keeps it in BL and copies it to AL at the return, ours keeps it in EBP) and retail reloads the
 // table's data pointer and recomputes the scaled index between the flag test and the object read; the earlier legal
@@ -875,6 +877,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Creation and notification payload via memcpy with attach-owned result 77.
 // Creation and notification payload via memmove with attach-owned result 95.
 // NOT kept: payload memcpy kept the original allocation on the validity graph, and memmove or the attach-owned result regressed. Original payload and result restored.
+// Round 418: Common header flag / common object datum / both / existing header getter with common object datum:
+// 49/49/49/49 with validity result, 77/77/77/77 with attachment result. The typed accesses still share the
+// header address, and the attachment result shortens the body to 160 bytes.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -1999,6 +1999,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // shared control read 183, explicit case returns 183, named component squares 183,
 // typed mode member 183. On 175, staged walking rate and height adjustment 175/175.
 // NOT kept beyond the planar accumulator. The movement view grows the frame and body.
+// M421: Material assigned on both paths 675, fallback first 675, local at selection 675, complete conditional initializer 675;
+// common unit scale 175; unsigned material address 175; separate shape address/displacement 583; material address then displacement 175.
+// NOT kept: removing the entry material initialization shrinks the frame and body. The definition and material slots still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4155,6 +4158,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
+// score 548 (was 548): The 0x78 frame agrees. The changed byte is at +0x12 versus +0x11, then the flight
+// threshold uses +0x14 versus +0x18 and the vector schedules differ.
 // MiniMax E (11-17): no new form, no lower score (548): the frame is still 0x7c against retail's 0x78, and the definition's row pointer is still taken into ebx where retail takes it into ebp and pushes ebp as well, so the definition, biped and state homes sit four bytes apart and the flight call's arguments stay one register out.
 // MiniMax R (11-16): no new form, no lower score (548 in the full image, 612 in the reduced one): our frame is 0x7c against retail's 0x78; retail masks the tag index before its saves and keeps index * 12 in EBP with the definition in ECX, where this build masks it after the first push, keeps the index in EBX and brings the definition back in EBP; holding the mode's special flag as a byte instead of a long gives 656.
 // MiniMax C (11-15): no new form, no lower score (548): the prologue still differs - retail computes the pool offset in ebp (pushing ebp before the shift) and keeps it there, while this build computes it in ebx and pushes ebp later, and this build masks the object index after the pushes where retail masks it before, so the first field load and every call argument after it stay one register out.
@@ -4162,7 +4167,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // MiniMax D (11-15): no new form, no lower score (548): the flag byte still sits at [esp+0x12] where retail keeps
 // it at [esp+0x11], the flight scalar still has a home of its own that is not retail's, and the body is 2738 bytes
 // against retail's 2712, so the two cold exits land in a different place in the body.
-// score 548 (was 548): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// Earlier: round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax B (11-14): no new form, no lower score (548); the prologue already differs - retail computes the pool offset in EBP
 // (pushing EBP before the shift) and keeps it there, while ours computes it in EBX and pushes EBP later, so the first field load
@@ -4415,6 +4420,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Typed tag section confined to flight, pointer/reference 608/608. Shared across movement,
 // pointer/reference 596/596. NOT kept: the shared pointer reaches retail length but scores
 // 588 in the full image against 548 at opening.
+// Round 418: Single entry mode byte 607; reuse changed as the gate 590; compare initializer 592; initializer
+// through the gate 625; explicit mode-result arms 628; same arms through the gate 628; nested mode gate 607;
+// nested gate with walking-only state 615. NOT kept: the 590 form retains the reduced frame excess and retests
+// the result, and the 592 form stores the result with setne and repeats the mode comparison.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -5688,6 +5697,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// score 79 (was 79): The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
+// before the axis copy; the final cross has the same memory-operand difference for forward y.
 // MiniMax I (11-16): no new form, no lower score (79): the first difference is at +0x107, inside the inlined rotation helper,
 // whose file this lane may not edit; retail keeps the first product alive in xmm1 across the block where
 // this build spills it to [esp+0x10].
@@ -6003,6 +6014,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Axis with fallback 300. Up with fallback 297. All component constructions 310.
 // Both fallback value records before publication 99.
 // NOT kept: every form regresses and no rotation operand is recovered.
+// Round 418: Default forward/up/both through memcpy 79/79/79, through the shared vector setter 87/83/94, both
+// full copies with a nonzero-length return 79/94. The first rotation and final cross stay unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

@@ -5788,6 +5788,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // default for join 422, pending message guards 376, rank-first removal 104, role-based
 // byte names 89, mode test in the removal arm 224, kick query in its eligibility arm
 // 251. Original body retained.
+// Title-state scope 89, both title outputs scoped 89, separate regular-status
+// guards 392 or selections 396, roster actions under other-user gate 349 or by
+// player status 402, paired modification actions under rank gate 360 or
+// regular-player gate 365. NOT kept: title output byte remains displaced.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

@@ -4795,6 +4795,10 @@ struct s_128ca0
 // registers from the voice lookup on rotate); as a char defaulted to NONE and overridden 189 (same code); the first flag3
 // test with its two other conditions nested inside it 122 (same code); the second flag3 test as `(flags >> 3) & 1` 122 (same
 // code: the word load is still shared with the flag6 store); that plus the stream bit through the existing 0x12a420 123.
+// Synchronization count from postdecrement as char, byte or long 189/147/122.
+// Default char plus postdecrement 189, branch-local publication 208, default
+// char plus prefix decrement 189, single-read subtract as char or long 188/129.
+// NOT kept: no gain in the existing pin layout and byte update.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

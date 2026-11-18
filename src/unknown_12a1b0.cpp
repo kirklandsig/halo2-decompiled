@@ -2072,6 +2072,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // itself, as every caller passed `0 - maximum, maximum` (0x1269f0 matched with it): the gain
 // step's call 307 -> 305 (plain).
 
+// score 305 (was 305): The 0x11c frame differs from retail’s 0x128, with the sound ordinal, pitch-range state
+// and detail request at different stack offsets.
 // MiniMax H (11-12): no new form, no lower score (305); the sound-event block's gain sum and the two getter stores are unchanged.
 // MiniMax B (11-11): no new form, no lower score (305): retail folds the pair's +8 into the lea that forms its
 // address and reads the two words at +0 and +2, ours forms the element base and reads them at +8 and +0xa; the frame
@@ -2414,6 +2416,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Replacement definition handle retained 305, with complete state 305.
 // Complete state and shared pass limit 369, with retained replacement handle 369.
 // NOT kept: the complete state reserves 0x12c, and the shared limit adds more frame space.
+// Round 418: Shared long sound slot 305, with latch pool 418, with guarded successor and latch pool 413. Shared
+// word slot 449, with latch pool 336, with guarded successor and latch pool 348. Shared dword slot 305, with
+// latch pool 418. Every frame remains 0x11c.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

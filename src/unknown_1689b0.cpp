@@ -2057,6 +2057,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 0xb968: retail's edge-loop head exactly, but relative.i takes XMM0 where retail has XMM5 and the side cross spills one
 // more value); plus the nearest reset right after the distance 573 (retail's store place); on that, edge computed before
 // relative 581 (2850 B), relative through vector3d_from_points3d 597, both vectors through it 590.
+// Projected-point setter 598, scaled vector sum 629, direct component loop 570,
+// copied origin with component updates 639, separate scaled displacement and add 619,
+// in-place displacement and add 631, in-place scaled sum from copied origin 649,
+// setter with early nearest reset 597. NOT kept: the 570 form grows to 2893
+// bytes and leaves the projected-point homes and late remainder.
+// Component loop with a shared projection scale 614.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

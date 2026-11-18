@@ -1993,6 +1993,11 @@ long function_1fa7f0(void);
 // const reference 400 (same code); the typed scan as a `for (end = index; end < count; ++end)` loop 636 (1911 B); the
 // emitted type and link as two ternaries 521 (1795 B); type and link stored before next in the typed branch 400 (same
 // code); the emit's point written field by field instead of real_point3d_set 436 (1761 B). Body unchanged.
+// Forward result after condition or break 475/475, bound as presence 482,
+// next sentinel after forward scan 478, step pointer with short ordinal 419,
+// pointer range 520, next as forward cursor 502, next sentinel across both
+// phases 461. NOT kept: 419 reaches retail length with the larger frame and
+// the selected edge still in a slot.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
