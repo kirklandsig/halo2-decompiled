@@ -692,6 +692,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // or signed use-site decoding 604/796/794/604/604/796/794/604. NOT kept: the 604 forms gain three
 // bytes only and still compare BL with an immediate. Provider/NONE, palette/record and zero/SIMD
 // homes still differ.
+// Separate table/lower/upper gates 607; interval inside table guard 607; accepted slot via compound
+// or nested bounds 721/721; required entry count 608; conditional record inside table guard 607;
+// fresh lookup before previous record 607; signed-byte slot with separate guards 700.
+// NOT kept: the shared record test and provider/NONE, palette/record and SIMD homes still differ.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

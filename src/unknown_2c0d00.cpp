@@ -564,6 +564,15 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // holds the sphere counter, and the sphere flags 0x30 reuse the x87 dot temporary; retail has no home for the type (it re-reads the
 // byte) and packs straight with three other bools at 0x10-0x13, which is where ours spends its extra cells. The loop head
 // (0x2c0f68) reloads unit_index, self_unit and actor_index into EDI/EBP/EBX and the first entry jumps over it. Body unchanged.
+// Typed position and definition index 926, index only 926, position only
+// 926, both velocity reads 926, all named fields 926, shared point difference
+// 924, distance-local scope 926, typed selected unit 926 (reduced control 926).
+// NOT kept: shared difference gains two in the preview and leaves frame 0x2cb4.
+// Straight/aligned/both assigned in complete threshold arms 926/926/926 in the reduced image;
+// clear their prior true values on a failed threshold, straight/aligned/both 947/947/922;
+// start both false and set each on success 926; strict threshold first for both results 925.
+// NOT kept: the four-point reduced gain (926 to 922) shortens the body to 3702/3731 bytes
+// and retains frame 0x2cb4. The straight flag's dword-sized slot and actor and unit homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1972,6 +1981,10 @@ long function_1fa7f0(void);
 // produced); that helper reading the pathfinding pointer at +0x88 from its argument 400 (same code, folded); the
 // avoidance trace record at the loop-body scope 400 (same code). Diagnostics: `edge = 0xffff` at the scan hit 433 (the
 // second store appears, the edge stays in a slot); count's address taken, or count read through a pointer to it, 400.
+// Attempt-number orientation 431, Boolean difference 456, two-side loop 450,
+// two-side loop with in-place flip 461, retry inversion 449. Edge after the
+// forward scan 476, with the flipping loop 470. Separate fallback increment 400.
+// NOT kept: alternate orientation forms recover frame 0x10c and still regress.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

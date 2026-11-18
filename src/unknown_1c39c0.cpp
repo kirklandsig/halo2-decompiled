@@ -4,8 +4,10 @@
 
 extern long g_47f050;
 extern hkWorld *g_51e9a4;
-void function_1c51c0(long arg_0);
+/* function_278f00 stays declared ahead of function_1c51c0: link-time code generation walks callees in this
+   order, and 0x1c4040, 0x146bf0 and 0x1c51c0 match only with it (see 0x1c4040's comment) */
 void function_278f00();
+void function_1c51c0(long arg_0);
 
 // @retail 0x1c39c0
 void __stdcall function_1c39c0(void *arg_0, long arg_1)

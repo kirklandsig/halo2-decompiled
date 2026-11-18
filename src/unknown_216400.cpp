@@ -519,6 +519,18 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // (both same code); `index = count`, a count setter with `index + 1`, memcpy into `entries[index]` 51; the slot through an
 // entry accessor `entry(list, count++)` 51; the count bound as `long &` with `index = count; count = index + 1;` 51 (the
 // store before the slot as retail, registers still rotated). No accessor moves the rotation here. Pointer helper restored.
+// M3 lane 10 r117: a compile-only build of this file (/O2 /Gr) gives the append exactly as the full build does for
+// both families: forms without a materialized bool give retail's list ECX and lea/shift/store tail with the count in
+// EAX; every bool form gives `setne cl`, the count in EAX and the list in EDX. Compile-only, appends only: bool helpers
+// with the result from the compare, preset false or true, assigned in if/else, an early return, a `long` result, a
+// `full` flag, a count local with or without an index copy, the copy ahead of the count store, `entries[count++]` by
+// memcpy or by assignment, an element pointer, each with `if (!add) break`, a named `added`, `if (add) continue; break`
+// or `goto next` callers: the no-setne family or the setne-CL family, never AL with the count in ESI; a named room test
+// in the caller with the count read again for the index (directly or through a field pointer) merges; a found flag in
+// place of the two gotos leaves the append unchanged. Fast: the bool helper with a named `added` and `if (added) goto
+// next; break;` 51; the bool helper assigning true or false in if/else with `if (!add) break` 54 (654 bytes); a named
+// room test in the caller with the index read again 54 (654); the count read ahead of the 0x216e50 call, the room
+// tested after it, 62 (655 bytes; the load stays ahead of the call).
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

@@ -866,95 +866,7 @@ void function_1c2a10(void)
 
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index);
 
-// score 1 (was 1): the only difference is the force flag handed to function_1c4040:
-// ours goes in dl and retail passes it in al. That register belongs to
-// function_1c4040's own convention (see the note there).
-// Further trials: byte force, long attempt 24; signed char force, long attempt 24; int
-// force, long attempt 31; bool force, unsigned long attempt 2; bool force, short attempt
-// 11; bool force, unsigned short attempt 12; byte force, unsigned short attempt 26; int
-// force, unsigned long attempt 31.
-// Round 213: for-owned long retry 1; for-owned force 3; terminal equality 8; nonterminal
-// equality 2; for-owned int retry 1; for-owned signed-byte retry 40; signed-byte terminal
-// equality 40; for-owned long terminal equality with reset-first publication 8. Force argument
-// convention remains.
-// Round 88: defined after function_1c4040 1; the disabled 0xb8540 body enabled 1 (25 matched lost);
-// the call-cycle entry moved through declaration order (function_146bf0 declared first in
-// src/unknown_278f00.cpp, function_146da0 before function_1c4040 in src/unknown_146a20.cpp) 2, with
-// function_1c4040 then in a custom convention (attempt EAX, active CL) and 15 matched lost.
-// Round 32 (fast, each reproducing the baseline): function_146bf0 declared before function_278f00 here,
-// with function_146da0 before function_1c4040 in src/unknown_146a20.cpp 1; plus function_1c3770
-// declared first here and function_1c2690 before function_1c27a0 there 1; function_1d1540 declared
-// before function_b8840 in src/bipeds.cpp 1; function_278f00 before function_146bf0 in
-// src/unknown_0b8ca0.cpp 1; function_278f00 before function_1c51c0 in src/unknown_1c39c0.cpp 1.
-// Round 106 (fast): our walk reaches function_1c4040 through 0x278f00 -> 0x1c3770 -> 0x1d1540 ->
-// 0x1c39c0 -> here before 0x146bf0. This function moved ahead of the file's 0x146bf0/0x278f00 callers 1;
-// moved to the end of the file 1; function_146da0 before function_1c4040 in src/unknown_146a20.cpp
-// (alone) 1; function_1c4040 declared before function_278f00 here 1; function_146bf0 before
-// function_1c3770 in src/unknown_278f00.cpp 1 (function_1c4040 25, 0x1c39c0 lost at 41).
-// Round 61: attempt declared before force 3; callee declaration at the TU top 1; consistent inline
-// declaration 1; byte callee result 1; the other caller's function_146da0 declaration first 1;
-// callee declared before function_278f00/function_146bf0 1; function_146bf0/callee/function_278f00
-// order 1; callee after both 1. Original declarations restored.
-// Round 55 (lane 11, fast): 0x146bf0 declared first in this file 1; 0x278f00 declared first 1; 0x146da0 then
-// 0x146bf0 declared first 1; this body moved into src/unknown_1c39c0.cpp (diagnostic) 1; 0x1c4040's definition
-// moved to the end of this file 1. Its other caller 0x146bf0 stays built ahead of it; the declarations that move
-// that sit in src/unknown_278f00.cpp and src/unknown_146a20.cpp, both other lanes' files this round.
-// Round 204 (plain over the 720 cycle members, none lost): `force != false` at the call 24 (70 bytes, fast);
-// this body alone in a new file of its own 1; function_278f00 declared before function_146bf0 in
-// src/unknown_1c2b10.cpp 1, in src/unknown_1c3d30.cpp 1; function_1c3770 declared before function_e18d0 in
-// src/unknown_1c38a0.cpp 1. Under the default /Gr convention the second argument is always DL, so only a
-// custom convention for function_1c4040 can give AL.
-// Round 102: function_1d1540 before function_1d1260 1; between function_1d1260 and function_1d01c0 1;
-// function_146bf0 before function_278f00 1; that swap with function_1d1540 first of the three 1;
-// function_1d1540 before 0x278f00/0x146bf0 1; between them 1; before the reversed 0x1d01c0/0x1d1260
-// pair 1; the swapped pair with function_1d1540 between function_1d1260 and function_1d01c0 1.
-// Every control stayed unchanged; original declarations restored.
-// Round 89 (m3 lane 12, plain and full checks; every trial restored): `inline` on 0x146bf0's definition 1, on 0x146da0's 1; 0x1c4040 declared
-// first or between its neighbours in src/unknown_146a20.cpp 1, 1. 0x1c4040 and 0x146bf0 call each other and 0x146bf0 takes no arguments, so
-// retail reached 0x146bf0 first. Retail's graph has that path through a stub here: 0x1d1260 -> 0x2266a0 -> ... -> 0x17a8a0 -> 0xb7b40 -> 0x146bf0.
-// 0xb7b40's draft enabled, nothing else: 2 (the custom regime, attempt EAX, active CL), 0x1c4040 13, 0x146bf0 3, 6 matched lost, all callers
-// of 0x1d1540 going custom (215): 0xb8890, 0xe16b0, 0xf0fd0, 0x1c35f0, 0x1c3770, 0x1c39c0. With 0xb7430 too: the same plus 0x275380, 0xb7430
-// matches. 0xb7b40 and 0xb8540: 1, 0x1d1540 back at 97, 0xb8540 matches, 28 lost (0x1c3770 goes custom, 41). All four drafts: 1, 29 lost.
-// 0xb7b40, 0xb7430 and 0x2902b0: 1, 229 lost. Lead: with 0xb7b40 enabled 0x1d1540 needs a caller built before it, which takes 0x146bf0
-// being reached before 0x278f00 is on the walk's stack (then 0x1c4040 -> 0x278f00 -> 0xb8890 builds that caller first).
-// Round 94 (fast, all restored): 0xb7b40's draft enabled with 0x1c4040's array store without its cast and the fixed island
-// read through g_51e9a4: this function, 0x1c4040 and 0x146bf0 match, 0x1d1540 custom (215), six lost (0xe16b0 114, 0xb8890
-// 15, 0x1c35f0 40, 0x1c3770 21, 0x1c39c0 41, 0xf0fd0 27). Added to that: 0xb8890 declared before 0x1c3770 in
-// src/unknown_278f00.cpp 1 (nothing lost, 0x1c4040 plain again, 17); 0x146bf0 first in src/unknown_0b7b40.cpp 1 (0x278f00
-// lost 185); both 1; 0x1c2a10 declared first in src/unknown_1c2690.cpp no change. BLOCKED-BY 0x1c4040 (its convention).
-// Round 137 (lane 7, fast): `0x34e < g_47f050` 1; the call's result compared `== false` 1; attempt reset before the force
-// flag is set 3; `g_47f050 >= 0x34f` 5; the force step nested in a plain else 1.
-// m3 lane 11 r83 (fast): the walk forms in 0x1c4040's note re-measured 1/1/1/1/1 (the two 34 forms lose eight matched).
-// Round 175 (m3 lane 5): no form of this body can move the one differing instruction, so none was measured: under /Gr
-// the second argument of a default-convention callee is DL in every spelling, and retail's AL needs function_1c4040 in
-// the custom regime. Retail's graph gives the walk that does it: 0x146bf0 (with 0x146da0 inlined) calls 0x1c2690, which
-// calls 0x1c39c0, which calls this function, so both callers of function_1c4040 are on the walk's stack when it is
-// first reached, provided the cycle is entered at 0x146bf0 while 0x278f00 is still unvisited. Retail enters there
-// through 0xb7b40, whose body is disabled here; every other caller of 0x146bf0 is reached only after 0x278f00.
-// BLOCKED-BY 0xb7b40 (and the bodies its walk needs, see function_1c4040's note).
-// Round 194 (m3 lane 4, fast over 19 cycle members): in src/unknown_0b7740.cpp, off limits in the earlier walk rounds, 0xb8890
-// defined ahead of 0xb8840 1 and function_1d1540 declared before function_1d1260 1 (nothing moves); function_1d1540 declared
-// ahead of function_1d1260 in src/unknown_1cec30.cpp (0x1d0cf0 visits 0x1d1540 first) with function_278f00 declared before
-// function_1c51c0 in src/unknown_1c39c0.cpp 2 (0x1c4040 55; lost 0xe16b0 10, 0xb8840 15, 0x1c3770 41, 0x1c54b0 89, 0x1d1260
-// 220, 0x278f00 245, 0xf0fd0 33); with either src/unknown_0b7740.cpp move added the same. All restored.
-// Round 83 (m3 lane 2, full checks): 0xb7b40's draft enabled 1 (nothing lost on today's main, nothing moves); with
-// 0xb7430 and 0x2902b0 enabled too 1 (0xb7430 matches, 273 matched lost); with 0x2902b0 only 1 (252 lost); with
-// function_146bf0 declared first in src/unknown_0b7b40.cpp 1; with `inline` on 0x146da0's definition 1 (0x146da0 still
-// matched). In retail's graph the cycle holding function_1c4040 has 145 members and is first reached at 0x1ca290
-// (src/ai.cpp) in link order; most members sit in src/bipeds.cpp, src/damage.cpp, src/unknown_0b8ca0.cpp and
-// src/unknown_0b7740.cpp.
-// Round 127 (m3 lane 12): no body form can move the one difference (0x1c4040's convention, see its note); measured with
-// the walk trials there (1 in each).
-// M3 lane 10 r110: measured in each of 0x1c4040's walk trials (fast): MATCH with the src/damage.cpp set (six matched lost) and
-// with the 0x1c2a10-first set (eight lost); 1 in the others.
-// Round 129 (m3 lane 9, fast): `if (function_1c4040(...)) continue;` ahead of the retry step 1; `attempt <= 1` 3; a const
-// component parameter 1; the retry test inverted with the force step first (`if (attempt >= 2) { if (!force) ... } else
-// attempt++;`) 8; the call's result in a named bool 1. The force flag stays DL (0x1c4040's default convention).
-// Round 189 (m3 lane 6, fast): `if (attempt >= 2 && !force) {...} else if (attempt < 2) attempt++;` 8; a byte attempt 40
-// (81 B, 0x1c39c0 41); `if (call || force && attempt >= 2) continue; if (attempt < 2) { attempt++; continue; }` then the
-// force step 28 (75 B); the force step as `attempt = force ? attempt : 0; force = true;` in a plain else 5; the result
-// compared `!= true` 3. Same code (not counted): `if (g_47f050 > 0x34e)` around the loop, that guard with a do-while,
-// an empty then-arm on the call's result. No body form reaches the convention (0x1c4040's note).
+// Matches only while function_1c4040 keeps retail's link-time convention (see the comment above it).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1113,140 +1025,20 @@ struct s_1c4040
 	long field_10;
 };
 
-// score 8 (was 8): only the convention differs: ours takes the active flag in DL
-// (the default /Gr register: our LTCG reaches this function through 0x1c39c0 ->
-// 0x1c51c0 before 0x146bf0 on their call cycle), retail takes it in AL with attempt
-// in ECX. Kept: the existing function_a7670 for the mode test 66; the result field
-// without volatile 8. Tried: plain locals 180; an island-scan helper 180; the priority
-// field without volatile 172; the island-array store without its volatile cast 17;
-// the effect read after the mode test 100; a separate result local 119; an else arm
-// for the mode case 8. With 0x1c51c0's call removed (diagnostic) LTCG gives this
-// function a custom convention, but attempt in EAX and active in CL (30), and the
-// same with the parameters reordered (active, attempt).
-// Round 378: Scan-owned success result with shared/fixed/dynamic/both entity ordinals,
-// original/structured dispatch, all eight 111 at 537 bytes. Original result and body restored.
-// Round 279: selected index separate through both scans; island cursor/entity ordinals/entry initialization
-// combinations 35/36/35/36/35/36/35/36, all at 537 bytes. Original body restored;
-// active DL versus AL and its array/count allocation remain.
-// Round 88: our default convention comes from the call-cycle entry, which follows declaration order:
-// function_146bf0 declared first in src/unknown_278f00.cpp plus function_146da0 declared before this
-// function in src/unknown_146a20.cpp gives a custom convention, but attempt EAX and active CL (30; the
-// first half loses 15 matched); with (active, attempt) reordered 30; with g_51e9a4 read at each use 32;
-// 0xb8540's disabled body enabled 25 (25 matched lost). The custom regime still swaps EAX/ECX and AL/CL.
-// Round 163: coordinated cdecl/stdcall with bool, byte, signed-char active and
-// unsigned-long attempt transport 187/193 in every pair. All original declarations
-// and bodies restored; frame 0x14 agrees, but active remains DL rather than AL.
-// Round 42, in a diagnostic custom regime (0x1c51c0's call removed: 30, attempt EAX, active CL): world declared
-// first 30; island-array store without the volatile cast 27; long active 30; fixed island read through g_51e9a4
-// (world local only for the array choice) 31 with retail's AL/ECX ranking but the world load hoisted into EDX
-// before sub esp; every world read through g_51e9a4 32.
-// Round 90: declaration-first paths in three adjacent translation units, singly and combined, 8 each.
-// In the diagnostic custom regime: fixed-island direct read with a two-use retry local 31; the
-// complementary array-direct read 31; adding a two-use active local 31; world declared before the
-// record 31; block-scoped world 32. Original body and declaration order restored.
-// Lane 10 round 42: the convention follows where LTCG enters the object code's large call cycle, which
-// this function, 0x146bf0 and 0x278f00 belong to through 0xb8540 (BLOCKED-BY 0xb8540: its body is disabled,
-// see src/unknown_0b8540.cpp); the island-scan count in EDX rather than ECX follows from DL. Body trials:
-// separate index for the island scan 8; island element read at each use 150; entity read through the
-// priority view at both uses 143; fixed island read at each use 78; for-scoped indices 8.
-// Lane 15 round 42 (fast): the active choice as if/else stores 20; a named copy of the active flag 8; `active
-// == false` 8; a named array local before the volatile store 192 (553 bytes); the world pointer declared before
-// the record 8. A static definition (diagnostic:
-// the other caller in src/unknown_146a20.cpp no longer links) gives the custom convention, attempt EAX and
-// active CL 13, with 0x1c51c0 at 2.
-// m3 lane 9 r76 (fast): the world read through g_51e9a4 at each use 8; one physics_object_get shared by the detach
-// steps 116 (521 B); the mode case and the detach path as if/else with one success store after 8 (kept: drops the
-// goto and its label); object and unknown declared in the detach block 8; the three initial stores reversed 103.
-// Round 127 (lane 7): `inline` on this definition 8, on 0x1c51c0's 8, on both 8 (fast); 0x1c3590 moved to src/unknown_1c2690.cpp
-// (the same flags, ahead of nothing on the walk) 8. In the custom regime (0x146bf0 first in src/unknown_278f00.cpp, fast): the array
-// store without its cast 27, as if/else 27, through a named array 55, `!active` 28; that store with the fixed island read through
-// g_51e9a4 17 (one real difference, 538 bytes): this gives retail's AL/ECX and both callers match. With that body, plain, by walk:
-// 0x1c3770 declared before havok_component_node_states_get in src/damage.cpp: this function, 0x1c51c0 and 0x146bf0 match, but 0xb8890,
-// 0x1c35f0, 0x1c3770, 0x1c39c0 are lost (0x1d1540 goes custom, 215). Adding 0x1d1540 before 0x1d1260 here and 0x278f00 before
-// 0x1c51c0 in src/unknown_1c39c0.cpp: 14, 0x1d1540 back at 97, 0x1d1260's callers lost. 0x1d1540 before 0x1d1260 here, 0x278f00 before
-// 0x1c51c0 in src/unknown_1c39c0.cpp, function_ba6f0 before function_d9d60 in src/damage.cpp and 0x1d1260 declared ahead of the
-// include in src/unknown_278f00.cpp: all three match with only 0xba6f0 and 0xba7f0 lost, because that entry passes through 0x1c54b0
-// and 0xba7f0 is then built before it, so 0x1c54b0 goes default (81) where retail has it custom: BLOCKED-BY 0x1c54b0's place on the
-// walk. Not kept (a matched function may not be lost); body and declarations restored. 0xba7f0 reached first through 0xd6800 and
-// 0xd6a70 keeps 0x1c54b0 custom but this function default 17 (0xd6bc0, 0xd9640, 0x1039a0 lost).
-// Round 103: forward declaration before/after the cycle callees 8 each; fixed-island direct global read 8;
-// shared island/entity/priority locals 8 each; block-scoped world with the direct fixed read 8;
-// effect pointer at function scope 8. Original body and declaration order restored.
-// Round 137 (m3 lane 8, plain over the 149 cycle members): round 127's walk set without its src/damage.cpp step (array store
-// without its cast, fixed island through g_51e9a4, 0x1d1540 before 0x1d1260 here, 0x278f00 before 0x1c51c0 in
-// src/unknown_1c39c0.cpp, 0x1d1260 ahead of the include in src/unknown_278f00.cpp) 17 (still DL), none lost; plus 0x146bf0
-// first in src/unknown_278f00.cpp 34 (still DL, 0x1d1540 custom 215, 15 lost); plus 0x2266a0 before 0x278f00 in
-// src/unknown_1d1260.cpp 17; plus 0x146bf0 before 0x278f00 here 17; plus 0x1c51c0 defined after this function 17. Every
-// path from 0x1d1260 or 0x1d1540 to 0x146bf0 passes 0xb7b40 or 0x2902b0 (both disabled): BLOCKED-BY 0xb7b40.
-// Round 137 (lane 7, fast): `long i` declared first 8; the result byte cleared before the island-array store 101 (538 bytes);
-// the selected-object store before the priority store 10; a `* const` world pointer 8; the array choice as an inverted
-// ternary 9.
-// m3 lane 11 r83: retail's 0x1c51c0 is custom too (its parameter in EDI, as ours). On the walk this function custom needs
-// 0x146bf0 and 0x1c51c0 as its ancestors, and 0x1d1540 default needs one of its callers as its descendant. A rough walk
-// model (retail call edges, our file order, first-mention callee order; it reproduces today's conventions) puts the
-// cycle entry at 0x1d0cf0 -> 0x1d1260 -> 0x278f00 (src/unknown_1cec30.cpp); over every single callee-order move and pair
-// of moves in 26 cycle callers (46 moves), none makes this function custom without flipping a matched function: the
-// best, 0xdbc80 visiting 0x1c3770 first (round 127's src/damage.cpp lever), flips 0x1c39c0. Re-measured (fast): the array
-// store without its cast and the fixed island through g_51e9a4 17; that with 0x146bf0 before 0x1c3770 in
-// src/unknown_278f00.cpp 34 (0x1d1540 custom 215, eight matched lost); with 0x278f00 before 0x1c51c0 in
-// src/unknown_1c39c0.cpp 17; both 34; with 0x1c2690 first in src/unknown_146a20.cpp 17.
-// Round 172 (m3 lane 6, fast with 0x1c51c0, which stays 1): the priority tests as `local_0.field_4 < priority` in both
-// scans 12; the effect read through the globals at its test and the call 106; the island index a plain for-scoped local
-// in place of field_10 35; the mode test inverted with its arms swapped 73 (541 bytes); the fixed island's entity count
-// read once before its loop 185 (555 bytes). The convention stays the only cause (BLOCKED-BY 0xb7b40, as above).
-// m3 lane 10 r99 (fast with 0x1c51c0 1 and 0x1c3f30 matched): `if (object_index == NONE) continue;` in both scans 8; the
-// success store in both arms of the mode test 8; the entity priority read at each use (no priority local) 170 (547 B); the
-// island loop as a `while` with its increment at the end 8; the entity typed as the priority view (cast back for the call) 8.
-// m3 lane 7 r159 (fast): the parameters as (active, attempt) at the definition, both declarations and both calls 11
-// (active in CL, attempt in EDX); 0x1c3f30 defined after this function 8; 0x146bf0 defined first in
-// src/unknown_146a20.cpp 8; 0x1c3770 defined after this function 8; this function moved to the end of its file 8.
-// Round 127 (m3 lane 12): lane 7 r127's walk model rerun on today's tree no longer makes this function custom with its P9 set.
-// Over the 69 first-mention moves in files open to machine 3 (src/damage.cpp, src/unit_object_type.cpp and src/projectiles.cpp
-// hold contributor code), the only single move that makes it custom is 0x146bf0 first in src/unknown_278f00.cpp, and every
-// pair (4692) and every triple with that move (2300) also flips 0x1c3770 (matched) and 0x1d1540. Measured (fast): the custom
-// body (array store without its cast, fixed island through g_51e9a4) with 0x146bf0 before 0x1c3770 in src/unknown_278f00.cpp
-// 34 (538 B, still DL; 0x1d1540 215, eight matched lost: 0xb8890, 0xe16b0, 0x1c35f0, 0x1c3770, 0x1c39c0, 0x278f00, 0xf0fd0,
-// 0x1c54b0). Retail's first cycle member in link order, 0x1ca290 (src/ai.cpp), enters through 0x290250 -> 0x2902b0 -> 0xb7b40
-// -> 0x146bf0; ours has no edges past 0x290250 there and enters through 0xdc4a0 (src/bipeds.cpp). In the model, retail's edges
-// for 0x290250 and 0x2902b0 (with or without 0xb7b40) make this function custom but also 0x1d1540, and flip matched 0xb7290,
-// 0xb8600, 0xd6800, 0xdae60 and 0x1ca290; with 0xb8540 and 0xb7430 added it is default again. BLOCKED-BY 0x2902b0 and
-// 0xb7b40 (their bodies), or a walk entry through contributor code.
-// Measured (fast) on today's tree: 0xb7b40's draft enabled with the custom body 17 (still DL, nothing listed lost); that with
-// 0x146bf0 before 0x1c3770 in src/unknown_278f00.cpp 34 (still DL, the same eight lost).
-// The custom body with 0x146bf0 before 0x1c3770 in src/unknown_278f00.cpp and 0x146da0 declared first among
-// src/unknown_146a20.cpp's havok declarations: 17 in the custom regime with retail's AL/ECX, 0x146bf0 and 0x1c51c0 MATCH; the
-// one real difference left here is the 0x1c3770 call, custom in that walk (`mov eax, edi`, retail `push edi`), and the same
-// eight are lost. 0x1c3770 stays default only if one of its callers is built before it, as retail's walk has it (0x1c3770 ->
-// 0x1d1260 -> 0x278f00); from the free files the walk reaches 0x1c3770 ahead of 0x278f00 only through 0xdbc80's callee
-// order (src/damage.cpp, contributor code: round 127's P4). BLOCKED-BY 0xdbc80.
-// M3 lane 10 r110 (fast over 61 cycle members; 0xdbc80 is now an open function of ours): the custom body with 0x146bf0 before
-// 0x1c3770 in src/unknown_278f00.cpp, 0x146da0 first among src/unknown_146a20.cpp's havok declarations and 0x1c3770 declared
-// before havok_component_node_states_get in src/damage.cpp (0xdbc80 then reaches 0x1c3770 first): this function, 0x1c51c0 and
-// 0x146bf0 MATCH, 0x1c3770 default as retail, but 0x1d1540 goes custom (215) and its callers 0xb8890 15, 0xe16b0 114, 0xf0fd0
-// 27, 0x1c35f0 40, 0x1c3770 21 and 0x1c39c0 41 are lost; the src/damage.cpp move alone with the custom body gives the same.
-// Reading (DFS model: a function keeps the default convention when a descendant calls it): every path from 0x1d1540 back to an
-// unvisited caller runs 0x1c4040 -> 0xb8540 -> 0x109400 -> 0xe4c10 -> ..., and 0xb8540's body is disabled (stub), so that set
-// leaves 0x1d1540 custom: BLOCKED-BY 0xb8540. Also measured: that set plus 0x1d1540 declared first among 0x1c3770's callees here
-// 17 (default regime; 0x1d1540 back at 97, 0x278f00 lost 185); the set without the src/damage.cpp move plus
-// `void function_1c2a10(void);` ahead of the includes of src/unknown_1c2690.cpp 17 (0x1d1540 97, 0x146bf0 and 0x1c51c0 MATCH,
-// but 0x1c3770 custom: lost 0x278f00 85, 0x1c54b0 89, 0x1c39c0 41, 0x1c3770 41, 0xb7290 34, 0xe16b0 10, 0x1c38a0 5, 0xb8600
-// 1); that with 0x1c35f0 declared before 0x278f00 here 17 (same); both on the full set 0 (same losses as the full set);
-// 0xb8540's draft enabled (stub removed) alone 25 and with the full set 34 (0xb8540 matches; 28 matched lost each, 0x278f00
-// 185). All restored.
-// Round 129 (m3 lane 9, fast with 0x1c51c0, which stays 1): a named selected index for the found block 8 (same code); the
-// effect pointer declared in the detach arm 88; an early `return false` when nothing was found 119; the mode arm's flag
-// store through the object local 8; the custom body (array store without its cast, fixed island through g_51e9a4) with
-// function_146bf0 declared before function_278f00 here, fast over 59 cycle members 17 (still DL, nothing else moves).
-// Round 189 (m3 lane 6, fast with the file and 0x1c39c0/0x146bf0; the 8 are all the DL/AL convention): `if (0 <
-// island->m_entity_count)` around the fixed-island loop 56 (539 B); the result byte set true at the top of the found
-// block 99; no result byte, `return local_0.field_8 != NONE;` 111; the island-array store after the other three initial
-// stores 23; the detach written in both arms of the `unknown` test 77 (566 B).
+// Retail takes the attempt in ECX and the active flag in AL: a link-time convention, which this function gets only
+// when link-time code generation finishes it before both of its callers (0x146bf0 and 0x1c51c0). The bottom-up
+// walk does that with three callee mention orders, each marked where it stands: function_dbc80 declared ahead of
+// function_dbfb0 in src/damage.cpp, function_2266a0 ahead of function_278f00 in src/unknown_1d1260.cpp and
+// function_278f00 ahead of function_1c51c0 in src/unknown_1c39c0.cpp (the walk then runs 0x1d1260 -> 0x2266a0 ->
+// ... -> 0xd7b80 -> 0xd9640 -> ... -> 0x1c54b0 -> 0x1c3770 -> 0x1d1540 -> 0x1c39c0 -> 0x278f00 -> 0x146bf0 -> here).
+// Moving any of the three, or reading the fixed island through the world local, loses this function, 0x146bf0
+// and 0x1c51c0 again (m3 lane 5 r195; the earlier rounds' trial lists are in build/m3-reports).
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
 	s_1c4040 local_0;
 	s_physics_world_view *world = (s_physics_world_view *)g_51e9a4;
-	*(s_simulation_island_array *volatile *)&local_0.field_c = active ? &world->active_islands : &world->inactive_islands;
+	local_0.field_c = active ? &world->active_islands : &world->inactive_islands;
 	local_0.field_4 = 0x80000000;
 	local_0.field_8 = NONE;
 	local_0.field_3 = false;
@@ -1254,7 +1046,7 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 
 	if (!active)
 	{
-		c_havok_body_group *island = world->fixed_island;
+		c_havok_body_group *island = ((s_physics_world_view *)g_51e9a4)->fixed_island;
 
 		for (i = 0; i < island->m_entity_count; i++)
 		{

@@ -806,6 +806,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the global's j/k in xmm5/xmm4 and the axis i in memory); the axis draw alone through it 152 (880 B), the first draw
 // alone 154 (880 B). On 125: sine and cosine as named locals around the axis draw 152; one `dword *seed` local for
 // the three draws 149 (889 B); the shared helper capturing the vector's j as well as k 155 (893 B; 0x2551f0 63, lost).
+// Clock fields retained across first draw 171 (short scale), 195 (long scale), 171 (clock
+// reference), 201 (real elapsed ticks). Shared seed reference 174, with both clock operands 195.
+// Integral random sample scaled with envelope 214, named first envelope product 130, local
+// direction through shared rotation 201. Frame and rotation homes still differ.
 // Round 614: one random-state object for all draws, taken before the record, between record and
 // definition, or after the definition 130/152/130. Separate seed step before time 198, after both
 // clock reads 192, between interval/count 199 or count/interval 190, and before time through the
@@ -819,6 +823,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // M3 lane 13 r108 (fast; 0x118140, 0x117c80 and 0x2551f0 matched): the axis declared at function scope and assigned in
 // the block 130; the axis a const local 130; the time as `field_2_3 * (real)game_time` 130; the frame test written
 // `g_55e710 < (long)g_4ba034` 130 (all the same code); the rotation's sine and cosine through sinf/cosf 132.
+// Round 416: Angle initialized from the sample, first weighting or both weightings,
+// with grouped or separate scale updates, and a named doubly weighted fraction
+// all scored 130. The 0x1c frame and initial sample slot still differ.
+// Separate bounded axis ordinal and named trig values: sine before the
+// draw, cosine before or after sampling 152/158 and 152/158; sine after the
+// draw, cosine after or before sampling 152/158 and 152/158. Each pair copies
+// the table entry whole or by components. Whole-entry forms reach 880 bytes
+// with the 0x1c frame. Direction read order and the frame still differ.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
