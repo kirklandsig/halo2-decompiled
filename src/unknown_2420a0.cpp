@@ -2792,7 +2792,7 @@ void function_242ba0(long marker_index, long object_index, long player_index)
 
 #include "flexible_surface_calls.h"
 
-void function_19f680(long tag, long group, long pass, long variant, void *context,
+void function_19f680(long tag, long group, long variant, long pass, void *context,
 	point2f const *vertices, long count, point3f const *center, real radius,
 	real perimeter, point3f const *color, real height);
 struct s_sort_record;
@@ -2844,7 +2844,7 @@ void __stdcall function_244470(long arg_0, long arg_1, long arg_2, long arg_3,
 	}
 	real local_9 = local_4[1].x - local_4[0].x;
 	real local_10 = local_4[1].y - local_4[0].y;
-	function_19f680(arg_0, arg_2, arg_4, arg_3, arg_6, local_4, 32, &local_3,
+	function_19f680(arg_0, arg_2, arg_3, arg_4, arg_6, local_4, 32, &local_3,
 		local_2, (real)sqrt(local_9 * local_9 + local_10 * local_10) * 32.f, g_468710, 0.4f);
 }
 

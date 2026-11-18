@@ -75,6 +75,7 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// score 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // MiniMax C (11-15): no new form, no lower score (79, was 79): retail's outer loop carries a pretest our do-while lacks, the slot scan holds its pointer in EDX and its predicate in CL where ours holds them in ECX and AL, the terminal stores fold the record base into the displacement where ours adds it to the index register, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found
 // arm, a doubled store kept only with a match; the pretested while alone 168, local_5 zeroed once 110; code back to
@@ -111,7 +112,7 @@ void function_2232a0(void)
 // retail passes 3 in ECX and the view count in EDX, so 0x2b5d0's real parameter order/convention is the question
 // (BLOCKED-BY 0x2b5d0).
 // MiniMax C (11-17): score 47 (was 79): the outer traversal is now a pretested while (retail tests the view count at the loop head and the bottom test jumps back into the body), the source pointer is cleared at the loop head and again in the found arm as retail does (its loop head and its found-arm getter each zero the pointer, the getter's default surviving the inline), so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
-// score 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
+// Earlier score 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
 // layout, source) at its disabled definition and this call passes (3, view_count, ...): the same values as before, in the
 // order retail's own 0x2b5d0 body needs (with these formals it takes the count in EAX and the mode in ECX, lane 11 r50 and
 // lane 2 r55 below) and retail's setup implies (count set up first, mode last); plain 79, 0x223240 and 0x2232a0 match.
@@ -357,6 +358,21 @@ void function_2232a0(void)
 // arm first (`if (local_1 < 4) { if (g_4686c4 != NONE) ... } else local_1 = NONE;`) 109; the found arm through
 // `&g_4e9bd4[local_1].state` (the getter's own spelling) 79; the do-while with the loop-top NULL and the found arm as
 // `g_4686c4 == NONE ? 0 : ...` 122; the pretested `for` with the loop-top NULL and that conditional 108.
+// Records from first live entry 183, live record cursor 141, cursor bound 165,
+// dispatch base from initializer return 48, initializer inside dispatch argument 48,
+// terminal pointer local 47, first entry shared at the tail 183, dispatch base from final cursor 134.
+// NOT kept: no qualifying gain or native terminal stores.
+// score 47 (was 47): MiniMax D (11-17): no new form, no lower score (47 plain and on the reduced image): the record setup
+// can be reproduced byte for byte in the reduced image by hoisting the four field stores into the two callers and leaving
+// the helper with the field_0 store, the 0x2f800 call and the memcpy - that form matches retail's instructions exactly up
+// to +0x17e, and its only difference is that retail materializes the record pointer with `lea eax, [eax + 0x47f0f8]` after
+// the six folded stores where this build folds every use of the same address into the displacement, so it scores 56 there
+// and is not kept; the pointer's spelling does not steer that choice (pointer parameter, local pointer, `g + index`,
+// byte-pointer arithmetic, an intptr cast, a member pointer and a helper returning the pointer all fold the pointer's uses
+// the same way). The full build tells a different story: there the block materializes the pointer early with
+// `add eax, <base>` and keeps the six stores off that register, so the first difference is at +0x13a and the score is 47
+// with the hoisted form as well - the reduced image's shape is not the full build's. BLOCKED-BY 0x2b5d0 and 0x16f3a0's
+// noinline declaration (tail stubs in another file).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

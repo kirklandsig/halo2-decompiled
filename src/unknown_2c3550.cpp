@@ -859,6 +859,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // `flags` declared before `actor` 754; maximum_height declared before `actor` 754; the failure path's flag loop index as
 // short 752. On this body: that add through obstacle_list_add with first_output declared at the top 732. Diagnostic: the
 // add through a clean non-volatile inline copy of 0x2c0d00 725 (2966 B), so that inlining alone is not the cause.
+// MiniMax E (11-17): no new form, no lower score (675): the prologue still differs at +0x14, where retail takes the state
+// argument into ebx and indexes the g_4e0300 pool's data with it (twelve-byte entries) while this build takes the actor index
+// into eax and indexes g_4f55f0's data, and the count stays in ebp where retail keeps the state in edx, so the two bodies stay
+// laid out differently from the first instruction.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

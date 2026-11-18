@@ -1198,6 +1198,16 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // N393: Native nearest/anchor/opposite coordinate-difference double residency, seven
 // subsets 648/640/730/645/731/665/753; all plus projection 753. NOT kept: larger,
 // unmatched storage domains; original scalar graph restored. Frame/query/vector homes remain.
+// M3 lane 12 r136 (fast with 0x24550, 0x22c30, 0x22750, 0x146020 and the caller 0x23690; the plain check agrees on the kept form):
+// kept at the same count, 547 (2122 B): delta through the existing vector3d_from_points3d, and scan 2's offset, projection and
+// distance through vector3d_from_points3d, dot3f and length_sq3f, in place of their bodies written out as scalars (the emitted sums
+// are (y*dj + z*dk) + x*di and (z*z + y*y) + x*x, the same values as retail's; 0x23690 stays 330). Scan 1 through distance_sq3f on
+// this body 552 (2111 B), with the other three as well 552; the delta alone 547; scan 2 alone 547 (other registers).
+// The retail-shaped index body re-measured 654 (2033 B; register-masked aligned 118 against this body's 397): its first differences
+// are `nearest` kept in memory (retail EDI with a home at +0x14) and one zero register shared by the count test, `nearest` and the
+// index. On it: `nearest` and `opposite` as a two-long array 654 (same code, frame 0x18); `if (0 < count)` around scan 1 635
+// (2039 B); `nearest` through a reference 654 (same code); scan 1 in an inline helper returning the index 1130 (1572 B, the scans
+// are no longer unrolled); dot3f with its arguments swapped 654 (same code).
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -1230,9 +1240,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
                 ++nearest_sample;
             }
             vector3f delta;
-            delta.i = position->x - first->position.x;
-            delta.j = position->y - first->position.y;
-            delta.k = position->z - first->position.z;
+            vector3d_from_points3d(&first->position, position, &delta);
             long opposite = NONE;
             real other_distance = 1048576.0f;
             for (s_light_sample const *opposite_sample = samples;
@@ -1240,13 +1248,11 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
             {
                 if (opposite_sample != first)
                 {
-                    real x = position->x - opposite_sample->position.x;
-                    real y = position->y - opposite_sample->position.y;
-                    real z = position->z - opposite_sample->position.z;
-                    real projection = delta.k * z + delta.j * y + delta.i * x;
-                    if (projection <= 0.0f)
+                    vector3f offset;
+                    vector3d_from_points3d(&opposite_sample->position, position, &offset);
+                    if (dot3f(&delta, &offset) <= 0.0f)
                     {
-                        real distance = z * z + y * y + x * x;
+                        real distance = length_sq3f(&offset);
                         if (distance < other_distance)
                         {
                             other_distance = distance;

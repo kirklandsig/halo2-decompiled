@@ -463,7 +463,20 @@ bool g_47f05b;
 // is still dropped as a dead store and the pool's placement is still loaded and added where retail reloads the block and
 // forms the address with a lea, and both follow from the shared constructors in include/unknown_146a20.h, which this lane
 // may not edit. BLOCKED-BY that header.
+// b16F (11-17) walk against retail, fast build on r852: every statement matches retail's (the three global stores, the
+// null-guarded construction, the fixed base's fields at 0x146a5b..0x146a68, the final vtable 0x4576a4 at 0x146a6b, the
+// pool's lea at 0x146a83, the call 0x22c3e0, the count increment); the whole difference is the abstract allocator's
+// `mov [eax], 0x453760` at 0x146a49 (kept in retail only here; 0x146b80 and 0x22c3e0 drop it) and, behind it, the block
+// reload at 0x146a76. The piece is include/unknown_146a20.h, c_havok_fixed_memory_base's constructor. Measured with the
+// header's ten files (46 functions): a second base constructor taking the size alone (m_buffer = this + 1, the same
+// three stores) that ends in _ReadWriteBarrier(), with the base `__declspec(novtable)` and the call site `new (block)
+// c_havok_fixed_memory(0x15000)`: 0x146a20 MATCH, 0x146b80 and 0x22c3e0 still MATCH, no other function moves (0x146bf0
+// 5, 0x146e30 120, 0x22c0d0 125, 0x2d6fe0 22 as before). Without novtable 6 (the base's own vtable store stays after
+// the zero stores). The barrier in the shared (buffer, size) constructor instead: 0x146a20 MATCH but 0x146b80 21 and
+// 0x146e30 123. Not kept: it is a same-behaviour constructor twin carrying a barrier steer (twin ruling, as lane 4 r166
+// held). No real header form found that drops the barrier. No new doubles.
 // @retail 0x146a20
+// MiniMax E (11-17): no new form, no lower score (34): the 1 in EDX and retail's reload of the block on the constructed arm still never come together (the forms that keep the 1 read the block from a local, the forms that reload it read the global), and the abstract allocator's vtable store retail keeps still comes from the shared constructors in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY that header).
 // MiniMax C (11-17): no new form, no lower score (34): the abstract allocator's vtable store retail keeps is still dropped as a dead store, and the pool's placement is still loaded and added where retail reloads the block and forms the address with a lea; both follow from the shared constructors in include/unknown_146a20.h, which this lane may not edit, and the permuter's 53 variants in 310 s found nothing below the kept form. BLOCKED-BY that header.
 void function_146a20(void)
 {
@@ -556,6 +569,13 @@ void function_146b80(void)
 // it after the other arguments are pushed; here the callee takes it in DL, so the
 // byte is loaded into DL before the other byte is stored. The callee lives in
 // src/unknown_1c25a0.cpp and is far from retail.
+// b14H (11-17) walk against retail, fast build on r847: every instruction matches except the call setup at
+// 0x146c8e..0x146ca8 (statement by statement: the bool `recent` stored at [esp+0x1c] and read back as a dword for the
+// even_if_unknown push at 0x146c96/0x146c9a, push -1, then `mov al, byte ptr [esp + 0x1b]` at 0x146ca1 AFTER the
+// pushes). The values, the push order and the loop and flag logic are retail's; ours reads the active byte into dl
+// before the pushes (3 instructions out of step, 5 differing lines). Retail's callee 0x1c4040 tests al at 0x1c4043
+// and ours tests dl (fast check of 0x1c4040: 8), so the register comes from that body, which sits outside this lane.
+// No change is made to this function.
 // @retail 0x146bf0
 void function_146bf0(void)
 {

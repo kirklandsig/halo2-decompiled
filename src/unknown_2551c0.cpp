@@ -905,6 +905,11 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // XMM2/XMM3 at 0x255a1c/0x255a42. New on that form: adjusted written into the length local, whole adjustment included:
 // retail's groups, 0x14/0x18 swapped, 17; sum assigned into a side1 variable 164-197; side0 zeroed ahead of the length,
 // dot or size 132-159 (966 B); the four scalars as one local struct 155 (frame 0x64).
+// M3 lane 8 r180 (fast with 0x2556b0; caveat on 0x110ab0): lane 17's match-only 17 form rebuilt 17; on it the timing outputs
+// and the request in their own block 17; with the adjusted projection in the length local (17, the {length, adjusted} and
+// {sum, second side, timing3} groups at +0x14/+0x18, retail the reverse) the timing reals declared distance-last 17, the
+// location index and record ahead of the side outputs 17, the second side output declared at function scope 17 (same code
+// each: shared slots follow liveness, not scope or declaration order). Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

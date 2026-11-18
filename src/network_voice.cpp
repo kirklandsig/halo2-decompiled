@@ -1232,6 +1232,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax I (11-17): no lower score (94): a permutation run over this function's source (4 tries in 375 s) left the
+// score at 94; the total, the cursor and the flag in the orders total-cursor-flag, total-flag-cursor and
+// cursor-flag-total measure 94, 108 and 99, the channels walked by position with the flag read before the total
+// measure 120, and the channel value read into a named local compiles to the same code.
 // MiniMax R (11-16): no new form, no lower score (94): the identity flag still lands in BL where retail keeps it in AL, and the flag-first order moves the channels pointer into EBP and still leaves the flag in BL (111), so the kept mask, the value load and the accumulate follow that allocation; the flag, pointer and total order still reaches only 93.
 // MiniMax C (11-15): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in al, this build still sets the total to two and the channel pointer before the compare that retail does after it, and the inner channel blocks are still not unrolled.
 // MiniMax G (11-14): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in
@@ -1480,6 +1484,19 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // the compiler unroll the loop four times, which reaches retail's length (347) and its four blocks at 0, 0x170, 0x2e0 and 0x450
 // with the 0x5c0 step, but the identity flag still takes bl and the channels pointer still takes ebp, so the score is 109; the
 // flag read before the total measures 112, and four written-out blocks in a four-group loop are unrolled away into 1020 bytes.
+// b16H (11-17) walk against retail, fast build on r852: every statement matches retail (initialized byte [ebx], call
+// 0x56160 with ecx=player edx=channels, getter 0x4c99b8/0x476fcc/0x4c9878 then cmp eax,esi; sete, 2, 16 channels at +4
+// step 0x170, mask word +8, values +0x130, 11 + 2 * flag, + 2): no behaviour difference; the 94 is all allocation.
+// Retail's flag takes al (channels still in ebx when the flag is made, so A/B land in cl and the mask in ebx); ours
+// puts the flag in bl because the lea of the cursor is scheduled before the compare. Retail also loads the value into
+// ebp, then imul ecx,ebp; add ecx,2; add edi,ecx (ours: imul ecx,[mem]; lea edi,[edi+ecx+2]); three more spellings of
+// the add (bandwidth local, total += 2 then product, value/size locals) 94 each. New, all worse: flag, cursor, total 93
+// (350 bytes: channels in edi, the early-exit zero in ebx); total, flag, cursor 108 (channels in ebp from the stack,
+// `ret 4`); indexed `&channels->channels[i]` 109 (IV biased to channel 1's mask at +0x17c, bl flag, stack argument);
+// four `channel[k]` blocks per pass, i += 4 110 (second IV, player lands in ecx); a loop-level inline helper taking the
+// flag is not inlined (182/287); do/while `++i < 16` 287. Outside piece voice_get_unknown00 (ternary / early-return
+// body) 96 each, not kept. Lead: the unbiased IV and one 0x5c0 step in retail need the flag made while channels is
+// still in ebx; every order that does that makes the allocator move channels to ebp or edi instead of the flag.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -2032,6 +2049,11 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes
+// the function from 85 to 64; the three tests read only globals and have no side effects, so their order does not
+// change the result, and 0x54890, 0x53a20 and 0x53bb0 stay matched. Still differs: retail keeps the second port
+// flag query inline (the getter, the shift and the availability tests at the end of the loop body) where this build
+// calls the out-of-line copy, so the body is 12 bytes shorter than retail's.
 // MiniMax R (11-16): no new form, no lower score (85): retail loads both ready bytes before the first test and keeps the second in DL, while this build reloads it for the mode test and takes the mode in EAX; the remote mask rides in EDX here and in ESI there, and the flags held in locals are re-read from the globals at every use (96 to 104).
 // MiniMax C (11-15): no new form, no lower score (85): the availability bytes are still read into locals for the muted test and the mode helpers are still parameterised on them, so the second byte still loads lazily inside the muted test where retail loads both before it and keeps the remote mask in esi.
 // MiniMax G (11-14): no new form, no lower score (85): the availability bytes read into locals for the muted test
@@ -2244,7 +2266,7 @@ void function_55990(s_voice_player_values *values)
 				for (long j = 0; j < 16; j++)
 				{
 					if ((mask & (1 << j)) &&
-						(function_57d63(j, i) || voice_port_flag1(j) || voice_port_flag2(j)))
+						(voice_port_flag1(j) || voice_port_flag2(j) || function_57d63(j, i)))
 						mask &= ~(1 << j);
 				}
 				values->values[i] = mask;
@@ -3343,6 +3365,14 @@ finish:
 // terminating-copy helper (as src/font_loading.cpp has) 2 (plain; 0x41640 flipped to 4); the
 // identity pointer set to the player then overridden by empty 80 (fast); the mask test written
 // mask-first 3 (fast). All restored.
+// b14B (11-17) walk against retail, fast build on r847: statement by statement the body agrees with retail; the only
+// difference is the pair of reloads after the voice_sprintf call (retail 0x5468e ebp = players slot, then 0x54692
+// edi = mask slot; ours loads edi first). It follows the image, not the C text: score 2 on the plain 4-object image
+// and with 0x7f070, 0xb3de0, 0x8e240 or 0x6b4a0 added; MATCH with 0x74aa0, 0x755d0, 0x8df50 (805 objects) or 0x193560
+// added (the shared input there is matchmaking_hopper.obj). The seeded full-build report (r847) has score 2 at +0xff,
+// the same pair. 0x53610 0x53de0 0x55060 0x560e0 stay MATCH. players + i, a byte-offset source and const mask act
+// like the original in all those images; a source or destination pointer local, mask/players declared first or late,
+// long mask: 2 (plain image); mask or players evaluated first/late 163-201; one identity copy 394.
 // @retail 0x54590
 void function_54590(void)
 {

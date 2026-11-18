@@ -994,6 +994,24 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // register-masked 21, but pathfinding arrives in EDX); on that, the mutable `start_out` parameter 295; on that form, the
 // surface pointer set ahead of the start_out copy 287 (same code). Retail also forms `inverse * radius` in the inverse's
 // register (`mulss xmm2, [radius]`) where ours loads the radius first.
+// b12L (11-17) walk against retail, fast build on r846: every statement, jcc sense and callee argument checked against
+// 0x26f3f0-0x26f8d2; no behaviour difference found. Case 1/6: the four vertex-word tests in order (0x26f42e-0x26f45c),
+// first = b - a and second = d - c (0x26f472-0x26f4bb, 0x26f4e1-0x26f50d), length > 0 as comiss/jbe (0x26f4d3,
+// 0x26f525: NaN takes the fallback), radius * 2 test (0x26f5b6), margin = reciprocal * radius (0x26f5b8), clamps
+// (0x26f5bf, 0x26f5cd), stores and word output indices in retail's order (0x26f5fb-0x26f679; fallback
+// 0x26f686-0x26f6db). Case 5: vertex 3 scaled by -1.0f, cmp eax, -1 / je (0x26f6e8, 0x26f74e), 0x270400 with edx = 0
+// and ecx = &direction (0x26f750-0x26f769), whole 16-byte parent_point copy in the fallback (0x26f7ac-0x26f7c9). Case
+// 2: node-index store ahead of the call (0x26f85e), 0x26c590 stack order and 0.2f (0x26f885-0x26f895), trace point +4
+// and sector +0x10 (0x26f89a-0x26f8c0). Constants 0.0, 1.0, 0.5, 2.0, -1.0 (0x45dbd8, 0x45dbc0, 0x45dbbc, 0x45dc0c,
+// 0x45dbcc) agree. Only the entry allocation (above) differs. New forms, no gain: `inverse *= radius` for the margin
+// local 218 (same code); the vertex-word tests as a negated early return 218; `case 6:` before `case 1:` 218 (same
+// code); the projection and origin sums written out as y*j + z*k + x*i, vector- or point-major, grouped or not, 366
+// (1288 B).
+// M3 lane 16 r131 (fast with 0x270d90/0x270400; base 218): corners a, b, c, d re-measured 287 (1284 B); the actor parameter
+// declared `long const` 218 (same code), on a, b, c, d 287; case 5's outcomes as one fallback block with shared out stores
+// re-measured 399, on a, b, c, d 344 (1228 B); a, b, c, d with the switch on `(long)surface->type` 287 (same code); a, b, c, d
+// through one `vertices` base for the four corners 295. On a, b, c, d the caller loads pathfinding into EDX too (retail EAX):
+// the incoming register follows whether the actor load is placed before or after pathfinding's copy to EBX. Body unchanged.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
