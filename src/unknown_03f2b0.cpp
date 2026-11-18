@@ -774,30 +774,6 @@ void *function_449e0(short index, bool instance, bool load)
 	return result;
 }
 
-PRIVATE __forceinline byte *visible_entry_geometry(short index)
-{
-	s_44940_entry *entry = &g_4ba138[index];
-	if (entry->tag != NONE)
-	{
-		byte *definition = g_4e3b44[entry->tag & 0xffff].bytes;
-		byte *sections = *(byte **)(definition + 0x28);
-		return *(byte **)(sections + ((entry->flags >> 9) & 0x1ff) * 0x5c + 0x34);
-	}
-	byte *structure = (byte *)g_4e0348;
-	byte *data;
-	if (!((byte)(entry->unknown00 >> 12) & 1))
-	{
-		byte *section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
-		data = *(byte **)(section + 0x50);
-	}
-	else
-	{
-		byte *instances = *(byte **)(structure + 0x144);
-		short definition_index = *(short *)(instances + ((entry->flags >> 18) & 0x7ff) * 0x58 + 0x34);
-		data = (byte *)*(dword const *)(*(byte **)(structure + 0x13c) + definition_index * 0xc8 + 0x50);
-	}
-	return data;
-}
 
 struct s_render_part_context;
 bool function_45ce0(short index, byte *out, short part, short transform_index);
@@ -1333,6 +1309,10 @@ struct s_133f70;
 // globals' addresses, which differ between the two builds, and the layout of the entry test.
 // MiniMax I (11-11): no new form, no lower score (355 in the reduced image, 93 in the full build): the first difference is at +0x1 and the reduced image's score is inflated because the globals it leaves out are not masked; the tail is BLOCKED-BY 0x23690.
 
+// score 93 (was 93): The frame agrees, and distance still loads into ECX after the force push. The cache and previous-level homes also differ.
+// Signed-short query count widened across the level store, after count clear, or at loop entry 96/367/367.
+// Native count selection widened before count clear, widened after type, or used directly 367/109/109.
+// Explicit suppressed/admitted long count 110. Zero count with an admitted assignment 354.
 // MiniMax S (11-17): no new form, no lower score (93 on the full image): every difference still sits before the
 // 0x4c190 call - the previous level is still a dword against retail's byte, the distance argument still travels
 // in ecx against retail's eax, and success is still stored after the esi spill against retail's before it; the
@@ -1365,7 +1345,7 @@ struct s_133f70;
 // MiniMax S (11-16): no new form, no lower score (93): the frame 0x33f8 agrees with retail, but the distance staging, the
 // nullable-entry and cache adds and the result homes still differ, and the tail that 0x23690 owns is in another file:
 // BLOCKED-BY 0x23690; the permuter (full-image builds, 900 s, 14 tries) found no variant below 93.
-// score 93 (was 93): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// Earlier 93 (was 93): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
 // MiniMax E (11-10, run 73): no new form, no lower score (93 on the full image, 355 on the reduced one); every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, success stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end, and the tail stays blocked by 0x23690 in another file.
@@ -1585,6 +1565,7 @@ struct s_133f70;
 // an optional view index 358, explicit selected outcomes 353, or a conditional count within the valid view 365.
 // Those forms with a signed-byte previous level: 356, 150, 358, 365. The 150 form keeps the original first
 // difference and takes more differences through the view and cache blocks. Body restored.
+// MiniMax A (11-17): no new form tried this round, no lower score (93): every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ecx, retail's dead entry lea, the header's global loaded first and its object in eax, the success value stored before the 0x3d4f0 call, the byte previous level, the record offset added in two steps, the reuse test's registers and the 0x4c190 argument order) plus one object load near the end; the tail needs 0x23690, which is still todo in config/functions.csv. BLOCKED-BY 0x23690. The reduced image scores 344 here, so --fast is only a screen.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

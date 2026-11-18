@@ -695,6 +695,10 @@ struct s_text_line_measurement
 // Two-use glyph sum for offset/kerning/width, offset/kerning, kerning/width, and staged
 // offset/kerning/width, each inline/forceinline 77/77/77/77/77/77/77/77. The independent advance
 // copy and early width load still differ.
+// Scalar SSE advance/offset/kerning/all products 121/129/129/153. Scalar SSE comparison
+// sum/accepted width/both sums/both sums with all products 143/126/134/179.
+// All introduce 16-byte stack alignment and regress at the entry. The separate advance
+// register and early width load remain unresolved in the restored body.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
