@@ -1999,6 +1999,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // shared control read 183, explicit case returns 183, named component squares 183,
 // typed mode member 183. On 175, staged walking rate and height adjustment 175/175.
 // NOT kept beyond the planar accumulator. The movement view grows the frame and body.
+// M421: Material assigned on both paths 675, fallback first 675, local at selection 675, complete conditional initializer 675;
+// common unit scale 175; unsigned material address 175; separate shape address/displacement 583; material address then displacement 175.
+// NOT kept: removing the entry material initialization shrinks the frame and body. The definition and material slots still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

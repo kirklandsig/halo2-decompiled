@@ -2119,6 +2119,9 @@ void function_b7360(long object_index);
 // 0x25ab50 writes nothing (0x25a380 in the same file keeps its reference and the scenario pointer in ESI/EBX across the same
 // call, which named locals would also give); a natural form of 0x25ab50 that hides that, with locals at its other callers
 // (0x25a380, 0x1b0f20, 0x1b13b0, 0x1c1080, 0x2773d0), is what would unlock this body. Body unchanged.
+// M421: Low-word actor/command/both pool ordinals 471/471/482; point-set accessor in movement/recording/both 272/272/270;
+// named point sets 270; word set and point ordinals 465. NOT kept: the word ordinals change entry scheduling without
+// restoring actor/output register roles. The packed reference still stays live across validation.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

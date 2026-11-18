@@ -782,6 +782,9 @@ struct s_physical_block_iterator
 // result declared first 389 (first difference +0x1d). On main: case 0 as `better = time < best.time; if (!better &&
 // time == best.time) better = pages < best.pages;` 244 (1193 B); case 0 with the candidate's time named once 201 (same
 // code). Body unchanged.
+// M421: Sufficient-pages take/refinement 262; exhaustive take/retention 253/262; nested eligibility 253;
+// first-candidate take with direct/shared eligibility 261/300; refined take with earlier-or-tied/equality result 270/270.
+// NOT kept: the complete admission results shift the prefix and do not recover the retail policy join.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
