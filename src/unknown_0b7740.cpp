@@ -1098,6 +1098,19 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // top 240 (same code). Reading: retail's bit-30 flags load is a separate value from the clear's reload (`mov edi, [ebp +
 // 4]`), as the 0xbfe20 clear gives (re-measured 262, 813 B), and its entry keeps three values (object_index ESI, the
 // parameter EDX, result EDI) where ours coalesces the parameter with result in ESI.
+// M3 lane 1 r118 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240, aligned 177,
+// register-masked 67). Compile-only sweeps of every combination of the listed levers (early-test object spelling x one
+// or two tests x `object` source x bit-29 object x clear x four exit shapes x final_matrices position x result position,
+// 3,456 bodies; then 1,152 more over the order of result / final_matrices / the header / a named table pointer): none has
+// retail's entry, and the compile-only build does not give the linked build's entry registers here, so it is no guide for
+// this function. Fast: a named table pointer (`headers`) with result declared between it and the header, on this body
+// 240 (aligned 183); the single exit with final_matrices left late, the 0xbfe20 clear and bit 29/+0x34b through
+// header->object 295 (825 B; aligned 91, masked 41: frame 0x4c, result in EDI as a copy of the parameter's register and
+// final_matrices stored late from that register, as retail, but object_index / table / parameter sit in ECX / EDX / ESI
+// where retail has ESI / ECX / EDX: retail loads the table pointer first, then the parameter, then object_index, ours
+// loads object_index first); that with the named table pointer and result ahead of the header 294 (aligned 90); with only
+// the model test nested 304 (813 B, aligned 129); object_index, the matrices parameter or both read through their own
+// address on the 295 form 295/295/295/295, with the table pointer 294 (same code: the reads fold). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

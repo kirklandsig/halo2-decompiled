@@ -2049,6 +2049,9 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// score 64 (was 85): left: retail tests the muted-word bit first, then the first port flag reusing the second
+// availability byte in CL, then the second port flag expanded in place (two calls of 0x53be0); this body tests the two
+// port flags first and calls 0x53bb0 out of line, 12 bytes short. BLOCKED-BY 0x53bb0 (its per-site inlining).
 // MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes
 // the function from 85 to 64; the three tests read only globals and have no side effects, so their order does not
 // change the result, and 0x54890, 0x53a20 and 0x53bb0 stay matched. Still differs: retail keeps the second port
@@ -2064,7 +2067,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // line: BLOCKED-BY 0x59670/0x596a0.
 // MiniMax B (11-13): no new form, no lower score (85): the session getters 0x59670/0x596a0 (src/unknown_058ee0.cpp) are outside this lane's files, and the second port-flag query is still called out of line where retail inlines it here: BLOCKED-BY 0x59670/0x596a0.
 // MiniMax S (11-15): no new form, no lower score (85): the session getters 0x59670/0x596a0 live in another file, so the second availability byte still loads lazily where retail loads both before the muted test and keeps the remote mask in esi.
-// score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
+// Earlier at 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
 // word outer/target induction 118/106; word active 97; mask names 94; skip cleared inactive entries 110.
@@ -2104,7 +2107,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // MiniMax G (11-12): no new form tried this round, no lower score (85): what is left is the order of the two
 // availability-byte loads and the register of the stack word, both decided by the schedule of the block.
 // MiniMax H (11-12): no new form, no lower score (85): the first branch is still at +0xb and still leaves for a different place than retail's shared exit at +0x1a6, so only the uninitialized path's exit sits at the wrong address.
-// score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
+// Earlier at 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
 // word outer/target induction 118/106; word active 97; mask names 94; skip cleared inactive entries 110.
@@ -2238,6 +2241,18 @@ static inline dword voice_get_player_mask_inlined(void);
 // MiniMax D (11-17): no new form, no lower score (85): retail still inlines both port-flag queries at this site where this
 // build inlines one and calls the other out of line, and the second availability byte still loads lazily; the helper's
 // spelling is shared with other files, so its inline decision cannot be changed from here.
+// M3 lane 1 r118 (fast with 0x54890/0x53a20/0x53bb0/0x53b90/0x53b40/0x53610/0x56590/0x565c0/0x56b70; control 64, 415 B,
+// aligned 17): retail's listing has the three inner tests in the order muted-word bit, first port flag, second port flag
+// (0x55a3c-0x55b0a); that order here 85 (427 B, retail's length; aligned 29, of which 10 are padding), so the kept
+// flags-first order is a positional gain only. Grid over the test order x `inline` kept or dropped on 0x53b90 x plain
+// availability reads in 0x53b90 x `inline` added to 0x53bb0 x plain reads in 0x53bb0 (32 forms). Flags first: plain reads
+// in 0x53bb0 64 (same code); `inline` on 0x53bb0 105 (446 B), with its plain reads 89 (433 B); plain reads in 0x53b90 89
+// (427 B), with plain 0x53bb0 89, with `inline` 0x53bb0 105, with both 80 (427 B); no `inline` on 0x53b90 97 (391 B: it is
+// then called too), with `inline` 0x53bb0 64 (416 B), with its plain reads 73 (407 B). Muted-word bit first: `inline`
+// 0x53bb0 102 (446 B), plain 0x53b90 94 (404 B), plain 0x53b90 with `inline` 0x53bb0 43 (429 B, aligned 6: round 198's
+// form), with both plain 74 (427 B); no `inline` on 0x53b90 122 (393 B), with `inline` 0x53bb0 84 (427 B). Every form
+// with `inline` on 0x53bb0 loses 0x54890 and 0x53a20 (83/84, 72/72 with both plain, 21/28 without `inline` on 0x53b90),
+// and every form without `inline` on 0x53b90 loses 0x53b40 (59) as well; no form expands 0x53bb0 here alone. Body unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
