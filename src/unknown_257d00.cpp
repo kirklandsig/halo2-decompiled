@@ -2133,6 +2133,10 @@ void function_b7360(long object_index);
 // three pairs and all together 270 each. With separate actor and point guards in recording, 270. NOT
 // kept: ties. The actor and output registers stay reversed and the post-validation reference reload is
 // still missing.
+// Perception index after both lookups 272, before the command lookup as a value/reference/predicate 487/487/487,
+// command getter or named type in the guard before payload lookup 506/506, early perception with explicit type
+// comparisons 477, early perception and type 487. NOT kept: the actor-first forms load the actor data too early,
+// and the actor/output roles and packed-reference reloads still differ.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
