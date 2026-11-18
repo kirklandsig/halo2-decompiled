@@ -1838,6 +1838,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // with positive header read 165; cleared outcome with positive header read 172; short circuit outcome
 // with positive header read 188; accumulated outcome with positive header read 172. NOT kept because
 // reusing the resize result regresses the score and changes the frame.
+// The query and write homes, close join, and write/checksum registers still differ.
+// Scoped write failure or success 98/98; scoped query equality 33; mismatch-scope
+// header extent 33; nested close guard 33; full header-range outcomes 103; direct
+// checksum outcome 41; named checksum words 33; scoped close and header outcomes
+// 111; expected size before or after the query wait 279/276. NOT kept: the scoped
+// write count recovers the slots but adds a result test and regresses the score.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -674,6 +674,13 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P608: Current-frame weight shared from frame admission, enabled blend, explicit disabled arm
 // or deferred blend into both pivots and both downstream pairs, aspects or inverse extents:
 // 398/416/416/405/397/367/357/396. NOT kept: every form regresses and changes frame layout.
+// Supplied spans for both encoders 407. Primary supplied spans 308. Secondary supplied spans 380.
+// Horizontal supplied spans 318. Vertical supplied spans 395. Two-component span input 426.
+// Branch-selected supplied spans 407. Shared span/origin reversal tests 403.
+// Animated-only supplied spans 546.
+// The supplied spans change the reciprocal allocation and move the first difference into the fixed arm or
+// frame. Keeping the fixed call uncached gives 1865 bytes and score 546. All five matched controls stay
+// exact.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -812,6 +812,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // `cluster` local 159/162, for(;;) 149, count as long 160, unsigned short or `cluster_count++` 142, volume_index/entry
 // declared outside the loop, head pointer, next-index local (no change). A probe store using cluster_slot in the loop
 // flips ebx/ebp (131), so the pick is a use-count tie; probe not kept.
+// Eligible-volume scope 129. Admitted volume postincrement 129. Nullable cluster record 159.
+// Capacity checked on map miss 159. Loop-break result 130. Typed camera stride 129.
+// Portal sentinel value 129. Group count before head 129.
+// The slot still uses EBP and the volume index EBX. The loop-break result grows to 442 bytes and changes
+// the prologue. The matched caller and projection callee stay exact throughout.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1398,7 +1403,7 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 205 (was 221): The entry now saves ESI and initializes AL at retail length. The flag stack homes and false-return tail still differ.
+// score 134 (was 205): The entry now saves ESI and initializes AL at retail length. The flag stack homes and false-return tail still differ.
 // Earlier comparison at 221.
 // the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
 // (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
@@ -1424,6 +1429,16 @@ struct s_pool_view_172840
 // change.
 // single result from the three failure tests 205;
 // Plain check: 205.
+// Chained failure-byte initialization after the result 205.
+// Chained failure-byte initialization before the result 205. Positive polygon path 143.
+// Separate exclusion masks 205. State-specific cluster tests 205. Separate pool capacity guards 210.
+// Positive pool capacity branch 205. Queue failure first 205.
+// Positive polygon with signed cluster result (NOT kept, 873 bytes) 149.
+// Positive polygon with shared bit-array base 134.
+// Plain confirmation gives 134 at 868 bytes. The null-projection branch now reaches its own late failure
+// store, and the copy and bit set reuse the same destination base as at retail 0x172a9b–0x172aae. All 36
+// checked functions preserve their status, with no score rise elsewhere. The flag homes and false-return
+// tail still differ.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1447,69 +1462,70 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 		{
 			long portal_index = cluster->portals[portal];
 			s_projected_polygon_173520 *polygon = function_173520(portal_index, cache);
-			if (!polygon)
+			if (polygon)
 			{
-				projection_full = true;
-				continue;
-			}
-			dword bit = 1 << (portal_index & 31);
-			long word_index = portal_index >> 5;
-			if (((dword *)entry->unknown2c)[word_index] & bit)
-				continue;
-			if (!(((dword *)g_4f93a4)[word_index] & bit))
-				continue;
-			if ((polygon->state == 1 && (polygon->field_0 & 2)) ||
-				(polygon->state == 2 && (polygon->field_0 & 0x10)))
-				continue;
-			if (!((polygon->state == 1 && polygon->field_6 == (short)cluster_index) ||
-				(polygon->state == 2 && polygon->field_8 == (short)cluster_index) ||
-				(polygon->state == 3 && function_173350(pool, (short)index, (short)portal_index) == NONE)))
-				continue;
-			box2f const *polygon_bounds = &polygon->bounds;
-			s_rect4 const *entry_rect = &entry->rect;
-			if (!(polygon_bounds->x1 >= entry_rect->x0 && entry_rect->x1 >= polygon_bounds->x0 &&
-				polygon_bounds->y1 >= entry_rect->y0 && entry_rect->y1 >= polygon_bounds->y0))
-				continue;
-			long new_index = pool->count;
-			if (new_index == 256 || 5120 - storage->used < 64)
-			{
-				pool_full = true;
-				continue;
-			}
-			++pool->count;
-			s_pool_entry *next = &pool->entries[(short)new_index];
-			point2f *allocated = &storage->points[storage->used];
-			storage->used += 64;
-			next->data = (real *)allocated;
-			if ((byte)function_173380((s_polygon_clip_173380 *)&polygon->bounds,
-				(s_polygon_clip_173380 *)&entry->rect, (s_polygon_clip_173380 *)&next->rect))
-			{
-				short other_cluster = polygon->field_6;
-				if (other_cluster == (short)cluster_index)
-					other_cluster = polygon->field_8;
-				next->next = (short)index;
-				next->key = key;
-				next->value08 = other_cluster;
-				next->unknown06 = (short)portal_index;
-				next->unknown28 = NONE;
-				next->unknown0a = NONE;
-				next->rect = *(s_rect4 *)g_4687dc;
-				next->unknown24 = polygon->distance;
-				memcpy(next->unknown2c, entry->unknown2c, sizeof(next->unknown2c));
-				((dword *)next->unknown2c)[word_index] |= bit;
-				storage->used = ((point2f *)next->data - storage->points) + next->count;
-				function_11f5f0((box2f *)&next->rect, (point2f *)next->data, next->count);
-				function_173b00(lists, other_cluster, (short)new_index);
-				if ((queue->index + 1) % 256 != queue->unknown00)
-					function_173b60(queue, (short)new_index);
+				dword bit = 1 << (portal_index & 31);
+				long word_index = portal_index >> 5;
+				if (((dword *)entry->unknown2c)[word_index] & bit)
+					continue;
+				if (!(((dword *)g_4f93a4)[word_index] & bit))
+					continue;
+				if ((polygon->state == 1 && (polygon->field_0 & 2)) ||
+					(polygon->state == 2 && (polygon->field_0 & 0x10)))
+					continue;
+				if (!((polygon->state == 1 && polygon->field_6 == (short)cluster_index) ||
+					(polygon->state == 2 && polygon->field_8 == (short)cluster_index) ||
+					(polygon->state == 3 && function_173350(pool, (short)index, (short)portal_index) == NONE)))
+					continue;
+				box2f const *polygon_bounds = &polygon->bounds;
+				s_rect4 const *entry_rect = &entry->rect;
+				if (!(polygon_bounds->x1 >= entry_rect->x0 && entry_rect->x1 >= polygon_bounds->x0 &&
+					polygon_bounds->y1 >= entry_rect->y0 && entry_rect->y1 >= polygon_bounds->y0))
+					continue;
+				long new_index = pool->count;
+				if (new_index == 256 || 5120 - storage->used < 64)
+				{
+					pool_full = true;
+					continue;
+				}
+				++pool->count;
+				s_pool_entry *next = &pool->entries[(short)new_index];
+				point2f *allocated = &storage->points[storage->used];
+				storage->used += 64;
+				next->data = (real *)allocated;
+				if ((byte)function_173380((s_polygon_clip_173380 *)&polygon->bounds,
+					(s_polygon_clip_173380 *)&entry->rect, (s_polygon_clip_173380 *)&next->rect))
+				{
+					short other_cluster = polygon->field_6;
+					if (other_cluster == (short)cluster_index)
+						other_cluster = polygon->field_8;
+					next->next = (short)index;
+					next->key = key;
+					next->value08 = other_cluster;
+					next->unknown06 = (short)portal_index;
+					next->unknown28 = NONE;
+					next->unknown0a = NONE;
+					next->rect = *(s_rect4 *)g_4687dc;
+					next->unknown24 = polygon->distance;
+					dword *portal_bits = (dword *)next->unknown2c;
+					memcpy(portal_bits, entry->unknown2c, sizeof(next->unknown2c));
+					portal_bits[word_index] |= bit;
+					storage->used = ((point2f *)next->data - storage->points) + next->count;
+					function_11f5f0((box2f *)&next->rect, (point2f *)next->data, next->count);
+					function_173b00(lists, other_cluster, (short)new_index);
+					if ((queue->index + 1) % 256 != queue->unknown00)
+						function_173b60(queue, (short)new_index);
+					else
+						queue_full = true;
+				}
 				else
-					queue_full = true;
+				{
+					storage->used = (point2f *)next->data - storage->points;
+					--pool->count;
+				}
 			}
 			else
-			{
-				storage->used = (point2f *)next->data - storage->points;
-				--pool->count;
-			}
+				projection_full = true;
 		}
 	}
 	if (pool_full)
@@ -1627,7 +1643,7 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 284 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// score 284 (was 266): Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
 // the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
 // calling convention: retail takes up in eax and forward in ecx with point, distance and offset on the stack
@@ -1642,6 +1658,17 @@ struct s_camera_reference_171830
 // is probably not fixable before 0x171d00 matches. 0x171d00 now matches (#987), which took this from 266 to 284.
 // Permuter (25 min on r622): 26 below its own baseline, only with a float term truncated through an int and a
 // volatile pointer (a behaviour change); not kept.
+// Joint endpoint and direction 301. Shared preferred-side comparison 300. Boolean direction 281.
+// Signed endpoint branch 324. Explicit lower-fraction fallback 284. Sample material after target 284.
+// Refinement material after direction 286. Both material initializations at trace inputs 286.
+// The joint endpoint, shared comparison and signed-endpoint forms recover the 0xb8 frame, but leave the
+// point in EBX and shorten the body to 1197, 1204 and 1181 bytes. NOT kept: the Boolean direction gains
+// three points and grows to 1224 bytes. All four reduced controls retain their opening scores.
+// The 0xbc frame and point register still differ. Sample/retained-ray names 284; separately
+// declared short while ordinal 284; sampled hit fraction read once 284; shared refinement
+// point difference 286; signed cluster ordinal retained 284; shared rear-displacement scale
+// 284; combined reference admission 284; no-displacement early exit 311; signed winning
+// side 282. NOT kept: signed winning side gains two and shortens to 1213 bytes.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

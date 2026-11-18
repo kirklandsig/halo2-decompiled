@@ -555,6 +555,11 @@ struct s_24e9c7_points
 // the same with `size * (0.0f - forward_j)` 141 (742 B); with the copy after the result 139 (742 B); after the half width 143
 // (739 B); the copy after the result and up computed after the side scaling 140 (742 B). Re-measured: the first corner's base
 // copy right after the across scalars 124 (listed; the across products still sink into the side products).
+// The across-Y spill and returned-height home still differ. Height committed between
+// upper products, after upper, after side or after back 125 each; after corners 139;
+// after draw 187; in-place side with interleaved height 143; first raised origin before
+// back 153; shared forward components 142. NOT kept: early commitments tie and the
+// later or combined forms miss the original frame, extent or score.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

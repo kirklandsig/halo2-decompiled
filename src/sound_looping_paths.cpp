@@ -644,6 +644,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Attenuation sampled before the indexed walk with short/long count 847/919.
 // NOT kept: portal cursors recover ESI zero at +0xf but grow the body and retain displaced
 // count and array homes. Other cursor variants also move the frame away from 0x4e0.
+// Round 628: dword choice count through construction/repair, then short for later use 947/952.
+// Short construction and long count at repair/conversion 912/893. Full query bound in construction
+// with a short completed count 961, or in repair with a short conversion count 890.
+// Typed portal indexing 846, with the first two choice-count splits 947/952.
+// The dword construction forms recover the ESI zero but shorten the body and raise the score.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

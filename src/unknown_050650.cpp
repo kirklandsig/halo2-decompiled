@@ -905,11 +905,15 @@ struct s_collision_result_buffer_1697c0
 // pointer 308 (1446 B); each rotation's sine/cosine pair as named locals in its own block 217 at 1423 B (masked 86), with
 // the best vector before best_fraction 214 (1423 B, masked 84). All match-only (the wrapper's body written out or a one-use
 // pointer); body unchanged.
+// Earlier 299 (was 299): MiniMax D (11-17): no new form, no lower score (299): the frame-bottom homes still differ -
 // MiniMax D (11-17): no new form, no lower score (299): the frame-bottom homes still differ -
 // retail's three locals sit at [esp+0x1c]/[esp+0x20]/[esp+0x24] against this build's [esp+0x18]/[esp+0x1c]/[esp+0x20],
 // retail's flag byte is at +0x2f against this build's +0x2b, and retail keeps the magnitude result at [esp+0xc] where this
 // build keeps it at [esp+0x2c]; the masked count is 154, so what is left is the homes rather than the statements, and
 // lane 14 r84's reused sine/cosine pair is a match-only form (its body written out), which is not a permitted shape.
+// Shared normalizer at pitch/clear/best 305/299/299; pitch-clear/pitch-best/clear-best 305/305/299;
+// private in-place normalization by reference 299, with shared pitch normalization 305.
+// NOT kept: the pitch forms recover the early axis and magnitude homes but add 25 bytes.
 // P608: Paired random draws through one field pointer, object pointer, field reference or
 // object reference, at loop or draw scope: eight 296 at 1451/1423, first +0x31.
 // NOT kept: three-point gain, longer body and different generator loads despite native entry slots.
@@ -1407,6 +1411,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 255, on the 166 form 166 (same code); cases 1 and 6 through a shared object-point inline helper: plain inline 392
 // (1300 bytes, kept out of line), forceinline 255, forceinline with the NONE-first test 166. None kept: each gain rests
 // on forms kept only with a match.
+// Shared recalled projection 311; shared direct-point cases 397; typed state point reads 258.
+// Common prop lookup 416; explicit reference first 416; looking arm first 424;
+// with shared direct-point cases 408; with typed state point reads 416 (reduced control 258).
+// The common lookup forms shorten the body and change the specification argument's register.
 // Round 415. case 2 state-admitted presence 278, case 1 state-admitted presence 265, both state-admitted 278, case
 // 2 point-write presence 375, case 1 point-write presence 102, both point-written 390, case 1 point-written with
 // case 2 state-admitted 213, case 1 state-admitted with case 2 point-written 348, case 1 reference-state snapshot
