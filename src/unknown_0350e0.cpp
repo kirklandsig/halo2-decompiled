@@ -3795,6 +3795,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // EDX/EBP roles at 1324 bytes, but adds a manufactured out-of-range start and comparison on
 // the path retail skips directly. Counter homes and the decay base still differ.
 // MiniMax C (11-17): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped; the declaration orders of the two homes measure the same, so the body stands.
+// Creation-entry cursor with indexed end, ordered/equality bound and else/continue
+// advancement 337/337/337/337. Paired entry/end cursors 382/382/382/382.
+// NOT kept: the state and prefix registers are still reversed.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
