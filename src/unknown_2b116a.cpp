@@ -4529,6 +4529,10 @@ bool __stdcall function_2b278e(long controller_index)
 // native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
 // The incoming controller reference and the two post-membership index reloads still differ.
 // Dispatch-scope controller index for the initial queries, then with name entry, message permission, both dialog masks, name and permission, name and masks, or all three groups each score 54. All uses with Boolean membership score 199.
+// Named identity-query result 54, index assigned at the identity call 54, Boolean membership with
+// warning assigned on the eligible path 199 or cleared for the excluded kind 192, signed warning result 199,
+// conditional dialog invocation 199, function-scope identity 199, inherited dialog receiver 199.
+// The original controller reference and both index reloads still differ.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
