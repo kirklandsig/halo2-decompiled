@@ -2056,6 +2056,10 @@ void function_27dd10(void)
 // in the walk's for 6 (0x281b60 6, 0x285750 4, 0x288570 2, 0x289580 5). Diagnostics (semantics changed): the empty
 // group's step or the group end's `+ 8` as 9 or 7, the bit test as `& 3`: the pair stays reversed in both functions.
 // Also the interpolation's three frame-state restores in reverse order 14 (0x281b60 14, 0x285750 12, 0x288570 19).
+// M3 lane 8 r183 (fast with 0x281b60 and the five matched walk users): in function_288572 the count read through a
+// no-code forceinline accessor at the group clamp 2 (0x281b60 2, 0x288570 120), at the outer loop bound 2 (0x288570 120);
+// the bit test through the accessor 2; the group end declared in the inner for's init 2; the blend frame state copied in
+// reverse order before the second decode 11 (0x281b60 11, 0x285750 9, 0x288570 9; the pair unchanged). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2201,6 +2205,8 @@ void function_2818e0(void)
 // M3 lane 13 r106 (the shared-walk trials listed above 0x27dff0): counter step helper 2; empty-group arms swapped 352;
 // chained counter resets 2; the node index zeroed in the wrapper 6; the frame-state restores reversed 14; constant-change
 // diagnostics leave the pair reversed.
+// M3 lane 8 r183 (the shared-walk trials listed above 0x27dff0): count accessor at the clamp 2, at the loop bound 2;
+// bit test through the accessor 2; group end in the inner for's init 2; frame state copied in reverse order 11. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

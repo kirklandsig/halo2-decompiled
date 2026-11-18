@@ -211,6 +211,10 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // inner loop 11 (same code), around the accumulation pass over the samples 32; the output section (previous-index store,
 // copy, blend, increment) in its own block 11 (same code); the cluster array through a local copy of the parameter for
 // both accesses 30; the cluster loop index typed `short` 304 (1173 B).
+// Round 140 (m3 lane 12, fast; control 11): the lookup helper's index parameter typed `short` 200; the blend's source
+// index local typed `short` 11 (same code); the palette index read once into a named `long` for the test and the lookup 240;
+// the first pass's element bound as a reference (`s_12ec00 &`) 11 (same code); the blend accumulator value-initialised
+// (`= s_12eb00()`, no memset) 160 (1208 bytes).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

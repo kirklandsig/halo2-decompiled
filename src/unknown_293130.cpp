@@ -372,6 +372,14 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // then matches and all 24 left are the rotation (dot j, k, i; retail i, k, j; v.j/v.k in each other's registers), the same
 // 24 as in the 30 form. On that lead: the cross terms before the dot 53; the angle passed straight 35; the true flag stored
 // before the two false ones 27. Restored.
+// M3 lane 4 r211 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the existing basis_dot_xzy (vector_products.h, i then
+// k then j, staged) for the projection's dot, (axis, vector) 99 and (vector, axis) 99 (the same code, 1405 bytes): LEAD,
+// the dot then sums i, k, j with the i product as the accumulator and v.k/v.j in retail's XMM1/XMM2, but every a.k
+// product turns copy-first (`movaps x, v; mulss x, [a.k]`) where retail loads a.k first, so the positional count rises.
+// On it: the three cross terms ahead of the dot 74 (1409 bytes, then a.j loads first too); the components named
+// i, k, j 99 (same code); the cross terms through cross3f(vector, axis) into a local 162 (1420 bytes). Retail's sides:
+// a.i and a.k products load the axis field, a.j products read it from memory; dot3f gives that split, the staged dot
+// does not.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

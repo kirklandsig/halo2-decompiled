@@ -330,6 +330,22 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Captured growth count/roster bound/growth timestamp join, seven nonempty subsets, then all with signed count: 387/402/432/402/432/433/433/433.
 // NOT kept: count capture ties. The shared roster bound reaches 1589 bytes at 402, and the timestamp join grows to 1605 bytes.
 // Original executable body restored.
+// m3 lane 14 r108 (fast with 0x72140, 0x71ff0, 0x71e00, 0x5b060, 0x5b080, all MATCH; control 387 at 1597 B, 191 aligned rows by sequence alignment
+// with addresses masked). Retail's block order: the mode-3 block whole right after the fourth test (0x71913, its own flag store and jmp); every failing
+// chain arm stores the ready byte and jumps to the not-ready block (0x71a8e, or 0x71a87 where EBP is restored first), which sits mid-function after the
+// members-ready arm; the balance-failure arm (0x71c69) falls into the timeout (0x71c7a); the identity loop and the 0x71ff0 call sit between the timeout's
+// two arms. Tried: the two label blocks moved into the arms where retail lays them out 387 (same code: the compiler sinks a block that ends in a goto to
+// the gap ahead of its target); the whole body as nested if/else with the timeout under `if (!transition)` 382 (1610 B, aligned 208: the not-ready
+// block stays mid-function, but the guard costs a run-time test retail lacks and pulls the timeout up after it; five points, longer and further by
+// alignment, not kept); nested chain, `if (!transition) {not ready} else {success}` and the timeout reached by fall-through with one goto past it to the
+// mode-12 call 416 (1599 B, aligned 182: retail's block order for all four points above, but arg_0 takes EBX and the owner EBP at entry, the reverse
+// of retail, and the kind-3 arm takes the place ahead of the not-ready block that retail gives the members-ready arm); that with the chain flat (jumps
+// to the not-ready test) 416 (same code); with the reject block as if/else 425 (1597 B, aligned 194); with the original goto tail 416 (same code);
+// with the mode-3 block back ahead of the timeout 416 (same code); with the split's arms swapped, success first 406 (1589 B, retail's length, registers
+// as retail, aligned 189: the not-ready block goes back to the end). The real 0x58d70 in place of the header's live-state copy at both sites, on this
+// body 387 (same code: both sites call it out of line; retail expands both and calls 0x5b080). Diagnostic, reverted: the third form with the live test
+// forced inline 439 (1613 B, aligned 172, entry registers still reversed). So retail's source has the structured not-ready/success split; what is
+// missing is the form that keeps arg_0 in EBP at entry with it (the swapped-arm form shows the arm order moves that choice).
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

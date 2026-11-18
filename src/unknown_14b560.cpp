@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
+// walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
+// place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
 // MiniMax R run 92 (11-17): no new form, no lower score (43): the permuter cannot search this body over the reduced
 // image (it reads 44 there against 43 in the full one), and the carriers still come from the out-of-line 0xbaf80 walk
 // in src/unknown_0bad50.cpp and from the iterator's registers in include/data_iterator.h, both outside this lane's
@@ -803,7 +806,7 @@ bool function_e4050(long object_index);
 // MiniMax H (11-14): no new form, no lower score (43): this round compared retail's listing with ours
 // region by region; the entry test and the 0x10 frame agree, and the difference opens inside the root
 // walk, whose body is the out-of-line 0xbaf80 in src/unknown_0bad50.cpp; the body is unchanged.
-// score 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
+// Earlier at 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
 // and the unit index takes EDI where retail takes EBX, and retail reads the unit object out of the
 // record into EBX once the record's address is dead; the root walk itself is the out-of-line 0xbaf80
 // whose body is in another file.
@@ -949,10 +952,10 @@ bool function_e4050(long object_index);
 // in edi and has no entry test; writing retail's shape makes the compiler peel the first iteration (109) and the same
 // walk with the record loaded after it gives 102, so both were restored. The remaining rotation comes from the datum
 // iterator's helper (include/data_iterator.h and src/unknown_0bad50.cpp), which this lane may not edit.
-// score 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
+// Earlier at 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
 // include/data_iterator.h and src/unknown_0bad50.cpp.
 // MiniMax E (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
-// score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
+// Earlier at 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
 // EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
 // may not edit.
 // MiniMax I (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where
@@ -969,6 +972,16 @@ bool function_e4050(long object_index);
 // and the iterator index EBX, because the step object reuses ECX where retail's takes EAX). Grid of three walk shapes x
 // long/dword unit x inline/named parent x unit object before/after the walk: long unit 171/162/113, dword unit
 // 109/102/107/98; none under 43. Best match-only recipe: none reached a match.
+// M3 lane 1 r118 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43,
+// aligned 27 including two padding lines, register-masked 8): re-measured the NONE-root walk from a long unit 109
+// (431 B, aligned 40: no entry test; player EBP, unit EDI, unit object EBX, table EDX) and from a dword unit or with
+// a dword walk variable 171/171 (405 B, aligned 43: the entry test is back with the table in ESI, the unit object in
+// EBP and the player in EDI as retail, but the unit stays in EAX, the step object reuses ECX and the iterator index
+// takes EBX, so the frame goes). New: the continue test compared as unsigned on a long unit (`(dword)unit ==
+// (dword)NONE`) with the long NONE-root walk 171 (405 B, the same code as the dword unit), the same test read from
+// the field ahead of the unit local 171 (same code), the dword unit with 0xe4050 passed the field 171 (same code);
+// the unsigned continue test on the kept parent-first walk 43 (same code). Any signed/unsigned mismatch between the
+// continue test and the walk keeps the entry test and gives that one 405-byte allocation. Body unchanged.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2528,6 +2541,9 @@ static __forceinline long player_round_ticks(real value)
 // still 0x4c against retail's 0x74 and the first 0x151b80 call is still expanded here where retail calls
 // it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files.
 // MiniMax G (11-12): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail makes out of line, and retail's two request homes are still one here.
+// MiniMax G (11-18): no new form, no lower score (701): the length agrees (2740 bytes) but the frame is still 0x4c against retail's 0x74, our
+// link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out of line, and retail's two request homes are still one
+// here; the definitions of those callees sit in files this lane may not edit.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -3091,6 +3107,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // (0x510c50) ahead of the frame setup and keeps the globals pointer in ESI across the first block,
 // while this build loads the globals pointer first and takes the field's address with a lea, so the
 // two loads come in the other order from the first instruction on; the body is unchanged.
+// MiniMax G (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail loads it into ESI and
+// reloads it after the busy check and again before the final store, and the two loops still swap the datum and unit registers with it; the
+// stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue, and the reduced image overstates this body.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
 // function where retail loads it into ESI and reloads it after the busy check and again before the
 // final store, and the two loops swap the datum and unit registers with it; the reduced image

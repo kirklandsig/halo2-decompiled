@@ -1255,6 +1255,13 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // inline (0x6fa60's spelling) 195, on the current form 9 (same code); the else arm through a named entry count copied
 // into the count after the copy 195 (copy-propagated); no `joining` local (read through the owner at both calls) 209
 // (715 B).
+// m3 lane 14 r109 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): the destination declared in the branch, re-measured 195
+// (state in EBX for the whole function, `current` in ESI, the count spilled and stepped as `inc [esp+0xc]`); on it the
+// else arm's count assigned after its copy (the size read from the field) 195, a const base pointer formed before the
+// branch and copied into the destination inside it 195 (the base folds back to the frame address), the destination
+// indexed by the zero count 195, the pointer step before the count 216 (728 B); the current form with the destination
+// indexed by the zero count 9 (same code). Retail places the destination's lea in the loop preheader after the mask
+// store; every form that defines it inside the branch flips the colouring.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

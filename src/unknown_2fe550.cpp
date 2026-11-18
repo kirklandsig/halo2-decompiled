@@ -40,11 +40,15 @@ public:
 // a segment starting inside the box misses; otherwise the faces are taken
 // first on the positive side, then on the negative side, each one the start
 // lies outside of moving the entry and each other one moving the exit
-// score 42 (was 73): the axis loop counts one byte offset (8, 4, 0) that every access uses, and
+// Matched (was 42): each path that leaves the axis loop steps the offset, tests its sign and
+// switches to the negative side itself, so the step fuses with the sign test (`sub ecx, 4; jns`)
+// and the two assignments of the side keep it on the x87 stack across both passes; the end
+// point is read through a pointer taken once per pass, so it is addressed from the offset like
+// the start point.
+// Before, 42 (was 73): the axis loop counts one byte offset (8, 4, 0) that every access uses, and
 // steps it in both paths (after an axis that is not crossed, and at the end of the body), which
 // keeps it the only counter; the limit is read once per axis and the leaving test is
-// `!(leave < fraction)`; `leave` is declared last. Left: retail fuses the step with the sign test
-// (`sub ecx, 4; jns`), ours tests again, two bytes longer.
+// `!(leave < fraction)`; `leave` is declared last.
 // Before, 73 (was 141): retail walks the three axes by their byte offset, so the
 // offset is the loop's one counter and every access is a plain displacement;
 // ours still derives the axis from the offset and scales it, and our four
@@ -84,16 +88,21 @@ answer_2fe550 box_2fe550::function_2fe550(segment_2fe550 const *segment, hit_2fe
 	float leave = hit->fraction;
 	for (int pass = 1; pass >= 0; pass--)
 	{
-		for (int offset = 8; offset >= 0;)
+		char const *const end_point = (char const *)&segment->end;
+		for (int offset = 8;;)
 		{
 			if ((crossed & *(int const *)((char const *)&axis_bits + offset)) == 0)
 			{
-				offset -= 4;
+				if ((offset -= 4) < 0)
+				{
+					side = -1.0f;
+					break;
+				}
 				continue;
 			}
 			float const limit = *(float const *)((char const *)&negative_extents + offset);
 			float const start_distance = side * *(float const *)((char const *)&segment->start + offset) + limit;
-			float const end_distance = side * *(float const *)((char const *)&segment->end + offset) + limit;
+			float const end_distance = side * *(float const *)(end_point + offset) + limit;
 			float const fraction = start_distance / (start_distance - end_distance);
 			if ((outside & *(int const *)((char const *)&axis_bits + offset)) != 0)
 			{
@@ -112,9 +121,12 @@ answer_2fe550 box_2fe550::function_2fe550(segment_2fe550 const *segment, hit_2fe
 			{
 				return answer_2fe550(false);
 			}
-			offset -= 4;
+			if ((offset -= 4) < 0)
+			{
+				side = -1.0f;
+				break;
+			}
 		}
-		side = -1.0f;
 		crossed = end_below | start_below;
 		outside = start_below;
 	}
