@@ -994,6 +994,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // pointers 310/310, immutable returns 310, both with existing normal setter 305.
 // NOT kept: frame 0x44 and 1243 bytes recover in several forms but every score regresses.
 // Root classifier and output homes remain. Original collector restored.
+// AC572: Full key selected by conditional or assigned in its two arms 238/238,
+// optional unsigned adjustment set by branch or conditional 328/315. Same
+// forms indexing with the validated clamp result 339/339/353/342.
+// NOT kept: the frame and second-node spill remain. The distinct forms grow the body.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
