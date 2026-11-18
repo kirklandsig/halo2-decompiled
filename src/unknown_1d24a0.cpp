@@ -104,6 +104,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax B (11-18): no new form, no lower score (949, was 949): the frame is still 0x1f0 against retail's
+// 0x1d4, so every stack home differs; retail unrolls the scale helper into three multiplies with both
+// vectors in memory while this build rolls the loop, retail reloads the delta from its stack copy after the
+// 0x24590 call and keeps two subtract arms, and retail's loop head (the element pointer formed with
+// `shl eax,3; add`, the object index in EDI across 0xbadc0) belongs to that callee's own file; the calls,
+// the argument values and the float constants are unchanged.
 // MiniMax H (11-14): no new form, no lower score (902): this round re-walked retail's listing block by
 // block against the source; the conditions, fields, constants and callee arguments agree, so what is
 // left opens with the frame and the entry's register roles, and the loop head's shape is settled in the

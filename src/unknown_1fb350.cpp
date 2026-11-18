@@ -318,6 +318,12 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax B (11-18): no new form, no lower score (122, was 122): the frame is still 0xc against retail's 0x14
+// and the pool is still forwarded into EDI for both the scan and the element; retail reads the high-water mark
+// once per search into ESI and keeps the pool in two stack homes, while the shared scan reads the count
+// through the volatile pointer and reloads it in the loop - dropping that volatile to give retail's snapshot
+// loses all three matched siblings (0x1fb4c0, 0x1fb6f0, 0x1fb760, all four at 0 of 4 matching here), so the
+// two scan shapes need two expressions and the step written out by hand is barred.
 // MiniMax S (11-17): no new form, no lower score (122): retail opens a frame of 0x14 with the object pool in two stack homes and the datum index in edi, where ours opens 0xc, forwards the pool into edi for both reads and keeps the index in eax; the form that reaches retail's frame needs the iterator step written out by hand, which the rules bar.
 // MiniMax E (11-14): no new form, no lower score (122): retail opens a frame of 0x14 and keeps the pool in two stack
 // homes, while this build opens 0xc and forwards the pool in EDI for both the scan and the element; the lead of 99
