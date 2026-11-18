@@ -3060,6 +3060,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // ahead of the second 0x202e90 call is gone. With the re-test kept (`if (local_4 != NONE)` after the breaks): breaks for
 // the delay and stored exits 50, for the stored exit only 50, for the delay exit only 50, for all three 50 (the reload
 // returns in each). So the reload goes with the follow-up's task re-test block, whatever shape the exits take.
+// Requested-index conditional 50; unlocked or absent-definition conditional 164; lock-owned
+// selection 50; absent-definition conditional 178; permission assigned in requested arm 50;
+// separate unlocked, absent and script permission branches 179; negated locked-definition gate 50;
+// conditional automatic selection 170. NOT kept: the four ties still reload the first event index.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

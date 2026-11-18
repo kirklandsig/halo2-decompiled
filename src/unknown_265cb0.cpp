@@ -2138,6 +2138,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// MiniMax H (11-18): no new form, no lower score (168): the 0x80 frame agrees, but the first iterator load still
+// encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
+// retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
+// registers.
 // score 168 (was 168): The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // One decoded actor slot for both lookups, long/word with the iterator helper 168/695 and with the typed actor accessor 168/695.
 // Named clear destination, with the typed head read, and with typed summary fields 168/168/168. Chained selections 170.
