@@ -828,6 +828,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // draw, cosine after or before sampling 152/158 and 152/158. Each pair copies
 // the table entry whole or by components. Whole-entry forms reach 880 bytes
 // with the 0x1c frame. Direction read order and the frame still differ.
+// Shared rotation snapshots direction j/k or k/j before the projection. Direct
+// projection 150/148, with cross j/k before i 150/148, named unscaled dot 148/158,
+// with both 148/158. The frame reaches 0x20, first difference +0x2a, with the seed
+// still loaded late. NOT kept: all scores rise and the matched rotation user differs.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

@@ -2115,6 +2115,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // all reference component setters 214; read position x before cross 193; read position y before cross
 // 193; read position z before cross 193; read position components before cross 193. NOT kept: tied or
 // higher scores, with no result-slot recovery.
+// Camera-up input to the perpendicular as a value local, component aggregate,
+// by-value input, or per-mode copy passed by pointer. Original
+// displacements / complete origin capture: 421/377, 192/214, 206/279, 206/279.
+// NOT kept: the component aggregate leaves the 0x14 frame and gains one. The
+// value local gets a separate result at +8 in a larger frame and raises the caller.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3837,6 +3842,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Creation-entry cursor with indexed end, ordered/equality bound and else/continue
 // advancement 337/337/337/337. Paired entry/end cursors 382/382/382/382.
 // NOT kept: the state and prefix registers are still reversed.
+// Indexed swap through list pointer, list reference, entry pointer, or fixed array
+// reference. Direct subscripts 368 each, record references 380 each. NOT kept:
+// direct subscripts preserve the 0x30 frame but leave prefix and state reversed
+// at 1336 bytes. Record references shrink the frame to 0x2c at 1326 bytes.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

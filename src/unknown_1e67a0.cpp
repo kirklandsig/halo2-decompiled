@@ -1199,6 +1199,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // side crosses through cross3f_staged 112 (1389 B). A private rotate reading only the vector's j and k into locals first
 // (diagnostic, to test whether those two ranking ahead of the axis gives retail's copy-first products) 118 (1393 B: the four
 // products stay axis-first, v.j/v.k swap XMM5/XMM6). Body unchanged.
+// Scale the sampled angle in place with sine only, cosine only, sine then cosine,
+// or cosine then sine staged. After the forward copy 186/190/187/191, before it
+// 199/202/198/201. NOT kept: frame 0x18 stays, the trig sequence moves away from
+// retail and every form shortens to 1364–1366 bytes against 1382.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
