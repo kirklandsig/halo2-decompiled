@@ -170,6 +170,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 0x2626b0 argument 12; the bool output's address in a pointer local for the 0x261280 call 12; the actor bound by reference
 // for the node lookup 12 (all the same code); re-measured on the real 0x260670 body, the three 0x261280 outputs declared at
 // the function's top 12 (same code). 0x260670 (ours) is still 440 at 3097 bytes against 3077.
+// m3 lane 15 r96 (`--fast 0x1af160 0x1e1f20`, control 12; the same two swapped home pairs): the node looked up through a
+// fresh actor lookup 79; a block around the 0x261280 outputs and everything that uses them (ending before the scratch release)
+// 44; the search record declared first in the function 12 (same code); the scratch buffer fetched before the search record's
+// setup 249 (978 bytes); the 0x1ac610 short output array scoped to its call 12 (same code). Re-measured by mistake: the
+// equal-arm flag test on a fresh actor lookup 61 (round 150). Body unchanged.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

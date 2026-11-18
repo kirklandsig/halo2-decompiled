@@ -4202,7 +4202,7 @@ vector3f *vector3d_decompress(dword arg_0, vector3f *arg_1);
 
 vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
-// score 101 (was 101): MiniMax I (11-16, round 2): no new form, no lower score: the 0x221810 lookup that retail calls
+// score MATCH (was 101): MiniMax I (11-16, round 2): no new form, no lower score: the 0x221810 lookup that retail calls
 // out of line is still expanded through the inlined caller, and keeping the call out of line needs the inline-depth
 // pair the rules drop (the notes below measure 4 with it); the call boundaries otherwise agree with retail's. Body
 // unchanged.
@@ -4264,6 +4264,17 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // MiniMax G (11-14): no new form, no lower score (101): re-measured in the batch; the 0x221810 lookup still expands
 // here where retail calls it out of line, and the expansion still shifts the rest of the listing, so the case bodies
 // start at other offsets.
+// b16I (11-17) walk against retail, fast build on r852: every statement, field offset and branch sense already agreed;
+// the only differing rows were the inlined 0x221810 lookup, case 0's flag byte and the fade sum's load order. Retail
+// calls 0x221810 out of line and inlines no other helper, so the whole function takes the file-scope pair
+// `#pragma inline_depth(0)` (DECOMPILING.md allows it around a whole function; src/damage.cpp 0x119280 has one), which
+// also stops decibels_sum (two sites) and sound_definition_get (one site): they are written out, and the size is
+// retail's 1152 with the fade sum's load order retail's too (score 1). Case 0's `local_0->unknown0a |= 1` folds to a
+// store of 1 (the 0 above it is known); retail ors the byte (0x129ce6), and `g_4e6378[arg_0].unknown0a |= 1` there
+// (pointer elsewhere) gives that: MATCH. Every use through the array 20. Fast check of this file's 76 functions plus
+// caller 0x1293f0 and callees 0x12abe0 0x142700 0x1427f0 0x125060 0x188ea0 0x12ad30 0x2195f0 0x2197f0 0x12a6d0: no
+// other score moved. Outside pieces: none changed (decibels_sum and sound_definition_get are only written out here).
+#pragma inline_depth(0)
 // @retail 0x129aa0
 void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization *arg_2)
 {
@@ -4312,7 +4323,9 @@ void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization 
 			else
 			{
 				local_2->field_18 = function_12ad30((s_sound const *)&local_1->location, (vector3f const *)&local_5.position, local_1->definition_index, &local_4);
-				*arg_1 = decibels_sum(*arg_1, function_2197f0(local_2->field_18));
+				long class_gain = function_2197f0(local_2->field_18);
+				real gain_sum = *(real const *)arg_1 + *(real const *)&class_gain;
+				*arg_1 = *(long *)&gain_sum;
 				local_0->unknown0a |= 1;
 			}
 			if (SOUND_FLAG(local_1->location.flags, 11))
@@ -4321,7 +4334,8 @@ void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization 
 		}
 		break;
 	case 0:
-		local_0->unknown0a |= 1;
+		/* retail ors the byte: it does not fold this into a store of 1 after the 0 above */
+		g_4e6378[arg_0].unknown0a |= 1;
 		if (SOUND_FLAG(local_1->location.flags, 8))
 			local_2->field_18 = 0.0f;
 		else
@@ -4373,9 +4387,10 @@ void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization 
 	local_2->field_10 = 0;
 	if (SOUND_FLAG(local_1->location.flags, 11))
 	{
-		s_sound_definition *local_22 = sound_definition_get(local_1->definition_index);
+		s_sound_definition *local_22 = (s_sound_definition *)g_4e3b44[local_1->definition_index & 0xffff].bytes;
 		s_unknown_5c *local_23 = function_221810(local_22->promotion_index);
-		local_2->field_8 = decibels_sum(*(long *)((byte *)local_23 + 0x14), local_2->field_8);
+		real definition_sum = *(real const *)((byte *)local_23 + 0x14) + *(real const *)&local_2->field_8;
+		local_2->field_8 = *(long *)&definition_sum;
 	}
 	if (!TEST_FIELD_BIT(local_1->source_updated) && local_1->source && local_1->source->spatialize)
 	{
@@ -4384,6 +4399,7 @@ void function_129aa0(short arg_0, long *arg_1, s_looping_channel_spatialization 
 			*local_2 = local_17;
 	}
 }
+#pragma inline_depth()
 
 void function_21ec00(void);
 void function_1293f0(void);

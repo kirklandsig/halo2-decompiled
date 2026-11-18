@@ -52,7 +52,8 @@ struct c_aggregate : c_child
 };
 
 
-// score 31 (was 31): MiniMax I (11-17): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 because
+// score 31 (was 31): frame 0x8024 versus 0x8020 and different homes for the escaped callback count and loop cursors.
+// MiniMax I (11-17): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 because
 // the address-taken produced count keeps a slot of its own under /GL; the instruction sequence is retail's and only
 // the frame and the slot order differ, the produced count taking the slot at 0x1c where retail keeps it at 0x10 and
 // this build's slot at 0x10 holding the children base where retail's holds the dispatch cursor. The build flag was
@@ -552,6 +553,24 @@ struct c_aggregate : c_child
 // call); the collection child bound by reference 42; the cleanup item's object field bound by reference (tested, released
 // and cleared through it) 67 (376 B); a redundant `if (starts[i] < starts[i + 1])` guard around the dispatch's inner loop
 // 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
+// M3 lane 16 r132 (fast with the six file-mates, all still matched): `register long produced` 31 (same code); the count
+// declared zeroed at the collection loop body's top with `total += produced` after the gated call 60; the count as `int`
+// passed through a `long *` cast 31 (same code); the count and its call in a bare block inside the gate 31 (same code);
+// the count in the loop's for-init, zeroed in the gate (repeat of r108) 42; the total re-formed as `starts[i] + produced`
+// 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
+// Callback count reused as dispatch bound 138.
+// Callback count reused as dispatch progress 115.
+// Callback count reused as cleanup block progress 157.
+// Callback count reused as cleanup item progress 84.
+// Callback count reused as dispatch bound and cleanup block progress 176.
+// Callback count reused as dispatch progress and cleanup block progress 131.
+// Callback count reused as dispatch bound and cleanup item progress 142.
+// Callback count reused as dispatch progress and cleanup item progress 88.
+// NOT kept: reuse for cleanup item progress recovered frame 0x8020, but the extra loads and stores grew the body and raised the score. The other reuse forms also regressed.
+// NOT kept: carried dispatch start 120; carried start and end cursor 122; three ends with carried
+// start 118 or indexed predecessor 130; three starts with carried start 122 or indexed successor
+// 105; carried start with block pointer ranges 129, with three ends 122. Three-boundary forms
+// recover frame 0x8020 but the virtual count still has its own slot and the dispatch changes.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

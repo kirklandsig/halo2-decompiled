@@ -260,6 +260,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // the function (diagnostic, no-aliasing) 4 (same code: the store/load ordering is not an alias edge); the row as
 // `position + 0.5f * velocity - origin` without parentheses 4; unit.k as `local_8 * local_2.k` 4; the flag store inside the
 // row loop body 240 (1012 B); the length, then the flag, then the rows 181 (1000 B).
+// M3 lane 14 r107 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): the square sum spelled
+// `(k*k + i*i) + j*j` 10, `j*j + (k*k + i*i)` 10 (the x87 order changes), `(i*i + k*k) + j*j` 4 (same code); the row
+// loop tested `component != 3` 238 (962 B, not unrolled); a short component counter 243 (960 B, not unrolled).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

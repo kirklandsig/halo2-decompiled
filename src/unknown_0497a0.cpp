@@ -441,6 +441,22 @@
 // sum without the double cast 538; s1 computed after the first scaled add, just ahead of its use, 536 (VC sinks it there
 // anyway); the first cross after the first scaled add, ahead of its use, 643 (2603 B). Reading: retail rounds s0 to a float
 // home (fstp, movss) and multiplies by 0.03 in SSE, where ours multiplies by 0.03 on the x87 stack before the one store.
+// The 0x54 frame still overlays the wave and cross scratch, twelve bytes short of retail.
+// Opposite cross between position updates 579, between sines 665, before both updates 665. With the short-period
+// sine delayed past the first update, opposite cross before that sine 579, opposite cross before that update 665.
+// Inverse before the wave block 594, with the opposite cross between updates 636. Both staged crosses with
+// overlapping lifetimes 581. NOT kept: the between-update forms reach the 0x60 frame and 2622 bytes but raise the score.
+// Round 401 tested complete perspective side/up and ordinary side output values, subsets 1/2/4/3/5/6/7, then both full projection cases: 618/617/620/652/657/657/682/721.
+// All retain the 0x54 frame and grow. Original vector stores restored.
+// In-place wave scaling at first/combined/both definitions 642/589/653; both after
+// the wave pair or at both position updates 652/655; first sine before the cross
+// with scales at use 655; incremental first phase or named double combined wave
+// with scales after both waves 651/651. NOT kept: the frame reaches at most 0x5c.
+// Separate rounded-wave and cross homes remain.
+// N405: Indexed special displacement through axis/amplitude/weight tables,
+// weighted tables, split wave records and weighted wave records 635/635/704/625;
+// short separate/weighted tables 753/708; separate scale then add with tables or
+// weighted records 791/705. NOT kept: no exact rounded-wave or cross schedule.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -152,6 +152,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // address local 19 (same code); the record fill and `return true` in a forced-inline tail helper 23 (the constant 1 still
 // shared, the root's two products swap); no address local re-measured 33 (464 bytes). Same reading as 0x1414d0: retail
 // gives the stack-passed pointer EBP (the one register no register argument uses) and the other cross-call value EBX.
+// Round 107 (m3 lane 14, fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, matched throughout), aimed at the shared
+// constant 1: a `result` flag started false, set true in each arm, the fill under `if (result)` and `return result`
+// 138 (458 bytes: field2e then takes retail's immediate word store, but the flag lives in CL/BL); an uninitialised
+// result with one `goto done` to the only return 19 (same code: threaded back to constants); `return arg_3 != NULL`
+// 19 and `return arg_3->field2e != 0` 19 (both fold, same code); field2e set through a forced-inline member setter 19.
+// Matched 0x1b1f70 (`x = 1; return true;`) shares the constant as ours does; the only matched non-sharing word store
+// found (0x26ed40) has EAX busy as the store's base.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
