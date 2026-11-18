@@ -73,8 +73,8 @@ struct member_30c8e0
 	collector_3173f0 *group;
 
 	collidable_30df80 *get_collidable() { return &collidable; }
-	bool is_fixed() const { return fixed; }
-	collector_3173f0 *get_group() const { return group; }
+	bool immovable() const { return fixed; }
+	collector_3173f0 *owner_collector() const { return group; }
 };
 
 class owner_30c8e0 : public world_312590
@@ -92,9 +92,9 @@ static inline void set_handler_30df80(dispatcher_3728c0 *dispatcher, pair_handle
 // after callbacks before restoring its normal handler.
 // Matched (was 19): the collidable is taken once through get_collidable() and its shape
 // through get_shape(), the motion is read through the collidable, the fixed test is
-// is_fixed(), the recorder is installed and the dispatcher's own handler restored through
+// immovable(), the recorder is installed and the dispatcher's own handler restored through
 // set_handler_30df80, the pending count comes from pending_count(), and the other branch
-// takes the group through get_group().
+// takes the group through owner_collector().
 // @retail 0x30df80
 void owner_30c8e0::function_30df80(member_30c8e0 *member)
 {
@@ -111,7 +111,7 @@ void owner_30c8e0::function_30df80(member_30c8e0 *member)
 	pair_finder->slot_1(&collidable->handle, &bounds, &added);
 	if (added.size > 0)
 	{
-		if (member->is_fixed())
+		if (member->immovable())
 		{
 			holder_30dc80 recorder(collidable);
 			set_handler_30df80(dispatcher, (pair_handler_3173f0 *)&recorder);
@@ -126,7 +126,7 @@ void owner_30c8e0::function_30df80(member_30c8e0 *member)
 		}
 		else
 		{
-			collector_3173f0 *group = member->get_group();
+			collector_3173f0 *group = member->owner_collector();
 			group->function_3173f0(added.data, added.size, 0, 0);
 		}
 	}
