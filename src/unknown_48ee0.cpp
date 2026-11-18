@@ -39,6 +39,9 @@ extern real g_4c9798[36];
 // MiniMax A (11-13): no new form, no lower score (174): the mode bit loads the flags into EDX where retail uses EAX,
 // the size stays in a register across the two rounding calls where retail reloads it from its slot, and the frame's
 // slots still run from the mode up where retail's start with the size; the rounding callee now matches.
+// MiniMax A (11-18): no new form, no lower score (174): the five source variants tried this round score 250, 280, 264, 258
+// and 258; the frame's homes still run mode, maximum, extent, size, distance, aspect, border where retail's start with
+// the size, and the mode bit still loads the flags into EDX where retail uses EAX.
 // score 174 (was 174): the far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
@@ -330,6 +333,37 @@ extern real g_4c9798[36];
 // MiniMax D (11-17): no new form, no lower score (174 in both images); retail's frame homes (size, mode, maximum and
 // extent one slot further down than ours), the mode flag's register (EAX there, EDX here) and the near plane's dot
 // product (retail reads the published normal back) still differ, and the permuter found nothing in 300 s.
+// m3 lane 7 r178 (fast; control 174, of which 81 lines are real and the rest only a relocated address): nothing kept, body unchanged.
+// HELD (needs machine 1's OK): `inline` on 0x48e70's definition in src/unknown_02b400.cpp, measured in the real linker for the first
+// time (a diagnostic, restored after each trial; full diff with the body below in build/r178/held-48ee0.patch). With it 0x48e70 still
+// matches, this body is 175 (1496 B) with retail's reloads around both rounding calls and the size in the frame's lowest slot, and
+// the only other caller 0x184440 reloads its scale and both clamp constants after each call as retail does (0x184f0d, 0x184f68;
+// positional 965 -> 1014, aligned with addresses masked 710 -> 699). On that diagnostic: long height limit, border product in
+// parentheses, `raw` with one nested ternary clamp and the near normal straight into the plane with the dot on the plane 148 at
+// retail's 1479 B; that with the near distance read at each use 130 (plain 130; aligned 16, the held form); with lane 1's
+// `__assume` on the named near distance instead 102 = 9 real lines: the flags in EDX (4) and the distance/extent slots swapped (5).
+// Tag test on the 102 form: a one-case switch, a switch with a default, a named long selector, `== 1`, `(long)x == 1`, an enum
+// compare, an enum switch, `== (short)1`, `(word)x == 1` 327 each (the named long selector with `== 1` 314): every compare of the
+// word with the literal 1 loads the flags into EAX as retail does but blocks ECX (`== 1` shows `mov ecx, 1; cmp [tag + 0x8e], cx`
+// and stores the mode from ECX), so the state arrives in EAX and moves to EDI; the diagnostic `case 5` gives state ECX, tag EDI and
+// flags EAX at once. Subtract spellings (`- 1 == 0`, `!(x - 1)`, a switch on `x - 1` with case 0, a ternary, an empty then-arm, a
+// long accessor) 102 each: state ECX, flags EDX. `long type = x - 1; if (!type)` 321, `if (--type == 0)` 321, `x >= 1 && x <= 1`
+// 327, `x > 0 && x < 2` 343, `(dword)(x - 1) < 1` 334, a short accessor with `- 1 == 0` 330.
+// With the switch: depth-bound reads through a second pointer 327 (same code); far distance named 327; near distance named ahead
+// of the scale 339, both named 339; the mode's middle value changed to 3 (diagnostic) 327; the three limit tests as mask tests
+// (diagnostic) 307, with the mode flag test too 323, with the mode value too 323 (the state then arrives in EDX, ECX stays
+// blocked); short mode 244; parameters declared (tag, matrix, state) or (matrix, tag, state) with both callers 327 each; the member
+// form with the state as `this` 327 (with the subtract test 104).
+// Slots on the 102 form (retail gives the upper of the two reused limit slots to the distance, ours to the extent): limits renamed
+// 102, distance renamed 102, extent renamed 102, height limit declared ahead of the width limit 102, extent declared ahead of the
+// distance 102, `x + extent` 102, distance ahead of the aspect 104, extent as one ternary sum 329, extent copied into a second
+// variable ahead of the limits 102 (same code), the raw size through an inline helper taking the extent by value 102 (same code),
+// limits, maximum and clamp through one inline helper with reference outputs 441 (1317 B). On the inline-only form: long height
+// limit 255 (it alone sets the two limit slots), border parentheses 180, raw clamp 244, direct near normal 338, long limit with the
+// raw clamp 157. Accessors between the tag test and the flags on the 102 form: forward vector accessor for the rows, group pointer
+// accessor, group flags accessor, bool mode-off predicate, state offset accessor 102 each (same code); a negated mode-on predicate 290.
+// Left under the held change: a source form for the named near distance (retail loads the three direction components and
+// multiplies each by the distance in XMM0, as the first plane does with its constant), the flags' register and that slot order.
 // M419: shared first sizing bit 180; sampled sizing word and first bit 180; separate size-limit branches 180;
 // first bit with dword height limit 243; reused pixel cap before height alignment 323, with dword height 351;
 // pixel cap between rounding calls 323; cap with separate width alignment 323.

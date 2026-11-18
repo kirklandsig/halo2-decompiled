@@ -330,6 +330,11 @@ long g_55e6c0;
 // ahead of the kind store 31, the kind store between them 31 (kind is still loaded and stored first). Diagnostic,
 // reverted: the clamp reading its own volatile copy of the count 46 (the count still takes EAX, so the call's raw-count
 // use does not give it EAX).
+// Round 212 (m3 lane 4, fast with 0x1dc40/0x1db10, both matched in each): the clamp reading the count through a `long const &`
+// bound to the parameter 29; through a trivial forceinline accessor returning the count 29 (both the same code); the clamp
+// as `count < 0 ? 0 : count` stored, then `if (field > 4) field = 4;` 156 (495 bytes); as an unsigned range test
+// `(dword)count > 4 ? (count < 0 ? 0 : 4) : count` 140; the height bound by `long const &` for its store and the packing
+// 29 (same code). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

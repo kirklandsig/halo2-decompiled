@@ -3,6 +3,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "vector_products.h"
 #include <math.h>
 
 real function_30bf0(vector3f *v);
@@ -105,6 +106,11 @@ real function_50650(real cosine);
 // M3 lane 3 r255 (lead, not kept: a new one-caller helper needs a match): the position step through a file-local
 // forceinline helper taking the distance as a double, with `real angle`: this function 2 (same code), 0xc60c0 268 -> 127
 // and, with block scopes there, 0x1197b0 218 -> 46 (its note); with `double angle` kept 76 (917 B).
+// M3 lane 3 r258 (fast and plain with this file's functions, 0x1197b0 and 0xc60c0): the cross product through the existing
+// cross3f(forward, target, &axis) 2 (same code, kept: it replaces the written-out products); cross3f_staged 2 (same code);
+// the first dot through the existing dot3f, either argument order, 6 (the dot's i product moves); `real angle` alone 2
+// (same code). Compile-only screen of the seven declarations (every single move, with `double` or `real angle`, 85
+// forms): the j row's first product loads the forward vector's k first in all of them, as before.
 // @retail 0x11f0d0
 void function_11f0d0(
 	vector3f *position,
@@ -136,9 +142,7 @@ void function_11f0d0(
 	angle = angle + angle;
 	real limit = angle >= max_angle * max_angle ? max_angle : (real)sqrt(angle);
 
-	axis.i = target->k * forward->j - forward->k * target->j;
-	axis.j = target->i * forward->k - target->k * forward->i;
-	axis.k = forward->i * target->j - target->i * forward->j;
+	cross3f(forward, target, &axis);
 	function_30bf0(&axis);
 
 	axis.i = axis.i * limit;

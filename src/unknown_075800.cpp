@@ -113,7 +113,7 @@ bool __stdcall network_session_handle_time_synchronize(const s_session_id *messa
 void __stdcall function_0785d0(void *unknown10, const s_type_99af70 *address, const void *message);
 class c_class_938e0;
 void __stdcall function_093fa0(c_class_938e0 *handler, const void *message);
-void __stdcall function_094220(c_class_938e0 *handler, const s_session_id *message, const s_type_99af70 *address);
+void __stdcall function_094220(c_class_938e0 *handler, const s_type_99af70 *address, const s_session_id *message);
 void __stdcall function_0942d0(c_class_938e0 *handler, const s_session_id *message, const s_type_99af70 *address);
 
 /* src/unknown_092870.cpp */
@@ -336,7 +336,7 @@ void network_message_handler_handle_leave_request(c_class_938e0 *handler, long a
 }
 
 // @retail 0x94220
-void __stdcall function_094220(c_class_938e0 *handler, const s_session_id *message, const s_type_99af70 *address)
+void __stdcall function_094220(c_class_938e0 *handler, const s_type_99af70 *address, const s_session_id *message)
 {
 	c_class_58d20 *session = network_session_manager_find_session(handler->session_manager, message);
 	if (session)
@@ -961,6 +961,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// One switch in retail's block order. Retail keeps the address in EDI for the whole body (loaded from the stack at
+// 0x938e5) and hands it to 0x94220 there, after that call's message goes into EAX: the address is that handler's
+// parameter ahead of the message, so it stays live across the EAX setup and cannot share EAX with the three lookups.
 // MiniMax E (11-16, second round): no new form tried this round, no lower score (143 plain, 196 on the reduced image):
 // retail's dispatcher takes the message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while
 // the declaration here is a thiscall member with the address, the type and the message, and the only caller
@@ -1581,7 +1584,7 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 		network_message_handler_handle_leave_request(this, (long)address, (const s_session_id *)message);
 		return;
 	case 10:
-		function_094220(this, (const s_session_id *)message, address);
+		function_094220(this, address, (const s_session_id *)message);
 		return;
 	case 12:
 		function_0942d0(this, (const s_session_id *)message, address);
@@ -1600,6 +1603,9 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 		return;
 	case 24:
 		function_945f0((const s_session_id *)message, address);
+		return;
+	case 18:
+		function_94420((const s_session_id *)message, address);
 		return;
 	case 11:
 		function_94270((const s_session_id *)message, address);
@@ -1620,11 +1626,5 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 			network_message_handle_connect_closed(connection_index, (const s_type_ac8d96 *)message);
 		return;
 	default: break;
-	}
-	switch (message_type)
-	{
-	case 18:
-		function_94420((const s_session_id *)message, address);
-		break;
 	}
 }

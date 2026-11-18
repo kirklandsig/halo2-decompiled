@@ -78,6 +78,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 
 // score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
+// M3 lane 10 r119 (fast; control 558): `*arg_5 = 0.0f;` ahead of the minimum's initializer 559; the hit flags as `{ 0 }`
+// 689 (2819 B, block store); the success flag declared after the hit flags 552 (first difference +0x2e; the success store
+// moves after the call and to +0xf, a declaration move under the bar); the early exit as `field_48 <= 0.0f` and as
+// `0.0f >= field_48` 663 each (the first re-measures the listed 663). Body unchanged.
 // MiniMax I (11-16): no new form, no lower score (558): retail materialises the zero in XMM0 after the minimum's store
 // at +0x18 and keeps the range in XMM1, ours materialises it in XMM1 before the minimum's load and keeps the range in
 // XMM0, so every later row is one off. Naming the ray length once (retail computes the half width plus the range once
@@ -619,6 +623,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // The three with the shared scale helper 608/579/603.
 // Reuse the side axis or both with the staged cross 599/600.
 // NOT kept: The success byte stays at +0x13 and the body shortens. The separate projection workspaces are restored.
+// DH401: Separate measured and clipped clearance. For explicit arms and measured
+// default, direct fraction with minimum after/before hit stores 564/665
+// and 564/665, named fraction 554/587 and 554/587.
+// NOT kept: minimum first gives the native success slot but regresses. The
+// best reduction is four points and leaves the success slot unchanged.
 // Frame 0x108 agrees. The success byte is four bytes below retail. Scoping the collision query did not
 // move it; the for count narrowed the extent gap by four bytes. query workspace scope 558; count and ray
 // in for scope 558; count and ray in exclusive scope 558; preincremented ray ordinal 667; query scope

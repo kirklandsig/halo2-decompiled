@@ -22,7 +22,7 @@ char *function_216400(long memory_unit, char *buffer, short capacity)
 }
 
 // @retail 0x216d70
-bool function_216d70(char *path, const char *directory, long type)
+bool function_216d70(const char *directory, char *path, long type)
 {
 	strncpy(path, directory, 0x100);
 	path[0xff] = 0;
@@ -531,6 +531,11 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // next; break;` 51; the bool helper assigning true or false in if/else with `if (!add) break` 54 (654 bytes); a named
 // room test in the caller with the index read again 54 (654); the count read ahead of the 0x216e50 call, the room
 // tested after it, 62 (655 bytes; the load stays ahead of the call).
+// M3 lane 6 r192 (fast with 0x216400/0x216d70/0x216e50; 0x216d70 now takes (directory, path, type), this body 20 either way): a
+// count local at function scope with `bool room = count != 4096;`, the copy under `if (room)` and `if (!room) break;` 51
+// (setne CL, count EAX, list EDX), the same count local in the found block 51; the function-scope count with `if (count ==
+// 4096) break;` before the store and copy 54 (654 bytes); a function-scope `bool room` set in the found block with the copy
+// into `entries[count++]` and `else break` 54 (654), with the function-scope count too 54 (654).
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {
@@ -554,7 +559,7 @@ void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
                 {
                     char path[256];
                     path[0] = 0;
-                    function_216d70(path, entry.directory, type);
+                    function_216d70(entry.directory, path, type);
                     s_storage_file_reference file;
                     memset(&file, 0, sizeof(file));
                     file.signature = FILE_REFERENCE_SIGNATURE;

@@ -660,6 +660,18 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // number before iterator setup or at sector entry 364/198; loop-carried previous sector
 // after the scan or in the for increment 384/384; history with post-scan count 362.
 // NOT kept: the lower scores shorten the body further, and the entry-count form changes the prologue.
+// M3 lane 10 r119 (fast; all on the held goto form rebuilt from this body, re-measured 34 at 1605 B): tail C stored
+// blocked, edge, distance without its `success = false;` 60 (1607 B: success moves to a high stack home); the line
+// offset from `(vector2f const *)&normal` after the planar copy 359; `while (next_sector_index != NONE)` 34 (same code);
+// the planar normal declared, then assigned 34 (same code); normal and offset as one vector3f line (`.k` the offset)
+// 304 at 1612 B (as plane2f). Reading: in both builds XMM1/XMM2/XMM3 reload from the +0x3c/+0x38/lowest homes, so the
+// XMM rotation and the line/previous-sector slot swap are one difference. Body unchanged.
+// Direction indexes the vertex pair in the previous-surface case 294, ordinary
+// first-edge case 527, or both 337. Previous edge recorded after count 406, at
+// crossing classification 400, or after no-hit handling 341. Common departing
+// endpoint 660, common entering and departing endpoints 648. The after-scan
+// edge reaches retail length with the same byte-slot difference. The original
+// body retains the first-edge and success bytes in the exchanged homes.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
