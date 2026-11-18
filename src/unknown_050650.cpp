@@ -942,6 +942,11 @@ struct s_collision_result_buffer_1697c0
 // the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
 // The startup zero register and random/trig transfer word still differ.
 // Attempt- or function-scope candidate with the two draws and turns in one block, inner pitch block, pitch-only block, and pitch-only block with immutable draws all score 270 (eight forms).
+// Ray before the draws or across attempts 270/270; query record at attempt entry or across
+// attempts 270/270; query default before scale 270; scale return passed to query 270; ray copied
+// and scaled in place 354; default direction before fraction 267.
+// NOT kept: the three-point gain retains the wrong zero register and transfer word. The ray copy
+// also raises the caller's score.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

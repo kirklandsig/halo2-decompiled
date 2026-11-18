@@ -836,6 +836,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // names 129; allocated cluster and candidate volume names 129.
 // NOT kept: The early-key forms gain six at 427 bytes and leave the register exchange. The address-only form gains
 // one.
+// Separate entry cursor 133; immutable map result 129; reserved index from tested count 129;
+// count read after entry admission 129; next-volume count 129; group head from published
+// index 129; direct portal field 129; one resolved plane value 123. NOT kept: the resolved
+// plane gains six and still exchanges the entry EBX save with the volume-loop BP save.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1964,6 +1968,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
 // initial placement clamps on all three coordinates 336; projected-point aggregate 429;
 // in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
+// Collision resolver stack slots before/after the basis parameters 325/325;
+// later up pointer 325; direct up/forward through all phases 374/375;
+// nested collision gate 325; current up value before publication 385;
+// conditional entry distance 413. The collision point still occupies EBX.
 // The state remains in EBP with the point argument in EBX.
 // Current-channel address, rate-channel address, follow translation reference, current plus rate, current plus translation, rate plus translation, all three, and all with a translated view-vector address 464/325/325/464/464/325/464/464.
 // @retail 0x170fd0

@@ -839,6 +839,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // angle or after the oscillation 154/154; initial-direction and axis setters 152/149;
 // shared draw value or separate const samples 130/130. NOT kept: sample and rotation
 // homes remain different and none lowers the score.
+// Wider receivers of the rounded time, fraction, oscillation, time/fraction,
+// time/oscillation, fraction/oscillation and all three 207/130/130/207/207/130/207.
+// Named initial direction length 154 at 880 bytes. The 0x1c frame and
+// random sample slot still differ.
 // Double argument for sine/cosine/both 159/132/162. Shared promoted argument
 // before/after axis 165/165, with named sine/cosine 165/161. Round at the
 // angle producer and hold the promoted argument 161. NOT kept: the last form

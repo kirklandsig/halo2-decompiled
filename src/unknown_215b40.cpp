@@ -303,6 +303,10 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // the test 51, table local at the block top or entry 186/185 (584 bytes; retail's EDX and latch reload, but from a
 // stack home); cached block with a typed cache local, the getter at each use or split declarations 52 each, with
 // `long index = 0;` before `cached_count` 52 (the form that matches under the diagnostic).
+// Device capacity break in for or while 114/114; built-in bound inside for or while 114/114;
+// current index for copy and handle 198, also for the bounds check 151; typed built-in table 114;
+// separate bounds in both loops 114; declared location iterator with the original copy loop 114.
+// NOT kept: neither current-index form recovers the cache and count registers.
 // M3 lane 7 r177 (plain, 30 functions, 27 MATCH throughout; aligned counts by sequence, base 66): retail packs from the
 // index read before the increment, ((generation << 14 | index) << 4 | unit) << 4 | type. The header's location iterator
 // with `long current = iterator.index++;` (as 0x2170e0) and the or-of-shifts packing from `current` 170 (aligned 67): the

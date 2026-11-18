@@ -673,6 +673,12 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // endpoint 660, common entering and departing endpoints 648. The after-scan
 // edge reaches retail length with the same byte-slot difference. The original
 // body retains the first-edge and success bytes in the exchanged homes.
+// First-edge clear after the pair or at the endpoint 254/473; preserve the
+// first state across surface edges 450; positive carried-endpoint state
+// 245, set after the pair 254; combined acceptance with rejection arm 407;
+// cap and increment with a common break 208; ordinary edge count 354;
+// hit initialized after the first fetch 244. NOT kept: the 208 form leaves
+// the swapped byte homes and widens the length gap to 17 bytes.
 // Traversal-local distance history alone or with edge history, crossing count, or both:
 // inside the admitted path 261/410/384/431; inside the projected line 289/289/290/424.
 // NOT kept: each changes allocation before the return-byte initialization. Moving both
