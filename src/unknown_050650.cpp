@@ -920,6 +920,11 @@ struct s_collision_result_buffer_1697c0
 // shared rotation 289. NOT kept: the 1423-byte forms at 217/226/228 require
 // one-use trig results. The helper form grows and raises its other user's score
 // from 23 to 245. The 217 form recovers the axis, result byte and magnitude homes.
+// Deferred clear publication 374; one normalized candidate 437, selected vector
+// pointer 474, separate selection arms 516; deferred store through candidate 340
+// or best direction 348; normalize best direction after loop 446; deferred clear
+// store with separate fallback 358. NOT kept: all raise the score and change the
+// matched caller; the frame-bottom magnitude/draw/trig home remains.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
