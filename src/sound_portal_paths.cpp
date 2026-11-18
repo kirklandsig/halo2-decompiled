@@ -224,6 +224,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // cluster before flags 373; one destination environment after distance calls 363; rejecting range gates
 // 354, selected distance 354, comparison selected by the validity bit 356; one starting environment 326.
 // NOT kept: retail rereads the starting environment, and the 326 form retains the 0x430 frame.
+// Round 625: one path count 323, one entry array 356, both 323, packed-entry range 356;
+// portal distance before addition 354, total in the travel result carrier 352 at 1363 bytes,
+// nearest distance before portal 354, late order array and integer sort scratch 354.
+// NOT kept: both 323 forms keep the count snapshot where retail reloads the count and retain the 0x430 frame.
+// The 352 form gains two. The path table spills and starting-cluster register still differ.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
