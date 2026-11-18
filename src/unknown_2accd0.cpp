@@ -598,7 +598,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
-// score 34 (was 34; m3 lane 7 r175 at the end): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
+// score 34 (was 34): round 103 unchanged. The scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
@@ -1140,6 +1140,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // arm's count in ECX then `mov edi, ecx`), while the one sum with header_size on its left (the body position) adds in place;
 // the matched sibling 0x2adb10 adds its signature position in place. Body unchanged.
 // MiniMax A (11-18): no new form, no lower score (34); a forceinline seek helper in the signature case, and in both the signature and body cases, with the compare inside the helper or at the call site, scores 178 and 179, so the plain SetFilePointer compare stays; what still differs is the register rotation (the entry total in EAX against retail's EDX, the hoisted body_size in ESI against ECX, the task pointer in EDX against retail's EAX) and the join copy at retail's 0x2ad911 that ours lacks.
+// Body/signature seek results separately, as case locals, or as a shared value 34 each. Body/signature read
+// results after accepted seeks separately, as case locals, or as a shared value 34 each. Verified request size for
+// offset advance 128, and for signature input and advance 139. Verified header count for signature input 34. NOT
+// kept: the entry total and case extent stay in EAX and ESI.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

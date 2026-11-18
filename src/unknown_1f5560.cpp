@@ -655,6 +655,17 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
+// MiniMax A (11-18): score 1 (was 4): the entry test is written `index >= count - 1` (the same test as
+// `index + 1 >= count`), which loads the count into EDX and the index into EAX as retail does; left: the
+// test ends in `dec edx` where retail has `inc eax` (the count is decremented, the index is not).
+// A function-scope path pointer (count, index and entries read through the path at actor+0x50c)
+// makes the entry test load the count first and gives retail's `inc eax`/`cmp eax, edx` exactly, but the
+// dot products then differ (score 2: the second dot's i term takes the direction as multiplicand) and the
+// previous point still reads the actor's own fields; the projection's point read through the path gives 2,
+// through the actor's own field with the path pointer live gives 10.
+// Writing the test the other way round (`index + 1 >= count`, `count <= index + 1`, the same test negated and
+// the same test with both sides widened) all measure 4: the increment moves to EDX with the index and the count
+// takes EAX, so the compare and the load order change as well. The body stands.
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
@@ -807,7 +818,7 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 	bool reached = false;
 	s_actor_view *actor = actor_get(actor_index);
 	s_object_definition const *definition = (s_object_definition const *)g_4e3b44[moving_object_get(object_index)->tag_index & 0xffff].bytes;
-	bool last = actor->unknown53a + 1 >= actor->unknown539;
+	bool last = actor->unknown53a >= actor->unknown539 - 1;
 	bool direction_valid = false;
 	vector3f direction;
 	vector3f approach;

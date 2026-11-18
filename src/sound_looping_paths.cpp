@@ -666,6 +666,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // counts 965. NOT kept: the shared sound lookups tie at the original width. With a full-width choice count,
 // the entry zero and three query-array homes agree with retail, but the target-count and primary homes still
 // differ and the extent falls to 3264 bytes. The opening executable source is restored.
+// M3 lane 13 r110 (fast with 0x18bb80, which matched in each; control 846, aligned 1004): the literal -64.0f in place
+// of the global in both decibel helpers 846 (same code); with the linear helper pinning the long bit pattern through
+// an if/else result (0x2195f0's shape) 867 (3309 B, aligned 665); every helper in the shape of 0x2195f0/0x2197f0 873
+// (3309 B); only the logarithmic helper in 0x2197f0's shape 848; the fraction's test as `fabs(0.0f - range)` 846 and
+// its ternary as an if/else 846 (both the same code). Lead: retail treats 0x14b240 as a call that may write memory
+// (0x18d730's note; retail reloads the sounds base after it here); with that callee form this body is 911, so a
+// rework of this function belongs with build/r110/held-0x18dc90.patch.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

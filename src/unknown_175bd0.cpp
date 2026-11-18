@@ -3183,6 +3183,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // register arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order (0xbf600's call line).
 // M3 lane 13 r108: no trial. Baseline 23 at 1328 bytes; the first difference (+0x24f) is still the decal call's two
 // register arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order (0xbf600's call line).
+// M3 lane 13 r110: no trial. Baseline 23 at 1328 bytes; the first difference (+0x24f) is still the decal call's two
+// register arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order (0xbf600's
+// call line). Checked this round: retail never takes 0x17e670's address (no immediate or table entry holds it), and
+// its two retail callers pass its first two parameters in ECX and EDX, so its convention comes from its own body.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {

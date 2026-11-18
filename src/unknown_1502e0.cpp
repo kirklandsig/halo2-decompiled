@@ -1527,6 +1527,9 @@ void function_150820(dword *bits, bool local_only)
 // separate lookups recover those three registers but combine the player-address calculation into LEA and
 // score worse. The shared success paths change the extent and regress. The original body was restored.
 // MiniMax A (11-17): no new form tried this round, no lower score (43): a register rotation only (retail keeps the player in esi, the unit index in edx and the hand in edi, this build keeps them in edi, ecx and esi, and the primary byte follows in cl against al); the body, the length (210) and the calls agree.
+// Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
+// player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
+// kept: it restores the saved-register roles but still folds the player add and move into LEA.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

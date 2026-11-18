@@ -584,6 +584,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // holds the actor pointer in edx instead of the volatile home at +0x14, zeroes the cells at 0x40, 0x48, 0x58, 0x60
 // and 0x24 and packs its four bools at 0x11, 0x13 and 0x21 where ours spends 0x13, 0x1b and 0x22, so the frame is
 // still 0x2cb4 against retail's 0x2cac and the body is 3718 bytes against 3731.
+// The excess frame word pair and the actor/unit and priority/query homes remain.
+// Actor publication after unit lookup, confidence tests, self-unit test, and settings, each with opening then ordinary unit index: 902/877, 922/932, 902/935, 924/924 reduced.
+// NOT kept: 902 and 877 shorten the body to 3702 or 3708 against retail 3731, and the matched caller scores 1 in those previews.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

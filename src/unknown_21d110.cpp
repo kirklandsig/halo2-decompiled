@@ -294,21 +294,6 @@ void __cdecl sound_effect_delete(long effect_index)
 #pragma inline_depth(255)
 
 
-PRIVATE __forceinline void function_21dcf1(long effect_index)
-{
-	s_record_pool *effects = function_x39bdd5();
-	s_sound_effect *effect = &((s_sound_effect *)effects->data)[effect_index & 0xffff];
-
-	if (effect->record_index != NONE)
-	{
-		looping_sound_controller_release(effect->record_index);
-		effect->record_index = NONE;
-	}
-	record_pool_release(effects, effect_index);
-}
-
-#define sound_effect_delete function_21dcf1
-
 /* starts a sound from a play state (src/unknown_124f90.cpp) */
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
@@ -606,6 +591,7 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		effect_index = sound_effect_new(definition);
 	}
 
+	long sound_index;
 	if (effect_index != NONE)
 	{
 		s_sound_effect_class_flags *sound_class = (s_sound_effect_class_flags *)function_18d090(tag_index, platform_playback);
@@ -615,7 +601,7 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		}
 		sound_effect_attach(effect_index, state);
 
-		long sound_index = sound_start(state, tag_index);
+		sound_index = function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
 		if (sound_index != NONE)
 		{
 			s_sound_effect *effect = sound_effect_get(effect_index);
@@ -628,10 +614,28 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		{
 			sound_effect_delete(effect_index);
 		}
-		return sound_index;
 	}
-	return function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
+	else
+	{
+		sound_index = function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
+	}
+	return sound_index;
 }
+
+PRIVATE __forceinline void function_21dcf1(long effect_index)
+{
+	s_record_pool *effects = function_x39bdd5();
+	s_sound_effect *effect = &((s_sound_effect *)effects->data)[effect_index & 0xffff];
+
+	if (effect->record_index != NONE)
+	{
+		looping_sound_controller_release(effect->record_index);
+		effect->record_index = NONE;
+	}
+	record_pool_release(effects, effect_index);
+}
+
+#define sound_effect_delete function_21dcf1
 
 PRIVATE __forceinline long function_21d2c1(s_sound_effect_definition *arg_0)
 {

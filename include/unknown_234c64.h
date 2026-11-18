@@ -19,6 +19,12 @@ struct s_screen_request : s_screen_parameters
 	{
 		field_c = 0;
 	}
+
+	/* fills this request in place: function_149f49 on the request itself */
+	void build(word type, dword *id, short user_flags, long a, long b, long load)
+	{
+		function_149f49((s_message *)this, type, id, user_flags, a, b, load);
+	}
 };
 
 class c_window_channel
