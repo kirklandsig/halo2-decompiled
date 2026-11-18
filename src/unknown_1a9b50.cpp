@@ -414,7 +414,8 @@ real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
 // MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
-// score 375 (was 375; earlier 375 (was 375)): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// Earlier at 375 (was 375).
 // M3 lane 6 r188 (fast with the file's functions, 0x265d30 and the five callees, control 375; masked diff shows no block-order
 // difference, only homes, the planar test pair (retail: an aggregate copy, integer moves) and the result byte): actor first with
 // the result returned in the arm plus that aggregate planar copy 408 (1530 B); actor first with the aggregate copy alone 408;
@@ -758,6 +759,14 @@ extern point2f *g_468778;
 // if/else 378 (1553 B, masked 112); the field_34 arm's one as if/else 374 (1549 B, masked 110: positional, not kept); both
 // 375 (1552 B, masked 112). The tail around 0x1f4280 / 0x1a9d80 / 0x1a9e00 differs only in registers (retail's field_2d
 // pointer in EBP); the actor-first, constant-exit, velocity-pointer and prop forms and their combinations are listed above.
+// AC564: Explicit false result from split admission, settings-first 440/440/440/427
+// and actor-first 413/413/413/400 (last in each group gives each test its own arm).
+// NOT kept: all shorten and regress. Early actor, settings, slot and prop homes still differ.
+// MiniMax I (11-17): no new form, no lower score (375): retail computes the actor pointer before the call to
+// 0x1e4f90 and keeps it in ebp, this build computes it after the call and keeps it in ebx; the actor-first
+// declaration order measures 413 again (the actor pointer then takes edi, is spilled at esp+0x20 and the frame grows
+// to 0x44), the slot between the two lookups measures 413 as well, and the same order with the result declared last
+// measures 426.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -917,6 +926,12 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
+// prop view through the existing prop_node_view wrapper 382 (same code); the computed entry result with that
+// wrapper 508 (1921 bytes, frame 0x54: 0x25d740 still expands under the computed result); the result preset
+// true with the false arm last 397 (the true store hoists above the entry tests); `return local_2 != false;`
+// 438 (1925 bytes); the entry test as `!(f13 || f14 || f2d)` 382 (same code). Still BLOCKED-BY 0x25d740: the
+// computed result threads retail's false exit but our link then expands the view getter.
 // MiniMax H (11-13): no new form, no lower score (382): retail's early false exit (xor al, al; pop ebp; add esp,
 // 0x58; ret 8) sits in the middle of the body where ours lands after the main exit, and in the velocity block retail
 // keeps the view pointer in eax and forms the facing pointer late where ours forms it in esi from the view call; the
@@ -945,10 +960,10 @@ static __forceinline long real_to_long(real value);
 // `lea esi, [eax + 0x2c]` where this build forms it in ESI from the view call, and the helper retail keeps out of line
 // (0x25d740) is expanded here: BLOCKED-BY src/ai.cpp; the two early-exit forms fold the result byte away and read 508
 // and 495, so the shared exit with the result byte in its stack slot stays as it is.
-// score 382 (was 382): MiniMax R (11-15): no new form, no lower score; the 79 differing hunks still come from the
+// MiniMax R (11-15): no new form, no lower score; the 79 differing hunks still come from the
 // velocity block (retail keeps the view in EAX and forms the facing pointer late with `lea esi, [eax + 0x2c]`) and from
 // 0x25d740 being expanded here where retail keeps it out of line, and that body is in src/ai.cpp: BLOCKED-BY that file.
-// score 382 (was 382): the frame and the length agree, and the early false exit's place, the
+// Earlier (382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose
 // first output is the reused speed local) checked against retail 0x1aab50-0x1ab2bd; no logic or precision difference found. The written-out

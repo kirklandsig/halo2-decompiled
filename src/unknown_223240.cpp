@@ -363,6 +363,7 @@ void function_2232a0(void)
 // terminal pointer local 47, first entry shared at the tail 183, dispatch base from final cursor 134.
 // NOT kept: no qualifying gain or native terminal stores.
 // Earlier 47 (was 47): MiniMax D (11-17): no new form, no lower score (47 plain and on the reduced image): the record setup
+// MiniMax D (11-17): no new form, no lower score (47 plain and on the reduced image): the record setup
 // can be reproduced byte for byte in the reduced image by hoisting the four field stores into the two callers and leaving
 // the helper with the field_0 store, the 0x2f800 call and the memcpy - that form matches retail's instructions exactly up
 // to +0x17e, and its only difference is that retail materializes the record pointer with `lea eax, [eax + 0x47f0f8]` after
@@ -377,6 +378,11 @@ void function_2232a0(void)
 // shared projection address 47, entry projection address 47, two view buffer addresses 77, rectangle pair field 72.
 // projection record with two stores 47, projection record with pair store 72, projection record with shared address 47, three-word descriptor prefix 47.
 // NOT kept: separate rectangle stores tie with the typed record. The pair copy shortens the body and the two-buffer form raises the score.
+// Y616: Incremented terminal count 47, count from the returned record
+// position 144, last player record plus one 183, count declaration at
+// entry 47, player count from total 157, both counts from returned record
+// position 158, typed optional view pointer 47, role names 47. Terminal
+// field addressing and the stub's count register still differ.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

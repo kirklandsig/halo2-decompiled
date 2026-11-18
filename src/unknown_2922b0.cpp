@@ -597,6 +597,17 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // in packing: retail puts the ray index (later x87 temporaries) at +0x4, success at +0xb and the range alone at +0x28;
 // ours leaves +0x4 to the success byte (+0x7), packs the range with the sine/cosine temporaries at +0x8 and moves the
 // ray index to +0x14.
+// Success still stores at +0x13 instead of +0x17 on the 0x108 frame.
+// Clearance predicate accumulated with logical AND or boolean AND assignment before or after the guarded distance
+// update 665/659/648/649. Using a selected distance gives the same four scores.
+// NOT kept: the AND after distance reaches 2886 bytes but regresses at the same success slot.
+// B460: Ray origins by a two-axis table, positive/negative/both passes and opposite pairs
+// 685/689/681/689. Opposite pairs with separate cursors 683, signed passes with one
+// cursor 680, nested signed-offset and axis loops with cursor/index 775/777.
+// The success, input and hit homes remain different. Original body restored.
+// DH391: Shared origin generation/query cursor, hit query/response cursor and hit-distance
+// query/response cursor, seven subsets 563/563/663/558/665/665/670; all with origin
+// advance and rewind 651 (2886 bytes). NOT kept: no gain or matching success-byte home.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

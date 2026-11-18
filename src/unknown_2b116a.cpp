@@ -4492,6 +4492,11 @@ bool __stdcall function_2b278e(long controller_index)
 // address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
 // bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
 // index rather than re-reading it for the dialogs.
+// Double-pointer selection view 199; reference to the current controller pointer
+// 199; per-dialog short mask 195 (Boolean membership 197); membership tested
+// before identity type 201, in the condition 201, or held as nonmember 191;
+// per-dialog controller index 199. NOT kept: the original controller reference
+// and post-call index reloads are still missing.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5726,13 +5731,27 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
-// score 97 (was 97): The retail frame agrees, but the friend-query outputs and later
+// score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
 // boolean predicates use different byte slots.
 // origin predicate scoped through join eligibility 97; request result scoped through
 // add-member eligibility 97; regular-player predicate scoped through membership
 // actions 97; friend-query outputs scoped through membership actions 97; independent
 // origin and request predicate scopes 97; origin predicate as a byte 97; request
 // result as a byte 97; regular-player predicate as a byte 97.
+// Cancellation eligibility via conditional expression 89 or branch assignments
+// 89. Joinability
+// branches 430; inverted join exclusions 97; other-user predicate 448; title
+// eligibility branches 433; joint mute action branches 325; add-member query
+// branches 299; removal eligibility branches 92.
+// NOT kept: the removal form gains five and the other alternatives tie or regress.
+// Exclusive join branches 92; shared join permission 365; friend-action branches
+// by roster state 388 or addition gate 381; add/pending branches by roster state
+// 381 or admission 86; shared removal gate 360; joined title and joinability 95.
+// NOT kept: the admission form gains three; the title-state output slot still differs.
+// Round 456: one member result for change and removal 358, shared roster-mode predicate 351, shared rank
+// and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
+// friend result in removal test 320, reused removal result in kick test 269, membership statuses
+// assigned from tests 312, friend-query result declarations in spill order 97.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
@@ -5780,7 +5799,8 @@ PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
         bool offer = !has_player && !self && ((list->value3a0 == 4 && in_session) || (list->value3a0 != 3 && invite));
         bool promote = host && !self && (flags & 0x100);
         bool add_friend = !listed_friend && !self;
-        bool cancel_friend = listed_friend && (flags & 0x20) && (list->value3a0 == 1 || list->value3a0 == 3);
+        bool cancel_friend = listed_friend && (flags & 0x20) ?
+            (list->value3a0 == 1 || list->value3a0 == 3) : false;
         bool remove_friend = listed_friend && !(flags & 0x30) && list->value3a0 == 1;
         long rank = *(long *)(local_status.data + 0x1c);
         bool add_member = request_valid && !is_player && !self && rank >= 1 && list->value3a0 != 4 && list->value3a0 != 2;

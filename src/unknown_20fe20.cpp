@@ -2737,6 +2737,11 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // declared after the outer x, y, z. The permuter (fast, annealed, 605 s, 61 tries) stays at 3. The outer y alone computed
 // ahead of the helper call 422 (y then takes XMM1 and is copied); the outer locals' order only moves the case 6/7 dot
 // products' term order (z, x, y: 15, re-measured).
+// M3 lane 7 r175 (fast; control 3): the helper's sum accumulated through a reference-bound local 54 (all three squares
+// rescheduled); the helper's y difference through a trivial inline accessor 411 (1944 B, a separate copy); the outer x, y, z
+// declared at function scope and assigned after the helper 3 (same code); a three-scalar sum helper taking the differences
+// as call arguments, parameters z, x, y 19 (arguments evaluate right to left: retail's y-first schedule, y XMM1 and z XMM3,
+// the listed y, x, z statement order), parameters y, x, z 3 (evaluation z, x, y: the body's code).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

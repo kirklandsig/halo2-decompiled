@@ -446,7 +446,8 @@ struct s_visibility_bound_record
 // Geometry/query/fallback entry scope, seven nonempty subsets, then all with direct fallback visibility mark: 449/457/449/449/449/449/449/449.
 // NOT kept: seven forms come within two bytes of retail at 449 differences. All eight preserve the first entry-address difference and increase the score.
 // Original executable body restored.
-// score 443 (was 443): MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
+// MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
+// Re-measured at 443. MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
 // against retail's 1742): the first difference is still at +0x10, where retail forms the entry address as a scaled index
 // added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and this build forms it
 // as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`), and retail then loads the tag table into esi and
@@ -455,6 +456,16 @@ struct s_visibility_bound_record
 // entry and the two views in five declaration orders, the release masks, the chained counts and capacities, the query data
 // read in the arms, the plane loop as a plain `for`) all measure 443 or worse.
 // MiniMax C (11-17): no new form, no lower score (443): this build is 1760 bytes against retail's 1742 and the first difference is at +0x10, where retail forms the entry address as a scaled index added to the entry table (movsx, shl, lea) where this build forms it as a shifted copy added to the same table (shl, add), and retail then loads the tag table into esi and spills the entry at [esp+0x30] where this build keeps the entry in a register; what stands between the two is the allocator's choice of live ranges, not a source shape - this round's named entry-offset local (the entry taken from the table with an index held separately) gives 443, unchanged, and the earlier rounds' forms measure 443 or worse.
+// Y616: Shared section ordinal 467, common entry tag 443, indexed entry at
+// every use 469, shared instance bit 481, fallback base and offset 443, signed
+// range grid 443, conditional query displacement 460. NOT kept: geometry
+// field read at the join 438 is below the gate and grows to 1764/1742.
+// The entry address and register-save order still differ.
+// Fallback base plus displacement 443, fallback geometry-address join 460, same-base structure reads
+// with a displacement join 464, one tagged/fallback address join 452, per-path flags with the
+// displacement join 462, displacement before the base 464, address join with the bool selector 441,
+// displacement join with the entry by reference 443. NOT kept: 441 saves two points. The entry
+// address and tag-table saves still differ.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

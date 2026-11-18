@@ -161,6 +161,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // level) 4 (same code); the floor inside the PIN macro 202 (489 B: the macro evaluates the floor three times); the entry as
 // `state + 0x1320` then `+= index * 0x40` 4; a `long const slot` copy of the scanned index for the entry, the call and the
 // clear 4 (all the same code); the bias zero as an else arm of the flag test 90 (384 B).
+// Round 97 (m3 lane 2, fast with 0x143c0, which matched in each): the level store after the call through a trivial
+// forceinline setter 4; the call's result held in a bool and discarded after the store 4; the clear through a
+// forceinline helper taking the mask by reference 4; the clear through a reference bound to the mask 4 (all the same
+// code, the clear still EDX).
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -938,6 +942,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// MiniMax S (11-17): no new form, no lower score (547): retail opens a 0x2c frame with homes for the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector, where ours opens 0x18 and keeps the count in edx with no home; retail's nearest scan is a four-wide unrolled pass over the samples with two induction pointers and the closest index in edi, where ours walks a pointer and keeps the closest sample.
 // MiniMax D (11-17): no new form, no lower score (547, was 547); retail's 0x2c frame still needs its
 // offset.x home at +0x24, the dead store each pass, the pass counter at +0x18 and the hoisted entries
 // pointer in scan 2, and retail's EBX/EAX pair against our ECX/EDX stays. The permuter (30 tries,
