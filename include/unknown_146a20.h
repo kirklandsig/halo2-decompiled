@@ -48,7 +48,7 @@ public:
 	virtual void method10(void *block, long size);
 
 	/* drops one reference; the last one deletes the allocator (0x2d6fe0) */
-	void remove_reference()
+	void drop_reference()
 	{
 		if (--m_unknown04 == 0)
 			delete this;
