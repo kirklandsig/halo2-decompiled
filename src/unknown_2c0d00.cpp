@@ -1408,6 +1408,11 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax E (11-17): no new form, no lower score (400): the permutation search over the body (38 tries, 300 s, annealed,
+// one job) reached nothing below the baseline of 395 differing instructions on both the full and the reduced image, so the
+// body is unchanged. What still differs is the frame and its slots: ours reserves 0x114 against retail's 0x10c, so every
+// home sits eight bytes off, the three homes the body uses are at +0x54/+0x58/+0x5c against retail's +0x64/+0x68/+0x6c and
+// the two byte homes are at +0x12/+0x13 against retail's +0xe/+0xf, and the first difference is the frame size itself.
 // MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
 // score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,

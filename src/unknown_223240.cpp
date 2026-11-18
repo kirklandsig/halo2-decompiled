@@ -362,7 +362,7 @@ void function_2232a0(void)
 // dispatch base from initializer return 48, initializer inside dispatch argument 48,
 // terminal pointer local 47, first entry shared at the tail 183, dispatch base from final cursor 134.
 // NOT kept: no qualifying gain or native terminal stores.
-// score 47 (was 47): MiniMax D (11-17): no new form, no lower score (47 plain and on the reduced image): the record setup
+// MiniMax D (11-17): no new form, no lower score (47 plain and on the reduced image): the record setup
 // can be reproduced byte for byte in the reduced image by hoisting the four field stores into the two callers and leaving
 // the helper with the field_0 store, the 0x2f800 call and the memcpy - that form matches retail's instructions exactly up
 // to +0x17e, and its only difference is that retail materializes the record pointer with `lea eax, [eax + 0x47f0f8]` after
@@ -373,6 +373,11 @@ void function_2232a0(void)
 // `add eax, <base>` and keeps the six stores off that register, so the first difference is at +0x13a and the score is 47
 // with the hoisted form as well - the reduced image's shape is not the full build's. BLOCKED-BY 0x2b5d0 and 0x16f3a0's
 // noinline declaration (tail stubs in another file).
+// Y616: Incremented terminal count 47, count from the returned record
+// position 144, last player record plus one 183, count declaration at
+// entry 47, player count from total 157, both counts from returned record
+// position 158, typed optional view pointer 47, role names 47. Terminal
+// field addressing and the stub's count register still differ.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

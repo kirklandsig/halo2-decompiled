@@ -202,6 +202,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // to a `c_class_1a2c81 &` before the model loop and used for its call and animation read 23; the model result as a
 // `*const &` bound to the call 23; one widget local at function scope shared by the text and model loops 23 (all the
 // same code). Retail's model loop alone reads `[esi + 0x34]` from the call's ESI; matched 0x22facd copies there too.
+// M3 lane 12 r137 (fast; all the same code as main): a file-local inline accessor for the screen's animation type in the model
+// loop 23, in the text loop 23, in all five loops 23; an inline value0a setter in the model loop 23, in the three value0a loops
+// 23; accessor and setter together in the model loop 23; the model call and animation read through a `c_class_1473c9 *&`
+// bound to the screen 23; the model bound to a `c_class_1a2c81 *&` over a plain local 23; `i = 0; if (i < count)` guarding the
+// model loop 23, the text loop 23 (the guard folds away; it moves neither the resets nor the EAX copy).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

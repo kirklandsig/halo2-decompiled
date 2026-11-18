@@ -2903,6 +2903,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax I (11-17, run 103): no new form, no lower score (389): retail still opens with one four-byte slot and a
+// comparison tree rooted at 0x10000573 that branches jle, while this build reserves eight bytes and tests the two
+// activity names before the switch, whose tree then branches jg; the single-switch form with both activity names as
+// ordinary cases was measured at 412 by another lane, and the tree's shape does not follow the order of the case labels.
 // MiniMax I (11-17): no new form, no lower score (389): this build still reserves eight bytes where retail reserves one
 // four-byte slot and still keeps the weapon index in ebp with the weapon in edi where retail takes the table entry into
 // ebp, so the prologue and the switch tree's block order differ (ours branches `jg` to an out-of-line greater block,
@@ -3267,6 +3271,10 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax I (11-17, run 103): no new form, no lower score (190): retail still holds the destination weapon in EBP and
+// stores the acquired flag with setg, where this build holds the destination in EDI and stores the not-acquired flag
+// with setle, and the conversion scan still needs its entry tested for null; the entry kept by its index measures 194
+// and the acquisition flag with retail's polarity 211, so the body stands.
 // MiniMax I (11-17): no new form, no lower score (190): the conversion scan still needs its entry tested for null, and the
 // destination weapon's register and the acquisition flag's sense still differ (this build holds the destination in edi and
 // stores the not-acquired flag with `setle`, retail holds it in ebp and stores the acquired flag with `setg`); the forms
@@ -3556,6 +3564,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax I (11-17, run 103): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in
+// EBX and the barrel index in EDI and reads the first argument after its first push, where this build keeps the barrel
+// index in EBX, the definition in EDI and reads the argument before the pushes; the frame still agrees at 0x1c60.
 // MiniMax I (11-17): no new form, no lower score (607 plain, 643 fast): the frame still agrees with retail at 0x1c60 but
 // ours is 2545 bytes against retail's 2533, retail keeps the weapon index in ebx, the weapon pointer in ebp and the barrel
 // offset in edi and spills the definition to [esp+0x14] where this build keeps the weapon index in a stack slot, the

@@ -133,6 +133,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // the hidden bit read as the word flags' 0x100 bit 21 (same code). On update-first (218, masked 15): inline accessors for the update
 // time at its NONE test or for the sample time at its subtraction 218 each (same code), update elapsed before the zero return 192,
 // the sample helper 303 (768 bytes), the word-flags bit 218 (same code), the hidden return ahead of the clamp and the force arm 214.
+// M3 lane 4 r209 (fast with 0x3d2c0 and 0xd1850, both matched; control 21; update-first re-measured 218): update first
+// with the object looked up in each arm of the force test (no lookup ahead of it) 232 (the lookup is not hoisted); the
+// kept order with the object looked up in each arm 248 (813 bytes); update first with update elapsed computed at the
+// update test 263 (802 bytes); update first with the update-time test moved ahead of the sample decision 228; update
+// first with the object bound through a `byte *const &` to its lookup copy 218 (the update-first code).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
