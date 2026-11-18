@@ -793,10 +793,18 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // arms swapped or nested; the scale through a named root. Worse: explicit correction statements in every form and order (648
 // combinations, the parking then changes too), the limit ahead of the deltas, the correction straight into the output (x87).
 // Body unchanged.
+// M3 lane 16 r132 (fast with the file's five matched functions, all kept): lane 17 r45's lead re-measured 54 (first +0x59:
+// the ticks convert into XMM4, retail XMM3; the parked deltas take XMM2/3/4 where retail takes XMM4/2/3; the correction
+// scales all three in place with the scale in XMM0). On the lead: the ticks read from the global at the scale call 54; the
+// rate read from the global at the prediction 54; the tick conversion named just before the scale 54; the ticks as a
+// `real` read 57; `delta` declared ahead of `velocity` 54; the correction vector declared at the top 54. Body unchanged.
 // NOT kept: point difference in the predicted vector then local/shared scale into velocity 89/89;
 // separate position displacement then local/shared scale 69/69; complete corrected vector in
 // the correction or delta 37/37; common final velocity 37; selected velocity pointer 84.
 // The first store and delta order remain coupled. The corrected-result forms grow the body.
+// The i-first velocity spills and correction products still differ. Residuals paired with squares after the tick-scale
+// helper, indexed field 86, indexed local 77, named squares 32, named residuals and squares 32. Tick scaling fused
+// with those four forms 84, 77, 58, 58. The two 32 forms still spill j first. Body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

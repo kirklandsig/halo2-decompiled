@@ -810,6 +810,16 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // reference), 201 (real elapsed ticks). Shared seed reference 174, with both clock operands 195.
 // Integral random sample scaled with envelope 214, named first envelope product 130, local
 // direction through shared rotation 201. Frame and rotation homes still differ.
+// Round 614: one random-state object for all draws, taken before the record, between record and
+// definition, or after the definition 130/152/130. Separate seed step before time 198, after both
+// clock reads 192, between interval/count 199 or count/interval 190, and before time through the
+// earlier state object 199. NOT kept: the early seed step gets ESI between the pushes but ahead of
+// the clock reads, and all forms leave the frame at 0x1c against 0x20.
+// Shared rotation with original i/k captured 150, all original components 164, all axis
+// components 151, staged result 170, accumulated projection 129, scaled cross components 156,
+// forced inline 130, both component sets captured 163. NOT kept: forced inline ties; the
+// other forms break the other caller's match. The i/k capture and scaled cross restore
+// frame 0x20 at 880 bytes but leave the initial random-state load order and raise the score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1047,6 +1057,16 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // inline helper taking the object index and returning the pointer, 316 with an early-return helper); left are the same
 // retail inlines of 0x1ccb0/0x1cd90 (0x116d0b-0x116d3a), 0x4b2d0's register convention, and the stack homes of the
 // scans.
+// P599: Frame 0x2c agrees. The record/object-index setup, lighting result, and format-helper expansions still differ.
+// typed field conditional 322.
+// typed field initialized before lookup 315.
+// typed field assigned in both arms 322.
+// typed field passed directly 322.
+// typed field inside setup scope 322.
+// typed entry inside present arm 315.
+// select entry then field 404.
+// apply lighting in both lookup arms 322.
+// NOT kept: Both null-first typed forms gained seven points, below the eight-point minimum. The original cache expression and body are restored.
 // Record reference 322, object index before the definition lookup 300, with null-first lighting 296,
 // embedded vertex base at the record, after lighting, or after Begin 316 each, strip element
 // references 322, direct material arm first 322. NOT kept: the 300/296 forms use a one-use

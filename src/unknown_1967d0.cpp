@@ -918,6 +918,10 @@ static inline long team_score_195ed0(long team)
 // Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
 // entry 314, combined team guard 333, team read before flag 309, record reference 191,
 // native counter field 191, and branch-local score stores 192.
+// The flag read precedes the configuration copy, and the final score query expands. Tried:
+// existing score clamp 192; separate clamp stores 147; inline score clamp 100; existing score on lower/upper
+// test 223/216; statistics pointer retained 191; shared active-team query 138; reversed clamp tests 210. NOT
+// kept: 100 and 138 differ at the score or active-team call boundary; 147 grows farther from retail.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

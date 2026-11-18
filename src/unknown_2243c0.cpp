@@ -702,6 +702,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // over the four group-test forms and three material-index forms (reference, accessor reference, plain), 33 builds: best
 // 79 (546 B), every other 86-135, none under the chain's 8. Left on the chain, as before: the pass definition takes EDX
 // where retail reuses EAX, the material tag ECX (EDX), the material definition EDX (EDI), the zero's `xor` late.
+// M3 lane 7 r175 (fast, 0x2243c0 and 0x224d90 matched each time; main's body unchanged at 117): the reference chain rebuilt
+// on this main (the type-14 search through vertex_input_index) 8, the same eight lines. On it: the pass tag bound as
+// `long const &` straight into the pass element 8; the pass definition's tag data named before its +0x20 read 8;
+// local_11 declared ahead of local_10 and assigned after it 8; local_11 through the tag-data and material-index accessors
+// 8 (all the same code); the four cache zeros grouped ahead of local_10 60 (first +0x50).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

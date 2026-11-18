@@ -687,6 +687,14 @@ struct s_text_line_measurement
 // then scale after projected origin 31, with raw kerning first 31.
 // NOT kept: the lower scores move one-use field reads or the projected
 // origin earlier; the native independent advance register is still absent.
+// N404: Signed pixel loads before the break snapshot with later scaling of kerning/offset/advance
+// 80/38/38, paired metrics 53/56/76, and all three 76. In-place late scaling of all metrics 78,
+// kerning/offset/advance 73/72/71. NOT kept: the two 38 forms use one-use pixel locals and
+// leave a product after the break branch, where retail completes all three first. The advance
+// copy still differs. In-place forms miss the gain threshold.
+// Two-use glyph sum for offset/kerning/width, offset/kerning, kerning/width, and staged
+// offset/kerning/width, each inline/forceinline 77/77/77/77/77/77/77/77. The independent advance
+// copy and early width load still differ.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

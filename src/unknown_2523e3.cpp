@@ -44,9 +44,20 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // steers link-time inlining of the existing constructor (coordinator review); body back at 49.
 // Automatic `s_widget_item items[4]` construction inlined the `flags = 0`
 // constructor into a zeroing loop; retail calls the array-constructor
+// score 49 (was 55): retail calls the item-array constructor iterator, then loads the slot flags twice.
+// Earlier: the `s_widget_item items[4]` construction differs. Ours inlines the
+// the `s_widget_item items[4]` construction differs. Ours inlines the
+// `flags = 0` constructor into a zeroing loop; retail calls the array-constructor
 // helper 0x20670 with (constructor 0x2b0149, 4, 0x74, &items). Marking the
 // constructor `__declspec(noinline)` gives 53, but the compiler still emits a
 // per-element loop rather than the helper call. The helper choice is the front
+// end's, not reachable from the constructor or array spelling.
+// Aligned placement with a named pointer/result 236/236, direct placement 226.
+// Direct placement matches the constructor call, controller slot and four movsd copies.
+// NOT kept: one flag load is reused and shifts later offsets in the checker.
+// Shared slot layout 49, ternary status 252, conditional appearance 252, short controller 237,
+// full-width flag shifts 49. Direct placement with declared slot flags 226, split connection
+// branch 113, mixed flag views 226. Typed profile copy with ordinary construction 247.
 // end's decision for the automatic array forms tested there.
 // Placement array construction and value initialization both emit the iterator but score 242. Empty
 // initializer and array typedef 49 each; four constructor initializers 228; one constructor initializer
@@ -59,6 +70,11 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // combined sign-in bits 248; pretested controller loop 226; disconnected defaults 116;
 // aligned byte storage 216; connection-scoped slot reference 209; const slot pointer 33;
 // nullable connected slot 234.
+// Direct placement construction with the sign-in bit from the global slot 226,
+// live from the global slot 226, separate live slot view 230, connected state
+// updated to sign-in 247, shared admission test 245, false arm first 204,
+// live assigned first on admission 203, and live under its final sign-in guard 230.
+// NOT kept: the iterator prefix returns, but the flag-read block and score regress.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {

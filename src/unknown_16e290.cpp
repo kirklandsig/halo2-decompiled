@@ -1537,6 +1537,17 @@ void function_170630(long player_index);
 // stays 7, so retail's callee cannot be declared that way; the callee must keep (out, second, first). Also tried:
 // first computed once with second = first + 0x40 and out as the literal state + 0x320 17, the same with named
 // second 17, out = first + 0x314 / 4 17, a second-based set (out = second + 0x214 / 4, first = second - 0x40) 31.
+// M3 lane 2 r97 (fast with 0x16f280, 0x170bb0): the out address through a trivial forceinline accessor 7 (folds); out
+// formed into a local and passed through a reference bound to it 11, or `real *const &out = ...` at the call 11: the
+// argument block is then retail's exactly (command EDX, base ECX, out/first/second, `add ecx, 0x10c` last) but the user
+// index moves to ESI and the cursor to EDI, and the matched caller 0x16f280 follows (10); all three arguments as const
+// references 17 (formed in declaration order); that form with a reference-bound loop cursor 11, with the reference in its
+// own block 11, with a redundant `if (0 < remaining)` guard 11, with the command read through `state` 30, the countdown
+// declared before the test 11, the cursor formed ahead of the state 11, both declared inside the test 12. A reference
+// bound to first or second alone (argument order unchanged) also moves the index to ESI (17), and so does dropping a call
+// or adding a cursor read (diagnostics), so any reference-bound temporary causes it. Without references: out through
+// `&observers[user_index]` 7, through the global 24, first and second that way 7; the cursor formed in the loop's
+// scope 24 (the state then lives in ESI).
 // @retail 0x16fe90
 void function_16fe90(long user_index)
 {
@@ -1574,6 +1585,11 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax S (11-17): no new form, no lower score (87): the classification's plane sum written with the plane's
+// i, k and j terms in that order measures the same as the j, k, i order, so that reorder was restored; retail
+// still reloads the copied forward's second component before the third component's store where ours reloads the
+// third, the shared cross3f fixes the product order, and the permuter's 31 tries over this body (fast) found
+// nothing below 87.
 // MiniMax D (11-14): no new form, no lower score (87): the cross product's second product still takes
 // forward.j before up.k where the shared cross3f (include/vector_products.h, which this lane may not edit)
 // takes them the other way round, and the clip block still folds the cluster address into the load where

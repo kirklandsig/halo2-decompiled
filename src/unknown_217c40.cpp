@@ -228,6 +228,12 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // ahead of 1.0). BLOCKED-BY the link's object order, not this source. On the kept 25 body: both absolute offsets declared
 // after the magnitudes 530 (2000 bytes); offset and fabs through a two-use inline helper 405 (1996 bytes); the magnitudes
 // first in the snap block 47. All restored.
+// Round 116 (m3 lane 10, fast, on the kept 25 body): why retail computes the first offset ahead of the magnitudes: the
+// offset must have two uses for VC not to forward it into its single `fabs`, which the at-each-use 2 form gives (its
+// two fabs are CSE'd into the one stored absolute, as retail's `fabs; fst`); so that form is retail's source shape and
+// only the link-order block keeps it from matching. Tried: the first absolute offset taken straight from
+// `first_angle - table` with no offset local 25, both 405; the first absolute offset ahead of the magnitudes 342, both
+// 531; the two angles renamed so they sort the other way (move/look) 25 (their homes stay swapped).
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

@@ -472,6 +472,12 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax S (11-17): no new form kept, no lower score (42): the emitter walk as a guarded do-while with the offset's
+// zero store inside it measures 41 on its own and 39 with the scale declared before the multiplier (the form MiniMax
+// R 11-14 and MiniMax A 11-12 measured), under the keep bar, so the body stands; row i of both rotations still sums
+// the up product before the forward one: regrouping the sum, swapping the products' operands and writing the rotation
+// out in a local helper (with the copy taken by the caller) leave the shared helper's product order alone (41, 81 and
+// 274) and the copy's component order alone, and the permuter's 48 tries (fast) found nothing below 39.
 // MiniMax C (11-16): no new form, no lower score (42): the i row of both rotations still sums the up product before
 // the forward one and that term order is the shared rotation helper's own text in include/matrix_transform.h, a file
 // this lane may not edit.

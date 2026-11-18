@@ -1368,7 +1368,9 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 221 (unchanged): the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
+// score 205 (was 221): The entry now saves ESI and initializes AL at retail length. The flag stack homes and false-return tail still differ.
+// Earlier comparison at 221.
+// the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
 // (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
 // the 173380 clip, the stores into the new entry in retail's order, the 173b00/173b60 calls, the flag tail).
 // Remaining: retail saves esi at entry (we push all four registers at the loop), so every [esp+N] differs; retail's
@@ -1390,6 +1392,8 @@ struct s_pool_view_172840
 // esi, so they are not kept. An early `return true` before the flags: 139, frame 0x34 and a branchless tail (setne/
 // dec/and) against retail's three test/je, not kept. result as byte/long, flags reordered, storage declared later: no
 // change.
+// single result from the three failure tests 205;
+// Plain check: 205.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1480,10 +1484,10 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 	}
 	if (pool_full)
 		result = false;
-	if (projection_full)
+	else if (projection_full)
 		result = false;
-	if (queue_full)
-		return false;
+	else if (queue_full)
+		result = false;
 	return result;
 }
 

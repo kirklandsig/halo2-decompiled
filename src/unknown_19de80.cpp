@@ -308,7 +308,8 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
-// score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
+// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
+// retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
 // and its ESI result register, but it merges the four name/team copy tails into one block, where
@@ -715,10 +716,25 @@ static inline bool teams_enabled_19e1c0()
 // result with the teams at each use and a named player pointer in the spawn-time and lives cases 667 (1196 B), with `best_score
 // <= function_1587f0(team)` too 667; the volatile result with those three together 387 (1443 B, retail's length; 3 points and a
 // one-use pointer, not kept).
+// ordinary rejection assignments 701;
+// qualified rejection assignments 437;
+// ordinary rejection-first branches 657;
+// qualified rejection-first branches 415;
+// ordinary arm-local defaults 695;
+// qualified arm-local defaults 420;
+// ordinary result with reject returns 662;
+// qualified result with reject returns 420;
+// Original body restored.
 // NOT kept: complete string-format returns 643, integer-format returns 655, all formatted returns
 // 707 with plain copy result and 458 with existing result; shared signed name/literal clamp and
 // copy with per-name lengths 557 plain or 519 with existing result; shared name clamp/copy 548;
 // shared name length/clamp/copy 596. The plain result recovers frame 0x204 but merges the name tails.
+// The entry token preload and separate length/clamp blocks still differ. Shared final copy only, with branch-local
+// length and clamp, for player names, team names, all names, or names plus fallback: existing result 422, 478, 527,
+// 539. Ordinary result 605, 569, 550, 568. Ordinary results reach frame 0x204 and shorten the body. Body restored.
+// Token preload, ordinary result and independent copy tails still differ. Capacity-initialized result
+// with zero on rejected cases, through name clamp, formats, both, or both plus engine fallback:
+// ordinary 458/701/458/458, existing qualified result 427/497/431/434.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
