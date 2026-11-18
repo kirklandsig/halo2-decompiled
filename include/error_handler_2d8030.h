@@ -84,14 +84,17 @@ struct id_values_2d8410
 	long *get(long const &id);
 };
 
-// the default error handler (vtable 0x411da4). Its vtable is not resolved
-// here: the slots this file does not define are left pure, so a vtable this
-// build may emit differs from retail's (2d7fe0, 2d7fb0, 2d7f70 and the
-// repeated 2d8640/2d86a0 slots).
+// the default error handler (vtable 0x411da4), the class 0x2d8780 constructs.
+// Retail's table repeats 0x2d8640 in slots 6-8 and 0x2d86a0 in slots 9-11:
+// three members with one body each, which the linker folded.
 class error_handler_2d8030 : public c_sized_reference_a9ef0
 {
 public:
 	REFERENCED_NEW_2D88A0(0x13)
+
+	// both lists start empty, with no storage of their own (defined where the
+	// handler is constructed)
+	error_handler_2d8030();
 
 	location_counts_2d8280 counts;
 	id_values_2d8410 silenced;
@@ -105,12 +108,13 @@ public:
 	virtual flag_2d8e70 function_2d7fe0(long id);
 	// counts a silenced location up, or down (forgotten at zero)
 	virtual void count_location(char const *file, long line);
-	virtual void slot_7() = 0;
-	virtual void slot_8() = 0;
+	virtual void count_location_7(char const *file, long line);
+	virtual void count_location_8(char const *file, long line);
 	virtual void uncount_location(char const *file, long line);
-	virtual void slot_10() = 0;
-	virtual void slot_11() = 0;
-	virtual void slot_12() = 0;
+	virtual void uncount_location_10(char const *file, long line);
+	virtual void uncount_location_11(char const *file, long line);
+	// writes `text` to the reporter's stream
+	virtual void function_2d7fb0(char const *text) const;
 	// the name kept for a source file
 	virtual char const *file_name(char const *path) const;
 

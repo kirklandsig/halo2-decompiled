@@ -92,3 +92,65 @@ void error_handler_2d8030::uncount_location(char const *file, long line)
 		}
 	}
 }
+
+// slots 7 and 8 of retail's table are 0x2d8640 again, and slots 10 and 11 are
+// 0x2d86a0 again: members with the same bodies, folded by the linker.
+void error_handler_2d8030::count_location_7(char const *file, long line)
+{
+	location_2d8280 location;
+	location.file = file_name(file);
+	location.line = line;
+	if (counts.find(location) == 0)
+	{
+		*counts.get(location) = 1;
+	}
+	else
+	{
+		++*counts.get(location);
+	}
+}
+
+void error_handler_2d8030::count_location_8(char const *file, long line)
+{
+	location_2d8280 location;
+	location.file = file_name(file);
+	location.line = line;
+	if (counts.find(location) == 0)
+	{
+		*counts.get(location) = 1;
+	}
+	else
+	{
+		++*counts.get(location);
+	}
+}
+
+void error_handler_2d8030::uncount_location_10(char const *file, long line)
+{
+	location_2d8280 location;
+	location.file = file_name(file);
+	location.line = line;
+	if (counts.find(location) != 0)
+	{
+		long *count = counts.get(location);
+		if ((*count)-- == 0)
+		{
+			counts.remove(location);
+		}
+	}
+}
+
+void error_handler_2d8030::uncount_location_11(char const *file, long line)
+{
+	location_2d8280 location;
+	location.file = file_name(file);
+	location.line = line;
+	if (counts.find(location) != 0)
+	{
+		long *count = counts.get(location);
+		if ((*count)-- == 0)
+		{
+			counts.remove(location);
+		}
+	}
+}
