@@ -579,6 +579,17 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // helper's depth snapshot first 197 (973 B). Diagnostics, reverted: the reverse retransform removed 480 (704 B: the
 // second transform then keeps x in the sum's register but moves y); a twin copy of the helper for the second, the
 // third, or both later transforms 195 each (same code: the three inline copies do not share register choices).
+// Round 416: The displaced-point transform spills X and Z and reserves 0x30 bytes, compared with one spill
+// and a 0x2c frame in retail. That extra stack word displaces both inverse defaults. matched vector
+// transform with direct translation into its output 211; matched vector transform with shared addition into
+// its output 211; matched vector transform to a rotation local and direct translation 212; matched vector
+// transform to a rotation local and shared translation 218; matched vector transform with direct translation
+// into its output with deferred factor copies 234; matched vector transform with shared addition into its
+// output with deferred factor copies 234; matched vector transform to a rotation local and direct
+// translation with deferred factor copies 235; matched vector transform to a rotation local and shared
+// translation with deferred factor copies 235. NOT kept: Reusing the existing vector transform and applying
+// the translation separately shortens the body to 958 or 959 bytes but leaves an incorrect frame and raises
+// the score. Deferring the factor copies raises it further. The opening transform and body are restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

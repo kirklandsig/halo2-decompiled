@@ -576,6 +576,16 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // pitch then the first sine (+0x10), cosine (arg_3's home), final pitch (arg_4's home), i.e. the final pitch gets its home
 // after the first rotation's sine and cosine; ours homes the yaw first (+0xc) and the final pitch before the sine and cosine.
 // Body unchanged.
+// Round 416: The 0x2c frame agrees. The first differing instruction loads unity into XMM5, where retail uses
+// XMM4. The root and acos scratch share +0x10 in the build and share the yaw slot at +0xc in retail.
+// fallback first at planar admission 176; fallback first with common planar length publication 171; initial
+// angle computations in one local scope 176; initial angle scope with common planar length publication 171;
+// independent yaw and pitch clamp scopes 176; independent clamp scopes with common planar length publication
+// 171; reuse the first direction after admission and publish planar length once 187; reuse the first
+// direction with fallback first and publish planar length once 187. NOT kept: Common planar length
+// publication restores XMM4 and shifts the first difference to +0x84. Its best score is 171, five points
+// below baseline, with the root still at +0x10. Reusing the first direction moves the extent to 1708 bytes
+// but scores 187. The opening body and normalizer are restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
