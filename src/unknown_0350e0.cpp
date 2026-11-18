@@ -3165,6 +3165,10 @@ real magnitude3d(vector3f const *v);
 // Complete raw tangents before/after sine, sine-weighted tangents before cosine
 // or before projection, each with original projection or its dot before cosine:
 // 170/170/170/170/170/170/170/170. Raw length and promoted-dot homes unchanged.
+// MiniMax A (11-18): no new form kept, no lower score (170): retail keeps the raw current magnitude in a slot of its
+// own ([esp + 0xc]) and reloads it for both clamp tests, while this build keeps it in the x87 stack and lets the
+// clamped value take its place; a named raw magnitude local measures 251 and the same value in a two-element array
+// also 251 (the array is promoted away), so the raw length's home stays as it is.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
