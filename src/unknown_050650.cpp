@@ -1031,6 +1031,10 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax G (11-18): score 175 (was 257): the player test of cases 1 and 6 is written with the == NONE arm
+// first, which restores retail's case-1 block layout; the body is 1424 B against retail's 1444. Left: the two
+// flags' byte homes are still swapped against retail's (the returned flag at +0x0a, the presence byte at +0x13),
+// the two 0xcafc0 calls still sit side by side where retail keeps them apart, and the jump table sits 20 B early.
 // score 257 (was 257): retail keeps case 1's and case 2's identical 0xcafc0 blocks inline where this build
 // tail-merges them (that moves case 2's block and the direction chain's fall-through predecessor); retail's failure
 // exit stores result = false (F+2, point-valid at F+3); the weapon block keeps the direction pointer in EBX where
@@ -1448,6 +1452,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // case references 258, case 2 reference and state local 258, case 1 reference and state
 // local 258, both case-local pairs 258, both pairs with read-only state 258.
 // NOT kept: all tie the reduced control at 258. The player-point blocks still merge.
+// MiniMax G (11-18), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
