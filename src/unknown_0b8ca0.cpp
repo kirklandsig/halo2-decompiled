@@ -1125,19 +1125,19 @@ bool __stdcall function_bdef0(long object_index)
             matrix->forward.k * center.x + matrix->position.z;
         *(real *)(object + 0x3c) = *(real *)(object + 0xa0) * *(real const *)(definition + 4);
     }
-    point3f *sphere_center = (point3f *)(object + 0x30);
+    point3f *primary_center = (point3f *)(object + 0x30);
     point3f *secondary_center = (point3f *)(object + 0x50);
     real secondary_radius = *(real const *)(definition + 0x20);
     if (secondary_radius > 0.0f)
     {
-        secondary_center->x = sphere_center->x + *(real const *)(definition + 0x24);
-        secondary_center->y = sphere_center->y + *(real const *)(definition + 0x28);
-        secondary_center->z = sphere_center->z + *(real const *)(definition + 0x2c);
+        secondary_center->x = primary_center->x + *(real const *)(definition + 0x24);
+        secondary_center->y = primary_center->y + *(real const *)(definition + 0x28);
+        secondary_center->z = primary_center->z + *(real const *)(definition + 0x2c);
         *(real *)(object + 0x5c) = *(real *)(object + 0xa0) * secondary_radius;
     }
     else
     {
-        *secondary_center = *sphere_center;
+        *secondary_center = *primary_center;
         *(real *)(object + 0x5c) = *(real *)(object + 0x3c);
     }
     point3f center;
