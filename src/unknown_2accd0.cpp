@@ -598,7 +598,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
-// score 34 (was 34; m3 lane 7 r175 at the end): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
+// score 34 (was 34): round 103 unchanged. The scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
@@ -1165,6 +1165,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // folded total alone 181 [63]. Diagnostic (reverted at once): the shared assignment reached by a `break` out of a
 // do/while(false), folded total and seek helper, 153 (689 B) [17]: retail's arm shape again with the offset and the
 // remaining count in ECX/EAX the other way round, as every form whose count is a named local at the join.
+// Body/signature seek results separately, as case locals, or as a shared value 34 each. Body/signature read
+// results after accepted seeks separately, as case locals, or as a shared value 34 each. Verified request size for
+// offset advance 128, and for signature input and advance 139. Verified header count for signature input 34. NOT
+// kept: the entry total and case extent stay in EAX and ESI.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

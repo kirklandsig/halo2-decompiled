@@ -586,6 +586,9 @@ struct c_aggregate : c_child
 // as nested ifs 31; the dispatch inner loop as a `while` with both bounds named 31; the cleanup bounded by `starts[3]`
 // 31 (same code as the one-output form in all three); the cleanup's outer loop as a `while` taking `&blocks[k++]` 91
 // (380 B); the dispatch inner loop over block pointers 136 (389 B). Still BLOCKED by the build flag.
+// Stop collection on callback error by break/loop test 83/37; with null-child skip 83/48.
+// With the final boundary set in the dispatch block 83/139/83/140.
+// The frame stays 0x8024 and the produced count still has a separate home.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
