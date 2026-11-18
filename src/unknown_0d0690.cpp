@@ -1787,6 +1787,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (0x3db00 lost) / 580 / 579; the 571 and 574 forms with lane 5 r182's statement order (length, lightmap copy, normal copy,
 // bias local added in place, square after the direction1 negate, lightmap pin first) 586 / 587 (2206 B, 0x3db00 lost).
 // Lead: `0 < count` with (type, query, block) is the first form giving retail's whole entry convention on main's order.
+// AC570: Both length curves before the color stores, with tested selection,
+// success exit, failure guard or late success, then early attenuation with
+// those results: 539/577/554/569/529/573/553/579. NOT kept: failure guards restore frame and length
+// but still swap block/query and regress. Late success loses 0x3db00.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

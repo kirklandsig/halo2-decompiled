@@ -3043,6 +3043,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // After-scan action via trigger list, event encoding, completing condition or actor options
 // 50/80/50/50. Remaining qualifying count, normalized count and short/long
 // pre-decrement tests 90/141/100/137. First follow-up reload stays on tied forms.
+// AC570: Shared pending eligibility with captured or typed definition index,
+// short-circuit/conditional/named/guarded override: 173/181/173/173/173/181/173/173. NOT kept: the
+// EBP copy returns, but the entry's definition read and branch shape drift.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

@@ -328,6 +328,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Two cosine-weighted scalars, shared complement, and compound factors 479/421/479.
 // Incremental weighted axis, aggregate, const shared-complement aggregate, shared scaler
 // and component loop 477/477/433/446/496. All shorten the body. Square and sine spills remain.
+// AC570: Matrix return with component, aggregate, row or const row construction,
+// with and without earlier forward diagonal: 488/617/726/805/497/617/726/805. NOT kept: the returned
+// matrix grows the body and leaves the axis-specific spills and table placement.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

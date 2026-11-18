@@ -1813,6 +1813,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // into the home of the first found output, so the two stores land in the opposite order; the calls, the
 // argument order and the two requests are unchanged, and the remaining difference follows from where that
 // third output is written.
+// AC570: Resolved mode/class/type snapshots for publication and resource request,
+// seven subsets then snapshots at each output test: 828/828/828/828/828/828/828/828. NOT kept: the
+// snapshots coalesce, leaving the candidate and iterator homes and late zero.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -655,6 +655,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 194 (same code); the two inverse sums through a force-inline (1-t)*a + b*t helper 238 (1943 B); remaining_blend assigned
 // at the top of each aspect arm 338 (1972 B). Retail's sequence arm jumps over a join block that reloads the blend into
 // XMM5 for the other paths; ours falls through and the aspect block reads the blend from memory (about 19 bytes longer).
+// AC570: Sequence snapshots before and after frame evaluation, shared wrap count
+// and shared frame base: 194/194/194/194/194/194/194/194. NOT kept: the snapshots fold to the same
+// reads. Tint and secondary UV homes remain exchanged, and the blend still spills.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
