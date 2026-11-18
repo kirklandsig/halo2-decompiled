@@ -1468,6 +1468,15 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // + 0x212)`, `((long *)(unit + 0x218))[slot]`) 17; a unit-index local for the test and both calls with the lookup
 // reading `player->unit_index` 17; an object getter taking the index as `long const &` at the lookup 17; the lookup's
 // argument as `*(long *)((byte *)player + 0x2c)` 17 (all the same code: each read merges as early as the plain one).
+// M3 lane 10 r117 (fast): diagnostic, the lookup reading another player field (a separate load through the same player
+// pointer) gives every retail register with retail's player address (13, only the changed field), so retail's lookup
+// read is a load through the player pointer kept apart from the test's read; NONE, mode and code constants changed one
+// at a time and either call's unit-index use removed never flip the pair. Forms: the slot read through the lookup in
+// place with the weapon through the unit local (0xa9030's split) 17, the reverse 17; a second player pointer from the
+// getter for the lookup, at the top, after the result or in the block, 5/5/5 (the getter-reload code); a plain or const
+// copy of the player pointer, or a `long const &` to the field, for the lookup 17/17/17; test, lookup and call reads
+// each through the player pointer or the getter in place, with the result before or after the player (14 forms), best
+// 5 (lookup through the getter), the rest 26-68; the player fetched again ahead of the lookup 26 (parameter in EDX).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
