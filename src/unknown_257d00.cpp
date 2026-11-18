@@ -1590,7 +1590,8 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
-// score 270 (was 270): Retail loads both pools early and reloads the packed reference after validation. Actor and output occupy the opposite registers.
+// score 270 (was 270): actor and command pool loads, actor/output registers and the point-reference reloads differ.
+// Retail loads both pools early and reloads the packed reference after validation. Actor and output occupy the opposite registers.
 // see the forms below.
 // actor-pool acquisition and actor/output registers differ. Point references stay live across validation.
 // MiniMax R (11-16): no new form, no lower score (270); the prologue still reads the cs pool global before the actor pool and takes arg_0 into ESI after the pushes where retail reads the actor pool first and takes arg_0 into EBP, and the case-10 flag store still follows the selector compare where retail stores the flag first; the permuter's best (221) swaps the arguments of the call to 0x1fb360, but retail's call site passes the unit index in EAX, the second argument in ECX and the constant on the stack, so the swap would change what the call does.
@@ -2078,6 +2079,10 @@ void function_b7360(long object_index);
 // the 1/19 check and copy 272, for case 5's check and point 272, both 270 (the reference folds back, the read stays held
 // across 0x25ab50); case 4's unit test as `arg_1 == local_0->unknown018` 271; case 10's +0x8c clear through a byte
 // pointer 270 (same code: the selector load still moves above the clear); case 7's dot sides swapped 276 (a repeat).
+// Short/long selector shared by perception and notification only, command-first 477/451,
+// actor-first 470/457; with positive admission, command-first 462/414 and actor-first 468/408.
+// NOT kept: the best form starts with the actor pool, then loads its data before the first save
+// and puts the actor index in EBX. The native EBP/ESI assignment and point-reference reloads remain.
 // shared validation and publication first 485;
 // shared validation and request first 485;
 // shared validation with command interval 489;
@@ -2098,6 +2103,22 @@ void function_b7360(long object_index);
 // 522/523. Actor first with positive admission and the original success state 307. Explicit result branches
 // before/after the shared exit 464/464. NOT kept: all regress and move length away from 1848 bytes.
 // Actor/output register ownership and the post-validation point-reference reloads remain.
+// M3 lane 13 r107 (fast with 0x259e70, 0x259ec0, 0x25ab50 and the file's other functions; control 270, difflib-aligned 126):
+// what sets the registers. 0x25ab50's definition moved below this function 270 (same code: the file order does not hide
+// it); the two validations through an `inline` or `__forceinline` forwarding wrapper 270 each (same code); the actor looked up
+// first, re-measured, 487 (1852 B). Diagnostic, reverted at once (the banned pointer-to-a-local form, and it costs 0x25a380 its
+// match, 364): 0x25ab50's result set through a pointer to its own local keeps 0x25ab50 byte-identical but stops the compiler
+// treating the call as leaving memory alone; this function is then 107 with only the prologue's order left (aligned 48: arg_0
+// EBP, output ESI, +0x28 re-read after the call at the 1/19 arm and case 5, all as retail). On that diagnostic: the actor
+// looked up first 488 (1856 B: ESI is pushed late and the guard's `return 2` gets its own epilogue); with the guard as one
+// `perception == NONE || type == 1 || type == 4` test around both switches 170 (1852 B: arg_0 EBX/actor EBP, compares not
+// the switch's dec/sub); with the guard's switch clearing a bool in its default and both switches under `if (allowed)` 12
+// (1848 B, aligned 10: left are case 7's dot operand order, case 10's +0x8c clear after the selector load, case 5's +0x99/
+// +0x9a stores around the selector load, and case 9's pool load after the `jl`). Without the diagnostic the same two forms
+// are 267 (1848 B, a flag set in a test, under the bar) and 307. Lead: retail compiles this function without knowing that
+// 0x25ab50 writes nothing (0x25a380 in the same file keeps its reference and the scenario pointer in ESI/EBX across the same
+// call, which named locals would also give); a natural form of 0x25ab50 that hides that, with locals at its other callers
+// (0x25a380, 0x1b0f20, 0x1b13b0, 0x1c1080, 0x2773d0), is what would unlock this body. Body unchanged.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2892,6 +2913,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // as `c ? 1 : 0` 610; cases 9 and 11 as `local_0->unknown018 == arg_1` 610; case 6 with g_5023fc read at each use 610
 // (same code); case 1's point at function scope 610 (same code); case 4's facing read from the state's fields 639 (as
 // listed). Every one still gives the actor EDI and the state EBX.
+// Two-field planar initializers at the animation release, turning and fallback sites 501/488/494;
+// release+turning/release+fallback/turning+fallback 502/509/503; all three 510; separate component assignments
+// at all three 510. NOT kept: component transfers grow the body to 2412 to 2440 bytes against retail's 2396;
+// the first difference is still the dispatch displacement at +0x51.
 // cases 7/8 fall through to 0 479;
 // cases 7/8 else-break then fall through 479;
 // grouped timer cases 611;

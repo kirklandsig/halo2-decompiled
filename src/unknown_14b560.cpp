@@ -786,6 +786,10 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax R run 92 (11-17): no new form, no lower score (43): the permuter cannot search this body over the reduced
+// image (it reads 44 there against 43 in the full one), and the carriers still come from the out-of-line 0xbaf80 walk
+// in src/unknown_0bad50.cpp and from the iterator's registers in include/data_iterator.h, both outside this lane's
+// queue.
 // MiniMax C (11-16): no new form, no lower score (43): the datum pointer still takes ebx where retail takes edi and
 // the player datum takes edi where retail takes ebx; the colouring comes from the shared iterator step in
 // include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
@@ -2596,6 +2600,9 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax R run 92 (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
+// this build still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees
+// live in files this lane may not edit.
 // MiniMax C (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74; the 0xccd20
 // call and the first 0x151b80 call are still expanded here where retail calls them, and both callees live in other
 // files that this lane may not edit.
@@ -3164,6 +3171,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax R run 92 (11-17): no new form, no lower score (103): the players-globals pointer still stays in edi where
+// retail keeps it in esi, and the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may
+// not edit.
 // MiniMax C (11-16): no new form, no lower score (103): the players-globals pointer is still kept in edi across both
 // loops where retail keeps it in esi, and the 0x16bc00 call is still expanded here where retail calls it out of line;
 // the stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue.

@@ -4,6 +4,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_1e3920.h"
+#include "object_tag_definitions.h"
 #include "slot_handler.h"
 #include "unknown_2626b0.h"
 #include "unit_requests.h"
@@ -654,7 +655,8 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 4 (was 10): the path block is read through the actor's own fields except in the not-last arm, which
+// score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
+// The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
 // count/index reads); left: the entry test loads the index before the count.
 // Before that, 10 (was 12): the first dot product takes the projection vector first; left: the two dot
@@ -771,13 +773,36 @@ struct s_1f9762
 // a_path/segment 2 each; `path` as the address of the +0x50c flag 2; the second dot's arguments swapped or
 // non-const 2/2/2; the first dot named 2, the second named 4, both 4, the sum negated 37; a const current point 2;
 // a non-const projection pointer 2; the three vector locals in all six orders 2; actor fields in the arm too 21.
+// Lane N round 411 (fast control 4).
+// Count before tag 6.
+// Count after tag 6.
+// Final ordinal test 1 (NOT kept: three-point gain with a decrement still differing).
+// Points remaining test 135.
+// Not before final 4.
+// Count then successor 6.
+// Final ordinal local 3 (NOT kept: one-point gain with count decrement and a dot operand order still differing).
+// Count byte before tag 6.
+// Object cull radius 4 (kept after plain check).
+// Count branch result 4.
+// Count first complement 4.
+// Narrow next ordinal 29.
+// Both end ordinals 131.
+// Next ordinal increment 6.
+// Reversed final ordinal 3 (NOT kept: one-point gain without a match).
+// Typed tag final ordinal 1 (NOT kept: three-point gain with a decrement still differing).
+// Terminal fields before tag 6.
+// Referenced count field 6.
+// Can advance result 107.
+// tag index before count 6; tag index before count and successor 4; last between tag index and table
+// 143; object header tag lookup 4; object receiver before count 6; scoped count and successor 6; count
+// and prefix successor 6; index via point bound 18. NOT kept because the forms tie or raise the score.
 // @retail 0x1f9760
 bool function_1f9760(long actor_index, long object_index, point3f const *point, real distance,
 	bool *last_out, bool *direction_valid_out, vector3f *direction_out)
 {
 	bool reached = false;
 	s_actor_view *actor = actor_get(actor_index);
-	byte *definition = g_4e3b44[moving_object_get(object_index)->tag_index & 0xffff].bytes;
+	s_object_definition const *definition = (s_object_definition const *)g_4e3b44[moving_object_get(object_index)->tag_index & 0xffff].bytes;
 	bool last = actor->unknown53a + 1 >= actor->unknown539;
 	bool direction_valid = false;
 	vector3f direction;
@@ -822,7 +847,7 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 	if (projection_direction)
 	{
 		real remaining = dot3f(projection_direction, (vector3f *)&actor->unknown53c[actor->unknown53a].point.point) - dot3f((vector3f const *)point, projection_direction);
-		if (remaining < *(real *)(definition + 4) * 1.2f)
+		if (remaining < definition->cull_radius * 1.2f)
 			reached = true;
 	}
 	*last_out = last;
@@ -1417,6 +1442,10 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax R run 92 (11-17): no new form, no lower score (120): retail still holds the actor in edi and the object in
+// esi and scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the
+// pool first and keeps the actor in esi; the two 1.0f entry stores still come out in the opposite order and the
+// callee's declaration order (object index first) is fixed by four other files.
 // MiniMax D (11-16): no new form, no lower score (120): this round read the retail diff against ours again and the
 // remaining delta is the prologue and the two pointers: retail masks and scales the actor index into EDX before it
 // pushes and forms the actor with `lea edi, [edx + esi]` (actor in EDI, object in ESI) where this build loads the pool
@@ -1429,7 +1458,9 @@ real function_50650(real cosine);
 // and keeps the actor in esi and the object in edi; the two 1.0f entry stores still come out in the opposite order, the
 // velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, and the callee declaration
 // order (object index first) is fixed by four other files.
-// score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
+// score 120 (was 137): Frame 0x1c agrees. Retail scales the actor index before the pool load and
+// holds the actor in EDI and the object in ESI. This build exchanges those homes.
+// Earlier score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
 // named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
 // callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before
 // the frame pushes and keeps the actor pointer in EDI with the object pointer in ESI, where this build loads
@@ -1554,6 +1585,12 @@ real function_50650(real cosine);
 // Shared following-point difference 128. Object-header getter 120. Named turn span 122. Following radius read
 // once 266. Angle clamped before complement 120. Distinct scale minimum names 120. Positive-gap ternary 120.
 // Checked following-object index 120.
+// actor pool read after settings 333; actor getter after settings 333; early actor offset deferred
+// pool read 333; early actor slot deferred indexed pool read 333; object receiver loaded after
+// settings 120; object receiver in each use phase 117; early offset with receivers after settings 333;
+// actor pool and entry data separate 333. NOT kept because phase-specific object lookups gain only
+// three points and leave the two-byte excess and first difference in place. The other forms tie or
+// regress.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
@@ -1822,7 +1859,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // +0x1c/+0x20, the length in the dead argument slot at +0x54 and the flag byte later; the products after that are
 // coloured xmm2/xmm5/xmm6/xmm7 against retail's xmm1/xmm3/xmm4/xmm6/xmm7, and the length is 1182 against retail's
 // 1173.
-// score 239 (was 238): no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
+// score 239 (was 238): retail keeps the direction at +0x1c/+0x20, the radius at
 // +0x14 and the normalizer's length in the dead argument slot at +0x54, where this build keeps the direction at
 // +0x28/+0x2c, the radius at +0x20 and the length at +0x14; it also zeroes in xmm2 where retail zeroes in
 // xmm1 and multiplies the direction's y first where retail multiplies the x first.
@@ -1859,7 +1896,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // only with a byte match, so the body stands; the permuter's 23 tries over the reduced image
 // (with --allow-mismatch, since the reduced score 254 differs from the full 231) found nothing below the
 // baseline either.
-// score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
+// Earlier score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),
 // shares the left type-0 arm's `+ target.y` and flag re-test with the type-1 arm (ours threads that arm),
 // spills the lateral term to the type slot, and puts radius/desired, then direction, below the
@@ -1997,6 +2034,11 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // where retail compares the float with comiss at 0x1f9de5 before its fld qword 1.0 at 0x1f9df0, so the written-out
 // clamp is retail's form), `MIN(cosine, 1.0f)` 264; without the volatile origin read 273 at 1173 bytes. 0x29a190
 // stays MATCH and 0x29cbb0 378.
+// Round 625: direction before result and radius 264; radius then direction then result 239;
+// direction between result and radius 264, with direct initialization 260. Named squared length 239,
+// float square root 240, separate squared components 240, small-length early exit 240.
+// Single return with in-place sign 255, conditional sign assignment 275, explicit sign arms 275.
+// Restored. The XMM zero and radius allocation and separate invalid-type epilogue remain.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

@@ -688,6 +688,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Both with slip in impact buffer 1559. Both with in-place normalization 1508.
 // Direct tangential with slip in impact buffer 1454. Direct forward with in-place normalization 1547.
 // NOT kept: the direct tangential form gains two points. The smaller frames shorten the body.
+// Round 415. typed physics object 1375, shared collision ray 1375, ray length shared with compression 1389,
+// conditional world choice 1396, branch-selected world 1394, ray scoped to admitted query 1440, shared ray scale
+// 1371, typed object with conditional world 1396. NOT kept: the shared ray scale gains four points while adding 21
+// bytes. The frame is still 0x5d0.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

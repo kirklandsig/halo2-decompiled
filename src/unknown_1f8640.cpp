@@ -858,6 +858,10 @@ struct s_1f8a70_actor
 // `result = route_found;` after it 326 (1680 B, re-measured); route_found written through a pointer to it at every
 // assignment 182 (same code: folded, so no reload after 0x1f8750); one actor pointer from a single actor_get ahead of the
 // first test 207. Retail's case 6 `route_mode = 1` cross-jumps into case 5's tail (0x1f8c9d); ours keeps its own store.
+// Round 620: the route join and failed-result reload still differ. Zero-destination guard inside its case
+// with signed range 295, switch default 331, separate precheck 323, named case predicate 331;
+// unsigned bound 307; mode-six query selecting zero/two 410, early movement rejection with that
+// selection 410, and one conditional mode selection 312.
 // Shared destination publication for modes 4/6, 5/6 and 4/5/6: 433/363/428. Shared writers for modes
 // 2/4 and 3/5: 384/390, both writers 402. One writer for 2-5 or 2-6: 446/538. The dispatch and
 // failure-result reload still differ.
@@ -865,6 +869,11 @@ struct s_1f8a70_actor
 // tail-merge the two bodies) and the permuter's 3 tries stayed at 182; retail lays the route check as case 5's fall-through
 // with cases 6-7 jumping back to it and the route==0 block jumping back to one shared switch dispatch, and the goto
 // restructure scored 316, so the shared dispatch needs a source form not found here.
+// AC572: Mode-seven node snapshot with radius-first store 212, radius
+// snapshot with node-first store 360. Both reads node/radius or radius/node,
+// each storing node first or radius first, 360/212/360/212. Native order
+// through the case frame 392, earlier snapshots before point stores 372.
+// NOT kept: all raise the score. Route dispatch and the late false reload remain.
 // Filtered zero route 182; conditional zero-route choice 182; branch-owned route 384; separate
 // zero/nonzero value choices 384; range-first normalization 309; separate radius/node outcomes 403;
 // compound invalid-route test 299; nested route choice 384. NOT kept: dispatch adjacency and

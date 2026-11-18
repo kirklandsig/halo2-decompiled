@@ -503,6 +503,7 @@ struct s_collision_result_buffer_1697c0
 	byte unknown4c[0x5c - 0x4c];
 };
 // score 299 (was 299): Earlier 303. Frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
+// frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
 // after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
 // F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
 // range, F+0x3c pitch range; ours F+0 candidate, F+0xc attempt, F+0x10 axis, F+0x1f result, F+0x20
@@ -912,6 +913,13 @@ struct s_collision_result_buffer_1697c0
 // P608: Paired random draws through one field pointer, object pointer, field reference or
 // object reference, at loop or draw scope: eight 296 at 1451/1423, first +0x31.
 // NOT kept: three-point gain, longer body and different generator loads despite native entry slots.
+// Earlier score 303.
+// Round 416: Existing in-place rotation with named pitch/yaw/both trig pairs
+// 307/226/217, and direct pitch/yaw/both 305/296/299. Named pitch with direct
+// yaw 286, direct pitch with named yaw 228. The existing angle helper using the
+// shared rotation 289. NOT kept: the 1423-byte forms at 217/226/228 require
+// one-use trig results. The helper form grows and raises its other user's score
+// from 23 to 245. The 217 form recovers the axis, result byte and magnitude homes.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1394,6 +1402,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 255, on the 166 form 166 (same code); cases 1 and 6 through a shared object-point inline helper: plain inline 392
 // (1300 bytes, kept out of line), forceinline 255, forceinline with the NONE-first test 166. None kept: each gain rests
 // on forms kept only with a match.
+// Round 415. case 2 state-admitted presence 278, case 1 state-admitted presence 265, both state-admitted 278, case
+// 2 point-write presence 375, case 1 point-write presence 102, both point-written 390, case 1 point-written with
+// case 2 state-admitted 213, case 1 state-admitted with case 2 point-written 348, case 1 reference-state snapshot
+// 263, both reference-state snapshots 263. NOT kept: the two lower previews publish presence after the point calls
+// instead of at the state test. The 102 form also falls short of retail length.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

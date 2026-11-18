@@ -291,6 +291,12 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // 316/316/316/316. Returned suffix to append, format, both, and both with a
 // list-owned loader 483/330/477/850. NOT kept: the suffix and other text
 // buffer homes remain unresolved.
+// M3 lane 7 r176 (fast, control 316): the invitation test written out in both arms of the friends test (nested ifs) 328,
+// as `if (friends) { ... } else if (...)` 328 (the two bodies merge back into the same inline arms; the count slot moves); the
+// flag word copied and shifted by an if/else 316 (same code); the item test through a file-local inline with an early
+// return 620 (2336 B, it stays a call); the loop body with two `continue`s 316 (same code); a named flag set by an if/else
+// 522 (2344 B). Retail parks the shift-by-10 arm after the session player's `jmp` (0x2b3088) and falls from the shift-by-12
+// arm into the bit test; none of these forms moves a block out of the loop.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

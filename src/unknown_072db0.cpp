@@ -1666,6 +1666,13 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
 // variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
+// M3 lane 11 r113 (fast with 0x641a0/0x8df50/0x749b0/0x75790/0x192e60/0x647a0/0x647d0/0x18fd94, all MATCH; control 703):
+// lane 16's lead re-measured (`inline` on 0x647d0's definition, the users loop reading the slot index and properties
+// through it) 720 at 2862 B; on it the request builder's free space named (record_space / property_space, tested > 0 and
+// passed to 0x80940) 710, the delay as `> 3 ? 300000 : 2000` 720, both 710, the space names with the rolled record loop
+// (`j < record->count`, `properties_used += record->count`) 753 (2830 B), with the delay too 753. Left on the 710 form: the
+// logon test's `dec eax`, the users cursor's slot (+0x14 against +0x18) and loop-head jump, and the slot test's cmovne
+// (a file-flag question) that shifts every later line.
 // MiniMax I (11-15): no new form, no lower score (703): /arch:SSE2 on this file's flags line does reach retail's cmovne at
 // the slot test (mov ecx, 0; cmovne ecx, eax), but the function scores 748 and the switch is file-wide, so it would change
 // the file's other matched functions; /arch:SSE gives the same 748 and dropping the 'g'-off pragma around the slot helper

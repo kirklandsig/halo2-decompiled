@@ -532,7 +532,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// score 238 (was 238): frame 0x40 versus 0x44. The second node and shape share the wrong stack slot.
+// score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// frame 0x40 versus 0x44. The second node and shape share the wrong stack slot.
 // Retail keeps origin y/z in reused slots and has two unused dwords below the plane.
 // Earlier at 238 in round 95. See the m3 lane 11, lane 2 r79 and lane 8 r164 forms below.
 // frame 0x40 versus 0x44, with a different second-node slot.
@@ -982,6 +984,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (1287 B, other code); the same pin returning by value 238 (same code as the body). Reading: retail's `mov edx,
 // [eax+8]` after the zero test, its constants in the result register and the unfolded `mov ecx, edx; cmp ecx, edx`
 // say the clamp read the data through a form the first test's read was not merged with; a reference return is not it.
+// Shifted upper value, split words, packed fields into longs and direct packed fields:
+// 238/311/238/316; with material declared before plane processing 238/311/238/316.
+// NOT kept: ties or regressions; the frame, second-node home and classifier reads still differ.
 // AC564: Component property scan with end pointers < and !=, counted cursor,
 // and indexed element pointer 327/327/339/341. Break with one result in the same
 // forms 347/347/325/326. NOT kept: all raise the score and retain frame 0x40.
@@ -995,6 +1000,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // pointers 310/310, immutable returns 310, both with existing normal setter 305.
 // NOT kept: frame 0x44 and 1243 bytes recover in several forms but every score regresses.
 // Root classifier and output homes remain. Original collector restored.
+// AC572: Full key selected by conditional or assigned in its two arms 238/238,
+// optional unsigned adjustment set by branch or conditional 328/315. Same
+// forms indexing with the validated clamp result 339/339/353/342.
+// NOT kept: the frame and second-node spill remain. The distinct forms grow the body.
 // Packed-contact shape reference 327. Material before shape or after data 327/327.
 // Immutable shape pointer 327. Shared receiver used in the plane arm or both arms 327/327.
 // Separate material-arm shape references 327. Shared receiver and early short material 328.
