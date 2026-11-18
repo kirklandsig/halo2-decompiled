@@ -234,7 +234,8 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
+// score 171 (was 171): Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
+// Earlier score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
@@ -754,6 +755,12 @@ void __stdcall function_1160c0(real dt)
 // the committed and previous positions 359; vector setter for the angle reference 171; point and vector
 // setters for both attachment outputs 380. NOT kept: the anchor-position and commit setters shorten the body
 // and demote the update caller.
+// terminal decrement of default ordinal 175; replace default ordinal at terminal node 171; terminal
+// ordinal as default then interior 275; velocity member throughout node step 256; position member
+// throughout node step 171; position and velocity members throughout step 256; early rejection before
+// node traversal 171; early rejection with decremented terminal ordinal 175. NOT kept: the original
+// ordinal and member access score as well as or better than all trials. The segment spill and rotation
+// schedule remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
