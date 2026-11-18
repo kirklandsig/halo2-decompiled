@@ -1523,6 +1523,10 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // J262: carried loop predicate 1; clamped fallback/traversal count 149/156; conditional singleton index 16;
 // append via count 3; save the next ordinal 11; continue with common step 1; named positive guard with equality 2;
 // remaining count as local/condition 18/18. Kept the shared object-tag acceleration scale fields at 1.
+// Descending count with saved or ordinary ascending ordinal 155/168; bounded pointer range 171;
+// endpoint advanced during selection 165; saved ordinal as sole induction variable 125;
+// count of populated indices 2; fill cursor distance as count 157; nonnegative unsigned extent 156;
+// inclusive next position test 23. The populated count changes the count store and retains the entry compare.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

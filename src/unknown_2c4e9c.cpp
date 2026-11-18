@@ -1597,6 +1597,11 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // exit 69, definition declared in guard with title index 69, index reassigned before description 69,
 // shared buffer scoped to valid index 71, title text receiver named at lookup 69, title index with
 // dereferenced buffer clears 69, guarded index reused on description-only path 93.
+// String-list field reference 15; saved title index with child declaration or name changes 69 each;
+// admitted definition reference 69; buffer clear at list admission with reset after title 16;
+// shared validity at both widget tests 78, title tested first 94; shared or block-local output cursor 69 each.
+// NOT kept: title buffer clear before list admission 6, before the title test 4, before the list
+// load 8; retail clears it only after both guards. All three keep the native extent.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -2202,6 +2207,9 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 // first. Parameter clear before lookup 58; saved lookup before unconditional clear 18; shared null-loader
 // tail 62; early guard with direct mask, short mask by value, unsigned mask, controller pointer local and
 // clear before selector 14 each.
+// Common optional callback result 49; selector from one full item read 23; selector before lookup 22;
+// carried open decision 65; default first in ascending or descending case order 7 each;
+// named selected callback at invocation 7; callback table 73; alternate mode assigned after dispatch 50.
 // @retail 0x2c8719
 void c_controller_settings_edit_list::handle_item(s_controller_reference **controller, long *item)
 {
