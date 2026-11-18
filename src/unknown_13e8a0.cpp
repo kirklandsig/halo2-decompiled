@@ -502,7 +502,8 @@ struct s_text_line_measurement
 	long index;
 };
 
-// score 77 (was 77): frame 0x1c and 415-byte extent agree; first +0x3a spans branches; native independent advance copy and early width load still differ.
+// score 77 (was 77): frame 0x1c and 415-byte length agree, but the width load is late and the scaled advance lacks retail’s independent update register.
+// frame 0x1c and 415-byte extent agree; first +0x3a spans branches; native independent advance copy and early width load still differ.
 // Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
 // MiniMax S (11-16): no new form, no lower score (77): retail reloads the width into xmm4 right after the scale and copies the advance product with movaps, so the sum lands in xmm5 and the bound in xmm0, where this build sinks the width's reload past the three products and sums into xmm4 with the bound in xmm5; copying the width into a local right after the kerning call is the same code, the sum in a local before the can_break test 75, the can_break block before the products 85, and a permuter run found nothing below 77.
 // Earlier (77): MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
@@ -666,6 +667,26 @@ struct s_text_line_measurement
 // accumulated in the advance through the reference (`step += offset; step += kerning; width += step;`) 77 (all four identical
 // code: the reference is folded here); the bound read through `real const &right = bounds->x1;` 77, and the caller 0x13f0e0
 // then falls from MATCH to 144 (936 B). Body unchanged.
+// Bound accumulator 77.
+// Fitting-branch width accumulator 77.
+// Iteration-entry width 77.
+// Bound accumulator, fitting-branch width accumulator 77.
+// Iteration-entry width, bound accumulator 77.
+// Iteration-entry width, fitting-branch width accumulator 77.
+// Iteration-entry width, bound accumulator, fitting-branch width accumulator 77.
+// Iteration-entry width, bound accumulator, fitting-branch width accumulator, advance starts that accumulator alone 77.
+// NOT kept: width snapshots and separate accumulators all compile to the baseline comparison. Original metric and update expressions restored.
+// Early origin and right edge 42; early right edge alone 77; early origin
+// alone 41; both between offset and advance 33; both with break admission
+// 42; projected origin before offset 31; early pair with width first 42;
+// early pair with running-width snapshot and accumulation 33. Comparison
+// accumulation from early origin 32, with early pair 35, with independent
+// accepted-width accumulator 30, with width first 30; pair between offset
+// and advance with comparison accumulation 33; origin after offset with
+// comparison accumulation and width first 28. Read offset before advance,
+// then scale after projected origin 31, with raw kerning first 31.
+// NOT kept: the lower scores move one-use field reads or the projected
+// origin earlier; the native independent advance register is still absent.
 // N404: Signed pixel loads before the break snapshot with later scaling of kerning/offset/advance
 // 80/38/38, paired metrics 53/56/76, and all three 76. In-place late scaling of all metrics 78,
 // kerning/offset/advance 73/72/71. NOT kept: the two 38 forms use one-use pixel locals and

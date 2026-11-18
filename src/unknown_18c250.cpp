@@ -449,6 +449,11 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // operand is the more complex one and, for two field reads, the offset (pointer arithmetic puts the index first);
 // every plain spelling, rename (data after entry), declaration order or integer sum keeps the offset first; only a
 // non-forwardable offset (a copy of the entry, a memcpy, or a reference to the result) puts the samples first.
+// M3 lane 13 r106 (fast with 0x10e480, matched throughout): the entry as a `const &` to the array element 2; the samples'
+// memcpy moved to the function's top 57 (142 bytes); the offset bound to a `long const &` at the sum 2; the sum through a
+// file-local forceinline (base, offset) address helper 2; `samples_address += offset` then the cast 8. Re-measured the
+// memcpy'd offset with plain samples 3: the samples load into EDX as retail, but the offset loads first, into the entry's
+// ESI in place, where retail loads it second into the data pointer's dying EDI.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
@@ -883,6 +888,11 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // retail shares the last `mov [edi+3], al` between the forced `audible = 1` and the outer `else audible = 0` (load/and/store,
 // laid out before the join); ours emits the else as `and byte ptr [edi+3], 0xf0` after the `ret`. Tried: the forced block as
 // `flags |= 1; audible = 1;` 183 (only the `or` moves up, as retail); the type-1 test inverted with `audible = 0` first 193.
+// MiniMax I (11-17): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80 and the
+// literal 1 is still pooled in ebx, where retail tests the flags byte with an immediate and materialises the 1 only
+// for the shift; retail gives ebx to the object pointer because it treats 0x188790 as clobbering ecx, and that
+// helper's inline-ness is decided in src/unknown_1887d0.cpp, which this lane may not edit. Reading the same bit
+// through TEST_FIELD_BIT(sound->flag0) instead of sound->flags & 1 compiles to the same bytes (184).
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

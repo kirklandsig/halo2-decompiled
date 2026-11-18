@@ -191,6 +191,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // MiniMax I (11-17): no new form, no lower score (622 plain, 614 fast): retail keeps q, the fourth stack argument, in EBX from the activation block on (its fallback is the cmove ebx, [0x4687a4]) and reads d from its stack slot at each of its five uses, this build keeps d in EBX and reloads q, and d is used here four times against q's three, so the choice is not reachable from the source; the body is unchanged.
+// Earlier at 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier heading: 622 (was 622; 636 before the settle factor): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
@@ -632,6 +633,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 0.866 test as dot3f(&s->direction, d) 601; the globals local kept for the update block and the output stage reading
 // g_510c54 at each use (retail reloads it there) 600. Retail's final block pops EDI, EBP, EBX before the closing tests
 // and ORs memory directly (`or dword ptr [eax], 4`); ours pops in each exit.
+// Second-clamp mode shared with duration, after/before the step 699/699; joint
+// multiplier and duration branch before/after the step 710/710; shared mode
+// producing both coefficients 709; direct guarded bound with shared mode
+// 689; preselected multiplier with guarded rate 708; preselected multiplier
+// with the direct bound 675. The sample still needs retail's EBX home.
 // Direct component loops for supplied-direction fallback at activation, refresh,
 // and the angle guard, subsets 1 through 7, 684/673/689/673/685/674/689. All
 // with the opening sample copy as a loop 690. Frame 0x24 and matched caller
