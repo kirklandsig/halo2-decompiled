@@ -236,7 +236,9 @@ __forceinline bool search_new_point(__m128 const &first_corner, __m128 const &se
 	return true;
 }
 
-// score 111 (was 1955): same size as retail now. The inverse direction is
+// score 58 (was 110): the reduction's shared exit reads count_b through a
+// reference, so its load stays after the normal store as retail has it.
+// Before, 111 (was 1955): same size as retail now. The inverse direction is
 // the transpose of the three columns, the second support point is read through
 // a const reference, the normal is bound after the squared length, the tail
 // stores the distance through a float, and the reduction's separating exits

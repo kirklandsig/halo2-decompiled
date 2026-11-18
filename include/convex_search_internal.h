@@ -272,7 +272,7 @@ __forceinline int search_reduce_features(search_features_303dd0 &s)
 			break;
 		default: return 1;
 		}
-		s.previous_b = s.count_b;
+		{ int const &count = s.count_b; s.previous_b = count; }
 		return 0;
 	}
 }
