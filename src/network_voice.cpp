@@ -1918,6 +1918,15 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // writable span end 202; last writable entry start 140; entry pointer distance for scan and mask 201;
 // pointer distance in both scans 268; pending-recipient word reused after store 198.
 // The opening capacity, traversal and recipient loads were restored.
+// m3 lane 8 r186 (fast with the matched caller 0x56380 in brackets, [0] = still matched; control 60 [0]): retail computes
+// the length before the header stores into EDI and copies it to EAX only at the end (`mov eax, edi` ahead of the shared
+// pops), with EAX holding the entry's zero up to the capacity test. The length in a local where `result` was computed and
+// `result = length;` as the capacity block's last statement 60 [0] (same code: the two are merged again); that with a
+// direct `return NONE` at both tests 154 [73] at 454 bytes; with the entry size as `include_mask ? 13 : 11` (retail's
+// compare and setne) 147 [0] at 461 bytes; with both 178 [73] at 470 bytes; `result = written * entry_size + 2;` moved to
+// the block's end 155 [137] at 462 bytes; the length local with `return length;` ending the block 216 [73] at 494 bytes;
+// the length local with the statements before the capacity test in retail's order (kept, written, capacity, size) 153
+// [13] at 434 bytes. Body unchanged.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4133,6 +4142,13 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor with four named slot roles 164; forwarding mask comparison 181;
 // forwarding mask comparison with cursor 168; packet-kind clamp 182; packet-kind clamp with cursor 188.
 // NOT kept: the cursor with recipient-set comparison recovers EBP but drops the member slot and shortens the body.
+// m3 lane 8 r186 (fast with the matched caller 0x564c0, matched throughout; control 139): on the packet-cursor form
+// (`byte *packet = data + 2;` beside the count, advanced at the loop's end; re-measured 164 at 478 bytes, the member in
+// EBP): the relay arm's talker result in a named bool 164; both arms' talker results named 164; the member's NONE test
+// through a by-value inline predicate 164 (all three the same code as the cursor form); the packet-kind test ahead of
+// the member fetch with the NONE test after it 145 (EBP still the member); the entry order size, consumed, cursor,
+// stride 164; the cursor advanced ahead of the size and consumed updates 167. No form moved the channel into EBP.
+// Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
