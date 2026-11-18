@@ -1012,6 +1012,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // re-measured 399, on a, b, c, d 344 (1228 B); a, b, c, d with the switch on `(long)surface->type` 287 (same code); a, b, c, d
 // through one `vertices` base for the four corners 295. On a, b, c, d the caller loads pathfinding into EDX too (retail EAX):
 // the incoming register follows whether the actor load is placed before or after pathfinding's copy to EBX. Body unchanged.
+// Transition record indexing through a mutable/read-only/named read-only table
+// 218/218/219. With case-five vertex base 218/218, with paired-corner vertex
+// base 219, with both vertex bases 219/220.
+// NOT kept: all preserve the delayed EBX save and actor load at the same length.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

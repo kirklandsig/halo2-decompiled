@@ -870,6 +870,10 @@ struct s_1f8a70_actor
 // each storing node first or radius first, 360/212/360/212. Native order
 // through the case frame 392, earlier snapshots before point stores 372.
 // NOT kept: all raise the score. Route dispatch and the late false reload remain.
+// Paired direct modes 372, paired reference modes 383, both pairs 182.
+// Mode-six movement-bit early break 408, with direct/reference/both pairs
+// 372/383/408, or with explicit source-node branches 414.
+// NOT kept: the dispatch join and failure-result reload remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

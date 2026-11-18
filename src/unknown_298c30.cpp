@@ -1106,6 +1106,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Negative arm first at initial offset 876, pivot 569, sweep 775, initial and pivot 876, initial and
 // sweep 872, pivot and sweep 775, all three 872; distinct branch-local reverse radii 732 at 3349
 // bytes. XMM5 still retains the radius from entry and retail reloads at the branches.
+// Planar offset helper with staged products per row/pair 850/850, staged final
+// scalar coordinates 569, paired accumulation 850. Planar displacement 830,
+// planar result copy 851, accumulated planar result copy 901 or member stores 830.
+// NOT kept: eager radius remains in XMM5, with larger differences or a tie.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
