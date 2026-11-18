@@ -584,6 +584,7 @@ void function_e5930(long unit_index);
 // state named, a forced-inline getter one or two levels deep, a forced-inline arm: 118 each, 0xe5930 still matching and still inlined here; an if chain
 // 121 (0xe5930 23), an explicit case 0 124 (27), the biped named at entry 110 (35). No spelling of its body keeps it out of line. Still BLOCKED-BY 0xe5930.
 // MiniMax R (11-11): no new form tried this round, no lower score (118): the body matches retail's first 0x10a bytes and is 70 bytes longer overall, the extra bytes all coming from the reset helper expanding at this call site.
+// MiniMax R (11-17): no new form, no lower score (118): the definition's flags read folds to a byte test where retail loads the dword and shifts it, retail's flag update is the memory form (or byte ptr [edi+0x348], 8) where this build does it in a register, and the reset dispatch expands here, making the body 413 bytes against retail's 343: BLOCKED-BY 0xe5930.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -819,6 +820,7 @@ struct s_biped_flags_10a_view
 // through the parent-object helper, and retail's early exit jumps to the shared epilogue where this build has an
 // epilogue of its own; the forms tried (the state pointer as a local, the early exit as one return, the parent's
 // field read directly) all score 222 or worse.
+// MiniMax R (11-17): no new form, no lower score (222): the stack slots sit four bytes off from the first difference (this build keeps the value at [esp+0x20] where retail has [esp+0x24]) and the body is 15 bytes shorter than retail's 1121.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -3218,6 +3220,7 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // stack arguments and writes its result through a byte pointer, where this build passes seven stack arguments and a long
 // out-parameter; that callee's declaration lives in src/unknown_1d5120.cpp and a declaration's shape may not change here:
 // BLOCKED-BY 0x1d5120.
+// MiniMax R (11-17): no new form, no lower score (63): retail tests the +0x3aa byte in place and reads it again sign-extended at the call, where this build sign-extends it into a long before the test (the byte tested in place measures 82, the byte read again through the BIPED_GET lookup 68); retail also passes the settling count in EAX with six stack arguments, which is 0x1d5120's declaration in another file: BLOCKED-BY 0x1d5120.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3923,6 +3926,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // 0xdd360 224), with the `(char)` switch 407. Still BLOCKED-BY 0xe16b0 (contributor) for the frame.
 // MiniMax C (11-15): no new form, no lower score (324): the frame is 0x48 against retail's 0x4c, and the byte at
 // +0x34b is read with movzx where retail reads it with movsx - a signedness difference worth one point on its own.
+// MiniMax R (11-17): no new form, no lower score (324): retail sign-extends the +0x34b state byte (movsx) where this build zero-extends it - the signed field measures 323, under the keep bar - and the frame is 0x48 against retail's 0x4c.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4989,6 +4993,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // stores 350; early placement rejection 470.
 // NOT kept: shared stores shorten the body and raise the score. Independent root coordinate reads tie. The body
 // matrix and origin retain their baseline slots.
+// MiniMax R (11-17): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and a permuter run over the body (15 tries, 326 s) found nothing below the baseline.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5392,6 +5397,7 @@ void function_e4300(long arg_159e6d)
 // dispatch at this straight-line call site where retail keeps the call out of line (113 bytes
 // against 61); the callee's file is not mine, so the boundary cannot be recovered here:
 // BLOCKED-BY 0xe5930.
+// MiniMax R (11-17): no new form, no lower score (91): the reset dispatch expands at this call site, so the body is 113 bytes against retail's 61, and the helper's own file (src/unknown_0e57e0.cpp) is not this lane's: BLOCKED-BY 0xe5930.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {
@@ -5977,6 +5983,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P586: Immutable actual angle/cosine/sine producer subsets 1/2/4/3/5/6/7, then
 // complete producers with immutable biped receiver: 79/79/79/79/79/79/79/79.
 // NOT kept: first-rotation spill/operand and final-cross reload gaps remain; original body restored.
+// MiniMax R (11-17): no new form, no lower score (79): the frame is 0x20 against retail's 0x24, and this build pushes ebx before it masks the character index where retail masks it first.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

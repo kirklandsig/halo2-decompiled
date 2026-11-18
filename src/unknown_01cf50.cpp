@@ -123,6 +123,7 @@ void __stdcall function_1c710(void *state);
 // MiniMax S (11-16): no new form, no lower score (188): this body is 35 bytes longer than retail's, the value 1
 // goes through edi where retail stores the immediate twice, and retail keeps three of the four SetVertexData2s
 // calls out of line where this build inlines them.
+// MiniMax R (11-17): no new form, no lower score (188): the body is 35 bytes longer than retail's 1422 and the first difference is at +0x335, where retail inlines only the first of the four vertex-data writes and calls the other three out of line; the only lever for that is an inline_depth pair, which may not be added.
 // @retail 0x46230
 void __stdcall function_46230(short target, real const *bounds)
 {
@@ -4770,7 +4771,9 @@ extern long g_485898;
 // position's stack slots for the corner coordinates, the definition's flag byte is still copied into bl where retail tests the
 // byte in place, and the 1.0f constant still rides in xmm0 where retail holds it in xmm3; the forms tried before (a shared
 // scaled local, a ternary scale, the four corners in an array) are under the keep bar or rebuild the body.
+// MiniMax R (11-17): no new form, no lower score (285): the frame is 0x38 against retail's 0x34, so every stack slot sits four bytes off, and the reduced image leaves three of the globals unresolved, so the fast score is not faithful here.
 // @retail 0x2e540
+// MiniMax R (11-17): no new form, no lower score (285): the frame is still 0x38 bytes against retail's 0x34 - retail reuses the position's slots for the corner coordinates and keeps the area in the data argument's dead home, this build gives both homes of their own - the definition's flag byte is still copied into bl where retail tests the byte where it lies, and the 1.0f constant still rides in xmm0 where retail holds it in xmm3.
 // MiniMax C (11-17): no new form, no lower score (285): the frame is 0x38 bytes against retail's 0x34 because retail reuses the position's slots for the corner coordinates, the definition's flag byte is copied into bl where retail tests the byte where it lies, and the 1.0 constant takes xmm0 where retail holds it in xmm3; the array-shaped corner form that reached 272 is a banned stack-home steer, so the body stands.
 long __stdcall function_2e540(s_slot *slot, byte *data)
 {
@@ -5045,6 +5048,7 @@ long function_184000(long index, long bit);
 // `byte visible` 315, `bool result = false` with one `return result` 313 (these three at 271), the commuted material sum,
 // every order of the four terms of the plane sum (all the same score), dropping the volatile `out` read 323
 // (callers 0x44ac0 and 0x44c90 lose their match: 0 -> 58 and 53).
+// MiniMax R (11-17): no new form, no lower score (239): the entry's address is an add of the link-time address where retail has a lea of the array's address, and no spelling of the index reaches it.
 // @retail 0x45ce0
 bool function_45ce0(short index, byte *out, short part, short transform_index)
 {
@@ -5412,6 +5416,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
 // MiniMax S (11-16): no new form, no lower score (125): the four products and the corner values take other
 // registers and other spill slots than retail's, and this body is five bytes longer, so the first difference is
 // a branch target.
+// MiniMax R (11-17): no new form, no lower score (125): the first difference is the branch after the first float compare, which lands in a different place in the two bodies, and the body is five bytes longer than retail's 1027.
 // @retail 0x480a0
 void __stdcall function_480a0(point3f const *point, real width, real height, real cosine, real sine, dword color)
 {
@@ -5572,6 +5577,7 @@ void function_48010(real const *color);
 // MiniMax S (11-16): no new form, no lower score (244): this build saves esi in the prologue and loads the mode
 // later where retail copies the mode into ebp and dispatches on it with a compare chain, and retail keeps six of
 // its eighteen calls out of line where this build inlines them.
+// MiniMax R (11-17): no new form, no lower score (244): the prologue differs - this build pushes esi where retail loads the stack parameter into ebp - and the register choices follow from that.
 // @retail 0x47930
 void function_47930(word flags, long format, long mode)
 {
@@ -6837,6 +6843,7 @@ dword g_4b8430;
 // &entry) took 127 -> 2, but a reference-bound local is a match-only form (the notes above already list it); the
 // entry struct and the split index test go with it (the split test alone is 125, under the keep bar). Code back to
 // main.
+// MiniMax R (11-17): no new form, no lower score (127): the model's read is still folded into a single load here, where retail forms the entry's address first and loads the model through it, and one pair of the vertex rows' float reloads comes in the other order; the reference form that materialises the entry's address reaches 2 but is a match-only form this function does not reach.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -9079,6 +9086,10 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // MiniMax S (11-16): no new form, no lower score (299): the group index is still widened from sixteen bits
 // where retail moves the thirty-two bit value, the group's home still sits at [esp+0x3c] against retail's
 // [esp+0x54], and retail's first test jumps to a block placed after the function's end.
+// MiniMax R (11-17): no new form, no lower score (299): the count test written as `<= 0` does give retail's own load, test
+// and jle, but the three bytes it takes off the entry pair the rest of the body against the wrong instruction (313), and a
+// thirty-two bit group counter grows the frame again (514); the group's home still sits at [esp+0x3c] against retail's
+// [esp+0x54] and the counter is still widened with movzx where retail moves the thirty-two bit value.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
@@ -9878,6 +9889,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // shorter than retail's 1133 with the frame at 0x201c against retail's 0x2020.
 // MiniMax D (11-15): no new form, no lower score (328): the stack size is 0x201c against retail's 0x2020, the unit table pointer rides in edi where retail keeps it in eax, and the body is 25 bytes shorter than retail's.
 // MiniMax D (11-16): no new form, no lower score (328).
+// MiniMax R (11-17): no new form, no lower score (328): the stack allocation is 0x201c against retail's 0x2020 (four bytes of locals missing) and the unit table pointer rides in edi where retail keeps it in eax.
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
