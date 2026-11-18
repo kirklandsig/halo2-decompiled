@@ -100,6 +100,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax A (11-18): no new form, no lower score (96): the type read once at the entry (24 at 256 B with the caller matched) needs a one-use object-index and a one-use absolute-index local, so it stays unkept; the one-use-free forms (the header base first, the header base second, the type local alone, a long type) score 83 to 136 and demote the matched caller 0x1d5bf0 to 2, 13 or 213, so the body stands.
 // MiniMax B (11-18): no new form, no lower score (96): the type is still read in both kind routes where retail reads it once at the entry; the single-read form reaches 68 only with a one-use local and a score-picked declaration order, and the one-use-free form (98) demotes the matched caller 0x1d5bf0, so the read stays as it is.
 // score 96 (was 96): unchanged in round 252; left: retail reads the type once at the entry with the header data
 // loaded first, which every keepable form here either repeats in both branches or pays for with the caller's register
