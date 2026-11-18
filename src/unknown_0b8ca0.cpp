@@ -1843,6 +1843,10 @@ done:
 // offset read through the table in place with the definition local declared after it for size and placement offset 27;
 // the size as a dword 27; the definition typed as the object type definition (the 0xa offset through its field, the
 // header included) 27; the placement index widened once into a long local for the product and the push 32.
+// M3 lane 3 r260 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x29fd80/0x2a12f0/0x2a1340): the 27 form re-measured 27 (236 B);
+// on it the three definition reads in one declaration 27, the datum in one expression with the placement offset read inline
+// 27, the placements read folded into the datum with a placement-offset local 27 (all the 27 form's code); the slot lookup
+// as `NONE` then an `if` (for the ternary) 59 (243 B), that on the 27 form 59 (240 B).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

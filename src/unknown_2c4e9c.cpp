@@ -1726,6 +1726,29 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 // in a named long 28, the member typed as the profile settings with an aggregate assignment 28; the flat
 // `type == 5 && (param == 1 || param == 13) && changed` 7 (retail's registers, receiver order and tail, only
 // the button test is `cmp 1`/`cmp 0xd` where retail has the switch's `dec`/`sub 0xc`).
+// Round 193 (m3 lane 6; compile-only screen of this file, exact for this body; aligned instruction counts, the body
+// below = 2 and the one-call if/switch form = 12). Reading: with one base call the switch value (five references: the
+// load, `dec`, `sub`) outranks the event and `this` (four each) and takes EAX, pushing `this` to EBX; with two written
+// calls the event and `this` have five each and get retail's EAX/EDX, but the two identical call blocks are joined
+// before code generation and that joined block sets ECX ahead of the push. With two different callees (diagnostic) each
+// block has retail's `push eax; mov ecx, edx; call`, and so has each call of the form whose changed arm holds its own
+// call (4, 28 rows: its ESI/EDI restores follow the call, so the tails stay apart). Matched sibling 0x2c7ec0 has the
+// one-call form's EAX switch value in retail too, so this function's source differs from it in more than the copy.
+// One-call forms at 12: the copy through an inline member (with or without the changed test), through an inline
+// (settings) function, through one taking the controller index too; the base call through an inline member or an
+// inline (screen, event) function; qualified by the menu base; `sizeof(settings)` for the count; a `default: break;`;
+// the cases 13, 1; `if (!changed) break;`; a `do { } while (false)` for the type test; the selector as `param - 1`
+// with cases 0 and 12, as short, as byte, as dword, as a named or const long; the event bound by const reference; the
+// type and button in locals; `switch` on the type too; a `this` copy. Others: the two cases with their own bodies 14;
+// the button through an inline switch predicate 12, the event through one 12; the changed test outermost 19; the
+// button switch outermost 14; a flag set by the switch and tested after 8; `param + 1` with cases 2 and 14 14; a copy
+// of the event 24; a `goto` past the switch 15. Two-call forms at 2 (same code as the body): direct returns in the case
+// and at the end; a type mismatch returning first; `if (!changed) return base;` in the case; a `default:` returning;
+// either or both calls through the inline member or the inline function; an `__assume` ahead of or after the case's
+// call, or ahead of the last call. Three calls (one per case) 18; the case's call compared `!= false` 7, as `? true :
+// false` 6. Diagnostics, restored: a member store from the event's controller index after the switch gives retail's
+// registers and order with one call (3 extra rows); the same store ahead of the type test 18, inside the type test 9,
+// inside the case 11; a dead result store ahead of the case's call 2.
 // @retail 0x2c87fe
 bool c_screen_45d2b8::v10(s_widget_event *event)
 {
@@ -3144,6 +3167,24 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // before/after the capture 29/29; direct guard with snapshot after all setup or before the pool write
 // 30/30; guard-scope snapshot transferred into the scan 30; derived receiver reference 30. NOT kept:
 // all remain one byte short of retail. The pool-first variants gain three at most without the EAX handoff.
+// Round 193 (m3 lane 6, fast with 0x2c9a58, which matched in each). A byte scan of retail finds this sequence (a global
+// loaded into EAX, `cmp eax, -1`, `mov ebx, eax`, `je`) in no other function; after a call retail has the copy first
+// (`mov r, eax; cmp r, -1`, 199 sites) and the compare first only where an inlined helper's own result local sits in EAX
+// (7 sites, 0x11a570's family). Diagnostic: the id fetched by an out-of-line file-local getter gives 3 (81 bytes, every
+// row retail's but the 5-byte call where retail has the 5-byte load, and the copy before the compare), so retail's id
+// reaches EBX the way a call result does. Same code as the body (30): `long const &` bound to a cast of the field or to
+// an inline getter's result; a plain inline getter; the id in a one-member local aggregate, in a one-element array,
+// copied out of the field as a one-member aggregate, returned by value as one from an inline getter (read whole or by
+// member), copied out with memcpy; tested through an inline `long const *` predicate; read through a `long const *`
+// to the field at both uses; the loop compare through an inline `(long const &, long const &)` equality; a code-free
+// `__assume` after the load, between a first local and its copy, at the top of the block, or on the preferences'
+// ready flag ahead of the load. Diagnostics, restored: a volatile read of the field 30 (same EBX load); one or two extra
+// member stores through `this` 30/34 (87/94 bytes: `this`'s use count does not move its home ahead of the load); the
+// body as a file-local function of the list returning nothing 30, returning the id 27 (82 bytes: `mov eax, ebx` at the
+// exit, so an ignored result is not dropped at link time), returning `id != NONE` 38 (88 bytes); the load written as
+// inline assembly 32 (85 bytes, `this` then arrives in ECX and the caller 0x2c9a58 stops matching). Also the same code
+// (30): the id held in the map_id member of a local map entry, of a local map definition, of a local two-long
+// aggregate (assigned alone, or both members initialised), or in the second element of a two-long array.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

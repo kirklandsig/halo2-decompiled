@@ -2063,6 +2063,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // setter with early nearest reset 597. NOT kept: the 570 form grows to 2893
 // bytes and leaves the projected-point homes and late remainder.
 // Component loop with a shared projection scale 614.
+// Count and radius homes, nearest-distance storage and signed remainder timing still differ.
+// Tried scalar face sums 601; scalar edge sums 554; scalar face and edge sums 622;
+// scalar sums initialized at the original reads 622; scalar sums initialized through one origin pointer 622;
+// scalar sums with axis-first names 622; component loops for initial sum copies 623;
+// coordinate aggregates for initial sums 643.
+// NOT kept: All eight scores rise. The original sum copies agree with retail.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

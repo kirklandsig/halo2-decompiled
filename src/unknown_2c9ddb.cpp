@@ -59,6 +59,7 @@ extern long g_55c154;
 // is still spilled to a byte slot where retail branches on the selected index itself and keeps two load call
 // sites, and the name copy is still expanded in place where retail calls 0x13fac0 out of line (a file this
 // lane may not edit); the arms swapped under `!create_default` give 60 (one point, not kept).
+// MiniMax B (11-18): no new form, no lower score (61): the default/existing choice is still spilled to a byte slot where retail branches on the selected index itself (writing the two arms out with their own load call each flips the frame to `mov ebp, esp` and measures 174), and the link still expands the name copy in place where retail calls 0x13fac0 out of line with the count in ESI (src/unicode_strings.cpp): BLOCKED-BY 0x13fac0.
 // MiniMax E (11-17): no new form, no lower score (61): the arms swapped under `!create_default` give 60 (one point,
 // not kept), the same one point as the earlier round's measurement of it; retail's two 0x212bc0 call sites and its
 // out-of-line 0x13fac0 name copy still need another lane's file (src/unicode_strings.cpp).

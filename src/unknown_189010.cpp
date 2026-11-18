@@ -118,8 +118,9 @@ struct s_sound_class_play_flags
 	word flag13 : 1;
 	word flag14 : 1;
 	word flag15 : 1;
-	byte unknown0a : 7;
-	byte flag23 : 1;
+	word unknown0a : 7;
+	word flag23 : 1;
+	word : 8;
 };
 
 struct s_sound_play_tag
@@ -448,6 +449,8 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // (161). On the byte-read end test: the marker pointer in a local 45, the lookup's record through a reference 45, the priority
 // stored first with no local 115, the variant bytes read through the local pointer only 88 (470 B); the request stays in EBP.
 // Left: the end test (retail tests bit 8 as a byte, then loads the dword for bit 11) without EBX going to the object index.
+// Coordinator (11-18): with 0x221810 called out of line from its own /Ob1 file (0x21d110's match) and the flags set bit by bit
+// on state.flags (the source read once), 89 at 458 B (was 106 at 472 B).
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -456,23 +459,18 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 	if (tag_index != NONE)
 	{
 		s_sound_play_tag *sound = (s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes;
+		s_sound_source_callbacks const *source = request->source;
 		s_sound_play_state state;
+		long priority = request->location.audible ? 3 : 1;
+		state.flags = 5;
+		source ? (state.flags |= 0x20) : (state.flags &= ~0x20);
+		request->object_index != NONE ? (state.flags |= 8) : (state.flags &= ~8);
+		request->platform_playback != NONE ? (state.flags |= 0x100) : (state.flags &= ~0x100);
 		// Retail also clears the padding after the priority field.
-		*(long *)&state.priority = request->location.audible ? 3 : 1;
+		*(long *)&state.priority = priority;
 		state.location = request->location;
-		dword flags = (request->source ? 0x20 : 0) + 5;
-
-		if (request->object_index != NONE)
-		{
-			flags |= 8;
-		}
-		if (request->platform_playback != NONE)
-		{
-			flags |= 0x100;
-		}
-		state.flags = flags;
 		state.object_index = request->object_index;
-		state.source = request->source;
+		state.source = source;
 		state.platform_playback = request->platform_playback;
 
 		if (TEST_FIELD_BIT(((s_sound_class_play_flags *)function_221810(sound->class_index))->flag23) && !(sound->flags & 1))
@@ -861,111 +859,9 @@ real function_30bf0(vector3f *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
 #pragma inline_depth(0)
-// score 2 (was 2): Round 108 plain trials: existing player-unit getter direct with ordinary/forceinline/inline declarations 160/160/160;
-// camera-position copy then component subtraction 147 (664 bytes); direction copy then component scaling 154 (682);
-// to-camera copy then projection subtraction 160 (673); staged along and distance sums 2/2. Original restored;
-// success result/pop schedule remains.
-// Success result/pop schedule (retail pops ESI before `mov al, 1`). It follows
-// the link-time context, not this body or its caller's call: a 67-source reduced image matches,
-// any image of 541+ sources (0xf8eb0's, or any of 0xfc330/0xfcdd0/0x10c880/0x17a8a0/0x184440)
-// gives the swap, and in 0xf8eb0 the result ignored or the call removed still gives it; the
-// 0x189fe0 tick conversion simplified, 0x189210's result used, `inline` on 0x1895f0 2 each.
-// Round 25: early false returns 175; one nested eligibility condition, no gotos 157; the
-// distance test written `distance_squared <` 2; 0x1895f0 reading tag_index plainly 2 (0x1895f0 8).
-// Earlier, BLOCKED-BY 0xf8eb0 (a reduced build without that caller matched). Round 52 (fast, caller included):
-// noinline declaration 2; plain returns 175; no inner block 2; success falling through to the
-// label 2. Earlier: result before submit/request 181/181;
-// forward/velocity/location library copies 2/2/2; location before velocity 23;
-// read-only camera 2; forward assignment 2.
-// success result/pop order remains; positive eligibility 157; nested eligibility 157; shared point difference 170; vector names 2; request lifetime 2; distance declaration 2; shared point setter 73; shared length 162; all scores plain.
-// success result/pop order remains; camera helper 34; result/scalar names 2/2;
-// length squared first 2; entry maximum/outer owner index 2/2; distance before position 2;
-// submission name 2; delayed false initialization 5; inverted success 2; all scores plain.
-// Success result/pop order remains. Request/forward/distance/combined scope endings 2 each plain;
-// projection component loop 2 plain; difference/paired component loops fast 4/4;
-// projection library clear fast 161. Reduced exact results need plain confirmation.
-// Round 11 (lane 17, plain): without the inline_depth pragmas 269 (callees inlined, 733 bytes); the
-// success result set before the final call 181; length_squared reused for the second length 160;
-// dot3f for the projection length 166, for the perpendicular distance 158. The sources that bring the
-// swap (0xfc330, 0x10c880, 0x17a8a0, 0x184440) are all callers of 0x1895f0 that ignore its result.
-// Round 195 (lane 3, plain; --fast matches): 0x1895f0's prototype first 2; the camera block braces
-// dropped 2; position at function scope 2; forward copy declared before position 2; the two trailing
-// `goto local_2` dropped 2 (kept). One, two or three unused initialised probe locals (diagnostic) 2 each,
-// so the symbol count does not decide it. Retail puts `mov al, 1` just before the last pop after this
-// kind of call elsewhere (0x11b50b, 0x1bc56b, 0x98750); ours puts it before the first of the two.
-// Round 75 (plain; --fast matches with a CAVEAT): the 0x1895f0 call cast to void 2; the perpendicular
-// distance computed before the along test 140 (660 bytes); the distance before the forward copy 2; the
-// position sums camera-first 2; the velocity before the forward normalize 41.
-// Round 210 (fast with 0x188180, whose 533-source image reproduces the plain 2): the sound call's result tested and
-// ignored (`!= 0 || true`) 2; `return result ? true : false` 170 (657 bytes); `return result` right after setting it
-// 175 (659 bytes); `goto` after setting it with a `result = false` fall-through 2; the camera lookup before the result
-// declaration 5. Retail scan: with an own epilogue and an esp frame `pop; mov al, 1; pop` is the rule (172 sites); `mov al,
-// 1` before two or more pops appears only where other paths jump into those pops, or in ebp frames. Images today: with
-// 0xfcdd0, 0x184440 (67 sources), 0x1201a0, 0xfd410 or 0x17bbd0 (57) it matches; with any member of the large call cycle
-// (0xfc330, 0x10c880, 0x17a8a0, 0x188180, 0xfcea0, 0x1765e0, 0x247470 ...; 533+ sources) the swap appears, so 0xfcdd0 and
-// 0x184440 no longer bring it. Direct calls of 0x1895f0: retail 10, ours the same 10 plus the stand-in.
-// Round 152 (m3 lane 6, fast with 0x188180): this function placed before 0x1895f0 / before 0x189fe0 in the file 2/2 (source
-// order inside the file does not move it); the forward compressed after the velocity and location copies 20; the maximum
-// distance looked up just before the along test 197 (676 bytes); the length test arms swapped (`== 0.0f` first) 127 (661
-// bytes). Lead: retail's `pop esi; mov al, 1` is what a scheduler gives when the call is taken to define EAX; the 0x1895f0
-// result reaches callers through 0x189400 -> 0x189210 -> 0xc5890 (0x188180 and 0xc58f0 drop it).
-// Round 155 (m3 lane 6, fast with 0x188180): the play call through a void inline wrapper 35; the result flag as a long
-// 169 (657 bytes); the player unit lookup as a ternary 157 (658 bytes); the forward normalized before the position sums
-// 27; the camera-active exit as an enclosing test with the other exit kept 2.
-// Round 138 (m3 lane 7, fast with 0x188180 = plain 2): no retail caller of 0xc5890 reads its result (0xc50a0,
-// 0xc5740 drop it), so 0x1895f0's value is not consumed along 0x189400 -> 0x189210 -> 0xc5890 in retail either;
-// the only caller of this function is the unmatched 0xf8eb0. Forms: the zero-length arm with the projection
-// cleared before the perpendicular copy 2; the projection cleared by one chained assignment 15 (first +0xcf);
-// `0.0 - sqrt(...)` for the negated distance 2; the duplicate 0x1895f0 declaration above this function dropped 2;
-// the along test as two nested ifs 2. All restored.
-// Round 76 (m3 lane 13, fast with 0x188180, which gives the plain 2): the two exits as `break` from `do { } while (false)` 171
-// (frame and registers differ from +0x1); the 0x155760/0x218d30/0x30bf0 prototypes moved to the top of the file 2; the along
-// bound written `along < length_squared` 2; the normalize result cast to void 2; the projection dot as one expression
-// instead of the staged sum 6. Re-measure: `distance_squared < maximum_distance * maximum_distance` 2.
-// Round 92 (m3 lane 11, plain, with 0x189400/0x1895f0 matched): the existing helpers together (to_camera through
-// vector3d_from_points3d, both lengths through length_sq3f, projection and along through dot3f, the projection through
-// vector3f_scale) 312 (514 B: the inline_depth(0) pragma keeps them calls); without vector3f_scale 288 (539 B); to_camera
-// and the lengths only 251 (575 B); length_squared declared at its initialisation 2; a const maximum distance 2.
-// m3 lane 15 r79 (fast with 0x188180, 542 sources, = the full check's 2): the result flag renamed 2; the location copy
-// first in the success block 42 (first +0x23); the forward copy declared after the position sums 2; the camera position
-// copied into a local used six times 194 (683 B); an explicit `goto local_2` after the success store 2 (a near-repeat of
-// the listed fall-through form); the projection products written `t * direction->i` 2 (same code). The retail
-// call graph has no cycle through this function or 0x1895f0 (0x1895f0 does not reach 0xf8eb0), so the context effect
-// is not a compile-order cycle through this function itself.
-// m3 lane 14 r92 (fast with 0x188180, control 2): the camera position through a const pointer used six times 2 (same
-// code); the distance as a float `(real)-sqrt(...)` 48 (659 B); the player test written `player_unit_index == unit_index`
-// 3; the three vectors declared projection, perpendicular, to_camera 2; the along bound written `0.0f <= along` 2.
-// Image search: of the 486 sources 0x188180's image adds, src/unknown_0350e0.cpp alone flips the order, and inside it
-// only 0x4ff50 and 0x37260 together (each alone, or 0x4ff50 with any of eleven other functions of that file, keeps
-// retail's `pop esi; mov al, 1`); 0x37260 still flips it with a one-line body. The same pair flips 0x4ff50's own
-// epilogue (pops interleaved with its last stores as retail without 0x37260, not with it), so the order is an
-// image-wide code-generation state, not this body's: no form here moves it.
-// m3 lane 14 r97 (fast with 0x188180, control 2): 0x37260 and 0x4ff50 are not reachable from 0x1895f0 (neither is a
-// callee of it), so the state is not a call-graph summary; `auto_inline(off)` in place of the inline-depth pragma 269
-// (diagnostic: the callees inline as without the pragma); the camera exit as `return local_1;` 179 (661 B); the
-// velocity copied before the forward normalize 41; the square root left positive and subtracted per component 53
-// (660 B); the player-unit test as one ternary comparison 167 (667 B).
-// m3 lane 14 r99 (fast with 0x188180, control 2): `if (length_squared)` 2 (same code); the along test as `!(along < 0.0f)`
-// 85; the zero-length arm's copy written per component 172 (618 B); the projection scale divided in place in local_0 2
-// (same code); `-sqrt(distance_squared)` without the double cast 66 (663 B). Diagnostic: the function renamed (its
-// definition and 0xf8eb0's declaration and call) still 2, so the decorated name does not decide the epilogue order.
-// m3 lane 16 r124 (fast with 0x188180, control 2): the result assigned from the distance test and then tested 181 (663 B);
-// the success path ending in `return true` 175 (659 B); the result declared bare with the success path jumping past a
-// `local_1 = false` at the exit label 175 (659 B); the forward copy declared before the sound position 2 (same code); the
-// velocity and location copies ahead of the forward normalize and compress 42.
-// Round 169 (m3 lane 7, fast with 0x188180, control 2): the sound position's components written z, y, x 8; the sound
-// position record and the forward copy each declared with the outer block's vectors 2/2 (same code); the position computed
-// into a point local and copied into the record 90 (680 B); `along` declared with the outer locals, assigned in place 2.
-// Round 134 (m3 lane 12, fast with 0x188180, control 2): `local_1 = true` right after the forward normalize 181 (663 B);
-// the velocity copied first in the success block 41; to_camera's components written k, j, i 20; the maximum distance
-// looked up after to_camera 178 (661 B); the along test with the length bound first 15. The epilogue order stays the
-// image-wide state described above.
-// M3 lane 2 r97 (fast with 0x188180, control 2): the camera bound by reference for the active test 2; the 0x1895f0 call
-// in its own block ahead of the result store 2; the result set as `!false` 2; the 0x155760 result named before the
-// player-mode test 2; the maximum-distance lookup below the vector declarations 2 (all the same code).
-// M3 lane 8 r183 (fast with 0x188180/0x1895f0/0x189210, control 2): 0x1895f0's result kept in an unused local 2; the play
-// call cast to void 2; the result flag as char 170 (657 B); the sound position sums camera-first 2; the position products
-// distance-first 2. All restored.
+/* the distance is a long double: as a plain double local the full image (not a reduced one) puts the
+   success exit's `mov al, 1` ahead of both pops, where retail has it after the first; other functions'
+   double locals elsewhere in the program decide that, as they did for 0xaaca0's frame */
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
@@ -1030,7 +926,7 @@ bool function_1897c0(long local_player_index, long unit_index, long tag_index, s
 			{
 				s_sound_position position;
 				vector3f forward = *direction;
-				double distance = -sqrt((double)distance_squared);
+				long double distance = -sqrt((double)distance_squared);
 
 				position.position.x = (real)(perpendicular.i * distance + camera->position.x);
 				position.position.y = (real)(perpendicular.j * distance + camera->position.y);
