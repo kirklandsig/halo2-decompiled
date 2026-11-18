@@ -21,13 +21,10 @@ static __forceinline class_3193c0 *contact_motion_318a90(lane_a_contact_entity c
 	return motion;
 }
 
-// score 2: the normal and first-velocity loads trade places.
-// @retail 0x318a90
-unsigned short lane_a_simple_contact_manager::add(lane_a_contact_body const *first,
-	lane_a_contact_body const *second, void const *, lane_a_contact_point const *point)
+// The velocities live in the helper's own block, so the event call does not alias them.
+static __forceinline float closing_speed_318a90(lane_a_contact_entity const *entity_a,
+	lane_a_contact_entity const *entity_b, lane_a_contact_point const *point)
 {
-	lane_a_contact_entity *entity_a = a;
-	lane_a_contact_entity *entity_b = b;
 	__m128 velocity_a, velocity_b;
 	contact_motion_318a90(entity_a)->velocity_at(&point->position, &velocity_a);
 	contact_motion_318a90(entity_b)->velocity_at(&point->position, &velocity_b);
@@ -36,6 +33,16 @@ unsigned short lane_a_simple_contact_manager::add(lane_a_contact_body const *fir
 	float speed;
 	_mm_store_ss(&speed, _mm_add_ss(_mm_shuffle_ps(products, products, 0xaa),
 		_mm_add_ss(_mm_shuffle_ps(products, products, 0x55), products)));
+	return speed;
+}
+
+// @retail 0x318a90
+unsigned short lane_a_simple_contact_manager::add(lane_a_contact_body const *first,
+	lane_a_contact_body const *second, void const *, lane_a_contact_point const *point)
+{
+	lane_a_contact_entity *entity_a = a;
+	lane_a_contact_entity *entity_b = b;
+	float speed = closing_speed_318a90(entity_a, entity_b, point);
 	lane_a_contact_point copy;
 	copy.position = point->position;
 	copy.normal = point->normal;
