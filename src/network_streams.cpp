@@ -1127,6 +1127,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // sent from word and resend from field 88; sent from field and resend from word 88; both fields 84;
 // packed test with byte field update 88; word fields with Boolean tests 88. NOT kept: the word field
 // recovers the memory OR, but the prologue, oldest load and message register differ.
+// Pending-bit exclusion first 36; sent gate with pending continue 89;
+// combined mask with array base 48; separate resend type 129;
+// selected resend return 124; byte memory OR 86; combined mask with byte OR 88;
+// low-byte assignment from saved flags 34. NOT kept: gains one point and
+// still assigns from the flag snapshot instead of ORing the bit into memory.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

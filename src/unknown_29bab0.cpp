@@ -638,6 +638,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // 733, direct coordinate loop 615, and target scoped to side selection 771. The
 // aggregates reach retail length while the position still uses the other stack
 // home. Original body retained.
+// Collision vector supplies the query direction, initialized on the miss before
+// location, after location, at collision processing or before the result branch
+// 577/589/790/786. Response vector supplies it with fresh/saved defaults
+// 848/834. Collision reuse with a late target or the response default 827/786.
+// Restore the original collision default into the expired query vector 641.
+// The first forms recover the position slot but regress the opening copies.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

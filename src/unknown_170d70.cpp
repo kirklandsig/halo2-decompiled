@@ -1916,6 +1916,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
 // initial placement clamps on all three coordinates 336; projected-point aggregate 429;
 // in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
+// Collision resolver stack slots before/after the basis parameters 325/325;
+// later up pointer 325; direct up/forward through all phases 374/375;
+// nested collision gate 325; current up value before publication 385;
+// conditional entry distance 413. The collision point still occupies EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
