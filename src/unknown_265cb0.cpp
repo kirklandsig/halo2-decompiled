@@ -853,6 +853,9 @@ real function_30bf0(vector3f *vector);
 // countdown with postincremented input 187, indexed count with postincremented input 185. Primary fallback
 // first with selected 3/2 tier 84, four-way result select 153, explicit zero in the primary fallback 153.
 // NOT kept: the two-sided clip and cursor forms reach 1308 bytes but keep the wrong result home and raise the score.
+// DH398: Positive signed seat admission with a word or dword countdown, pointer stepped
+// before the call, after it or at body end. Word or dword admitted count with indexed walk 184/163/150/139/176/180, 188/184.
+// NOT kept: Four countdown forms reach retail length at 1308 bytes, but all eight score higher and keep the result four bytes above the retail home. The original indexed seat walk is restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2658,6 +2661,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the prologue and the frame (0x80 in both) match instruction for instruction and the first difference is the inlined 0x26be00
 // reading [eax+ecx+0x58] where retail reads [ecx+eax+0x58] (the same address, the two registers swapped), and the player loop
 // further down allocates the table base and the index to different registers.
+// DH398: Normalized direction snapshot after its call, distance guard, contact lookup,
+// or relative construction, as a vector or three scalars 429/429/429/429, 168/168/168/168.
+// NOT kept: Vector copies enlarge the frame to 0x8c. The scalar snapshots reproduce the baseline, including the iterator SIB and the direction reloads. The original direction consumers are restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

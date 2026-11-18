@@ -1106,6 +1106,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Negative arm first at initial offset 876, pivot 569, sweep 775, initial and pivot 876, initial and
 // sweep 872, pivot and sweep 775, all three 872; distinct branch-local reverse radii 732 at 3349
 // bytes. XMM5 still retains the radius from entry and retail reloads at the branches.
+// DH398: One point or vector for the reverse trace direction and sweep point,
+// each alone, with forward direction reuse, with local cosine, and with both 719/777/719/777, 719/777/719/777.
+// NOT kept: All forms regress. The radius still loads before actor indexing and the side trace homes still differ. The separate geometry workspaces are restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

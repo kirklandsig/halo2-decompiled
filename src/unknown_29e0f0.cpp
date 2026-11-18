@@ -620,6 +620,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // update orders or advancing either index in a for update, 419 each. Initialize
 // the point at the start of each pass on those forms, 430 each. NOT kept:
 // the selected-index slots and native validator setup remain, and length falls.
+// DH398: Capture the signed reference index as short or long after root admission, before its
+// validation, after selected defaults, or at entry 382/382/382/382, 427/451/438/438.
+// NOT kept: All short captures reproduce the baseline. The long captures regress, and the selected-index homes remain different. The original reference field reads are restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
