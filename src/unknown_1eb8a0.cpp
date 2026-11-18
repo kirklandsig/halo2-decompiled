@@ -646,6 +646,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Shared normalize-or-copy and its guard form, vector and state refresh, each inline/forceinline
 // 603/603/603/603/672/672/671/671. The full refresh forms keep frame 0x24 and move zeroing ahead
 // of the register saves. The sampled-velocity register and stack direction reads still differ.
+// Settled state kept across normalization 603; complemented first-settle state
+// 599; output rate read once 685, activation rate read once 710, both 739; local
+// settling clock 600; shared ramp tick conversion 699; local settling clock and
+// settled-state read 600. NOT kept: best gain is four and the sampled-velocity
+// register still differs. The clock form grows beyond retail length.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -454,7 +454,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 // Earlier score history (71 before).
 // score 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
-// score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
+// Earlier score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier: Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
@@ -1020,6 +1020,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // direct sine and cosine, direction copied by memcpy 215. The alternate axis helper with both trigonometric
 // values named ties the opening score. The other call forms raise it. Restored the original rotation call
 // and direction copy.
+// The rotation still schedules the direction components differently, and the transform
+// input stores precede the collision marker. Lifted coordinates in the point setter
+// 172, lifted point aggregate 67, named lifted coordinates 172, separate collision
+// probe point 58, disjoint transform and probe points 56, scoped pathfinding views
+// 77, direct pathfinding views 26, direction setter 248. Original body retained.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
