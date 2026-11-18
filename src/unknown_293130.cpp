@@ -399,6 +399,14 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // count 0-69 matches); 0x1eb8a0's helper shape 49 (41 at best) and a helper through cross3f 69 (54 at best; none 0-69); __FILE__/__LINE__ at
 // the draws 54 (45 at 13-15); slot_random_range for the four draws 19 at best; a creature index local 111; a source
 // centre pointer 39; a perch count local 44; the angle passed straight 33 (10 at 13-15).
+// M3 lane 4 r211 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the existing basis_dot_xzy (vector_products.h, i then
+// k then j, staged) for the projection's dot, (axis, vector) 99 and (vector, axis) 99 (the same code, 1405 bytes): LEAD,
+// the dot then sums i, k, j with the i product as the accumulator and v.k/v.j in retail's XMM1/XMM2, but every a.k
+// product turns copy-first (`movaps x, v; mulss x, [a.k]`) where retail loads a.k first, so the positional count rises.
+// On it: the three cross terms ahead of the dot 74 (1409 bytes, then a.j loads first too); the components named
+// i, k, j 99 (same code); the cross terms through cross3f(vector, axis) into a local 162 (1420 bytes). Retail's sides:
+// a.i and a.k products load the axis field, a.j products read it from memory; dot3f gives that split, the staged dot
+// does not.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

@@ -536,6 +536,52 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // `axis * projection + cosine * v - cross * sine`) into a separate output vector 234 (1198 B, frame 0x120: sine first and the
 // cosine after the dot as retail, but the heading at +0x10), written in place 241 (1193 B, frame 0x114); both with that
 // helper's axis alias 232/240. Helper restored.
+// DH401: Apply sine to the cross before both input scales. Sine and weighted cross
+// before projection, both trig values before weighted cross and dot,
+// projection then sine and weighted cross, cross then sine before cosine.
+// Shared cross 207/232/227/208, staged cross 207/232/227/208.
+// Weighting the cross before cosine restores the 0x118 frame.
+// Shared weighted-term adds 233, separate subtotal 227, shared scaled add at cross/projection/both
+// 233/204/254. Early sine on cross/projection/both 230/252/253. The shared additions can shorten the
+// frame to 0x110 or 0x114 but leave the request and transform displaced.
+// Round 416: The launch rotation reserves 0x11c versus retail 0x118 because it gives the whole cross vector
+// a frame home. This displaces the request and transform by four bytes. weighted cross read only at final
+// component addition, with three accumulators 230; weighted axis and cross read only at each component, with
+// three accumulators 233; weighted direction and axis accumulate before separately weighted cross, with
+// three accumulators 239; retained weighted axis and cross with independent direction products, with three
+// accumulators 165; weighted cross read only at final component addition, one row at a time 230; weighted
+// axis and cross read only at each component, one row at a time 233; weighted direction and axis accumulate
+// before separately weighted cross, one row at a time 239; retained weighted axis and cross with independent
+// direction products, one row at a time 165; three accumulators with sine before cosine and projection 196;
+// three accumulators with sine and inner dot before cosine 195; three accumulators with the caller producing
+// sine before the outer cross 257; caller sine and three accumulators with a staged inner cross 257. NOT
+// kept: Keeping weighted axis and cross terms while forming the heading products in scalar accumulators
+// recovers the 0x118 frame and moves the first difference to +0xa9. The two 165 forms grow the body from
+// retail length to 1218 bytes, and random scratch and trig homes still differ. Reordering sine relative to
+// the cross or dot regresses. The opening helper and body are restored.
+// Round 193 (m3 lane 6, fast with 0x28dab0/0x256bd0/0x259d0, all MATCH in every run; control 173, aligned 183,
+// register-masked 66). Reading: retail colours the zero k ahead of the heading's i and j (XMM3 against XMM4/XMM6)
+// because its register value ends at the dot; after `movss xmm3, [1.0]` every later use is the literal (a memory 0.0,
+// then `xorps xmm7`). Every form here keeps one zero register through the rotation and re-reads the heading's j from
+// its home, so cross j is not spilled. function_28dbd2 in place with scalar cross j/k and retail's operands in every
+// product (sine, dot3f(axis, v), cosine, `projection *= 1 - cosine`, cross i in row i, rows `axis * projection + v *
+// cosine - cross * sine`) 228 (1194 B, frame 0x114, aligned 177, masked 50: sine at +0x24 and cosine at +0x10 as
+// retail); that helper reading the stored forward and writing the heading 225 (1209 B, 0x114, masked 97); reading the
+// heading and writing a separate result vector 251 (1188 B, 0x114); forward in, separate result out 244 (1198 B, frame
+// 0x110); the vector passed by value from the heading or the forward 253/253 (1224 B, 0x114); by const reference to
+// the forward with the dot taken from the heading 228 (1209 B, 0x114, masked 67). A scripted search of 90 forms of the
+// in-place scalar helper (operand order of each of the 15 products, row term order, dot argument order, three
+// projection spellings, cross j/k order and place, cross i named or in row i, four trig/dot orders): 65 at frame
+// 0x114 (185 to 242) and 25 at retail's 0x118 (149 to 251, 11 of them at 1209 B). Row i written `v * cosine - cross *
+// sine + axis * projection` gives 0x118 in all 19 forms that have it, the sine taken after the projection in 10 of 15;
+// with retail's own row sums (the cross term subtracted last) and the sine before the cosine none of 38 does. Lowest:
+// 149 twice (1211 B, row i in that order with cross j/k ahead of the cosine), 160 and 161 at 1209 B (161: aligned 146,
+// masked 73). 34 single changes around the 161 form: the 15 product operand swaps, the dot's argument order and row
+// sums `a + b` against `b + a` all give its code unchanged (commutative operands are canonicalised, so they are not a
+// lever); `projection *= 1 - cosine` 153 (1209 B, 0x118, aligned 126, masked 66); row i with the cross subtracted
+// last 234 (1200 B, back to 0x114); row j or k regrouped 161/213/215; cross k ahead of cross j 214; the crosses after
+// the projection 229 (1227 B), ahead of the cosine 160; sine after the projection 231 (1228 B). NOT kept: every one is
+// the helper's shared-call body written out, with no match.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

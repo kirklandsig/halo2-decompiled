@@ -271,6 +271,13 @@ void juggernaut_set(long player_index, bool juggernaut)
 // the loop's top level 20 (same code); the draw in its own block with the count copied to a local for the modulo and a
 // named choice 20 (same code); the players word through a `word const &` bound to the global's field at the loop top 20
 // (same code); the candidates written through an end pointer with the count taken from it after the loop 81 (248 bytes).
+// Round 118 (m3 lane 10, fast with 0x192530, matched throughout): the scan as a forceinline helper returning the count
+// to the caller's own count 20 (same code; as a plain inline it stays out of line, 243, and 0x192530 5); a
+// function-scope copy of g_510c9c re-measured 36: the pointer then loads at entry into EBX and count still takes EBP,
+// so the pointer's longer range does not flip the pair; `dword player_index` 20; the waiting calls folded into the
+// candidate condition with the store in braces 20; a named absolute index with the bit and exclusion tests as two
+// `continue` guards (`player_index == excluded`) 21; a trivial forceinline accessor returning the players word for the
+// bit test 20 (same code).
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

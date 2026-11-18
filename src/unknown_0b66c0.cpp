@@ -506,6 +506,14 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // [35] (string ECX -> EBX, start EDX for life, walk EDI, byte AL, two exits); with the length helper walking a local
 // cursor 41 [35], with `start += (long)string` 41 [35], with a named length 41 [35], with both 41 [35] (all the same code:
 // a plain pointer is never left in memory, as rounds 55 and 86 found).
+// Round 118 (m3 lane 10, fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time unless noted): the shared
+// length helper's counter started in its own for 21 (same code); the helper as `while (length < 0x1ff &&
+// string[length]) length++;` 57 (86 bytes, 0xb61d0 46); with a plain string parameter: the current body 49 (92 bytes,
+// string in EBP, start EDX for life, walk EDI, counter ECX as retail, [6]); `start += (long)string` after the clamp 41
+// (104 bytes, two exits, [35]), with a named length 41 [35], with one combined condition 41 [35], with one combined
+// condition and the result set in if/else arms 52 (90 bytes, [36]). Every plain-string form ends the result's AL life
+// early (two exits), which frees a register for the string; retail keeps the result in AL across the scan and the
+// string on the stack.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

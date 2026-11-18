@@ -510,12 +510,18 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax B (11-18): no new form, no lower score (102): this build still reassociates the dot product's three products to (n.k*v.k + n.j*v.j) + v.i*v.i where retail sums them as (v.i*n.i + n.k*v.k) + n.j*v.j (writing the sum with += restores retail's order but measures 103), and retail's sweep still sits at [esp+0x44] with the collision record at [esp+0xb0] where this build has [esp+0x38] and [esp+0xa4].
 // MiniMax R (11-17): no new form, no lower score (102): the dot product's three products are still summed in the other order and the perpendicular vector's slot still sits below the sweep's where retail keeps it above the collision result; MSVC canonicalises the sum and allocates the slots by liveness, so neither the operand order nor the declaration order moves them (three forms tried and reverted).
 // MiniMax E (11-16): no new form, no lower score (102): the sweep and collision homes still sit twelve bytes below retail's and the body is still twelve bytes longer; retail's dot product adds its terms in another order, a spelling the coordinator has already reverted.
 // MiniMax I (11-17): no new form, no lower score (102): retail adds the dot's three terms as
 // (v.i*n.i + n.k*v.k) + n.j*v.j while this build reassociates the same sum to (n.k*v.k + n.j*v.j) + n.i*v.i;
 // writing the sum with += restores retail's order but measures 103, and the sweep and collision homes still sit
 // twelve bytes below retail's, so the first difference stays at +0xfe.
+// MiniMax H (11-18): score 102 (was 102): no new form, no lower score; the sweep and collision homes still sit
+// twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0) and the dot's three products are still summed
+// in the other order; the position set through the existing real_point3d_set was measured again at 245, so the
+// plain stores stay. Nine spellings of the dot's three terms compile to the same instructions (102), the typed
+// particle record is the same code (102), and the velocity read through a pointer measures 194.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);

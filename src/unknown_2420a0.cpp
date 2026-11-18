@@ -1634,6 +1634,10 @@ void function_2422d0(long slot)
 // 7/7 (copies fold); a named header pointer with the object read from it 7; a pointer or a reference to a zero-offset first
 // member of a view of the object 7/7, a derived view converted to its base 7 (all fold to the object); the slot local at
 // function scope and reused as the third loop's counter 7.
+// Round 211 (m3 lane 4, fast): the reference bindings that matched 0x2c5897's mask: the object pointer as
+// `s_slot_object *const &` 7; the slot as `long const &` 7; both 7 (all the same code); the index as a `long const &`
+// to a cast copy of the team entry 104 (267 bytes: the cast folds and the reference reads the entry again after the
+// call); the bound object with no slot local 79.
 // @retail 0x2423f0
 bool function_2423f0()
 {

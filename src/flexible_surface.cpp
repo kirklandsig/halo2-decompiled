@@ -820,6 +820,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // forced inline 130, both component sets captured 163. NOT kept: forced inline ties; the
 // other forms break the other caller's match. The i/k capture and scaled cross restore
 // frame 0x20 at 880 bytes but leave the initial random-state load order and raise the score.
+// M3 lane 13 r108 (fast; 0x118140, 0x117c80 and 0x2551f0 matched): the axis declared at function scope and assigned in
+// the block 130; the axis a const local 130; the time as `field_2_3 * (real)game_time` 130; the frame test written
+// `g_55e710 < (long)g_4ba034` 130 (all the same code); the rotation's sine and cosine through sinf/cosf 132.
 // Round 416: Angle initialized from the sample, first weighting or both weightings,
 // with grouped or separate scale updates, and a named doubly weighted fraction
 // all scored 130. The 0x1c frame and initial sample slot still differ.
@@ -828,6 +831,22 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // draw, cosine after or before sampling 152/158 and 152/158. Each pair copies
 // the table entry whole or by components. Whole-entry forms reach 880 bytes
 // with the 0x1c frame. Direction read order and the frame still differ.
+// Shared rotation snapshots direction j/k or k/j before the projection. Direct
+// projection 150/148, with cross j/k before i 150/148, named unscaled dot 148/158,
+// with both 148/158. The frame reaches 0x20, first difference +0x2a, with the seed
+// still loaded late. NOT kept: all scores rise and the matched rotation user differs.
+// Unit-range generator 154, directly in the angle 203; integral sample converted in the
+// angle or after the oscillation 154/154; initial-direction and axis setters 152/149;
+// shared draw value or separate const samples 130/130. NOT kept: sample and rotation
+// homes remain different and none lowers the score.
+// Double argument for sine/cosine/both 159/132/162. Shared promoted argument
+// before/after axis 165/165, with named sine/cosine 165/161. Round at the
+// angle producer and hold the promoted argument 161. NOT kept: the last form
+// recovers frame 0x20 at 880 bytes, but the seed placement and rotation differ and the score rises.
+// Tick getter with a direct product, factor-first product, named short factor, or named tick count
+// 130/130/152/130. With the shared vector sampler for both table draws, 126 each.
+// NOT kept: the sampler's four-point gain misses the eight-point bar and leaves the 0x1c frame.
+// The named short factor reaches 880 bytes but raises the score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -959,6 +978,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // MiniMax C (11-01): no new form, no lower score.
 // MiniMax S (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
 // MiniMax E (11-16): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 and passes the first argument to 0x4b2d0 in ECX; both callees sit outside this lane's files.
+// MiniMax B (11-18): no new form, no lower score (322): retail still inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and still passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
+// MiniMax G (11-18): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line and
+// passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against this build's three stack arguments; both callees sit in files this
+// lane may not edit, so the frame 0x2c, the attribute scans, the side loop and the outer vertex calls stand as they are.
 // score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
 // 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
 // tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.

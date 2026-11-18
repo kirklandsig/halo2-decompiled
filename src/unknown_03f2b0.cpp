@@ -1292,6 +1292,7 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
+// MiniMax B (11-18): no new form, no lower score (93 on the full image): every difference still sits before the 0x4c190 call - the 0x4bcc0 argument load (retail EAX ahead of the force push), the entries in ecx, retail's dead entry lea, the header global's load order, the byte previous level, the two-step record adds and the 0x4c190 argument order; the reduced image of this file is not faithful, so only the plain build measures it.
 // score 93 (was 93): m3 lane 9 r134 (all plain; the earlier 175-base forms re-measured on the 93 base that round 224
 // reached, and the MiniMax C line that sat below the marker moved up into this note): the object-header table read
 // into a local before the count store 349; the type stored through one ternary 93 (same code); the 0x4ed284 entry

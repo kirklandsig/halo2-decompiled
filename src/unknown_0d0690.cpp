@@ -313,6 +313,12 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // point idiom 121; the scenario's sky block read through the shared tag-array and tag-reference types in the sky helper 131
 // (the sky lookup's registers swap; the add stays load-first). Diagnostic: the blend through a forceinline (result, a, b, t)
 // wrapper over 0x131c20 253 (878 B: LTCG then inlines 0x131c20's body). Body unchanged.
+// M3 lane 16 r134 (fast; base 30; colour first re-measured 121): on colour first, the angles as named `real yaw`/`real pitch`
+// locals 159 (821 B: the post-call add goes in place and the first-light copy is retail's, but the x87 block then loads each
+// angle once where retail reloads both fields); the same as `real const &` references 121 (folded back, same code); the record
+// direction stored field by field 134 (838 B); the light pointer declared ahead of the loop 121; the first-light strength read
+// as `((real *)(entry + 4))[3]` 121 (same code). Screen (24 combinations of the index local, the hit local, the blend in the
+// call, the sky helper's count local, three declaration orders and the open test written in the if): best 121, none in place.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1409,6 +1415,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // length (2189) and reads 566 on the full image, which is worse than the 529 the kept body reads there, so it was
 // dropped and the body restored. What still differs is the entry: retail keeps the block in EAX and the query in
 // EDX where this build has the block in EDX, and the count is tested twice around the scan.
+// MiniMax H (11-18): score 529 (was 529): no new form, no lower score; retail hands this function its block in
+// EAX and its query in EDX where this build has the block in EDX and the query in EAX, the frame stays 0x2c
+// against retail's 0x28, and the selection result still spills where retail keeps it in a register; the
+// parameter order that would fix the swap is retail's and the callers' declarations are in files this lane
+// may not edit.
 // score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
 // MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
@@ -1797,6 +1808,16 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // selected/missing completion assignments 572, missing/selected completion assignments 589.
 // NOT kept: the count-predicate form reaches the retail frame but grows to 2194 bytes. Late readback and both
 // completion assignments lose a matched caller.
+// Primary clamp-only/full-output scope 529/529; reflected clamp-only/full-output
+// scope 529/529; joined and separate output scopes 529/529; scoped curve outputs
+// with separate luminances 530; with the normal scope ending at its final copy 530.
+// The 0x2c frame and selection spill remain.
+// Round 422: Sole-exit missing-selection branch, success after/before the record stores: guarded index 573/547,
+// one-test index 586/586, consumed-count cursor 568/565, end cursor 578/577.
+// The selected result and incoming register homes still differ.
+// Indexed rejection by combined/nested tests 529/529, with a single flags read 530/530.
+// Counted entry cursor with either rejection test 541/541, with a single flags read 578/578.
+// The cursor forms reach frame 0x28 but leave the result spill and shorten the body.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

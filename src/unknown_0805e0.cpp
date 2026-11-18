@@ -786,6 +786,12 @@ void function_1537f0(s_profile_record *record);
 // byte at +0x52 are scheduled ahead of the name copy; unsigned 16-bit lvalues through casts 28 (260 bytes, the same early
 // schedule with `mov eax, 0xffff`). So with direct entry stores the links are free to move above the builder's copy;
 // retail keeps the builder's stores and the links in source order, as stores through a pointer do.
+// M3 lane 4 r211 (fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): three links through `entry` in
+// retail's order and the last through a pointer to its field 46 (NONE hoisted into EBP); no entry local, the view, the
+// link pointer and the tail all from `g_4cf98c[index]` 44 (base +0x4c as retail, but NONE hoisted and the two record
+// words merged in EBX); a pointer-stepped entry loop 80 (275 bytes); the four links by one 8-byte 0xff memset 38 (250
+// bytes: base +0x4c, no hoist, two dword -1 fills); the four `entry->` links from one `short const &` bound to NONE 49
+// (hoisted). So the hoist follows the link stores' shape, not the pointer local itself.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -157,7 +157,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 846 (was 846): Frame 0x4e0 agrees. The entry zero uses EBP and the target count, primary source and query arrays have different homes.
+// score 846 (was 846): The 0x4e0 frame and 3327-byte extent agree. The entry zero uses EBP instead of ESI,
+// and the target count, primary source and query arrays receive different homes. The retail query keeps its
+// full-width count through the walk and reloads a sound entry before testing its tag.
+// Earlier score 846 (was 846): Frame 0x4e0 agrees. The entry zero uses EBP and the target count, primary source and query arrays have different homes.
 // entry zero, target-count, primary and query-array homes differ in the 0x4e0 frame.
 // unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
@@ -627,6 +630,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Sound table held through the scan and matched row reacquired after the distance call,
 // with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
 // Original body restored.
+// F417: Shared gain after tag 900; two-use computed gain 851; target gain readback 900;
+// tag and decibels before shared gain 900; target entry before range 866; local gain with target-first
+// publication 852; named endpoint before shared gain 900; allocation before choice gain 900.
+// NOT kept: the entry zero and query array homes remain and the scores regress. Original body restored.
 // AC571: Full producer count in the first scan or in repair 915/856. Capacity checked on acceptance,
 // short/full-width count, 950/965. Count advanced before record stores and capacity checked afterward 964/984.
 // Primary set during first inside conversion or first target append 940/956. NOT kept: all regress.
@@ -644,6 +651,28 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Attenuation sampled before the indexed walk with short/long count 847/919.
 // NOT kept: portal cursors recover ESI zero at +0xf but grow the body and retain displaced
 // count and array homes. Other cursor variants also move the frame away from 0x4e0.
+// First source retained from acceptance, record completion, collection end or inside selection:
+// 943/937/920/952. The same forms with full query count: 945/954/879/945. NOT kept: even the
+// 3327-byte form raises the score, and the entry zero and stack homes still differ.
+// Round 628: dword choice count through construction/repair, then short for later use 947/952.
+// Short construction and long count at repair/conversion 912/893. Full query bound in construction
+// with a short completed count 961, or in repair with a short conversion count 890.
+// Typed portal indexing 846, with the first two choice-count splits 947/952.
+// The dword construction forms recover the ESI zero but shorten the body and raise the score.
+// shared sound lookup in first query and primary repair 846; shared sound lookup in query and neighbor
+// repair 846; shared sound lookup through all BSP reads 846; shared sound reference through all BSP reads
+// 846; ordinary inline sound lookup through all BSP reads 846; shared sound lookup with full query count
+// 919; shared sound lookup with full choice count 964; shared sound reference with full query and choice
+// counts 965. NOT kept: the shared sound lookups tie at the original width. With a full-width choice count,
+// the entry zero and three query-array homes agree with retail, but the target-count and primary homes still
+// differ and the extent falls to 3264 bytes. The opening executable source is restored.
+// M3 lane 13 r110 (fast with 0x18bb80, which matched in each; control 846, aligned 1004): the literal -64.0f in place
+// of the global in both decibel helpers 846 (same code); with the linear helper pinning the long bit pattern through
+// an if/else result (0x2195f0's shape) 867 (3309 B, aligned 665); every helper in the shape of 0x2195f0/0x2197f0 873
+// (3309 B); only the logarithmic helper in 0x2197f0's shape 848; the fraction's test as `fabs(0.0f - range)` 846 and
+// its ternary as an if/else 846 (both the same code). Lead: retail treats 0x14b240 as a call that may write memory
+// (0x18d730's note; retail reloads the sounds base after it here); with that callee form this body is 911, so a
+// rework of this function belongs with build/r110/held-0x18dc90.patch.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

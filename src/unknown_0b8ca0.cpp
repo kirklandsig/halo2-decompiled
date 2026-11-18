@@ -221,84 +221,6 @@ short function_b8d30(long object_index, long marker_name, s_object_marker *marke
 
 // Preserve the activation call boundary while inlining the component lookup.
 __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disable);
-// score 4 (was 4): the component pool data loads after the index scaling, into eax (retail: before it, into ecx); tried a flags pointer local 4, a component index local tested and passed 13, a goto-free bool form 55, NONE on the left 4, a component pointer local 4
-// component data loads into eax after index scaling, retail ecx before it.
-// Signed bitset 11; unsigned bitset 11; external object reference 4; object reference/bitset 11.
-// External header reference 18; header reference/bitset 20; type read first 4; bitset before object reference 11.
-// The view's own physics bits 4; the tail written out in both arms 106; disable tested first 4;
-// both index reads through the havok object getter 51; a word index 14; in a one-file LTCG
-// build the data stays in eax for every lookup spelling, even with the update tail deleted.
-// Round 55: no noinline 4; inline target 4; inline activation/update/list-update declarations 4/4/4;
-// component reference 4; const object and type 4; explicitly masked getter index 4.
-// Round 31: the pool data read into a component-array local before indexing 4; `if (disable) goto
-// update;` ahead of the activation 4; the address written index-first, `index * size + data` (diagnostic,
-// identical code, so the evaluation order of the lookup is not the cause) 4; the type read from the
-// header at each of its three uses 61; the component index re-read through OBJECT_GET 55. Matched
-// 0x11bce0 makes the same lookup with the data loaded after the index scaling, as ours does here.
-// Round 57 (lane 10): matched 0x1c4b00 has retail's order here (data into ECX, then the mask) with the
-// same getter spelling, because its next load takes EAX; matched 0x1ed340 has ours. An index local
-// inside the activation arm 4; a data local then a masked index local 4; the masked index local then
-// the data local 4; a scaled offset local 4; a typed elements local plus the masked index 4 (all the
-// same code). Nothing visible here keeps EAX busy across the data load.
-// Round 32 (lane 17, fast): the component index in a local under a nested NONE test 70 (221 bytes); a named
-// `1 << type` mask 11; the physics bit without TEST_FIELD_BIT 48; a byte type 49. Kept: the two `goto update`
-// jumps replaced by a final `if (!disable)` block 4 (same code).
-// Round 135: forced-inline component getter 4; forced-inline getter without target noinline 4;
-// const local object pointer 4; activation result reference 4; final type arms reversed 6;
-// inverted outer type test 17; existing object in only the 0x1c arm 80 (217 bytes);
-// unsigned component-get parameter 4. All restored; the pool data load schedule is unchanged.
-// Round 147 (lane 5, fast): one header local for the object and its type 18; a typed pointer add on the
-// pool data 4; the component pointer local before the `disable` test 4 (sunk into the arm); the
-// component index read into a local at entry 13. Diagnostics: 1-16 unused locals at entry 4 each (not a
-// symbol-count tie); unused mentions of the pool data/pool/index ahead of the lookup 4/4/4/4. Lead: a
-// compile-only copy reproduces our order for every lookup spelling, and only a second use of the pool
-// data after the add (diagnostic store, 75 at 210 bytes) gives retail's exact data-first sequence, so
-// retail's register allocator saw the data live past the add.
-// Round 54 (lane 2, fast): `do { } while (false)` around the activation arm, around the call, ahead of the
-// test 4/4/4; a const reference to the component index for the test and the lookup 4; a component local inside
-// the arm 4; `disable == false` 4. Diagnostics, reverted at once: one to three volatile probes at the top, ahead
-// of the `disable` test or inside it leave the data load after the `lea` in EAX, so unlike 0x15adb0 this is no
-// missing rotation step: retail allocates the data load while the masked index still holds EAX.
-// Round 77 (lane 10, fast): a dword type 4; a short type 11 (201 bytes). Diagnostics: without the
-// `else if (disable)` store 41, without the 0x1c/0x20 tail 73, without the final `if (!disable)` block 79:
-// the data still loads into EAX after the scaling in each, so no other block of the body sets it.
-// Round 156 (lane 5, fast): a direct `bool has_physics = ...` with `if (disable) ... else ...` 80 (228 bytes,
-// three callers lose); a component local at function scope assigned in the arm 4; the component pool data
-// read into a typed local at entry 4 (sunk into the arm); the two disabled-bit stores through the flags
-// word 4; the component index field as dword 4. Matched 0xbc470 makes this exact lookup index-first from
-// the same call-argument form, and the data-first sites with one data use (0xbc5e0, 0x1c35f0) keep the
-// component in a multi-use local, so retail's ECX data points to a second use of the component here.
-// Round 137 (lane 7, fast; a one-file LTCG harness reproduces 4): a second real use of the component gives retail's
-// data-first lookup (pool in EDX, data in ECX before the mask): a NULL test of it 42 (204 bytes), a test of its object field
-// 46 (209 bytes), both diagnostics; uses that leave no code do not (harness: an empty inline taking it 4, a dead field read 4,
-// a self-compare 4, cleared after the call 4). A `* const` component local 4; a `long const` index local in the arm 4; a
-// reference to the component 4.
-// Round 100 (m3 lane 9, fast): the activation function 0x1d1c60 as a member of the component type (definition
-// and all four calls, diagnostic) 4, its callers unchanged; a component pointer started NULL, set under the three
-// tests and tested afterwards 43 (202 bytes); the outer test inverted with the `disable` store first 4; the three
-// tests in a named bool with `disable` tested first 80 (228 bytes, callers 0xb73b0 and 0x1ed340 lose 2 each); a
-// typed components local and a component index local inside the arm 4.
-// Round 187 (m3 lane 6, fast with 0xb73b0/0x1ed340): a pool pointer local in the arm indexed at the call 4; a static
-// helper taking the component index and doing the lookup and call 76 (177 bytes, out of line), forced inline 4; the
-// lookup as a forced-inline const member getter on a view of the pool 4; the component index assigned inside the
-// NONE test 4; a forced-inline getter taking the index field by const reference 4. Retail's other data-first caller
-// 0x1c4b00 crosses the same block edge with the index in EAX, but its next load takes EAX.
-// M3 lane 5 r190 (fast with 0xb7360, 0xb73b0, 0x1d1c60 and 0x1ed340, all matched each time): a 600 s annealing permuter
-// run (seed 190, 58 tries, reduced image equal at 4) none below 4; the lookup written out at the call without the getter
-// 4; as byte arithmetic on the pool data, `data + (index & 0xffff) * 0xa0`, 4 (both the same code). Diagnostic: the
-// masked index in a local stored again after the call 93 (224 B): the data still loads after the scaling into EAX, so the
-// index's live range is not what makes retail load the data first. The getter given `havok_object_get(object_index)->
-// havok_component_index` (the physics view the matched data-first 0x1c4b00 uses) 55 (211 B: the object is looked up again).
-// M3 lane 10 r114 (fast with 0xb73b0/0x1ed340/0x1d1c60/0xb7360/0xb58c0/0xa03d0/0xe18d0, all matched each time):
-// `__assume(component != NULL)` on a named component before the call 4 (same code); the component computed at entry,
-// before the three tests, 4 (sunk into the arm); the index test and the lookup through the havok object view
-// (`havok_object_get(object_index)`, the matched data-first 0x1c4b00's spelling) 4 (CSE'd with `object`); the type
-// local renamed `object_type` 4; a `bool const enable = !disable` for the two tests 55 (205 B).
-// M3 lane 14 r107 (fast with 0xb73b0/0x1ed340/0x1d1c60/0xb7360, all matched each time), the #1225 scratch-rotation
-// idea (a no-code accessor shifting which scratch register the pool data takes): the getter given the index through a
-// forced-inline accessor 4, the accessor also in the NONE test 4; the lookup written out over a typed components local
-// with the accessor's index 4; the pool data through a forced-inline data accessor 4; the pool through a forced-inline
-// pool accessor 4 (all the same code: the data still loads after the scaling into EAX).
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -310,7 +232,11 @@ void __stdcall function_b9b90(long object_index, bool disable)
 		object->havok_component_index != NONE)
 	{
 		if (!disable)
-			havok_component_rigid_bodies_activate(havok_component_get(object->havok_component_index));
+		{
+			// the pool's elements bound by reference: retail loads them before it scales the index
+			s_havok_component *const &components = (s_havok_component *)g_51e9b8->data;
+			havok_component_rigid_bodies_activate(&components[object->havok_component_index & 0xffff]);
+		}
 	}
 	else if (disable)
 		object->physics_disabled = true;
@@ -1917,6 +1843,10 @@ done:
 // offset read through the table in place with the definition local declared after it for size and placement offset 27;
 // the size as a dword 27; the definition typed as the object type definition (the 0xa offset through its field, the
 // header included) 27; the placement index widened once into a long local for the product and the push 32.
+// M3 lane 3 r260 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x29fd80/0x2a12f0/0x2a1340): the 27 form re-measured 27 (236 B);
+// on it the three definition reads in one declaration 27, the datum in one expression with the placement offset read inline
+// 27, the placements read folded into the datum with a placement-offset local 27 (all the 27 form's code); the slot lookup
+// as `NONE` then an `if` (for the ternary) 59 (243 B), that on the 27 form 59 (240 B).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -2124,6 +2054,14 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // reached here, so the first difference is the jump target at +0x76; the marker pointer retail inlines belongs to
 // 0xb8bd0 in another file, which is /Ob1, so LTCG keeps the call here and it cannot be changed from this lane.
 // MiniMax E (11-17): no new form, no lower score (285): the permuter's best variant (283) came from an argument swap and a constant local, which the rules rule out, so the body stands.
+// MiniMax H (11-18): score 285 (was 285): no new form, no lower score: the prologue and the frame now agree with
+// retail's (the index read before the frame, the 0x64 frame, the pool in ebx and the pool's data in edi), and the
+// first difference is still the jump target at +0x76, retail's shared epilogue at 0xb987a against our duplicated
+// one; behind it retail keeps the pool in ebx and the object's data in edi where this build reloads the pool's
+// data into edx and the index into ecx. The permuter's best variant (283) swaps the arguments of 0x141590 and
+// 0xb8bd0 and of 0xb9b90, turns one of 0xb7430's true arguments into false, and adds a volatile pointer and a
+// constant local, so it is wrong as well as under the gate and was restored. Retail still inlines the marker
+// pointer of 0xb8bd0, whose file is /Ob1 and outside this lane.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60

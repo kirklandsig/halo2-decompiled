@@ -834,7 +834,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
-// score 35 (was 60): retail keeps the message in ECX and the flags in AX (ours EAX / CX) and ends the found path with
+// score 35 (was 60): The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
+// Earlier: retail keeps the message in ECX and the flags in AX (ours EAX / CX) and ends the found path with
 // `or byte ptr [ecx + 0xe], 2` (ours `or ecx, 2` and a word store); m3 lane 3 r257's entry is the last one above the marker.
 // Earlier first line: Retail uses one sequence counter and reloads newest in the index helper.
 // Round 112 (m3 lane 10), NOT kept (coordinator 11-16): 44 needs the loop bound re-read as `m_message_window.newest` in
@@ -1115,6 +1116,30 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the message getter: reconstructed newest 88/91/88/91; wide distance from
 // oldest 172/165/172/165. NOT kept: native loads and single cursor remain
 // different, and all eight extents move away from 225 bytes.
+// Scan selects the entry before publishing the outputs. Index with live cursor 83/67,
+// message with saved sequence 91/35, saved index and sequence 83/67, loop test on
+// pending message with one-past cursor 96/84. Each pair sets the bit in place or
+// writes the saved flag word. NOT kept: the in-place forms still lose the retail
+// message/flag registers. The message and saved sequence tie only with a word store.
+// In-place resend update with size/time/both captured before sequence publication 90/90/90.
+// Both captured with saved flags 88. Single exit from the found path with saved/in-place flags 35/89.
+// Initial send to single exit 89. Complete eligibility with in-place update 89.
+// NOT kept: the in-place update loses the native opening allocation.
+// Separate query and resend types: early snapshot 81, conditional return 111, late
+// assignment 35, nested query/count guards 81. With an in-place flag update 93/129/91/93.
+// NOT kept: the result split ties or changes the entry and loses the native oldest reuse.
+// Resend bit updated through byte/word/bool fields with saved word tests 86/89/86;
+// sent from word and resend from field 88; sent from field and resend from word 88; both fields 84;
+// packed test with byte field update 88; word fields with Boolean tests 88. NOT kept: the word field
+// recovers the memory OR, but the prologue, oldest load and message register differ.
+// Absent-index branch 90/43, absent-index conditional 90/43, table base in the valid
+// branch 89/35, table base before validation 90/45 (in-place update / saved word).
+// NOT kept: the saved-word absent-index forms recover ECX/AX but change the lookup
+// branches and still write the full word. The in-place update loses the opening allocation.
+// In-place resend bit with conditional selection, invalid-first selection, a scan-scope message,
+// or a scan-scope array base 90/90/89/67. With the three output lvalues bound 90/90/89/67.
+// NOT kept: the array base preserves the query setup and restores the byte memory OR, but
+// moves the cursor and oldest to different registers. The other forms also change the query setup.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
