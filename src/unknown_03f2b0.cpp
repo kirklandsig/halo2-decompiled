@@ -1585,6 +1585,7 @@ struct s_133f70;
 // an optional view index 358, explicit selected outcomes 353, or a conditional count within the valid view 365.
 // Those forms with a signed-byte previous level: 356, 150, 358, 365. The 150 form keeps the original first
 // difference and takes more differences through the view and cache blocks. Body restored.
+// MiniMax A (11-17): no new form tried this round, no lower score (93): every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ecx, retail's dead entry lea, the header's global loaded first and its object in eax, the success value stored before the 0x3d4f0 call, the byte previous level, the record offset added in two steps, the reuse test's registers and the 0x4c190 argument order) plus one object load near the end; the tail needs 0x23690, which is still todo in config/functions.csv. BLOCKED-BY 0x23690. The reduced image scores 344 here, so --fast is only a screen.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

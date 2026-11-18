@@ -2845,6 +2845,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // MiniMax S (11-14): no lower score (17): the set index is still sign-extended (movsx ebp, ax) where retail copies
 // the dword, and this build still pushes two arguments where retail calls 0x219070 with one; both are fixed by that
 // callee's declaration in another file, and the delayed start still stores the flag byte before the start time.
+// MiniMax A (11-17): no new form kept, no lower score (17): the range value as a short local scores 53 in the reduced image and 52 in the full image (the sign extension moves to the 0x219070 call as movsx eax, bp where retail copies the dword), and the long local is the only form that reaches retail's mov ebp, eax; the delayed start still stores the start time at offset 0x8c before the flag byte at +4 where this build sets the flag byte first. BLOCKED-BY 0x218f50 and 0x219070.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -5041,6 +5042,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
 // score 535 (was 535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their
 // noinline declarations live in other files.
+// MiniMax A (11-17): no new form tried this round, no lower score (535): the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line; their noinline declarations live in other files. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

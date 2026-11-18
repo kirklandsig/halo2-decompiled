@@ -1279,6 +1279,7 @@ long function_cbd50(long unit_index, short weapon_index);
 // through unit_weapon_view_get with the slot loop's weapon through unit_weapon_in_slot 57; loop 1's bit-3 test through a
 // named `held_weapon` read from held[hand] 57 (all same code); loop 1's weapons as named held/pending locals stored
 // after both lookups 120.
+// MiniMax A (11-17): no new form kept, no lower score (57): a pool copy used by the three lookups scores 314 (the pool takes ebp, the player ebx and the frame grows to 0x20), and the permuter (900 s annealed, 100 tries) found nothing below 57; what is left is an esi/edi exchange, retail keeping the object pool in edi and the slot and weapon temporaries in esi, this build the other way round.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1751,6 +1752,7 @@ void function_150820(dword *bits, bool local_only)
 // edi, esi and ecx - and both bodies are 210 bytes; the rotation starts at the entry block, where retail reuses edx (the
 // pool data pointer's register) for the unit index and leaves ecx free for the policy byte, and this build reuses ecx (the
 // table's register) and takes the policy byte in al, and no declaration order, hand width or result form in the list moves it.
+// MiniMax A (11-17): no new form tried this round, no lower score (43): a register rotation only (retail keeps the player in esi, the unit index in edx and the hand in edi, this build keeps them in edi, ecx and esi, and the primary byte follows in cl against al); the body, the length (210) and the calls agree.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
