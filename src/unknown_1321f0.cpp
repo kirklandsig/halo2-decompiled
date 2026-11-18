@@ -621,6 +621,27 @@ struct s_visibility_object_header
 // param-home pick does not follow names); 0x132b10's first and last parameters swapped with the call 202 (0x132b10 12:
 // a register parameter's position picks its register); the plane outputs and both calls in their own block 4;
 // `contained` declared before first/second 7 (only the init stores move).
+// M3 lane 1 r119 (fast, control 4; 0x132fd0 and 0x132b10 checked each time): retail keeps in_front in flag_b's dead
+// argument slot and behind in the frame byte at 0x13, ours the other way round, every other byte equal. 0x132fd0's two
+// outputs declared in the other order (definition and all three calls) 2 here but 0x132fd0 6: its registers follow the
+// declared position, so its present order stands, and the homes do not move (only the two lea operands); in_front ahead
+// of the centre 11 (0x132fd0 6); behind last, or the radius ahead of in_front-then-behind, 2 (0x132fd0 6); the radius
+// second, third or fourth with behind before in_front 4 each (0x132fd0 MATCH, same code). 0x132b10's AL parameter at
+// each of its other four positions ahead of the last two 4 each (0x132b10 MATCH, same code); the other 29
+// interleavings of its three register parameters give 12 to 21 in 0x132b10 itself (its DL and CL parameters must be
+// the last two). first/second/contained declared c,f,s 7, c,s,f 6, s,f,c 6 (only the three init stores reorder, no
+// slot moves). The pair declared behind first 4; behind in the outer block after or before the three flags, or at the
+// function top, 4 each; in_front at the function top or in the outer block 4 each; the pair named a/z, z/a,
+// front/back, x1/x2, x2/x1 4 each; both read into named locals ahead of the packer call, either order, 4 each (same
+// code). Diagnostics, restored at once: `bool in_front = false;` alone 54, and the homes are then retail's (in_front
+// in the argument slot, behind at 0x13; only the extra store differs); `bool behind = false;` alone 56 (homes ours);
+// both initialised, either order, 128 (homes ours); in_front or behind read once more after the packer call 128/129
+// (homes ours: the second read folds into the first load); in_front or behind as a byte with a cast at the call
+// 126/130; the visibility result reused as the front output 67 re-measured (retail's homes, one extra store of AL);
+// in_front initialised from flag_b 57 (the store stays, flag_b moves to EBX), behind from flag_b 59. So the slot goes
+// to behind on a tie and to in_front only when in_front alone has an earlier direct store; declaration order, scope,
+// names and both callees' parameter orders do not decide it. Open: what gives in_front that precedence with no
+// instruction.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {
@@ -738,8 +759,8 @@ struct s_visibility_bsp
 	s_visible_instance *instances;
 };
 
-short function_2cbf0(long arg_1, short arg_2, dword arg_3,
-    long arg_4, dword arg_5, long arg_6, long arg_7, byte *arg_8, short arg_9, byte arg_10,
+short function_2cbf0(long arg_1, dword arg_3,
+    long arg_4, dword arg_5, long arg_6, short arg_2, long arg_7, byte *arg_8, short arg_9, byte arg_10,
     void *arg_11, long arg_12, real arg_13, long arg_14, long arg_15,
     bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
     real arg_21, word arg_22, point3f const *arg_23, real arg_24);
@@ -766,6 +787,24 @@ short function_2cbf0(long arg_1, short arg_2, dword arg_3,
 // constant loads first). Caller forms: the flags `| 0x40` folded into the 0x1332f0 result's declaration 30; the radius
 // product written in the call argument 2; the list pointer read at the top of each iteration (loop bound through
 // arg_1->lists[0]) 2; the indices byte read after the cluster pointer 80 (410 bytes); `0x40 | local_3` 2.
+// HELD (m3 lane 1 r119; needs the owner's OK, 0x2cbf0 is a contributor's function): MATCH (fast and plain) with
+// 0x2cbf0's instance parameter declared after category (definition, both declarations, all three calls): 0x133390
+// MATCH, 0x133520 and 0x133f70 stay MATCH, 0x2cbf0 stays 10. Retail evidence: this call sets ECX (instance) at
+// 0x1334fd, then EDX (category) at 0x133500, then EAX at 0x133502, last to first in that declared order; 0x133520 loads
+// the instance at 0x1336b7 ahead of its two constants. In 0x133f70 each register load sits where the pushes free its
+// register, so 0x1341b9/0x1341c8 do not decide the order (b16B's swap moved category ahead of the stack parameters,
+// which is what cost 0x133f70 its match). The instance sixth to tenth (after category, material, object, mask or
+// mode) gives the same bytes in all four; eleventh or later 13 to 25 here, 0x2cbf0 300 and both other callers lost
+// (36 to 49). Patch: build/r119/held-133390.patch (lane 1's worktree). Code left as on main.
+// MATCH (2026-11-18): 0x2cbf0 declares instance after category, so its register arguments load ecx before edx as in
+// retail. Forms kept, each on retail evidence: (a) the cluster index is a plain long in esi (0x1333b8) and its
+// (short) cast is a register movsx at 0x1333d7, before the bounds loads (the byte load stays at 0x13344b); the old
+// `long const &` re-read a word. (b) The extent follows the file's 0x134390 idiom (centre and corner point3f through
+// real_point3d_set, vector3f through vector3d_from_points3d); retail reads +0x60/+0x68 a second time for the corner
+// (0x1333f8, 0x1333fd). Its sum is retail's tree (x*x + y*y) + z*z (fld 0x13341d, 0x13342f, 0x133451), which compiles
+// only when written k, j, i; length_sq3f compiles (z*z + x*x) + y*y (34), i, j, k gives 33. (c) The plane sum is
+// retail's tree ((z*g38 + x*g20) + y*g2c) + g44 (0x133455-0x13347b) only when written y, x, z; z, x, y compiles ((y +
+// x) + z), a last-bit rounding difference (12).
 // @retail 0x133390
 void function_133390(s_bit_vector_pool const *arg_1)
 {
@@ -793,7 +832,7 @@ void function_133390(s_bit_vector_pool const *arg_1)
 		if (!(local_11 > 0.1f))
 			local_11 = 0.1f;
 		real local_12 = (g_4b9ed0 / local_11) * local_10 * 2.0f;
-		function_2cbf0(local_4, NONE, local_3 | 0x40, NONE, NONE, 0, 0, NULL,
+		function_2cbf0(local_4, local_3 | 0x40, NONE, NONE, 0, NONE, 0, NULL,
 			local_13, 0xff, NULL, NONE, local_12, NONE, NONE, false, false,
 			false, 0.0f, 0.0f, 0.0f, 0, g_468788, 0.0f);
 		local_1 = arg_1->lists[0];
@@ -837,7 +876,7 @@ void __stdcall function_133520(s_bit_vector_pool *arg_1)
 			local_6 |= 1;
 		if (local_11 > 0)
 		{
-			function_2cbf0(0, local_4, local_6 | 0x1008, NONE, 0xffffffff, 0,
+			function_2cbf0(0, local_6 | 0x1008, NONE, 0xffffffff, 0, local_4,
 				0, NULL, local_8, local_11, local_5, NONE, local_9, NONE, NONE,
 				false, false, false, 0.0f, 0.0f, 0.0f, 0, local_12, local_5->radius);
 		}

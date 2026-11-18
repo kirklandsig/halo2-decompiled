@@ -516,6 +516,21 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // products staged per axis 313.
 // indexed signed-radius pair, short with component or point stores 396/416.
 // indexed signed-radius pair, long with component or point stores 393/463.
+// M3 lane 5 r197 (fast with 0x29a190 and 0x298c30, both MATCH unless noted; aligned exact / register-masked counts in
+// brackets, base [257/123]): the candidate count `short` re-measured 469 (1686 B; ours then saves no EBX, takes the facing
+// pointer in EBX, `ret 0x18`, and keeps the outer counter in EDI; 0x29a190 684). Near arm: both trig values as locals with
+// the y row as one expression ahead of the x row (`turned_y = y * cos + x * sin;` after the sine) 365 (1745 B) [249/126]:
+// the cosine and sine are then rounded to float slots, the y row is SSE and the x row x87 from the slots as retail, but
+// `y * cos` and the load of x come after the sine where retail has them before the sine argument's branch (`movss xmm1,
+// [y]; movss xmm0, [x]; fstp [cos]; mulss xmm1, [cos]; jne`), and ours multiplies the loaded cosine by [y]; the same with
+// the y row written x term first 365 (same code); the rotated point through a new inline setter taking the two rows by
+// value 365 (1745 B) [221/125]; the y term loaded and then scaled (`turned_y = y; turned_y *= cos;`) 305 (same code as the
+// staged form). Compile-only (the screen reproduces this arm; 55 spellings): the sine written out in both rows is
+// recomputed with a second branch and puts the y row on x87; an embedded sine assignment in the y row is evaluated before
+// the row; rows passed by value to an inline setter (either parameter order), or the vector, cosine and sine passed to an
+// inline rotation (either parameter order, four row orders, with none, one or both trig locals): none starts the y row
+// before the sine's branch. Left as before: the short count (blocked by the EBX convention above), the constant's
+// XMM1/XMM2 and the near arm's order.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1131,6 +1146,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Negative arm first at initial offset 876, pivot 569, sweep 775, initial and pivot 876, initial and
 // sweep 872, pivot and sweep 775, all three 872; distinct branch-local reverse radii 732 at 3349
 // bytes. XMM5 still retains the radius from entry and retail reloads at the branches.
+// Planar offset helper with staged products per row/pair 850/850, staged final
+// scalar coordinates 569, paired accumulation 850. Planar displacement 830,
+// planar result copy 851, accumulated planar result copy 901 or member stores 830.
+// NOT kept: eager radius remains in XMM5, with larger differences or a tie.
 // Round 620: radius remains live from entry in XMM5; pivot and side trace homes are displaced.
 // Typed pivot 569; shared facing dot 617, arc dot 569, both 718, both with planar vector 718;
 // wide arc dot 616, guarded wide clamp 616, and wide arc with shared facing dot 626.
@@ -1142,6 +1161,18 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // NOT kept: All forms regress. The radius still loads before actor indexing and the side trace homes still differ. The separate geometry workspaces are restored.
 // Early radius retention and pivot/trace homes remain. Center formed around the two transforms in shared scope 574/569/575/750.
 // center formed around the two transforms with the sector block-scoped 574/569/575/750.
+// M3 lane 5 r197 (fast with 0x29a190 and 0x298c30, both MATCH throughout; aligned exact / register-masked counts in
+// brackets, base [254/172]; all restored). Scope check: 0x2108a0 has one retail call site (here), and none of 0x210770's 18
+// retail call sites keeps an XMM value live across it. Diagnostic, reverted at once: the 0x2108a0 call replaced by an
+// undefined `__stdcall` extern with the same argument (so the link knows nothing about what it clobbers) 727 at 3349 B
+// [247/169]: the entry is then retail's to +0xc2 (no XMM5; `movss xmm1, [radius]` loaded inside each offset arm, both
+// blocks), so retail compiled this function without 0x2108a0's register summary: BLOCKED-BY 0x2108a0 (its definition is in
+// src/unknown_20fe20.cpp, another lane's file this round; `inline` on it now expands it here, 897 above). With that
+// diagnostic, the body under `if (local_11 != NONE) { ... return local_0; } return true;` 766 at 3348 B [230/152]; that
+// nesting alone 790 [239/157]. Left after the diagnostic: the pivot offset's negative arm (retail loads each component and
+// multiplies by the negated radius, with no shared tail; ours copies the radius and shares the tail), the sweep arms
+// (retail keeps the two arms whole, 32 instructions more), the pivot home (+0x94, ours +0xa0). Also: the offset helper's
+// products written component first 569 (same code); the reversed direction formed ahead of the pivot offset 784.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

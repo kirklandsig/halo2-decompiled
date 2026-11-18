@@ -472,6 +472,10 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax B (11-18): no new form, no lower score (42): a local copy of the emitter definition for the three property
+// tests measures 125 and a local copy of the emitter flags for the same three tests 181, both above the plain body; the
+// permuter's annealed run (900 s) finds nothing below 39, so row i of both rotations still sums the up product before
+// the forward one and the three post-call reload pairs still restore ebx before esi.
 // MiniMax S (11-17): no new form kept, no lower score (42): the emitter walk as a guarded do-while with the offset's
 // zero store inside it measures 41 on its own and 39 with the scale declared before the multiplier (the form MiniMax
 // R 11-14 and MiniMax A 11-12 measured), under the keep bar, so the body stands; row i of both rotations still sums
@@ -887,6 +891,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // (up*z + x*forward) + left*y, retail (left*y + forward*x) + up*z) the same three 112/115/115 (1134/1138/1138 B).
 // The offset initialization and row-i rotation still differ. Saved successor with byte offset 203/203/203/203.
 // saved successor with indexed definitions and scale first 205/205/205/205.
+// Declared link area, definition-array member, or both 42/42/42.
+// Mode as the low byte of its word 122, also with either or both member reads
+// 122/122/122 and with the offset in a for initializer and step 122.
+// NOT kept: the member reads tie and the low-byte mask grows the body by six bytes.
+// Empty-chain offset initialization, receiver reloads and row-i products still differ.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1138,56 +1147,26 @@ void function_175270(s_particle_system_datum *particle_system, s_particle_system
 	spawn->location_index = particle_location->next_index;
 }
 
-// score 17 (was 17): Frame and entry agree; half-path buffer/result ownership and the distant untinted exit remain.
-// Earlier 17 (was 29): the untinted half-path exit is a long jump to the last
-// the untinted half-path exit is a long jump to the last
-// epilogue where retail's short jump joins the half path's own; the half path
-// reads the unpacked color through the returned pointer where retail reads the
-// buffer and pushes the returned pointer. Store per path (retail's entry
-// registers) 41; returned pointer packed only 41; one shared buffer 17;
-// early untinted return 17; tinted tested first 37.
-// Update inline/noinline declarations 17/17; packing noinline 17; paired update-inline/packing-noinline 17.
-// Plain product loop with long/short/byte ordinals 21/45/45; shared native product-loop storage 23.
-// Shared double scale 58; immutable/ordinary complete products 23/23;
-// product value copy 74; decode value copy 63; exchanged decode workspaces 17;
-// two decode-result lifetimes 45; double scale with in-place result 64.
-// Standalone unpack before scaling 41; unpacked pointer for scale and pack 42 (204 bytes);
-// vector half buffer 17; half names buffer/scaled 17/17; product declarations swapped 17;
-// second input alternate with declarations swapped/original 17/17.
-// Scale from the buffer through the unpacked result 42 (204 bytes); a 2400 s permuter run, no result.
-// Round 27 (lane 13): parameters reordered to (color_a, color_b, system, multiplied, tinted): all three retail
-// callers query the tint before the multiply flag, which a call written with the tint last evaluates first
-// (0x174a30 292 -> 248 with it); this body's code is unchanged (17), and so are 0x177040 and 0x178c80.
-// M3 lane 16 r133 (fast with 0x174a30, matched unless given; control 17): the half path as `color3f *unpacked =
-// unpack_color3f(color_b, &color); vector3f_scale(&color, 0.5f, &color); pack_color3f(unpacked)` 41 (the half path is then
-// retail's but for `push eax` where retail copies the pointer, `mov ecx, eax; push ecx`, and the untinted exit's far jump);
-// the same with the unpacked colour bound by reference 41 (same code); the scale written into the unpacked pointer with its
-// result packed 42 (204 B, stores through EAX); one shared pack of a per-path colour pointer 42 (the pack is duplicated per
-// path as in retail, but the system moves to EDI and colour B to ESI; 0x174a30 27); multiplied tested first with the half
-// path last 47 (204 B).
-// Half buffer scaled and decoder result packed, with the product first return
-// used for pack, read, pack plus second return, or both returns read: 46/48/42/44.
-// Half buffer written from the returned decoder pointer and that pointer packed,
-// with the same four product forms: 46/48/44/46. The two 204-byte forms
-// still branch to the distant exit and differ in their decode/pack registers.
+/* sets a particle system's colour from its two packed colours: their product when multiplied and tinted, the
+   first colour when only multiplied, half the second when only tinted. The half tint is packed after the arms:
+   retail takes the product's pack argument before the half tint's (`mov ecx, eax; push ecx` there) and ends the
+   untinted path at the half tint's own epilogue. */
 // @retail 0x175a80
 void function_175a80(dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied, bool tinted)
 {
+	color3f color;
+	color3f other;
+
 	if (!multiplied)
 	{
 		if (tinted)
 		{
-			color3f color;
-
-			vector3f_scale((vector3f *)unpack_color3f(color_b, &color), 0.5f, (vector3f *)&color);
-			particle_system->color = pack_color3f(&color);
+			unpack_color3f(color_b, &color);
+			vector3f_scale((vector3f *)&color, 0.5f, (vector3f *)&color);
 		}
 	}
 	else if (tinted)
 	{
-		color3f color;
-		color3f other;
-
 		unpack_color3f(color_a, &color);
 		unpack_color3f(color_b, &other);
 		color.red *= other.red;
@@ -1199,6 +1178,8 @@ void function_175a80(dword color_a, dword color_b, s_particle_system_datum *part
 	{
 		particle_system->color = color_a;
 	}
+	if (!multiplied && tinted)
+		particle_system->color = pack_color3f(&color);
 }
 
 extern vector3f *g_4687bc;
@@ -2076,6 +2057,16 @@ bool function_17afd0(long effect_index, long value);
 // (`if (owner ok) { same_view = true; if (!available) same_view = false; }`) 149 (519 B: retail's `test bl; mov [x], 1; jne`
 // shape, but same_view takes BL), that with a false default before the availability 129 (506 B, owner in EDI). Permuter on the
 // 12 form (600 s, 61 tries): best 12. Body unchanged.
+// M3 lane 5 r197 (fast with 0x174420, matched throughout; base 12): the view-state logic (owner, availability, same_view,
+// attached, draw, camera flag) as a forceinline helper returning draw with same_view and the camera flag as output pointers,
+// same_view as the plain conjunction 138 (510 B, the plain form's code: the output pointers fold away, the conjunction's
+// temporary takes BL and the availability spills), stored 1 then cleared when unavailable inside the owner test 148 (518 B),
+// from the owner pair then `if (!available) *same_view = false;` 135 (508 B); the same helper as plain `inline` is not
+// inlined (283 B, 365). Without the helper, same_view declared ahead of the availability and assigned later: nested true
+// store and clear 148, owner pair then clear 135, plain conjunction 138 (each the same code as with the later declaration:
+// the declaration order does not decide who gets BL). In all six NONE takes EBX from the loop top, so the availability
+// (set before the query) finds EBX taken and spills, the owner goes to EDI and same_view is cached in BL after NONE's last
+// use; only the early true default keeps EBX free of NONE until the availability claims it.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

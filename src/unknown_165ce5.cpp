@@ -1387,6 +1387,7 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (216), the rate hoisted into a local (541) and the cast-spelled divisor (220) were measured and dropped.
 // MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
 // retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
+// Earlier 220 (was 220), merged from a second score line: frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // Earlier at 220 (was 220). Frame 0x28 versus 0x2c. Unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
@@ -1854,12 +1855,31 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // rates followed by upper selections 486, upper-limited rates followed by lower selections 487.
 // Round 401 tested paired look clamps with lower-first/upper-first branch defaults and upper/lower preset bounds, strict then inclusive: 219/220/223/223/221/222/224/224.
 // The one-point lead is below the threshold. The 0x28 frame, shared reciprocal and reused spring homes remain.
+// m3 lane 14 r108 (fast with 0x165dc1, MATCH; control 220, as plain). Retail's slot map: the yaw value has -0x2c to itself (3 stores, 1 load) and
+// the pitch value shares -0x28 with the temporary that carries the channel duration to fmod; neither shares with the aiming springs or the unit,
+// which are dead by then, while the flags, the loop index and the weapon pointer do reuse those slots. Tried: the look values as const references
+// bound to the clamps 220 (same code); one point2f initialised with both clamps 216 (frame 0x30, homes -0x2c/-0x28, reciprocal shared; a grouping,
+// under the bar); one inline two-axis spring helper for the aiming pair and the look pair, the look pair passed by address 588 (2163 B: the
+// time global then lives in EBX across the calls and the user goes to the stack); the look values as an inlined helper's locals 220, as its
+// by-value parameters 221; the clamp through an inline function with three returns, value by value 220, by const reference 220, returning a
+// const reference 499 (2225 B); an empty inline function taking both look addresses after the fourth spring call 220 (same code: the link
+// drops the address-taken state with the call). Diagnostics, reverted at once: both look addresses passed to a fifth 0x11eed0 call 220 (same
+// code: that call is inlined and deleted whole, so round 120's escape to the second aiming call proved nothing); passed to an opaque external
+// call 454 (2208 B, frame 0x30, look homes -0x14/-0x10): the yaw block is then retail's instruction for instruction (rate pointer reloaded, x
+// divided by the rate, the 1.0 load between comiss and jbe) and the pitch divides again after a reload, as (y / rate) * -1 where retail has
+// (-1 / rate) * y. So a store to an address-exposed look value is what ends the shared reciprocal, but retail's two homes sit at the frame's
+// bottom with the compiler's late temporaries, not where an address-exposed local goes, and no code-free form found gives either.
 // AC572: Captured entry unit index 220. Add guarded primary index, conditional
 // NONE or branch-set NONE 220/529/529. The primary-index forms alone
 // 220/529/529. Both captures with a terminal unit guard 220.
 // NOT kept: frame 0x28, exchanged unit/mode homes and shared reciprocal persist.
 // The frame and independent look homes still differ. Separate suppression defaults 253/401/227/404.
 // chained suppression defaults 253/401/227/404.
+// MiniMax A (11-18): score 188 (was 220): the two clamped look values as one `real look_angles[2]` take retail's
+// [ebp - 0x2c]/[ebp - 0x28] homes, the pitch read through a reference to the game-time globals keeps retail's two
+// separate divisions (no shared reciprocal) with the multiply's operands in retail's order, and both look springs'
+// rates through the same reference; still open: the frame is 0x30 against retail's 0x2c, the unit and mode
+// homes are swapped and the ESI/EDI saves sit before the unit test.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -1874,8 +1894,7 @@ void __stdcall function_166d75(long user_index)
 		real spring_c = 27.0f;
 		real spring_d = 6.0f;
 		s_first_person_weapon *first_weapon = &user->weapons[0];
-		real look_yaw;
-		real look_pitch;
+		real look_angles[2];
 		point2f *look;
 		dword flags;
 		long field_x11c898;
@@ -1904,10 +1923,11 @@ void __stdcall function_166d75(long user_index)
 		}
 		function_11eed0((real *)&user->unknown2030[0x0], (real *)&user->unknown2030[0x8], unit->aiming_velocity.i, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
 		function_11eed0((real *)&user->unknown2030[0x4], (real *)&user->unknown2030[0xc], unit->aiming_velocity.j, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
-		look_yaw = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
-		look_pitch = PIN(-1.0f / g_510c54->rate * *(real *)&user->unknown2030[0x2c], -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_yaw, g_510c54->rate, spring_d, spring_c, false, -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_pitch, g_510c54->rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		look_angles[0] = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
+		s_game_time_globals &frame_settings = *g_510c54;
+		look_angles[1] = PIN(*(real *)&user->unknown2030[0x2c] * (-1.0f / frame_settings.rate), -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_angles[0], frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_angles[1], frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
 
 		look = (point2f *)&g_4ed284->entries[user_index].yaw;
 		flags = user->flags;

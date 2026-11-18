@@ -565,6 +565,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // branches, captured origin updates, a complete point or component conditionals
 // 255/307/263/307. Explicit expansion repeats those four scores.
 // NOT kept: the transform still needs the native X/Z and inverse allocation.
+// M3 lane 13 r108 (fast with 0x30bf0): transform_point as a plain static function (this /Ob1 file keeps it out of line)
+// 728 (465 B); the inverse defaults in one declaration 195 (same code); declared after the three parameter defaults 202
+// (974 B, frame 0x30), after the displaced sums 204 (974 B); the orthographic factors as `fa = fb = 1.f;` 195. Lead, not a
+// source form: retail's frame keeps ta and tb as memory points in name order (b, ta, tb, as address-taken locals sort),
+// which a link-time inline of an out-of-line point transform such as 0x142570 (the same row code) would give; its /Ob1
+// file keeps it a call in our build (a file-flag decision).
 // M3 lane 3 r257 (fast; control 195, aligned differences exact / stack-offset-masked / fully masked 80 / 61 / 34). The
 // positional 195 hides two separate causes. (1) The tail: with the factor copies after the perspective test (the
 // orthographic arm setting the inverses to 1, then `fa = inv_a; fb = inv_b;`, the listed direct-inverse form) the tail is
@@ -579,6 +585,17 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // helper's depth snapshot first 197 (973 B). Diagnostics, reverted: the reverse retransform removed 480 (704 B: the
 // second transform then keeps x in the sum's register but moves y); a twin copy of the helper for the second, the
 // third, or both later transforms 195 each (same code: the three inline copies do not share register choices).
+// Round 416: The displaced-point transform spills X and Z and reserves 0x30 bytes, compared with one spill
+// and a 0x2c frame in retail. That extra stack word displaces both inverse defaults. matched vector
+// transform with direct translation into its output 211; matched vector transform with shared addition into
+// its output 211; matched vector transform to a rotation local and direct translation 212; matched vector
+// transform to a rotation local and shared translation 218; matched vector transform with direct translation
+// into its output with deferred factor copies 234; matched vector transform with shared addition into its
+// output with deferred factor copies 234; matched vector transform to a rotation local and direct
+// translation with deferred factor copies 235; matched vector transform to a rotation local and shared
+// translation with deferred factor copies 235. NOT kept: Reusing the existing vector transform and applying
+// the translation separately shortens the body to 958 or 959 bytes but leaves an incorrect frame and raises
+// the score. Deferring the factor copies raises it further. The opening transform and body are restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

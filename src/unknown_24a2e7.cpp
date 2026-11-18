@@ -212,6 +212,20 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // skip mismatches with indexed terminator 84; formatted arm breaks 84; fixed-array
 // destination 84; selected name then result 84. NOT kept: the 56 forms recover length
 // but retain 46 differing instructions, no base spill and no final ordinal multiply.
+// M3 lane 10 r119 (fast; plain where noted). Reading: retail's entry base sits in memory at [ebp-8] next to the count
+// at [ebp-4] and is reloaded only after the library concatenations, so it behaves as an address-taken local.
+// The indexed terminator alone 84; entries and count as one two-member local aggregate (count's address passed),
+// everything indexed, 64 (plain 64; frame 0x28, suffix, base spill and terminator as retail; the base is reloaded
+// after the ascii call where retail keeps ESI); on that, an entry pointer at the found point 72 (multiply ahead of
+// the append test), an entry pointer inside the append arm 52, with the ascii argument indexed 39 (204 B), the same
+// with `if (append) { entry; if (entry->name[0]) {...} }` nested 39 (natural spelling, same code); on the 39 form the
+// terminator as `(entries + i)->`, entry as `entries + i` or as a byte offset `i * sizeof`, i declared outside the
+// for, or the terminator after `result = buffer` 39 each; a found flag in the loop condition 75/70 (flag kept, no
+// threading); search loop then `if (i < count)` 66 (210 B, extra count test); a cursor pointer loop 83 (i in EBX as
+// retail, but the found block keeps the cursor in ESI); a per-iteration entry pointer 75/83; the 39 form without the
+// aggregate 84. What is left on 39: ours keeps i * 0x248 in EBX across the calls (i itself in ECX in the loop), retail
+// keeps i in EBX and multiplies again for the terminator and the plain arm. The aggregate is a grouping form
+// (match-only); build/r119/lead-0x24a691-39.cpp.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

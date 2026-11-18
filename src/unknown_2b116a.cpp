@@ -4503,6 +4503,10 @@ bool __stdcall function_2b278e(long controller_index)
 // before identity type 201, in the condition 201, or held as nonmember 191;
 // per-dialog controller index 199. NOT kept: the original controller reference
 // and post-call index reloads are still missing.
+// Round 575: the incoming double pointer still needs to survive both identity calls. NOT kept: index field
+// reference or address 181/181; early identity failure 54; confirmation arm first 54; shared dialog
+// context with long or Boolean membership 197/202; nullable dispatch 198; nested warning with common
+// confirmation fallback 54.
 // Round 416: Case orders 3/2/1/0, 3/0/2/1, 0/3/2/1 and 0/2/3/1 each score 54.
 // Orders 3/1/2/0, 3/0/1/2, 0/3/1/2 and 0/1/2/3 each score 127. NOT kept: case
 // reordering still leaves the original index in ESI and omits the dialog reloads.
@@ -4511,6 +4515,15 @@ bool __stdcall function_2b278e(long controller_index)
 // or an identity-only controller view 199/197. Each pair forms masks at their
 // dialog calls or in the corresponding arm. The original reference and index
 // stack home are still missing.
+// Retail still retains the controller reference through membership and reloads both pointer levels before the dialog context calls.
+// Native membership: bitwise operands 192, ternary decision 60, kind-first confirmation decision 194,
+// named warning decision 199, kind tested before membership 199, explicit window recheck 199,
+// explicit window and channel 187. Both virtual queries explicit with the inherited long result 201.
+// The controller reference and the initial index still need their separate retail homes in the opening body.
+// Independent membership ID value 204. NOT kept: one-use field copy requires a match.
+// The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
+// Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
+// native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5773,6 +5786,15 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // Conditional invitation 369; add friend 375; player removal 90; offer by mode 336;
 // feedback by mode 349; promotion 322; friend removal 224; membership change 100.
 // NOT kept: all regress, and the two retail-length forms pass the title-state byte at +0x72 and +0x71.
+// The friend-query session, membership and friend bytes still use different slots.
+// Direct rank reads 89, regular-member result cleared by pending state 381, origin
+// default for join 422, pending message guards 376, rank-first removal 104, role-based
+// byte names 89, mode test in the removal arm 224, kick query in its eligibility arm
+// 251. Original body retained.
+// Title-state scope 89, both title outputs scoped 89, separate regular-status
+// guards 392 or selections 396, roster actions under other-user gate 349 or by
+// player status 402, paired modification actions under rank gate 360 or
+// regular-player gate 365. NOT kept: title output byte remains displaced.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
