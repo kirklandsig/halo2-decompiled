@@ -1570,6 +1570,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // i, j, k, re-measured, 543 (aligned 193); that with the flags declared flying, direct, damping, gravity, the input pointer
 // after them and the first arm clearing gravity first 543 (aligned 192; the first difference moves to +0x3d, the entry
 // block exact). Body unchanged.
+// MiniMax A (11-18): no new form, no lower score (234); what still differs is the damping's first extraction (ours keeps it in
+// ECX), the vector homes and the vertical output tail; the homes only move when the arms' shapes change, which raises the
+// score, so the body stands.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

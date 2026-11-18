@@ -3510,6 +3510,11 @@ s_cached_input_list g_5234e8[4];
 // NOT kept: all disturb the matched caller. The last form recovers frame 0xa0 but grows to 567 bytes.
 // MiniMax C (11-17): no new form, no lower score (147 in this reduced image, 113 in the twenty-address one): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and the frame is still 0x9c against retail's 0xa0 - retail spills the input list and keeps the native list and total on the stack.
 // MiniMax R (11-17): no new form, no lower score (147): the frame is 0x9c against retail's 0xa0 and the body is 16 bytes shorter than retail's 548.
+// MiniMax A (11-18): no new form, no lower score (113; 146 on this build's reduced image); against that reduced image's 147
+// control the list read once into a local scores 136, the list and the element array in locals 138 and the array alone in a
+// local 138, so g_547f98 stays read at each use; what still differs is the frame (0x9c against retail's 0xa0) and the
+// list/cursor/index split (retail spills the list and reloads it at the loop top, keeps the total on the stack, the index in
+// EBX and the cursor in EBP; ours holds the total in EBP).
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -4767,6 +4772,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // named transmission 51; fade set in branches 51; header byte member 51;
 // region scope limited to query 51; special result before alpha store 51.
 // MiniMax R (11-17): no new form, no lower score (51): only the frame differs, 0x18 against retail's 0x1c, because retail's final fade keeps two dead stores (a byte 0 in the object index argument home and a float 0.0f in an extra frame slot) that this build eliminates; the fade block itself reproduces retail's sequence exactly when the fade value is named and clamped by hand, and the getter route that would keep them (function_c6b90 with zeroed outputs) is BLOCKED-BY 0xff5f0 in src/weapons.cpp.
+// MiniMax A (11-18): no new form, no lower score (51); only the frame differs (0x18 against retail's 0x1c) and the two dead
+// stores retail keeps (a byte 0 in the object index argument home and a float 0.0f in the extra frame slot); the getter route
+// that would keep them is BLOCKED-BY 0xff5f0 in src/weapons.cpp, so the fade stays read at each use.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -5968,6 +5976,10 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // Named bounds members 47; clip indices 74; first record before flag clear 46 (NOT kept:
 // one point); positive lookup region 47; separate lookup guards 47; clamp assignments 58;
 // shared marker key 147; typed view pointer 47.
+// MiniMax A (11-18): no new form, no lower score (47); the whole four-byte gap is the group field copies (ours encode them
+// in EAX at five bytes where retail uses ECX and EDX at six) and the first real divergence is the float temp for the radius
+// argument of function_1650a0 (ours in EDX, retail in EAX); seven source forms (the group through a pointer, the statements
+// reordered, the flags in a local, the restore through a local) move neither the length nor the register choice.
 // @retail 0x30ed0
 void function_30ed0()
 {
@@ -6138,6 +6150,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // inclusive-range arm first 111, short cull result 187, requested cull then disable 243, two consecutive bound decisions 175.
 // table cull modes 111, table cull and targets 111, table group/cull/target 111, table-driven mode traversal 649.
 // NOT kept: the first branch and constant table forms tie. Single-result cull forms raise shared-user scores. The mode loop removes the retail pass expansions.
+// MiniMax A (11-18): no new form, no lower score (111); the shared pass helper and the pass list stay as they are, because
+// retail's clear call passes its flags in EAX and needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched
+// 0x14ac0's frame and realigns this function); what still differs is that call's argument setup and the cull arm order.
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {
@@ -6205,6 +6220,9 @@ extern dword g_4b843c;
 // camera bit through the mask setter 212, joined clear mask 197, shared two-bit decision 212, sibling bit-mask tests 214.
 // joined flag result with two clears 215, carried flags with two clears 215.
 // NOT kept: the 197 form uses a computed clear mask where retail clears separate constants. The two forms preserving the retail clears score 215.
+// MiniMax A (11-18): no new form, no lower score (212); what still differs is the 0x4a1e0 argument registers, the first mask
+// publication and the late flag reads, and the body stays fourteen bytes short of retail because no spelling of the bit-0 and
+// bit-1 steps reproduces the store retail keeps before the branch.
 // @retail 0x31170
 void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool enabled, real scale)
 {
@@ -6386,6 +6404,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // One-based payload 233; end cursor 198; separate index base 101; fog mask bit 100;
 // mask set in both arms 113; first record before flag reset 104; direct group fields 100;
 // flags restored before first-record reset 100.
+// MiniMax A (11-18): no new form, no lower score (100); the five passes equal retail's inlined 0x44370 apart from the clear
+// call, and that call needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched 0x14ac0's frame and realigns
+// this function), so its argument setup stays different.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
@@ -6843,6 +6864,9 @@ PRIVATE __forceinline real absolute_32350(real value)
 // staged light and box crosses 528, or renamed query and result locals 437.
 // NOT kept: the full shape gives frame 0xb3c, still four bytes short, and the best variant
 // gains one. The original 0x74-byte buffer remains, against the initializer's 0x7c-byte clear.
+// MiniMax A (11-18): no new form, no lower score (437); what still differs is the frame (0xb34 against retail's 0xb40), where
+// the shape initializer clears 0x7c bytes against the 0x74-byte buffer the source reserves, and the box center's one shared
+// displacement; the typed shape and the extents-first records gain one point each and are not kept.
 // @retail 0x32350
 bool __stdcall function_32350(long index, real input_alpha)
 {
