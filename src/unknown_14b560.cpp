@@ -786,6 +786,11 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-18): no new form, no lower score (43): the player datum is still computed in EBX where retail has
+// EDI and the unit index in EDI where retail has EBX; writing retail's walk (the root NONE, the entry test before
+// the loop, the step object recomputed in the loop) makes the compiler peel the first iteration (109), and the same
+// walk with the step object taken from the root index instead also gives 109, so the walk stays as it is; the datum
+// iterator's register use comes from include/data_iterator.h, which this lane may not edit.
 // score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
 // walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
 // place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
@@ -2560,6 +2565,9 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax G (11-18): no new form, no lower score (701): the length agrees (2740 bytes) but the frame is still 0x4c against retail's 0x74, our
 // link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out of line, and retail's two request homes are still one
 // here; the definitions of those callees sit in files this lane may not edit.
+// MiniMax H (11-18): no new form, no lower score (701): the length agrees (2740 bytes), but the frame is still 0x4c
+// against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out
+// of line, and retail's two separate request homes are still one here; those callees sit in other files.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -3126,6 +3134,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // MiniMax G (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail loads it into ESI and
 // reloads it after the busy check and again before the final store, and the two loops still swap the datum and unit registers with it; the
 // stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue, and the reduced image overstates this body.
+// MiniMax H (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail
+// loads it into ESI and reloads it late, and retail inlines the status test that this build calls out of line; that
+// callee is in src/unknown_13bf00.cpp, which this lane may not edit, and the reduced image overstates this body.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
 // function where retail loads it into ESI and reloads it after the busy check and again before the
 // final store, and the two loops swap the datum and unit registers with it; the reduced image

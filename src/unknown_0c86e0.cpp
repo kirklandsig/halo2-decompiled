@@ -101,6 +101,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // stands with the 32-bit index retail reads - and this link still knows that 0xbadc0 writes no memory and merges the
 // unit fetches where retail fetches the unit again: BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp).
 // Earlier 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
+// MiniMax H (11-18): no new form, no lower score (110): the two unit fetches still merge across the two 0xbadc0 calls
+// because this link knows that callee writes no memory, and the unit index stays in ESI where retail has EDI; that
+// callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
+// score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
 // 0xbadc0 calls although retail's 0xbadc0 neither writes nor calls; ours merges the fetches (rounds below).
 // MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls
 // where this build merges the two fetches, because that callee writes no memory, and the callee's body is in
