@@ -1859,10 +1859,11 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // +0x1c/+0x20, the length in the dead argument slot at +0x54 and the flag byte later; the products after that are
 // coloured xmm2/xmm5/xmm6/xmm7 against retail's xmm1/xmm3/xmm4/xmm6/xmm7, and the length is 1182 against retail's
 // 1173.
-// score 239 (was 238): retail keeps the direction at +0x1c/+0x20, the radius at
-// +0x14 and the normalizer's length in the dead argument slot at +0x54, where this build keeps the direction at
-// +0x28/+0x2c, the radius at +0x20 and the length at +0x14; it also zeroes in xmm2 where retail zeroes in
-// xmm1 and multiplies the direction's y first where retail multiplies the x first.
+// score 239 (was 238): the 0x3c frame and the direction, radius and magnitude slots agree.
+// Retail keeps the zero in XMM1, copies it to XMM0 for the unsupported type and holds radius in XMM5.
+// The build uses XMM2 and XMM7 and materializes the unsupported-type result separately.
+// Earlier default-flag form: direction at +0x28/+0x2c, radius at +0x20 and length at +0x14
+// instead of +0x1c/+0x20, +0x14 and +0x54. The direction's products also used the opposite order.
 // MiniMax C (11-14): no new form, no lower score (238): with the side test written as a flag
 // (bool left = <dot> > 0.0f) every stack home lines up with retail (the direction at +0x1c/+0x20, the
 // radius at +0x14, the length in the dead origin slot at +0x54) but it scores 239, because the flag stays
@@ -2039,6 +2040,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // float square root 240, separate squared components 240, small-length early exit 240.
 // Single return with in-place sign 255, conditional sign assignment 275, explicit sign arms 275.
 // Restored. The XMM zero and radius allocation and separate invalid-type epilogue remain.
+// Round 628: type switch with 0/1/default, 1/0/default and default/0/1 gives 284 each;
+// switch literal zero 284, ordinary origin 299, single exit 254, shared Y translation 299.
+// The existing difference helper scores 239 in the original dispatch and 284 in the switch.
+// The matching entry and frame still diverge at the XMM2 zero and unsupported-type exit.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
