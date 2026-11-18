@@ -2126,6 +2126,10 @@ void function_b7360(long object_index);
 // M421: Low-word actor/command/both pool ordinals 471/471/482; point-set accessor in movement/recording/both 272/272/270;
 // named point sets 270; word set and point ordinals 465. NOT kept: the word ordinals change entry scheduling without
 // restoring actor/output register roles. The packed reference still stays live across validation.
+// Perception index after both lookups 272, before the command lookup as a value/reference/predicate 487/487/487,
+// command getter or named type in the guard before payload lookup 506/506, early perception with explicit type
+// comparisons 477, early perception and type 487. NOT kept: the actor-first forms load the actor data too early,
+// and the actor/output roles and packed-reference reloads still differ.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
