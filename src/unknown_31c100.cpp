@@ -103,8 +103,9 @@ static __forceinline void reserve_workspace_31c100(workspace_sizes_31c100 const 
 // The allocator reads its free size after rounding the request, as retail does; that
 // order decides which dead register the memory operands of the size arithmetic get.
 // The mode for the last loop is a float argument; the first body's address is saved
-// for the last loop. Left: retail schedules the first body's lea after the fifth row
-// store of the zero motion (ours right after the entry test).
+// for the last loop. The zero motion's sixth row is stored through its float lanes:
+// that store may overlap the rows written before it, which is why retail emits the
+// first body's lea after the fifth row store rather than right after the entry test.
 // @retail 0x31c100
 void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *world_info,
 	void *simulation, void *islands, long island_count, long field_58, long field_5c)
@@ -132,7 +133,7 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 	zero->rows[1] = _mm_setzero_ps();
 	zero->rows[3] = _mm_setzero_ps();
 	zero->rows[4] = _mm_setzero_ps();
-	zero->rows[5] = _mm_setzero_ps();
+	_mm_store_ps(zero->rows[5].m128_f32, _mm_setzero_ps());
 	void **entity = (void **)islands;
 	void **entity_end = entity + island_count;
 	zero->rows[6] = _mm_setzero_ps();
