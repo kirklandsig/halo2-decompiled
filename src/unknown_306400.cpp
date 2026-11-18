@@ -182,9 +182,34 @@ public:
 	answer_306580 function_306580();
 };
 
+// the part of the box pair from the second box's extents to the first
+// box's face separations
+struct face_view_306580
+{
+	__m128 second_extents;
+	char unknown10[0x80];
+	__m128 first_centre;
+	float first_faces[3];
+};
+
 // whether the boxes overlap: no face or edge axis separates them by more
 // than the tolerance
-// score 56 (was 91): each face test and each edge group has its own `reach`
+// score 4 (was 34): the edge sums are single expressions, and three components of
+// the extents are named once as constant references (first0, second1, second2)
+// at the points retail's sum order needs, so all nine sums add their products in
+// retail's order; group 3's lengths are formed after its reach. Left: group 1
+// sums its lengths early and stores them late in retail, and group 3 loads its
+// reach before its edge after the 0x305940 call.
+// Before, 34 (was 56): the second face test reads the second box's extents and
+// the first box's centre, and stores the first face separations, through one view
+// of the box pair (retail keeps those stores ordered after the first box's
+// extents only); the three squared rows are all set before they are squared;
+// in the second edge group the lengths are summed after the separations and
+// the first two products of the first separation are one sum. Left: in the
+// first edge group retail sums the lengths early but stores them after the three
+// separations, and the edge groups' sums are single expressions in retail
+// (the scheduler's 81-instruction windows end where retail's do only then).
+// Before, 56 (was 91): each face test and each edge group has its own `reach`
 // vector (the second face test's and the edge groups' declared in their blocks).
 // They still share one stack slot, but as five variables the slot is created
 // after the edges' slot, and the frame's slots now sit where retail has them.
@@ -252,7 +277,10 @@ answer_306580 class_306580::function_306580()
 	{
 		return answer_306580(false);
 	}
-	store3_306580(&first_reach.value, first_faces);
+	face_view_306580 *const view = (face_view_306580 *)&second_extents;
+	view->first_faces[0] = first_reach.value.m128_f32[0];
+	view->first_faces[1] = first_reach.value.m128_f32[1];
+	view->first_faces[2] = first_reach.value.m128_f32[2];
 
 	// the second box's faces
 	{
@@ -268,8 +296,8 @@ answer_306580 class_306580::function_306580()
 		__m128 const z = _mm_mul_ps(row_2, _mm_shuffle_ps(first, first, 0xaa));
 		__m128 const y = _mm_mul_ps(row_1, _mm_shuffle_ps(first, first, 0x55));
 		__m128 const x = _mm_mul_ps(row_0, _mm_shuffle_ps(first, first, 0x00));
-		__m128 const span = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), second_extents);
-		reach.value = _mm_sub_ps(_mm_and_ps(first_centre, *(__m128 const *)g_455940), span);
+		__m128 const span = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), view->second_extents);
+		reach.value = _mm_sub_ps(_mm_and_ps(view->first_centre, *(__m128 const *)g_455940), span);
 		exceeds_306580(&reach.value, &limit, &separated);
 		if (separated)
 		{
@@ -280,14 +308,17 @@ answer_306580 class_306580::function_306580()
 
 	// the edges: the squares of each row of the axes, for the lengths of
 	// the cross products
+	float const &first0 = first_extents.m128_f32[0];
 	vector_306580 squares_x;
 	squares_x.set(axes[2].m128_f32[0], axes[1].m128_f32[0], axes[0].m128_f32[0]);
-	squares_x.value = _mm_mul_ps(squares_x.value, squares_x.value);
 	vector_306580 squares_y;
 	squares_y.set(axes[2].m128_f32[1], axes[1].m128_f32[1], axes[0].m128_f32[1]);
-	squares_y.value = _mm_mul_ps(squares_y.value, squares_y.value);
 	vector_306580 squares_z;
+	float const &second2 = second_extents.m128_f32[2];
 	squares_z.set(axes[2].m128_f32[2], axes[1].m128_f32[2], axes[0].m128_f32[2]);
+	float const &second1 = second_extents.m128_f32[1];
+	squares_x.value = _mm_mul_ps(squares_x.value, squares_x.value);
+	squares_y.value = _mm_mul_ps(squares_y.value, squares_y.value);
 	squares_z.value = _mm_mul_ps(squares_z.value, squares_z.value);
 
 	// the first box's x axis across each of the second's
@@ -297,18 +328,9 @@ answer_306580 class_306580::function_306580()
 		vector_306580 reach;
 		((box_305b30 const *)this)->function_305b30(&edge, 1, 2);
 		lengths = _mm_add_ps(squares_z.value, squares_y.value);
-		float x = a[0].m128_f32[2] * first_extents.m128_f32[1];
-		x += a[0].m128_f32[1] * first_extents.m128_f32[2];
-		x += a[1].m128_f32[0] * second_extents.m128_f32[2];
-		x += a[2].m128_f32[0] * second_extents.m128_f32[1];
-		float y = a[1].m128_f32[2] * first_extents.m128_f32[1];
-		y += a[1].m128_f32[1] * first_extents.m128_f32[2];
-		y += a[2].m128_f32[0] * second_extents.m128_f32[0];
-		y += a[0].m128_f32[0] * second_extents.m128_f32[2];
-		float z = a[2].m128_f32[2] * first_extents.m128_f32[1];
-		z += a[2].m128_f32[1] * first_extents.m128_f32[2];
-		z += a[1].m128_f32[0] * second_extents.m128_f32[0];
-		z += a[0].m128_f32[0] * second_extents.m128_f32[1];
+		float y = a[0].m128_f32[0] * second2 + a[2].m128_f32[0] * second_extents.m128_f32[0] + a[1].m128_f32[1] * first_extents.m128_f32[2] + a[1].m128_f32[2] * first_extents.m128_f32[1];
+		float z = a[1].m128_f32[0] * second_extents.m128_f32[0] + a[2].m128_f32[1] * first_extents.m128_f32[2] + a[2].m128_f32[2] * first_extents.m128_f32[1] + a[0].m128_f32[0] * second1;
+		float x = a[0].m128_f32[1] * first_extents.m128_f32[2] + a[0].m128_f32[2] * first_extents.m128_f32[1] + a[1].m128_f32[0] * second2 + a[2].m128_f32[0] * second1;
 		reach.set(z, y, x);
 		function_305940((float *)&lengths);
 		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
@@ -329,20 +351,11 @@ answer_306580 class_306580::function_306580()
 		__m128 lengths;
 		vector_306580 reach;
 		((box_305b30 const *)this)->function_305b30(&edge, 2, 0);
-		lengths = _mm_add_ps(squares_z.value, squares_x.value);
-		float x = a[1].m128_f32[1] * second_extents.m128_f32[2];
-		x += a[0].m128_f32[0] * first_extents.m128_f32[2];
-		x += a[0].m128_f32[2] * first_extents.m128_f32[0];
-		x += a[2].m128_f32[1] * second_extents.m128_f32[1];
-		float y = a[0].m128_f32[1] * second_extents.m128_f32[2];
-		y += a[2].m128_f32[1] * second_extents.m128_f32[0];
-		y += a[1].m128_f32[0] * first_extents.m128_f32[2];
-		y += a[1].m128_f32[2] * first_extents.m128_f32[0];
-		float z = a[1].m128_f32[1] * second_extents.m128_f32[0];
-		z += a[2].m128_f32[0] * first_extents.m128_f32[2];
-		z += a[0].m128_f32[1] * second_extents.m128_f32[1];
-		z += a[2].m128_f32[2] * first_extents.m128_f32[0];
+		float x = a[1].m128_f32[1] * second2 + a[0].m128_f32[0] * first_extents.m128_f32[2] + a[0].m128_f32[2] * first0 + a[2].m128_f32[1] * second1;
+		float y = a[0].m128_f32[1] * second2 + a[2].m128_f32[1] * second_extents.m128_f32[0] + a[1].m128_f32[0] * first_extents.m128_f32[2] + a[1].m128_f32[2] * first0;
+		float z = a[1].m128_f32[1] * second_extents.m128_f32[0] + a[2].m128_f32[0] * first_extents.m128_f32[2] + a[0].m128_f32[1] * second1 + a[2].m128_f32[2] * first0;
 		reach.set(z, y, x);
+		lengths = _mm_add_ps(squares_z.value, squares_x.value);
 		function_305940((float *)&lengths);
 		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
 		exceeds_306580(&edge, &tolerance, &separated);
@@ -362,20 +375,11 @@ answer_306580 class_306580::function_306580()
 		__m128 lengths;
 		vector_306580 reach;
 		((box_305b30 const *)this)->function_305b30(&edge, 0, 1);
-		lengths = _mm_add_ps(squares_y.value, squares_x.value);
-		float x = a[1].m128_f32[2] * second_extents.m128_f32[2];
-		x += a[0].m128_f32[0] * first_extents.m128_f32[1];
-		x += a[0].m128_f32[1] * first_extents.m128_f32[0];
-		x += a[2].m128_f32[2] * second_extents.m128_f32[1];
-		float y = a[0].m128_f32[2] * second_extents.m128_f32[2];
-		y += a[2].m128_f32[2] * second_extents.m128_f32[0];
-		y += a[1].m128_f32[0] * first_extents.m128_f32[1];
-		y += a[1].m128_f32[1] * first_extents.m128_f32[0];
-		float z = a[1].m128_f32[2] * second_extents.m128_f32[0];
-		z += a[2].m128_f32[0] * first_extents.m128_f32[1];
-		z += a[0].m128_f32[2] * second_extents.m128_f32[1];
-		z += a[2].m128_f32[1] * first_extents.m128_f32[0];
+		float x = a[1].m128_f32[2] * second2 + a[0].m128_f32[0] * first_extents.m128_f32[1] + a[0].m128_f32[1] * first0 + a[2].m128_f32[2] * second1;
+		float y = a[0].m128_f32[2] * second2 + a[2].m128_f32[2] * second_extents.m128_f32[0] + a[1].m128_f32[0] * first_extents.m128_f32[1] + a[1].m128_f32[1] * first0;
+		float z = a[1].m128_f32[2] * second_extents.m128_f32[0] + a[2].m128_f32[0] * first_extents.m128_f32[1] + a[0].m128_f32[2] * second1 + a[2].m128_f32[1] * first0;
 		reach.set(z, y, x);
+		lengths = _mm_add_ps(squares_y.value, squares_x.value);
 		function_305940((float *)&lengths);
 		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
 		function_305900(&edge, &tolerance, &separated);
