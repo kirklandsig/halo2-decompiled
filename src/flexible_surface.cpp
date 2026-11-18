@@ -847,6 +847,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 130/130/152/130. With the shared vector sampler for both table draws, 126 each.
 // NOT kept: the sampler's four-point gain misses the eight-point bar and leaves the 0x1c frame.
 // The named short factor reaches 880 bytes but raises the score.
+// Initial-direction flag read before time, before the first draw, after the draw,
+// or before angle weighting 130/130/130/130. With all draws using one seed
+// pointer 174/174/174/174. NOT kept: shared seed reaches retail length with
+// the frame difference and a higher score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

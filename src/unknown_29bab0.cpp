@@ -660,6 +660,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // direct path branch with correction scoped through the final latch 489;
 // direct path branch with normalized input scoped before the final latch 489.
 // NOT kept: All eight tie at the original length, with the same first differing stack slot.
+// Input capture before position, or complete normalization before position 500/762.
+// Admitted position only, both producers, normalization only, input and
+// normalization only, position between input and normalization, or position after
+// normalization 750/998/874/890/998/998. NOT kept: the position home remains
+// unresolved. Moving both producers under admission also raises the caller score.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

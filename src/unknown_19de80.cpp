@@ -763,6 +763,10 @@ static inline bool teams_enabled_19e1c0()
 // existing result and returns through cause-team name 390; existing result and early name returns 390;
 // existing result and returns through cause-team score 390.
 // NOT kept: the ordinary result reaches frame 0x204 but moves farther from retail's length and merges the name tails.
+// Token comparisons supply the selected arm's zero count for player names,
+// team names, local scores and timers, or all tokens. Existing count storage scores
+// 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
+// ordinary count gives frame 0x204 but still merges the name producers.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

@@ -1140,6 +1140,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // or a scan-scope array base 90/90/89/67. With the three output lvalues bound 90/90/89/67.
 // NOT kept: the array base preserves the query setup and restores the byte memory OR, but
 // moves the cursor and oldest to different registers. The other forms also change the query setup.
+// Resend type selected by the sent bit, pending bit, both bits, or separate tests
+// 52/52/89/54. Nullable eligible message via conditional or rejection branches 89/89.
+// Qualifying cursor used for post-scan publication with an in-place or saved-word
+// update 98/82. NOT kept: single-bit type selection gives the retail cursor and
+// message pointer with a byte OR, but changes the flag read and return-value code.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
