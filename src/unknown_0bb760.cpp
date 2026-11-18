@@ -692,6 +692,9 @@ void function_3dd10(long object_index, bool force);
 // late read and both single-precision absolute values and remainders 129. Both remainder overloads
 // recover the CL compare before the blend spill at +0x1c. NOT kept: overall score rises and the
 // signed scan exits and fallback unity reload still differ.
+// Round 415. last eligible choice address 219, last address with signed bound 635, last address and weight cursor
+// 229, last address with signed bound and weight cursor 576, last address and selection cursor 216, last address
+// with both cursors 229, last address and const indexed choices 219, last address with early ineligible skip 219.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
