@@ -13,6 +13,12 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax B (11-18): no new form, no lower score (171, was 171): retail forms the point differences as
+// d3.x, local_6.x, d1.x, d1.y, d3.y and local_6.y before the products while ours still forms d1.y
+// first and the two d3 components last; round 66's three order changes (the copy source to local_1, the
+// result set before the output store and the clearance moved into its use block) measure 175, 238 and 242
+// on this tree and 232 together, all worse than the body below, and the 130 form needs the statement moves
+// picked by score, so the body stands.
 // MiniMax I (11-16): no new form, no lower score (171): retail forms the point differences as
 // d3.x, local_6.x, d1.x, d1.y, d3.y and local_6.y before the products while ours still forms d1.y
 // first and the two d3 components last, and the two dot products still multiply the i term before

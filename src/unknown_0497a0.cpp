@@ -482,6 +482,11 @@
 // paired terms, or separate product families 638/649/646/640. Moving the short
 // wave before those forms gives the same four scores. NOT kept: every form
 // shortens the body and leaves the frame and rounded-wave homes different.
+// The independent rounded-wave homes and 0x60 frame remain. two-factor carrier 534; three-factor modulation
+// 534; unattenuated wave 536; two scaled displacements 704; shared row zero offsets 715; perspective first
+// with shared zero offsets 717; depth axis selected at use 678; scoped row crosses 594. NOT kept: Naming
+// the first two modulation products saves two points at the retail extent. The frame stays 0x54, and the
+// product forms fall below the keep threshold. Separate displacements and projection forms regress.
 // The 0x54 frame and distinct rounded-wave/cross homes still differ. Read-only shape
 // views 536; retained projection mode 669; in-place reciprocal 536; shared negative
 // numerator 537; guard before depth up-vector selection 678; branch-selected normal
@@ -491,6 +496,13 @@
 // MiniMax A (11-18): no new form, no lower score (536); what still differs is the frame (0x54 against retail's 0x60, twelve
 // bytes short) and the first XMM rotation (ours moves the wave through xmm3 into xmm1, retail through xmm1 into xmm5); the
 // between-update forms that reach retail's frame and length score higher, so the body stands.
+// M3 lane 16 r136 (fast with 0x4a1e0; control 536 = baseline, aligned 593; ours returns with `ret 0x20` as retail in the full
+// build): the mixed wave through a forceinline value helper `(phase, sine, cosine_a, cosine_b)` called with `x * 8.2f`,
+// sin x, cos 7.8y and cos 7.75y, real parameters 536 (same code), double parameters 586 (aligned 597: the arguments are
+// substituted back and evaluated nested, not kept on the x87 stack), the parameters in the reverse order 586; a forceinline
+// helper taking the camera point with a real phase and three named double factors 535 (aligned 594); the two wave values
+// as a `real wave[2]` 634 (2670 B, frame 0x60, as the point pair of round 202); the two scaled amounts named before the
+// adds 650 (2594 B). None keeps sin x, cos 7.8y and cos 7.75y on the x87 stack past the mixed wave as retail does.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -808,6 +820,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // retail's build inlines pack_color4f from that file while this file's front end expands its own copy, so the
 // frame is still 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes still
 // differ; the u step and the V end still take 4-byte homes where retail spills them to the 8-byte ones.
+// MiniMax A (11-18): no new form tried this round, no lower score (351): the frame is still 0xa8 against retail's
+// 0xac, so the u step and the V end still take four-byte homes among the channel slots where retail spills them to
+// the eight-byte homes at the top of the frame, and the first-edge Y, the half-width, the cursor and the colour
+// homes differ with them. The helper this body calls at 0x131e50 has its declaration fixed in another file, which
+// this lane may not change: BLOCKED-BY 0x131e50.
 // score 351 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes

@@ -299,16 +299,6 @@ void function_2216f0(
 		IDirectSoundBuffer_SetMixBinVolumes(buffer, &out_mixbins);
 }
 
-/* a sound class of the sound classes tag. Retail calls it out of line
-   everywhere, but moving it into a file of its own built /Ob1 (which matched
-   0x218d30) changed 0x189fe0's convention and lost 0x189650 and 0x189760 */
-// @retail 0x221810
-s_unknown_5c *function_221810(
-	short index)
-{
-	return sound_class_definition_get(index);
-}
-
 // @retail 0x221850
 void function_221850(void)
 {

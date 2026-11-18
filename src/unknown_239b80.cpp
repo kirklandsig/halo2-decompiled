@@ -1295,6 +1295,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // short and a 32-bit count would also change that contributor's caller. The inside arm's copy written per member 129,
 // `previous = &points[i]` at the loop end 129 (same code each); the crossing point built in a point2f initializer and
 // stored whole 255 (899 bytes). Body unchanged at 129.
+// MiniMax H (11-18): no new form, no lower score (129): what is left is allocation only - retail reads the count as
+// a dword into ECX and keeps it there (`mov ecx, dword ptr [ebp + 8]`, `movsx edi, cx`, `test cx, cx` at the loop
+// entry) while this build reads it as a word and keeps the previous side in CL where retail has it in a byte home at
+// +0xd, and the zero constant is in XMM4 here against XMM2 in retail; the count's width is fixed by declarations
+// outside this lane's files, the only lever for it (a repeated `if (count > 0)` guard) is match-only, and the
+// recorded way to spill the previous side (moving its assignment to just before the inside test, which does give
+// retail's count in ECX) merges the alias copy into the inside test at 157, so the body stands.
 // MiniMax G (11-14): no new form, no lower score (129): the count's width is still the first difference - retail reads
 // the argument as a dword home (`mov ecx, dword ptr [ebp + 8]; movsx edi, cx`) where this declaration's `short count`
 // is read as a word home - and that width is declared by the caller in src/unknown_17d9a0.cpp, so it cannot be changed

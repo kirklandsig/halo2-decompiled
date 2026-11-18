@@ -1238,6 +1238,13 @@ struct s_item_flags_view_10b850
 // MiniMax B (11-18): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c (forty spare
 // bytes below the homes), so every stack home sits further out; retail keeps the two entry flags in stack slots where
 // this build holds them in registers, and the item walk still differs, so no form of the body's locals changes it.
+// MiniMax H (11-18): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every
+// stack home sits 0x28 further out; the two entry flags are still tested in registers where retail keeps them in stack
+// bytes, and the item's own flag byte is still written with a load, a mask and a store where retail masks the byte in
+// place (the byte's own view of the field, the bit-field view and a byte pointer all give the same bytes here). The
+// collision result's home is at esp+0xdc here and at esp+0xb4 in retail, so the thirty-six bytes of difference sit
+// below it in the locals of the main block; copying the normal and the point out of the result instead of taking a
+// reference into it grows the frame to 0x168 and scores 895.
 // MiniMax H (11-11): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c from the first instruction, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where ours holds them in registers.
 // MiniMax D (11-11): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c from the
 // first instruction, so every stack home sits 0x28 further out, and retail still extracts the flag bits in place
@@ -1758,6 +1765,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // still sits at +0xe where retail keeps it at +0xf, retail clears the release flag with one byte read-modify-write where
 // this build splits it into a load, an and and a store, and the event and point homes and the location call's setup
 // still differ; no form of the return value's home or the flag clear lowered the score.
+// MiniMax H (11-18): no new form, no lower score (140): the release byte is still cleared with a load, an and and a
+// store where retail masks the byte in place, the release impulse is still one shared copy where retail keeps two, and
+// the returned byte still sits at esp+0xe where retail keeps it at esp+0xf; the flag clear moved into the impulse
+// helper (a mask argument) measures 198, the flag-4 test without its own local measures 192, and the direct success in
+// the damping branch measures 190, so the body stands.
 // MiniMax R (11-16): no new form, no lower score (140): the release scale's two factors swapped in the source leave the
 // bytes unchanged (the compiler picks the operand order), retail clears the release flag with one byte read-modify-write
 // where this build splits it into a load, an and and a store, retail keeps two copies of the release impulse (the flag-5

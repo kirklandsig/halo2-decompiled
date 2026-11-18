@@ -950,6 +950,21 @@ static inline long team_score_195ed0(long team)
 // receiver 202; statborg/mask 160; statborg/mode/mask 178; shared eligibility 165; engine receiver and
 // mask with both mode guards 210/215. NOT kept: the 107 form grows the frame to 0x78. The mask
 // and shared-eligibility gains omit retail guards, and the final score call still expands.
+// M3 lane 10 r120 (fast; control 100): the flag order was tested with the globals joined. One object for the whole
+// range (0x510ca0 to 0x51e984: the kept bytes, the record's head, the players' entries, the teams' entries, the
+// counters, the samples and the addresses as fields, the old names as macros) 76 here (each unrolled pass reads the
+// teams flag after the copy and the 0xff store, as retail), but matched 0x196470 goes to 158: its second player loop
+// then tests the NONE index on the entry pointer (`cmp eax, <entries - 0xa4>`), where retail keeps a separate
+// index * 0xa4 counter in a stack slot for that test, which our compiler does only while that address lies below the
+// start of the entries' own global. So retail's players' entries are not in an object that starts at or below
+// 0x510fa0, and the flag (0x510ddb) cannot share their object: not kept. The head alone as one object (0x510cb0 to
+// 0x511000, its address already taken here) 100 (same code; 0x196470 and the 44 other users stay matched). On that
+// head object: the record pointer formed from the head's address (`&g_510cb0 + 0x384 + index * 0xa4`, diagnostic) 333
+// (aligned 58: the flag after the copy as retail, but the first loop then keeps the flag in BL); the record pointer
+// through a `long` cast of input_device(0) 100 (same code). Diagnostic on main's globals: the flag read as
+// `*((byte *)&g_511000 - 0x225)` 373 (the flag after the copy, the address not folded). Third score read: the two
+// clamp tests through the file's inline copy and the value through the existing 0x1587f0 191 (1237 B: the link
+// inlines 0x1587f0 there and calls 0x161e60 and 0x162030 from it). build/r120/storage-lead holds the head-only header.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
