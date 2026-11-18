@@ -1228,6 +1228,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Fraction inside opposite-ordinal/resolved-pointer admission; lower-then-upper tests
 // 560/568, upper-then-lower 561/562, partial-before-endpoint 560/569,
 // shared selected-endpoint copy 673/672. Frame stays 0x18.
+// Round 630: direct opposite winner with indexed records, nearest pointer/ordinal 742/712;
+// with a count-bounded cursor 830/781. Convert the winning pointer once after the walk,
+// pointer-bounded 711/735, count-bounded 766/762. The frame and query register differences remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
