@@ -1608,6 +1608,22 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // 151. The common scan increased the score in all eight forms. The indexed/pointer tail pair reached retail
 // length with a larger frame and different homes. The two original scans and their pointer fills are
 // restored.
+// M3 lane 6 r191 (fast with 0x199ebc/0x199ef8/0x19a951/0x19a9b4/0x199dc9/0x25142f, control 83): the fill is retail's only as an
+// index loop, and with the index fill in branch two only (107, 437 bytes) that branch's fill is retail's instruction for
+// instruction: index_count in EDI, saved to its home between the compare and the jge, `sub ecx, [home]`, the in-place lea,
+// the reload after rep stosd. What differs is who holds EBX: retail the mode (index_count then takes EDI and is saved around
+// both fills, and the player count is reloaded from its home); ours a forwarded copy of the player count in branch two (107
+// form), or index_count for the whole body once both fills are index loops (172; the mode moves to the stack). Diagnostic:
+// with the else arm's `item_count = player_count` replaced by a constant, index_count takes EBX in both forms 172/169, so
+// the mode loses EBX to index_count even without the forwarded copy. Forms: a separate scan counter copied into
+// index_count before the fill, shared / per branch, fill from either 172/172/159/159; the fill stepping the scan counter
+// itself (for / while, shared / per branch, index_count uninitialised) 172/159/172/172; an inline append helper taking the
+// count by pointer / by reference with index fills 172/172, with the pointer fills 83; the player count stored through an
+// inline out-parameter helper 172; the three qsort calls written out 119, with both index fills 174; memset fills
+// (plain, guarded, sizeof remainder) 164/179/164; the mode, teams and values declared first 171 (173 with the qsort
+// calls), the mode alone first 171, declared first and assigned after the counts 172; index fill in branch one only 169.
+// Homes: the four locals renamed (item_count / index_count to other names) 83 each and declared in four orders 83/83/83/84:
+// neither names nor declaration order move the two homes; they follow how often each is read from memory.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
