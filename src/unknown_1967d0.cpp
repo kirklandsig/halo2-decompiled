@@ -917,6 +917,9 @@ static inline long team_score_195ed0(long team)
 // existing score clamp 192; separate clamp stores 147; inline score clamp 100; existing score on lower/upper
 // test 223/216; statistics pointer retained 191; shared active-team query 138; reversed clamp tests 210. NOT
 // kept: 100 and 138 differ at the score or active-team call boundary; 147 grows farther from retail.
+// Configuration memmove 720; existing input-device view with memcpy/memmove 191/720;
+// native ranking record 191; ranked-team/team-rank/player/player-rank pointer walks 223/243/209/195.
+// The flag read still leads the copy in the tied forms, and the final score query still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

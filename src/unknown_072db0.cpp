@@ -2062,6 +2062,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // update as one `else if` chain 703 (same code); `team` declared where it is computed 703 (same code), with the delay expression
 // as well 703; the identity-change copy from the local identity instead of the session record 777. Body unchanged; the slot
 // helper's cmovne still needs the SSE flag.
+// Typed owner publication 703, also with typed team-key copy 703; combined/independent rejection bits 802/717.
+// Property slices by index with literal/recorded count 714/714; pointer slices 754/754.
+// NOT kept: the indexed slices reach retail length but grow the frame from 0xc0 to 0xc8.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

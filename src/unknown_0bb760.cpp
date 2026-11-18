@@ -692,6 +692,9 @@ void function_3dd10(long object_index, bool force);
 // late read and both single-precision absolute values and remainders 129. Both remainder overloads
 // recover the CL compare before the blend spill at +0x1c. NOT kept: overall score rises and the
 // signed scan exits and fallback unity reload still differ.
+// Signed weight pointer end with carried/derived ordinal 558/643; unequal end 283/313;
+// signed selection pointer end 297/301 and both signed ranges 574/652.
+// Signed weight ranges unroll. The unequal bound grows the frame and leaves the two output registers exchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
