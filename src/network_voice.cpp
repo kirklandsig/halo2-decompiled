@@ -2126,6 +2126,11 @@ static inline dword voice_get_player_mask_inlined(void);
 // MiniMax G (11-18): no new form, no lower score (64): the loop body still runs the port-flag queries before the word mask
 // test where retail does the word test first, and the second port-flag query is still called out of line where retail
 // expands it at this site, so the body and its jump targets differ.
+// MiniMax A (11-18): no new form tried this round, no lower score: retail still inlines both port-flag queries at this
+// site where this build inlines one and calls the other out of line, and the second availability byte still loads
+// lazily where retail loads both before the muted test and keeps the remote mask in esi. The second query's helper is
+// in this file, but marking it inline takes the matches of 0x54890 and 0x53a20 with it, and the session getters
+// 0x59670/0x596a0 live in another file: BLOCKED-BY 0x53bb0 and 0x59670/0x596a0.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;

@@ -212,6 +212,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // skip mismatches with indexed terminator 84; formatted arm breaks 84; fixed-array
 // destination 84; selected name then result 84. NOT kept: the 56 forms recover length
 // but retain 46 differing instructions, no base spill and no final ordinal multiply.
+// Postincrement comparison cursor with indexed strings/visited destination/visited
+// inputs/visited strings: 84/84/69/75. Selected const entry with independent search
+// cursor, then wide destination/field-end clear/array destination: 89/89/89/89.
+// The visited-input form recovers frame 0x28 at 204 bytes but spills the cursor
+// and keeps the derived output entry instead of reloading the array base.
 // M3 lane 10 r119 (fast; plain where noted). Reading: retail's entry base sits in memory at [ebp-8] next to the count
 // at [ebp-4] and is reloaded only after the library concatenations, so it behaves as an address-taken local.
 // The indexed terminator alone 84; entries and count as one two-member local aggregate (count's address passed),

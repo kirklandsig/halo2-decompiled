@@ -2095,6 +2095,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // code); the read submission's two `> 0` tests nested 696 (same code). Checked, not a form: retail's hopper checks behind
 // 0x1934f0 take their argument in ESI, ECX and EAX, so they were built with link-time code generation; a non-LTCG flag
 // on their file would not explain why retail reloads memory after those calls.
+// Disconnected group cursor with indexed players, ordered bound/nonempty loop/count 702/702/718.
+// With counted players 702/702/718; ordered/equality group bound with a player end 738/738.
+// NOT kept: the one-point gains leave the exit span and width unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

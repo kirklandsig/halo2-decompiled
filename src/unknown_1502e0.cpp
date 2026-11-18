@@ -1541,6 +1541,9 @@ void function_150820(dword *bits, bool local_only)
 // pointer; modes declared first; the cd4e0 arm as an if): best 73 with aligned 3 (the lead again), nothing lower than
 // 43, no match. Every form that makes the player address a shared temp gets retail's registers with `lea`; every form
 // that keeps it a plain local gets `add`/`mov` with the player/hand and unit-index/slot registers exchanged.
+// Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
+// player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
+// kept: it restores the saved-register roles but still folds the player add and move into LEA.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
