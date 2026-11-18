@@ -272,6 +272,9 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // and the cross product change (141); `real one = 1.0f` for the length tests (72, same bytes); the dot
 // product in a local (180) or the tests split into bool locals (123). Permuter (25 min on r622): best 63, from the
 // two changes kept here plus spelling-only rewrites; the count as unsigned 72 alone.
+// The time cursor and group ordinal still spill in the opposite order. Their latch and the cross products also differ.
+// Tried time-group index name 64, ordinal before channel setup 83, time cursor before current 141, time cursor before constant 129,
+// indexed time address 88, shared copy width 329, self-dot length tests 64, accepted-orientation return 64.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1118,7 +1121,9 @@ struct s_polygon_context_173910
 short function_120850(vector3f const *v);
 bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon);
 
-// score 69 (was 126): logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
+// score 3 (was 69): the side test uses EAX instead of AL, and the final call sets up the two
+// argument addresses in reverse order.
+// Earlier at 69: logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
 // of the context origin onto the plane, the two axis indices from g_440b94[axis * 2 + (plane[axis] > 0)], the 2d copy
 // of every vertex, point-in-polygon with 0.0001f); no behaviour difference found. Retail makes the 0/1 an int
 // (mov 1 / xor), tests it at once (test al, al) and builds the index with setne later; that and the early
@@ -1131,28 +1136,33 @@ bool function_23a220(point2f const *point, short count, point2f const *points, r
 // Permuter (25 min on r622): best 58, only with a (char) cast of the count passed to 0x23a220; retail reads it as
 // a zero-extended word (0x173ac5) and (char) would turn a count of 128 negative, so it isn't kept. A (word) cast and
 // the plane declared first are 69.
+// Tried comparison widened directly 69, unsigned-short side 69, normalized side local 120, early copy bound 122,
+// byte side with early copy bound 137, native postprojection indices 127, native predicate return 70, named axis component 122,
+// byte side normalized early 118, normalized side with origin record 7, normalized byte with origin record 40,
+// normalized long with origin record 3, normalized signed byte with origin record 40, normalized bool with origin record 40.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
 	point2f points[128];
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
 	short axis = function_120850(&plane->n);
-	short positive = plane->n.n[axis] > 0.0f ? 1 : 0;
-	point3f const *origin = &context->origin->position;
-	real distance = 0.0f - plane_distance_to_point(plane, origin);
+	long positive = plane->n.n[axis] > 0.0f ? 1 : 0;
+	bool use_positive_side = positive != 0;
+	s_polygon_context_173910::s_origin const *origin = context->origin;
+	real distance = 0.0f - plane_distance_to_point(plane, &origin->position);
 	point3f projected;
-	projected.x = plane->n.i * distance + origin->x;
-	projected.y = distance * plane->n.j + origin->y;
-	projected.z = plane->n.k * distance + origin->z;
+	projected.x = plane->n.i * distance + origin->position.x;
+	projected.y = distance * plane->n.j + origin->position.y;
+	projected.z = plane->n.k * distance + origin->position.z;
 	point2f point;
-	point.x = projected.n[g_440b94[axis * 2 + (positive != 0)][0]];
-	point.y = projected.n[g_440b94[axis * 2 + (positive != 0)][1]];
+	point.x = projected.n[g_440b94[axis * 2 + use_positive_side][0]];
+	point.y = projected.n[g_440b94[axis * 2 + use_positive_side][1]];
 	for (long i = 0; i < polygon->count; ++i)
 	{
 		point2f *destination = &points[i];
 		point3f const *vertex = &polygon->points[i];
-		destination->x = vertex->n[g_440b94[axis * 2 + (positive != 0)][0]];
-		destination->y = vertex->n[g_440b94[axis * 2 + (positive != 0)][1]];
+		destination->x = vertex->n[g_440b94[axis * 2 + use_positive_side][0]];
+		destination->y = vertex->n[g_440b94[axis * 2 + use_positive_side][1]];
 	}
 	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
 }
@@ -1263,6 +1273,11 @@ struct s_point_pool_173520
 // if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
 // Permuter (25 min on r622): best 58, from temporaries plus a memcpy size read through a char (a behaviour change);
 // not kept.
+// The pool increment and state-test schedule, stride reload, x87 clamp, and bounds expansion still differ.
+// NOT kept: capturing the state moves the projection branches. The explicit float clamp grows the body.
+// Tried state snapshot after reservation 172, returned byte for traversal 180, scoped bounds alias 96, named point stride 96,
+// signed remaining-count loop 934, explicit float clamp outcomes 117, explicit minimum selection 96, library box copy 96,
+// explicit double clamp outcomes 96, direct cache pool members 188.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {

@@ -998,6 +998,9 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // channel 117/117; out-of-range stores only, low then high 116/116 or high then
 // low 116/116. Each pair uses an ordinary or fixed current pointer. The input
 // spill and the current pointer's register through the blend call still differ.
+// The source spill and destination register across the blend call still differ. The direct scale-name reads restore the guard span and length but raise the total.
+// Tried explicit blend latch 89, explicit scale latch 89, both explicit latches 89, unsigned ordinal 89,
+// read-only input and indexed output 100, blend value before colour operands 89, direct indexed scale name 110, admission result and remaining count 176.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

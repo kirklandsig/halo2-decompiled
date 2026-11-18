@@ -4511,6 +4511,9 @@ bool __stdcall function_2b278e(long controller_index)
 // or an identity-only controller view 199/197. Each pair forms masks at their
 // dialog calls or in the corresponding arm. The original reference and index
 // stack home are still missing.
+// The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
+// Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
+// native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
