@@ -1550,6 +1550,10 @@ real function_50650(real cosine);
 // object in edi, so the prologue is two bytes longer and every later row pairs with the wrong row; the offset-first
 // expression, the scaled offset in a local of its own and the actor getter all compile to the same code, and the
 // velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, which this lane may not edit.
+// Round 605. The 0x1c frame agrees. The early actor pool load and reversed actor/object registers remain.
+// Shared following-point difference 128. Object-header getter 120. Named turn span 122. Following radius read
+// once 266. Angle clamped before complement 120. Distinct scale minimum names 120. Positive-gap ternary 120.
+// Checked following-object index 120.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,

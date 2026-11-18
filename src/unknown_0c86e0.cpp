@@ -351,6 +351,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // not kept); the early-return helper with the globals' sound as the default 115; the `&&` flag with that default 107.
 // Re-measured on this base: the `&&` flag alone 104 (367 bytes), the early-return helper alone 113, the late zoom
 // flag alone 125, `&&` with the late flag 116, the early-return helper with the late flag 127. Still BLOCKED-BY 0xbadc0.
+// P604: Carry the pre-reset level through the reset join as char/short/long/byte,
+// defaulted after the weapon query or in the preserve arm: 131/128/130/129/129/126/128/127.
+// NOT kept: the post-query unit fetch stays merged, and the later level
+// comparison shortens the body farther from retail.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

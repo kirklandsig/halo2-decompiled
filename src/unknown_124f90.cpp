@@ -3561,6 +3561,9 @@ static inline short sound_voice_find_available_channel(char type)
 // byte 96; distinct rejection arms with bool 114.
 // The distinct byte rejection branches tie at 96 and shorten the body by one byte. The other forms regress,
 // including three that reach retail length. The twelve-byte frame and early result residence remain.
+// Assigned-channel bypass with separate, nested, compound or named buffer checks, each with
+// direct or cleanup-scoped rejection return: eight 135s. NOT kept: eight-byte frame recovered,
+// but entry AL, pre-call failure in BL and the shared failure return still differ.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

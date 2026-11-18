@@ -823,6 +823,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // allocator-failure exit 344, query-scoped collision 344 or separate refreshed
 // settings 344. The staged gate gains the two slots through an extra readback;
 // the split effect address and DL load remain. Restored.
+// Spatial workspace alone or with collision after the effect gate 334/334. Workspace alone or
+// with collision in the allocation arm 334/334. First-draw workspace and probe collision 334.
+// Post-gate workspace and probe collision 334. Allocated workspace and motion collision 334.
+// Settings declared after the gate 334. NOT kept: folded address and flag/settings homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

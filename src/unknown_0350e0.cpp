@@ -360,6 +360,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 375. NOT kept: the destructively scaled axis captures either enlarge the frame or leave the opening register
 // assignment. The square and diagonal compound forms tie 334, and the cross accumulators raise it. The matched
 // caller held.
+// P603. Caller-side sine-axis through the scaler 360, aggregate 354, staged components 354,
+// or in-place scaler 372. Scaler with a value argument 367, aggregate with a reference 354,
+// both sine axes produced first with scaler 360 or aggregates 354. NOT kept: every split
+// moves the frame from 0x90 and raises the score. The original coefficient builder and caller
+// remain, with the first-axis square and sine-product register homes still different.
 // MiniMax R (11-17): no new form, no lower score (334): the first difference is the xmm choice for the two constants (this build keeps them in xmm4 and xmm5 where retail uses xmm0 and xmm7), and the body is two bytes longer than retail's 1779.
 // AC571: Sine/cosine pairs by const reference, initializer or member assignments, each pair before its
 // builder or both before either 342/343/342/343. By value 364/363/364/363. NOT kept: the pair forms
@@ -3817,6 +3822,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // EDX/EBP roles at 1324 bytes, but adds a manufactured out-of-range start and comparison on
 // the path retail skips directly. Counter homes and the decay base still differ.
 // MiniMax C (11-17): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped; the declaration orders of the two homes measure the same, so the body stands.
+// Creation-entry cursor with indexed end, ordered/equality bound and else/continue
+// advancement 337/337/337/337. Paired entry/end cursors 382/382/382/382.
+// NOT kept: the state and prefix registers are still reversed.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -6318,6 +6326,11 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // (0x423c0 160), so the alignment demand comes through 0x14ac0, not D3DDevice_Clear. Shared pass helper: the clear
 // test nested under `mode == 1` 138; a `sources` pointer for the flags and g_467138 138; 0x44370's mask-gated
 // flag test 141. 0x44370 is retail-inlined here but lives in an /Ob1 file, so it stays out of line.
+// P603. Nested clear checks 100, paired clear-byte guard 100, named clear admission 100,
+// one mode read with the in-range cull branch 100, assigned short cull 223, ternary short
+// cull 172, upper range bound first 104, nested clear with the one-read range 100.
+// NOT kept: the clear guards tie and the shorter shared cull calls raise the peer scores.
+// The stub still passes the clear flags on the stack.
 // Round 615: the clear call still pushes its first argument, and the cull fallthroughs differ.
 // One-based payload 233; end cursor 198; separate index base 101; fog mask bit 100;
 // mask set in both arms 113; first record before flag reset 104; direct group fields 100;
@@ -6774,6 +6787,11 @@ PRIVATE __forceinline real absolute_32350(real value)
 // shared box center displacement 437.
 // NOT kept: the 0x7c shape reaches frame 0xb3c and ties 445. The scopes tie and one return regresses.
 // Kept: one displacement used for all three box center products, 437 in the ordinary check.
+// P603. Complete typed shape 437, typed projections 437, both typed records 437,
+// both records with extents first 436, one extent-vector initializer 503, staged box cross 437,
+// staged light and box crosses 528, or renamed query and result locals 437.
+// NOT kept: the full shape gives frame 0xb3c, still four bytes short, and the best variant
+// gains one. The original 0x74-byte buffer remains, against the initializer's 0x7c-byte clear.
 // @retail 0x32350
 bool __stdcall function_32350(long index, real input_alpha)
 {

@@ -502,7 +502,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 299 (was 299; earlier 303): frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
+// score 299 (was 299): Earlier 303. Frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
 // after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
 // F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
 // range, F+0x3c pitch range; ours F+0 candidate, F+0xc attempt, F+0x10 axis, F+0x1f result, F+0x20
@@ -904,11 +904,14 @@ struct s_collision_result_buffer_1697c0
 // pointer 308 (1446 B); each rotation's sine/cosine pair as named locals in its own block 217 at 1423 B (masked 86), with
 // the best vector before best_fraction 214 (1423 B, masked 84). All match-only (the wrapper's body written out or a one-use
 // pointer); body unchanged.
-// score 299 (was 299): MiniMax D (11-17): no new form, no lower score (299): the frame-bottom homes still differ -
+// MiniMax D (11-17): no new form, no lower score (299): the frame-bottom homes still differ -
 // retail's three locals sit at [esp+0x1c]/[esp+0x20]/[esp+0x24] against this build's [esp+0x18]/[esp+0x1c]/[esp+0x20],
 // retail's flag byte is at +0x2f against this build's +0x2b, and retail keeps the magnitude result at [esp+0xc] where this
 // build keeps it at [esp+0x2c]; the masked count is 154, so what is left is the homes rather than the statements, and
 // lane 14 r84's reused sine/cosine pair is a match-only form (its body written out), which is not a permitted shape.
+// P608: Paired random draws through one field pointer, object pointer, field reference or
+// object reference, at loop or draw scope: eight 296 at 1451/1423, first +0x31.
+// NOT kept: three-point gain, longer body and different generator loads despite native entry slots.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

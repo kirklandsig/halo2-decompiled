@@ -491,6 +491,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // bounds 398; wide near comparison with distant-arm rounding 384, with wide numerator 384; wide
 // quotient and dot with bounded real results 353. Near cosine still stays on x87 and the candidate
 // ordinal is still a byte.
+// Table-driven fixed turns, real paired angles with component/point stores 481/505,
+// real separate tables 491/510, double paired angles 592/610, double separate tables
+// 578/591. NOT kept: length shrinks by at least 98 bytes and the unity register still differs.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1109,6 +1112,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Round 620: radius remains live from entry in XMM5; pivot and side trace homes are displaced.
 // Typed pivot 569; shared facing dot 617, arc dot 569, both 718, both with planar vector 718;
 // wide arc dot 616, guarded wide clamp 616, and wide arc with shared facing dot 626.
+// Lateral distance z/y/x sum 569, y/z and z/y subtotals 569/569, named real
+// subtotals 569/569, named squares 569, wide subtotal 573, wide differences 573.
+// NOT kept: no exact x87 or radius-load recovery; pivot and trace homes still differ.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

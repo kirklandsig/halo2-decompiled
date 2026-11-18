@@ -853,6 +853,9 @@ real function_30bf0(vector3f *vector);
 // countdown with postincremented input 187, indexed count with postincremented input 185. Primary fallback
 // first with selected 3/2 tier 84, four-way result select 153, explicit zero in the primary fallback 153.
 // NOT kept: the two-sided clip and cursor forms reach 1308 bytes but keep the wrong result home and raise the score.
+// Seat record reference 90, value copy 150, named vehicle/seat/both 84/84/86;
+// record reference, value copy and paired fields with a scan-wide world-up pointer 149/203/144.
+// NOT kept: the result and projection/count homes remain unresolved.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

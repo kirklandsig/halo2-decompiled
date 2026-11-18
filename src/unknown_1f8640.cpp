@@ -874,6 +874,10 @@ struct s_1f8a70_actor
 // each storing node first or radius first, 360/212/360/212. Native order
 // through the case frame 392, earlier snapshots before point stores 372.
 // NOT kept: all raise the score. Route dispatch and the late false reload remain.
+// Filtered zero route 182; conditional zero-route choice 182; branch-owned route 384; separate
+// zero/nonzero value choices 384; range-first normalization 309; separate radius/node outcomes 403;
+// compound invalid-route test 299; nested route choice 384. NOT kept: dispatch adjacency and
+// the failure result reload remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
