@@ -130,6 +130,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // integer sort scratch 296, aggregate validity clear 368, shared destination sound index 355,
 // shared seed sound index 367, long packed link 317, sort validity before ordinal 299.
 // The entry still uses EBX for the starting cluster and spills both table bases.
+// Round 630: unsigned packed link 296, named endpoint 296, high-bit endpoint selection 358,
+// signed seed index with fresh bitmap read 361, distance accumulator 296, scoped path walk 296,
+// nested closest-distance admission 296, ordered range rejection guards 296.
+// The starting-cluster register and both table-base reloads still differ.
 // The starting cluster still occupies EBX, and both table bases are kept across the portal loop.
 // Shared bitmap setter/range test/order-output tests/all operations 296/317/296/317.
 // Seed-and-walk cluster scope 298; early closest distance 296; signed starting sound at the
@@ -319,6 +323,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // declared before the loop 225 (1355 B); the fraction's arms in the other order 181 (1370 B); the cluster lookup
 // ahead of the clear 371 (1347 B). With main's 0x14b240: the test helper alone 333 (1347 B); the long-bits decibel
 // helper alone 357; the path entry types alone 351; all three 377 (none kept).
+// Tried flags before endpoint 322, long masked ordinal 351, high-bit predicate 351, short endpoint local 354,
+// packed cursor with live count 354, explicit range cases 354, initial maximum range 365,
+// shared fill and sort count 354, available-first output cap 363. NOT kept: early flags skip retail's
+// pretest endpoint decode and the frame remains larger.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

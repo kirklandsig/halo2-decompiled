@@ -1905,6 +1905,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax G (11-18): no new form, no lower score (251): retail loads the object-pool global into EDI above the
+// options lookup's `je` and keeps that base for every field read ([edi+0x84], [edi+0x18], [edi+0x225],
+// [edi+0x722], [edi+0x764]), while ours holds the actor in EDI and re-reads the global for the second lookup; the
+// actor and the weapon options take the other two registers (ours actor EDI, options ESI; retail actor ESI,
+// options EBP), and the unit pointer still rides across the opaque callee 0x1e53e0, so the residency is settled
+// in another file (src/unknown_1e53e0.cpp) together with the /GL- build of 0x259a0 (src/unknown_0259a0.cpp).
 // MiniMax H (11-18): no new form, no lower score (251): the pool and seed globals still take retail's registers the
 // other way round (retail holds the pool in EDI and reloads the seed into EBX), the two-weapon index is still
 // strength-reduced into a cursor and a countdown where retail keeps a 32-bit index in the frame's slot at +0x14 and

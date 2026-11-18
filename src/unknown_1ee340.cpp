@@ -89,6 +89,26 @@ struct c_vertex_shape : radius_shape_2de750
 	virtual void ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result);
 };
 
+/* one of the shape's vertices as the physics library's four-real vector: its components are read and
+   written through the component accessor */
+struct s_shape_vector4
+{
+	real components[4];
+
+	real &operator()(long index) { return components[index]; }
+
+	void set(real x, real y, real z, real w)
+	{
+		(*this)(0) = x;
+		(*this)(1) = y;
+		(*this)(2) = z;
+		(*this)(3) = w;
+	}
+};
+
+/* the radius every vertex shape is made with (retail reads it from .data and only the constructor does) */
+real g_47f068 = 0.01f;
+
 PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const point3f *point, point3f *result)
 {
 	real x = point->x, y = point->y, z = point->z;
@@ -103,174 +123,11 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
-// score 6 (was 6): the entry loads the index before the radius constant where retail loads the constant first, and the
-// x store uses the formed vertex address where retail folds it into the store. Earlier notes:
-// MiniMax G (11-12): no new form, no lower score (6); the entry still loads the index before the radius constant where retail loads the constant first, and the x store still uses the formed vertex address where retail folds the address into the store's operands; the helper called with the array element scores 25 and with the array element for the w store as well 38.
-// MiniMax E (11-11): no new form, no lower score (6); the check's left column is ours and the right column is retail.
-// The entry still loads the index before the radius constant where retail loads the constant first, and the loop
-// still forms the vertex address before its x store where retail folds the address into the store's operands; an
-// address folds into a store only when its value is used once, so the x store needs an address of its own, but then
-// the y and z stores have to share the multi-use pointer and stay separate float copies, which only the inlined
-// point helper produces; this round the surface index store moved to the top of the body scores 6 (no change) and is
-// reverted.
-// MiniMax I (11-09): no new form, no lower score; the x store split from the helper as its own array element, through a union view, through an int pun and with the components written through the union's array members score 110 to 140, the helper called with the array address scores 38, and the permuter (2400 s) found no candidate; this round the surface index as a member initializer scores 6, the value store before the surface pointer 33 and the surface index stored last 123, the helper called with the array address 25, a point3f pointer local 6, no vertex local 38 and the tag through the vertex 58; the entry loads the radius constant before the index where retail loads the index first, and the x store folds the vertex address into the store's operands where retail forms the address first.
-// Earlier: this round: no new form and no lower score; the entry still loads the index before
-// the radius constant where retail loads the constant first, and the loop still forms the vertex address
-// before its x store where retail folds the address into the store.
-// MiniMax S (11-09, second round): no new form, no lower score (6); the entry still loads the
-// index before the radius constant and the loop still forms the vertex address before its x
-// store; this round the x store as a long copy of the point's x beside the helper leaves a
-// second store and grows the frame, so the whole body shifts, and the helper called on the
-// array element still forms the address in a register (38).
-// MiniMax D (11-06): no new form, no lower score; the entry still loads the index before the radius constant and the loop still forms the vertex address before its x store; this round the x store as a long copy through the array element with the other components through the pointer (112), the x store through the array element with the point helper kept for x, y and z (119), the x store through the array element with y and z through the pointer (112) and the x store through the array element with y and z through the point3f view (112) are all worse, because only the single helper call keeps the y and z stores as float copies and it forces the x store through the materialised pointer; the x, y and z stores written out one by one through a point3f view of the vertex pointer are worse still (106), because the view needs a stack home.
-// MiniMax I (11-06): no new form, no lower score; the entry still loads the index before the radius constant and the loop still forms the vertex address before its x store; this round the x store through the array element with the other components through the pointer (112), all four components through the array (144) and the x store beside the point helper (119) are all worse, and the permuter (480 s) found no candidate.
-// MiniMax G (11-05): no new form, no lower score. The entry still loads the index before the radius
-// constant and the loop still materialises the vertex address before its x store. This round: the
-// x store as a standalone array element (before or after the helper) folds the address into the
-// store but leaves a second x store or a reloaded count (110, 124, 125); the helper on the array
-// element materialises the address (38); the helper's destination shifted by one element keeps the
-// folded address but makes the y store a dword copy (120); the surface lookup through the stored
-// index and the index store at the end of the body change the prologue without lowering (6, 123).
-// MiniMax H (11-04): no new form, no lower score; the x store through the array element, the helper on the array element, the w store through the pointer, the x store as a long copy, through the m128 accessor and through the point3f view give 112, 25, 58, 106, 112 and 106, the members in the initialiser list give 6 and the member stores moved after the loop give 119 to 123, and the permuter tried 95 forms without a lower score, so the entry's load of the radius constant before the index and the vertex address folded into the x store still stand.
-// MiniMax B (11-03): no new form, no lower score. The entry still loads the index before the radius
-// constant and the loop still materialises the vertex address before its x store. This round: the x
-// store written through the array element while y and z go through the pointer gives 110 (the count is
-// reloaded after the store and the y and z stores become dword copies), and forming that pointer
-// before the store gives 112 but moves the index parameter to another stack home, which would break
-// the matched callers 0x1ee4d0, 0x1ee500 and 0x1ef950; both were reverted.
-// MiniMax R (11-01, fourth round): no new form, no lower score. The x store still does not fold
-// the vertex address into the store. This round: the x store through the array element while y
-// and z go through the pointer scores 112; three separate stores through the pointer score 106;
-// the x store through the pointer with y and z through the array score 136; the helper followed
-// by a duplicate array x store scores 125. Storing all three components through the array does
-// not compile (vertex undeclared) and writing them through the point3f union's array members
-// does not compile either (C2679).
-// MiniMax R (11-01, third round): no new form, no lower score. The entry still loads the index
-// before the radius constant and the loop still materialises the vertex address before the x
-// store. This round: an x store with an address expression of its own (the array element, a
-// local index, the array mixed with the pointer) changes the frame and scores 119, 118, 118 and
-// 119; the helper called with a fresh array address scores 132; the three components written
-// through the union's array members score 106; the vertex taken as an __m128 pointer does not
-// compile (C2679); moving the value assignment to the top of the body leaves the code unchanged
-// (6) and to the end changes the store order (120).
-// MiniMax R (11-01, second round): no new form, no lower score. The entry still loads the index
-// before the radius constant and the loop still materialises the vertex address before the x
-// store. This round: the six orders of the four member stores (vertex_count, kind, surface_index
-// and value) score 6, 33, 35, 33, 22 and 23, and the five ways of forming the vertex pointer
-// (pointer arithmetic, the m128 accessor, a point3f pointer, the w store written through the
-// pointer and the count read into a local) score 6, 6, 6, 58 and 58; writing the three
-// components straight onto the point3f union does not compile (C2679).
-// MiniMax R (11-01): no new form, no lower score. The entry still loads the index before the
-// radius constant and the loop still materialises the vertex address before the x store. This
-// round: an x store with an address expression of its own folds the base, but the y and z values
-// held in locals change the loop's loads and the frame (65); a second x store beside the helper
-// changes the frame as well (119/125); the helper called with the array address still
-// materialises the address (25/38) and moves the w store to a folded [eax+ecx+0x2c]; the member
-// store at the end of the body and the surface read through the member leave the code unchanged
-// (6).
-// MiniMax R (11-01): no new form, no lower score. The entry still loads the index before the
-// radius constant and the loop still materialises the vertex address before the x store; the x
-// store through the array, the helper called with the array, the point3f pointer, the separate
-// component stores, the member's surface pointer and the member in the loop test score 6 to 122.
-// This round (score 6, was 6): the entry block still loads the index before
-// the radius constant, and the loop still materialises the vertex address
-// before the x store; a fresh address expression for the point helper, the w
-// and mask stores written from separate expressions, the pointer written as
-// vertices_raw + count * 4 and a point3f pointer all compile identically.
-// Also this round: the member stores reordered (surface_index before kind, and
-// surface_index first) and the vertex pointer taken as a point3f pointer all
-// leave the two differences in place, and the w store written through the array
-// again is worse (38).
-// Earlier, also at 6 (one note now): radius/index loads swap; vertex x uses the completed
-// address before its store. Derived count/kind/value initializers 33; all
-// member initializers 6; index/count/kind initializers 6; const source 6;
-// point memcpy 120; point value with in-place transform 128; word edge
-// cursors 97; full-width side 97.
-// Source-surface reference 6; source-edge reference 6; cached edge table 120;
-// cached vertex table 125; output ordinal snapshot 101; outer transform workspace 6;
-// short side 97; external geometry reference 6. Radius/index and x-store order remain.
-// Also tried: tag stored through (long *)vertices_raw or vertices() 6; vertex
-// as vertices_raw + n, an x local, surfaces[surface_index], surface_index set
-// first 6; w stored by member index 38; offset local 68; separate x/y/z
-// stores 10/106; point struct copy 120; __m128 vertex pointer 6.
-// MiniMax S (11-09): no new form, no lower score; the entry still loads the index before the radius
-// constant and the loop still forms the vertex address before its x store; this round the x store
-// through the array element as a long copy (119), through the point3f view of that element (119) and
-// the helper called on the array element (38) are all worse, and writing the three components
-// separately (112) turns the y and z stores into long copies.
-// Round 98 (m3 lane 10, fast with 0x1ee4d0, 0x1ee500, 0x1ef950; control 6). Finding: retail's 0.01 radius is not a literal:
-// 0x47f068 is in .data and only this function reads it, so the source passed a global to the base constructor; with
-// `real g_47f068 = 0.01f;` (or const) as that argument the code is the same 6 (the index is still loaded first), so the
-// literal stays for now. Vertex stores: through the existing 4-component set of include/unknown_1cec30.h (element indexed,
-// element address, a named reference, w passed) 6 each (same code); through a file-local vector with direct member stores
-// or a 4-real free setter given the element address (inline or forceinline) 6 each; through a real array-of-vectors view of
-// the member (so the element is an lvalue) with either setter 6/6, with four direct member stores 106; four m128_f32 element
-// stores through a named vertex 106. Every setter form materialises the vertex address before the x store; retail's
-// `mov [eax + ecx], edx; add eax, ecx` is the shape main's 0xa3df0 gets from a pointer whose first use is folded and
-// which is formed only for a later use. One compiler-setting diagnostic (not kept): /G5 or /G7 on the file 6, nothing moves.
-// Round 416: Advancing output cursor 92 (445 bytes); persistent edge cursor 117;
-// read-only edge pointer 6; post-transform point selection 6; memmove point copy 125 (459 bytes);
-// immutable output cursor 6; unsigned full-width edge ordinals 6; existing shared point transform
-// 323 (256 bytes). All restored; radius/index loads and the first vertex address/store remain.
-// Round 115 (m3 lane 16, fast with 0x1ee4d0 and 0x1ee500; control 6): the 6 is the entry load order (2) and the x store
-// (2) plus its knock-on rows: retail's `mov [eax + ecx], edx; add eax, ecx` is a byte longer than ours, which moves the
-// back-edge jne and the padding (2). A compile-only screen (CL without /GL) reproduces ours and gives retail's entry
-// order with the radius read from a .data global, but LTCG does not: the global defined here 6, defined in a /GL-
-// object and declared extern here 6 (the index is still loaded first). The x store through the array element with
-// y, z and w through the pointer folds the x address in the screen but copies y and z as dwords, 112 (the listed
-// form). first_edge declared first with edge_index copied from it 6; the w store through the point setter's
-// returned pointer 6 (same code).
-// Also: the radius written as a double literal 6 (same code); the vertex pointer taken before the transform 69.
-// M3 lane 3 r245 (fast with 0x1ee4d0/0x1ee500, both matched): dead-local phase scan, 0..8 unused locals after the first
-// member store, 6 at every n (diagnostic: neither spot is a symbol-count tie); the `index` parameter renamed 6 (same code);
-// the vertex pointer formed from a byte offset of `this` 6, from the array address as an integer 6 (same code, diagnostics);
-// the point stored through the existing void vector3f_assign 6 (same code).
-// M3 lane 8 r171 (fast with 0x1ee4d0/0x1ee500): the side test written `index == edge->surfaces[1]` 7 (cmp flips); the
-// radius assigned in the body after the member stores (a no-argument base constructor) 9 (its store moves after the
-// vtable, the index is still loaded first); the w store ahead of the point set 14 (stores keep source order); the
-// surface pointer formed ahead of the member stores 22 (the entry loads the radius first as retail, but the surfaces
-// load moves above the stores); the surface pointer formed between the index and value stores 20.
-// Round 91 (m3 lane 15, fast with 0x1ee4d0/0x1ee500): the radius as a file-static .data global 6 (index still first);
-// the surface through the stored member index 6; the side test against the stored member 122 (both callers lose their
-// match); the vertex from the m128 accessor's element 6; the radius assigned first in the body through a no-argument
-// base constructor 8 (header edit for the trial only, restored).
-// M3 lane 11 r108 (fast with 0x1ee4d0/0x1ee500, both matched throughout): the vertex pointer as a row of a `real (*)[4]`
-// view of the array 6 (same code); the source vertex addressed in each arm of `if (matrix)` (the transform reading it in
-// the true arm, the else arm pointing at it) 69 (473 bytes); the source vertex as a named vertex-record pointer with the
-// point taken from it 6 (same code); `word first_edge` with the edge cursor copied from it 6 (same code); the transform
-// helper returning the point by value 94 (480 bytes). Diagnostic (r98's listed form re-measured): with `real g_47f068 =
-// 0.01f;` here as the base argument the reduced map shows the radius read from that global (not folded to a constant),
-// and the index is still loaded first, so the entry order is not an aliasing effect of a .data load. A scan of the
-// retail image finds 0x47f068 referenced only here and never written; its .data neighbours 0x47f05c and 0x47f074 are
-// globals other files already define (src/impacts.cpp, src/unknown_1c2d40.cpp).
-// Round 91 (m3 lane 2, fast with 0x1ee4d0/0x1ee500, both matched throughout): a `real *const` vertex pointer 6; the
-// transformed point declared at function scope 6; const surface and edge pointers 6; the count advanced with `+= 1`
-// 6; `if (matrix != NULL)` 6 (all the same code). Re-measured by mistake (listed): a long side 97, the tag through a
-// `long *` view of the array 6. Restored.
-// Round 94 (m3 lane 2, fast with 0x1ee4d0/0x1ee500, both matched throughout): an inline member storing x into the
-// next slot and returning it, y/z/w stored by the caller, 10; the x copied with memcpy, y/z/w through the pointer 10;
-// the slot through an inline `vertex_slot(index)` accessor 6; the vertex as a `real (&)[4]` array reference 6; a
-// four-component setter (x, y, z, w) on the pointer 6. Diagnostics (not kept): a global store of 0 or 1 at the top
-// gives retail's entry order (radius first) but not the x store; at the end it moves nothing. A compile-only screen
-// (CL without /GL reproduces ours exactly) shows VC folds a pointer into its first use and forms it afterwards only
-// when the later uses lie past a block boundary (matched 0x42850's inlined record take: two stores fold, the add
-// follows for the uses after the inline's test); no code-free boundary (label, do-while(0), one-pass loop, a
-// returned pointer, a later use) moved the add here, so retail's x store sits in another block than y, z and w.
-// In the screen the fold needs a pointer variable with more than one definition whose later uses lie past a merge
-// (0x42850's `result = 0; if (...) result = &records[count];`, then the caller's uses); the vertex pointer declared
-// at function scope, set to NULL at the top or at the loop top and then assigned, still forms the address first.
-// Round 116 (m3 lane 10, fast with 0x1ee4d0/0x1ee500, both matched throughout; the compile-only screen shows no fold for
-// any of them): the vertex bound by reference as the m128 element 6, as a point3f 6; the count bound by reference
-// (`long &count = vertex_count;`) for the address, the tag and the increment 6; the source point bound by const
-// reference 6; the vertex pointer passed through a const reference 6.
-// M3 lane 16 r134 (fast with 0x1ee4d0/0x1ee500, both matched throughout; control 6): the vertex set through a member
-// `set(x, y, z, w)` of a 4-real record view of the array 6 (same code); a member `set(point, w)` reading the point inside 106;
-// the radius from `real g_47f068 = 0.01f;` defined here, the four members in the initializer list and the member setter, in
-// all seven combinations, 6 each; the vertex append (address, set, w, tag, increment) as an inline member function 6; the edge
-// as a `s_shape_edge const &` 6 (same code each).
+/* Retail keeps the radius load ahead of the member stores, as it does for a global whose address is taken, so
+   the base's argument is read through the global's address. */
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
-	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
+	long user_data, const transform4x3f *matrix) : radius_shape_2de750(*(real const *)&g_47f068)
 {
 	vertex_count = 0;
 	kind = type;
@@ -290,9 +147,8 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 			shape_transform_point(matrix, point, &transformed);
 			point = &transformed;
 		}
-		real *vertex = &vertices_raw[vertex_count * 4];
-		real_point3d_set((point3f *)vertex, point->x, point->y, point->z);
-		vertex[3] = 0.0f;
+		s_shape_vector4 *vertex = (s_shape_vector4 *)&vertices_raw[vertex_count * 4];
+		vertex->set(point->x, point->y, point->z, 0.0f);
 		*(long *)&vertices_raw[vertex_count * 4 + 3] = vertex_count | 0x3f000000;
 		vertex_count++;
 		edge_index = edge->next[side];
@@ -307,6 +163,12 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 
 // score 192 (was 192): frame 0x84 against retail's 0x90, the ray loads and the origin and edge homes; BLOCKED-BY 0x23a220
 // (its definition and its count parameter's width are in another lane's file). One note, the rounds' entries below.
+// MiniMax H (11-18): no new form, no lower score (192): walking retail's body against this build again, the frame
+// stays 0x84 against retail's 0x90 - retail loads the ray's six components and the shape's vertices up front and forms
+// the direction and the two edge vectors in xmm registers (the ray start's three components stay in xmm3-xmm5), while
+// this build forms each difference and spills it to a stack home - and the polygon count is still pushed as a word
+// here and as a dword in retail, which the short count's type (declared outside this lane's files) forbids:
+// BLOCKED-BY 0x23a220; the earlier permuter runs over this body (34 tries) found nothing below the baseline.
 // MiniMax R run 92 (11-17): no new form, no lower score (192): the permuter's 34 annealed tries over the reduced image
 // found nothing below its 187 baseline there, and the frame is still 0x84 against retail's 0x90 with the origin's x
 // and y and the edge vectors in stack homes; the point-in-polygon query still needs the points before the point:

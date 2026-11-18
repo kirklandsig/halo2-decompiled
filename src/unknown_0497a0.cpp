@@ -482,6 +482,11 @@
 // paired terms, or separate product families 638/649/646/640. Moving the short
 // wave before those forms gives the same four scores. NOT kept: every form
 // shortens the body and leaves the frame and rounded-wave homes different.
+// The independent rounded-wave homes and 0x60 frame remain. two-factor carrier 534; three-factor modulation
+// 534; unattenuated wave 536; two scaled displacements 704; shared row zero offsets 715; perspective first
+// with shared zero offsets 717; depth axis selected at use 678; scoped row crosses 594. NOT kept: Naming
+// the first two modulation products saves two points at the retail extent. The frame stays 0x54, and the
+// product forms fall below the keep threshold. Separate displacements and projection forms regress.
 // The 0x54 frame and distinct rounded-wave/cross homes still differ. Read-only shape
 // views 536; retained projection mode 669; in-place reciprocal 536; shared negative
 // numerator 537; guard before depth up-vector selection 678; branch-selected normal
@@ -808,6 +813,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // retail's build inlines pack_color4f from that file while this file's front end expands its own copy, so the
 // frame is still 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes still
 // differ; the u step and the V end still take 4-byte homes where retail spills them to the 8-byte ones.
+// MiniMax A (11-18): no new form tried this round, no lower score (351): the frame is still 0xa8 against retail's
+// 0xac, so the u step and the V end still take four-byte homes among the channel slots where retail spills them to
+// the eight-byte homes at the top of the frame, and the first-edge Y, the half-width, the cursor and the colour
+// homes differ with them. The helper this body calls at 0x131e50 has its declaration fixed in another file, which
+// this lane may not change: BLOCKED-BY 0x131e50.
 // score 351 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes

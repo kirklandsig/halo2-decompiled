@@ -651,6 +651,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Attenuation sampled before the indexed walk with short/long count 847/919.
 // NOT kept: portal cursors recover ESI zero at +0xf but grow the body and retain displaced
 // count and array homes. Other cursor variants also move the frame away from 0x4e0.
+// First source retained from acceptance, record completion, collection end or inside selection:
+// 943/937/920/952. The same forms with full query count: 945/954/879/945. NOT kept: even the
+// 3327-byte form raises the score, and the entry zero and stack homes still differ.
 // Round 628: dword choice count through construction/repair, then short for later use 947/952.
 // Short construction and long count at repair/conversion 912/893. Full query bound in construction
 // with a short completed count 961, or in repair with a short conversion count 890.
