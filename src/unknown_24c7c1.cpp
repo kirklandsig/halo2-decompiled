@@ -798,6 +798,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // coordinate forms and tied scoped forms leave the view, predicate and coordinate homes different.
 // Status rectangle 115; row draw/measurement/both 172/115/172; banner draw/measurement 115/115.
 // All phase-owned rectangles 162; with byte timer 208. NOT kept: ties or regressions against the 115 preview control; no native view or left-coordinate repair.
+// MiniMax A (11-18): no new form, no lower score (114; 115 on this build's reduced image); the tutorial colour's condition in
+// De Morgan form (`!flag_1384 && (flags_b6 & 1) ? color_a8 : color_a4`) compiles exactly as before (115), and holding the
+// colour in a local so that it is loaded first and only then overwritten (retail's order) scores 398; what still differs is
+// the stack homes (the timer byte, the left word, the view and the font), the tutorial colour's block order and 0x24ce9d's
+// argument setup; reordering 0x24ce9d's parameters reaches 103 to 110 but changes a function's parameter order, so it is not
+// applied.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

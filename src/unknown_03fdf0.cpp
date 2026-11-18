@@ -574,6 +574,14 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // its six uses 114 (491 bytes); the entry as a const reference (`entry.` reads) 2 (same code); a block reference for
 // the loop's count and entries only 152. The loop's step order (n, cursor, index) is retail's; only the preheader
 // order of the cursor start and first's last read decides whether first shares the cursor's mode home.
+// M3 lane 11 r116 (fast with 0x404b0; base 2): a named `long count` in the block for the copy size and the `current +=`
+// update, the loop still reading the field, 2; the copy (first, the memcpy, the current update) as an inline helper
+// returning first 218 (442 bytes, it is called), forced inline 2; that helper writing first through an out-parameter
+// (`long first; append(cache_index, &first);`) 2 (the indirection folds once inlined; first stays a spilled register
+// candidate); a `dword` mode parameter 2 (all the 2s the same code). Re-measured: the explicit cursor before the `for` 5
+// (first at +0x14 with the material and every other instruction retail's; only the cursor's two start instructions sit
+// above the loop guard). No address-taken or aggregate-member form of first had been tried before; the inlined
+// out-parameter does not keep it in memory.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

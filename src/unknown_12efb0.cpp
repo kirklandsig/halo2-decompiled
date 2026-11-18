@@ -136,10 +136,14 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
-// score 607 (was 607): frame 0x4820, clears and metadata cursor agree; first +0x15f spans the loop; provider/NONE, palette/record and zero/SIMD homes differ.
+// score 607 (was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
+// loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in
+// EAX, and joins failed palette lookups at one record test. The build uses EAX, BX and ECX and threads past
+// the join.
+// Earlier score 607 (was 607): frame 0x4820, clears and metadata cursor agree; first +0x15f spans the loop; provider/NONE, palette/record and zero/SIMD homes differ.
 // MiniMax S (11-16): no new form, no lower score (607): the palette slot is still sign-extended and read as a word where retail reads the byte unsigned at each use, and the 0x130f60 result still stays in EAX where retail moves it to EDX and keeps NONE in EAX; the native byte palette measures 611 and the signed short 616 in this build, and that register home is set by the clamp in the three-scalar helper in this file, whose other callers keep their own match.
 // Earlier at 607: MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
-// Earlier score 607 (was 607): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// Earlier MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // Earlier 607 (was 607), MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // probe's call target for the 0x4820 frame, whose address belongs to this build and cannot match; the palette slot's
 // sign extension and the helper differences in the notes below are unchanged. Body unchanged.
@@ -699,6 +703,17 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Retained palette tag, nested/compound 607/714; alternate tag, compound/nested 607/607.
 // Both retained tags, compound/nested 712/606; with signed palette byte 597/699.
 // NOT kept: the 597 gain only occurs in combination, while the provider homes and shared record test still differ.
+// The provider result stays in EAX and the palette, record and SIMD homes differ.
+// Joined palette/tag dispatch with separate lookup, missing-palette tag assignment and conditional
+// tag 1087/1085/1085 with a short slot, and 1083/1081/1081 with a signed byte.
+// Joined dispatch with a shared presence decision 1089; one sparse-table receiver 1085.
+// NOT kept: the common dispatch adds over 300 bytes and moves the first difference into the clear prefix.
+// shared uncovered weight from distance 604; shared uncovered weight from cluster 604; shared weighted
+// remainder addition 702; common default accumulation at both missing sources 703; ordinary inline default
+// accumulation 703; common default with native palette reads 699; common default with calculated weight 608;
+// common default and shared uncovered weight 609. NOT kept: the two shared uncovered-weight forms gain three
+// points at 3828 bytes and retain the provider, palette and record assignment gap. The common default block
+// forms regress. The opening executable source is restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

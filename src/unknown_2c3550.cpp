@@ -872,6 +872,23 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // argument into ebx and indexes the g_4e0300 pool's data with it (twelve-byte entries) while this build takes the actor index
 // into eax and indexes g_4f55f0's data, and the count stays in ebp where retail keeps the state in edx, so the two bodies stay
 // laid out differently from the first instruction.
+// m3 lane 7 r178 (fast, 0x270930 and 0x2c4030 MATCH each time; aligned difflib counts as [exact, addresses masked, stack offsets
+// masked too], control 675 [527, 418, 362]): nothing kept. The radius through an inline maximum helper (`a > b ? a : b`, source
+// radius first) 754 [528, 420, 364]; the actor's linked index read through a named data base ahead of the record pointer (retail
+// loads the pool's data into EBP, reads [eax + ebp + 0x26c] and then adds) 679 [532, 423, 367]. Lane 14 r77's whole shape body
+// re-measured on today's tree 771 (2938 B) [480, 357, 276]: closer by alignment, but it keeps the count in BP and the state in EDI
+// from the prologue on, where retail reads the count from its stack slot at the loop head and reloads the state inside the loop.
+// On that shape: the linked index through the data base 778 [484, 361, 279]; the pathfinding read ahead of the radius 770
+// [480, 357, 275]; the radius through the maximum helper 782 [482, 361, 279]. At retail's exact length the positional count only
+// falls when the whole frame lines up at once, so single structural fixes all raise it; the next round needs the whole body
+// rebuilt against retail by alignment (start from that shape: state left in its stack slot, count unregistered, NONE in EBX).
+// MiniMax B (11-18): score 675 (was 675): no new form, no lower score. Read the listing again: retail pushes ebx, ebp
+// and esi before it stores anything and edi after the radius compare, keeps the pathfinding pointer in ebx and stores it
+// at +0x44, writes the success result as a byte at +0x13, keeps the actor pointer at +0x4c (zeroed first), the radius at
+// +0x2c and the completion flag at +0x2b, while this build takes the pathfinding pointer into eax before the pushes and
+// spills it at +0x50, writes the result as a dword at +0x64, and keeps the actor pointer at +0x54, the radius at +0x24 and
+// the completion flag at +0x22; the frame agrees at 0x1f88. The out parameter's short type stays BLOCKED by its
+// declaration and the caller in path.cpp.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

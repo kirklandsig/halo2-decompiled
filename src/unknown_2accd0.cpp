@@ -8,17 +8,7 @@
 #include "unknown_2accd0.h"
 #include "async.h"
 #include "language.h"
-
-/* the location and type of a saved game file (0x40 bytes) */
-struct s_saved_game_file_location
-{
-	char name[0x14];
-	wchar_t display_name[0x12];
-	long type;
-	byte unknown3c;
-	char language;
-	byte unknown3e[2];
-};
+#include "saved_game_storage.h"
 
 struct s_saved_game_file_id
 {
@@ -75,9 +65,8 @@ char *function_11c9c0(char *buffer, long maximum_count, const char *format, ...)
 bool function_1249f0(long memory_unit, char *drive_letter);
 bool function_1367d0(s_type_acf665 *file);
 bool file_ref_truncate(s_type_acf665 *file, dword position);
-bool function_216da0(long type, wchar_t *name, const wchar_t *display_name, long language);
 bool saved_game_file_write_save_image(long type, s_saved_game_file_location *location);
-bool function_2168b0(s_saved_game_file_location *location, long flags);
+bool function_2168b0(long flags, s_saved_game_file_location *location);
 
 /* the root of the memory unit a saved game file is on, or the hard disk's */
 inline void saved_game_file_get_root(const s_saved_game_file *file, char *root)
@@ -174,8 +163,7 @@ bool saved_game_file_read_begin(void *buffer, dword size, bool non_roamable, s_s
 
 	parameters.buffer = buffer;
 	char *task_path = task->path;
-	bool *pending = &task->unknown1;
-	*pending = false;
+	task->unknown1 = false;
 	parameters.size = size;
 	parameters.non_roamable = non_roamable;
 	parameters.task = task;
@@ -422,42 +410,29 @@ bool file_copy_open(s_saved_game_file *copy, bool *exists)
 done:
 	return result;
 }
-// score 17 (was 19): the second argument of the save call is a pointer held in a register here and
-// the address of the local buffer in retail.
-// b13O (11-17) walk against retail, fast build on r846: kept: the language stored through a char pointer, retail's
-// store (0x2ad532) before the flags load (0x2ad535), 19 -> 17. A MATCH needs three forms together (alone: 19, 4, 2),
-// not kept: (1) the name buffer as a struct with a fill() wrapper (the shape of s_saved_game_name in
-// unknown_216b60.cpp, matched 0x215f40), so its address is not kept in edi across the 216da0 call and 0x2ad4f5 /
-// 0x2ad580 re-lea it (19 -> 4); (2) language stored through a char pointer, which keeps the store at 0x2ad532 ahead of
-// the flags load at 0x2ad535 (4 -> 2); (3) function_2168b0 parameters swapped to (flags, location), so the call site
-// loads flags (0x2ad535), then lea eax (0x2ad538), then pushes (0x2ad53b) (2 -> 0). Evidence for (3) is only that
-// call-site order, a register/stack split; without (1), (2) and (3) give 15. (1) copies a struct another file keeps
-// privately, so the match is recorded here, not built. Tried: location pointer local (43), flags local (17), *(long
-// *)file (4), helpers taking (location, flags) or doing store plus call (4, or 2 with the pointer), no (char) cast
-// (same).
 // @retail 0x2ad480
 void saved_game_file_copy_finish(s_saved_game_file *file, bool succeeded)
 {
 	long type = file->flags & 0xf;
 	char root[8];
-	wchar_t name[0x80];
+	s_saved_game_name name;
 
 	saved_game_file_get_root(file, root);
-	name[0] = 0;
+	name.text[0] = 0;
 	if (succeeded)
 	{
-		function_216da0(type, name, file->location.display_name, file->location.language);
-		XDeleteSaveGame(root, name);
+		name.fill(type, file->location.display_name, file->location.language);
+		XDeleteSaveGame(root, name.text);
 		saved_game_file_copy_display_name(file->location.display_name, file->display_name);
 		// a store through a pointer keeps retail's order against the flags load
 		char *language = &file->location.language;
 		*language = (char)get_current_language();
-		function_2168b0(&file->location, file->flags);
+		function_2168b0(file->flags, &file->location);
 	}
 	else
 	{
-		function_216da0(type, name, file->display_name, get_current_language());
-		XDeleteSaveGame(root, name);
+		name.fill(type, file->display_name, get_current_language());
+		XDeleteSaveGame(root, name.text);
 	}
 	*file->done = true;
 }
@@ -1164,6 +1139,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // and forms every sum that has body_size on its left in another register (entry EDX, signature ESI through `lea`, the direct
 // arm's count in ECX then `mov edi, ecx`), while the one sum with header_size on its left (the body position) adds in place;
 // the matched sibling 0x2adb10 adds its signature position in place. Body unchanged.
+// MiniMax A (11-18): no new form, no lower score (34); a forceinline seek helper in the signature case, and in both the signature and body cases, with the compare inside the helper or at the call site, scores 178 and 179, so the plain SetFilePointer compare stays; what still differs is the register rotation (the entry total in EAX against retail's EDX, the hoisted body_size in ESI against ECX, the task pointer in EDX against retail's EAX) and the join copy at retail's 0x2ad911 that ours lacks.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1270,8 +1246,8 @@ bool signed_file_read_begin(const char *path, void *header, dword header_size, v
 {
 	s_signed_file_read_parameters parameters;
 
-	*(volatile bool *)&task->unknown1 = false;
-	*(volatile bool *)&task->succeeded = false;
+	task->unknown1 = false;
+	task->succeeded = false;
 	task->progress = 0.0f;
 	task->state = 4;
 	function_x91aa57(task->path, path, sizeof(task->path));
@@ -1469,8 +1445,8 @@ bool signed_file_write_begin(const char *path, void *header, dword header_size, 
 {
 	s_signed_file_write_parameters parameters;
 
-	*(volatile bool *)&task->unknown1 = false;
-	*(volatile bool *)&task->succeeded = false;
+	task->unknown1 = false;
+	task->succeeded = false;
 	task->progress = -1.0f;
 	task->state = 4;
 	function_x91aa57(task->path, path, sizeof(task->path));

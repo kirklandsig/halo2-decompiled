@@ -683,10 +683,22 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // NOT kept: removing individual magnitude input copies reduces the frame to 0x5c0, pairs reach 0x5b8, and
 // replacing all three direct roots reaches 0x5a8 at 6070 bytes. Every preview regresses and the magnitude
 // grouping requires equality.
+// The frame remains 0x5d0 against 0x58c. Component and velocity homes and contact indexing differ.
+// Slip in impact buffer 1447. Save slip before in-place force normalization 1517.
+// Direct tangential velocity 1373. Direct projected forward 1445. Both projections 1403.
+// Both with slip in impact buffer 1559. Both with in-place normalization 1508.
+// Direct tangential with slip in impact buffer 1454. Direct forward with in-place normalization 1547.
+// NOT kept: the direct tangential form gains two points. The smaller frames shorten the body.
 // Round 415. typed physics object 1375, shared collision ray 1375, ray length shared with compression 1389,
 // conditional world choice 1396, branch-selected world 1394, ray scoped to admitted query 1440, shared ray scale
 // 1371, typed object with conditional world 1396. NOT kept: the shared ray scale gains four points while adding 21
 // bytes. The frame is still 0x5d0.
+// score 1375 (was 1375):
+// The extra 0x44 frame bytes, escaped velocity and component homes, and indexed contact loop remain.
+// Independent slip/tangent lengths use a default then tangent 1447, complete branch results
+// with direct or selected tangent 1455/1455, and a common predicate with selected or direct
+// tangent 1388/1455. Selected-pointer test 1389, choice before coefficients 1453,
+// slip branch first 1455. Every form retained the 0x5d0 frame.
 // Query scope 1375. Ray scope 1374. Velocity scope 1394. Typed query scope 1375.
 // Descriptive workspace names 1375. Query and ray scopes 1374.
 // Velocity scope with typed query 1394, with workspace names 1394.

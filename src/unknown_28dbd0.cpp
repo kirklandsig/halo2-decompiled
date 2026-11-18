@@ -536,6 +536,29 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // `axis * projection + cosine * v - cross * sine`) into a separate output vector 234 (1198 B, frame 0x120: sine first and the
 // cosine after the dot as retail, but the heading at +0x10), written in place 241 (1193 B, frame 0x114); both with that
 // helper's axis alias 232/240. Helper restored.
+// DH401: Apply sine to the cross before both input scales. Sine and weighted cross
+// before projection, both trig values before weighted cross and dot,
+// projection then sine and weighted cross, cross then sine before cosine.
+// Shared cross 207/232/227/208, staged cross 207/232/227/208.
+// Weighting the cross before cosine restores the 0x118 frame.
+// Shared weighted-term adds 233, separate subtotal 227, shared scaled add at cross/projection/both
+// 233/204/254. Early sine on cross/projection/both 230/252/253. The shared additions can shorten the
+// frame to 0x110 or 0x114 but leave the request and transform displaced.
+// Round 416: The launch rotation reserves 0x11c versus retail 0x118 because it gives the whole cross vector
+// a frame home. This displaces the request and transform by four bytes. weighted cross read only at final
+// component addition, with three accumulators 230; weighted axis and cross read only at each component, with
+// three accumulators 233; weighted direction and axis accumulate before separately weighted cross, with
+// three accumulators 239; retained weighted axis and cross with independent direction products, with three
+// accumulators 165; weighted cross read only at final component addition, one row at a time 230; weighted
+// axis and cross read only at each component, one row at a time 233; weighted direction and axis accumulate
+// before separately weighted cross, one row at a time 239; retained weighted axis and cross with independent
+// direction products, one row at a time 165; three accumulators with sine before cosine and projection 196;
+// three accumulators with sine and inner dot before cosine 195; three accumulators with the caller producing
+// sine before the outer cross 257; caller sine and three accumulators with a staged inner cross 257. NOT
+// kept: Keeping weighted axis and cross terms while forming the heading products in scalar accumulators
+// recovers the 0x118 frame and moves the first difference to +0xa9. The two 165 forms grow the body from
+// retail length to 1218 bytes, and random scratch and trig homes still differ. Reordering sine relative to
+// the cross or dot regresses. The opening helper and body are restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

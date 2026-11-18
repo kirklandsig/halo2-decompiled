@@ -200,6 +200,9 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Nested guard with plain-name copy input 66, also with last append result 66.
 // Early append result with named suffix 90. NOT kept: nested guards reserve
 // 0x28 and gain one. The slot holds the result. The entry base stays in a register.
+// DH401: One return with the empty name assigned on exhaustion. Indexed for/while
+// and cursor for/while, formatted arm first 83/83/83/83,
+// plain arm first 83/83/83/83. The EBP-8 base spill is absent.
 // Round 624: writable result with indexed/direct terminator 84/67; const result through copy
 // and appends with indexed terminator 84; publish at first append and terminate by index 70; publish before
 // indexed terminator 84; wide-character suffix with original/indexed/result output 67/84/84. All hold
@@ -214,6 +217,20 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // cursor, then wide destination/field-end clear/array destination: 89/89/89/89.
 // The visited-input form recovers frame 0x28 at 204 bytes but spills the cursor
 // and keeps the derived output entry instead of reloading the array base.
+// M3 lane 10 r119 (fast; plain where noted). Reading: retail's entry base sits in memory at [ebp-8] next to the count
+// at [ebp-4] and is reloaded only after the library concatenations, so it behaves as an address-taken local.
+// The indexed terminator alone 84; entries and count as one two-member local aggregate (count's address passed),
+// everything indexed, 64 (plain 64; frame 0x28, suffix, base spill and terminator as retail; the base is reloaded
+// after the ascii call where retail keeps ESI); on that, an entry pointer at the found point 72 (multiply ahead of
+// the append test), an entry pointer inside the append arm 52, with the ascii argument indexed 39 (204 B), the same
+// with `if (append) { entry; if (entry->name[0]) {...} }` nested 39 (natural spelling, same code); on the 39 form the
+// terminator as `(entries + i)->`, entry as `entries + i` or as a byte offset `i * sizeof`, i declared outside the
+// for, or the terminator after `result = buffer` 39 each; a found flag in the loop condition 75/70 (flag kept, no
+// threading); search loop then `if (i < count)` 66 (210 B, extra count test); a cursor pointer loop 83 (i in EBX as
+// retail, but the found block keeps the cursor in ESI); a per-iteration entry pointer 75/83; the 39 form without the
+// aggregate 84. What is left on 39: ours keeps i * 0x248 in EBX across the calls (i itself in ECX in the loop), retail
+// keeps i in EBX and multiplies again for the terminator and the plain arm. The aggregate is a grouping form
+// (match-only); build/r119/lead-0x24a691-39.cpp.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

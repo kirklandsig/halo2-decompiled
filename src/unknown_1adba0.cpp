@@ -591,6 +591,12 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // bound as `real const &` beside the ticks read 15, after the 0x18 product 15, with the ticks through the existing
 // getter function_146650 15; the ticks and the rate both as const references 77 (the ticks read after the 0x18 call);
 // the game-time globals bound as a `const &` 91 (415 bytes, the named-pointer code).
+// m3 lane 14 r109 (fast with 0x110ab0 and 0x1ae440; control 15): the call's result held in a `void *` local and cast
+// into the typed result 15 (same code); a no-code `(void)` read of the result's field_6 ahead of the ticks read 15 and
+// ahead of the chance product 15 (dead reads vanish before allocation, so they add no weight); the ticks read right after
+// the 0x1e5380 call, ahead of the enable/result tests, 61 (the load is not sunk into the branch); the `void *` result
+// with a named game-time pointer 91 (415 bytes, the named-pointer code). Reading: retail colours the result ahead of both
+// the NONE constant and the shared game-time pointer (they take EBP in turn), ours colours both of them first.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

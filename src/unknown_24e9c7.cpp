@@ -553,6 +553,17 @@ struct s_24e9c7_points
 // after across, after height, or after width. Signed products and separate
 // scale/negate stages respectively 129/129, 129/129, 127/127, 125/125.
 // All retain 743 bytes but the early across spill and height home stay wrong.
+// M3 lane 16 r134 (fast with 0x24e59f/0x22a664, both matched throughout; control 125): the side point set to the across
+// products (`size * -forward_j`, `size * forward_i`) and scaled in place by the half width, with the first corner's base copy
+// right after that set, 145 (746 B: the across products are then computed early, but the corner copy hoists to the top);
+// the same with `size * (0.0f - forward_j)` 141 (742 B); with the copy after the result 139 (742 B); after the half width 143
+// (739 B); the copy after the result and up computed after the side scaling 140 (742 B). Re-measured: the first corner's base
+// copy right after the across scalars 124 (listed; the across products still sink into the side products).
+// The across-Y spill and returned-height home still differ. Height committed between
+// upper products, after upper, after side or after back 125 each; after corners 139;
+// after draw 187; in-place side with interleaved height 143; first raised origin before
+// back 153; shared forward components 142. NOT kept: early commitments tie and the
+// later or combined forms miss the original frame, extent or score.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
