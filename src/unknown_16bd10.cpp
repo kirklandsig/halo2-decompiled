@@ -1202,6 +1202,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // distance 399 (1700) [131, 44]; the distance as dot3f(normal, position) 126 (same code); the distance against the
 // camera vector instead of the copied normal 172 [120, 52]; t as one conditional expression 126 (same code). The three
 // 39x forms are worse aligned too, not only shifted. Body unchanged.
+// Unnegated quotient through the join, negated at use or before it 164/164;
+// squared length as the zero arm or factor default 378/378; conditional
+// factor at the scaled add 126; distance before the test or length 411/411;
+// complete plane aggregate 440. Direction-j preload and zero home remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

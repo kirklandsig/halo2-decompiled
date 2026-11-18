@@ -1109,6 +1109,7 @@ PRIVATE inline long damage_object_root(long object_index)
 // MiniMax D (11-17): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the query's mode
 // value (the flags' bit 2 as 3 or 0) is still computed after the four argument pushes where retail computes it before them,
 // and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
+// MiniMax R (11-17): no new form, no lower score (206): retail's frame is 0x1b4 against this build's 0x1a4 (the objects array sits at the same address in both), retail keeps the player index in a stack slot and the data pointer in edi where this build keeps the index in edi and spills the data, and the inlined index helper lives in include/data_array.h, which is not this lane's.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1635,6 +1636,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // uses eax, ecx, edx and the flags store still sinks below the record's address computation; the union's flags member, a memcpy
 // of the owner and a member-wise copy all leave the same ten (the last one worse), and a permuter run over the body (13 tries)
 // found nothing below the ten.
+// MiniMax R (11-17): no new form, no lower score (10): the owner's three dwords still copy through ecx, edx and eax where retail uses eax, ecx and edx, and the flags store still sinks below the record's address; moving the owner copy after the 1.0f store scores 17 and a cast destination still gives 10.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -2165,6 +2167,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // register against retail (the rate pointer takes eax where retail takes ecx, the byte eax where retail takes al and the sum
 // edx where retail takes eax), while the first delay block matches retail exactly; the rotation is the allocator's choice for
 // the block and no spelling of the block's statements changes it.
+// MiniMax R (11-17): no new form, no lower score (45): the delay block's temporaries are still rotated by one register against retail and each of the two call setups (0xda110 and 0xd9d60) is one instruction longer, so the nine later branch targets move with them.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -2753,6 +2756,10 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// MiniMax I (11-17, run 103): no new form, no lower score (420): retail still holds the region index in EBP and the
+// permutation pointer in EBX, where this build holds them the other way round, and retail reads the info argument
+// after its first push where this build reads it before the pushes; reading the region index directly scores 510 and
+// dropping the region local 558, so the body stands.
 // MiniMax I (11-16): no new form, no lower score (513): the first difference is the schedule of the argument loads - retail pushes
 // the saved registers first and reads the arguments from the shifted slots, this build reads one argument
 // before the pushes.
@@ -3367,6 +3374,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // the source order of the two returns does not decide it (an early return, an explicit else and a merged tail all keep the
 // same order or score worse), so the difference is the compiler's block layout; a permuter run over this body
 // (30 tries, 305 s) found nothing below the five.
+// MiniMax R (11-17): no new form, no lower score (5): the two cold returns still hold this build's order (the stack reload before the xmm1 copy) where retail copies xmm1 first, and the source order of the two returns does not decide it (an early return, an explicit else and a merged tail all keep the order or score worse).
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -5175,6 +5183,7 @@ dword function_db810(long object_index, long node_index)
 // MiniMax D (11-17): no new form, no lower score (4): retail still masks the model tag index before it pushes ebp and reuses
 // eax for the tag entry and its field where this build masks the index after both pushes and takes the entry in edx; a
 // permuter run over the body (27 tries) found nothing below the four, and the frame still lacks retail's extra dword.
+// MiniMax R (11-17): no new form, no lower score (4): retail still masks the model tag index before it pushes ebp and reuses eax for the tag entry and its field where this build masks the index after both pushes and takes the entry in edx; the typed model_tag_index field, a local for the masked index and a local for the tag bytes all compile to the same four instructions.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {

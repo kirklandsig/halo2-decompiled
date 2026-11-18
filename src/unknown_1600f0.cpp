@@ -1226,7 +1226,7 @@ PRIVATE inline long score_string_list_1608e0()
 // the body is off.
 // MiniMax E (11-01): no new form, no lower score; left: the entry register roles (retail loads the
 // player index first), the colour/bounds local homes and the missing bytes.
-// score 679 (was 678 in the r718 fast check): frame 0x790 versus retail 0x79c; early player/panel roles, the scroll clamp (one
+// score 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // limit conversion in retail) and coordinate/color homes remain.
 // Earlier (score 689, was 689): baseline frame 0x78c versus retail 0x79c; early player/panel roles and coordinate/color homes remain.
 // this round's reduced listing shows the frame at 0x790 against retail's 0x79c
@@ -1425,6 +1425,11 @@ PRIVATE inline long score_string_list_1608e0()
 // order 681 (same code); with height not volatile 721 (2856) [561, 192]; with the fade count not volatile either 738
 // (2840) [554, 195]; with the screen height computed ahead of x as well 717 (2856) [554, 186]. The frame stays 0x798 in
 // each; the aligned counts fall but the positional score does not. Body unchanged.
+// P595: Frame, viewer register and early coordinate homes still differ. single late upper conversion
+// 709, one-read scroll 710, branch stores 677, joined result 710, height before x with late conversion
+// 679, height before x with one-read scroll 717, joined scroll reused for y 727, early height with
+// scroll reused for y 730. NOT kept: the best two-point reduction leaves the four-byte frame gap and
+// falls below the keep bar.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

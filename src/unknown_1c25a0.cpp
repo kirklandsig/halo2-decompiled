@@ -9,6 +9,7 @@
 #include "unknown_1cec30.h"
 #include "object_iterator.h"
 #include "havok_reference.h"
+#include "object_tag_definitions.h"
 #include <xtl.h>
 
 extern bool g_47f05b;
@@ -1402,14 +1403,7 @@ hkBool c_contact_rule_filter::accepts(void const *query, s_contact_body_view con
 
 
 long function_183c60(long object_index, long node_index);
-void havok_component_rigid_body_linear_velocity_change(long index, s_havok_component *component, vector3f const *change);
 void havok_component_rigid_body_point_impulse_apply(long index, s_havok_component *component, point3f const *point, vector3f const *change);
-
-struct s_contact_scale_definition
-{
- byte unknown00[0x14];
- real scale;
-};
 
 PRIVATE inline void contact_vector_set(vector3f *out, real i, real j, real k)
 {
@@ -1423,10 +1417,8 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
  contact_vector_set(out, (*value)(0), (*value)(1), (*value)(2));
 }
 
-// score 1 (was 3): retail tests the loop count against zero at the loop entry and
-// ours compares it with the index register; retail sets up the register arguments of
-// the 0x1d10b0 call with ecx first and ours with edx first, an order that follows
-// the callee's declared parameter order in src/unknown_1cec30.cpp (not editable here).
+// score 1 (was 3): retail tests the loop count against zero at entry; ours compares
+// it with the zeroed index register. The member call now matches retail's register setup.
 // Further trials: shared scale helper for both vectors 3; shared scale and output
 // assignment helpers 65; shared scale plus named progress and body count 3; native int
 // selected count 3; named saved iteration index 3; named selected and available counts 3;
@@ -1528,6 +1520,9 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // as {index, a, b} 126 (864 B); as {count, a, b, index} (retail's frame from +0x14 is count, a, b, index, indices) 106 (864 B).
 // The last with `inline` on 0x1d1160's definition 106 (864 B, 0x1d1160 still matched).
 // Register- and offset-masked, each leaves one difference: retail's index reload after the 0x1d1160 call.
+// J262: carried loop predicate 1; clamped fallback/traversal count 149/156; conditional singleton index 16;
+// append via count 3; save the next ordinal 11; continue with common step 1; named positive guard with equality 2;
+// remaining count as local/condition 18/18. Kept the shared object-tag acceleration scale fields at 1.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
@@ -1550,11 +1545,11 @@ bool __stdcall function_1c4c50(long object_index, long node_index, point3f const
    s_havok_component *component = havok_component_get(root->havok_component_index);
    if (root_index != object_index)
    {
-    s_contact_scale_definition *definition = (s_contact_scale_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
-    if (definition->scale > 0.001f)
+    s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
+    if (definition->acceleration_scale > 0.001f)
     {
-     s_contact_scale_definition *root_definition = (s_contact_scale_definition *)g_4e3b44[*(long *)root & 0xffff].bytes;
-     real scale = root_definition->scale / definition->scale;
+     s_object_definition const *root_definition = (s_object_definition const *)g_4e3b44[*(long *)root & 0xffff].bytes;
+     real scale = root_definition->acceleration_scale / definition->acceleration_scale;
      if (change_a)
      {
       a.i *= scale;
@@ -1602,7 +1597,7 @@ selected:
       i = local_0;
      }
      else if (change_a)
-      havok_component_rigid_body_linear_velocity_change(index, component, &a);
+      component->rigid_body_linear_velocity_change(index, &a);
      if (change_b && !TEST_FIELD_BIT(component->flag1))
       component->rigid_body_linear_velocity_add(index, &b);
      if (havok_component_main_rigid_body_index_get(component) == index)
