@@ -106,7 +106,8 @@ __forceinline void gather_overlaps_2e3370(class_2e1090 *sweep, long *first_owner
 #define SEARCH_TEST_2E1090(k) \
 				if (found_bits & (1 << k)) \
 				{ \
-					unsigned long const apart = apart_yz_2e1090(*range, other[k]); \
+					unsigned long apart; \
+					apart_yz_2e1090(*range, other[k], apart); \
 					if (!apart && (other[k].owner & 1) == 0) \
 					{ \
 						if (mode == SEARCH_REPORT_PAIRS_2E1090) \
@@ -235,7 +236,11 @@ __forceinline void sort_after_first_2e3370(endpoint_2e0f80 *entries, int count)
 
 // the endpoints of every box the bounds overlap (not the grid cells'), one
 // list per axis, each sorted between a sentinel at each end
-// score 51 (was 414): the box is quantized and the overlaps gathered by
+// score 7 (was 51): the y/z test accumulates in the search's own `apart`.
+// Left, three sites: the cells pointer at +0x1ae is in edx in retail (ours eax,
+// one instruction more), the axis size at +0x2fa is loaded after the reload of
+// [esp+0x44], and the outer latch reloads its two homes in the other order.
+// Before, 51 (was 414): the box is quantized and the overlaps gathered by
 // file-local inline helpers (copies of the header's search, specialized here),
 // and each kept endpoint is appended from the box and the slot number.
 // Before, 414 (was 438): each kept endpoint is copied by a list member that takes

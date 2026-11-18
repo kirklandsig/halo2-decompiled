@@ -48,10 +48,4 @@ public:
 	stream_holder_2d8e70 first;
 	stream_holder_2d8e70 second;
 };
-
-class path_2d7f70
-{
-public:
-	void function_2d7fb0(char const *text) const;
-};
 #endif
