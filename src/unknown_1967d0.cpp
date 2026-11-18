@@ -913,6 +913,11 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
+// score 191 (was 191): the teams flag is read before the configuration copy and address-index
+// store, and the final team-score lookup expands where retail calls it.
+// Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
+// entry 314, combined team guard 333, team read before flag 309, record reference 191,
+// native counter field 191, and branch-local score stores 192.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

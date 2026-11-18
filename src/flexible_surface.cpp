@@ -806,6 +806,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the global's j/k in xmm5/xmm4 and the axis i in memory); the axis draw alone through it 152 (880 B), the first draw
 // alone 154 (880 B). On 125: sine and cosine as named locals around the axis draw 152; one `dword *seed` local for
 // the three draws 149 (889 B); the shared helper capturing the vector's j as well as k 155 (893 B; 0x2551f0 63, lost).
+// Clock fields retained across first draw 171 (short scale), 195 (long scale), 171 (clock
+// reference), 201 (real elapsed ticks). Shared seed reference 174, with both clock operands 195.
+// Integral random sample scaled with envelope 214, named first envelope product 130, local
+// direction through shared rotation 201. Frame and rotation homes still differ.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

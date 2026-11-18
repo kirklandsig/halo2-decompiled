@@ -4488,6 +4488,12 @@ bool __stdcall function_2b278e(long controller_index)
 // address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
 // bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
 // index rather than re-reading it for the dialogs.
+// Dialog masks before/after the context calls 188/192, per-arm controller object 181, shared short
+// mask 200, membership-initialized decision 192, membership-first test 55, type tested before
+// membership 54, initial controller and short masks 54, named identity field 54, copied post-query
+// controller index 54, Boolean membership with retail-order dialog operands 199.
+// NOT kept: Boolean membership with context call before both mask reads 28 at 655 bytes. It recovers
+// the index spill and reloads by changing the observed evaluation order.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

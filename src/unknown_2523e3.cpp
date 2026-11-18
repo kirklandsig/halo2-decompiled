@@ -38,9 +38,12 @@ void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type)
 void function_2b0a14(s_widget_view_2b0a *widget, short index);
 void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 
-// score 49 (was 49):
-// the `s_widget_item items[4]` construction differs. Ours inlines the
-// `flags = 0` constructor into a zeroing loop; retail calls the array-constructor
+// score 49 (M414, 11-18): placement construction of the four items in raw dword storage plus one shared slot
+// reference reached 33 (retail's constructor-iterator call; the slot address then forms before the connected test
+// and both predicates reuse one load, while retail reads the slot twice). NOT kept: raw storage + placement new only
+// steers link-time inlining of the existing constructor (coordinator review); body back at 49.
+// Automatic `s_widget_item items[4]` construction inlined the `flags = 0`
+// constructor into a zeroing loop; retail calls the array-constructor
 // helper 0x20670 with (constructor 0x2b0149, 4, 0x74, &items). Marking the
 // constructor `__declspec(noinline)` gives 53, but the compiler still emits a
 // per-element loop rather than the helper call. The helper choice is the front
@@ -51,6 +54,11 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // initialization moves the first difference to the controller stack slot at +0x2a (236). Placement with
 // appearance memcpy 243, or 237 with the controller initialized after the array. The latter emits a
 // memcpy call where retail uses four movsd instructions.
+// Placement trials: typed array construction 226; const sign-in slot reference 33 (kept, plain);
+// native slot-head reference 33; sign-in state enum 243; connected-only state assignments 213;
+// combined sign-in bits 248; pretested controller loop 226; disconnected defaults 116;
+// aligned byte storage 216; connection-scoped slot reference 209; const slot pointer 33;
+// nullable connected slot 234.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {

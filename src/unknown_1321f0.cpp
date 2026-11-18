@@ -1155,17 +1155,21 @@ struct s_view_collection_1733e0;
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index, s_view_collection_1733e0 *collection);
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera);
 
-// score 26 (was 26, full build; fast build on r846 reads 25): the diff is the g_4e7c18 flag, see below.
+// score 26 (was 26): camera argument load order and the pre-call flag stores. Reduced opening score 25.
 // b13F (11-17) walk against retail, fast build on r846: the arguments of 0x132b80, the switch (0x13213f-0x132149)
 // and the three case bodies with their call arguments (0x13214b-0x132157, 0x132159-0x13215b, 0x132162-0x13217d) agree.
 // Retail keeps `mov byte ptr [0x4e7c18], bl` (0x13218f) before the call to 0x134390; ours drops it as a dead store,
 // so retail's `mov bl, 1` (0x13218c) shared by the stores at 0x1321b6 and 0x1321c2 becomes `mov al, 1` after the call,
 // and `inc dword ptr [0x4e7c1c]` (0x132186) becomes load/inc/store through ebx. 0x4e7c18 is never read in retail
 // (writes at 0x13218f, 0x1321a9, 0x1699f8, 0x169e10, 0x16a52a, 0x16a773), so the store survives only if the compiler
-// thinks 0x134390 may read it: untried lead, as for cluster_marks_storage.h: 0x4e7c18 flag, 0x4e7c1c tick and the
+// thinks 0x134390 may read it: shared-storage lead, as for cluster_marks_storage.h: 0x4e7c18 flag, 0x4e7c1c tick and the
 // 0x4e7c20 table are one 8 + 0x1000 byte block (the callee reads tick and table), which needs edits outside this
 // function (unknown_1689b0.cpp:713, unknown_244c10.cpp:9, and the table above). Also: retail loads ebx (data->context)
 // before eax (cluster) at 0x13214b-0x13214d, ours eax first (a local for the collection leaves it as is).
+// NOT kept (reduced scores): camera/cluster/collection signature 23, only two points gained and the flag gap remains.
+// Typed frustum array 25; collection read before dispatch 43; common collection cases 64; selected pool
+// reference 26; short location cluster 25; chained completion clears 25; prefix stamp increment 25;
+// sort context reference 25.
 // @retail 0x1320f0
 s_bit_vector_pool *function_1320f0(long mode, long count, bool use_plane, long flags, byte const *frusta,
 	byte const *center, real radius, void *filter, real plane_offset, long cluster)
