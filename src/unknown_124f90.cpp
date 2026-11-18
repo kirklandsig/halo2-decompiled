@@ -737,6 +737,10 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // member of the voice aggregate 3 (same code; 0x128500/0x128700/0x128920 unchanged); the voice as a const reference bound
 // to the pointer temporary 11 (both increments sink below the stores), the same temporary used for only the first store,
 // the first two or the stores from unknown0a on 11 each (any such temporary changes the store schedule of the whole body).
+// Round 118 (m3 lane 10, fast with 0x128500/0x128700/0x128920, all matched): the type stored before the sound index
+// with the voice index advanced after both stores 2 (re-measure: only the two stores swap, `inc esi` stays right after
+// `inc edi`); channel and 0e as one chained NONE store (0e first) 3; `short type; for (type = 0; ...)` 3; a `byte` type
+// counter 7 (`xor dl, dl`); the voice index declared before the system reload 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1338,6 +1342,9 @@ long function_2197f0(real gain);
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
 // score 87 (was 87): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
+// MiniMax G (11-18): no new form, no lower score (87): the elapsed time and its reciprocal still take different registers
+// (XMM2 against retail's XMM3), the first gain load is still separate, and the release-to-attack join still differs.
+// score 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
 // Earlier: MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
 // by the reciprocal where retail divides, because the divisor's spelling lets this build reuse the inverse - a fade-in
 // local used for the inverse and for the 0.001f test measures 101, and the one-use local form in the notes below (87)
@@ -2856,6 +2863,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // fixed by that callee's declaration in another file, so this one stays BLOCKED-BY 0x219070 and 0x218f50.
 // score 17 (was 17): unchanged this round: the sound set index is sign-extended where retail copies the dword
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
+// MiniMax G (11-18): no new form, no lower score (17): the sound set index is still sign-extended (movsx ebp, ax) where
+// retail copies the dword, because 0x218f50 is declared to return a short in another file, and 0x219070 is still called
+// with two arguments where retail passes one. BLOCKED-BY 0x218f50 and 0x219070.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
 // (`movsx ebp, ax`) where retail copies the dword, and we call 0x219070 with two arguments where retail passes one.
 // MiniMax S (11-14): no lower score (17): the set index is still sign-extended (movsx ebp, ax) where retail copies
@@ -4791,6 +4801,10 @@ struct s_128ca0
 // registers from the voice lookup on rotate); as a char defaulted to NONE and overridden 189 (same code); the first flag3
 // test with its two other conditions nested inside it 122 (same code); the second flag3 test as `(flags >> 3) & 1` 122 (same
 // code: the word load is still shared with the flag6 store); that plus the stream bit through the existing 0x12a420 123.
+// Synchronization count from postdecrement as char, byte or long 189/147/122.
+// Default char plus postdecrement 189, branch-local publication 208, default
+// char plus prefix decrement 189, single-read subtract as char or long 188/129.
+// NOT kept: no gain in the existing pin layout and byte update.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -5088,6 +5102,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // 0x1420f0 and 0x11c120 still have to stay out of line, which their noinline declarations in other files decide.
 // score 535 (was 535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
+// MiniMax G (11-18): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8 and 0x16f3a0,
+// 0x1420f0 and 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
+// BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
 // score 535 (was 535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their
 // noinline declarations live in other files.
 // MiniMax A (11-17): no new form tried this round, no lower score (535): the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line; their noinline declarations live in other files. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.

@@ -1350,6 +1350,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // the positional gains ride on retail's length only. Diagnostic: light_projection_point_ab's parameters as (point,
 // matrix, result) and as (result, matrix, point) at the definition and its five calls 290 each (same code: the helper's
 // own symbol order does not move the rows). Body unchanged.
+// M3 lane 8 r184 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0; control 290): a matrix pointer for every matrix
+// access in the sphere arm 588 (2788 B); light_projection_point_ab's pre-scale through the existing vector3f_scale on a copied
+// vector 715 (2962 B); the sphere bounds call given the constant 4 600 (2777 B); the cone depth as `origin_offset +
+// far_distance` 290 (same code); a const up-vector pointer for both cross products 530 (2815 B). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

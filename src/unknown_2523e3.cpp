@@ -38,13 +38,16 @@ void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type)
 void function_2b0a14(s_widget_view_2b0a *widget, short index);
 void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 
-// score 49 (M414, 11-18): placement construction of the four items in raw dword storage plus one shared slot
+// score 49 (was 49): retail calls the item-array constructor iterator (0x20670 with the constructor 0x2b0149, 4, 0x74)
+// where ours expands the constructor into a zeroing loop, and it forms the sign-in slot's address once and loads the slot
+// flags twice where ours loads them once; the rest is the same code, shifted.
+// M414 (11-18): placement construction of the four items in raw dword storage plus one shared slot
 // reference reached 33 (retail's constructor-iterator call; the slot address then forms before the connected test
 // and both predicates reuse one load, while retail reads the slot twice). NOT kept: raw storage + placement new only
 // steers link-time inlining of the existing constructor (coordinator review); body back at 49.
 // Automatic `s_widget_item items[4]` construction inlined the `flags = 0`
 // constructor into a zeroing loop; retail calls the array-constructor
-// score 49 (was 55): retail calls the item-array constructor iterator, then loads the slot flags twice.
+// Earlier 49 (was 55): retail calls the item-array constructor iterator, then loads the slot flags twice.
 // Earlier: the `s_widget_item items[4]` construction differs. Ours inlines the
 // the `s_widget_item items[4]` construction differs. Ours inlines the
 // `flags = 0` constructor into a zeroing loop; retail calls the array-constructor
@@ -75,6 +78,15 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // updated to sign-in 247, shared admission test 245, false arm first 204,
 // live assigned first on admission 203, and live under its final sign-in guard 230.
 // NOT kept: the iterator prefix returns, but the flag-read block and score regress.
+// Round 140 (m3 lane 12, fast; control 49): the four items as the member array of a new aggregate (implicit constructor)
+// 256 and with an empty inline constructor 256 (the aggregate's constructor stays out of line and the iterator is called
+// from it); diagnostic, `#pragma inline_depth(0)` around the array as main's 0x253339 has, 233 (791 B): the iterator call
+// appears, so the loop is the inliner expanding the compiler's iterator (retail's file or build never expanded it), and
+// the controller's zero store then sits ahead of the pushes (the controller is declared before the array; retail stores
+// it after the call). The slot reads: a slot pointer declared after the connected flag for both tests 244 (the address
+// forms before the connected test, one load); the two flags set by plain `if` statements 252 (two loads, but the address
+// is formed twice and the flags materialise with `and al, 1`); the pointer formed inside a connected branch with nested
+// tests 262 (one load). Retail: one address, formed after the connected test, and two loads.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {

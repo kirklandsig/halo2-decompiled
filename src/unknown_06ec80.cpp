@@ -160,6 +160,10 @@ union s_6ec80
 // and the guard inside a block of their own 88 (same code: the frame still reshuffles), an `int` counter 88; with the
 // mask as now, the counter declared before the guard and zeroed inside it 5 (same code). ESI is not used as a zero
 // after the guard, so the mask's zero is simply where it is written.
+// M3 lane 16 r135 (fast with 0x6ec10/0x5b120; base 5), all with the mask scoped in the guard: the two block pointers
+// initialised NULL at their declarations (the later NULL stores dropped) 269 (975 B); the loop through a typed
+// player-record pointer declared in the guard 225; the two pointer declarations moved down to their NULL stores 225;
+// the mode guard testing the ready flag first 234 (976 B); the mask test ahead of the machine word 225.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

@@ -574,6 +574,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // not enter the reload order); the first two texture calls in the free device-call form 467 (2157 B, out of line).
 // Retail reloads the lower coordinate (defined at the first texture call) before the constant (first vertex), i.e. in
 // the order the values are first computed, as in 0x254490; ours reverses both pairs.
+// M3 lane 12 r139 (single-address fast, control 2): each SDK call of the body switched alone between the C and the
+// class-member form (29 C sites to the member form 2 each, same code; the first quad's Begin and first two texture
+// calls to the C form 446/369/375); the first block's eleven texture-stage calls through the existing wrapper 0x224f0
+// 465 (2236 bytes); the colour bound by a `color3f const &` 2 (same code). Diagnostics: the first quad's inline-depth
+// start moved one call later 2; an unreferenced float function added to the file leaves 2 and 0x254490's 4.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

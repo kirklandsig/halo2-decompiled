@@ -234,6 +234,11 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // only the link-order block keeps it from matching. Tried: the first absolute offset taken straight from
 // `first_angle - table` with no offset local 25, both 405; the first absolute offset ahead of the magnitudes 342, both
 // 531; the two angles renamed so they sort the other way (move/look) 25 (their homes stay swapped).
+// Round 212 (m3 lane 4, fast unless marked): the fabs-at-each-use form re-measured plain 2 (only the two hoisted loads:
+// ours 1.0 at 0x862fc8 then the scale at 0x8632bc, retail the scale at 0x43ba70 then 1.0 at 0x45dbc0, so in both builds
+// the lower address loads first); on the kept body: each stick prepared in turn (quadrant, offset, magnitude) 415 (2028
+// bytes); the second offset ahead of the first 25; each stick's snap step in its own block scope 25; both angles declared
+// at the top of the controller block and assigned at the atan2 25 (all three the same code). All restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

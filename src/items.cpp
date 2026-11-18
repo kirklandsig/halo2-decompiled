@@ -588,6 +588,10 @@ struct s_item_collision_bsp
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
 // MiniMax E (11-16): the transformed-plane rows written as accumulating statements score 176 (the compiled tree then matches retail's (up*k + left*j) + forward*i) but that is under the keep threshold, so the body stands; a double spin scale keeps it in x87 but grows the frame to 0xa4 (238), so the scale still sits in a stack slot where retail holds it in st(1).
+// MiniMax B (11-18): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the plane-normal and spin/speed homes remain; the shared receiver gains six points and the transformed-plane rows 22, both under the eight-point minimum, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (198): the frame 0xa0 agrees with retail; the instance indexing, the plane-normal rows and
+// the spin/speed homes still differ (the spin scale sits in a stack slot where retail holds it in st(1)), and the accumulating-statement form
+// of the plane distance scores 176, under the keep bar, so the body stands.
 // score 198 (was 200): frame 0xa0 agrees; instance indexing, plane-normal and spin/speed homes remain.
 // Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
@@ -1231,6 +1235,9 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// MiniMax B (11-18): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c (forty spare
+// bytes below the homes), so every stack home sits further out; retail keeps the two entry flags in stack slots where
+// this build holds them in registers, and the item walk still differs, so no form of the body's locals changes it.
 // MiniMax H (11-11): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c from the first instruction, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where ours holds them in registers.
 // MiniMax D (11-11): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c from the
 // first instruction, so every stack home sits 0x28 further out, and retail still extracts the flag bits in place
@@ -1747,6 +1754,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax B (11-18): no new form, no lower score (140): the frame 0xac agrees with retail's, but the returned byte
+// still sits at +0xe where retail keeps it at +0xf, retail clears the release flag with one byte read-modify-write where
+// this build splits it into a load, an and and a store, and the event and point homes and the location call's setup
+// still differ; no form of the return value's home or the flag clear lowered the score.
 // MiniMax R (11-16): no new form, no lower score (140): the release scale's two factors swapped in the source leave the
 // bytes unchanged (the compiler picks the operand order), retail clears the release flag with one byte read-modify-write
 // where this build splits it into a load, an and and a store, retail keeps two copies of the release impulse (the flag-5

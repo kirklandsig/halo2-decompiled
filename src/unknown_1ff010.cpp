@@ -506,270 +506,40 @@ done:
 #include "props.h"
 #include "unknown_11cc90.h"
 #include "vector2f_products.h"
+#include "axis_rotation.h"
 
 void __stdcall function_26c2d0(long prop_index);
 bool function_1fef40(s_type_c3b527 const *target, long actor_index);
 extern vector3f *g_4687b0;
-void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
-// score 77 (was 77): m3 lane 9 r134 (fast with 0x1ecf50, 0xe3910, 0xd0080, 0x1e5bb0 and 0x26d570, the other users of
-// rotate_direction, control 77/match/79/58/114/45): rotate_direction's own body in src/unknown_1eb8a0.cpp, not a twin:
-// the cross terms k, j, i first and the dot axis-first 68 (843 bytes) but 0x1ecf50 138 (998 bytes, loses its match),
-// 0xe3910 147, 0xd0080 78, 0x1e5bb0 138, 0x26d570 58; the dot axis-first alone, the projected term first in each
-// sum, and `sine * cross` 77 each (same code everywhere: the order is canonicalised); the existing cross3f for the
-// three cross terms 104 (853 bytes; 0x1ecf50 171). The helper body that helps here costs every other user.
-// MiniMax R (11-14): no new form, no lower score (77): the first difference is at +0xeb, where the two arms of the
-// direction test branch to blocks retail lays out elsewhere; behind them retail expands the rotation where our build
-// calls rotate_direction (src/unknown_1eb8a0.cpp) and normalises through normalize2d_fast (include/unknown_11cc90.h),
-// neither of which is this lane's file, and the scale products differ in order (retail `scale * x`, ours `x * scale`).
-// The score needs the controls 0x1ecf50 and 0x2b400 in the reduced image; without them the helper is not inlined
-// and the score reads 299.
-// MiniMax E (11-14): no new form, no lower score (77): retail still multiplies the scale into x and y as `scale * x` and
-// `y * scale` and keeps the test's zero in XMM0, while this build hoists the zero into XMM6 above the helper's products
-// and multiplies x * scale; the helper's body lives in include/unknown_11cc90.h and the turn in src/unknown_1eb8a0.cpp,
-// neither of which this lane may edit.
-// MiniMax C (11-14): no new form, no lower score (77): the turn is still expanded here and the test zero is still the one XMM register held from above the divide; the turn helper and the normalisation helper are in other files, so the register homes around them stand.
-// MiniMax D (11-10): no new form, no lower score (77); retail multiplies the scale into x and y as
-// `scale * x` and `y * scale` and keeps the test zero in XMM0 for the caller's magnitude test, ours hoists
-// the zero into XMM6 above the helper's products and multiplies x * scale; the normalisation helper is in
-// include/unknown_11cc90.h and the turn in src/unknown_1eb8a0.cpp.
-// MiniMax I (11-09): no new form, no lower score; the test zero is still one XMM register held from above the divide through the inlined rotation, so our `comiss` still precedes the `divss` where retail materialises the zero after the scale products.
-// MiniMax I (11-06): no new form, no lower score; the frame and the prop and point refresh still agree and the first planar normalization is still the difference: retail divides first and tests the planar length after the scale products, ours tests the length against zero before dividing, and that schedule comes from the normalization helper, which is in another file.
-// MiniMax G (11-05): no new form, no lower score; the zero's lifetime depends on the inlined rotation from another file, so the rematerialised test zero stays unmatched.
-// MiniMax G (11-04): no new form, no lower score: the zero's lifetime and the rotation's register homes are the whole difference.
-// MiniMax C (11-16): no new form, no lower score (77): the turned pair scaled as `magnitude * turned.i` and
-// `magnitude * turned.j` 77 (the same code), and the tail (the velocity stores and the speed products) still matches
-// retail byte for byte; what still differs is inside the rotation expansion (src/unknown_1eb8a0.cpp) and the
-// normalisation (include/unknown_11cc90.h), neither of which is this lane's file.
-// MiniMax I (11-17): no new form, no lower score (77): the first difference is still the block layout after the
-// direction copy, and the two helpers that set it are in other files - the normalisation (include/unknown_11cc90.h)
-// multiplies by the reciprocal where retail multiplies the reciprocal into the copy, and the rotation
-// (src/unknown_1eb8a0.cpp) is called out of line here where retail expands it: BLOCKED-BY both.
-// Earlier (77): frame 0x20 agrees; retail tests the planar length after the scale products, keeps the
-// test zero in xmm0, multiplies the facing components as registers and stores the velocity directly, while
-// ours zeroes xmm6 above the divide, multiplies x * scale and carries that zero through the inlined turn.
-// Round 28: the existing rotate_vector_170d70 (src/unknown_170d70.cpp) for rotate_direction 130 at retail's 850
-// bytes (aligned 106 -> 88; lead), with the output through vector3f_scale 147 (830); vector3f_scale for the output
-// alone 147 (828); rotate_direction with scalar cross terms (dot first, or (1 - cosine) first) 134/134 (0x1ecf50
-// 120 -> 148). No existing 2D dot or perp-dot helper exists for the facing/side tests.
-// with the zero in xmm0 and does not carry that zero into the inlined rotation (memory 0.0 for i, a
-// fresh xorps for j/k); ours zeroes xmm6 before the divide and keeps it through the rotation, whose
-// loads, dot order and registers then differ. Retail multiplies the facing components as registers
-// (`movss reg, [field]; mulss reg, y`) and stores the velocity directly (speed * each component):
-// with direct stores the tail matches but the body is 828 bytes. Round 42: retail inlines the same
-// rotation helper at about 20 sites; the matched 0x1055b0 and 0x177d10 write it with axis-first
-// products and (1 - cosine) first; a file-local copy in that form (not keepable: a twin of
-// rotate_direction, which lives in another lane's file) gives aligned 83 against 106 (134), and with
-// direct stores aligned 70 (147, 830 bytes), so the rotation's shape is most of what is left.
-// Fast checks build this one differently unless 0x1ecf50 and 0x2b400 are checked with it.
-// Tried: planar scale loop 153; direction branch update 204; horizontal native copy 142; rotation
-// native copy 153; real signed sine 170; horizontal shared facing base 195; horizontal facing rotation
-// copy 195; horizontal native vector copy 142; horizontal rotation copy 142; direct products 173;
-// native side predicate 152; nested guards 153; entry magnitude 153; both planar normalizations
-// inline 153; with the native horizontal copy, direct final products 154; shared direct scale 154;
-// depth one 142; size policy 366; shared output-vector scale 142; native turn side 145; length in
-// predicate 142; adjustment test result 142; direct side expression 142; turn-test result 139;
-// original direction object 185; shared output in place 206; native output in place 206; facing
-// object reference 153; turn completion copy 142; output memcpy 142; named turn length 139; result
-// declared first 142; native motion view 142; read-only actor 142; both completion copies 142; word
-// side 146; named length with word side 143, direct output 146, shared scale 146; forced rotation
-// declaration 142; inline declaration 142; planar facing snapshot 220; named dot 142; named
-// determinant 142; combined planar result lifetimes 142; planar scale operand order 142; planar
-// completion copy 146; native turn initializer 152; turn before side 136; initialized turn before
-// side 151; output product input order 142; shared double output 137; shared double direct output
-// 167; horizontal copy observation 144; native input observations 154; existing length inline 142;
-// earlier turn length result 136; earlier turn product input order 136; earlier turn shared result
-// scale 136; earlier turn shared direct scale 160; combined memmove 191; immutable real results 136;
-// byte turn truth 136; horizontal memmove 184; turn memmove 168; output memmove 140; external speed
-// binding 147; external side components 136; native planar initializer 161; early turn memcpy 136;
-// completed output memcpy 136; Y/X horizontal initialization 161; factor entry lifetime 136; native
-// output loop 137; turn input before normalization 171; turn workspace at entry 136; output after
-// target update 136; normalization failure first 131; Y/X input with output loop 157; native
-// horizontal on early turn copy 136; axis reference/snapshot 152/190; native horizontal with either
-// axis form 152/190; vertical input 171, with native horizontal 171, with axis snapshot 214; direct
-// planar commit 182; planar memcpy 152; original horizontal fallback 162; fallback plus planar copy
-// 157; native turn plus fallback 162; normalized point 237; both points 253; normalized point plus
-// direct commit 166; named normalized x/y 130 (kept: retail's square order in the planar
-// normalization); y declared first 136; named dot 130; direct output stores 147 (828 bytes); side
-// before the turned copy 136 (862 bytes); sine as a ternary of constants 149; inline sine with the
-// side bool declared before the turned copy 140 (838 bytes); side bool from an if/else 147; vector2f
-// horizontal 147; turned declared at the block top 147; no named x/y 160 (screens: speed read at
-// each use or the k copy moved before the second normalization shorten the body to 765-788 bytes);
-// normalized scalar declaration priority 130; immutable normalized pair 130; planar pair names 130;
-// length/pair names 130; second length in normalized-pair context 131; named integer sign 130;
-// declaration priority plus planar names 130; sine result arms 149.
-// Round 148: Complete helper-context preview agrees at 130. Complete planar facing capture 177; both
-// dot/determinant product pairs 141; both input/product forms 177; facing/magnitude/side/all zero-first
-// comparisons 130/130/130/130; native output copy then component scales 145. Magnitude/zero, facing, rotation
-// and output schedules remain.
-// Round 317: Guard-scoped normalized scalars 130; native planar input 130; both 130; all speed-field reads 140; scalar declarations at planar entry 130; adjusted turn name 130; requested direction name 130; native guarded input plus field reads 131.
-// Round 262: complete vector setter at requested direction/turn input/both
-// 176/147/168; completed output workspace 130; workspace plus requested/turn/both
-// 176/147/168; direct final setter 147 (828 bytes). Original body restored.
-// Round 77: horizontal array view 130; facing array fields 130; turned array stores 130; direct array output 147;
-// combined array views 130; horizontal pointer 137; immutable magnitude 130; immutable normalized scalars with
-// direct output 147. Original body restored.
-// declaration priority plus planar names 130; sine result arms 149; complete planar facing capture
-// 177; both dot/determinant product pairs 141; both input/product forms 177; facing/magnitude/side/
-// all zero-first comparisons 130/130/130/130; native output copy then component scales 145;
-// guard-scoped normalized scalars 130; native planar input 130; both 130; all speed-field reads 140;
-// scalar declarations at planar entry 130; adjusted turn name 130; requested direction name 130;
-// native guarded input plus field reads 131; complete vector setter at requested direction/turn
-// input/both 176/147/168; completed output workspace 130; workspace plus requested/turn/both
-// 176/147/168; direct final setter 147 (828 bytes); round 42: turned, horizontal or the planar
-// magnitude/x/y at function scope 130 each (identical). Round 19: the inline planar normalisation
-// still compares the length before the divide where retail compares it after, and carries the
-// magnitude and the reciprocal in different registers. Round 8 (lane 2): the cause is the 0.0f
-// constant: ours zeroes xmm6 once and keeps it from the length test through the rotation's cosine
-// products, retail keeps the zero in xmm0 for the three tests and rematerialises it (memory, then
-// xorps) in the rotation, so it follows the rotation helper's shape (src/unknown_1eb8a0.cpp, another
-// lane's file this round). Horizontal pair as an aggregate of the two components 166 (835 bytes);
-// only the normalized turned pair stored back into the direction 176 (801); the k copy dropped
-// (pair stored back) 159 (818); integer-zero magnitude test 130; speed-first output products 130.
-// magnitude/x/y at function scope 130 each (identical).
-// Round 231: facing-first positive / both positive predicates / facing-first nonzero /
-// both nonzero predicates 205/231/211/237; with direct component output
-// 175/193/181/199. Original admission and aggregate output restored.
-// Round 28 (lane 10): with direct output stores the aligned count drops 106 -> 93 (the tail and the
-// turned copy then follow retail); the four missing instructions are the facing products, which ours
-// write as `movaps reg, x; mulss reg, [field]` where retail loads the field and multiplies by x.
-// Normalization products as scale * x, y * scale 130 (identical); direct stores 147 (828 bytes, aligned
-// 93); output through vector3f_scale 147 (same code); direct stores without named x/y 160 (821 bytes);
-// normalization as if (!(fabs < eps)) { scale } else zero 131 (845 bytes).
-// BLOCKED-BY 0x1eb8a0 (the form of its inline rotation helper, src/unknown_1eb8a0.cpp).
-// Round 231: facing-first positive / both positive predicates / facing-first nonzero /
-// both nonzero predicates 205/231/211/237; with direct component output
-// 175/193/181/199. Original admission and aggregate output restored.
-// Round 179: the facing and side tests through the shared two-pointer dot_product2d/cross_product2d
-// (include/vector2f_products.h) 106 (865 bytes; the side test now matches), with the output stored
-// straight into velocity as speed-first products 77 (846 bytes), kept, with `horizontal` a vector2f
-// 77. Only the dot helper 146, only the cross helper 150; the side bool before the turned copy 130;
-// rotate_vector_170d70 or a local copy in 0x1055b0's axis-first form for rotate_direction 77 each
-// (identical code: the rotation's source form is canonicalised, so the BLOCKED-BY above no longer
-// holds). Left: ours zeroes XMM6 before the divide and carries that zero into the rotation's first
-// cosine product, so the turned components colour XMM4/XMM7/XMM5 as k/j/i where retail has
-// XMM4/XMM6/XMM5 as i/j/k; retail's test zero is XMM0 after the scale products, and it multiplies x
-// as `movaps xmm1, scale; mulss xmm1, [x]`.
-// Round 230: native unsigned object/prop handles and signed-byte side truth, seven subsets; all with
-// unsigned-byte truth, scores [77, 77, 77, 77, 77, 77, 77, 77].
-// Original executable source restored. Zero-test scheduling and rotation register homes remain.
-// Round 69 (m3 lane 9, fast with 0x1ecf50 and 0x2b400): the magnitude and facing tests nested 77 (same code);
-// the facing vector as a named const 2D pointer for both tests 148 (857 bytes); the turned pair written
-// straight into direction on success (no k or fallback copy) 167 (790 bytes); integer-zero literals in both
-// tests 77; the rotation's cosine through a named zero local 77 (diagnostic only). The first difference is
-// still the magnitude compare and its XMM6 zero scheduled above the divide.
-// Round 234: Eager geometric admission, direct/length-first/facing-first/separate predicates
-// 180/177/190/174; with native planar component input 199/196/198/193. Original short-circuit admission
-// and library copy restored.
-// Round 230: native unsigned object/prop handles and signed-byte side truth, seven subsets; all with
-// unsigned-byte truth, scores [77, 77, 77, 77, 77, 77, 77, 77].
-// Original executable source restored. Zero-test scheduling and rotation register homes remain.
-// DL231: Existing shared planar normalizer scale-first/one-result/native-output subsets; joined scale-
-// first j-first stores: 77/119/119/189/189/189/189/121. Zero-test lifetime and rotation registers remain;
-// helper and all users restored; original executable source restored.
-// P262: New turn-copy phase/library/normalization-arm combinations
-// 130/130/130/132/132/132/132; paired requested/turn library copies after sine 132.
-// Original observations, copies, normalization arms and complete body restored.
-// Round 86 (KIMI2): dot inputs reversed 77; opposite-side cross 79; both reversed 79;
-// reversed cross with the original left predicate 79; shared three-component facing pointer 148;
-// two-use magnitude scale 85; named determinant 77; read-only magnitude 77. Original body restored.
-// Round 46 (m3 lane 2, fast with 0x1ecf50 and 0x2b400): `magnitude != 0.0f` 128 and the second normalize
-// `!= 0.0f` 108 (both 850 bytes but `ucomiss`/`lahf` where retail has `comiss`/`jbe`), both together 134 (854);
-// speed read right after the direction copy 175 (864); the k copy before the second normalize 174 (788).
-// Round 35 (m3 lane 18, fast with 0x1ecf50 and 0x2b400), zero-first comparisons re-measured on the
-// two-pointer helper form: `0.0f < magnitude` 77; `0.0f > dot` 77; `0.0f < cross` 77; the turned pair's
-// normalize as `0.0f < ...` 77 (all same code); the k copy before the turned pair's normalize 174 (788
-// bytes). Retail rematerialises the test zero (xorps after the scale products) and multiplies the
-// rotation's cosine from memory; ours keeps one zero in XMM6 from above the divide through the rotation.
-// Round 145 (m3 lane 5, fast with 0x1ecf50 and 0x2b400): the horizontal pair as two component stores 170 (827 B);
-// the sine passed straight into the rotation 141 (842 B); `0.0f < normalize2d(...)` 77 (same code); the up axis
-// read into a pointer before the turned copy 94; the side test inside the sine expression 130 (835 B). A
-// compile-only probe puts the zero in XMM0 after the scale products (retail's) when the rotation is a call, and
-// in XMM6 above the divide (ours) once its body is inlined, so the hoist follows the rotation's register pressure.
-// Round 138: split turn/direction declarations 77 each; sine after direction/at entry 77 each; outer side
-// predicate with entry sine 77; speed declared at entry/after direction with its read at the original point
-// 77 each; named second-normalization result 85 (842 bytes). Original body restored; zero lifetime remains.
-// Round 153 (m3 lane 5, fast with 0x1ecf50 and 0x2b400): turned copied by components 149 (828 B); turned declared at
-// function scope and assigned at its copy 77 (same code); the side as `long side = left ? 1 : -1;` times 0.5 77 (same code);
-// output products as `direction.i * speed` 77 (same code); rotate_direction's body in an axis-first form (dot, (1 - c) * dot,
-// axis-first cross, `+ sine * cross`) 101 and matched 0x1ecf50 135 (restored). Compile-only diagnostic: with the rotation's
-// cosine not a literal zero (or no rotation) the test zero is materialised after the scale products in XMM0, exactly
-// retail's placement, so the remaining difference is the literal 0.0 cosine sharing the tests' zero register.
-// Round 87 (m3 lane 16, fast with 0x1ecf50 and 0x2b400): the three tests through a `real const zero` 119 (840 bytes); magnitude and facing tests as
-// `!(<=)`, `!(>=)` 77 (same code); the side test as `!(<=)` 78; the side as a negated cross `< 0` 128 (853); the rotation's cosine as `sine * 0.0f` 138 (861);
-// the cosine named before the sine 77 (same code). The zero's register is still XMM6 in the kept form. Original body restored.
-// MiniMax D (11-06): no new form, no lower score; the test zero is still one XMM register held from above the divide through
-// the rotation, so our `comiss` is scheduled before the `divss` where retail materialises the zero after the scale products
-// and multiplies the rotation's cosine from the constant pool; the rotation is an inlined helper from src/unknown_1eb8a0.cpp,
-// so its body cannot be steered from this file, and a local copy of that body is a form this round does not use.
-// Lane 11 round 80 (fast with 0x1ecf50 and 0x2b400, both matched throughout): retail rematerialises the zero three times
-// (xorps after the scale products for the three tests, the pooled constant for the rotation's first cosine product, a second
-// xorps for the other two). Double zero literals in the magnitude, facing and side tests 199 (891 bytes); a double zero, a
-// `(real)0` or `sine - sine` for the rotation's cosine 77 each (same code); a double zero in the turned pair's length test
-// 138 (855), in the magnitude test alone 170 (874); `magnitude != 0.0f` 128 (850, as round 46); double zeros in the three
-// tests plus the cosine 199, plus the turned length test 215 (896). All restored.
-// m3 lane 16 r107 (compile-only screen, build/r107/h1ff*.py: this block with rotate_direction's body inlined reproduces
-// ours, XMM6 zeroed above the divide; with the rotation a call it gives retail's XMM0 zero after the scale products).
-// Caller-side forms, none of which moves the zero (all still XMM6 above the divide): the axis in a pointer local or a
-// local copy, the sine as `left ? 0.5f : -0.5f`, nested tests, `magnitude != 0.0f`, the horizontal pair as an aggregate
-// copy, the pair stored back without the fallback, speed read first, the turned copy after the sine, the cross and dot
-// operands reversed, `0.0f < magnitude`, a named moving test, `!= 0.0f` on the turned pair, k copied first, double zeros.
-// Rotation-body forms (diagnostic copies of the helper, not keepable here): axis-first dot, cosine-first products, an
-// input copy, a temporary result, cross3f / cross3f_staged of vector x axis all hoist the zero too; only the cross term
-// written as axis x vector and added (`+ cross * sine`, the same values; also through cross3f(axis, vector)) puts the
-// test zero in XMM0 after the divide as retail does, though its turned loads stay k/j/i where retail loads i, j, k into
-// XMM4/XMM6/XMM5 and reloads j twice. The lead belongs to rotate_direction in src/unknown_1eb8a0.cpp (its other callers
-// in bipeds.cpp, unit_object_type.cpp and unknown_1e67a0.cpp would have to be measured).
-// Fast with 0x1ecf50 and 0x2b400 (control 77): that axis x vector form as a local forceinline twin of rotate_direction
-// (diagnostic, restored) 101 (847 bytes, aligned 52 -> 45, masked 30 -> 28): the magnitude, facing and side tests then
-// take retail's XMM0 zero and registers; left are the scale products (retail `scale * x` but `y * scale`, from
-// normalize2d_fast in include/unknown_11cc90.h) and the rotation's own order. BLOCKED-BY 0x1ecf50 (the inline
-// rotate_direction beside it in src/unknown_1eb8a0.cpp).
-// MiniMax R (11-10): no new form, no lower score (77): ours is 846 bytes against retail's 850 and the
-// first difference is at +0xeb, where the two arms of the direction test branch to blocks that retail
-// lays out at other offsets; behind them the difference is that retail expands the rotation where we
-// call rotate_direction, which lives in src/unknown_1eb8a0.cpp and is not this round's file, so the
-// expansion cannot be written here, and the sine is turned into a float by an integer conversion in
-// our build (`setne dl`, `lea edx, [edx + edx - 1]`, `cvtsi2ss`) where retail keeps the sign test
-// inside the expansion. The forms the earlier rounds record ((real)0 and sine - sine for the
-// rotation's cosine, magnitude != 0.0f, the double zeros, rotate_vector_170d70 in place of the call,
-// the axis-first copy of the helper's body) all measure 77 or worse.
-// MiniMax H (11-12): no new form, no lower score (77); the full check shows 846 bytes against retail's 850 with the first difference at +0xeb, and the turn is expanded in our build as well, so the difference is inside it: retail multiplies the axis component by the turned one and loads the turned i, j, k into xmm4, xmm6 and xmm5 and reloads j twice, ours multiplies the turned component by the axis one and loads them into xmm5, xmm7 and xmm4; the scale products differ in the same way (retail `scale * x`, ours `x * scale`). The turn helper is in src/unknown_1eb8a0.cpp and the normalisation in include/unknown_11cc90.h, so neither is in this lane's files.
-// Round 112 (m3 lane 16, fast with 0x1ecf50 and 0x2b400): the three tests against a double 0.0 199 (891 bytes, x87);
-// the cosine as a double 0.0 77; the planar copy `*(vector2f const *)&direction` for horizontal 77 (same code each);
-// the second normalisation's arms swapped 87. Lead: the cosine from a file-scope `real const` holding 0.0 99 (857
-// bytes) gives retail's code through the side test (zero tested in XMM0 after the scale products, j in XMM6, the
-// i * cosine product from a memory constant, a fresh zero later; retail's 0x183df0 uses the same 0x45dbd8 zero, the
-// file constant k_real_zero in src/unknown_183c60.cpp); left there: x loaded before the divide (retail folds it into
-// the product), k in XMM4 and i in XMM5 (retail i, k) with the dot summed j, k, i (retail j, i, k). On it:
-// rotate_vector_170d70 99 (same code); the axis-first record_rotate_vector 142; side test before the turned copy 136;
-// side and sine before it 138; turned at function scope 99; turned copied by memcpy 99; a local copy of the inline
-// normaliser with `scale * v->i` or as is 99/99 (diagnostic: the product order is canonicalised).
-// MiniMax G (11-13): no new form, no lower score (77): both streams are 846 bytes against retail's
-// 850 and the difference is inside the rotation expansion, which lives in src/unknown_1eb8a0.cpp
-// and is not this round's file.
-// M3 lane 13 r91 (fast with 0x1ecf50 and 0x2b400, both MATCH; control 77, difflib count with addresses masked 52): the
-// turned pair's length test against the pooled zero as `> g_45dbd8` 77 fast and plain (that compare line stays flagged
-// either way); the facing dot named ahead of the magnitude test 155 (862 B) [67]; the sine as `left ? 0.5f : -0.5f` 158
-// (833 B) [103]; the side as a named cross value with `(side > 0.0f ? 1 : -1) * 0.5f` 134 (833 B) [60]. Diagnostic, reverted:
-// the rotation's cosine passed as the zero global 164 (880 B) [58]; with this file alone in the reduced image (the rotation
-// then a call) it puts the tests' zero in XMM0 after the scale products exactly as retail, so the shared literal zero of the
-// three tests and the inlined rotation's cosine is the cause. BLOCKED-BY 0x1ecf50: rotate_direction's body in
-// src/unknown_1eb8a0.cpp is shared with src/flexible_surface.cpp and src/unknown_1e67a0.cpp, both held by other lanes this
-// round. Body unchanged.
-// b10F (11-17) walk against retail, fast build on r841 (with 0x1ecf50 and 0x2b400, control 77, 846 bytes vs 850): the
-// logic agrees with retail through the direction copy (+0x0 to +0xeb: actor +0x7e0/+0x7cc/+0x26c/+0x7e8/+0x7f4, prop
-// node +0x24/+0x20, point +0x48 plus 0.2f, the 0x25d690/0x26c2d0/0x1fef40/0x1ff010 calls) and in the tail; the four jcc
-// senses (0x1ff4ac, 0x1ff4d7, 0x1ff50b, 0x1ff618: magnitude > 0, 0 > dot, cross > 0, turned length > 0) and the
-// constants (1.0, 1e-4, 0.5, 0.0) match, so no behaviour fix. One rounding difference, inside rotate_direction
-// (src/unknown_1eb8a0.cpp, not editable here): retail's dot is (a.j*j + a.i*i) + k*a.k (addss 0x1ff543, 0x1ff55f), the
-// C grouping (i + j) + k; ours compiles (j + k) first, then i. Diagnostic twins of the helper, restored (they count
-// only on a MATCH): written inline, six dot term orders 72 (842 B), cross statement orders 72-146; as a local
-// forceinline function (cross_k, cross_j, cross_i, then the dot axis-first) 68 (843), with a file-scope zero as the
-// cosine 66 (847, best recipe; the zero folds); axis x vector with `+ cross * sine` 101-107; dot-first and cross-first
-// permutations 77/78. The test zero is still hoisted above the divide and the scale products are x * scale (retail
-// `scale * x`), so no match.
-// M405: Planar/turned/both length cutoffs; those tests with both sides negated; mixed cutoff and negation in both orders.
-// Scores 68/78/69/165/111/183/117/165. NOT kept: retail tests the planar length against zero after the scale products; original body restored.
+/* the cosine of the quarter turn the facing is turned by */
+static real const k_quarter_turn_cosine = 0.0f;
+
+/* a planar vector times a scale, into out (which may be the vector itself); the vector counterpart of the
+   point pair in src/unknown_0a76b0.cpp */
+static inline void planar_scale(vector2f const *vector, real scale, vector2f *out)
+{
+	out->i = scale * vector->i;
+	out->j = scale * vector->j;
+}
+
+/* makes a planar vector unit length and returns the length it had, or 0 for one too short to scale */
+static inline real planar_normalize(vector2f *vector)
+{
+	real magnitude = magnitude2d(vector);
+
+	if (fabs(magnitude) < 0.0001f)
+		return 0.0f;
+	planar_scale(vector, 1.0f / magnitude, vector);
+	return magnitude;
+}
+/* the actor's desired velocity toward the target: its aim direction at its speed; an actor with no field 0x26c
+   whose facing points away from that direction turns the facing a quarter turn toward it instead and moves along
+   the result at the same planar length. Returns the prop's object when the prop node counts one or more.
+   Retail evidence for the forms: the turn's first cosine product reads the pooled zero from memory while the three
+   tests before it share a zero of their own, as a named constant cosine compiles (a literal shares one register);
+   the planar scale multiplies `scale * x` but `y * scale` with y loaded ahead of the divide, the in/out scale
+   helper's code; and the node's count is loaded once for its two tests. The turn is the axis rotation the matched
+   0x2551f0 inlines (include/axis_rotation.h). */
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
@@ -779,9 +549,10 @@ long function_1ff360(long actor_index, point3f const *target, vector3f *velocity
 	if (prop_index != NONE)
 	{
 		s_prop_node_view *node = prop_node_get(prop_index);
-		if (node->unknown24 >= 1)
+		short count = node->unknown24;
+		if (count >= 1)
 			object_index = node->object_index;
-		if (node->unknown24 > 0 && *(bool *)((byte *)actor + 0x7cc))
+		if (count > 0 && *(bool *)((byte *)actor + 0x7cc))
 		{
 			s_type_5cfb45 *state = function_25d690((s_prop_datum *)node);
 			function_26c2d0(prop_index);
@@ -796,13 +567,13 @@ long function_1ff360(long actor_index, point3f const *target, vector3f *velocity
 	{
 		vector2f horizontal;
 		memcpy(&horizontal, &direction, sizeof(horizontal));
-		real magnitude = normalize2d_fast(&horizontal);
+		real magnitude = planar_normalize(&horizontal);
 		if (magnitude > 0.0f && dot_product2d((vector2f const *)&actor->unknown290, &horizontal) < 0.0f)
 		{
 			vector3f turned = actor->unknown290;
 			bool left = cross_product2d((vector2f const *)&actor->unknown290, &horizontal) > 0.0f;
 			real sine = (left ? 1 : -1) * 0.5f;
-			rotate_direction(&turned, g_4687b0, sine, 0.0f);
+			function_x84d9e8(&turned, g_4687b0, sine, k_quarter_turn_cosine);
 			if (normalize2d((point2f *)&turned) > 0.0f)
 			{
 				turned.i *= magnitude;

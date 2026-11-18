@@ -13,6 +13,10 @@ void function_1fe410(point3f *arg_0, real arg_1);
 static __forceinline long real_to_long(real value);
 
 // MiniMax S (11-17): no new form, no lower score (373): the frame is 0x4c against retail's 0x48, retail holds the third settings pointer in esi from the entry and the random-state pointer in ecx where this build caches the random state in esi and reloads the third input from its stack slot, the flag byte is stored at +0xf where ours is at +0xb, and retail passes the third input's word at +0x7a in ecx where ours passes it in edx; the argument's transport is set by the caller at 0x1fc7e0, in another file.
+// MiniMax G (11-18): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, this
+// build still keeps the random-state pointer in ESI from the first draw where retail holds the third settings
+// pointer in ESI and the random state in ECX, so the third input is still reloaded from its stack slot; the
+// random-state pointer read through the global instead of through the named local scores 423 and was restored.
 // MiniMax D (11-16): score 373 (was 373), nothing kept: retail's frame is 0x48 and it takes the third settings
 // pointer in esi from the entry, this build has a 0x4c frame and takes the random-state pointer in esi instead,
 // so the third input is reloaded from its stack slot and the state pointer is kept in a register across the
@@ -249,6 +253,18 @@ static __forceinline long real_to_long(real value);
 // the 0x1fdce0 result inside `if (flag)` 456 (1856 bytes). Retail forwards the seed from the sign test through all
 // three range draws in EAX and stores it once (so the bound loads are scheduled ahead of the draws, holding +0x14/+0x18
 // on the x87 stack); ours stores and reloads it per draw. All restored.
+// M3 lane 6 r191 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, control 373): retail's own listing fixes three
+// facts for the next round. (1) Before the first range draw it loads +0x10, +0x14, +0x18, +0x1c, +0xc and +0x38 in that order
+// (0x1fe93f-0x1fe95e; +0x14/+0x18 stay on the x87 stack) and reads +0x3c at each use, so the six values are locals read
+// in that order and the seed is then forwarded through the three draws with one store (0x1fe9f2). (2) The third input is
+// in ESI only from the entry to the +0x1c test (0x1fe775): ESI then holds the prop pool, then the +0x744 point for the
+// inlined 0x210850, and the 0x1fe410 argument re-reads the input from its stack slot (0x1fe807). (3) The random state is
+// never kept in a saved register: ECX is loaded at 0x1fe7f6 and again at 0x1fe810 after the 0x1fe410 call. Forms that
+// are acceptable without a match, all worse: the limits in retail's load order with +0x38 named for its two uses 375;
+// that with the sign test as `(seed & 0x80000000) > 0` 375 (1862 bytes); that with draws one and three through the
+// random-state local 418; +0x3c read at each use 447 (1846 bytes); that with the ordered limits and the named +0x38 448
+// (1845 bytes). The +0x14/+0x18 locals are one-use and the resolver is 0x210850's body, so the composite of rounds
+// 63/110/112 still needs an exact match, and 0x210850 is inlined only here: BLOCKED-BY 0x210850.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
