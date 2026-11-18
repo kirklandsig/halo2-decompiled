@@ -1013,6 +1013,11 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // in eax/esi/edx/ecx, retail eax/edx/ecx/esi); 0x11e800 is still contributor code; BLOCKED-BY 0x11e800.
 // Round 194 (m3 lane 5): baseline listing (full build, 4) still differs only in 0x11e800's four argument registers;
 // 0x11e800 is still contributor code; BLOCKED-BY 0x11e800.
+// M3 lane 11 r114: baseline listing (full build, 4) still differs only in 0x11e800's four argument registers (ours
+// point/third/second/first in ecx/edx/esi/eax, retail third/second/first/point in ecx/edx/eax/esi). HELD (needs the
+// owner's OK): the (p, a, b, c, u, v) reorder at 0x11e800's definition, this file's declaration and both calls,
+// re-measured (fast, restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172; the diff is in
+// build/r114/held-14a8e0.patch. BLOCKED-BY 0x11e800 (contributor).
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

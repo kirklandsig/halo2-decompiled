@@ -494,14 +494,6 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 }
 
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
-// M3 lane 11 r113 (plain each, with the file's functions; base 535): the group pass as a plain
-// `while (remaining > 0)` inside the flag test in place of the count test plus do-while 534 (`remaining` is then stored
-// ahead of the count test as in retail; not kept, under the 8-point bar). Also tried: a named edge-array base in the selection loop 535 and a named vertex
-// base for the two endpoints 535 (both on the old loop; same homes); the tag pointer written at each use 720 (3649 B);
-// on the while loop the first loop stepped `++i` with `faces[i]` 547, the group search's tests swapped 766 (3628 B), the
-// searched slot cleared before the face is stored 540, the first plane declared ahead of the first face 534 and start,
-// end and the selected plane declared at the group pass's top 534 (same code). Left: the spill homes (outer index, edge
-// base and tag in reversed order; group count/first face/plane homes) and the first loop's increment.
 // MiniMax I (11-16): no new form, no lower score (535): the frame 0x21dc and the 3647-byte length agree and the first
 // difference is still the tag spill at +0x41; the later homes of the tag, the count and the plane still sit in other slots
 // than retail's, and the entry register roles are still the other way round (retail takes the object pointer in edx and
