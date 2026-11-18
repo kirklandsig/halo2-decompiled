@@ -737,6 +737,10 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // member of the voice aggregate 3 (same code; 0x128500/0x128700/0x128920 unchanged); the voice as a const reference bound
 // to the pointer temporary 11 (both increments sink below the stores), the same temporary used for only the first store,
 // the first two or the stores from unknown0a on 11 each (any such temporary changes the store schedule of the whole body).
+// Round 118 (m3 lane 10, fast with 0x128500/0x128700/0x128920, all matched): the type stored before the sound index
+// with the voice index advanced after both stores 2 (re-measure: only the two stores swap, `inc esi` stays right after
+// `inc edi`); channel and 0e as one chained NONE store (0e first) 3; `short type; for (type = 0; ...)` 3; a `byte` type
+// counter 7 (`xor dl, dl`); the voice index declared before the system reload 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {

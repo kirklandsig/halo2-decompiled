@@ -1291,6 +1291,10 @@ bool c_projectile_type::v8(long a, long b)
 // Also (fast, mask): the update flags as a local overlay (a dword and a 10/1/1/20 bitfield view), tested through
 // the bits, 12 (word read 5); the result as that overlay, its bits set through the fields 12, only the 0x800 bit
 // through its field 12 (the bitfield forms lower to the same test/or constants before allocation).
+// M3 lane 10 r119 (fast with 0xa5e70, matched each time; mask control 12), all with the full-width mask: the body moved
+// to the end of the file 12 (source position does not order the pair); the entry address written multiply-first 12; the
+// state's two fields as `((real *)d)[0x24]`/`[0x25]` 12; the object's fields as `((real *)object)[0x50]` and
+// `((long const *)object)[0x4f]` 12; the 0x800 test as `(flags & 0x800) == 0x800` 12. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
