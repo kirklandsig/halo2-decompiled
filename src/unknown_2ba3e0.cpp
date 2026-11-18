@@ -838,6 +838,15 @@ real g_55e618;
 // no home and the frame is 0x118: a reference-bound temporary behaves as a named local here. Body unchanged.
 // DH397: Existing i/k/j dot with velocity snapshot, field pointer or direct field, using grouped rows, interleaved rows or the scale helper 103/211/103/194/195/194/200/201.
 // NOT kept: The snapshot with grouped rows or the scale helper scores 103 at the original frame and length. The field forms change the frame and regress. None recovers the retail sweep, collision and reflection spill homes. The original body is restored.
+// M3 lane 7 r179 (fast with 0x2ba3e0, 0x2b8da0 and 0x2b8e10, all MATCH each time; control 102). On the coordinator's lead (a
+// once-computed dot that keeps the written-out form's code): round 75's base rebuilt (normal locals, velocity pointer, position
+// setter, the dot written at each of the three products) 64 at 1537 bytes (aligned with addresses masked 14); on it the dot
+// computed once: a named real from the existing dot3f 180; a function-scope real assigned in the block 189 (1533 bytes); a real
+// declared ahead of the normal locals and assigned after them 189; the dot held in perpendicular.i with j and k from it and i
+// scaled last 193; the named real renamed to sort after or before the normal locals (`speed_along_normal`, `a_dot`) 189 each
+// (the same code: names do not order the product's operands). Every once-computed form multiplies a copy of the normal by the
+// dot (frame 0x118, first difference +0x2); only the compiler's own temporary for the repeated expression is copied and scaled
+// in place as retail does. Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
