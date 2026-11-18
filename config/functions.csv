@@ -2995,7 +2995,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000d1680,80,game,unknown,a16,,,0012ccf0 0012ce00,src/unknown_0d0690.cpp,matched
 000d16d0,370,game,unknown,a16,,,000d1d70 000d2bf0 000d2f90,src/unknown_0d0690.cpp,matched
 000d1850,469,game,speed,a16 pad,,,000d1a30 000d2a50 000e5670,src/unknown_0d0690.cpp,matched
-000d1a30,821,game,speed,a16 pad,,,00030bf0 00131c20 00131ed0 001697c0,src/unknown_0d0690.cpp,todo
+000d1a30,821,game,speed,a16 pad,,,00030bf0 00131c20 00131ed0 001697c0,src/unknown_0d0690.cpp,matched
 000d1d70,155,game,speed,a16 pad,,,0012de70 0016e290,src/unknown_0d0690.cpp,matched
 000d1e10,3130,game,speed,a16 pad,,,000241c0 00024490 00024590 00030bf0 000d1d70 000d2bf0 000d2dc0 000d2f90 000d30d0 000d31c0 000d33a0 000d35a0 000d3630 00131ed0 0013d9f0 0013da30,src/unknown_0d0690.cpp,todo
 000d2a50,337,game,speed,a16 pad,,,000d1e10 0014af40,src/unknown_0d0690.cpp,matched
@@ -5037,7 +5037,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00169430,212,game,speed,a16 pad,,,0011bed0 00168ae0 001691a0,src/unknown_1689b0.cpp,matched
 00169510,442,game,speed,a16 pad,,,000d8ae0 0011e5e0 00168a10 00168b40 00169510 001efb40 001eff40,src/unknown_1689b0.cpp,todo
 001696d0,237,game,speed,a16 pad,,,000b9ce0 0011bed0 00168ae0 00169510,src/unknown_1689b0.cpp,matched
-001697c0,2167,game,speed,a16 pad,,,000b8940 000b89b0 0011bed0 0011e5e0 0014a280 00168ae0 00168ce0 00169510 0016b500 001de630 00244980,src/unknown_1689b0.cpp,near
+001697c0,2167,game,speed,a16 pad,,,000b8940 000b89b0 0011bed0 0011e5e0 0014a280 00168ae0 00168ce0 00169510 0016b500 001de630 00244980,src/unknown_1689b0.cpp,matched
 0016a040,81,game,speed,a16 pad,,,001697c0,src/unknown_1689b0.cpp,matched
 0016a0a0,480,game,speed,a16 pad,,,00141590 001689b0 00183fc0 001dde10 00245aa0 00320560,src/unknown_1689b0.cpp,matched
 0016a280,436,game,unknown,a16,,,000df5f0 00168a10 0016a280 001efb40 001f0230 00244ca0,src/unknown_1689b0.cpp,matched
@@ -7275,7 +7275,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 001fc210,214,game,speed,a16 pad,,,0025bba0 0025d020 0025d690 0025d810,src/unknown_1fb940.cpp,matched
 001fc2f0,95,game,speed,a16 pad,,,,src/unknown_1fc2f0.cpp,matched
 001fc350,341,game,speed,a16 pad,,,00030bf0 000b75a0 001d0dd0 001d4360,src/unknown_1fc2f0.cpp,matched
-001fc4b0,366,game,speed,a16 pad,,,001fc660,src/unknown_1fc2f0.cpp,todo
+001fc4b0,366,game,speed,a16 pad,,,001fc660,src/unknown_1fc2f0.cpp,matched
 001fc620,58,game,speed,a16 pad,,,,src/unknown_1fc2f0.cpp,matched
 001fc660,165,game,speed,a16 pad,,,,src/unknown_1fc2f0.cpp,matched
 001fc710,202,game,speed,a16 pad,,,000cafc0 00101b80,src/unknown_1fc2f0.cpp,matched

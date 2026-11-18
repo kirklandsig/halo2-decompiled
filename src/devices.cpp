@@ -1048,6 +1048,18 @@ struct s_device_machine_view
 // M3 lane 13 r108 (fast): on the group pointer, the machine and both-bits tests as one `||` test 111 (654 B, the pushed
 // ESI), with the group bits first 119 (654 B); the pointer with a byte machine-flags local 122 (656 B), with a word
 // machine-flags local 123 (657 B); the lane S word local tested with direct `& 1`/`& 2` masks (no byte copy) 115.
+// M3 lane 10 r120 (fast with 0x107870, 0x1071e0, both matched throughout; control 2; compile-only screen exact): on the
+// plain group pointer (122, the pushed ESI) any third reference to the pointer between its lea and the word load gives
+// retail's EAX and `mov ax, [eax + 2]`: the machine arm reading `group->value` (diagnostic, reverted at once) is retail's
+// code but for that arm's `movss xmm0, [eax + 4]`, and a test of `group->identifier` likewise but for its compare. So
+// retail's pointer had three references when registers were chosen and one of them left no code. Trials: the value
+// set through a `real &` in both tests 122; both tests through file-local inline helpers taking `real *value` 122; the
+// group test alone through that helper 122; one inline helper taking the value, the machine flags and the group and
+// returning the value 83 (658 B); an inline both-bits helper with two return paths chosen by the machine test 92
+// (655 B). Screens: the flags read at the end of both machine arms hoists between the `test` and the `je` (aligned 2,
+// with the value through a reference too); bit 0 through the word and bit 1 through a bit-field view (either way
+// round) the pushed ESI; the two bits tested in a counted loop aligned 57; that one helper with the lookup as its
+// argument aligned 13.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1837,6 +1849,18 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // render-model index local); the step read from the frame globals at each of its three uses (no local) 185; the else
 // arm's inverse and relative declared the other way round 2; the orientation declared before the two quaternion
 // pointers 2; the speed as `(real)(sqrt(d) / step)` 2.
+// M3 lane 10 r120 (fast; control 2): compile-only probes of the flag block (the first call's arguments varied, 14 forms)
+// put the time's fstp after exactly five non-x87 instructions of its basic block every time (eighth with the fld and
+// the fmul), wherever the fld and the fmul land; retail's block has six before it, so retail's render-model load
+// `mov edx, [esp + 0x18]` was not in that block when it was scheduled: a block boundary after the load that emits no
+// code, as 0x1253d0's. Diagnostic (reverted at once): `if (render_model == 0) return false;` at the top of the flag block
+// 379, and the block after that test then has retail's order (the fstp after the animation push). Trials: the two
+// flag-block samples through a plain `inline` pair helper taking the block's locals 380 (called, not inlined); a plain
+// `inline` helper taking the channel and returning the animation and the time through references 372 (called); the two
+// reads under a dominated `if (device)` guard with a block-local copy of the render model 2 (same code); the first
+// sample's seconds as `DEVICE_PIN(0.0f, 0.0f, time)` 365 (1654 bytes, not folded); the two sample calls in a bare scope
+// 2 (same code). Compile-only: the processor-tuning and debug-information options leave the block's schedule alone, and
+// the time assigned inside any of the first call's arguments compiles to the same block.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

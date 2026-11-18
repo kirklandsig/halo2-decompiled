@@ -596,6 +596,15 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // translation with deferred factor copies 235. NOT kept: Reusing the existing vector transform and applying
 // the translation separately shortens the body to 958 or 959 bytes but leaves an incorrect frame and raises
 // the score. Deferring the factor copies raises it further. The opening transform and body are restored.
+// m3 lane 1 r120 (fast with 0x30bf0 and 0x30710, both MATCH; control 195). Reading: in the second transform retail keeps the
+// displaced x and y in the registers their sums were built in (XMM7, XMM6) as the transform's own x and y, loads z through
+// XMM0 into XMM4 and gives only z a memory home (the dead scale slot) although XMM5 is free there; ours gives the transform's
+// x, y, z XMM4, XMM6, XMM7, so x is moved and both x and z get homes (the extra frame word). A sum's register follows its
+// first operand's base (the displacement's XMM7, the origin's XMM6), hence round 63's parameter-order lead. Tried: no-code
+// mentions `(void)ta.z;` or `(void)tb.z;` after the two transforms 195/195 (same code); `(void)tb.x; (void)tb.y;` 263 (991 B);
+// `(void)ta.x; (void)ta.y;` 251 (988 B); the direct-inverse form re-measured 207 (974 B), with `(void)tb.z;` 207, with the
+// displacement reference for the sums 205. Compile-only (the stream agrees with the real build but two lines): mentions of the
+// displaced point's or the retransform point's components, before or after their sums, in every ordered subset, change nothing.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
