@@ -3185,6 +3185,10 @@ real magnitude3d(vector3f const *v);
 // its scaling 241/241. Complete axis product pairs before the angle or across its inverse
 // cosine and scaling 170/241/196/241. NOT kept: tie or regressions. The raw magnitude still
 // shares the clamped length's slot on the baseline frame and the dot still widens to a spill.
+// MiniMax A (11-18): no new form kept, no lower score (170): retail keeps the raw current magnitude in a slot of its
+// own ([esp + 0xc]) and reloads it for both clamp tests, while this build keeps it in the x87 stack and lets the
+// clamped value take its place; a named raw magnitude local measures 251 and the same value in a two-element array
+// also 251 (the array is promoted away), so the raw length's home stays as it is.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

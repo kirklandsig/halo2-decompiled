@@ -1873,6 +1873,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // NONE or branch-set NONE 220/529/529. The primary-index forms alone
 // 220/529/529. Both captures with a terminal unit guard 220.
 // NOT kept: frame 0x28, exchanged unit/mode homes and shared reciprocal persist.
+// MiniMax A (11-18): score 188 (was 220): the two clamped look values as one `real look_angles[2]` take retail's
+// [ebp - 0x2c]/[ebp - 0x28] homes, the pitch read through a reference to the game-time globals keeps retail's two
+// separate divisions (no shared reciprocal) with the multiply's operands in retail's order, and both look springs'
+// rates through the same reference; still open: the frame is 0x30 against retail's 0x2c, the unit and mode
+// homes are swapped and the ESI/EDI saves sit before the unit test.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -1887,8 +1892,7 @@ void __stdcall function_166d75(long user_index)
 		real spring_c = 27.0f;
 		real spring_d = 6.0f;
 		s_first_person_weapon *first_weapon = &user->weapons[0];
-		real look_yaw;
-		real look_pitch;
+		real look_angles[2];
 		point2f *look;
 		dword flags;
 		long field_x11c898;
@@ -1917,10 +1921,11 @@ void __stdcall function_166d75(long user_index)
 		}
 		function_11eed0((real *)&user->unknown2030[0x0], (real *)&user->unknown2030[0x8], unit->aiming_velocity.i, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
 		function_11eed0((real *)&user->unknown2030[0x4], (real *)&user->unknown2030[0xc], unit->aiming_velocity.j, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
-		look_yaw = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
-		look_pitch = PIN(-1.0f / g_510c54->rate * *(real *)&user->unknown2030[0x2c], -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_yaw, g_510c54->rate, spring_d, spring_c, false, -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_pitch, g_510c54->rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		look_angles[0] = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
+		s_game_time_globals &frame_settings = *g_510c54;
+		look_angles[1] = PIN(*(real *)&user->unknown2030[0x2c] * (-1.0f / frame_settings.rate), -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_angles[0], frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_angles[1], frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
 
 		look = (point2f *)&g_4ed284->entries[user_index].yaw;
 		flags = user->flags;
