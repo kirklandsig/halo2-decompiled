@@ -811,6 +811,25 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P594: Primary-failure-only false default with original success publications, byte/char/
 // signed-char/bool/word/short/long/dword: 400/400/400/528/575/575/528/528. NOT kept: no exact graph/base or
 // byte-return repair; original entry default, all queries and complete body restored.
+// M3 lane 12 r141 (fast with the callers, callees and 0x1ddb90/0x1ddc70/0x1ddd00; that image reproduces 348): the
+// tail differs in one decision. Retail loads the graph for `&graph->mode_count` before the last found-name read, while
+// EBP still holds &found->weapon_type, so the sum is formed in place (`mov ebx, [graph]; add ebx, 0x34`), keeps EBX
+// for the five groups, and the graph is then loaded lazily into EBP (loop 1 and 2 preheaders, the join after group 2).
+// Ours reads the three found names first, so both registers are free: graph in EBX, `lea ebp, [ebx+0x34]`.
+// Helper-side diagnostics (src/unknown_1dacb0.cpp, another lane's file this round, restored): const formals on the
+// grouping helper, and the five direct groups called from the request without the grouping layer: 348 each (same
+// code); `inline` on the definitions of 0x1ddb90/0x1ddc70/0x1ddd00 with the real 0x1ddd00 called here in place of
+// the forced copy: 348, the same code, and the three still match (their file's /Ob1 is why the link keeps the real
+// one out of line here: with `inline` on 0x1ddd00 alone 1788). The real 0x1ddd00 with `success` as its urgent
+// argument and no test 1955 (not expanded), with `success != false` 1955, bool success 1964; the forced copy the
+// same way 645/655. The request's outer level written here (the grouping helper called for the graph and for each
+// inherited graph) 674, with the found names in locals 390. Found names read into locals in the six orders (m mode,
+// c weapon_class, t weapon_type): m-c-t 390, m-t-c 390, c-m-t 353 (graph in EBP, the sum in EBX by lea), c-t-m 352,
+// t-m-c 350, t-c-m 348: the graph load always follows the three reads.
+// One-object screen of the same shape (build/r141/probe25..28.py): a spilled graph local, an out-parameter getter, a
+// reference, a const local, a second copy, by-reference or const formals at any level, the lookup helper taking the
+// mode array, and even macros in place of every helper all keep the graph in a register with the sum by lea; only a
+// resources local read before each loop gives retail's in-place add (but not retail's in-loop read).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1057,6 +1076,10 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax H (11-18): no new form, no lower score (210): the two id slots are still the other way round (retail keeps
+// the transition id at frame+0x14/0x16 with its stores in the block and the animation id at frame+0x18/0x1a with its
+// stores at the entry), the blend-query byte is still computed after the 0xe6800 call where retail computes it before,
+// and the set() call's fourth argument still differs; the 0xe6800 call's body is in another file.
 // MiniMax E (11-17): no new form, no lower score (210): the two id slots are still swapped (retail keeps the animation id at frame+0x18/0x1a with its -1 stores at the entry and the transition id at frame+0x14/0x16 with its stores in the block); four declaration and scope orderings measured at 210 or 211, and moving the transition id to function scope gives retail's slots but leaves its constructor at the entry (353).
 // MiniMax E (11-15): no form kept. The permuter's best variant (195, same in both images) swaps the first and
 // fourth arguments of the transition channel's set() call, which would put the animation set name into the

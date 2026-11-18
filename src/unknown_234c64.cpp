@@ -266,6 +266,10 @@ void c_window_channel::v9()
 	dispose();
 }
 
+// Matched with the new request built through its own `build` member (unknown_234c64.h): after the builder retail
+// forms the request's address again (`lea eax, [ebp - 0x20]`), where a caller that hands `&request` to the free
+// builder and then calls the local's own load (0x2358c3) copies ECX. An inlined member's `this` stays apart from the
+// later `&new_request`, which gives that second `lea`; with the free builder called here the address is one value.
 // score 3 (was 3): after the call to 0x149f49, retail recomputes the
 // request's address (lea eax, [ebp - 0x20]); ours uses mov eax, ecx. The
 // callee leaves ecx unchanged, and retail's 0x2358c3 in this file reuses it
@@ -403,7 +407,7 @@ void c_window_channel::v10()
 	{
 		s_screen_request new_request;
 		request.type = 0;
-		function_149f49((s_message *)&new_request, 0, (dword *)&request.id, request.user_flags, request.a, request.b, (long)request.load);
+		new_request.build(0, (dword *)&request.id, request.user_flags, request.a, request.b, (long)request.load);
 		c_class_1473c9 *screen = request.load(&new_request);
 		set_next(screen, &new_request);
 	}

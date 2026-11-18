@@ -3078,6 +3078,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // `(word)local_2 != (word)NONE` 52 (580 B); the trigger event test as `(word)local_13 != (word)NONE` 44 (580 B, the reload
 // stays); the second half's pending test word-wide against `(word)NONE` 52 (580 B); `word local_4 = NONE` or its reset
 // as `NONE` 50/50; the first four together 50, the two event tests 46 (581 B), with the pending test 48, all nine 48 (582 B).
+// Requested-index conditional 50; unlocked or absent-definition conditional 164; lock-owned
+// selection 50; absent-definition conditional 178; permission assigned in requested arm 50;
+// separate unlocked, absent and script permission branches 179; negated locked-definition gate 50;
+// conditional automatic selection 170. NOT kept: the four ties still reload the first event index.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

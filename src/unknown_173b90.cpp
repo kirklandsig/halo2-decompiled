@@ -889,6 +889,8 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // both rotations 45 (1130 B), `point3f const &frame_origin = *origin_result;` for the translation 122 (1136 B), both 122
 // (1134 B); on indexed definitions with scale first (re-measured 113, 1136 B: row i of the position rotation sums
 // (up*z + x*forward) + left*y, retail (left*y + forward*x) + up*z) the same three 112/115/115 (1134/1138/1138 B).
+// The offset initialization and row-i rotation still differ. Saved successor with byte offset 203/203/203/203.
+// saved successor with indexed definitions and scale first 205/205/205/205.
 // Declared link area, definition-array member, or both 42/42/42.
 // Mode as the low byte of its word 122, also with either or both member reads
 // 122/122/122 and with the offset in a for initializer and step 122.
@@ -912,6 +914,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // each use or inline, `+=` translation, pointer or reference locals for the position vector, the helper's returned
 // pointer and no-code mentions of the copied components give 20 other states, none retail's. So the row state follows
 // the function's tuple numbering, and retail's is one neither count reaches with the shared helper's text.
+// Typed ordinal for-latch and declared array member 115/115, on it
+// staged position rotation 119. Packed scale bit 42, all three property
+// bitfields 229, shared mutable update mask 209, input block copies 42,
+// linked latch with empty-emitter continue 212. NOT kept: the indexed
+// loop advances the first difference but the rotation rows grow the body.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

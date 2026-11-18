@@ -1382,6 +1382,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // score 188 (was 188): frame 0x30 versus 0x2c (the look values have retail's homes and divisions since 11-18); the unit and
 // mode homes, the weapon-active and zoom homes, the active preset, the movzx flag test and the ESI/EDI save placement remain.
 // Earlier first line (220, was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// frame 0x30 versus 0x2c, exchanged unit and
+// mode homes and earlier ESI/EDI saves. Both look divisions and output homes agree.
+// Earlier 220: frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // Earlier noted 218 (was 218). The full check gave 220 in m3 lane 16 r130.
 // MiniMax C (11-17): score 220 (was 220): no new form, no lower score. The look clamps still share one 1/rate
 // reciprocal where retail divides x / rate and -1.0f / rate and reloads g_510c54 after the yaw store, and retail's
@@ -1875,6 +1878,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // NONE or branch-set NONE 220/529/529. The primary-index forms alone
 // 220/529/529. Both captures with a terminal unit guard 220.
 // NOT kept: frame 0x28, exchanged unit/mode homes and shared reciprocal persist.
+// the two clamped look values as one `real look_angles[2]` take retail's
+// The frame and independent look homes still differ. Separate suppression defaults 253/401/227/404.
+// chained suppression defaults 253/401/227/404.
 // MiniMax A (11-18): score 188 (was 220): the two clamped look values as one `real look_angles[2]` take retail's
 // [ebp - 0x2c]/[ebp - 0x28] homes, the pitch read through a reference to the game-time globals keeps retail's two
 // separate divisions (no shared reciprocal) with the multiply's operands in retail's order, and both look springs'
@@ -1887,6 +1893,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (2191 B); the first three together 322 (2202 B); the preset pair with the callback 345; the look array in its own block
 // around the clamps and the two look springs 188 (same code, frame still 0x30); the look array declared last or first in
 // the unit block 188/188; `unit` and `mode` declared bare and assigned in the next statements 188 (same code).
+// Direct look-spring rate reads 188, all six direct reads 219, named
+// raw look rates 188, initialized look pair 482, separate mutable/const
+// look outputs 196/196, shared aim-velocity pointer 206, unit reference 188.
+// NOT kept: independent look locals reduce the frame to 0x28 and raise
+// the score. The paired outputs keep both retail clamp homes at frame 0x30.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

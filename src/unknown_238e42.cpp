@@ -888,6 +888,11 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax B (11-18): no new form, no lower score (90, was 90): the identity pointer and the requested rank
+// still take the two registers the other way round, so this build copies the identity into EAX before the
+// removal call into the matched callee 0xac050 and that copy is the one extra instruction whose two bytes
+// shift every later jump; the colouring follows from that callee's own declaration in
+// src/online_teams.cpp, a file this lane may not edit, so the body stands.
 // MiniMax G (11-18): no new form, no lower score (90): the identity pointer and the requested rank still take
 // the two registers the other way round, so this build copies the identity into EAX before the removal call and
 // that copy costs the two bytes that move every later jump; the colouring follows from the callee's own
