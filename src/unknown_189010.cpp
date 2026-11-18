@@ -149,6 +149,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// score 150 (was 110): The 0xa8 frame agrees. The first class lookup still expands, and playback state still passes on the stack.
+// Native short priority and padding by separate stores, chain first, after flags, or before location 162/162/163/163.
+// Native priority and padding published before or after flags 152/152. Complete priority copy at the original store 150.
+// NOT kept: complete priority copy before flags 139 requires a one-use priority temporary.
 // MiniMax E (11-17): no new form, no lower score (110): the first 0x221810 lookup is still expanded in this body where retail calls it out of line, and the 0x21d110 call still takes the play state by pointer on the stack where retail passes it in a register; both are decided outside this file. BLOCKED-BY 0x221810 and 0x21d110.
 // MiniMax H (11-14): no new form, no lower score (110): retail passes the class index to the first
 // lookup as a sign-extended byte, and whether that lookup is a call or an expansion is settled in
@@ -180,7 +184,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // are in other files: LTCG expands the first 0x221810 lookup here where retail calls it out of line, and 0x21d110
 // takes the tag in EAX and the state on the stack where retail passes the state in a register; the forms that give
 // 0x21d110 retail's convention move this function's request to EDX and cost its eight matched callers.
-// score 150 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
+// Earlier 150 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
 // 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
 // tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
 // retail's convention move this function's request to EDX and cost its eight matched callers. Round 71:

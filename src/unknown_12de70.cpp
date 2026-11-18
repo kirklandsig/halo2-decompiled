@@ -657,6 +657,12 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // the time decrement as `physical_block->time--` with no field pointer 55; the arm's group read through a second field overlaid
 // on `block` (an anonymous union) 27 (same code: the two reads still merge); the time field bound as `long &` 27
 // (same code).
+// Round 138 (m3 lane 12, fast with 0x12e210, which stays matched; control 27): the loop's linked test through a new
+// trivial inline accessor taking the block 27 (same code); the group passed as the address of the block's first field on
+// this body 27 (same code); the tail's test and pointer through a block local 51 (tail exact, EDI/EBP swap); the group
+// through a fresh `geometry_cache_block_get(block_index)->block` lookup (0x12e210's spelling) 115 (293 B); the arm as a new
+// inline helper taking the block by const reference, the group named first inside it, with the test read straight from
+// the field 27 (the reference read merges with the test's before allocation).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

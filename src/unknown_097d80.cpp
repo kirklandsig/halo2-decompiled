@@ -571,6 +571,10 @@ struct c_aggregate : c_child
 // start 118 or indexed predecessor 130; three starts with carried start 122 or indexed successor
 // 105; carried start with block pointer ranges 129, with three ends 122. Three-boundary forms
 // recover frame 0x8020 but the virtual count still has its own slot and the dispatch changes.
+// m3 lane 5 r196 (fast with the six file-mates, all still matched): v5's count passed through a named `long *` to it 31;
+// the count declared bare at the collection loop body's top and zeroed in the gate 42; on this body (last measured on the
+// 45 one) the query output declared at the cleanup's inner loop top 31, the cleanup bounded by starts[3] 31, one
+// function-scope index for the collection and dispatch loops 31 (frame 0x8024 in each). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

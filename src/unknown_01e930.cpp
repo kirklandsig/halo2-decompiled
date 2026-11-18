@@ -631,6 +631,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // N408: Shared initialized timestamp reader at start/elapsed/both 278/272/278. Raw start/elapsed/both
 // 283/324/326. Initialized reads with elapsed reduced in place 278. Explicit clock zeros and raw assignments 324.
 // NOT kept: frame stays 0x3c or shrinks to 0x30 against 0x40. The status/clock slot overlap remains.
+// P608: Library copies into surround bins/volumes, stereo bins/volumes, then surround pair,
+// stereo pair, both bins and all: 301/302/296/292/315/300/307/334.
+// NOT kept: longer bodies and no retail memory-status/clock/audio frame recovery.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

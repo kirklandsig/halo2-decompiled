@@ -592,6 +592,10 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax G (11-18): no new form, no lower score (236): the head still loads the actor pool into EAX where retail
+// loads it into ECX and keeps the scaled index in EAX where this build keeps it in EBX, and the body is still 22
+// bytes short of retail's 980 because retail expands 0x26ed40 into it; that expansion is settled in
+// src/unknown_26e370.cpp, which this lane may not edit, so the body stands.
 // MiniMax E (11-14): no new form, no lower score (236): the first difference is still at +0x3, where the actor
 // pool goes into EAX and retail puts it in ECX; the slot loop is still rotated by a jump with an alignment pad
 // retail has not, retail's memory walk still indexes the record as actor base + 12*i in EDX and re-reads the slot

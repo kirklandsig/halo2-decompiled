@@ -57,6 +57,32 @@ struct s_visibility_query_workspace
 };
 
 
+/* the geometry data of a visible entry; shared by 0x458d0, 0x45a80 and 0x44e90 */
+PRIVATE __forceinline byte *visible_entry_geometry(short index)
+{
+	s_44940_entry *entry = &g_4ba138[index];
+	if (entry->tag != NONE)
+	{
+		byte *definition = g_4e3b44[entry->tag & 0xffff].bytes;
+		byte *sections = *(byte **)(definition + 0x28);
+		return *(byte **)(sections + ((entry->flags >> 9) & 0x1ff) * 0x5c + 0x34);
+	}
+	byte *structure = (byte *)g_4e0348;
+	byte *data;
+	if (!((byte)(entry->unknown00 >> 12) & 1))
+	{
+		byte *section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
+		data = *(byte **)(section + 0x50);
+	}
+	else
+	{
+		byte *instances = *(byte **)(structure + 0x144);
+		short definition_index = *(short *)(instances + ((entry->flags >> 18) & 0x7ff) * 0x58 + 0x34);
+		data = (byte *)*(dword const *)(*(byte **)(structure + 0x13c) + definition_index * 0xc8 + 0x50);
+	}
+	return data;
+}
+
 void function_458d0(short index, bool ranges, s_geometry_visibility_list const *first, s_geometry_visibility_list const *second);
 void function_45a80(short index, bool ranges, s_geometry_visibility_list const *first, s_geometry_visibility_list const *second);
 

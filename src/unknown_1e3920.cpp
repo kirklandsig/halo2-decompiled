@@ -1905,6 +1905,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax R run 92 (11-17): no new form, no lower score (251): the pool global is still re-read after each lookup
+// where retail holds it in EDI across them, and the actor and options still take the other two registers (ours:
+// actor EDI, options ESI; retail: actor ESI, options EBP); the random-state load still rides across the opaque call
+// 0x259a0 in src/unknown_0259a0.cpp, which this lane may not edit.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax E (11-16): no new form, no lower score (251): the permuter (1500 s, 131 tries, one job) left the baseline at 251, so the pool global is still re-read after each lookup where retail holds it in EDI across the callees, and the actor, options and pool registers still rotate the way the notes below say.

@@ -775,6 +775,13 @@ struct s_physical_block_iterator
 // with symmetric age clamps 231/227/195/232/222/223/236/217. NOT kept: the 195 guard gains six,
 // is 19 bytes short and still misses the native case-zero join. Case-zero materialization and the
 // native weighted-age homes still differ.
+// M3 lane 16 r133 (fast with 0x13d320, MATCH each time; control 201). On lane 9 r109's 93 lead (rebuilt, 93 at 1213 B):
+// the overlap test as `offset < pages + best.offset && best.offset < offset + block pages` 93 (same code: the sum is
+// still built in best.offset's register and best.offset re-read for the second test, where retail adds into pages'
+// register and compares a copy, `mov edx, edi`); best.offset named in a local for the second test 93 (folded); the
+// result declared first 389 (first difference +0x1d). On main: case 0 as `better = time < best.time; if (!better &&
+// time == best.time) better = pages < best.pages;` 244 (1193 B); case 0 with the candidate's time named once 201 (same
+// code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
