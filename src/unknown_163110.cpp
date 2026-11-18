@@ -618,6 +618,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 
 // score 115 (was 115; m3 lane 16 r130 at the end; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
+// Earlier: coefficient XMM roles, classification operands and projection staging still differ.
+// Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax S (11-17): no new form, no lower score (115): the first plane's dot still loads view->vector_e4.i after the
 // forward copy where retail loads it before; naming the three coefficients ahead of the copy gives 294 (1867 bytes),
 // naming only the i term 141, the i term's two operands swapped 115 and the terms in j, k, i order 133 leave the
@@ -1067,6 +1070,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // negation order and the memcpy's place: none loads the i coefficient before the copy and none is under 38. Diagnostic
 // (reverted): the planes at elements 1 and 2 of a three-element array 402 (1830 B) with the first plane's i term
 // unchanged, so the role swap does not come from the normal's i sitting at the start of its local.
+// Shared x-z-y dot at both plane offsets or near only 284/284,
+// denominator only 224, all three 263, copied normal first at both
+// offsets 152. Offset before normal copy 444, with shared dot 446,
+// separate classification stores 747. NOT kept: copied-normal-first
+// retains the extent but exchanges the first coefficient registers.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

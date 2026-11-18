@@ -1083,6 +1083,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// MiniMax B (11-18): no new form, no lower score (828, was 828): the frame 0x2c agrees, but retail keeps its
+// three iterator outputs at the bottom of the frame with the result four bytes above ours and gives the dead
+// found_mode argument's home to the per-pass candidate, and the opening compare still loads the weapon class
+// into ECX where retail uses EDX; the calls, the argument order and the two requests are unchanged, so the body
+// stays as it is.
 // MiniMax S (11-17): no new form, no lower score (828, was 828); the frame 0x2c agrees, but retail keeps its three iterator outputs at the bottom of the frame with the result four bytes above ours and a dead input slot for the candidate, and the earlier home moves (991-1004) and the grouped-outputs array (807, an aggregate grouping, dropped) did not recover them, so the body stays as it is.
 // MiniMax E (11-14): no new form, no lower score (828, was 828): retail holds the found mode in EBP across the lookups
 // and keeps the graph pointer in EBX, so the table pointer takes the dead parameter's home; this build re-reads the mode
@@ -1890,6 +1895,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 828 (same code); the candidate at block scope, reset per pass, with the do-while testing it 932 (2825 B, frame 0x30,
 // masked 95; the index test after the outputs stays a dword load and shift). The loop shapes give two codes, the
 // do-while's and the for's; neither carries the id in a register out of the loop.
+// The class and NONE registers, candidate and iterator-output homes, and later zero carrier still differ.
+// Tried direct result with a fresh default on lookup failure 977; default-first direct result branch 977;
+// found-only candidate lifetime 977; default-first branch with a found-only candidate 977;
+// direct result fields and a constructed default 997; direct result value and explicit default fields 1017;
+// direct result and default written by fields 990;
+// default-first result branches with the success test in the named branch 995.
+// NOT kept: All scores rise. The forms at retail length change the frame, and the conditional loop still misplaces the result.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

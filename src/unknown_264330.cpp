@@ -431,6 +431,11 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax H (11-18): no new form, no lower score (412): the frame stays 0xa4 against retail's 0xa0 and the early
+// homes keep their order (ours the actor base at 0x18, the flag byte at 0x17 and the constant 1 at 0x1c, where retail
+// has the index at 0x28, the actor base at 0x20, the constant 1 at 0x1c and the flag byte at 0x13, since retail saves
+// four registers and this build three), and the actor index still comes from the stack where retail takes it in EAX;
+// a 300-second permuter run (21 tries) left the baseline at 409 differing instructions in both images; the body stands.
 // MiniMax R (11-14): no new form, no lower score (412): retail's entry is `sub esp, 0xa0; push ebx; mov ebx, eax`
 // with the actor index arriving in EAX, where ours reserves 0xa4 and reads the argument from the stack; the request
 // convention is fixed by the callee 0x2641c0, whose noinline declaration is in src/unknown_265cb0.cpp, another lane's
