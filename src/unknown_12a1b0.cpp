@@ -462,6 +462,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may
 // not edit; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form.
 // BLOCKED-BY 0x11bed0.
+// MiniMax H (11-18), NOT kept (coordinator): a datum walk with a pool local reached 0 only with `&& data && sound`
+// added to the audible test, pointer tests implied by the reads before them that steer LTCG to call 0x11bed0 out of
+// line; the 10-30 redundant-test ruling rejects that form (as lane 3 r166's same match, 11-04). Body back at 93.
 // @retail 0x21a100
 // MiniMax C (11-17): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit, so the call boundary and the register homes that follow it stand; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form. BLOCKED-BY 0x11bed0.
 void looping_sound_update_locations(void)
@@ -2872,6 +2875,17 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // G's form, not kept: score 321 (was 339): the loop-flag test now calls "has next sound" only when the flag is clear, which is what
 // retail does; the frame is still 0x4b4 against retail's 0x4bc and the early scalar, primary and last-chunk homes
 // still differ.
+// MiniMax H (11-18): score 339 (was 339): no new form, no lower score: the gain sum is already retail's, since retail
+// adds the source's unknown08 to (the track value + the gain) and passes the source scale to 0x1251e0 as a separate
+// argument, so a variant that read the scale into the sum (336) is wrong and was restored. What still differs: the
+// frame is 0x4b4 against retail's 0x4bc, because retail's local area holds two more dword slots (the track value at
+// [esp+0x28] and the source scale at [esp+0x48], both read before the pitch and spilled) and its properties start at
+// [esp+0x50] instead of [esp+0x48]; retail clears the properties in two parts (store 0 then rep stosd 11, store 0 then
+// rep stosd 273) where this build clears the whole block in one piece; retail calls 0x221810 out of line (all 35 of its
+// sites) and calls 0x12a420 twice, while this build expands the first and has one call left. Forms tried this round: the
+// track value and the source scale read into locals before the pitch (452 and 473), the gain sum in a local of its own
+// (349), the properties split into a base part and an effects part cleared with {{0},{0}} (496: the clear's shape is then
+// retail's, but the properties still start at [esp+0x48]). All restored.
 // Earlier at 339 (was 339): unchanged this round: the frame is 0x4b4 against retail's 0x4bc, and the early scalar,
 // primary and last-chunk homes still differ.
 // M3 lane 7 r161 (fast with 0x12a420/0x221810/0x12a1b0/0x21c190/0x1251e0/0x21f8a0/0x21f720/0x21fa80/0x21b0e0/0x1293f0/0xbfe40):

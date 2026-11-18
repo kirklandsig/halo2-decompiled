@@ -229,6 +229,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // leave the code unchanged (117) or worse (152). The block chain's argument registers and unfused element loads stand.
 // score 117 (was 117): Retail masks the fallback tag in EDX and materializes its stage and pass element addresses separately.
 // Earlier: The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
+// MiniMax H (11-18): score 117 (was 117): no new form, no lower score: the permuter (301 s, 36 tries on the reduced
+// image, then the full image) found nothing below 117, and the full image confirms the same 117. The fallback tag index
+// is still zero-extended through EAX where retail masks the 32-bit value in place (and edx, 0xffff), and the stage and
+// pass elements still land in other registers than retail's ESI and EBP with the element loads unfused. The score-8 chain
+// needs the head, stage and pass elements bound by reference and is kept only with an exact match, so the plain-pointer
+// body stands.
+// score 117 (was 117): The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
 // M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
 // the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
 // 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late

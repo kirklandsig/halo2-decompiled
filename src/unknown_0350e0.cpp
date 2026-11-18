@@ -6481,6 +6481,19 @@ bool function_13630();
 //   (0x2c25c, 0x2c260) where this build loads it into eax and dereferences eax; retail stores the byte return of 0x3ba90
 //   in a stack slot and reloads it (0x2c10e, 0x2c125) where this build keeps the long return in a register; the
 //   0x14b60 call takes its first argument in eax in retail and on the stack here.
+// MiniMax H (11-18): score 269 (was 269): no new form kept, no lower score. The permuter's variant (205) swaps the
+// two arguments of the second 0x25dc0 call, but retail passes the first flag in cl and the constant 1 in dl
+// (0x2c1c1, 0x2c1c9), so the swap is wrong and the call was restored. A one-use `bool` holding
+// `g_48575c && filter_mode != 2` reaches retail's 1638 bytes and a score of 206, but retail's own block is the
+// branch form (test / je / cmp / je, 0x2c0a9), so the local was restored (one-use flags are kept only with a
+// byte-for-byte match). What still differs: retail's cull test branches the other way (jle at 0x2be13 and
+// 0x2be95 against this build's jg) and that test is in include/selected_source_pass.h, which this lane may not
+// edit (BLOCKED-BY); retail's 0x14b60 call takes its first argument in eax (0x2bdff) while the stub in
+// src/stubs/lane_w.cpp takes four stack arguments (BLOCKED-BY, one byte); retail's second 0x25dc0 call builds
+// its first flag with a branch diamond (mov dl,1 / jle / xor cl,cl / jmp / mov cl,1, 0x2c1c1) where this build
+// folds it to setle, and the two-call form duplicates the call (421); retail stores the byte return of 0x3ba90
+// in a stack slot and reloads it (0x2c10e, 0x2c125) where this build keeps the long return in a register (the
+// byte form, 266, is under the keep gate).
 // score 269 (was 331): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based gate, two 0x15680
 // calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool stipple_enabled`
 // (260; kept only with a match, coordinator 11-08) passes 1, 3, 5, 8 and 20 now

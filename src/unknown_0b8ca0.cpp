@@ -2050,6 +2050,14 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // reached here, so the first difference is the jump target at +0x76; the marker pointer retail inlines belongs to
 // 0xb8bd0 in another file, which is /Ob1, so LTCG keeps the call here and it cannot be changed from this lane.
 // MiniMax E (11-17): no new form, no lower score (285): the permuter's best variant (283) came from an argument swap and a constant local, which the rules rule out, so the body stands.
+// MiniMax H (11-18): score 285 (was 285): no new form, no lower score: the prologue and the frame now agree with
+// retail's (the index read before the frame, the 0x64 frame, the pool in ebx and the pool's data in edi), and the
+// first difference is still the jump target at +0x76, retail's shared epilogue at 0xb987a against our duplicated
+// one; behind it retail keeps the pool in ebx and the object's data in edi where this build reloads the pool's
+// data into edx and the index into ecx. The permuter's best variant (283) swaps the arguments of 0x141590 and
+// 0xb8bd0 and of 0xb9b90, turns one of 0xb7430's true arguments into false, and adds a volatile pointer and a
+// constant local, so it is wrong as well as under the gate and was restored. Retail still inlines the marker
+// pointer of 0xb8bd0, whose file is /Ob1 and outside this lane.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
