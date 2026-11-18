@@ -2107,6 +2107,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // MiniMax G (11-12): no new form tried this round, no lower score (85): what is left is the order of the two
 // availability-byte loads and the register of the stack word, both decided by the schedule of the block.
 // MiniMax H (11-12): no new form, no lower score (85): the first branch is still at +0xb and still leaves for a different place than retail's shared exit at +0x1a6, so only the uninitialized path's exit sits at the wrong address.
+// MiniMax G (11-18): no new form, no lower score (64): the loop body still runs the port-flag queries before the word mask
+// test where retail does the word test first, and the second port-flag query is still called out of line where retail
+// expands it at this site, so the body and its jump targets differ.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;

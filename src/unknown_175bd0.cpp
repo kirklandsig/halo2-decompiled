@@ -1883,6 +1883,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 }
 
 // MiniMax I (11-15): no new form kept: reading colour B into a local ahead of the spawn stores measures 187 (was 128), so the body stands.
+// MiniMax G (11-18): no new form, no lower score (128): the frame is still 0x40 against retail's 0x44 with colour A packed
+// into the dead argument home, the particle system is still kept in EDI where retail uses ESI, and the zone block still
+// takes its zone byte from the cluster field.
 // score 128 (was 128): The frame is still 0x40 versus retail 0x44, and the early color-A spill and ESI system are missing.
 // frame 0x40 versus 0x44 (colour A packed into the dead `unknown` home), the system kept in EDI
 // through the type queries where retail reloads it from its home for the colour call (so colour B misses EDI), and the
@@ -3383,6 +3386,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 }
 
 // MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, the system and the
+// next index still take EDI and ESI the other way round, and the definition still has no spill for the per-call mode reads.
 // score 93 (was 93): The frame is 0x4c versus retail 0x54. The system and successor registers are exchanged, and the definition has no spill for per-call mode reads.
 // the system takes EDI and the next index ESI where retail has ESI and EDI (colour B and the type
 // object rotate with them), the frame is 0x4c against 0x54 and the location mode is cached where retail spills the
