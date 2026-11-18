@@ -2168,6 +2168,10 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax B (11-18): no new form, no lower score (442): the entry block's register roles still differ - retail keeps
+// the actor index in ESI, the slot offset in EAX, adds it to the base and spills it at esp+0x30, where this build
+// colours the registers differently - and 0x1fdd90 is still expanded here where retail calls it out of line (its
+// definition is in another file): BLOCKED-BY 0x1fdd90.
 // MiniMax E (11-15): no new form, no lower score (442): the call boundaries agree with retail's except that 0x1fdd90 is expanded here where retail calls it out of line, and its definition is in another file. BLOCKED-BY 0x1fdd90.
 // MiniMax C (11-15): no new form, no lower score (442 plain): the frame is still 0xd0 against retail's 0xc8 and the
 // cached animation words still have other homes, and this link still inlines 0x1fdd90 where retail calls it, which
