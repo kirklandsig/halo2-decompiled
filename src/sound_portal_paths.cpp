@@ -245,6 +245,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // nearest distance before portal 354, late order array and integer sort scratch 354.
 // NOT kept: both 323 forms keep the count snapshot where retail reloads the count and retain the 0x430 frame.
 // The 352 form gains two. The path table spills and starting-cluster register still differ.
+// Advance the gain, portal or cluster output pointer at each row store 368/355/357.
+// Cursor pairs 350/350/365, all optional cursors 359, every output cursor 359.
+// NOT kept: the two 350 forms recover the 0x428 frame at 1368 bytes and gain four.
+// Both BSP table bases still spill and the starting cluster remains in EDI.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

@@ -2119,6 +2119,10 @@ void function_b7360(long object_index);
 // 0x25ab50 writes nothing (0x25a380 in the same file keeps its reference and the scenario pointer in ESI/EBX across the same
 // call, which named locals would also give); a natural form of 0x25ab50 that hides that, with locals at its other callers
 // (0x25a380, 0x1b0f20, 0x1b13b0, 0x1c1080, 0x2773d0), is what would unlock this body. Body unchanged.
+// Select the point through the existing set accessor in cases 1/19, case 5, or both,
+// 270/270/270. Name both decoded ordinals in each path or both paths, 270/270/270;
+// name just the set or element ordinal in both paths, 270/270. NOT kept: ties. The point
+// reference still stays live across validation and the entry and output registers differ.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
