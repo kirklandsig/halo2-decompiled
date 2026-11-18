@@ -729,11 +729,16 @@ void function_16de20(short index, s_16e150_bits const *table, dword *output);
 bool __stdcall function_134950(long a, long b, void const *context);
 void sort_4byte(void *unused, long *elements, unsigned long count, bool (__stdcall *compare)(long, long, void const *), void const *context);
 
-// score 11 (was 11): the only differences are the register order of the loop bound reload (ours ecx then eax,
-// retail eax then ecx) and the call to sort_4byte, where retail sets the register argument (`lea ecx,[ebx+0x1770]`)
-// before the last stack push (`push edx` holding &camera) and ours after it. Tried: a local for the context, a local
+// score 9 (was 11): only the register order of the loop bound reload differs (ours ecx then eax, retail eax then ecx;
+// retail's `mov eax, [abs]` is a byte shorter, hence 320/319). Earlier, the call to sort_4byte also differed, where
+// retail sets the register argument (`lea ecx,[ebx+0x1770]`) before the last stack push (`push edx` holding &camera)
+// and ours after it; that agrees since sort_4byte takes its scratch pointer first. Tried: a local for the context, a local
 // for the count, a local loop counter, none changed it. Permuter (25 min on r621): best 9 (full image 10), only with
 // a volatile store to the cluster's first count; not kept.
+// M3 lane 8 r182 (fast), all 9 (same latch): the bound written `g_4e0348->list_count > i` (only the compare flips);
+// the loop as `while` with `++i` at its foot; a local copy of g_4e0348 read by the bound (the global is still reloaded),
+// or passed to 0x16de20; `cluster->counts[0]++` and `+= 1`; `collection->cluster_count++`; a `short` cluster index;
+// the step `i++`.
 // @retail 0x1733e0
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera)
 {
@@ -1147,7 +1152,7 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
 }
 
-// score 23 (unchanged): logic equals retail (inside test, state <= 0 / >= 3 returns, 1 vs 2 by the sign of the
+// score 23 (was 23): logic equals retail (inside test, state <= 0 / >= 3 returns, 1 vs 2 by the sign of the
 // distance). Only the x term's fld/fmul operand order (retail loads the plane first) and the block layout differ:
 // retail keeps `return 0` right after the first state test and jumps back to it from the inside branch; we put it
 // last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
@@ -1161,6 +1166,11 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 // arm, nested ifs, assignment in the condition, the x term as its own statement, the sum right-associated (first 11 of
 // 48 orders), plane->d in a local. Worse: both arms returning 1/0/3 in full (38), inside arm first (27), one shared
 // state test (75), origin declared first (52), origin->position.x spelled out (47).
+// M3 lane 8 r182 (fast), on this body: the zero label at the end of the function with both paths jumping to it 23 (same
+// code: no label position or return shape moves the shared block); two plain `return 0`s 23 (same code); the plane
+// factors through the union's vector member (`plane->n.i` for x alone, or all three) 23/23; the x term's origin factor
+// as `origin->n[0]`, or every factor through the array/vector members 23/23 (the x term keeps origin first); the 1/2
+// result as a ternary 28; the inside arm as `if (*inside || state > 0) return 3; goto zero;` 23 (same code).
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {
