@@ -1028,6 +1028,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // re-measured 399, on a, b, c, d 344 (1228 B); a, b, c, d with the switch on `(long)surface->type` 287 (same code); a, b, c, d
 // through one `vertices` base for the four corners 295. On a, b, c, d the caller loads pathfinding into EDX too (retail EAX):
 // the incoming register follows whether the actor load is placed before or after pathfinding's copy to EBX. Body unchanged.
+// Common surface pointer/reference with case views 219/219; common type with
+// an entry view 219; common table snapshot 218 at +0x4; indexed header with case
+// views 218; transition table indexed directly 218; signed type local 219;
+// case-local absent-actor test 218. NOT kept: the early root copy and actor load
+// remain unresolved. Original complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

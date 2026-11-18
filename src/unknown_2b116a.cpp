@@ -5773,6 +5773,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
 // friend result in removal test 320, reused removal result in kick test 269, membership statuses
 // assigned from tests 312, friend-query result declarations in spill order 97.
+// Origin assigned in both type branches 89; final eligible origin assignment 422;
+// complementary join/player/removal/request/mute predicates 382/433/91/389/401;
+// host-arm promotion assignment 92. The query and later Boolean byte homes still differ.
+// NOT kept: ties or regressions. Original complete body restored.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

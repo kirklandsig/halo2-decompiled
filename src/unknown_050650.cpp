@@ -1407,6 +1407,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // case 2 state-admitted 213, case 1 state-admitted with case 2 point-written 348, case 1 reference-state snapshot
 // 263, both reference-state snapshots 263. NOT kept: the two lower previews publish presence after the point calls
 // instead of at the state test. The 102 form also falls short of retail length.
+// Explicit live-state selection in cases 2, 1 and both 303/249/310.
+// Early case-one lower bound 263. Unit-kind range in cases 2, 1, 6 and all
+// 293/268/395/376. NOT kept: the 249 form reaches retail length but replaces
+// the native signed range branches with equality branches and leaves the
+// player-point blocks merged. Original complete body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

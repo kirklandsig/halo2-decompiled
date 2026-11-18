@@ -637,6 +637,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // 399; indexed count from inclusive span 413; endpoint in loop condition 395; short validator result for
 // pass 420; boolean validator result for pass 385; validator comparison for pass 420. NOT kept: all
 // forms scored above the opening body.
+// Nested accepted-direction limits 431; conditional endpoint comparison 380;
+// pass-owned cursor 453; selected endpoint limit 434; signed-step endpoint test
+// 396; signed-step loop guard 396; limit after cursor advance 418; distinct
+// forward and backward guards 382. NOT kept: the 380 form gains two and leaves
+// the selected-index homes unchanged. Original complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
