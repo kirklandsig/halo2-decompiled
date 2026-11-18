@@ -777,6 +777,11 @@ void __stdcall function_1160c0(real dt)
 // (1373 B); the rows written `position + offset` 144 (same code); the angle call and the rotation in their own `{}` block
 // 144 (same code); the scale written into the vector3f_add_scaled call 144 (same code); the rest-offset copy after the angle
 // call 180 (1375 B).
+// Conditional segment pointers from one base 291; ordinal minus terminal test 285;
+// terminal pointer relative to block end 304; segment/axis/offset names 144;
+// recurring point and rotation names 144; shared in-place displacement add 214;
+// conditional default axis pointer 304; default axis pointer assigned after normalization 294.
+// The segment still uses EDI/ECX and +0x20 against EDX and +0x14.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

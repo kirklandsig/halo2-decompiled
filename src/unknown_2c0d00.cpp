@@ -2007,6 +2007,10 @@ long function_1fa7f0(void);
 // pointer range 520, next as forward cursor 502, next sentinel across both
 // phases 461. NOT kept: 419 reaches retail length with the larger frame and
 // the selected edge still in a slot.
+// Named sector-trace output for the first, second or both traces 400 each;
+// second trace scoped to the unblocked arm 400. Typed source/target/both
+// trace endpoints 441/441/469. Shared candidate step for direction and sector 400.
+// The aligned frame still reserves 0x114, and the count and edge retain their old homes.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
