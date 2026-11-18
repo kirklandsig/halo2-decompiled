@@ -2689,6 +2689,16 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// score 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
+// keeps it at ebp-0xc, the first loop's element address ebp-0x18 where retail keeps it at ebp-8 and the player ebp-0xc
+// where retail keeps it at ebp-0x14, so the six spill slots stay one six-step cycle off retail's; the voice query
+// still keeps the player across 0x53b40 where retail reloads it (that needs a store through a pointer somewhere in the
+// chain in src/network_voice.cpp, another lane's file) and the last loop still keeps the screen in ebx where retail
+// gives ebx to bitmap_a. Measured and reverted: the count declared after the loop counter 87, a named local for the
+// first loop's element address 87, a named local for the second loop's element address 87, the four widget indices
+// returned in one aggregate 275, the helper's default arm reordered 92 and 95, the team test split in two 87, the
+// flags constant hoisted into a local 87; the permuter's only lower form (56) reorders the arguments of the five
+// set_child_value6e calls, which changes what those calls do, so it is not kept.
 // MiniMax E (11-17): no new form, no lower score (87): retail's last loop computes the four widget indices with the
 // mode switch inline, so they live in EAX, EDI and EBX with only bitmap_b in +0x1c; writing the helper's body out
 // there (its two case arms and its default) reproduces that register choice, but the four values then take two spill

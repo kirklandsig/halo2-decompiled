@@ -1542,6 +1542,16 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// score 134 (was 134): MiniMax G (11-18): no new form, no lower score; the masked flags byte still lives in BL here
+// while retail spills it to F+3 and keeps the loop entry in EBX, so the frame is still 0x10 against retail's 0x14, and
+// the incoming actor index is still taken in ECX where retail keeps it in EDX; the split around the two root calls is
+// decided by the memory summary of 0xbaf40, whose body is in src/unknown_0bad50.cpp: BLOCKED-BY 0xbaf40. Measured and
+// reverted: the 0x20 mask test written at both uses with no local 244 (868 bytes); the mask as a bool 241 and as a short
+// 253 (878 bytes); the mask declared at function scope 134; the two root calls compared the other way round 134; the
+// same test written as an if with the two results in locals 241; one local holding the four true arguments, the seat
+// test split in two and the flags or written as an assignment (together and one by one) 134 each; the permuter's only
+// lower form (123) swaps joint_decline's two arguments, and the callee reads its first parameter as the actor index
+// (retail puts the actor index in EAX at that call), so the swap is not kept.
 // MiniMax I (11-16): no new form, no lower score (134): what still differs is the frame, 0x10 here against retail's
 // 0x14 - retail spills the masked flags byte to the stack and keeps the loop entry in EBX where this build keeps the mask
 // in BL and spills the entry - and the incoming actor index stays in ECX where retail keeps it in EDX; the memory summary
