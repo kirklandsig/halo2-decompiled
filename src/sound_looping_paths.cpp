@@ -627,6 +627,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Sound table held through the scan and matched row reacquired after the distance call,
 // with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
 // Original body restored.
+// F417: Shared gain after tag 900; two-use computed gain 851; target gain readback 900;
+// tag and decibels before shared gain 900; target entry before range 866; local gain with target-first
+// publication 852; named endpoint before shared gain 900; allocation before choice gain 900.
+// NOT kept: the entry zero and query array homes remain and the scores regress. Original body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

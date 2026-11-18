@@ -220,6 +220,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // lifetimes differ. Tried: const portal 354; const views 354; endpoint mask before shift 354; const portal and
 // mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
 // path increment 371; index test before closest distance 354.
+// F417: Invalid output first 353; count-stop return 354; explicit gain arms 365;
+// sort cursor with ordinal bound 376; default two-entry limit 354; shared valid row 374;
+// sort ordinal after distance write 354; separate output bounds 362; index with sort cursor 360;
+// bounded end cursor 332. NOT kept: the end cursor recovers the 0x428 frame but shrinks to
+// 1346/1363 bytes and keeps the table bases live. Original indexed output and body restored.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
