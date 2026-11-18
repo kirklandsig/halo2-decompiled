@@ -875,6 +875,8 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Creation and notification payload via memcpy with attach-owned result 77.
 // Creation and notification payload via memmove with attach-owned result 95.
 // NOT kept: payload memcpy kept the original allocation on the validity graph, and memmove or the attach-owned result regressed. Original payload and result restored.
+// The early BL and independent header and object loads still differ. Association local in the attachment arm 49/49/77/77.
+// association local in the validation scope 49/49/77/77.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

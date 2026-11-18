@@ -1858,6 +1858,8 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // NONE or branch-set NONE 220/529/529. The primary-index forms alone
 // 220/529/529. Both captures with a terminal unit guard 220.
 // NOT kept: frame 0x28, exchanged unit/mode homes and shared reciprocal persist.
+// The frame and independent look homes still differ. Separate suppression defaults 253/401/227/404.
+// chained suppression defaults 253/401/227/404.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

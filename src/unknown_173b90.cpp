@@ -885,6 +885,8 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // both rotations 45 (1130 B), `point3f const &frame_origin = *origin_result;` for the translation 122 (1136 B), both 122
 // (1134 B); on indexed definitions with scale first (re-measured 113, 1136 B: row i of the position rotation sums
 // (up*z + x*forward) + left*y, retail (left*y + forward*x) + up*z) the same three 112/115/115 (1134/1138/1138 B).
+// The offset initialization and row-i rotation still differ. Saved successor with byte offset 203/203/203/203.
+// saved successor with indexed definitions and scale first 205/205/205/205.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
