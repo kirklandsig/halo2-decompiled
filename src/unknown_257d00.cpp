@@ -2098,6 +2098,22 @@ void function_b7360(long object_index);
 // 522/523. Actor first with positive admission and the original success state 307. Explicit result branches
 // before/after the shared exit 464/464. NOT kept: all regress and move length away from 1848 bytes.
 // Actor/output register ownership and the post-validation point-reference reloads remain.
+// M3 lane 13 r107 (fast with 0x259e70, 0x259ec0, 0x25ab50 and the file's other functions; control 270, difflib-aligned 126):
+// what sets the registers. 0x25ab50's definition moved below this function 270 (same code: the file order does not hide
+// it); the two validations through an `inline` or `__forceinline` forwarding wrapper 270 each (same code); the actor looked up
+// first, re-measured, 487 (1852 B). Diagnostic, reverted at once (the banned pointer-to-a-local form, and it costs 0x25a380 its
+// match, 364): 0x25ab50's result set through a pointer to its own local keeps 0x25ab50 byte-identical but stops the compiler
+// treating the call as leaving memory alone; this function is then 107 with only the prologue's order left (aligned 48: arg_0
+// EBP, output ESI, +0x28 re-read after the call at the 1/19 arm and case 5, all as retail). On that diagnostic: the actor
+// looked up first 488 (1856 B: ESI is pushed late and the guard's `return 2` gets its own epilogue); with the guard as one
+// `perception == NONE || type == 1 || type == 4` test around both switches 170 (1852 B: arg_0 EBX/actor EBP, compares not
+// the switch's dec/sub); with the guard's switch clearing a bool in its default and both switches under `if (allowed)` 12
+// (1848 B, aligned 10: left are case 7's dot operand order, case 10's +0x8c clear after the selector load, case 5's +0x99/
+// +0x9a stores around the selector load, and case 9's pool load after the `jl`). Without the diagnostic the same two forms
+// are 267 (1848 B, a flag set in a test, under the bar) and 307. Lead: retail compiles this function without knowing that
+// 0x25ab50 writes nothing (0x25a380 in the same file keeps its reference and the scenario pointer in ESI/EBX across the same
+// call, which named locals would also give); a natural form of 0x25ab50 that hides that, with locals at its other callers
+// (0x25a380, 0x1b0f20, 0x1b13b0, 0x1c1080, 0x2773d0), is what would unlock this body. Body unchanged.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
