@@ -872,6 +872,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // argument into ebx and indexes the g_4e0300 pool's data with it (twelve-byte entries) while this build takes the actor index
 // into eax and indexes g_4f55f0's data, and the count stays in ebp where retail keeps the state in edx, so the two bodies stay
 // laid out differently from the first instruction.
+// MiniMax B (11-18): score 675 (was 675): no new form, no lower score. Read the listing again: retail pushes ebx, ebp
+// and esi before it stores anything and edi after the radius compare, keeps the pathfinding pointer in ebx and stores it
+// at +0x44, writes the success result as a byte at +0x13, keeps the actor pointer at +0x4c (zeroed first), the radius at
+// +0x2c and the completion flag at +0x2b, while this build takes the pathfinding pointer into eax before the pushes and
+// spills it at +0x50, writes the result as a dword at +0x64, and keeps the actor pointer at +0x54, the radius at +0x24 and
+// the completion flag at +0x22; the frame agrees at 0x1f88. The out parameter's short type stays BLOCKED by its
+// declaration and the caller in path.cpp.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

@@ -51,6 +51,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
+// stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
+// return value 267 and the length local initialised before the call 171, all dropped; the helper's locals renamed
+// change nothing, so the magnitude still spills to +0x10 where retail keeps it at +0xc and the unity constant still
+// loads into XMM5 against retail's XMM4.
 // MiniMax C (11-17): score 176 (was 176): no new form, no lower score. The first normalizer's magnitude still spills
 // to -0x10 where retail spills it to -0xc (the vector homes differ too), the unity constant still loads into XMM5
 // against retail's XMM4; the length from the helper's return (263), the shared length slot (422) and the length local

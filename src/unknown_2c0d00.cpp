@@ -573,6 +573,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // start both false and set each on success 926; strict threshold first for both results 925.
 // NOT kept: the four-point reduced gain (926 to 922) shortens the body to 3702/3731 bytes
 // and retains frame 0x2cb4. The straight flag's dword-sized slot and actor and unit homes remain.
+// MiniMax B (11-18): score 920 (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
+// search over the body (300 s, one job, the full image because the reduced image misleads here) made two tries and
+// never beat its baseline of 910 differing instructions; read from the listing again: retail takes the actor's unit
+// field with the pool's data base and the scaled index kept apart ([edx + esi + 0x18] against our folded address),
+// holds the actor pointer in edx instead of the volatile home at +0x14, zeroes the cells at 0x40, 0x48, 0x58, 0x60
+// and 0x24 and packs its four bools at 0x11, 0x13 and 0x21 where ours spends 0x13, 0x1b and 0x22, so the frame is
+// still 0x2cb4 against retail's 0x2cac and the body is 3718 bytes against 3731.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
