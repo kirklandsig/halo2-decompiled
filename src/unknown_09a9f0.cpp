@@ -879,6 +879,8 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Creation and notification payload via memcpy with attach-owned result 77.
 // Creation and notification payload via memmove with attach-owned result 95.
 // NOT kept: payload memcpy kept the original allocation on the validity graph, and memmove or the attach-owned result regressed. Original payload and result restored.
+// The early BL and independent header and object loads still differ. Association local in the attachment arm 49/49/77/77.
+// association local in the validation scope 49/49/77/77.
 // Round 418: Common header flag / common object datum / both / existing header getter with common object datum:
 // 49/49/49/49 with validity result, 77/77/77/77 with attachment result. The typed accesses still share the
 // header address, and the attachment result shortens the body to 160 bytes.

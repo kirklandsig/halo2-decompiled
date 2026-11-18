@@ -1876,6 +1876,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // 220/529/529. Both captures with a terminal unit guard 220.
 // NOT kept: frame 0x28, exchanged unit/mode homes and shared reciprocal persist.
 // the two clamped look values as one `real look_angles[2]` take retail's
+// The frame and independent look homes still differ. Separate suppression defaults 253/401/227/404.
+// chained suppression defaults 253/401/227/404.
+// MiniMax A (11-18): score 188 (was 220): the two clamped look values as one `real look_angles[2]` take retail's
 // [ebp - 0x2c]/[ebp - 0x28] homes, the pitch read through a reference to the game-time globals keeps retail's two
 // separate divisions (no shared reciprocal) with the multiply's operands in retail's order, and both look springs'
 // rates through the same reference; still open: the frame is 0x30 against retail's 0x2c, the unit and mode
