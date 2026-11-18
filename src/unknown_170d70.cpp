@@ -272,6 +272,9 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // and the cross product change (141); `real one = 1.0f` for the length tests (72, same bytes); the dot
 // product in a local (180) or the tests split into bool locals (123). Permuter (25 min on r622): best 63, from the
 // two changes kept here plus spelling-only rewrites; the count as unsigned 72 alone.
+// Round 575: time and group still trade stack slots. NOT kept: time cursor in the for step 143; time-range
+// walk with derived ordinal 422; short channel stride 78; channel stride at each advance 127; exact group
+// termination 65; group while loop 64; final rotation group first 341; shared basis dot product 151.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1121,6 +1124,10 @@ bool function_23a220(point2f const *point, short count, point2f const *points, r
 // Permuter (25 min on r622): best 58, only with a (char) cast of the count passed to 0x23a220; retail reads it as
 // a zero-extended word (0x173ac5) and (char) would turn a count of 128 negative, so it isn't kept. A (word) cast and
 // the plane declared first are 69.
+// Round 575: the axis and side still occupy the wrong registers across projection. NOT kept:
+// projection index before origin 128 or after distance 104; side as row bit 117; default-zero side 121;
+// shared point projection 136; vertex base before the loop 156; query point initializer 69;
+// three-coordinate projection loop 69.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
@@ -1248,6 +1255,9 @@ struct s_point_pool_173520
 // if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
 // Permuter (25 min on r622): best 58, from temporaries plus a memcpy size read through a char (a behaviour change);
 // not kept.
+// Round 575: pool publication and state-test scheduling still differ. NOT kept: state predicate before
+// metadata 101; shared reverse predicate 121; forward source index 988; signed byte direction 98;
+// double clamp result 96; direct bounds member 161; typed inside view 117; point-value corners 212.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {

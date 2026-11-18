@@ -977,6 +977,10 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // walk both cursors with the ordinal advanced at the entry lookup 156. NOT kept: rebasing the output at setup
 // reshuffles both cursor homes and raises every score. The input spill and the destination register at the
 // blend call still differ.
+// Round 575: the late input spill and advancing destination in EBX remain unresolved. NOT kept:
+// explicit blend stride 85, scale stride 165, both strides 164, tint-entry stride 93;
+// byte-cursor countdown with returned receiver 187, library copy 83 (retail length, gain below bar),
+// read-only input reference 89, entry post-increment 169.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

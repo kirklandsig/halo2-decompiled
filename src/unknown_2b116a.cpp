@@ -4497,6 +4497,10 @@ bool __stdcall function_2b278e(long controller_index)
 // before identity type 201, in the condition 201, or held as nonmember 191;
 // per-dialog controller index 199. NOT kept: the original controller reference
 // and post-call index reloads are still missing.
+// Round 575: the incoming double pointer still needs to survive both identity calls. NOT kept: index field
+// reference or address 181/181; early identity failure 54; confirmation arm first 54; shared dialog
+// context with long or Boolean membership 197/202; nullable dispatch 198; nested warning with common
+// confirmation fallback 54.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
