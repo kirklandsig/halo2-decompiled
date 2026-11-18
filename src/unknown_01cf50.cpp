@@ -4749,11 +4749,6 @@ extern long g_485898;
 // for the four corners, the definition's flag byte is still copied into bl where retail tests the byte where it lies, and the 1.0f constant still
 // rides in xmm0 where retail holds it in xmm3; the permuter (annealing, 433 s, 37 tries, the first run over this body)
 // found no variant below 285.
-// MiniMax A (11-18): no new form, no lower score (285): the frame is still 0x38 bytes against retail's 0x34, and the
-// permuter's own baseline puts the first difference at that frame size; in this build the screen array takes the
-// position's two slots for screen[2] and screen[3], while retail's screen takes the dead size table's slots and leaves
-// the position's slots to the corner coordinates; declaring the scale before the three offset conversions measures 286
-// and is reverted, and the permuter (240 s, one try) found nothing below its own baseline.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
 // retail tests the definition's flag byte where it lies while we copy the byte into bl.
@@ -7948,12 +7943,6 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // comparison temporaries are still missing (retail copies each bound through a temp into a slot that overlaps
 // the dead direction), the dot product's three products are still summed in the other order, and this build
 // still inlines the second ten stage states and the three render-state calls that retail calls out of line.
-// MiniMax A (11-18): no new form, no lower score (576): the rounded centre is still narrowed to a float local where
-// retail keeps the second floor result as a double on the x87 stack (never narrowed), so our direction and bounds sit
-// four bytes higher in the frame than retail's (ours at frame+0x18 against retail's frame+0x14) and retail's four
-// comparison temporaries are still missing; keeping the centre as a named double measures 603, the four bounds computed
-// in double with a 32.0 double literal 614, and writing the rounded centre back into the screen array measures 576
-// again with a longer body (two floor calls), so the original body stands.
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
