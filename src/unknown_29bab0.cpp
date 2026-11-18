@@ -669,6 +669,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // M3 lane 16 r137 (fast; control 489): the input copy written member by member 765 (3486 B); local_7 copied from local_6
 // 489 (same code); local_9 declared ahead of local_8 and assigned after the 0xb9dd0 call 489 (same code); local_10
 // declared ahead of local_9 489 (same code); local_3 declared just before the input copy 538.
+// Input capture before position, or complete normalization before position 500/762.
+// Admitted position only, both producers, normalization only, input and
+// normalization only, position between input and normalization, or position after
+// normalization 750/998/874/890/998/998. NOT kept: the position home remains
+// unresolved. Moving both producers under admission also raises the caller score.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

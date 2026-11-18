@@ -1234,6 +1234,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // offset 395, accumulated zero-first scale 454, plane scoped to the factor 126, plane and const length after basis
 // stores 126, complete translated-vector local 427, in-place offset copy 470, separate scale and add 409.
 // NOT kept: the scope forms tie and the translated vectors enlarge the body.
+// Copied normal for final scaled point 427. Conditional plane constant 406, with copied normal 427.
+// Named distance and quotient 394. Signed numerator before division 395.
+// Timer published after both axes with conditional expression or branch result 378/378,
+// or elapsed seconds named on the nonzero path 377. The j preload and zero register still differ.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

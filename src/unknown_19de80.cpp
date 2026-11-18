@@ -766,6 +766,10 @@ static inline bool teams_enabled_19e1c0()
 // M3 lane 16 r137 (fast with 0x19e0f0; control 390): the switch-side failure as `result = remaining;` (single exit)
 // 431 (1398 B), with a plain result 732 (1129 B); the engine's token text in its own `written` local with the fallback
 // copy in the else 391 (1450 B), with a plain result 678 (1183 B), plus the single switch-side exit 719 (1142 B).
+// Token comparisons supply the selected arm's zero count for player names,
+// team names, local scores and timers, or all tokens. Existing count storage scores
+// 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
+// ordinary count gives frame 0x204 but still merges the name producers.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

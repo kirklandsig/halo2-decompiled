@@ -1094,6 +1094,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // retained rotated-forward address 350; staged dot 346; staged double squares or interleaved deltas
 // and squares 349 each; double deviation vector 392. NOT kept: the first unity register remains
 // different, and the new deviation forms shorten the function away from retail.
+// Shared sine-axis scale after or before cosine 360/358. Cosine-complement scale 331.
+// Cross terms staged per pair 366. Grouped common builder for the rotated axis 351,
+// with shared sine contributions 516. Rescaled original forward 349, with shared point difference 395.
+// NOT kept: cosine-complement scaling holds the axis components live where retail reads them again.
+// The retail second rotation scales j before multiplying by i. Preserving that grouping still differs.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1516,6 +1521,11 @@ struct s_pool_view_172840
 // queue predicate 227; combined pool/projection with direct queue failure 219; independent tests
 // with projection before queue or first-write initialization 221/221; four flag names reordered 205.
 // NOT kept: the return variants lose the early ESI save, and renaming leaves the flag homes in place.
+// Independent failure stores with wide selected cluster 151/151, selection at publication 57,
+// list insertion from the published field 150, wide-to-narrow sentinel read 49, selection
+// after link/key 152, narrow selection with late extension 55, narrow-to-wide sentinel read 151.
+// NOT kept: the 49 form adds a sentinel reload and five bytes. The 55 and 57 forms add two bytes.
+// The independent failure stores recover the initial flag homes, but the publication schedule differs.
 // Queue return first 246; boolean AND result 208; positive pool, projection or queue predicate 236 each.
 // Three independent assignments 152; combined geometry failures 150; geometry within queue branch 148.
 // Two geometry assignments and direct queue return 243. Widened cluster at publication 86 with the chain, 55 with independent tests.
@@ -1528,6 +1538,10 @@ struct s_pool_view_172840
 // 55, narrow predecessor local 55, widen after both identifiers 152, entry pointer before count 60, clipped count
 // first 55, common bounds destination 55, key before predecessor 53. NOT kept: the 31 form publishes the cluster
 // before the key. The 60 forms move the link or reservation sequence and the 53 and 55 forms grow to 870 bytes.
+// Independent failure stores with widened publication and reused polygon, entry, or both clip bounds 55/55/55.
+// Clipped end pointer 124. Shared clipped count 115. Shared clipped points 54. Parent bitset base 203.
+// Signed allocated entry index 55. NOT kept: shared count removes a retail reload, while the shared point
+// base and the 55 forms grow the body. The sentinel producer and publication schedule still differ.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1935,7 +1949,7 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 	vector->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 }
 
-// score 325 (was 336): same behaviour as retail. Walked statement by statement against retail
+// score 295 (was 325): same behaviour as retail. Walked statement by statement against retail
 // (0x170fd0-0x17182b): constants, every field offset, every branch direction, the call arguments and the stack
 // order of 0x171830 (position, &distance, 0.02f) agree; no behaviour difference was found.
 // The horizontal direction is a vector2f normalized with the existing normalize2d_fast (the magnitude is not used
@@ -1990,6 +2004,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // calibrated view through location 459; horizontal subvector 337; follow matrix reference 325;
 // distinct focus point 459. NOT kept: the address forms keep the collision register conflict,
 // and the distinct focus point shortens the body by 93 bytes.
+// Input point memcpy 325. Shared point setter 518. Followed-point copy 399.
+// Sweep/projection snapshot 406. Shared sweep address 325. View-axis memcpy 325.
+// Sign-extended cluster after the change check 295 (kept). Separate count-load guard 295.
+// The state still uses EBP and the collision point still uses EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
@@ -2062,9 +2080,12 @@ void __stdcall function_170fd0(long user_index)
 	function_11bed0(&location, &state->view.position);
 	if (location.cluster_index != NONE)
 	{
-		if (location.cluster_index != state->view.location.cluster_index && location.cluster_index >= 0 &&
-			location.cluster_index < *(long *)((byte *)g_4e0348 + 0x9c))
-			function_3f500(location.cluster_index);
+		if (location.cluster_index != state->view.location.cluster_index)
+		{
+			long new_cluster = location.cluster_index;
+			if (new_cluster >= 0 && new_cluster < *(long *)((byte *)g_4e0348 + 0x9c))
+				function_3f500(new_cluster);
+		}
 		state->view.location = location;
 	}
 	long player_index = NONE;

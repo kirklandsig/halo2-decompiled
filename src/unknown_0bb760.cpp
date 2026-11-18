@@ -1033,6 +1033,10 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // result from input cursor inequality/advance 166/166, result from final ordinal inequality/positivity 163/163,
 // indexed blend/all phase fields 153/152, indexed blend with returned destination 174.
 // NOT kept: the 163 forms shorten past retail length, and the retail-length forms shrink the frame to 0x20.
+// Input latch with body ordinal or lookup ordinal 89/168, early input advance before metadata 165,
+// destination-only walk with relative source 184, explicit byte bank distance 156, indexed from the
+// object block offset 242, guarded block with output latch 191, named pair count and early copy 141.
+// NOT kept: the input spill and EBX output still differ.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

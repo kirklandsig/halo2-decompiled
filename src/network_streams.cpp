@@ -1150,6 +1150,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // parameter's home 89 (the indirection folds); `next` declared at function scope 89; the update ahead of the three
 // stores 90; no flags local (tests on the member) 89. On the kept form: flags as `dword` with a `(word)` store 35
 // (same code).
+// Resend type selected by the sent bit, pending bit, both bits, or separate tests
+// 52/52/89/54. Nullable eligible message via conditional or rejection branches 89/89.
+// Qualifying cursor used for post-scan publication with an in-place or saved-word
+// update 98/82. NOT kept: single-bit type selection gives the retail cursor and
+// message pointer with a byte OR, but changes the flag read and return-value code.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
