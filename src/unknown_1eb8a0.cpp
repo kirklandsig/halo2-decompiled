@@ -633,6 +633,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 0.866 test as dot3f(&s->direction, d) 601; the globals local kept for the update block and the output stage reading
 // g_510c54 at each use (retail reloads it there) 600. Retail's final block pops EDI, EBP, EBX before the closing tests
 // and ORs memory directly (`or dword ptr [eax], 4`); ours pops in each exit.
+// Object-valued reference selection 673; conditional pointer copy 673; reference copy
+// branches 663 at retail length; active-only output pointer 659; shared output rate 681;
+// early speed-factor branches 697; ramp cap branches 726; activation limit defaults 681.
+// NOT kept: all regress. Direction still occupies the reference velocity register at entry.
 // Second-clamp mode shared with duration, after/before the step 699/699; joint
 // multiplier and duration branch before/after the step 710/710; shared mode
 // producing both coefficients 709; direct guarded bound with shared mode

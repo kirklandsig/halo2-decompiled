@@ -327,6 +327,11 @@ PRIVATE inline long swizzle_log2(dword value)
 // N408: Mask both coordinates before branch (long/short) 117/95. High-arm intersection split
 // (long/short/dword) 67/81/67. High index from the intersection at use 57. Mask from full-width
 // unsigned or signed-short span 57/57. NOT kept: ties or regressions. Coordinate promotions and the common-count home differ.
+// Round 625: unsigned word/dword table coordinates in the wide arm for the high band
+// 63/81, or both bands 125/81; word/dword after shifting the high band 90/57;
+// word/dword table coordinates before the branch 132/81. Signed suffixes retained in all forms.
+// Restored. The full-coordinate widenings still precede the logarithms and the common
+// count still spills from a different register.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

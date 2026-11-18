@@ -11,22 +11,11 @@ static __forceinline void initialize_service_array(array_2d91d0 *array)
 	array->size = 0;
 	array->capacity_and_flags = 0x80000000;
 }
-class default_error_handler_2d8780 : public error_handler_2d8030
+inline error_handler_2d8030::error_handler_2d8030()
 {
-public:
-	default_error_handler_2d8780()
-	{
-		initialize_service_array((array_2d91d0 *)&counts);
-		initialize_service_array((array_2d91d0 *)&silenced);
-	}
-	// Unreconstructed repeated slots retain main's partial interface.
-	virtual void slot_7() {}
-	virtual void slot_8() {}
-	virtual void slot_10() {}
-	virtual void slot_11() {}
-	virtual void slot_12() {}
-
-};
+	initialize_service_array((array_2d91d0 *)&counts);
+	initialize_service_array((array_2d91d0 *)&silenced);
+}
 
 class bootstrap_service_2d8780
 {
@@ -46,6 +35,12 @@ void __cdecl function_2d7460(reporter_2ff210 *);
 void __cdecl function_2d73f0(error_handler_2d97d0 *);
 void __cdecl initialize_registered_services_2d7ca0();
 
+// The error handler's destructor is the implicit one: the compiler emits it,
+// and the deleting form, in this file, which constructs the handler. It
+// releases the silenced ids, then the location counts.
+// @retail 0x2d84e0 deleting error_handler_2d8030
+// @retail 0x2d8510 destructor error_handler_2d8030
+
 // @retail 0x2d8780
 int __cdecl function_2d8780()
 {
@@ -54,7 +49,7 @@ int __cdecl function_2d8780()
 		function_2d6fe0(function_1473b0());
 		function_2d74d0((c_sized_reference_a9ef0 *)new debug_stream_factory_2d76f0);
 		function_2d7460((reporter_2ff210 *)new c_stream_pair_2d7650);
-		function_2d73f0((error_handler_2d97d0 *)new default_error_handler_2d8780);
+		function_2d73f0((error_handler_2d97d0 *)new error_handler_2d8030);
 		initialize_registered_services_2d7ca0();
 		g_480148->initialize();
 		g_48014c = 1;

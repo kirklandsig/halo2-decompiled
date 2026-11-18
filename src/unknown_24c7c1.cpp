@@ -580,7 +580,8 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // are still packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and
 // retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
 // MiniMax G (11-12): no new form, no lower score (114); the three message predicates are still packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
-// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// score 114 (was 115): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // MiniMax E (11-11): no new form, no lower score (114); the three message predicates are still packed in different
 // homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at
 // -0x3c where ours spills it as a dword at -0x50; the text buffer is still pushed where retail passes it in esi,
@@ -785,6 +786,13 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 0x24cffc, view 0x24cf76, font 0x24cfc9), the tutorial colour's block order (retail falls into the a4 load at
 // 0x24d1a2, ours puts it last), and 0x24ce9d's setup (retail pushes the text between the left and top loads at
 // 0x24d2d6-0x24d2dd; ours loads top first through edx; 0x1fa30's ecx/eax loads at 0x24d2eb swap likewise).
+// M3 lane 7 r176 (fast, control 115): all on the byte timer flag (191, 1888 B, re-measure): the origin in a block of its own
+// with the top and left computed inside it 191; the origin declared after top and left 191; the text rectangle declared
+// after the flags 191 (all the same code: scope and declaration order move no home); the scripted flag as a test-set 453
+// (1886 B); the scripted test written out at its second use 375 (1891 B; the flag then lives in DL and the timer and
+// tutorial bytes take -0xd/-0xe). On the byte-timer form the three flags already sit in retail's relative order (scripted
+// above tutorial above timer); the one home out of place is the origin/text-rectangle slot: retail allocates it straight
+// after the split flag (-0xc, flags at -0xd/-0xe/-0xf), ours after the scripted flag (-2, then the slot, then -0xd/-0xe).
 // 463: text measurer left/top/both as short 184/181/182; with byte timer 206/203/205.
 // View scoped to the end of the message rows, mutable/read-only 115/115. NOT kept: shorter
 // coordinate forms and tied scoped forms leave the view, predicate and coordinate homes different.

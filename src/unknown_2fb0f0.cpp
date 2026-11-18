@@ -162,12 +162,7 @@ struct hit_2fb150
 	char unknown22[0x30 - 0x22];
 };
 
-struct hits_2fb150
-{
-	hit_2fb150 *data;
-	long size;
-	long capacity_and_flags;
-};
+ELEMENTS_2D91D0_ALIGNED(hits_2fb150, hit_2fb150);
 
 // an array of 48-byte elements whose storage comes from the allocator's stack
 // area (src/unknown_2faeb0.cpp)
@@ -258,11 +253,21 @@ __forceinline answer_2fb150 repeats_plane_2fb150(contact_2fb150 const *other, co
 	return answer_2fb150(!apart_2fb150(other, closer, tolerance));
 }
 
+// the handler a dispatcher holds for a pair of shape kinds
+static __forceinline handler_2ed170 handler_for_2fb150(dispatcher_2ed170 const *dispatcher, long kind_a, long kind_b)
+{
+	return dispatcher->handlers[kind_a][kind_b];
+}
+
 // a query against a container's triangles, each through its part's agent:
 // the triangles' contacts are gathered, sorted closest first, those that
 // only repeat a closer one's plane dropped, and the rest passed to the
 // collector with ids from the contact manager
-// score 22 (was 244): rewritten in the shape of its sibling 0x2fa2f0: the part
+// Matched (was 21): the hit is appended through the hit list's own
+// next_slot(), so the collector is dereferenced once, and the dispatcher's
+// handler for the two shape kinds is looked up by a helper taking the kinds
+// as arguments instead of through two named kinds.
+// Before, 22 (was 244): rewritten in the shape of its sibling 0x2fa2f0: the part
 // body has a constructor and a set_shape member, the none-agent test reads the
 // entry directly, the entry count comes through an accessor, and the hit is
 // appended with the count stepped through the collector while the data is read
@@ -315,9 +320,7 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 		shape_2fb150 const *shape = container->child->part(entry->key, buffer);
 		part.set_shape(shape, entry->key);
 		shape_2fb150 const *a_shape = a->shape;
-		long const kind_b = shape->kind();
-		long const kind_a = a_shape->kind();
-		if (input->dispatcher->handlers[kind_a][kind_b] == (handler_2ed170)function_2f0e70)
+		if (handler_for_2fb150(input->dispatcher, a_shape->kind(), shape->kind()) == (handler_2ed170)function_2f0e70)
 		{
 			if (contacts.size == (long)(contacts.capacity_and_flags & 0x7fffffff))
 			{
@@ -377,12 +380,7 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 	{
 		if (contacts.data[k].found)
 		{
-			hits_2fb150 *hits = *(hits_2fb150 **)collector;
-			if (hits->size == (hits->capacity_and_flags & 0x7fffffff))
-			{
-				function_2d91d0(hits, sizeof(hit_2fb150));
-			}
-			hit_2fb150 *hit = &hits->data[(*(hits_2fb150 **)collector)->size++];
+			hit_2fb150 *hit = &(*(hits_2fb150 **)collector)->next_slot();
 			contact_2fb150 const *kept = &contacts.data[k];
 			hit->point = kept->point;
 			hit->normal = kept->normal;

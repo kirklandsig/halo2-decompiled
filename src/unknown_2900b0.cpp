@@ -458,6 +458,17 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // the copy 99 (the reference is read again at the add, after the copy); a redundant `!= NONE` guard around the
 // centre loop 28 (same code); the copy's destination through a trivial inline centre accessor 28 (same code); the
 // actor through swarm.h's swarm_leader_get after the copy 99, ahead of the copy 38 (the add then precedes the copy).
+// Round 135 (m3 lane 9, fast with 0x1e3b60 and 0x28f890): one variable for the pool data and the actor pointer
+// (`byte *&local_1 = base; local_1 += index * size;`) 90 at 390 bytes, but every other register is then retail's: the
+// prologue gives the pool ECX, the data EDX and the origin ECX, and the loop's `lea edx, [ecx + ecx*2]`, the EDX reload
+// after the call and `movsx eax, ax` all match; the only miss is that the add goes in place (`add edx, eax`) where retail
+// adds into EAX and copies (`add eax, edx; mov edx, eax`), which shifts everything after it by one instruction. So the
+// data must share EDX with the actor pointer but stay a separate value. The same with the product first in the sum 90
+// (same code); stepped as a typed element 90 (same code); the sum through a temp copied back 95 (383 bytes, still in
+// place); only the base bound by reference, the actor pointer its own local, 30 (the data ECX again); only the actor
+// pointer bound, 60; the scaled index named ahead of the copy 30 (same colouring as 28). Re-measured: actor_get ahead of
+// the copy 38 (it does give `add eax, edx; mov edx, eax` with the data in EDX, but the add then precedes the copy and the
+// origin takes EAX). Next: a form where the data and the actor pointer are two values that the allocator still ties.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

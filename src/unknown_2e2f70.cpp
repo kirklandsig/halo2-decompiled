@@ -58,7 +58,9 @@ __forceinline void report_pair_2e2f70(class_2e1090 *sweep, pair_2e1090 &pair, lo
 	}
 }
 
-// score 96 (was 122): both report loops pass the other box's owner read through the element
+// Matched (was 96): the y/z test accumulates in a result declared in each
+// loop, and the first loop reads the other box's id from the entry at both uses.
+// Before, 96 (was 122): both report loops pass the other box's owner read through the element
 // array again (the first names the entry's id for it), which puts ecx and edx the right way
 // round through the reports. Left: how the two tests form the other element's address, and
 // the second loop's result slot.
@@ -84,7 +86,6 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 	}
 	longs_2e1ab0 open(0x100);
 	long cursor = 1;
-	unsigned long apart;
 	for (long remaining = count; remaining > 0; remaining--)
 	{
 		long const id = endpoints->id;
@@ -124,12 +125,12 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 			endpoint_2e0f80 const &entry = *(endpoint_2e0f80 const *)&open.data[i];
 			if (entry.value & 2)
 			{
-				long const other_id = entry.id;
-				element_2e1090 const &other = elements.data[other_id];
-				apart = apart_yz_2e1090(box, other);
+				element_2e1090 const &other = elements.data[entry.id];
+				unsigned long apart;
+				apart_yz_2e1090(box, other, apart);
 				if (!apart)
 				{
-					report_pair_2e2f70(this, pair, elements.data[other_id].owner, id, pairs, change);
+					report_pair_2e2f70(this, pair, elements.data[entry.id].owner, id, pairs, change);
 				}
 			}
 		}
@@ -140,7 +141,8 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 			if ((entry.value & 1) == 0)
 			{
 				element_2e1090 const &other = elements.data[entry.id];
-				apart = apart_yz_2e1090(box, other);
+				unsigned long apart;
+				apart_yz_2e1090(box, other, apart);
 				if (!apart)
 				{
 					report_pair_2e2f70(this, pair, elements.data[entry.id].owner, id, pairs, change);

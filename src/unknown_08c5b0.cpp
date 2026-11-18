@@ -222,6 +222,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // keepable): plain read with one extra `else if (kind == 2)` arm giving 1, 4; plain read with an `else if (kind < 0 ||
 // kind > 2)` arm giving 1, MATCH (fast). So any two late-merged compares of the kind give retail's ECX/AX pair, an equal
 // pair or a range test alike; retail's source evidently had arms for other results that compile to the default.
+// Round 135 (m3 lane 9, fast with 0x8c5b0): an inline member accessor for the controller index 4 (same code); the
+// selection as an inline member of the request reading the kind, ahead of the index 23 (kind AX, request EDX), after
+// the index 5 (request EAX, kind AX, the index load first); the request read through a reference binding 4 (same code).
+// A plain read into a reference-bound kind (`short kind; short &result = kind; result = request->kind;`) gives 4, the
+// volatile read's exact code: the reference also keeps the word load out of the compare (not kept: a steering form
+// without a match, but it is the replacement if the volatile read has to go).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

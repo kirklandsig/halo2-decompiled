@@ -942,6 +942,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // MiniMax S (11-17): no new form, no lower score (547): retail opens a 0x2c frame with homes for the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector, where ours opens 0x18 and keeps the count in edx with no home; retail's nearest scan is a four-wide unrolled pass over the samples with two induction pointers and the closest index in edi, where ours walks a pointer and keeps the closest sample.
 // MiniMax D (11-17): no new form, no lower score (547, was 547); retail's 0x2c frame still needs its
 // offset.x home at +0x24, the dead store each pass, the pass counter at +0x18 and the hoisted entries
@@ -984,7 +985,6 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // dead store at 0x23013 each pass, and delta.k at +0x38), nearest kept in EDI in the unrolled part, one pass counter
 // at +0x18, and the hoisted entries pointer in scan 2; dot3f/length_sq3f are not used for the projection and distance
 // because their sums run i, j, k where retail's run k, j, i.
-// score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
@@ -1213,6 +1213,21 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // index. On it: `nearest` and `opposite` as a two-long array 654 (same code, frame 0x18); `if (0 < count)` around scan 1 635
 // (2039 B); `nearest` through a reference 654 (same code); scan 1 in an inline helper returning the index 1130 (1572 B, the scans
 // are no longer unrolled); dot3f with its arguments swapped 654 (same code).
+// Round 622: inclusive nearest cursor 590; inclusive indexed nearest 614; opposite ordinal with cursor 792;
+// indexed opposite result 727; shared inclusive bound with cursors 770; shared inclusive bound with indices 699;
+// cursor searches with ordinal exclusion 779; index searches with ordinal exclusion 684.
+// All eight inclusive-bound forms regress. Each inclusive opposite scan shortens the body by at least 130 bytes.
+// Two indexed scans with ordinal exclusion get a 0x1c frame and retain four-wide strides at 1992 bytes. The
+// baseline query register, vector homes and 0x18 frame remain.
+// Round 625: typed sample-position copies at nearest/anchor/opposite and nearest+anchor/
+// nearest+opposite/anchor+opposite/all 742/589/701/781/873/729/900; nearest copy through the
+// squared-distance helper 892. Existing sample record for active BSP count 547.
+// Opposite distance with current bound as conditional/default/explicit fallback 605/645/605.
+// NOT kept: the native copies expand the extent or remove the four-wide scan, and the
+// candidate-result forms add work to the rejected projection path. The 0x18 frame remains.
+// Fraction inside opposite-ordinal/resolved-pointer admission; lower-then-upper tests
+// 560/568, upper-then-lower 561/562, partial-before-endpoint 560/569,
+// shared selected-endpoint copy 673/672. Frame stays 0x18.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
