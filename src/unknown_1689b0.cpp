@@ -2036,6 +2036,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Zero-based advance before/between/within the calls 582/598/607. NOT kept: the
 // 579 and 598 forms still divide after the first reconstruction, and 582 changes
 // the frame. Sum homes, early signed remainder and axis schedule remain. Original body restored.
+// Projected-point setter 598, scaled vector sum 629, direct component loop 570,
+// copied origin with component updates 639, separate scaled displacement and add 619,
+// in-place displacement and add 631, in-place scaled sum from copied origin 649,
+// setter with early nearest reset 597. NOT kept: the 570 form grows to 2893
+// bytes and leaves the projected-point homes and late remainder.
+// Component loop with a shared projection scale 614.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

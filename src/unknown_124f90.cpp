@@ -4773,6 +4773,10 @@ struct s_128ca0
 // The sum and clamp shared by both submissions, taking permutation byte, permutation record,
 // converted permutation gain, or permutation byte with decoded gain, each returning the bits
 // or writing the packet: 122/122/122/122/122/122/122/122. Pin registers and store order unchanged.
+// Synchronization count from postdecrement as char, byte or long 189/147/122.
+// Default char plus postdecrement 189, branch-local publication 208, default
+// char plus prefix decrement 189, single-read subtract as char or long 188/129.
+// NOT kept: no gain in the existing pin layout and byte update.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

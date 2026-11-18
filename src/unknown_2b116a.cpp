@@ -5770,6 +5770,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
 // friend result in removal test 320, reused removal result in kick test 269, membership statuses
 // assigned from tests 312, friend-query result declarations in spill order 97.
+// Title-state scope 89, both title outputs scoped 89, separate regular-status
+// guards 392 or selections 396, roster actions under other-user gate 349 or by
+// player status 402, paired modification actions under rank gate 360 or
+// regular-player gate 365. NOT kept: title output byte remains displaced.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

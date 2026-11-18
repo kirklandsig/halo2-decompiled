@@ -650,6 +650,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Shared normalize-or-copy and its guard form, vector and state refresh, each inline/forceinline
 // 603/603/603/603/672/672/671/671. The full refresh forms keep frame 0x24 and move zeroing ahead
 // of the register saves. The sampled-velocity register and stack direction reads still differ.
+// Fixed-size copies of published sample 603, selected sample 665, both 665,
+// activation start 603, activation target fallback 603, both activation points
+// 678, tick-scaled output 603, settling workspace 603, and activation direction
+// fallback 603. The sampled-velocity register remains displaced.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
