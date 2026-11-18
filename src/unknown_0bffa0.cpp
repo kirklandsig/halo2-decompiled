@@ -1752,7 +1752,7 @@ void function_c09c0(long mode)
 
 bool __stdcall function_bab40(long object_index, long name, real *value);
 bool function_bad50(long object_index, long index, point3f *out);
-color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
+color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 color3f *function_131d60(color4f const *a, color4f const *b, dword flags, color3f *result,
     color3f const *tint, real t);
 long function_baf80(long object_index);
@@ -1828,10 +1828,8 @@ void __stdcall function_c0c80(long light_index)
         real duration = (real)g_510c54->field_2_3 * *(real *)(definition + 0xb0);
         real fraction = function_17ca10(elapsed / duration, *(short *)(definition + 0xb6));
         light->fraction = (1.0f - fraction) * light->scale;
-        function_131c20((color3f *)(definition + 0x58), (color3f *)(definition + 0x64),
-            *(dword *)(definition + 0x34), light->fraction, &light->colour);
-        function_131c20((color3f *)(definition + 0x40), (color3f *)(definition + 0x4c),
-            *(dword *)(definition + 0x34), light->fraction, &light->pair_colour);
+        function_131c20(&light->colour, (color3f *)(definition + 0x58), (color3f *)(definition + 0x64), *(dword *)(definition + 0x34), light->fraction);
+        function_131c20(&light->pair_colour, (color3f *)(definition + 0x40), (color3f *)(definition + 0x4c), *(dword *)(definition + 0x34), light->fraction);
         real blend = light->fraction;
         light->intensity = (1.0f - blend) *
             *(real *)(definition + 0x70) + *(real *)(definition + 0x74) * blend;

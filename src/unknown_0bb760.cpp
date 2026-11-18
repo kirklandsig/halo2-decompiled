@@ -846,7 +846,7 @@ struct s_colour_function_ab
     long scale_name;
     long blend_name;
 };
-color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
+color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 
 // score 89 (was 91): retail keeps the destination pointer in EBX and
 // retail keeps the destination pointer in EBX and the source pointer only in its stack
@@ -1049,7 +1049,7 @@ bool __stdcall function_be8e0(long object_index)
                 s_colour_function_ab *function = &entry->functions[j];
                 if (function->blend_name)
                 {
-                    function_131c20(&function->lower, &function->upper, function->flags, function_be8b0(object_index, function->blend_name), current);
+                    function_131c20(current, &function->lower, &function->upper, function->flags, function_be8b0(object_index, function->blend_name));
                 }
             }
             for (long j = 0; j < entry->function_count; ++j)

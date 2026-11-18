@@ -2424,6 +2424,13 @@ __forceinline char unit_action_round(real value)
 // retail's EBP, the 0x212 field is still compared as a byte against retail's sign-extended short, and the 0x1e and 0x1d
 // tag constants still land in EBX and EBP the other way round.
 // Earlier (score 234, was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
+// MiniMax H (11-18): no new form, no lower score (234): retail still loads the pool global into EBP with the unit index
+// in EDI and compares the sign-extended hand index in sixteen bits against the -1 it keeps in EBX, where this build
+// keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
+// reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
+// compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
+// stands.
+// score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
 // `goto done`s, which the rules drop. Body unchanged.

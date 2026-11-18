@@ -1878,6 +1878,23 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // mode there. Retail copies the found mode into EBP once for that request (the inlined argument kept as its own value),
 // where ours reads the output's home at every use even through an explicit copy (propagated), so retail treats the
 // output as possibly changed by the request's calls.
+// M3 lane 11 r117 (fast with 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1dd560, 0x2963f0, 0x1236f0, 0x1ddd00, 0x1ddc70 and
+// 0x1ddb90, all but the twin matched each time; aligned 580, register-masked 76). Readings: from the loop's found exit
+// retail keeps the id in ECX (the NULL-entry exit reloads it in a block between the loop's `jne exit; jmp top` and the
+// output stores) through the three output stores, which use only EAX/EDX, to the `push ecx` for 0x1dd9d0 and to the
+// no-result return, which jumps into the middle of the main epilogue; its index test after the outputs is a 16-bit memory
+// compare against SI where ours loads the dword and shifts, twice. Retail's second request is the first one over again:
+// `this` into EBX and the found mode into EBP both loaded at its start, the other two keys from their homes, the table pointer
+// reused from the first request's home, the inheritance counters in the dead mode / weapon_class argument homes. Forms:
+// `for (;;)` with the NULL break and a break testing the per-pass candidate's index 998 (2839 B, masked 98: retail's first
+// eight instructions, the NONE reloaded after the je and a memory index compare after the outputs, but the iterate call
+// is copied to the loop bottom and the id is still reloaded for 0x1dd9d0); the same testing result.index 998 (same code);
+// `do { } while (true)` with both breaks 998 (same code); `for (;;)` with the lookup under `if (weapon_type_entry)` and
+// `else break` 998 (same code); `for (;;)` ending `if (animation_id.index == NONE) continue; break;` 828 (same code as
+// this body); `do { } while (weapon_type_entry && result.index == NONE)` with the lookup under `if (weapon_type_entry)`
+// 828 (same code); the candidate at block scope, reset per pass, with the do-while testing it 932 (2825 B, frame 0x30,
+// masked 95; the index test after the outputs stays a dword load and shift). The loop shapes give two codes, the
+// do-while's and the for's; neither carries the id in a register out of the loop.
 // The class and NONE registers, candidate and iterator-output homes, and later zero carrier still differ.
 // Tried direct result with a fresh default on lookup failure 977; default-first direct result branch 977;
 // found-only candidate lifetime 977; default-first branch with a found-only candidate 977;

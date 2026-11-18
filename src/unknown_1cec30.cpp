@@ -988,6 +988,12 @@ void function_1d1540(s_havok_component *component);
 // rep movsd where retail uses four movaps; the component's ebx home is decided over the whole
 // 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files (0x1d1260 is in
 // src/unknown_1d1260.cpp): BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
+// MiniMax H (11-18): no new form, no lower score (65): the copy written as an assignment instead of a construction
+// (a default hkTransform and then `local = *transform`, which copies the four members one by one) gives 90 at 231
+// bytes, where the copy through hkTransform::set gave 77 at 237, so the member-wise copy does not pay for the frame
+// and the index; the frame is still 0x84 against retail's 0x88, the index and the component still arrive on the stack
+// where retail keeps them in ecx and ebx, and the entry copy is still a block copy where retail stores the four
+// members separately: BLOCKED-BY 0x1d1260 and 0x278f00, whose bodies are in other files.
 // score 65 (was 65): MiniMax R (11-15): no new form, no lower score; retail takes the transform in EAX, the index
 // in ECX and the component in EBX (frame 0x5c) where this build pushes the index and the component (frame 0x50), and
 // LTCG picks that split across the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other
@@ -1201,6 +1207,10 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // MiniMax B (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
 // component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided
 // across a call cycle whose other bodies are in other files: BLOCKED-BY 0x1d0cf0.
+// MiniMax H (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
+// component still travels on the stack where retail keeps it in EBX; the copy in the callee written as an assignment
+// instead of a construction moves this function to 40, so that form was restored and the callee's convention
+// remains the one difference: BLOCKED-BY 0x1d0cf0.
 // score 38 (was 38): The transform setter receives stack arguments where retail uses registers, including EBX for the component.
 // MiniMax A (11-12): no new form, no lower score (38); every difference is still the frame (0x50
 // against retail's 0x5c) and the callee's convention, which hands the component over in ebx where
@@ -2559,6 +2569,15 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // order (inv*i, j*inv, k*inv) 91 (the same code); the products in the order j,k,i 91 and k,j,i 91 (the same code);
 // the three components copied into locals ahead of the branch 326; the same copies with fresh destinations 131; the
 // velocity taken through a local pointer 175; the result written as four separate stores 99. All restored.
+// MiniMax H (11-18): no new form, no lower score (91): the permuter's 32 tries over the reduced image found no
+// variant below the baseline (87 differing instructions, best 87), and the property value's lifetime was tried: with
+// the word built before the property check in the helper, so that it would live in a register as retail's does
+// (retail keeps the zero in edi across the search loop, this build pushes it), the tail grows to 1467 bytes and
+// scores 155, so the helper stands. What still differs: the velocity's normalisation scales the j and k components
+// from memory where retail reloads them into xmm2 and xmm3 ahead of the branch, the i component ends in xmm1 where
+// retail keeps it in xmm4, and the material loop's call to 0x181db0 takes its arguments in ecx and edx where retail
+// passes them in eax and ebx: BLOCKED-BY include/normalize3d.h and src/unknown_181e90.cpp, which this lane may not
+// edit.
 // score 91 (was 91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
 // aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
