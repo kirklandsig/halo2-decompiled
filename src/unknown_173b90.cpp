@@ -483,6 +483,14 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // + left*y): `unknown0c != 0` 113, the 0x107f0 refresh mask named 113, the location flag as a (bool) cast
 // 113 (all same code), the definition formed before the emitter lookup 124; on the body the emitter mask read
 // before the defaults 204.
+// M3 lane 11 r113 (fast with 0x173c10/0x1751d0/0x2477b0, all MATCH; control 42): the list test wrapped around the
+// emitter loop with the offset's zero store inside it plus scale declared first 39 (left: the three reload pairs, row i
+// of both rotations and the branch offsets that follow from the rows' lengths); on it the definition formed ahead of
+// the emitter lookup 44 (reload pairs as retail, the definition then scheduled first), indexed definitions 113 (1136 B),
+// `+=` translation 39, the definition formed before the particle index 39, the motion copy declared first 47. A
+// compile-only screen (whole file, rotation block scored against retail) reproduces row i: every row-i term order
+// and copy spelling in the helper, the caller's local names, declaration orders, the translation's component order
+// and no-code field mentions of either copied vector leave row i at (left*y + up*z) + x*forward or worse.
 // MiniMax A (11-12): the emitter list test wrapped around the loop with the offset's zero store
 // inside it: 42 -> 39 (1130 bytes), the store now follows the list test as in retail.
 // MiniMax A's form, not kept: 39 (was 42): the offset's zero store now follows the list test as in retail; left: row i of

@@ -89,6 +89,12 @@ bool function_25d9b0(long prop_index);
 // before the fallback block; the branch-shaped spellings swap the actor and node registers.
 // MiniMax S (11-16): no new form, no lower score (49); the busy test's two returns are still if-converted into a mask select where retail branches to its own priority epilogue, and splitting the two exits with a goto reaches retail's exit shape but moves the actor into ebp and the node into ebx, which measures 65.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
+// M3 lane 11 r113 (fast with the file's functions and callees, faithful 49; aligned 9: the busy select, the zero exit's
+// `xor ax, ax` and the success block's place): the busy test joined to the && chain with `return priority` 65 (aligned 69:
+// no select, but actor/node swap to EBP/EBX and the success return stays inline ahead of the fallback); on it the decline
+// passed the invitation index local 65, the fallback through actor->prop_index 65, the participant priority read once
+// after the found/acquired arms 105 (560 B), the busy test through a fresh actor lookup 213 (610 B); on the body the
+// decline with the invitation index local 49 (same code).
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
 // Round 107 kept form, 86 -> 49: the `priority > 0` gate after both branches gives retail's block order (no-invitation
