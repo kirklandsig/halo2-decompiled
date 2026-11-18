@@ -5,7 +5,6 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "data_array.h"
-#include "data_iterator.h"
 #include "unknown_1fb360.h"
 
 s_record_pool *g_4f5724;
@@ -314,8 +313,6 @@ bool __stdcall function_beb30(long object_index);
 void __stdcall function_b8540(long a);
 void function_c6de0(long object_index, void *control);
 void function_f0fd0(long vehicle_index, bool set);
-struct s_object;
-s_object *function_badc0(long object_index, dword type_mask);
 
 /* advances every recorded animation by a tick; finished ones restore the
    unit's flags and are deleted */
@@ -327,12 +324,6 @@ extern "C" void _ReadWriteBarrier(void);
 // through the volatile pointer and reloads it in the loop - dropping that volatile to give retail's snapshot
 // loses all three matched siblings (0x1fb4c0, 0x1fb6f0, 0x1fb760, all four at 0 of 4 matching here), so the
 // two scan shapes need two expressions and the step written out by hand is barred.
-// MiniMax G (11-18): score 20 (was 122): the step as the matched 0x7b430 writes it (four-field datum iterator, a pool
-// local set after the iterator's two stores, data_find_index(iterator.data, iterator.index + 1) and
-// data_datum_iterator_set_current(&iterator, pool, index)) with the lookup through function_badc0(object_index, 3)
-// and the tick arm hoisted to `if (unit && !(flags & 1)) { tick; continue; }`: retail's 0x14 frame, prologue, scan and
-// two pool homes now match at retail's 473 bytes; the 20 left are one register rotation (the datum index in EBP
-// against retail's EDI, the header in EDI against retail's EBP).
 // MiniMax S (11-17): no new form, no lower score (122): retail opens a frame of 0x14 with the object pool in two stack homes and the datum index in edi, where ours opens 0xc, forwards the pool into edi for both reads and keeps the index in eax; the form that reaches retail's frame needs the iterator step written out by hand, which the rules bar.
 // MiniMax E (11-14): no new form, no lower score (122): retail opens a frame of 0x14 and keeps the pool in two stack
 // homes, while this build opens 0xc and forwards the pool in EDI for both the scan and the element; the lead of 99
@@ -655,32 +646,31 @@ extern "C" void _ReadWriteBarrier(void);
 // @retail 0x1fb510
 void function_1fb510(void)
 {
-	s_data_datum_iterator iterator;
+	s_record_pool_iterator iterator;
 	s_recorded_animation *animation;
 
 	iterator.data = g_4f5724;
 	iterator.index = NONE;
-	s_record_pool *pool = g_4f5724;
-	long index;
-	while ((index = data_find_index(iterator.data, iterator.index + 1)) != NONE)
+	iterator.datum_index = NONE;
+	while ((animation = (s_recorded_animation *)function_1fb762(&iterator, iterator.data)) != 0)
 	{
-		data_datum_iterator_set_current(&iterator, pool, index);
-		animation = (s_recorded_animation *)iterator.datum;
-		s_object *unit = function_badc0(animation->object_index, 3);
-		if (unit && !(animation->flags & 1))
-		{
-			bool finished;
-
-			animation->ticks--;
-			finished = !g_46fd5c[animation->version]->apply((s_type_339e8b *)animation->controller,
-				(playback_unit_control_view *)animation->control, &animation->remaining_ticks, &animation->cursor);
-			animation->remaining_ticks++;
-			function_c6de0(animation->object_index, animation->control);
-			SET_FLAG(animation->flags, 0, finished);
-			continue;
-		}
+		s_recorded_animation_object *unit = recorded_animation_unit_try_and_get(animation->object_index);
+		_ReadWriteBarrier();
 		if (unit)
 		{
+			if (!(animation->flags & 1))
+			{
+				bool finished;
+
+				animation->ticks--;
+				finished = !g_46fd5c[animation->version]->apply((s_type_339e8b *)animation->controller,
+					(playback_unit_control_view *)animation->control, &animation->remaining_ticks, &animation->cursor);
+				animation->remaining_ticks++;
+				function_c6de0(animation->object_index, animation->control);
+				SET_FLAG(animation->flags, 0, finished);
+				continue;
+			}
+
 			recorded_animation_object_set_flag(animation->object_index, 0, (animation->flags & 4) != 0);
 			recorded_animation_object_set_flag(animation->object_index, 22, false);
 			function_cbf60(animation->object_index, false);
