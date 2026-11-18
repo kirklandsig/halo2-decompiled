@@ -236,13 +236,10 @@ __forceinline bool search_new_point(__m128 const &first_corner, __m128 const &se
 	return true;
 }
 
-// score 111 (was 1955): same size as retail now. The inverse direction is
-// the transpose of the three columns, the second support point is read through
-// a const reference, the normal is bound after the squared length, the tail
-// stores the distance through a float, and the reduction's separating exits
-// break to one shared exit. Left: two lea instructions in the transform loop,
-// the previous_b load before push 1 (ecx, retail edx), scratch registers at a
-// few movmskps sites.
+// MATCH (was 58): the reduction switches on each query's result in its own
+// case, the separating results jump to its shared exit, and the source
+// pointer receives the second shape's vertices before it is reset for the
+// transform loop, after the target pointer.
 // @retail 0x3048a0
 int class_3048a0::function_3048a0(convex_2fefd0 const *first, convex_2fefd0 const *second, c_query_transform const *transform, pair_state_2fefd0 *state, closest_3048a0 *closest)
 {
@@ -253,8 +250,9 @@ int class_3048a0::function_3048a0(convex_2fefd0 const *first, convex_2fefd0 cons
 	float tolerance = 1.0e-10f;
 	s.count_a = counts[8]; s.count_b = counts[9];
 	((search_shape_3048a0 const *)first)->vertices(ids,s.count_a,s.a);
-	((search_shape_3048a0 const *)second)->vertices(ids+s.count_a,s.count_b,s.source_b);
-	{ __m128 const *source = s.source_b; __m128 *target = s.b; for (int i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,source); ++source; ++target; } }
+	__m128 *source = s.source_b;
+	((search_shape_3048a0 const *)second)->vertices(ids+s.count_a,s.count_b,source);
+	{ __m128 *target = s.b; source = s.source_b; for (int i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,source); ++source; ++target; } }
 	int result = 0;
 	for (;;)
 	{
