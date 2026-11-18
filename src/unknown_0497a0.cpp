@@ -491,6 +491,13 @@
 // MiniMax A (11-18): no new form, no lower score (536); what still differs is the frame (0x54 against retail's 0x60, twelve
 // bytes short) and the first XMM rotation (ours moves the wave through xmm3 into xmm1, retail through xmm1 into xmm5); the
 // between-update forms that reach retail's frame and length score higher, so the body stands.
+// M3 lane 16 r136 (fast with 0x4a1e0; control 536 = baseline, aligned 593; ours returns with `ret 0x20` as retail in the full
+// build): the mixed wave through a forceinline value helper `(phase, sine, cosine_a, cosine_b)` called with `x * 8.2f`,
+// sin x, cos 7.8y and cos 7.75y, real parameters 536 (same code), double parameters 586 (aligned 597: the arguments are
+// substituted back and evaluated nested, not kept on the x87 stack), the parameters in the reverse order 586; a forceinline
+// helper taking the camera point with a real phase and three named double factors 535 (aligned 594); the two wave values
+// as a `real wave[2]` 634 (2670 B, frame 0x60, as the point pair of round 202); the two scaled amounts named before the
+// adds 650 (2594 B). None keeps sin x, cos 7.8y and cos 7.75y on the x87 stack past the mixed wave as retail does.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
