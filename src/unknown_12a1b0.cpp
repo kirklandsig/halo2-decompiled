@@ -1395,6 +1395,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // code-free `if (0 <= iterator.count)` guard 24; the element through an `s_sound_playback *&` 24. Diagnostic (the
 // fade-in half written out, not keepable) with the `__assume` after the named element 35 at 211 B: the state load
 // still folds ahead of the add, so a pointer boundary does not split the offset from the element's register.
+// M3 lane 3 r260 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; `ret 8` and 210 B in both
+// builds): an iterator step yielding the element pointer (NULL at the end) with the call taking `iterator.index` 47 (214 B:
+// the NULL test is not threaded into the index test, registers unchanged); the duration or the curve read once through its
+// own address 24/24; the guard reading the first index through its own address 60 (211 B); the next step's links bound as
+// `s_looping_track_links &` 24.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
