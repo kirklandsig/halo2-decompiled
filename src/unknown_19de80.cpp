@@ -735,6 +735,18 @@ static inline bool teams_enabled_19e1c0()
 // Token preload, ordinary result and independent copy tails still differ. Capacity-initialized result
 // with zero on rejected cases, through name clamp, formats, both, or both plus engine fallback:
 // ordinary 458/701/458/458, existing qualified result 427/497/431/434.
+// m3 lane 5 r196 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691): re-measured
+// without knowing they were listed, the teams-enabled helper as one `&&` return plain/volatile 736/454, as if/else arms or a
+// ternary 414/414, the ternary on the plain result 698 (the listed admission forms). New: `remaining` bound by `long const &`
+// for every use, plain/volatile 691/390; `token` bound by `word const *const &` for every use, plain 691 (all fold). Lever,
+// diagnostic only: the plain result with a `remaining > 0 &&` test in every token compare 440 (1423 B): `remaining` then
+// takes EDI and `token` is re-read from its home for every compare as in retail; the same test in the first case only 655
+// (token keeps EDI). A compile-only copy of the file (no /GL; build/r196/cc19e.py) flips already with one early `remaining`
+// use (first or second case's condition, not a later one, not a token_length or destination test): token preload above
+// `sub esp`, the first buffer zero stored from SI and retail's four wcslen, two 0x19ea60 and two 0x19eae0 calls, frame
+// 0x208 only for the opponent loop's spilled down-counter. 121 random combinations of listed spellings (clamp, teams at
+// each use, failure returns, counter/team widths, mode local, declaration order, fallback test) never move token there.
+// So retail's source weights `remaining` above `token` on the dispatch path; no natural spelling found that does.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

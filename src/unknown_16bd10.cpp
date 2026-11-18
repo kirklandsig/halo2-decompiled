@@ -1194,6 +1194,14 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // and the offset rows 232; the distance dot ahead of the yaw 126 (same code); the sine and cosine declared at their
 // assignments 126 (same code); the length test as `0.0f != length_squared` 125 (only the ucomiss operands swap, the
 // zero still XMM1: a positional coincidence, not kept). The compile-only screen does not reproduce this function (263).
+// m3 lane 5 r195 (fast with 0x16c6f0, = full 126; aligned / register-masked aligned counts in brackets, base [103, 35]):
+// both dots sum (j product + k product) + i product and add into the j product's register; retail's second dot loads the
+// camera vector's j ahead of the normal's copy and its k at the product, ours the other way round, so the length ends in
+// XMM0 (retail XMM1) and every later zero takes the other register. The second dot as dot3f(camera vector, normal) 394
+// (1700 bytes) [119, 40]; as the camera vector's self-dot 392 (1700) [115, 37]; the length taken ahead of the plane
+// distance 399 (1700) [131, 44]; the distance as dot3f(normal, position) 126 (same code); the distance against the
+// camera vector instead of the copied normal 172 [120, 52]; t as one conditional expression 126 (same code). The three
+// 39x forms are worse aligned too, not only shifted. Body unchanged.
 // Unnegated quotient through the join, negated at use or before it 164/164;
 // squared length as the zero arm or factor default 378/378; conditional
 // factor at the scaled add 126; distance before the test or length 411/411;
