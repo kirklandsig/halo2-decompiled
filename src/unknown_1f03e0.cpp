@@ -1558,6 +1558,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // desired then takes 0x14 and the flying left 0x20), with the 12-byte direct vector 441. Lead: the 8-byte slot at 0xc goes to the
 // only 8-byte aggregate when the other one is 12 bytes, and a variable live in more arms sorts to the lowest 12-byte slot; retail's
 // general limited shares desired's slot without being desired. Body unchanged.
+// MiniMax A (11-18): no new form, no lower score (234); what still differs is the damping's first extraction (ours keeps it in
+// ECX), the vector homes and the vertical output tail; the homes only move when the arms' shapes change, which raises the
+// score, so the body stands.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

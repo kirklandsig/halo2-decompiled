@@ -2171,6 +2171,11 @@ void function_269250(long clump_index, long actor_index);
 // local record, the selection alone in a record, selection, score and best in one record 126 each (same code: the
 // records are split back into scalars); the selection from the iterator's datum index re-measured 128 (aligned 70:
 // selection memory-only and the pool hoisted, but into EDI, and the exhausted path threads to the exit).
+// MiniMax A (11-18): no new form, no lower score (87; 89 on this build's reduced image); what still differs is that retail
+// hoists the walk's pool into EBX, keeps the selection on the stack and compares the two scores on the x87 stack, while ours
+// keeps the pool in memory, the selection in EDI and compares with comiss; the in-arm compare (126) and the selection taken
+// from the walk's datum index (128) each score worse alone, and the two walk helpers are shared with four matched functions,
+// so they stay as they are.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

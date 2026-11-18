@@ -442,6 +442,7 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // or inside the miss, early or common exhaustion, and hit predicate or stale
 // handle reset: 186/155/192/134/186/134/177/164. NOT kept: none retains the
 // native hit bypass and trailing ESI return. Shared selected result restored.
+// MiniMax A (11-18): no new form, no lower score (77); the merge test moved out of the walk block (79), into the flag block (78), the merge test alone (152) and the record pointer in the flag block (176) all score worse, so the body stands; what still differs is that our compiler folds the redundant compare retail kept and the join copies the index in a register where retail reloads it from its stack slot.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

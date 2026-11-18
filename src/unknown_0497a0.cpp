@@ -482,6 +482,9 @@
 // paired terms, or separate product families 638/649/646/640. Moving the short
 // wave before those forms gives the same four scores. NOT kept: every form
 // shortens the body and leaves the frame and rounded-wave homes different.
+// MiniMax A (11-18): no new form, no lower score (536); what still differs is the frame (0x54 against retail's 0x60, twelve
+// bytes short) and the first XMM rotation (ours moves the wave through xmm3 into xmm1, retail through xmm1 into xmm5); the
+// between-update forms that reach retail's frame and length score higher, so the body stands.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
