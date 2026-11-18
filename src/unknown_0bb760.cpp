@@ -1028,6 +1028,10 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // The source spill and destination register across the blend call still differ. The direct scale-name reads restore the guard span and length but raise the total.
 // Tried explicit blend latch 89, explicit scale latch 89, both explicit latches 89, unsigned ordinal 89,
 // read-only input and indexed output 100, blend value before colour operands 89, direct indexed scale name 110, admission result and remaining count 176.
+// Input latch with body ordinal or lookup ordinal 89/168, early input advance before metadata 165,
+// destination-only walk with relative source 184, explicit byte bank distance 156, indexed from the
+// object block offset 242, guarded block with output latch 191, named pair count and early copy 141.
+// NOT kept: the input spill and EBX output still differ.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

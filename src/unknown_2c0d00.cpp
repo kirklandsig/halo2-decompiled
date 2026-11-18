@@ -587,6 +587,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // The excess frame word pair and the actor/unit and priority/query homes remain.
 // Actor publication after unit lookup, confidence tests, self-unit test, and settings, each with opening then ordinary unit index: 902/877, 922/932, 902/935, 924/924 reduced.
 // NOT kept: 902 and 877 shorten the body to 3702 or 3708 against retail 3731, and the matched caller scores 1 in those previews.
+// Settings after actor evaluation by index or selected actor 920/919, per-action optional
+// settings tests 920, complete priority or range defaults within the gate 931/916,
+// nullable settings after actor evaluation 927, immutable limits with ordinary/scoped query 960/960.
+// NOT kept: the four-point preview improvement leaves the eight-byte frame difference.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

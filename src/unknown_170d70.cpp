@@ -1473,6 +1473,11 @@ struct s_pool_view_172840
 // queue predicate 227; combined pool/projection with direct queue failure 219; independent tests
 // with projection before queue or first-write initialization 221/221; four flag names reordered 205.
 // NOT kept: the return variants lose the early ESI save, and renaming leaves the flag homes in place.
+// Independent failure stores with wide selected cluster 151/151, selection at publication 57,
+// list insertion from the published field 150, wide-to-narrow sentinel read 49, selection
+// after link/key 152, narrow selection with late extension 55, narrow-to-wide sentinel read 151.
+// NOT kept: the 49 form adds a sentinel reload and five bytes. The 55 and 57 forms add two bytes.
+// The independent failure stores recover the initial flag homes, but the publication schedule differs.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

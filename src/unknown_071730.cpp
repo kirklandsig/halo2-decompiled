@@ -346,6 +346,10 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // body 387 (same code: both sites call it out of line; retail expands both and calls 0x5b080). Diagnostic, reverted: the third form with the live test
 // forced inline 439 (1613 B, aligned 172, entry registers still reversed). So retail's source has the structured not-ready/success split; what is
 // missing is the form that keeps arg_0 in EBP at entry with it (the swapped-arm form shows the arm order moves that choice).
+// Variant-gated getter 428, getter at first data test 426, after both elapsed reads 424,
+// between variant key and lookup 429, before both 426, after first elapsed read 397,
+// variant gate with merged missing-input arm 428, variant gate after first elapsed read 457.
+// NOT kept: the variant gate restores the getter call at a different position and raises the score.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
