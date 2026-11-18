@@ -1046,6 +1046,19 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // and regress from 218. Paired differences give the lowest trial score, 280. The first-edge projection and
 // radius multiplication still use different SIMD operands. The opening body, caller and declaration are
 // restored.
+// M3 lane 6 r194 (fast with 0x270d90 at 286; control 218, aligned 70, masked 23). Round 113's actor-first recipe rebuilt on
+// this body (actor_index declared first in the definition, path.cpp's declaration and call; corners a, b, c, d; case 5's
+// position before its direction) 283 (1284 B, aligned 42, masked 6): every remaining difference is in case 1, where the
+// first edge's j/k, the parent point's y/z and the 1.0/a.z pairs hold each other's XMM registers (the instructions are
+// otherwise retail's) and the margin loads the radius and multiplies by the inverse where retail multiplies the inverse by
+// the radius in place (the 4 extra bytes). On the recipe: the radius named once for the compare and the margin 298 (aligned
+// 105); `inverse *= radius` used as the margin 283 (same code); the fraction and the margin as divisions by the first length
+// 283 (same code: the compiler forms the one reciprocal itself); the parameters as (actor, entry, pathfinding, surface,
+// state, ...) 283 (same code), (entry, pathfinding, surface, actor, state, ...) 289 (the entry is lost again), (actor, state,
+// entry, pathfinding, surface, ...) 283 (same code); retail's call sets up ECX (surface), then EAX, then EDI (entry) last.
+// Diagnostics (reverted at once): 1-7 dead initialised locals on the recipe 291/279/284/284/284/284/284 (only the origin
+// dot's term order moves; at 2 the body is 1280 B, aligned 39); a no-code read of first.j ahead of the projection puts
+// 1.0 in retail's XMM6, one of first.k puts first.j in retail's XMM3 (286/289), one of the parent point's y does nothing.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
