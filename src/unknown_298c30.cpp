@@ -94,7 +94,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
-// score 305 (was 305): The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax B (11-14): no new form, no lower score (382): retail carries the constant at +0x57 in xmm2 where this build
 // carries it in xmm1, which then swaps the product registers, retail's counter is in BX where this build's is in BP, and
 // the body is still 40 bytes shorter than retail's (1692 against 1732); the normalizer's two products follow the source
@@ -597,6 +597,39 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
 // Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.
 // NOT kept: every signed-count form shortens the body and changes the matched caller.
+// M3 lane 1 r129 (fast with 0x29a190 and 0x298c30, both MATCH unless noted; base 305, aligned 171/167 = unmatched instructions
+// ours/retail in an LCS-aligned diff; plain where said; nothing kept). Four retail-evidenced forms that work only together:
+// (a) the emitter's stores in retail's order (angle, side, facing test, direction) 314 (aligned 140/136; plain 314);
+// (b) the near arm's side as an if/else with one sine local assigned in each arm and the two rows written in both arms
+// (retail forms `y * cos` in SSE and loads x ahead of the sine's branch, which only the rows inside the arms give; the
+// cosine then goes to a float slot and unity to XMM2 as retail) 353 alone (1745 B, first difference +0x147);
+// (c) r122's global count used directly; (d) the distance compared unrounded through a double local with a float copy
+// for the later uses (retail's `fst` and compare on the x87 value) 352 alone (frame 0x68).
+// (a)+(b)+(c) 310 fast and 310 plain (1716 B, first difference +0x163, aligned 72/76; count in BP, outer counter in
+// EBX with its spill, x bits in EBX, `ret 0x1c`, caller MATCH: with the rows in the arms the count no longer sends the
+// facing pointer to EBX); (a)+(b)+(c)+(d) 284 fast (aligned 70/75) but 334 plain: the plain build's frame is 0x68 (one
+// unused dword at the bottom) wherever the double local is present (plain: (d) alone 352, (a)+(b)+(d) 351, (b)+(c)+(d)
+// 334, (a)+(c)+(d) 473 with the caller 684). Saved as build/r129/lead-298d90-plain310.patch and
+// lead-298d90-fast284-plain334.patch. Other sums (fast): (b)+(c) 315; (b)+(d) 327; (a)+(b) 342; (b)+(c)+(d) 283;
+// (a)+(b)+(d) 310 (1741 B).
+// On the four together (284 fast): wrapped angle as `>= 0.0f ? x - 2pi : x + 2pi` 284 (aligned 64/69); the emitter's
+// angle through a pointer 291, the array element by value 286, the element read at each use with `>=` and no copy 284
+// (aligned 56/60), that through a pointer 288 (aligned 53/57), the element with `<` 283; emitter dot x first 284; the
+// second side's ternary negated 283 (aligned 52/56); six operand orders of the arm rows 284 (same code); the cosine
+// assigned inside both arms 284 (same code); the angle store inside the arms 455 (caller 684); the second normalizer's
+// dot, the root's sum or the velocity dot in the other order 284 (same code); the sine argument selected by an if/else
+// into a double 284; float negation of the sine argument 310 (frame 0x68).
+// Float dx/dy locals for the distance on (a)+(b)+(c) 426 (1746 B, frame differs, caller 362), alone 432.
+// On the old body: the emitter's angle through a pointer or reference 325 (1736 B; first emission then reads the
+// element from memory at each use as retail does, but the wrapped angle loses XMM7), the element by value with
+// retail's store order 321; pointer forms without the `(double)` sine casts 373 (frame 0x68, SSE negation);
+// y and x read into locals after the angle store with the x row through the pointer 378 (frame 0x6c, all x87), all
+// through the locals 445; arms calling a two-real setter with `sin()`/`cos()` written in the rows 411 (1789 B, arms
+// not merged), with temporaries 360, with the ternary in both rows 411 (frame 0x68); sine by if/else or ternary and one
+// setter call 360; staged y with `cos()` written twice and the sine's angle in a double or float 306/360.
+// Left on the 310 plain form: the unrounded distance compare without a double local, the near arm's `y * cos`
+// (retail loads y and multiplies by the cosine's slot, ours loads the cosine), the first emission's angle read from
+// the element at each use, the wrapped angle's slot (+0x14 in retail) and its per-arm x87 loads.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1265,6 +1298,18 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // first sweep point's home), the sweep arms' XMM registers (retail: scale XMM2, i XMM0, j XMM1; the false arm copies
 // each component and keeps the first y product in XMM3 until the arm's end), the endpoint block after the arms, and the
 // three rotations in the loop. The patch is build/r201/lead-299460.patch in the lane 6 worktree.
+// M3 lane 1 r129 (fast with 0x29a190, 0x298c30, 0x2108a0 and 0x210770, all MATCH throughout; control 569, aligned 208/215 =
+// unmatched instructions ours/retail, masked 95/102; body unchanged). `inline` on 0x2108a0's definition re-measured 726
+// (3349 B, first difference +0xd0, aligned 203/208): the head then agrees up to the second pivot offset, where our two
+// arms share the y sum and store (the negative arm copies the negated radius and multiplies it by the stack component,
+// then scales y in place) and retail's arms each load the component and store y themselves.
+// The obstacle angle as float sums (`field_4 + pi : -field_4`, no double casts; retail's `fadd dword`) 601 (3353 B,
+// aligned 367/371), with the keyword 739 (3372 B, first difference +0x2e); the obstacle rotation's rows without the
+// double casts on the direction (retail's `fld st(0); fmul dword [mem]`) 625 (3349 B, aligned 266/275), with the keyword
+// 671 (3372 B, first difference +0xd0, aligned 268/268); both 643 (3372 B, aligned 344/349), with the keyword 744
+// (3387 B). The normalizer's squares as `j*j + (k*k + i*i)` 569 (same code; retail stores k and then takes i*i, k*k,
+// j*j from memory, ours keeps k on the x87 stack and squares it first); the distance's squares as `x + (y + z)`,
+// `z + y + x`, `(z + y) + x`, `x + (z + y)` 569 each (same code; retail squares z, then y, then x).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

@@ -309,6 +309,19 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // terminator indexed through `long const &found = i;` 39 (same code); the buffer named before the suffix conversion with the
 // suffix declared in the arm 44. Diagnostic (behaviour change, reverted): the append arm continuing the loop 59 (211 B).
 // Body unchanged.
+// M3 lane 1 r129 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all matched throughout; main 67; body
+// unchanged). Reading: retail's found entry in ESI serves the name test and the two copy arguments, dies when ESI takes
+// the copy's count, and the terminator and the plain arm each multiply i again (three `imul`), with i in EBX from the
+// loop's start; here any found-block entry spelled from i is shared with the terminator (address or product), so i
+// never has to outlive the calls. Indexed terminator with the entry pointer in the arm (re-measure) 84; a found flag
+// second in the loop condition (`i < count && !found`, flag set at the found block's top, no break) 72 (216 B: the
+// loop keeps its latch around the found block); the flag first in the condition and set last 79 (200 B, frame 0x28);
+// a NULL result in the loop condition with the empty name assigned after the loop 71 (207 B, frame 0x28, i in memory);
+// returns straight from both arms and the empty name returned after the loop 83 (193 B); a `built` flag set at the
+// arm's end with the plain name under `if (!built)` 84 (same code as the if/else: threaded before sharing), on the
+// two-member lead 39 (same code). Diagnostic (behaviour change, reverted): the two-member lead's append arm continuing
+// the loop 59 (211 B, re-measure: the calls then sit inside the loop and i goes to memory). Lane 10 r119's two-member
+// lead re-measured 39 (204 B, aligned 16/17: everything but the shared product).
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

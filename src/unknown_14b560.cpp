@@ -988,6 +988,12 @@ bool function_e4050(long object_index);
 // on the `dword current` walk 171, on the long NONE-root walk 109; the `dword current` walk in its own `{}` block
 // 171; re-measured the `dword current` walk 171 (405 B). Diagnostic: 1 to 7 dead initialised locals on the kept
 // body 44 each (the EBX/EDI swap of the player datum and the unit is not a symbol-count tie).
+// M3 lane 1 r128 (fast with 0xbadc0/0xbaf40/0xe4050/0x14deb0/0xbaf80/0x226190, all matched throughout; control 43): in the
+// 405-byte family (the `dword current` walk from the unit with a NONE root, re-measured 171) retail's walk keeps three
+// scratch values (current ECX, root EDX, step object EAX), so the unit, live across it to the 0xe4050 call, is pushed to
+// EBX; ours reuses ECX for the step object, so the unit stays in EAX. New on that family: the step object named before
+// or after the root store 171/171; the unit bound by const reference to the player field 171; the unit object bound by
+// const reference 171; 0xe4050 passed the root (equal to the unit on that path) 181 (391 B). BLOCKED-BY 0xbaf80 stands.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -3402,6 +3408,11 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // base only: round 46's split failure test 91 (608 B, aligned 55, masked 13; flag form, not keepable without a match); left on
 // it is loop 1's inlined iterator step (retail keeps NONE in EDX and datum/unit in EDI/ESI, and stores no iterator.data before
 // loop 1). BLOCKED-BY 0xb8540/0xb7b40 stands (both still disabled stubs: nothing on loop 2's call tree is seen to write g_4e8c20).
+// M3 lane 1 r128 (fast in round 34's widened image, control 103): 0xb7b40's disabled draft enabled with its stub removed
+// (its type callbacks are indirect calls that could reach the players init/dispose entries) 103 in the fast and the full
+// check (nothing lost there any more; 0xb7b40 607), so the indirect calls do not release the EDI globals pointer; the
+// root walk through the existing 0xbaf80 172 (578 B, a call); `busy` declared ahead of the root walk 103; loop 2 set up
+// from the pool global again 141; the pool local bound by const reference 154 (624 B). BLOCKED-BY 0xb8540 stands.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
