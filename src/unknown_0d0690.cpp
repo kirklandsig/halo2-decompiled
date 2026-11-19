@@ -1557,6 +1557,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // MiniMax G (11-18): no new form, no lower score (529): this build's frame is 0x2c against retail's 0x28 and the
 // selected result still spills; retail's own parameter order is (type, query, block), with the block in EAX and the
 // query in EDX, and this lane may not change the parameter order, so the lead that needs it stays blocked.
+// Conditional last-row selection 529, with an entry receiver 530, combined mask 571, or general bit first 531.
+// Return true in the selected branch 566, with the entry receiver 563; explicit empty-block
+// failure with the receiver 560 or combined mask 571. The selection spill and register homes still differ.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

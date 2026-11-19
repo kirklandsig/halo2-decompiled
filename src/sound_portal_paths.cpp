@@ -191,6 +191,9 @@ __forceinline long portal_path_gain(real distance, real range)
 // packed link base or address 296; path ordinal advanced at the link read 367;
 // starting-cluster and decoded portal names 296. NOT kept: the starting cluster and both
 // live BSP table bases retain their opening allocations.
+// Direct list/portal/both indexed records/direct list and portal 358/374/392/329.
+// Live-length link cursor/positive end cursor/consumed count/empty-range cursor 374/359/373/364.
+// The direct list form recovers the initial EBP save; both table reloads remain unresolved.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -289,11 +292,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 354 (was 354): The entry frame is 0x430 versus retail's 0x428. Retail keeps the starting cluster in
-// EBP, reloads both BSP table bases per path entry and resolves the destination before testing flags. The
-// extra table-base spills persist in the build.
-// Earlier score 354 (was 354): Frame 0x430 versus 0x428. Retail keeps the starting cluster in EBP and reloads
-// both BSP table bases inside the portal loop. Tried: const portal 354; const views 354; endpoint mask
+// score 315 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Retail's 0x428 frame keeps the starting cluster in EBP, reloads both BSP table bases per path entry
+// and resolves the destination before testing flags. Both extra table-base spills persist.
+// Before the cursor change the frame was 0x430. Tried: const portal 354; const views 354; endpoint mask
 // before shift 354; const portal and mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
 // path increment 371; index test before closest distance 354.
 // F417: Invalid output first 353; count-stop return 354; explicit gain arms 365;
@@ -371,6 +373,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Shared bitmap setters at the seed, destination or both 354/354/354. Shared tests for distance,
 // sort fill or output 333/354/354, all three 333, complete bitmap API 333.
 // NOT kept: the distance test shortens the function to 1347 bytes and leaves both BSP table spills.
+// Required index cursor at the stores 362 or row latch 315 (kept, plain); required-index
+// position/end 390/388; separate sorted cursor/sorted end 369/383; scoped sort scratch or
+// validity memset with the index cursor 359/359. The latch restores gain-based row addressing.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -440,7 +445,7 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 		long index = order[i];
 		if (valid[index >> 5] & (1 << (index & 31)))
 		{
-			indices[i] = index;
+			*indices = index;
 			if (gains)
 				gains[i] = index != NONE ? portal_path_gain(distances[index], bsp->environments[index].range) : 0xc2800000;
 			if (portals)
@@ -454,7 +459,7 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 		{
 			if (count)
 				break;
-			indices[i] = NONE;
+			*indices = NONE;
 			if (gains)
 				gains[i] = 0xc2800000;
 			if (portals)
@@ -462,5 +467,6 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 			if (clusters)
 				clusters[i] = NONE;
 		}
+		++indices;
 	}
 }

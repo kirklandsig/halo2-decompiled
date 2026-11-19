@@ -1272,6 +1272,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P557: Actual three-output query workspace in six field orders, then Boolean output pair with
 // probability second/first: 273/273/273/273/273/273/270/269. NOT kept: unmatched local grouping;
 // original independent outputs/defaults, sentinel/cleanup graph and complete body restored.
+// Indexed byte rows with low word/mask/available first/guarded assignment 237/252/353/371.
+// Typed rows with the same four lookup forms 237/252/353/371. NONE is still in EDI;
+// retail reloads the squad index and holds NONE in ESI.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
