@@ -4774,7 +4774,7 @@ void __stdcall function_15bb20(long player_index)
 }
 
 long function_23f360(long team, long mode);
-long function_23f260(long mode, long player_index, long value);
+long function_23f260(long player_index, long value, long mode);
 
 // @retail 0x158e90
 long function_158e90(long team)
@@ -4798,81 +4798,9 @@ bool function_158eb0()
     return result;
 }
 
-// score 5 (was 5): BLOCKED-BY 0x23f260 (mode declared first). The mode and the player index are kept
-// in swapped registers: retail computes the mode in ecx and the index in edx, ours the other way round.
-// Tried: `(long)(flag != 0)` 5; `!!flag` 5; a byte flag 5; `> 1` for `/ 2 > 0` 35.
-// actual mode reference 38; options record reference 5; complete iterator 46;
-// iterator scope 5; byte result 69; wide result 59; byte plus mode reference 66;
-// direct final count rejection 23. Cardinality bias 12; bounded count 43; singleton states 56;
-// retained quotient/raw score 63/63; signed/unsigned halfword result 58/58; bounded extra-player
-// count 46. Rejection state 27; rejection predicate 63; wide/byte rejection 51/27; rejection
-// from score 67; rejection cardinality exit 32; rejection fallthrough 85; rejection after iterator 30.
-// Mode local before the count 38; in-argument ternary on the global 38; inline helper taking the
-// mode last 5; `!!` on the global 38; index local read after the count, before the flag 5.
-// The flag through engine_options() 5; `flag ? 1 : 0` 5; a named score 5; count assigned after
-// its declaration 5; index initialised first 7; the bool flag passed directly 41.
-// Round 124: retail evaluates the mode before the index (so the mode takes ECX and is copied to EAX);
-// ours evaluates the index first. A long mode local after the flag 37 (the mode goes straight to EAX,
-// 144 bytes); the mode local in place of the flag 37; `(bool)` on the global for that local 44; the
-// flag read before the count 5; the score named and the count moved after the call 5.
-// Round 196: the index read into a local after the flag 5; the flag and call in a scoped block with
-// the score outside it 5; the flag, call and test in a scoped block 5; the count, flag, named score
-// and test in a scoped block 5; a named index and a named score 5. Matched 0x15c6f0 (flag in AL, then
-// `xor ecx, ecx`) shows the first free register goes to the mode when nothing is read before it, so
-// retail's mode is evaluated before the index: the parameters declared with the mode last would give
-// that, in a held file.
-// Round 96: iterator result stored in an active bool 5; iterator pointer 5; const flag 5; byte normalized
-// mode 35; plain for 5; guarded do/while 16; count postincrement 5; named positive predicate 5.
-// Original body restored.
-// Round 124 (m3 lane 7, fast): `g_4e6948->flag1128 != 0` in the argument 38 (144 bytes); result declared
-// before the count 7; the iterator fields stored index, absolute index, data 7; `/ 2 >= 1` 11 (147 bytes);
-// a long mode cleared then set under `if (flag)` 62 (130 bytes). Original body restored.
-// Round 147 (m3 lane 6, fast): the index through a `long const &` 5; the flag declared at function scope 5;
-// `flag == true` 6; a long flag local 12 (147 bytes); `!flag ? 0 : 1` 5. Original body restored.
-// Round 74 (m3 lane 11, fast): the mode from a forceinline helper in the argument 5; the index from a
-// forceinline accessor 5; the flag, call and halving in a forceinline rank helper taking the index 5
-// (the register choice survives inlining in every form); the iterator declared first 5; an options
-// pointer local at function scope 27 (147 bytes). Original body restored.
-// Round 96 (m3 lane 9, fast): diagnostic probe (one dword global load and store, reverted): anywhere ahead of the call's
-// arguments, at entry or in the loop body, it gives retail's exact setup (`mov edx, [esp+0x18]` / `xor ecx, ecx` / `setne cl` /
-// `mov eax, ecx`); after the loop it moves nothing. So the swap is one temporary-rotation step: retail has one more expression
-// temporary ahead of the index load. Chained `iterator.index = iterator.absolute_index = NONE` 5; next() given `&iterator.player`
-// 5; the iterator set through its record-pool view 5; `flag != false` 5; the raw rank named and halved in the test 5.
-// Original body restored.
-// Round 98 (m3 lane 16, fast): inline helpers whose parameters could supply the missing rotation step: a typed
-// wrapper around the iterator's next call 5; the iterator's three stores in an inline setter taking its address 5;
-// both 5; the rank call through a forwarding helper taking (mode, index) 5, (bool flag, index) 5, (mode, index,
-// value) 5, (index, flag) with the halving inside 5; the whole test in an inline predicate taking the index 5
-// (the same code in all eight). Original body restored.
-// Round 173 (m3 lane 5, fast): `result &&` in the loop condition in place of the break 67 (120 bytes); result declared
-// after the iterator setup 9; `0 < rank / 2` 5; `return count != 1 ? result : false;` 47 (161 bytes); `return result &&
-// count != 1;` 63 (128 bytes). Re-measured: `++count` after the flag read 5; the flag through TEST_FIELD_BIT (the same
-// bool) 5; the iterator's index stored before its absolute index 7. Original body restored.
-// Round 113 (m3 lane 16, fast): a named player index with a long mode local `flag != 0` 37 (144 bytes, the mode straight to
-// EAX); the ternary on the global in the argument 38 (re-measured); the flag read before `++count` with the rank named 5; a
-// named player index with `flag ? 1 : 0` 5; the flag normalised at its read (`bool flag = g->flag1128 != 0`) and passed
-// directly 35. Diagnostics (removed): the iterator's data store written twice 5, the flag read twice 5 (copies removed before
-// allocation do not rotate the registers). Original body restored.
-// HELD (needs the owner's OK: src/unknown_23f260.cpp is a held file): m3 lane 6 r178, one-file LTCG harness
-// (this file with src/player_queries.cpp, src/unknown_23f260.cpp, src/unknown_16b570.cpp, src/unknown_15b2f0.cpp,
-// src/unknown_15d770.cpp, src/unknown_15e410.cpp and the build's ballast object; it reproduces the 5 exactly):
-// 0x23f260 declared `(long player, long excluded_team, long mode)`, with the definition, the three declarations and
-// the five calls changed together (build/r178/held-158f50.patch), gives 0 here with 0x23f260 itself still exact.
-// The swap is one scratch-register rotation step: with fewer callee files in the harness g_4e6948 is reloaded in
-// the loop and that extra temporary alone gives retail's setup. On main's order in the harness: the iterator data
-// through a named pool pointer 5, the iterator stores reordered 7, result declared before the count 7, `!= false`
-// on the iterator call 5, `(bool)` on the flag read 5, `count++` 5, `/ 2 >= 1` 7, `return count != 1 && result;` 11.
-// Round 247 (m3 lane 3, fast): the count declared after the iterator setup 10; the test as `<= 0` with `continue` 67; an
-// options pointer local in the loop for the flag read 5; `flag == false ? 0 : 1` 5; the iterator named `players` 5.
-// Round 170 (m3 lane 7, fast with 0x23f260/0x19f240, both matched each time): an `unsigned long` count 5; the result
-// assigned from the halved rank's `<= 0` test with `if (!result) break;` 64 (129 bytes); `result &&` ahead of the
-// iterator call in the loop test 67 (120 bytes); re-measured a named player index after the flag 5 and
-// `g_4e6948->flag1128 ? 1 : 0` in the argument 38 (144 bytes). Still the
-// mode/index scratch pair (ours EDX/ECX, retail ECX/EDX): BLOCKED-BY 0x23f260 (its file is held this round).
-// Round 179 (m3 lane 8, fast with 0x23f260/0x19f240, both matched each time): `if (count == 1) return false;
-// return result;` 23; `return false;` in the loop with `return count != 1;` and no result 65 (126 bytes); a
-// short count 8 (147 bytes); the short count with the early return 22; the short count with the in-loop
-// return 64 (127 bytes). Still BLOCKED-BY 0x23f260.
+// true when no player's halved 0x23f260 rank (no excluded team, mode from the options flag, passed last: retail
+// evaluates the mode before the player, and sibling 0x158e90 passes 0x23f360 its mode last) is positive, and false
+// when there is exactly one player
 // @retail 0x158f50
 bool function_158f50()
 {
@@ -4886,7 +4814,7 @@ bool function_158f50()
     {
         ++count;
         bool flag = g_4e6948->flag1128;
-        if (function_23f260(flag != 0, iterator.index, NONE) / 2 > 0)
+        if (function_23f260(iterator.index, NONE, flag != 0) / 2 > 0)
         {
             result = false;
             break;
