@@ -704,6 +704,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // after planar normalization or at the collision split, scoped/entry declaration:
 // 790/790, 791/791, 790/790, 794/794. NOT kept: collision-split seeding reaches
 // 3499 bytes and position +0x80, but drops the early vector copy and shifts the heading spills.
+// The position query still uses ESP+0x8c for retail's ESP+0x80.
+// Planar snapshot after position 775, after normalization 751, at query admission 745.
+// Planar snapshot before or after the actor update 725/723, after the translated target 723,
+// after both planar normalizations 725, and before side selection 720.
+// NOT kept: The planar snapshots move the position to +0x68 or +0x58 and disturb the entry spills.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -2231,6 +2231,11 @@ void function_269250(long clump_index, long actor_index);
 // parameter is copy-propagated, so the selection keeps EDI); on the in-arm form the actor index read into a local at the
 // top of the actor body 126 or after the walk 126 (same code), the actor's previous clump in a local for the post-loop
 // compare 126. Body unchanged.
+// The pool still spills through the scan and the selected handle uses EDI.
+// Actor index at the selected arm or its transfer test 87/87.
+// Created-arm index before creation, after creation or after its success test 87/87/87.
+// Separate indices at transfer/success, arm entry, or transfer/after creation 87/87/87.
+// NOT kept: All capture lifetimes tie and retain the SSE score comparison and pool reloads.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

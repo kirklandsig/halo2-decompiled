@@ -597,6 +597,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
 // Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.
 // NOT kept: every signed-count form shortens the body and changes the matched caller.
+// Unity still uses XMM1 instead of XMM2. The fixed-turn cosine spill and candidate register still differ.
+// Fixed x accumulator 306, separate products 306, wide fixed x 306.
+// Distant x accumulator 305, distant y 320, both distant rows 320, all x rows 306, all rows 321.
+// NOT kept: The distant x form ties. The other forms raise the score or leave the fixed-turn spill unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
