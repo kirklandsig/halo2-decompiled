@@ -322,6 +322,13 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // bare and zeroed in the cache block and in an else 140; the unit count by if/else 114 (same code); the cached
 // generation through saved_game_storage_get_cache() 138; the entry test through that getter 114 (same code). Our
 // build still loads g_51ea14 into EAX at entry with EBP as the zero register, retail into EDX with EBX.
+// per-device cache receiver for the table and its generation 170; initialize the declared location iterator
+// as one actual record 114; use the matched disk location kind for packing 114; read the built-in kind once
+// for both filtering and packing 108; unsigned generation values in both packed handle paths 114; running
+// output destination for the disk scan 183; running output destination for the built-in scan 166; one running
+// output destination across both scans 231. NOT kept: using the built-in entry kind for filtering and packing
+// scores 108 at 568 bytes, six below baseline. The entry cache and zero registers still differ. The per-
+// device cache receiver and all output cursors grow the body. Opening executable source restored.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

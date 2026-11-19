@@ -278,6 +278,13 @@ static inline void font_copy_wait(bool volatile *done)
 // Declaration order and scope of the arrays, the delete loop's spelling and the parse order change nothing. Only an
 // extra use of the old array in the pointer loop `old_file < old_files + old_count` (score 227) moves it first, with
 // different loop code.
+// source file address from the record byte displacement 4; destination file address from the record byte
+// displacement 4; shared per-file byte displacement for both copy lists 4; shared advancing record
+// displacement with the ordinal bound 6; single copy displacement bounded by the parsed byte extent 281; old-
+// file deletion by bounded record displacement 252; separate old-list and paired copy-list byte displacements
+// 252; copy result formed after the two guarded opens 178. The indexed byte forms tie at four and leave the
+// same slot exchange. The advancing displacement gains no slot and adds two differences. The extent bounds
+// and joined copy result regress. Opening executable source restored.
 // @retail 0x121b00
 bool function_121b00(void)
 {

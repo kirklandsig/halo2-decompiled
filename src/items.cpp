@@ -430,6 +430,13 @@ inline real item_real_random_range(real lower, real upper)
 // `location_c2` as word; the helper returning `lower + span * sample`. Worse: the c2 copy before c4 (5, register
 // assignment changes), brace-initialising the owner {c4, c8, c2} (6, c4 loaded first), the helper with a named sample
 // local (76, SSE). No behaviour difference found against retail.
+// existing full random-range helper with the item seed 76; existing slot sample feeding the product-first
+// range 29; existing normalized sample with the explicit seed 29; existing integer draw with the original
+// normalization 2; existing object getter for the post-draw owner source 2; existing object getter for both
+// independently observed items 2; existing bounds type for the adjacent delay endpoints 2; owner source
+// scoped to filling its packet 2. The integer draw, object lookups, bound pair and packet scope preserve the
+// same two instructions. The normalized draws move other instructions, and the full range helper grows the
+// body. Opening executable source restored.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
@@ -597,7 +604,7 @@ struct s_item_collision_bsp
 // plane distance measures 196 as well, both under the eight-point minimum, so the body stands; the marker's coordinates
 // still come from different slots, the instance lookup folds the base into a lea where retail adds it, and the position
 // products stay in fresh registers where retail overwrites them in place.
-// score 198 (was 200): frame 0xa0 agrees; instance indexing, plane-normal and spin/speed homes remain.
+// score 190 (was 198; earlier 200): the 0xa0 frame and transformed instance address agree. The rejection span, plane-normal and contact-position XMM homes, and pending spin scale still differ.
 // Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
 // the settle call 0x10d056 (ja 0x10d245); contact marker query args 0x10d05f..0x10d06d; surface_index == NONE test 0x10d082; instance
@@ -835,6 +842,18 @@ struct s_item_collision_bsp
 // base and section displacement 201; shared byte-displaced receiver 192; collision
 // displacement 235. NOT kept: the shared receiver gains only six; instance indexing
 // still adds the base before the section read.
+// instance table field binding through section and transform reads 198; section table field binding for the
+// selected geometry 198; signed instance selector field in the guard and both reads 198; instance and section
+// table fields kept distinct through the query 198; signed selector and both table fields at their native
+// observations 198; section ordinal bound to the indexed instance field 198; signed selector and section
+// field on the shared instance record 192; world and instanced surface records supply the two plane indices
+// 198; shared signed instance selection with direct section field use 192; direct section field and all three
+// transformed normal accumulators 190. The first eight trials include the shared instance selector at 192.
+// NOT kept on its own: the exact instance-address sequence gains six at the original extent. The direct
+// section field with all three normal accumulators scores 190 in both checks at 1366 bytes and preserves the
+// 0xa0 frame. Retail reads the section index before adding the instance base, then adds the up and left
+// products before the forward product. The shared instance and staged normal rows are retained. All plain
+// controls keep their opening scores.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -860,7 +879,8 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 			{
 				plane3f plane;
 				plane3f surface_plane;
-				if (item->surface_index == NONE)
+				short const &instance_index = item->surface_index;
+				if (instance_index == NONE)
 				{
 					s_item_collision_data *collision = (s_item_collision_data *)g_4e0340;
 					bsp3d_get_plane((s_bsp3d *)collision, collision->surfaces[item->material_index].plane_index, &plane);
@@ -872,13 +892,19 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 				else
 				{
 					s_item_collision_bsp *bsp = (s_item_collision_bsp *)g_4e0348;
-					s_item_collision_data *collision = (s_item_collision_data *)(bsp->sections +
-						bsp->instances[item->surface_index].section_index * 0xc8 + 0x70);
+					s_item_collision_instance const &instance = bsp->instances[instance_index];
+					s_item_collision_data *collision = (s_item_collision_data *)(bsp->sections + instance.section_index * 0xc8 + 0x70);
 					bsp3d_get_plane((s_bsp3d *)collision, collision->surfaces[item->material_index].plane_index, &plane);
-					transform4x3f const *matrix = &bsp->instances[item->surface_index].matrix;
-					surface_plane.i = matrix->up.i * plane.k + matrix->left.i * plane.j + matrix->forward.i * plane.i;
-					surface_plane.j = matrix->up.j * plane.k + matrix->left.j * plane.j + matrix->forward.j * plane.i;
-					surface_plane.k = matrix->up.k * plane.k + matrix->left.k * plane.j + matrix->forward.k * plane.i;
+					transform4x3f const *matrix = &instance.matrix;
+					surface_plane.i = matrix->up.i * plane.k;
+					surface_plane.i += matrix->left.i * plane.j;
+					surface_plane.i += matrix->forward.i * plane.i;
+					surface_plane.j = matrix->up.j * plane.k;
+					surface_plane.j += matrix->left.j * plane.j;
+					surface_plane.j += matrix->forward.j * plane.i;
+					surface_plane.k = matrix->up.k * plane.k;
+					surface_plane.k += matrix->left.k * plane.j;
+					surface_plane.k += matrix->forward.k * plane.i;
 					surface_plane.d = matrix->position.z * surface_plane.k;
 					surface_plane.d += matrix->position.y * surface_plane.j;
 					surface_plane.d += matrix->position.x * surface_plane.i;
@@ -1551,6 +1577,14 @@ struct s_item_flags_view_10b850
 // initialization 820. NOT kept: shared-motion forms miss the native
 // frame or the gain threshold. Entry flag and motion workspaces still differ.
 // Contacted object tag flags read through the typed definition field 824.
+// position and collision result scoped through the position write 820; carrier and contact samples scoped
+// through the carrier correction 820; geometry and carrier samples end at their separate last consumers 820;
+// timestep scope ends immediately after position integration 824; timestep scope inside the position and
+// collision scope 820; timestep scope inside the carrier and contact sample scope 820; separate timestep,
+// geometry and carrier-sample scopes 820; bounded geometry workspace and flow magnitude declared at its test
+// 820. NOT kept: limiting the geometry or carrier scope reaches 820 at 4096 bytes, four below baseline. All
+// eight forms retain the 0x154 frame and first entry difference. The timestep scope alone ties at 824.
+// Opening executable source restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
