@@ -1393,7 +1393,8 @@ PRIVATE __forceinline void reset_vehicle_contact(s_vehicle_contact *contact)
 {
 	contact->contact_normal = *g_4687b0;
 	contact->unknownb0 = g_54e898;
-	contact->compression = 0.0f;
+	real *compression = &contact->compression;
+	*compression = 0.0f;
 }
 
 // score 3: the only difference is where the inlined reset's `xorps xmm0` sits.
@@ -1406,6 +1407,8 @@ PRIVATE __forceinline void reset_vehicle_contact(s_vehicle_contact *contact)
 // `/Ox`, `/Ot`, `/Ob2`, `/Oy`, `/Oi`, `/Oi-`, `/GX`, `/GX-`, `/arch:SSE2`
 // tie at 3; `/Oy-` 80, `/Ob0` 103, `/O1` and `/Os` 108, `/Od` 247; `/Gd`
 // and `/Gz` fail. Not a source-order or flag difference.
+// Matched in a full build with stand-in SDK headers (was 3): reset_vehicle_contact stores the zero compression
+// through a pointer local, which moves the inlined reset's `xorps xmm0` to where retail has it.
 // @retail 0x207ab0
 void function_207ab0(long index, s_vehicle_physics_state *state, s_vehicle_contact_result const *result)
 {
