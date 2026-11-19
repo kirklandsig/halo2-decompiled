@@ -696,6 +696,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 386/386/386. Separate accepted edge with while or for 389/389. Separate scan
 // and prior-crossing edges with while, for, or early rejection 382/382/382.
 // NOT kept: the return and first-edge homes remain exchanged, and the bodies shrink.
+// Trace success and first edge or either order 305/305. Per-sector first edge and crossing or
+// either order 305/305. Trace success and crossing or either order 305/305. All three with
+// success or first edge first 363/363. NOT kept: the paired records move the result byte outside
+// its retail slot. Grouping all three shrinks the frame. The opening body is restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

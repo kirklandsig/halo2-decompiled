@@ -1544,6 +1544,10 @@ void function_150820(dword *bits, bool local_only)
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
+// Two Boolean rows indexed by hand or selected by policy 43/88. Hand-pair field by policy or slot
+// ordinal 88/78, post-query pair copy or reference 88/88, first-row reference 43, separate hand
+// availability tests 78. NOT kept: neither workspace changes the saved player/hand allocation at
+// 210 bytes. The shorter and longer variants regress. The opening body is restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

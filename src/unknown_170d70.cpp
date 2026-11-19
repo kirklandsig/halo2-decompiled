@@ -848,6 +848,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // count read after entry admission 129; next-volume count 129; group head from published
 // index 129; direct portal field 129; one resolved plane value 123. NOT kept: the resolved
 // plane gains six and still exchanges the entry EBX save with the volume-loop BP save.
+// Head array live through projection, paired array references after projection, or head array at both
+// group accesses 128/128/128. Group element references or a reference to the carried cluster 129/129.
+// Reselect cluster after projection by record, direct indexing or two array receivers 165/165/164.
+// NOT kept: the first three gain one and retain the opening register exchange. Reselecting shortens
+// the body and direct indexing changes the matched caller. The opening body is restored.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1115,6 +1120,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // with shared sine contributions 516. Rescaled original forward 349, with shared point difference 395.
 // NOT kept: cosine-complement scaling holds the axis components live where retail reads them again.
 // The retail second rotation scales j before multiplying by i. Preserving that grouping still differs.
+// Original forward captured after the ratio, vertical field, both angles or first matrix
+// 345/345/345/358. Forward component capture split around the ratio after i or j 367/367.
+// Ratio computed before and stored after the capture 349. Shared forward address through both rotations 365.
+// NOT kept: the one-point gains leave unity in XMM3. Split captures and the shared forward address
+// change the matched initializer. The opening body is restored.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
