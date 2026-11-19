@@ -2179,6 +2179,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
+// base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
+// takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.
 // MiniMax H (11-18): no new form, no lower score (168): the 0x80 frame agrees, but the first iterator load still
 // encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
 // retail keeps EAX, and the player search further down still reads another global and keeps its counters in other

@@ -475,6 +475,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 }
 
 // score 218 (was 218): r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// MiniMax I (11-19): no new form, no lower score (218): the entry still leaves the pathfinding root in the register this build
+// picks instead of copying it into EBX, and the actor index is still read in the case that uses it rather than into EAX before the
+// dispatch; case 1's paired-edge block still keeps the edge vector's j and k in the other two xmm registers (retail xmm3 = j,
+// xmm4 = k and the 1.0f in xmm6) and the margin still loads the radius into a fresh register where retail multiplies the inverse
+// in place.
+// score 218 (was 218): r123 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // M3 lane 11 r123 (fast with 0x270d90/0x270400/0x30bf0): actor_index declared first alone 218 (same code); with corners
 // a, b, c, d 281 (1284 B, aligned 70 -> 59, register-masked 23 -> 15: entry exact). The 4 extra bytes are the margin:

@@ -80,6 +80,8 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// MiniMax I (11-19): no new form, no lower score (219): retail's two rotation copies take their complement products' operands on
+// different sides, which one shared helper cannot produce, and the jump table still sits four bytes earlier than retail's.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax R (11-17): no new form, no lower score (219): retail keeps two separately scheduled rotation copies whose complement products take their operands on different sides, which one shared helper cannot produce, and the helper's body may not be written out by hand unless the function then matches.
 // MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
