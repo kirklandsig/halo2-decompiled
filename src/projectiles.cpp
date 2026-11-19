@@ -391,6 +391,8 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // "the axis first" order) and is reverted, so the body stands.
 // MiniMax A (11-12): no new form, no lower score (3): the three differences are still the flag OR and its store around the fld st(0) and the axis.i load that retail makes after it; the angle declared after the flag store measures 10 and the axis through a pointer local measures 3 with the same code, so the body stands.
 /* the rotation a spinning projectile makes each tick */
+// Matched in a full build with stand-in SDK headers (was 3): the flag is set and cleared through a pointer to the
+// flags word taken at the top (as in function_fd3c0), so the axis loads wait for the flag store as in retail.
 // MiniMax R (11-16): no new form, no lower score (3): the flag OR and its store still straddle the angle duplicate the other way round and the first axis load still comes before the OR here and after it there; moving the flag against the axis and the trigonometry gives 32 each way.
 // MiniMax A (11-14): no new form, no lower score (3): only the rotating flag's OR and store and the first axis load
 // are in the other order; the frame, the length and every other instruction agree.
@@ -498,6 +500,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 void function_fbd40(long projectile_index)
 {
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
+	dword *flags = (dword *)&projectile->flags;
 	vector3f axis = projectile->angular_velocity;
 	real speed = projectile_normalize(&axis);
 
@@ -505,14 +508,14 @@ void function_fbd40(long projectile_index)
 	{
 		real angle = speed * g_510c54->rate;
 
-		projectile->flags.rotating = true;
+		*flags |= 1;
 		projectile->rotation_axis = axis;
 		projectile->rotation_sine = (real)sin(angle);
 		projectile->rotation_cosine = (real)cos(angle);
 	}
 	else
 	{
-		projectile->flags.rotating = false;
+		*flags &= ~1;
 		projectile->rotation_sine = 0.0f;
 		projectile->rotation_cosine = 1.0f;
 	}
