@@ -453,6 +453,23 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // merge test `!initialize || result != NONE` too 82 (520 B). Lead: in the single-return form the tail keeps the result in
 // ESI across 0x3dd10 because the walk's NONE edge brings it there; retail reloads it from the frame after the call.
 // MiniMax A (11-18): no new form, no lower score (77); the merge test moved out of the walk block (79), into the flag block (78), the merge test alone (152) and the record pointer in the flag block (176) all score worse, so the body stands; what still differs is that our compiler folds the redundant compare retail kept and the join copies the index in a register where retail reloads it from its stack slot.
+// MiniMax G (11-19): no gain (77), body unchanged. Retail's join is one block `cmp esi,-1 / mov cl,1 / je` reached by the
+// allocation arm and the exhausted walk only; the hit arm jumps straight to the record block (0x3def9). Our compiler instead
+// lets the hit arm enter the shared test and copies the joined index back from its slot there. Forms measured: the join test
+// moved into the miss arm as `if (result != NONE) { initialize = true; }` with the record block after the arms 86 (the test is
+// redundant there and folds away, so the join becomes `mov cl,1`); the same with an unsigned result 102 (510 B, frame 16: the
+// record pointer then needs its own slot); the record pointer computed in both arms 176 (488 B); the join test on its own 152.
+// `unsigned long result` is the one form that reproduces retail's hit-arm bypass: the compiler threads the hit arm past the
+// merge test straight to the record block, but the score stays 77 (510 B) because the join still materializes the index with a
+// reload (`mov eax,[esp+0x10]`) where retail keeps it in ESI, and our exhausted-walk exit falls through inline (`or eax,esi`)
+// while retail ends with a separate trailing epilogue (`mov eax,esi`) placed after the main one.
+// MiniMax G (11-19, second pass): no gain (77), body unchanged. Retail's tail mapped exactly: the walk exit at 0x3dedd
+// reloads the result into ESI and tests it (`cmp esi,-1 / je 0x3dfca`), the allocation arm jumps to 0x3deee where the same
+// test is repeated (`cmp esi,-1 / mov cl,1 / je 0x3dfbc`), and the record block at 0x3def9 reloads the result from its slot
+// and computes the record pointer before the `test cl,cl`; the hit arm jumps straight to that block. The `-1` epilogue is a
+// separate block after the main one and returns the register (`mov eax,esi`), not the folded constant we emit (`or eax,esi`),
+// so retail did not know the value there. Ours merges the two tests into one and keeps the index in EAX. A 300 s permuter
+// run (43 tries, full and reduced image) left the baseline at 71, so the body stands.
 // Eviction scan with separate first/absolute/next slots and all pairings 77 each;
 // all three together, also with a named next-search start, 77 each. Cache-hit and return edges remain.
 // One pool pointer 77; one data base 150; both 150. Exhaustion tested against the terminal cursor 79,

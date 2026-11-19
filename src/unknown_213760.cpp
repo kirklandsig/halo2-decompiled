@@ -1159,6 +1159,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // MiniMax B (11-19): no new form, no lower score (33): the frame and extent agree, the query-size and write-count
 // homes stay four bytes off, and the only lower form found so far is the goto that lane 11-16 used here, which is not
 // to be repeated; the body stands.
+// MiniMax G (11-19): no new form, no lower score (33), body unchanged. The range test written with a bool constant
+// (`index >= true && index <= true`, and `valid && index != 0 && index != true`) compiles to the same code as the literal 1
+// (the constant is still folded into an immediate), so retail's `mov esi,1` with two unmerged compares against ESI is not
+// reproduced by the source alone. The four residual differences are unchanged: our query size sits at [esp+0x34] where retail
+// keeps [esp+0x30] and our expected size at [esp+0x28] where retail keeps [esp+0x24], the write count is at [esp+0x40]
+// against retail's [esp+0x44]; the write call builds the flags zero in EAX after the other pushes where retail loads the
+// handle into EAX first and builds the zero in ECX; and the checksum compare takes EDX where retail takes EAX.
 // score 33 (was 33): Frame 0x1144 and extent agree. Query size and write count exchange stack
 // slots at +0x24/+0x28. The write argument setup, checksum register and header joins still differ.
 // MiniMax G (11-14): no new form, no lower score (33): the query-size and write-count homes stay four bytes off (ours
