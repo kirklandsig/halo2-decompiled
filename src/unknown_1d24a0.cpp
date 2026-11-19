@@ -524,6 +524,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // code); the flags word read once into a named local for both entry tests 962 (4283 B); the was-active bit tested as
 // `!(flags & 0x2000)` 951; the activity flag and response maximum declared before the two entry flags 956; the
 // contact array pointer read once before the loop test 1003 (4287 B).
+// MiniMax B (11-19): no new form, no lower score (949): the frame is still 0x1f0 against retail's 0x1d4 and the first
+// difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
+// the other way round), so every stack home below the top is out of step; the loop head's shape is decided by the callee
+// 0xbadc0, which lives in another file - BLOCKED-BY 0xbadc0.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

@@ -800,6 +800,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // signed byte 724. Inclusive last entry 725, positive extent with inclusive last
 // entry 674. Lower bound before the scenario table 607, missing table as an
 // empty extent with signed byte 689. Provider, sentinel and palette homes still differ.
+// MiniMax B (11-19): no new form, no lower score (607): retail reads the palette byte into a byte register and compares it
+// with the low byte of the -1 it also stores to the record, while this build keeps the slot in a 16-bit register and holds
+// the -1 in ecx; the byte at each use and the char and signed-char slot measure 666 to 700, and the record's three initial
+// stores sit before the palette read here and after it in retail, but moving them into the palette branch measures 725.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

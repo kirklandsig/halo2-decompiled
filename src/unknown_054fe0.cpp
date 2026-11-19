@@ -1964,6 +1964,10 @@ struct s_summary_player_sort_entry
 // 309 (1291) [48, 36] (it folds); two session locals without the explicit type pointer 310 (1291) [47, 32] (state in EDX
 // and the copy in the right block, no type-address home); with the type pointer after the second local 234 (1307)
 // [10, 10] (retail's prologue instruction for instruction), ahead of it 236 [12, 12].
+// MiniMax B (11-19): no new form, no lower score (339): retail writes output->state with a conditional move, which needs
+// /arch:SSE that this file's flags do not set (adding the flag to the file's @flags line measures 353, so it is not kept),
+// and retail's inlined 0x5a680 is out of line here; the frame is still 0xa9c against retail's 0xaa8 with the type,
+// membership and member-index homes still different - BLOCKED-BY 0x5a680.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

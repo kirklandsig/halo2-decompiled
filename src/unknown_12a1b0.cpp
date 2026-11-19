@@ -2508,6 +2508,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // forms: real sum 302/302/302/302 at 1923 bytes, decibel sum 335/335/335/335 at 1909.
 // NOT kept: the gain is three points and the frame remains 0x11c. Decibel forms also shorten
 // the body. The original level, flag and all call sites stand.
+// MiniMax B (11-19): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128, and retail keeps
+// NONE, the track definition and the active bit in registers through the second pitch loop and indexes sounds[i] at each
+// use, where this build hoists the datum index and the track index into EBX/EBP and holds &sounds[i] in EDI with the
+// active bit spilled; the listed forms (the count in each for-init, the pitch bounds pointer, the per-use reads) all
+// measure 305 or more.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3001,6 +3006,10 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // locals 445 (frame back to 0x4b4). Not kept: the early locals are one-use reads moved ahead (match-only) and 0x12a420 is
 // still expanded at one stop site (its file's flags), so no match is reachable yet. Left on the lead: spill-slot order, the
 // stop flag's word store (retail `or byte ptr [esi + 4], 0x40`) and the char field loads before the chunk lookup.
+// MiniMax B (11-19): no new form, no lower score (339): the frame is still 0x4b4 against retail's 0x4bc and the early
+// scalar, primary and last-chunk homes still differ; the 322 form needs the source scale and the track value read into
+// one-use locals ahead of the pitch, which the coordinator does not keep, and without them the same stack measures 445;
+// 0x12a420 is still expanded at one stop site (its file's flags) - BLOCKED-BY 0x12a420.
 // @retail 0x21c400
 // MiniMax C (11-17): no new form, no lower score (339): the frame is 0x4b4 against retail's 0x4bc, so the track value and the source scale still sit in the wrong slots ([esp+0x44] and [esp+0x34] against retail's [esp+0x4c] and [esp+0x3c]), and the calls to 0x221810 and 0x12a420 are still expanded here while retail keeps them out of line; both callees are declared in files this lane may not edit (src/unknown_221490.cpp and src/unknown_124f90.cpp), and taking the two early snapshots into locals moves every slot (476).
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
@@ -3583,6 +3592,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 734/732/723/690. Promote after finding or creating the sound, assignment/conditional
 // 725/714; inside the valid-sound block 725/745. NOT kept: all grow the frame to 0x40
 // and regress the matched caller. The early BL load and track-loop state home still differ.
+// MiniMax B (11-19): no new form, no lower score (597): retail keeps the track loop's index in memory, the track in EBP
+// and NONE in ESI, where this build holds the index in ESI, the track definition in EBP and NONE in EBX, so the track's
+// base and the constant 1 land in the other registers; the 519 form needs the creation arm's `result = false; goto done`
+// and the join's `else if (created) result = false`, which the coordinator does not keep.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

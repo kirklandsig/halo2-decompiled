@@ -1610,7 +1610,23 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
-// score 134 (was 134): 861 bytes as retail. Left: the frame is 0x10 against retail's 0x14 (retail spills the 0x20 mask
+// score 123 (was 134): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
+// magnitude retail's spill holds instead of being normalised to 0/1, and the build is now retail's exact 861 bytes.
+// Left: the frame is still 0x10 against retail's 0x14 (retail spills the 0x20 mask byte to frame+0x03 and keeps the
+// loop entry in EBX, saved after the early return; ours keeps the mask in BL and the entry in memory), so the tail's
+// frame offsets stay four bytes low, and in the head retail takes the actor index in EDX and reads the object table's
+// data ahead of the actor's index arithmetic.
+// MiniMax B (11-19): kept, 134 -> 123: the 0x20 mask compared against 0x20 (its only possible values) at both uses
+// keeps the masked byte's magnitude, which is what retail's spill holds, and the build takes retail's exact 861
+// bytes; what is left is the frame (0x10 here against retail's 0x14 - retail spills the masked byte to frame+0x03
+// and this build keeps it in BL, so the tail's frame offsets stay four bytes low) and the head, where retail takes
+// the actor index in EDX and reads the object table's data ahead of the actor's index arithmetic. Measured and
+// reverted: the mask written at both uses with no local 244 (868 bytes, though it does give retail's 0x14 frame and
+// the byte at frame+0x03, because the mask is then computed twice); the mask as a bool 241; the mask declared at
+// function scope 123 with the same code; the mask compared with != 0 at the second use 134; the first root call's
+// result in a local 241; `same` assigned in an if 141; the decline condition written without the ternary 235; the
+// decline split into a nested if/else with the accept block twice 294. A permuter run over the body (540 s, 45 tries)
+// found nothing below the kept 123 - its best was the baseline.
 // byte and keeps the loop entry in EBX, saved after the early return; ours keeps the mask in BL and the entry in
 // memory), and in the head retail takes the actor index in EDX and reads the object table's data ahead of the actor's
 // index arithmetic. The tail from the seat-definition lookup on agrees but for frame offsets.
@@ -2078,8 +2094,8 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
     {
         s_4c_element *element = (s_4c_element *)element_502424_get(entry->unknown4);
         byte specified = selection->flags & 0x20;
-        bool same = specified && function_baf40(element->object_index) == function_baf40(selection->object_index);
-        if ((element->unknown86 ? !(selection->flags & 0x40) || !same : specified && !same))
+        bool same = specified == 0x20 && function_baf40(element->object_index) == function_baf40(selection->object_index);
+        if ((element->unknown86 ? !(selection->flags & 0x40) || !same : specified == 0x20 && !same))
             joint_decline(actor_index, iterator.reference.unknown0);
         else if (function_26ecc0(actor_index, iterator.reference.unknown0, (s_joint_behavior_state *)slot))
         {
