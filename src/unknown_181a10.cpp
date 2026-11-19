@@ -1046,6 +1046,18 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // without forceinline 238 (same code); the clamp's data bound to a `dword const &` 294 (1249 B, still one data load);
 // the exclusion's last three tests nested under `if (component != NONE && kind != 24)` 238 (same code); the clamp's
 // ternary written upper bound first 238 (same code).
+// M3 lane 10 r126 (fast with the file's seven matched functions, all MATCH; control 238, aligned 180). Compile-only
+// frame screen (the asm lists each local's home): ours puts origin (9 references) below hit (6), retail hit below a
+// 12-byte home that keeps only origin x, with y and z in shared 4-byte cells; origin by components (x, y, z or z, y, x),
+// with the hit by components and published by assignment, three real snapshots, a setter, and the hit declared first
+// all leave origin whole. Tried: origin from a forceinline accessor returning the point by value 355 (1284 B); both
+// plane-side tests through a forceinline helper taking the point by value 391 (1298 B); the snapshot distance as
+// radius + distance 238 (same code); the property scan on `root->type == 1 ? root->entity : NULL` 238 (same code);
+// `valid` declared after the indices 238 (aligned 182).
+// Classifier outside result from successive tests, positive inline-index result, upper test on
+// the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
+// origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.
+// NOT kept: The frame and second-node home still differ, as does the classifier data reload sequence.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -1388,6 +1388,15 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // and all three loops get retail's registers, but the merged load is its own temp: `mov eax, [edi+0x24]; lea esi,
 // [eax+ebx]` against retail's `mov esi, [edi+0x24]; add esi, ebx`); that with the element formed in two statements 14;
 // that with the anchor as `&local_2->field_24[local_8 + 4]` 14.
+// M3 lane 3 r266 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): on the current body the count
+// declared before the offset 1, the count in the for initialiser 1 (same code). On SSS, loop 1's mask argument formed
+// from the field again (`local_2->field_24 + local_8 + 8`, also written offset-first or as `&field_24[local_8 + 8]`)
+// 14/14/14 (365 B), with the element declared after the condition call 14: every loop then gets retail's allocation
+// (the guard compares with the zero in EBX, the zero dies into loop 1's offset, loops 2 and 3 test then `xor ebx, ebx`),
+// and only the element's formation differs (`mov eax, [edi+0x24]; lea esi, [eax+ebx]` for retail's `mov esi, [edi+0x24];
+// add esi, ebx`, the field load now a shared temp). The draw call's element re-formed from the field 92 (367 B, reloaded
+// after the calls). So retail's loop 1 holds one more reference (definition pointer or offset) than SSS, not through a
+// second field load.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

@@ -1282,6 +1282,15 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // but the first dot's products and the copy's registers turn round); the pointer at the length dot and add-scaled only 393,
 // at the copy and add-scaled only 395, at the length dot only 394. Diagnostic (not kept): one more `unknowna4 = 0.0f`
 // store at entry 459 (the zero is then held in XMM1 through the function).
+// M3 lane 10 r126 (fast with every callee, which reproduces the full image's 126; the reduced image without them scores 275,
+// so the permuter declines this body): the pan quaternion declared before `t` 126 (same code); the pan rotation into a
+// matrix3x3 local in place of the transform 394 (1700 B); the basis matrix at case scope without its block 219 (1708 B);
+// the pan fraction after the camera reload 126 (same code); `command->distance` stored before offset.i 127; offset.k
+// computed and stored before offset.j 125 (one point, not kept).
+// Direct squared-length condition, field-of-view fallback arm, mutable target through blend,
+// ordered fraction clamp, staged angle accumulation, named angular delta, branch-local command
+// field stores, and a role-named projection scale: 126/141/390/126/126/395/154/126.
+// NOT kept: The direction-k preload and length/zero register split remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

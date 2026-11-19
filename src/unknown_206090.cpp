@@ -540,6 +540,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 
 // score 1346 (was 1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
 // header line, 1375 (was 1375), sits further up this file).
+// (Second note, merged:) Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
+// Earlier header, merged into this note (1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // P452: Independent magnitude/velocity-publication/query-origin/tangent/direction/velocity/friction-input/impact-normal memmove boundaries:
 // 1436/1376/1409/1397/1440/1407/1425/1376. NOT kept: 1376 leads retain nonnative record-transfer boundaries and excess frame; no byte equality. Original captures, all helpers, call tuples and full body restored; matched caller survives.
 // P454: Existing magnitude snapshot as aggregate/shared setter, five remaining native component-store
@@ -719,6 +721,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Descriptive workspace names 1375. Query and ray scopes 1374.
 // Velocity scope with typed query 1394, with workspace names 1394.
 // NOT kept: ray scope gains one point and all forms retain the larger frame.
+// Live point or contact count field references 1394/1394; live point or contact
+// definition-table field references 1375/1375; count and table references together
+// in either phase 1394/1394; shared motion-origin field reference 1449, with all
+// count and table references 1449. The frame and original contact induction remain.
+// Shared in-place scale in the mixed-precision normalizer, named reciprocal/argument: 1449/1375.
+// Float-sum normalizer, named reciprocal alone/with named/with direct mixed reciprocal: 1424/1421/1424.
+// Direct float-sum reciprocal alone/with named/with direct mixed reciprocal: 1436/1390/1436.
+// The 0x5d0 frame and displaced velocity and component homes remain.
 // Lane 13 r112 (plain checks: a `--fast` run of this function alone or with its eleven callees, 0x24590 and 0x30bf0 builds
 // it differently, 1392 at 6211 B with frame 0x5cc, so fast counts for it need a wider list). Retail's first loop and
 // contact loop keep their counters in one home (0x1c, read with `fild` in the first loop and passed to 0x2079f0 in the
@@ -746,6 +756,16 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // products, as retail, with some products' operand loads the other way round); the first loop's cross through
 // cross3f_staged on the kept change 1421 (6238 B); the kept helper computing k, j, i into locals before its three stores
 // 1386 (6243 B, aligned 1388).
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, faithful to the fast build; aligned difflib rows against retail,
+// control 1382, frame 0x5d0): the magnitude helper's snapshot bound by const reference 1433 (frame 0x590, 23 rows short);
+// the add helper as a three-pass component loop 1399; the cross helper staging its second vector as one vector3f copy 1439
+// (0x5e8); the add helper plain `inline` 1382 (same code); the scale loop's counter as short 1460; the cross's staged
+// reals declared k, j, i 1383. Not kept.
+// M3 lane 10 r126 (plain with 0x207ab0, 0x2078f0, 0x2079f0; fast builds this body at 6211 B, so plain only; control 1375):
+// the magnitude helper taking the vector by value 1375 (same code; a compile-only screen keeps five 12-byte copies, the
+// by-value temporaries do not share a slot either); the steering sign as `if (...) local_11 = -local_11;` 1378; the result
+// returned as one expression 1376 (6243 B); the impact loop's count test in the `for` condition 1397 (6264 B); the two
+// query arrays declared at the top 1375 (same code). This note and the one above it were one stacked pair; merged here.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

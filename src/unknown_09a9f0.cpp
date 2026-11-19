@@ -226,14 +226,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): r123 unchanged. The entry saves EBP instead of EBX for the byte result. The header flag and object reads
+// score 49 (was 49): r200 unchanged (r123 too). The entry saves EBP instead of EBX for the byte result. The header flag and object reads
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
 // MiniMax H (11-18): no new form, no lower score (49): the outcome byte is still split between BL and AL where retail
 // keeps it in BL from before the creation call, retail's EBP window around the header test is still missing, and the
 // header and the object are still read through one shared address where retail looks the header up twice.
-// score 49 (was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
+// Earlier score line (49, was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
 // remains (retail keeps it in BL and copies it to AL at the return, ours keeps it in EBP) and retail reloads the
 // table's data pointer and recomputes the scaled index between the flag test and the object read; the earlier legal
@@ -913,6 +913,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // for the two lookups 49 (same code); those getters on the early bool result set after the attach 77 (160 B); early returns
 // for NONE and the flagged header with a constant true at the end 77 (155 B). A scan of retail for a header-flag test
 // followed by a second load of the table's data pointer from the same register finds only this function.
+// M3 lane 6 r200 (fast; control 49, the early bool result set after the attach re-measured 77 at 160 B: f cached in EBP
+// from entry, one header address for the test and the object read): on that early bool form the index typed dword 77,
+// `long const` 77, the flag read as `(flags >> 4) & 1` 77 (each scores as the base form); the bool declared after the entity store
+// 80 (158 B); an early `return false;` for NONE with the bool declared after it 72 (176 B, the NONE exit gets its own
+// epilogue and the false byte is set after the header test). Retail's push/pop EBP window is a code-generation temporary
+// (all six other registers busy at the test: index in EAX, false in BL, the table global in EDX, the scaled index in ECX,
+// this and entity); matched windows of the same kind sit in 0x130f60, 0x15e530, 0x1e18f0 and 0x263670.
 // M3 lane 7 r186 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10, 0xbb780, 0xa3c70, matched throughout; control 49,
 // aligned/masked [35/27 best]): retail's shape (bool false first, true after the attach, NONE in the flagged else) 77 (160 B,
 // re-measured: retail's BL result, but `f` cached in EBP); one combined test `object_index != NONE && !(flags & 0x10)` with
@@ -1350,6 +1357,11 @@ bool c_projectile_type::v8(long a, long b)
 // group power through a pointer declared after the flags or inside the 0x800 block; a `real const *` to the group's power
 // in place of the entry pointer; `b` throughout or the flags local. Every form without the state-power and group-power
 // pointers 12 (same code); the group-power pointer 15; the state-power pointer 16; both 19. The object/flags pair never moved.
+// M3 lane 11 r121 (fast; word read 5, mask 12), all with the full-width mask: 0 to 8 initialised dead locals after the object
+// 12 each (diagnostic: no referenced-local count shift); one or two dead locals initialised with 0x800, 0xffff, 0x400 or
+// `b + i` 12 each (dead constants do not join the pair); flags dword/long x result long/dword x index reference long/dword,
+// all eight 12; the group entry through a `(index & 0xffff) * 12` offset local 12, with the object through 0xa1f70's offset
+// local as well 12, the object offset local alone 12.
 // M3 lane 13 r113 (fast with 0xa5e70, matched each time; mask control 12: the group data then reuses ESI after the flags,
 // retail after the object), all with the full-width mask: a `long` group offset local `(index & 0xffff) * 12` added to
 // the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the

@@ -506,6 +506,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // [13], the first with a long type 97 [13]; headers declared ahead of the rigid body, both through `& 0xffff` 128 [213]
 // at 224 bytes, case 0 through `(word)` 36 [13] (the listed 36 form). Every twice-used form moves the component and the
 // index between EAX and ECX and loses the caller, so none is kept. Body unchanged.
+// M3 lane 6 r199 (fast, caller 0x1d5bf0 in brackets, matched each time): round 60's 24 form rebuilt 24 at 256 B [0], long
+// type 89 [0]; on it the kind test as `switch (kind)` with case 7 (the one-case type switch) and the main switch in its
+// default 94 [0]; case 7's kind test with its arms the other way round (`kind != 6` first) 34 [0], that with a long type
+// 88 [0]; case 1's flag test as a ternary 73 (260 B) [0]; no header-array local (both lookups through the global) 24 [0]
+// (same code). Reading of the 24 form: retail's object index shares ECX with the incoming rigid-body index (the index
+// copied to ESI first), where ours computes the rigid body in place in ECX and gives the object index EDX; every
+// declaration order that uses the index before the object-index read flips the incoming pair (listed grids).
 // M3 lane 3 r262 (fast, caller 0x1d5bf0 matched in every run): round 118's one-read form rebuilt with main's shift
 // spelling for case 0 (object_index, absolute_index, rigid body, headers, byte type) 28 at 256 B; long type 89 (the movzx
 // load then sits after `cmp edi, 7`). New on the 28 form: the body array as a named local 96 (256 B: the owner chain moves to
@@ -533,6 +540,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // index). Retail's call sets up EAX (component) last, after the pushes, as the declared order implies. On the 24 form,
 // case 0 through the existing havok_object_get(component->object_index) 24 [0] (same code), through
 // havok_object_get(object_index) 101 [0]. Body unchanged.
+// M3 lane 14 r117 (fast with the caller 0x1d5bf0, caller in brackets): round 60's 24 form rebuilt 24 at 256 B [0]; its
+// three entry values are a rotation of retail's (object index EDX for ECX, headers ESI for EDX, rigid body ECX in place
+// for ESI). On it, the same code each: the type local const 24 [0], the object-index local const 24 [0], case 11 as one
+// nested ternary 24 [0], the rigid body as a reference 24 [0]; the kind-7 route as `if (type != 1) return 1; return
+// 0xc;` 94 [0]; the object index as a const reference to the component's field 96 [208]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

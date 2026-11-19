@@ -706,6 +706,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // into [esp+0x18]); the same with the pointer formed from the count and `choice_count++` after the distance 966 (3264 B,
 // ESI is then the entry zero as retail), that with the loops bounded by `count` directly 966 (same code); that with a
 // short choice count 938 (3280 B, aligned 986); with a short query count 965 (3264 B).
+// M3 lane 10 r126 (fast with 0x18bb80, MATCH throughout; control 846, aligned 1004): g_44a0b4 as `real const` at its
+// definition and both extern lines 846 (same code) and it loses matched 0x2197b0 (the read folds to an immediate, 15)
+// and raises 0x18d730/0x18dc90 287/315 -> 400/452; re-measured lane 15 r92's long counts 965, with
+// `&choices[choice_count++]` 972, the pointer alone 967 (all as listed); new: the short count incremented first and
+// each choice filled through `&choices[choice_count - 1]` 965 (3271 B, aligned 1047).
+// Accepted ordinal captured at increment, after the header, or from the incremented count;
+// post-increment choice reference; full-width choice count with captured ordinal; full-width counts
+// with header increment; target count as conversion ordinal; target count published after conversion: 932/932/950/967/954/941/914/951.
+// NOT kept: The entry zero, accepted count register and the separate count and buffer homes remain displaced.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
