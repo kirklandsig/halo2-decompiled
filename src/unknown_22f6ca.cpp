@@ -223,6 +223,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // written in both arms of the animation test 23; a separate widget local per loop declared at the pane block's top 23;
 // `long i = 0;` above the pane lookup with the first loop also `for (i = 0;` 66, and the first loop `for (i = 0;` under
 // main's `long i = 0;` 66 (both give one zero register, EBX, for the whole function; the model reset becomes `mov`).
+// M3 lane 6 r197 (fast): `int i` 23 (same code); on the first loop's `for (i = 0;` under `long i = 0;` (66, re-measured): the
+// text loop on its own `for (long t = 0;` counter 66, the model loop on its own 66, both 66 (every reset is then `mov` from
+// the one zero register EBX, and the zero-register difference is not per loop).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

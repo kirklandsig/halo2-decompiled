@@ -247,6 +247,11 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // the slot block's scope 116; spatialization assigned in an if/else and positioned after it 154 (541 bytes); positioned
 // held in a char 116. In the plain listing the request arm stores the object's EBP for its NONE field and the dispatch
 // reloads the tag from its home (EDI goes to 0x189340's source); retail never enregisters the object index.
+// M3 lane 6 r197 (plain): 0xb8d30's object argument read through the reference with the started test plain 75 (528 bytes);
+// no reference, one `bool attached` for the request, marker and started tests 107 (530 bytes); the unused fourth and fifth
+// parameters unnamed 11 (same code); `long audible = positioned ? 2 : 1;` named at the arm's top 136 (530 bytes); the
+// marker declared at the arm's top 11 (same code). Diagnostic: on the plain-reads body (no reference), 1 to 7 dead
+// initialised locals at the top 116 each, so the EBP contest between the object and the tag is not a symbol-count state.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

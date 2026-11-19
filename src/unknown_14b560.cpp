@@ -1651,6 +1651,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // where the two outputs, the unit index and the reuse flag are declared and first set (function top, result block,
 // mode block; with or without a NONE initialiser) give `or` only with a store ahead of the test; the outputs declared
 // between the kept-unit block and the result test stop the result test's threading (287 lines for 282).
+// M3 lane 6 r197 (fast with 0xa9440 and 0x14f040, both matched; compile-only screens agree): with the outputs moved into
+// the mode block (each at 1031 bytes, `mov eax, 0xffffffff` after the folded byte compare): declared third_person first
+// 45; declared bare and set by `third_person = tag_index = NONE;` 43; the second output initialised from the first 43;
+// the test as `4 != g_4e6948->mode` 43; the result and mode tests merged into one `!result && mode != 4` condition 43.
+// Compile-only (same code each): `tag_index = third_person = NONE;` 43-form; `mode != (char)4` 43-form. Retail's
+// 0xb8540 returns nothing (its EAX is clobbered), so no value of its own can hold EAX across the test.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
