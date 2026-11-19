@@ -889,6 +889,26 @@ real g_55e618;
 // 209 (1550 B, frame changes); no velocity copy, the particle's velocity field read at each use 199 (1543 B). Homes on the
 // base: ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100; retail tangent +0x38 (i, j spilled), sweep
 // +0x44, perpendicular +0xa4 (k spilled), collision +0xb0. All restored.
+// M3 lane 1 r130 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH each time; control 102, aligned 60/60 instructions unmatched
+// ours/retail, masked 22/22; body unchanged, all forms match-only). Reading: retail loads velocity.i twice from [ebp + 0x28]
+// (the second is a reload of the dot's destroyed first term, not another access path), reads j and k through the velocity
+// pointer in the dot and in the tangent rows, and multiplies the dot's copy by each normal component. On the velocity
+// pointer with normal locals, the dot written at each product, named position sums and plain stores after the impact
+// index: 81 (1535 B, aligned 22/22); tangent rows interleaved with the perpendicular rows 76; the dot's first term read
+// as particle->velocity.i with the tangent's through the pointer 61 (1537 B, first difference +0x2e7, aligned 23/23:
+// retail's two velocity.i loads), interleaved 60; the tangent's first term direct instead 81, interleaved 76; both direct
+// 174 (1541 B), interleaved 173. Without the normal locals (normal->i at each use): 77 (1538 B, aligned 20/20),
+// interleaved 79, with the position sums unnamed before or after the impact index 123 each (1550 B). Through existing
+// helpers: the perpendicular by vector3f_scale with the written-out dot as its scale 188 (frame 0x118), with dot3f as its
+// scale 189, the tangent by vector3d_from_points3d as well 189; `dot3f(velocity, normal) * normal->i` at each row 172
+// (1540 B, but aligned 18/17, the closest block: the i term is then the normal's copy times memory and the j term the
+// loaded one, where retail has them the other way), with normal locals 176; the dot in dot3f's i, j, k order with the
+// first term direct 176 (tangent direct) and 77 (tangent through the pointer); dot3f at each row with the tangent's first
+// term direct 172; dot3f(&particle->velocity, normal) with no pointer local 269 (1597 B). A compile-only build of this
+// file does not reproduce the block (the particle takes another register and nothing survives the placement call in
+// XMM), so forms here need the real build. Left on the 61 form: the normal components' registers (retail i XMM1, k XMM2,
+// j XMM4, loaded as needed), the position sums' order with `lea ebx` among them, the value argument's load at the block
+// top, and the flags test ahead of the final rows.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
