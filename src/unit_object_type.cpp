@@ -5200,6 +5200,12 @@ void __stdcall function_cc810(long vehicle_index)
 // outcomes before the phase durations 72; peak duration owns the cap calculation 58; complete speed cap and shared
 // extended phase before acceleration 82.
 // NOT kept: the 53 and 58 forms reach 708 bytes with the retail frame but depend on the discriminant reference and float scheduling. The first difference is still +0x182 around the square root and speed cap.
+// MiniMax D (2026-11-19): no new form, no lower score (162): the source already matches retail semantically, but MSVC
+// evaluates the discriminant chain on the x87 stack in double precision where retail keeps it in SSE and spills it to the
+// dead motion-argument slot; that also costs an eight-byte frame retail does not have, so every later [esp+..] offset
+// shifts. Retail keeps three multiplies in the first test (stop_time*0.5*velocity*0.5) where ours folds them into one
+// multiply by 0.25. Tried: the discriminant as a named local so it becomes a float lvalue (162, unchanged); the
+// parenthesised three-multiply first test (206, thirteen bytes longer).
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -5523,6 +5529,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // direction components read at each use instead of the three named copies 262 (682 bytes). Retail keeps
 // forward_scale on the x87 stack to the end (popped with cosine, `fld [m]; fmul st(n)` in all three rows) where
 // ours consumes it in the k row with an fxch. Not kept; original body restored.
+// MiniMax D (2026-11-19): no new form, no lower score (169): the first difference is inside the inlined cross-product
+// helper, which lives in a header this lane may not edit, and our build is one byte longer than retail's, which moves
+// the branch targets in the bit-test dispatch.
 // projection components have independent scalar destinations 187; projection destination declared outside the
 // basis phase 169; basis forward workspace reused as the projected direction 169; basis up workspace reused as the
 // projected direction 184; scalar horizontal projection consumed before the vertical projection 187; planar
