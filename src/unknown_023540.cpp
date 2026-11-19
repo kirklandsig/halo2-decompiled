@@ -3116,7 +3116,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax R (11-16): no new form, no lower score (54): the body is still retail's length and the scheduler still places the
 // x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527); the corner rows in the
 // other orders give 54 or worse, and the permuter (13 tries in 339 s, annealing) found no variant under 54.
-// score 54 (was 54): earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
+// score 54 (was 54): r200 unchanged; earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
 // (first difference +0x527). Round 176 (m3 lane 5, fast = plain): the hand-written slot-12 shader call
@@ -3355,6 +3355,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours. Tried, all 54 (same code): outputs by reference, `/ 2.0f`, u and v as two helpers; with each of a set's 8
 // statements written separately: retail's first-set order 219, single swaps in one set 54-225 (none under 54), 6 random
 // orders 96-247. Nothing kept: the body is as on r843.
+// M3 lane 6 r200 (fast with 0x144f0/0x1cc30/0x2a2f0, all MATCH; control 54): the second trig pair computed ahead of the
+// first corner set 261 (2006 B); the second scale's zero fix moved down to just ahead of the second set 233 (2042 B); the corner
+// helper plain `inline` 54 (same code); sine first in the first pair only 249 (2006 B); sine first in the second pair only
+// 128 (2022 B). Left as before: at each tie in both corner sets retail issues the SSE step ahead of the x87 one (the
+// coordinates 3, 4 and 5 of each set run on x87 in both builds).
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

@@ -642,6 +642,20 @@ real g_47ff94 = 1.5f;
 // code); taking references 331 (same code); forceinline 331 (same code); for the fade and vertex distances but not the
 // edge 321 (1497 B). Not kept: the positional score rises (the body is 20 bytes shorter). Left on that form: 0x1ccb0(59)
 // and 0x1cd90 expanded in place and the 0x4b2d0 call. BLOCKED-BY 0x4b2d0 and the /Ob1 file of 0x1ccb0/0x1cd90.
+// M3 lane 6 r201 (fast with 0x244470, 0x2be5d0, 0x22a664, 0x23ea80, all MATCH throughout; control 322). LEAD, not kept
+// (a new one-caller routine and two helper bodies written in place, kept only with a match, which the 0x4b2d0 call
+// still blocks): the three planar distances through one inline routine taking two point pointers (lane 13 r111's form)
+// together with 0x1ccb0(59) and 0x1cd90 written where they are called (the descriptor selection through the shader
+// state at g_51f0f0 offsets 0x8c/0xcc/0x20c and the two 0x1c710 calls, the descriptor table given external linkage)
+// 19 at retail's 1518 B, first difference +0xd2 (plain check 19 with 0x22a664, 0x244470, 0x2be5d0, 0x23ea80, 0x1ccb0,
+// 0x1cd90, 0x1cc60, 0x1cf50, 0x1cda0 and 0x1c8c0 MATCH, 0x47930 244, 0x4b2d0 62 and 0x116b00 322 as before). Left on
+// it: the 0x4b2d0 call (held), one padding byte after it, and the edge distance's x87 order (the routine squares the
+// first difference in place there; retail keeps both differences and pops them after the root, as at the other two
+// sites and as main's written-out edge gives). Patch: build/r201/lead-19f680.patch in the lane 6 worktree.
+// Body forms on main: the current vertex copied into a `point2f` local for the alpha, the bottom point and the edge 347
+// (1478 B); the bottom point built first and read for the alpha distance and the edge 370 (1456 B); the loop bound as
+// `step < count + 1` 317 (1498 B; five lower, under the bar and no match); the wrapped index as `step % count` 329
+// (1488 B).
 // @retail 0x19f680
 void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

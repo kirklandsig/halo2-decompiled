@@ -774,6 +774,14 @@ static inline bool teams_enabled_19e1c0()
 // team names, local scores and timers, or all tokens. Existing count storage scores
 // 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
 // ordinary count gives frame 0x204 but still merges the name producers.
+// M3 lane 6 r199 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691): the four
+// name/team clamps written into `remaining` itself (`if (remaining > length) remaining = length;`, then the copy and
+// `result = remaining;`) plain 692 (1170 B), volatile 618 (1235 B); that with the token fallback clamped the same way
+// plain 686 (1176 B), volatile 626 (1226 B); the clear-and-name calls through two two-caller inline helpers (`buffer[0] = 0;`
+// then 0x19ea60 / 0x19eae0) plain 691, volatile 390 (same code each). Compile-only (no /GL) diagnostic: a store of
+// `remaining` to a probe global after the if/else chain gives retail's shape there (token re-read for every compare,
+// `remaining` in EBP, four wcslen and two calls to each name function); a store of `token` there keeps token in memory but
+// EBP then holds a constant zero. The LTCG build does not follow that screen (lane 4 r167's probe before the return 687).
 // Round 140 (m3 lane 9, fast with 0x19e0f0/0x19ea60/0x19eae0, matched each time; control 390): retail's frame cell past
 // the buffer is the teams-enabled predicate byte (ours spills it too, one cell higher, under the volatile result). On
 // the plain result the fourth callee-saved register goes to `token` (retail: `remaining`), and the compile-only

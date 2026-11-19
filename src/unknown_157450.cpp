@@ -842,6 +842,18 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // 77/121 and 77/121. Pending word/dword mask seeded from the word snapshot
 // and changed by compound OR or assignment 77/133 and 77/133.
 // The word entry works, but the mask still reloads separately at the join.
+// M3 lane 6 r201 (fast; main 32; re-measured: plain present with the dword mask 102 at 378 B, with the word mask 63 at
+// 384 B, the word mask with main's present 77). On the dword mask with a plain present the player loop and every
+// block after the engine test are retail's; left there are the word entry and the compare block. With the word mask
+// and a plain present the engine globals lose EBP to the pool and present takes EDI. What keeps the globals in EBP on
+// the dword mask is the engine getter reading the globals pointer again after the loop: with the engine read through
+// the globals local (`g_55e4d0[globals->engine_index]`) the dword mask with a plain present gives 114 (378 B: pool EBP,
+// globals ESI, count EDI) and the word mask 122 (375 B, frame 0xc), with the engine index named at the head of the
+// change block 120 (377 B), with the mask also stored through the globals local 120 (377 B). More reads through the
+// getter do not bring the globals back on the word mask with a plain present: the playing store and index24 through
+// the getter 63, with the mask store as well 63, the saved playing mask read through the getter 63 (same code each).
+// Also on the word mask with a plain present: an early return when nothing changed 63; the present update as
+// `present_teams = present_teams | (1 << team)` 63, the playing update written the same way too 63 (same code each).
 // @retail 0x158140
 void function_158140(void)
 {

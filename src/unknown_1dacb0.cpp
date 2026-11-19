@@ -1095,7 +1095,7 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // frame size agrees; the home given to the dead parameter decides every offset after it.
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// score 828 (was 828): r200 unchanged. Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // Earlier lane 8 rounds 164 and 166 are recorded near the end of this note.
 // M3 lane 8 r164 and r166 forms appear at the end.
 // Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain. See also lane 8 r164 and r166 below.
@@ -1486,6 +1486,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // a reload only on the loop's exit; ours ends that EBX range at the loop and gives `this` EBP in the second request
 // (the +0x34 table pointer takes EBX from its second kind), also when the second request is keyed by the `mode`
 // parameter (829), so the found mode being address-taken is not what keeps it out of EBP.
+// M3 lane 6 r200 (fast, both twins at once, control 828/828): the three iterator outputs declared `register` 828 (same
+// score); the outputs as dword with long-pointer casts at the iterate call 828 (the NONE constant is still shared by the
+// compare, the result and the outputs, where retail makes a second NONE for the outputs); the per-pass candidate declared
+// ahead of the do-while, reset at each pass and the loop tested on it 932 (2825 B, frame 0x30); the found outputs stored
+// type, class, mode 829; the three outputs declared after the iterator's stores 826 (two points, a declaration move: not
+// kept). Retail's post-loop test reads the result's index as a word from memory (`cmp word ptr [esp + 0x1e], si`) and
+// pushes the result from ECX; ours loads the dword, shifts and reloads it for the push.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1565,7 +1572,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
 // frame homes still differ from retail's.
 
-// score 828 (was 828): Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
+// score 828 (was 828): r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
 // Earlier: Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
@@ -1942,6 +1949,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Conditional complete candidate copy 951; default then overwrite at hit 989; head-tested branch copies 840.
 // Implicit cursor zero initialization 828; zero or graph initializer before key stores 996/996;
 // candidate initialized from lookup outcome 978. NOT kept: best gain 2, candidate and mode homes remain.
+// M3 lane 6 r200 (fast, both twins at once, control 828/828): the three iterator outputs declared `register` 828 (same
+// score); the outputs as dword with long-pointer casts at the iterate call 828 (the NONE constant is still shared by the
+// compare, the result and the outputs, where retail makes a second NONE for the outputs); the per-pass candidate declared
+// ahead of the do-while, reset at each pass and the loop tested on it 932 (2825 B, frame 0x30); the found outputs stored
+// type, class, mode 829; the three outputs declared after the iterator's stores 826 (two points, a declaration move: not
+// kept). Retail's post-loop test reads the result's index as a word from memory (`cmp word ptr [esp + 0x1e], si`) and
+// pushes the result from ECX; ours loads the dword, shifts and reloads it for the push.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

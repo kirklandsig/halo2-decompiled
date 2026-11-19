@@ -1242,6 +1242,14 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // (`hand ? 0x13 : 9`) 60 (148 B); a forceinline hand-weapon helper taking the unit index and hand (lookup, slot and
 // NONE-default weapon inside) 17 (all the same code). Re-measured: the getter-reload lead 5 (player address still
 // `mov edx, [edx + 0x44] ... add edx, eax`).
+// M3 lane 6 r201 (fast with 0x152bf0; control 17), forms that might keep the lookup's unit-index read apart from the
+// test's until after allocation: the hand through an inline routine writing an out-parameter 17; an object getter that
+// masks its own index parameter (`object_index &= 0xffff;`) 17; the slot and weapon through an inline routine writing a
+// weapon out-parameter 17; the lookup's index through an inline routine writing an out-parameter 17; the index as an
+// unsigned 16-bit bit-field view of the field 17, a signed one 38; as a truncated 64-bit read 17; as a one-member
+// aggregate copied from the field 17; as a `memcpy` of the field into a local 17 (every 17 the same code: each is
+// folded into the plain read before allocation); the unit through a getter returning NULL for NONE with the block
+// under `if (unit)` 52 (144 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

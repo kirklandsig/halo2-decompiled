@@ -363,6 +363,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // library copy 490; pointer and orientation with library copy 490; reference and orientation with library copy
 // 490.
 // NOT kept: All eight forms shrink the frame to 0x60 and the body to 1720 bytes at a higher score.
+// M3 lane 6 r199 (fast, control 219): dead initialised `long` locals at the function's top, K = 1..31 each, 219 every time
+// (diagnostic, reverted: the symbol count does not reach this schedule); the rotation helper as a macro (the caller's
+// sine/cosine/axis spelled in place) 491 (1720 B, frame changes), the macro with the axis bound once to a pointer local
+// 485 (1724 B); `matrix3x3 basis, rotation;` 219 and the basis scoped to the second switch and the composition 219 (same
+// code each); the value array read once into a local for the four property calls and the update 495 (1716 B).
 // M3 lane 3 r262 (fast with 0x246cd0/0x142eb0/0x30bf0/0x11d000/0x173ba0, all MATCH): retail's second rotation case (the
 // g_4687b0 axis, in ECX) forms the cross terms as (t * i) * j and t * k, the operand order of the axis rotation written
 // out in the matched 0x1544e0 (squares, sine products, forward.i, t, tij, left.i, forward.j, left.j, tk, tki, up.i,
