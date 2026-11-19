@@ -1239,6 +1239,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 147 112 113 150 139 150 163 139 145. No symbol count gives retail's copy-the-vector, axis-from-memory products, so they are
 // not a numbering state here. The axis passed as the `up` parameter instead of the state's copy: rotate_direction 277
 // (1396 B), the header helper 292 (1398 B). Body unchanged.
+// M3 lane 16 r142 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114): the velocity rows through the
+// existing vector3f_scale (normalize3d.h) 166 at retail's 1382 B (the velocity block stays retail's; the rotation's
+// products change order: the inlined parameters move the product canonicalisation), with the `scale` local kept 166;
+// diagnostic, K = 1..16 dead initialised locals on that form: 150 145 122 149 139 150 139 163 166 144 112 116 139 150 150
+// 163 (first difference +0x1f3 for every K, never retail's copy-first products); that form with include/axis_rotation.h's
+// helper for the rotation 163; that form with round 112's preset-false moved-away flag 162 (1375 B).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
