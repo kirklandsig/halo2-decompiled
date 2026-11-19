@@ -3421,6 +3421,9 @@ finish:
 // the same pair. 0x53610 0x53de0 0x55060 0x560e0 stay MATCH. players + i, a byte-offset source and const mask act
 // like the original in all those images; a source or destination pointer local, mask/players declared first or late,
 // long mask: 2 (plain image); mask or players evaluated first/late 163-201; one identity copy 394.
+// Matched in a full build with stand-in SDK headers (was 2 there): the identity is chosen inside the memcmp call,
+// with no `identity` local; the two reloads after the voice_sprintf call then come in retail's order (players slot,
+// then mask slot). The note above says this pair follows the image, so the SDK build has to confirm it.
 // @retail 0x54590
 void function_54590(void)
 {
@@ -3441,8 +3444,7 @@ void function_54590(void)
   for (long i = 0; i < 16; i++)
   {
    const long *previous = &g_4c9878.unknown24[i * 3];
-   const void *identity = mask & (1 << i) ? (const void *)&players[i] : empty;
-   if (memcmp(previous, identity, sizeof(empty)))
+   if (memcmp(previous, (mask & (1 << i) ? (const void *)&players[i] : empty), sizeof(empty)))
    {
     changed = true;
     break;
