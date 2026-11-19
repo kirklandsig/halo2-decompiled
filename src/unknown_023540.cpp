@@ -2710,6 +2710,23 @@ dword __cdecl function_131fc0(real alpha);
 // reading the height first 12 (the homes stay swapped; only the order of the first stores changes). Control for
 // the kept form: the hoisted defaults in the old order (destination group and destination test first) 133 at
 // 1739 bytes; retail tests source first.
+// M3 lane 8 r196 (fast; control 100; both builds already end `ret 0x34`). Lane 13 r117's forms rebuilt: corner-order
+// stores 77, + u as `source[x] / width` with inverse_height named 14, + height declared first 12. LEAD, match-only (needs
+// those two forms): the bitmap's width and height as one point2f (x then y, both 1.0f before the bitmap test) puts their
+// homes at retail's 0x10/0x14 whatever the declaration or reciprocal order: 12 -> 4 and 14 -> 4 at 1729 B (main's body
+// with it 100, same code; the 77 form 77). Left in the 4: the bottom edge's two v products load the coordinate and
+// multiply by the stored inverse height where retail loads the reciprocal and multiplies by the coordinate (the top edge's
+// two are as retail's). On the 4 form: source, destination and both defaults as the existing box2f (x0, x1, y0, y1) 4
+// (same code); every v by division 77 (1725 B); every v as `* (1.0f / size.y)` 77; named inverse_width with v by division
+// 18; the bottom edge's v by division or `* (1.0f / size.y)` 72/72 (1735 B: a second home for the same reciprocal);
+// height and width renamed to later/earlier-sorting names 12/12/14 (names move no home). Dead-local scans (diagnostic):
+// 4 at every K = 1..32 (array form) and 1..31 (box2f form). A 900 s permuter run on the box2f 4 form (70 tries) found
+// nothing below 4. Compile-only (it reproduces the 4 form's products): a named reciprocal always gives coordinate-first
+// products and a compiler reciprocal always reciprocal-first, through member-form setters, a texture-coordinate helper,
+// a point2f reciprocal pair, a const or early-declared inverse_height and early or dead reads of the bottom coordinate;
+// only a per-vertex helper taking the destination coordinates by value gave retail's split (top coordinate-first, bottom
+// reciprocal-first), with sixteen more instructions (the coordinates held in temporaries across the first call).
+// Body unchanged.
 // @retail 0x2a8d0
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
