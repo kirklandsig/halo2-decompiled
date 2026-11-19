@@ -2817,9 +2817,9 @@ void network_observer_recreate_connections(s_network_observer *observer)
 		s_network_observer_channel *channel = &observer->channels[i];
 		if (channel->state)
 		{
-			XNADDR const *remote_address = (XNADDR const *)channel->remote_id;
+			XNADDR const *channel_xnaddr = (XNADDR const *)channel->remote_id;
 			char name[256];
-			format_title_address(remote_address, name, sizeof(name), false);
+			format_title_address(channel_xnaddr, name, sizeof(name), false);
 			long connection = link_connection_allocate((long)name, 0x38);
 			channel->connection_index = connection;
 			if (connection != NONE) link_connection_get(connection)->owner = (c_connection_owner *)observer;
