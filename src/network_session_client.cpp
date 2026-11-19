@@ -1316,6 +1316,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // aggregate filled by `identities[count++] = *(aggregate const *)&current->players[i]` 195; the branch inverted (`if
 // (!all_players)`, else arm first) on this body 209 (701 B); the count declared bare and zeroed at the top of the true
 // arm 201.
+// M3 lane 2 r112 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): a redundant `count = 0;` at the top of the true arm
+// on the indexed copy, on this body, and with the destination declared after it in the arm 201/201/201 (the first zero
+// is then dead and dropped, as the bare-count form); a row pointer `dword (*)[3]` declared before the branch and copied
+// through `memcpy(dest++, ...)` or `memcpy(*dest++, ...)` 53/53. Re-measured the indexed copy 195 (the state takes EBX
+// from the top, `current` stays in ESI up to the preheader and its spill slot swaps with `joining`'s, the count is
+// spilled).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

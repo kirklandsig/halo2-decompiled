@@ -3246,6 +3246,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // load; the file's 14 functions still matched). A retail byte scan finds a memory load into a scratch register,
 // compared with a constant and then copied to a callee-saved register, in no other function. Compile-only under /O2
 // (diagnostic): no frame and a rotated loop, so retail's body is an /O1 one. All restored.
+// M3 lane 2 r112 (fast with 0x2c9a58, matched in each): a redundant `if (map_id == NONE) map_id = NONE;` after the read 30
+// (folded); the id assigned in both arms of a test on the field, the `== NONE` arm first, 13 (the NONE-default code);
+// `if (map_id == NONE) return; else` the walk 30; the walk in a file-local `static inline` helper taking (list, id) or
+// (id, list) 100/100 (14 B: the helper stays a call), as `__forceinline` 30 (the inlined parameter loads straight into
+// EBX). Re-measured the if/else two-definition id 36: NONE has five uses there (two tests, the else store and the two
+// iterator stores), so it is kept in ECX.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
