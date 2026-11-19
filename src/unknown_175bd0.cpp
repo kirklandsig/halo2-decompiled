@@ -2801,7 +2801,8 @@ bool __stdcall function_1794e0(long effect_index)
 	}
 	else if (effect->object_index != NONE)
 	{
-		s_effect_object *root = OBJECT_GET(function_baf80(effect->object_index));
+		long root_index = function_baf80(effect->object_index);
+		s_effect_object *root = OBJECT_GET(root_index);
 
 		if (TEST_FIELD_BIT(root->flag4_8))
 		{
@@ -2818,7 +2819,12 @@ bool __stdcall function_1794e0(long effect_index)
 		{
 			bool visible;
 
-			if (function_1794a0(effect->object_index, effect->object_index))
+			/* retail passes the root (0xbaf80's result, still in eax) as the
+			   object whose header must be connected, and the effect's own
+			   object as the one that must not be hidden: a held weapon has
+			   no connected header of its own (0xb7290 marks only parentless
+			   objects), so its effects (the plasma pistol's charge) never woke */
+			if (function_1794a0(root_index, effect->object_index))
 			{
 				visible = !effect->unknown10 || function_bab40(effect->object_index, effect->unknown10, &effect->scale_a);
 				function_bab40(effect->object_index, effect->unknown14, &effect->scale_b);
