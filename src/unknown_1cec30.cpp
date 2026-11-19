@@ -2538,7 +2538,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
-// score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
+// score 8 (was 91): The frame and extent agree. The first scaled velocity store is late,
+// and the zero property value uses EBX where retail uses EDI.
+// Earlier score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
 // with match-only forms, detail first, older rounds below. The velocity's fields are ranked by how the code first
 // reaches them (0x1d3fc0's note): a field named in this body is "old" (scaled as `inverse * [x]`, reloaded on the short
 // path), one reached only through inline helpers is "young" (loaded beside its x87 square, scaled in place). Retail has
@@ -2619,8 +2621,6 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // retail keeps it in xmm4, and the material loop's call to 0x181db0 takes its arguments in ecx and edx where retail
 // passes them in eax and ebx: BLOCKED-BY include/normalize3d.h and src/unknown_181e90.cpp, which this lane may not
 // edit.
-// score 8 (was 91): The frame and extent agree. The first scaled velocity store is late,
-// and the zero property value uses EBX where retail uses EDI.
 // Earlier at 91: The aligned frame and contact/normal prefix agreed. The velocity j/k
 // loads were late and the zero property value did not stay live through erase.
 // Earlier (91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
@@ -2856,6 +2856,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // Havok conversion after completed scale 5 each, scalar SSE transfers 248, opening speed sum 5.
 // Typed private property argument with the shared scale and named-component setter 8, plain 8.
 // NOT kept: the 5 forms move the one-use property temporary before the erase call.
+// Shared component setter plus fourth-lane clear 8; direct named speed products 371; immutable output
+// bindings 8; property word by const reference 8; const property value 8; nonzero contact arm first 161;
+// zero contact arm returns directly 8; scaled velocity and destination role names 8.
+// The i product and store and both zero-property registers still differ.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -3651,6 +3655,9 @@ struct s_1cf531
 // `hkVector4 &` 23, the final scale alone through mul4 23 (all the in-place code); corrected as a named hkVector4 2
 // (same code); local_13 by `local_13 = local_7;` 2, copy-initialised from local_7 124/124 (932 B); a 1500 s
 // permuter run (608 tries) none below 2.
+// Impulse snapshot aggregate 2; separate final aggregate 94; read-only snapshot and final aggregates 94;
+// immutable correction 2; immutable square, projection and correction 2; correction declared before
+// the length test 2; impulse and velocity declarations with the surface 7; named scaled SIMD product 2.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

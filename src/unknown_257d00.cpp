@@ -2496,6 +2496,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // `return 1` / `return 0` exits and no result local 639 (2368 B, masked 75); with case 18's references in two named locals
 // checked one at a time and case 6's flag byte named for two stores 624 (masked 54; case 6 still folds to `or 0x69`); case
 // 18's named references alone 528 (2424 B, swapped); case 13 through the shared exit 478 (2400 B, masked 84).
+// score 433 (was 433):
+// Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
+// busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
+// fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
+// The dispatch and timer paths still reach the late completion block.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
