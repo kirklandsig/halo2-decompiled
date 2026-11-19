@@ -696,6 +696,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 386/386/386. Separate accepted edge with while or for 389/389. Separate scan
 // and prior-crossing edges with while, for, or early rejection 382/382/382.
 // NOT kept: the return and first-edge homes remain exchanged, and the bodies shrink.
+// Nested node or marker gate 244/244; marker first 310; predecessor before node 315;
+// predecessor veto after node admission 297, early predecessor eligibility 392;
+// first-edge or first-edge/hit initialization after the target test 265/265.
+// The two byte homes stay exchanged. Nested transition guards reproduce the opening code.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

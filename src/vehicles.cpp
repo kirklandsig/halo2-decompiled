@@ -1702,6 +1702,11 @@ long function_10f5f0(long object_index);
 // velocity outputs, alone and combined, and the fully shared workspace declared
 // before the physics state: eight at 561. NOT kept: sharing puts the bounds
 // and velocity at +0x24 and separates the request names. Frame still 0x1990.
+// Explicit bounds/velocity, bounds/request, or velocity/request storage union
+// 561/561/561. All three 557, with native axis bounds 557, before physics state
+// 557, or after reading control flags 557. Shared outputs and request zero-fill
+// 568. NOT kept: the three-way union recovers frame 0x1984 and first +0x54,
+// but the grouping requires byte equality.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

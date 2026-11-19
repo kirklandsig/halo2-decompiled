@@ -4476,7 +4476,7 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56): retail keeps the controller reference and reloads its index after the membership call.
+// score 54 (was 56): Retail keeps the controller slot and reloads both pointer levels before the two dialog masks.
 // Earlier: only case 3 differs. Retail keeps controller in esi, spills controller_index
 // only case 3 differs. Retail keeps controller in esi, spills controller_index
 // to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
@@ -4541,6 +4541,10 @@ bool __stdcall function_2b278e(long controller_index)
 // 211/199; message selection last/first 219/248; separate leave with Boolean membership
 // 196; group lower actions before leave 217. The original double pointer and index spill
 // still differ. Isolating leave grows the frame.
+// Library copies at the two dialog reads: slot 181/205, index 54/199,
+// both levels 181/205, or both levels at initial and dialog reads 181/205
+// with the opening and Boolean membership locals, respectively. The slot copy
+// keeps the controller object in ESI, and the index copy still folds the reload.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
