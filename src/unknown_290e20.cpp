@@ -576,6 +576,11 @@ struct s_ai_scene_assignment
 // B (re-measured as a base: retail's head, then the stores movsx the role from its slot and the variant store moves up);
 // the leaf and recursion arms swapped 65; the last-role flag declared ahead of the role pointer 103; the iterator loop as
 // `for (iterator_new; iterator_next; )` 59 (same code).
+// Round 190 (m3 lane 8, fast with 0x291b40/0x291800; int copy 12, direct maximum 59 at 350 B): on the direct maximum
+// the iterator's actor index named in the found arm for the first store 59; the assignment pointer declared just ahead of
+// the iterator (after the switch) 95, on the int copy 51; the four stores through a forceinline helper taking the role by
+// const reference 59 (int copy 12) or by const pointer (`&role_index`) 59: the address taken through an inlined helper
+// folds, the role stays a register candidate (our direct form loads it into ESI after the head test, reloaded per pass).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
