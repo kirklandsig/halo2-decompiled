@@ -3119,6 +3119,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // dominating use of the constant 1 (round 169's lead) with compares that might fold to their zero form: the delay test as
 // `< 1` 51 (`cmp ..., 1; jge`), the count test as `!(count < 1)` 55 (580 B), the trigger byte as `!= true` 116 (578 B);
 // none folds, and the reload stays in each.
+// M3 lane 3 r271 (fast with 0x202e90, 0x1fb8a0, 0x290cd0 and 0x290e20, all matched; control 50): the follow-up's flag
+// passed as `local_4 != (word)NONE` (folded to the `push 1`) 50; the squad index copied to a block local for the
+// follow-up's two calls 50; the reset word declared first in the arm 50; the pending arm's test as `!(delay > 0)` with
+// its two assignments swapped 50; the second call's index read through the parameter's address 50 (all the same code,
+// the first follow-up still reloads the index from its home).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

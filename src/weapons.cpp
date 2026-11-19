@@ -1923,6 +1923,26 @@ static inline bool unit_dual_wielding(long unit_index)
 // (the getter's local order is irrelevant); 0xc9d00 written with UNIT_GET at both uses or a header-array local in place
 // of its pool copy (scratch copies of its file, which is not ours this round) gives the put-away lookup retail's
 // offset-first order but drops retail's `mov eax, ecx` copy (13). The permuter cannot search this form (reduced 48, full 2).
+// M3 lane 3 r271 (fast with 0xc9d00, 0x1058b0 and 0xfff40 in the image, all matched each time; the five weapon lookups'
+// address orders are written O for offset-first and D for data-first: retail O O O D O with the `mov eax, ecx` copy): the
+// 0xc9d00-call form with `result` at the top re-measured 4 (D D D D D), with weapon_get_102e10 at the first lookup 2
+// (O O O O D). The flip of lookups 1-4 comes from any one-use local in the first lookup's statement, not from the masked
+// index: a one-use pool copy there (`s_record_pool *objects = g_4e0300;` read once) 2, a one-use offset local written on
+// either side of the data 2/2. The same locals used at two lookups 4 (D D D D D): the pool copy at lookups 1 and 2, that
+// with own copies at lookups 3 and 5, the offset local reused at lookup 2 or 5; the offset local at the animation test or
+// at every lookup 34 (534 B). Written operand order never counts: a lookup spelled offset-first with no local at lookup
+// 1 or 5 of the 4 form, or at the animation test or lookup 5 of the 2 form, same code. On the 2 form, no change (2): the
+// getter at lookups 1 and 5, at all five; lookup 5 or the animation test through a one-use pool copy; the animation test
+// through a one-use header-array local; `result` declared after the definition (the order of 0x1058b0 and 0x105c20),
+// `i` declared first, the put-away pointer, `current` or the definition declared bare at the top. Worse: one pool copy at
+// the top for lookups 1, 2, 3 and 5 182 (564 B: the copy takes EBX and its data address is strength-reduced); the trigger
+// loop through a trigger pointer from a fresh lookup 131 on the 4 form, 130 on the 2 form (533 B); a pool copy shared by
+// the animation test and a written-out holder lookup 200 (579 B); the dual-wield helper through a twice-used pool copy
+// 200 (579 B, diagnostic); the animation test through `current` 185 (576 B). The permuter on the 2 form with 0xc9d00,
+// 0x1058b0 and 0xfff40 as context: 19 tries in 600 s (its reduced image is 542 files), nothing below 2. Matched 0x101490
+// has retail's offset-first trigger loop beside data-first lookups only through its `volatile` pool read, so that
+// lookup is a separate expression there. Left: what keeps the animation test's lookup data-first and the put-away lookup
+// offset-first (with the copy for 0xc9d00's pool copy) once the others are offset-first.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
