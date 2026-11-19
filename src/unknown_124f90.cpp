@@ -620,6 +620,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 	environment->unknown10 = angle;
 }
 
+// Matched in a full build with stand-in SDK headers (was 3): the definition type is stored through a pointer to the
+// field, so the neighbouring field stores wait for it as in retail.
+// Before:
 // score 3 (was 3): retail schedules the inner counter's `inc esi` after the voice's first two
 // stores; ours puts it right after `inc edi`. Earlier rounds: while loop with the increment after
 // those stores 3; voice index as its own statement 3; long voice index 56; word counter 5; both
@@ -784,7 +787,8 @@ void function_1253d0(void)
 					{
 						s_sound_voice *voice = &g_4e6378[voice_index++];
 						voice->sound_index = NONE;
-						voice->definition_type = (byte)type;
+						byte *definition_type = &voice->definition_type;
+						*definition_type = (byte)type;
 						voice->unknown0a = 0;
 						voice->unknown0b = 0;
 						voice->channel_index = NONE;
