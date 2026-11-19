@@ -1270,6 +1270,13 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // already sum in retail's order (forward (k, j), i; left (k, j), i; up (k, j), i); only the sphere arm's differ, and the
 // left normalize there is 0x30bf0's code inlined by the linker, which its noinline declaration in src/unknown_030290.cpp
 // (another lane's file this round) prevents: BLOCKED-BY 0x30bf0's noinline. Body unchanged.
+// M3 lane 11 r125 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned 273, masked 122): in the
+// projection helper the forward row written j, i, k 290; all three rows written i, j, k 290; all three as `vi * row.i +
+// vj * row.j + vk * row.k` 290 (the same code each: without parentheses the sums are reordered by operand, not by source);
+// the forward row as `(j * vj + i * vi) + k * vk` 561 (2815 B: the grouping holds, but in both arms); the four corner
+// projections as a plain loop over the face's corners 528 (2810 B, not unrolled as retail); re-measured the reference as a
+// ternary copy 643. Retail's sphere-arm forward row sums (j, i), k where its cone arm sums (k, j), i, so the two arms do
+// not compile one source order the same way. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

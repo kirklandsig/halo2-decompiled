@@ -686,6 +686,17 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // control 391): the per-pass found flag declared once at function scope and cleared at each pass 391 (same homes); the
 // result flag declared ahead of the selected indexes 393; the selected indexes declared in reverse 391; the pass loop's
 // direction declared after its start index 366 (9 rows short); the group bitmap cleared by a chained assignment 391.
+// M3 lane 11 r125 (fast with 0x29e730 and 0x29de20, both MATCH; control 382, difflib-aligned 403, register/offset-masked
+// 174). Retail's output loop walks a separate point cursor (ESI) and steps it by comparing the anchor with the selected
+// point's unchanged home (`cmp ax, word ptr [esp + 0x38]`), indexes the entries by the count (`imul eax, eax, 0x1c` each
+// pass), and tests the anchor and stores it as 16-bit values (`cmp word ptr [esp + 0x34], -1`, a dword copy from the
+// candidate's home). Forms: a `short point = local_1;` cursor stepped by `local_2 > local_1 ? 1 : -1` with the entries
+// indexed by local_37, 386 (aligned 375, masked 152); that with local_2 `short` 400 (1579 B, aligned 331, masked 146: the
+// output loop is then retail's but for the NONE constant held in EBP and the merged tail); local_2 `short` alone 383; the
+// cursor with the output pointer kept 402 (1622 B); that with local_2 `short` 381 (aligned 333); the 400 form with
+// local_29 `short` 416 (1582 B, frame 0x68); the 386 form with local_29 `short` 421; local_29 `short` alone 456 (1563 B).
+// The three selected-index homes then sit at +0x40/+0x20/+0x1c against retail's +0x44/+0x28/+0x24 (retail's order, still
+// four and eight bytes low); the found flag keeps its own byte where retail reuses the dead by-value argument's slot.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

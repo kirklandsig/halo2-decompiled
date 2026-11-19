@@ -997,6 +997,21 @@ static inline long team_score_195ed0(long team)
 // rank and score through indexed team 105, short team rank ordinal 205,
 // named player rank and slot 100, native in-range score with short selection 191.
 // NOT kept: the early flag load remains and the native score call still inlines.
+// M3 lane 11 r125 (fast with 0x196470 and 0x199310, both MATCH throughout; control 100): the records through the
+// results view of g_510cb0 (players at +0x384, as 0x199310 reads them) 100 (same code: the flag is another symbol); the
+// flag and the records through that view 333 (aligned 58: each pass reads the flag after the copy and the 0xff store as
+// retail, but the first loop then keeps the flag in BL across the 0x161e60 calls); the same through the cast at each use
+// 333 (same code); the flag, the records and the team entries (+0xdc4) through the view 328 (aligned 59: the first loop
+// reloads the flag as retail, but counts down from 16 in EBX because the entries' end lies past the one-byte g_510cb0);
+// the score helper reading the score through the engine getter's statborg 116 (frame 0x78); the score helper taking
+// `long const &team` 296 (1077 B). Diagnostic (not keepable, an unmapped name): the flag, the records and the team
+// entries as fields of one 0x1044-byte object of the view type 73 (aligned 25): everything up to the rank loop body is
+// then retail's, the rank loop's `cmp word ptr [esp + 0x82], bp` included. So retail addresses the flag, the records and
+// the team entries off one symbol that runs past 0x511bf4, while matched 0x196470 needs the records' symbol to start
+// above 0x510fa0 (its NONE test keeps an index * 0xa4 counter); only the rank loop's inline budget is then left.
+// Diagnostic on that object: 0x196470's second player loop indexing its player array as a real array member (not the
+// cast entry pointer) 158 (751 B, the NONE test on the pointer again): the compiler forms `players - 0xa4` whenever it
+// lies inside the symbol, array member or not, so one object for both functions does not reproduce retail.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
