@@ -690,6 +690,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 }
 
 // MiniMax B (11-18): no new form, no lower score (114): the first difference is still inside the shared inlined rotation helper, whose source is in another lane's file, so the block copies, the side crosses and the small-turn exit remain.
+// MiniMax G (11-19): no new form, no lower score (114), body unchanged. The score depends on the reduced image: alone the
+// function reads 409 (1167 B against retail's 1382) because the rotation helper is not inlined; with an address from the
+// helper's own file (0x1eb640) in the same check it reads 114 (1389 B) with the helper inlined. The first difference is
+// inside that inlined helper (its source is in src/unknown_1eb8a0.cpp, which this lane may not edit): retail copies the
+// vector's component with `movaps` and multiplies the axis from memory, ours loads the axis and multiplies by the vector's
+// register, and that swap moves the whole rotation block's register roles.
 // score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // M3 lane 11 r123 (compile-only screen with the rotation helper pasted in, which reproduces this body's rotation; the
 // axis products' sides as a signature, retail j/k-with-j/k copy-first, ours load-first): no-code reads of the rotated

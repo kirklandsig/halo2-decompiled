@@ -19,6 +19,10 @@
 // MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
 // retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
 // after the product, which no plain spelling of the wave expression reproduces.
+// MiniMax G (11-19): no new form, no lower score (536), body unchanged. A 300 s permuter run (22 tries) reached 535 only
+// by naming the 0.5 factor in a local that holds nothing else (`real tmp0 = 0.5f;` used by the wave product, the k factor,
+// the default arm and the PIN calls), which is a form the coordinator rejects, so it is not kept; the frame stays 0x54 against
+// retail's 0x60 and the wave's three dead x87 factors stay behind retail's product.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // and late x87 factor lifetimes remain, at retail length 2622.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54

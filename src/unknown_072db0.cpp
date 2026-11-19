@@ -1656,6 +1656,13 @@ static __forceinline void query_restore_pending()
         }
 }
 
+// MiniMax G (11-19): no new form, no lower score (703), body unchanged. Binding the user record in a local so that the
+// cursor is the record base (the valid flag at +0, the XUID at +1, the unknown10 at +0x10 and the properties at +0x14, as
+// retail has them) instead of the XUID pointer with negative displacements scores 777 (the compiler then keeps the base in
+// EBX and the frame grows), so it is not kept. The first difference is still at the top: retail tests the logon status with
+// `dec eax` (the status minus one, then a jump) where we compare against the immediate 1, and retail keeps the users base at
+// [esp+0x18] where we keep it at [esp+0x14]; the users loop's own body (the valid test, the XUID copy, the properties copy
+// and the slot test) matches retail's shape apart from those homes.
 // score 703 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
