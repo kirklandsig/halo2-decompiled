@@ -1177,6 +1177,10 @@ __forceinline long vehicle_round(real value)
 // dead locals and dead inline locals at the top, before the first cross, inside the side block and before the
 // projection (288 diagnostic points) never 0. That product is retail's only with the rate read through the pointer,
 // which flips the side cross's i-by-k and j-by-i terms instead.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, exact against the fast build): `side` declared with the other
+// vectors at the top of the arm 4 (same code); the up pointer dropped with the rate on vehicle->up.k 6; MiniMax I's rate on
+// vehicle->up.k re-measured 2 (not kept, see above); 1-8 dead locals inside the side block 6/8/6/4/6/10/4/4 and on the 2 form
+// 4/10/8/10/12/12/6/2 (diagnostic, never 0: no count fixes the side cross's last product with the others).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2240,6 +2244,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // helper 9 (same code); a trivial `valid()` accessor on the animation-id type for the seven overlay tests 9 (same code);
 // the six overlay stores through one pointer to the overlay array 17. The compile-only screen of this file does not
 // reproduce this function (its callees' conventions come from other files), so the forms were measured one at a time.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, exact against the fast build): the eight callbacks given a local
+// copy of the vehicle index 12; the first lookup through a named `vehicle_index & 0xffff` local 12 (0x100130's lever for
+// the reverse order) and every callback passing 0 or the velocity call passing 0 (diagnostics) all keep the header lookup
+// offset-first; deleting the update block, either loop or any one overlay arm (diagnostics) never flips it either.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

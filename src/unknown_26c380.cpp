@@ -706,6 +706,11 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // either order 305/305. Trace success and crossing or either order 305/305. All three with
 // success or first edge first 363/363. NOT kept: the paired records move the result byte outside
 // its retail slot. Grouping all three shrinks the frame. The opening body is restored.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, faithful to the fast build: 1 row; aligned rows against retail,
+// this body 109, the held goto form 43 = positional 34): on the goto form, the up cross written out member by member
+// (diagnostic only: a helper body by hand) 41, the cross's row j and the magnitude's sum order then retail's but row i's
+// subtracted product loads the direction first; the same with row j's products written operand-swapped either way 41
+// (identical: the text order of the products is ignored). Body unchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

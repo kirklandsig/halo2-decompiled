@@ -1911,6 +1911,18 @@ static inline bool unit_dual_wielding(long unit_index)
 // 0x1058b0(weapon, 10, immediate) 117 (503 B: LTCG expands it with retail's tail, 0x101f20 and 0xcd660 stay calls). On
 // this body, weapon_get_102e10 at lookups 1-3 15 (they take retail's offset-first order, lookup 4 flips). The permuter
 // cannot search the 0xc9d00 form (its reduced image scores it 80, the full image 27).
+// M3 lane 9 r143 (fast, plain where noted; a reduced-link LTCG screen of this file reproduced the fast build): the 0xc9d00
+// call in place of the `volatile` block re-measured 27; on it `bool result = false;` declared first in the body 4 (every
+// register then retail's; left: lookups 1, 2, 3 and the put-away lookup data-first, retail offset-first); with
+// weapon_get_102e10 at the first lookup as well 2 (plain 2: lookups 1-3 take retail's order, the animation-test lookup
+// flips with them, the put-away lookup stays data-first). Not kept: the declaration move carries the gain (without it 27).
+// On the 2 form, no change: the getter at every other subset of lookups (31), the holder and dual-wield helpers with a
+// pool copy, the getter, a result flag or no NONE test, the tail through the holder helper, the put-away pointer reusing
+// `current`, the animation test named, through a pool copy or through the getter; dead initialised locals 1-16 change
+// nothing on either form. Diagnostics: only a named `weapon_index & 0xffff` local at the first lookup flips the order
+// (the getter's local order is irrelevant); 0xc9d00 written with UNIT_GET at both uses or a header-array local in place
+// of its pool copy (scratch copies of its file, which is not ours this round) gives the put-away lookup retail's
+// offset-first order but drops retail's `mov eax, ecx` copy (13). The permuter cannot search this form (reduced 48, full 2).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

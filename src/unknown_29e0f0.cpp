@@ -668,6 +668,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // pointer-to-volatile group views (local_6, local_11) 155 alone; lane 7's permuter set without them 98 (1604 B, the same
 // ESI exchange left). The table read once through `s_29de21 *const *` taken from the parameter (so its loads could be
 // shared) at the call, the range test or the endpoint search 155/155/155, and 0x29e730 (the caller) drops to 6: not kept.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, within 7 rows of the fast build; aligned rows against retail,
+// control 391): the per-pass found flag declared once at function scope and cleared at each pass 391 (same homes); the
+// result flag declared ahead of the selected indexes 393; the selected indexes declared in reverse 391; the pass loop's
+// direction declared after its start index 366 (9 rows short); the group bitmap cleared by a chained assignment 391.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

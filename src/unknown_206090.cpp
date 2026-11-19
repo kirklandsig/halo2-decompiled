@@ -536,8 +536,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // cross product use and reloads field_40.k right after storing it.
 // P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
-
-// score 1375 (was 1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
+// (Second note, merged:) Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // P452: Independent magnitude/velocity-publication/query-origin/tangent/direction/velocity/friction-input/impact-normal memmove boundaries:
 // 1436/1376/1409/1397/1440/1407/1425/1376. NOT kept: 1376 leads retain nonnative record-transfer boundaries and excess frame; no byte equality. Original captures, all helpers, call tuples and full body restored; matched caller survives.
 // P454: Existing magnitude snapshot as aggregate/shared setter, five remaining native component-store
@@ -732,6 +731,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // One magnitude workspace at contact phase or entry, assignment/memcpy, 1515 each. Separate root and
 // normalization workspaces at the same scopes, assignment/memcpy, 1457 each. NOT kept: the frames shrink
 // to 0x5a0/0x5a8 but the body loses 120/88 bytes and retail's component homes still differ.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, faithful to the fast build; aligned difflib rows against retail,
+// control 1382, frame 0x5d0): the magnitude helper's snapshot bound by const reference 1433 (frame 0x590, 23 rows short);
+// the add helper as a three-pass component loop 1399; the cross helper staging its second vector as one vector3f copy 1439
+// (0x5e8); the add helper plain `inline` 1382 (same code); the scale loop's counter as short 1460; the cross's staged
+// reals declared k, j, i 1383. Not kept.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
