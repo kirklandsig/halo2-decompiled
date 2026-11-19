@@ -2764,6 +2764,22 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// score 87 (was 87): the shown count, element-address and index homes are permuted against retail's, retail reloads
+// players[i] after the 0x53b40 voice query (BLOCKED-BY that chain's helper shape in src/network_voice.cpp, held by
+// another lane this round), and the last loop keeps the screen in ebx where retail gives ebx to bitmap_a.
+// m3 lane 4 r224: dead initialised longs at the top, K = 1-6, 8, 10, 12, 14, 16, 20, 24, 28: 87 at every K (921 bytes,
+// aligned 57 each: the homes and the last loop are not a symbol-count state). One-object LTCG screen (this file plus the
+// real objects of 0x22ee47, 0x19aaa5, 0x2b01a2, 0x7f790, 0x2b0a14, 0x53b40 and 0x149ead's files) reproduces our build
+// instruction for instruction except the voice block, where it already has retail's reload (the chain's bottom is left
+// unresolved); on it 43 rows from retail, all slot homes and the last loop. Delta: the object of 0x7f790 alone turns the
+// last loop from retail's into ours (its esi/edi register arguments), and deleting the 0x7f790 call, the second loop or
+// the first loop's fill (diagnostics) each gives retail's last loop (2 rows off); deleting the voice block or the four
+// lookups does not. Screened without a flip (last loop 18-20 rows off each): the helper's default arm in all 24
+// statement orders, as one four-way chain in 24 orders, as two chains in 24 pairings/orders, as store-then-copy pairs in
+// 24 (best 41 against 43); counters per loop in all/first/second/third/second+third loops 41-46; a short team index, a
+// `(short)` cast at the call, `&colors[0]`, an appearance pointer local, no_team declared first, the search result
+// unstored, a const player pointer; the team-name switch, the voice state and the team test each as an inline helper
+// 43/57/43. Fast check of the best default arm (text_a, text_b, bitmap_a, bitmap_b) 95 (926 bytes, aligned 55).
 // MiniMax B (11-19): no new form, no lower score (87): the frame agrees at 0x788 and the first difference is still
 // the shown count's home (ebp-8 against retail's ebp-0xc), with the first loop's element address at ebp-0x18 against
 // retail's ebp-8 and the player at ebp-0xc against retail's ebp-0x14, so the six spill slots stay one six-step
@@ -2771,7 +2787,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // keeps the player across 0x53b40 where retail reloads it (a store through a pointer somewhere in that chain, in
 // src/network_voice.cpp, another lane's file), and the last loop still keeps the screen in ebx where retail gives ebx
 // to bitmap_a.
-// score 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
+// Earlier 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
 // keeps it at ebp-0xc, the first loop's element address ebp-0x18 where retail keeps it at ebp-8 and the player ebp-0xc
 // where retail keeps it at ebp-0x14, so the six spill slots stay one six-step cycle off retail's; the voice query
 // still keeps the player across 0x53b40 where retail reloads it (that needs a store through a pointer somewhere in the
