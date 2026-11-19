@@ -471,6 +471,9 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // pointer), unused locals 0..7, extra temporaries before the test or the 0x21d110 call, extra end-test blocks, a
 // `globals` local for g_4ed288, a named ticks local, a bool for the test, nested class-flag tests, flag-setting helpers or
 // the marker size as a ternary moves the request back to EBX with retail's end test.
+// Round 636: the merged tail test remains. Reduced control 41, caller-context control 32. Single-exit
+// rejection with split masks or direct fields 41/41, Boolean fields 50, nested bit 8 or audible 65/50,
+// audible first 58; bit 8 then audible then bit 11 56; direct return on rejection 82.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

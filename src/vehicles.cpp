@@ -803,6 +803,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // work points declared at first store, separate producer scopes and reversing
 // scope all score 116. Tag lookup after the first velocity copy scores 141.
 // NOT kept: none recovers the first velocity-copy receivers or early unity.
+// Round 636: velocity receivers and early unity still differ. Entry dot 281; successive entry squares 120;
+// named planar and third-axis terms 222; entry throttle, steering or both shared with rotation 277/276/286;
+// component-array squares 218; successive squares at both observations 325.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
