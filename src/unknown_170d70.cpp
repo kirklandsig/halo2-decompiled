@@ -1107,6 +1107,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // with shared sine contributions 516. Rescaled original forward 349, with shared point difference 395.
 // NOT kept: cosine-complement scaling holds the axis components live where retail reads them again.
 // The retail second rotation scales j before multiplying by i. Preserving that grouping still differs.
+// Named square inputs together 381 or paired with products 379. Sine products before or after
+// complement products 354/343. Row aggregate 492; symmetric coefficients then aggregate 469.
+// Early horizontal axis 381; named double vertical tangent 368.
+// NOT kept: the 343 form gains three at 1465 bytes with frame 0x54, and unity moves to XMM6.
+// Both aggregate forms also demote the matched view initializer. The original square spills remain.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

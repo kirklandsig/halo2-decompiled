@@ -471,6 +471,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // pointer), unused locals 0..7, extra temporaries before the test or the 0x21d110 call, extra end-test blocks, a
 // `globals` local for g_4ed288, a named ticks local, a bool for the test, nested class-flag tests, flag-setting helpers or
 // the marker size as a ternary moves the request back to EBX with retail's end test.
+// Direct flag-8 field with boolean flag-11 conversion 60, with word extraction 32;
+// those tests with the flag-11 field store 60/32. Eligibility before the primary maximum 42;
+// audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
+// NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
+// keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

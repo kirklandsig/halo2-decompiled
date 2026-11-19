@@ -322,6 +322,10 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // bare and zeroed in the cache block and in an else 140; the unit count by if/else 114 (same code); the cached
 // generation through saved_game_storage_get_cache() 138; the entry test through that getter 114 (same code). Our
 // build still loads g_51ea14 into EAX at entry with EBP as the zero register, retail into EDX with EBX.
+// Shared packed handle type bits 210; named completed disk handle 114, built-in handle 114, both 114;
+// copied location declared outside the inner loop 114; built-in record cursor 117;
+// no-controller cases outside the switch 157, with a shared controller-selected predicate 186.
+// The entry and pass-latch cache registers still differ. The shared type bits grow the frame.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

@@ -742,6 +742,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 152, with the model field used directly 152, with typed tag arrays 152,
 // and with both shader lookups shared 152. The full-width fallback moves
 // the table load ahead of the frame. The stage and pass addressing still fuses.
+// Existing tag-array header in the accessor 117; typed block pointer 117; block lvalue 117;
+// three named block fields by pointer or lvalue 117/117; pass and material block headers 117;
+// all tag-array headers 117, with full-width fallback mask 152.
+// The full-width mask still hoists the tag table, and the stage/pass addresses still fuse.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
