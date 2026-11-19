@@ -894,6 +894,10 @@ extern "C" void _ReadWriteBarrier(void);
 // a bool ahead of the actor lookup 44. Compile-only (same code as the no-barrier body): a const reference to the
 // point at the top, the state NULL test joined to the busy test, the busy field in a long, the flags bool at the
 // top, a point pointer at the top; flags /G6, /Ob2, /Oi-, /Ot leave the slot load after the branch.
+// M3 lane 16 r148 (fast with 0x1ba3f0/0x1ba5c0, both MATCH each time; control 6): the flags byte bound to a `byte const &`
+// at the top, without/with the barrier 44 (208 B)/6 (same code); a discarded `(void)state->flags;` read at the top, no
+// barrier, 44 (removed); the point copied through a block-local `point3f` in the flags arm, no barrier, 50 (212 B). The
+// slot load still sinks to the NONE block in each.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

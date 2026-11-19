@@ -257,6 +257,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // `kind == 1` and availability tests 15; a `bool received = request->kind == 1;` passed to the selector 32; the kind
 // compared with a named enum constant, plain read, 32 (95 B). The identical-arm chain that matched (r104) stays out by
 // the 11-18 ruling: retail shows one compare of the kind, not one per value.
+// M3 lane 16 r148 (fast with 0x8c5b0/0x8c660, both MATCH each time): the availability as an inline helper returning the
+// payload pointer (NULL when unavailable) with the setting seeded 1, plain read, 30 (94 B, folded compare); the store and
+// change test as an inline setter returning `changed`, with the volatile read 4 (same code), with a plain read 32 (95 B).
+// Re-measured: the index read first with the volatile read 5 (request EAX, kind AX: the request dies before the kind
+// loads), with a plain read 32.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

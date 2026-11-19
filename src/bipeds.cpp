@@ -4328,6 +4328,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // The reduced image still differs in the 0x11dbb0 context. The full 0x78 frame, changed byte at +0x12
 // and flight threshold at +0x14 remain in the restored body.
 // Reduced control 602, full control 537.
+// M3 lane 16 r148 (plain; 0xe1c40 and 0xdd360 unchanged each time): K dead longs at the top, K = 1/2/3/4/5/6/8/11:
+// 640/575/577/543/543/543/578/589 in the full image (no state below 537). The wall turn through include/axis_rotation.h's
+// rotation helper 613 (2729 B), through rotate_direction 613 (re-measured); `bool special` from the direct compare 596
+// (2722 B); the planar turn with both rows named 635 (2743 B); the animation value read once into a named two-use local
+// at the top 658 (2740 B).
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4576,7 +4581,20 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
-// score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// score 308 (was 336): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// M3 lane 16 r148 (fast with 0xe1b60/0xe23e0/0x24590, all MATCH each time; plain agrees), KEPT 336 -> 308 (1931 B, aligned
+// 291 -> 227): the pivot offset through the existing vector3d_from_points3d (point to world pivot) and the reach distance
+// through the existing magnitude3d (plain: the offset alone 338 at 1928 B, magnitude3d alone the same code as before).
+// Not kept: delta through vector3d_from_points3d and the move test's squared length through length_sq3f give this
+// function's code unchanged but flip an EAX/ECX add in contributor 0x1c4590 (6 -> 11) in the full image. On 308 (with
+// those two): back through vector3f_scale 308 (other
+// code: some rotated-pivot products take retail's matrix-first order); the collision arms through vector3f_add_scaled 308
+// (same code); the root arm with a shift vector through vector3d_from_points3d, point minus shift, 307; retail's root arm
+// (shift first, origin overwritten by *point, z lowered, position = origin - shift) 311 at 1921 B, aligned 196: that arm is
+// then retail's, both arms leave y/z in xmm1/xmm0 and the tails merge as retail's (`jmp 0xe2397`), the first property takes
+// +0x4c, but origin goes to +0x34 (retail +0x40) and the matrix stays +0x60; on it the select as if/else 366, back through
+// vector3f_scale 319, both 366; the if/else select alone 369 (1943 B). K = 1..16 dead longs on 308: 316 (K 1-2), 314
+// (K 11-12), else 308.
 // MiniMax A (11-18): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and the matrix, placed-point and property homes shift together although the 0x12c frame agrees.
 // MiniMax E (11-17): no new form, no lower score (336): this build's locals still sit 0x10 higher in the frame than retail's (the matrix receiver at esp+0x44 against retail's esp+0x40, the argument block at esp+0x60 against esp+0x50), so the home sequence and the jumps after it land elsewhere.
 // MiniMax I (11-16): no new form, no lower score (336): the first difference is a stack home (this build's vector workspace at
@@ -4984,10 +5002,8 @@ bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value,
 			}
 			biped_matrix_transform(&parent, parent_pivot, &world_pivot);
 			biped_matrix_transform(&matrix, child_pivot, &child_world);
-			offset.i = world_pivot.x - point->x;
-			offset.j = world_pivot.y - point->y;
-			offset.k = world_pivot.z - point->z;
-			distance = (real)sqrt(offset.k * offset.k + offset.j * offset.j + offset.i * offset.i);
+			vector3d_from_points3d(point, &world_pivot, &offset);
+			distance = magnitude3d(&offset);
 			real limit = value - 0.025f;
 
 			target = world_pivot;
