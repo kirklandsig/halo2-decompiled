@@ -1064,6 +1064,16 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Diagnostics (reverted at once): 1-7 dead initialised locals on the recipe 291/279/284/284/284/284/284 (only the origin
 // dot's term order moves; at 2 the body is 1280 B, aligned 39); a no-code read of first.j ahead of the projection puts
 // 1.0 in retail's XMM6, one of first.k puts first.j in retail's XMM3 (286/289), one of the parent point's y does nothing.
+// M3 lane 3 r262 (fast with 0x270400 and the caller 0x270d90): lane 11 r113's form rebuilt (actor_index declared first in
+// the definition, the declaration in src/path.cpp and the call; corners a, b, c, d; case 5's position before its direction)
+// 283 at 1284 B, first difference +0x27 (0x270d90 286 as on main). Its case 1 against retail: the projected dot's j and k
+// terms come out k + j where retail has j + k (the parent point's y/z loads swap with the edge vector's j/k registers;
+// the origin dot's tree already agrees), the 1.0 constant in XMM7 for retail's XMM6, and the margin in a fresh XMM6 where
+// retail multiplies the inverse in place. On that form: a pointer local to the parent point's position for the projected
+// dot 283 (same code); the parent position copied into a local vector 332 (1308 B); fraction and margin as divisions by
+// the first length, no inverse 283 (same code); the half-way arm first with the condition negated 283 (same code); a
+// named radius for the test and the margin 298. Diagnostic: dead initialised locals at the top, k = 1..7:
+// 291/279/284/284/284/284/284 (k = 2 gives 1280 B but recolours the origin dot): no phase fixes case 1. Body unchanged.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

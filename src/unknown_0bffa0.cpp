@@ -1366,6 +1366,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // A register-masked alignment puts the 10 missing bytes in operand folding (retail loads the matrix element and
 // multiplies by the point register) and in the cone arm's reciprocal, which retail divides after the centre projection,
 // reusing the projection's 1.0 in XMM6. Body unchanged.
+// m3 lane 3 r262 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, base 290): the sphere arm written through
+// `entries[i].` with no entry pointer 592 (2786 B); the projection's result products as `transformed.i * scale` 290 (same
+// code); the cone direction copied into a local vector before the centre projection 603 (2816 B); the sphere vertices as a
+// point3f table filled through the existing real_point3d_set 566 (2807 B); the vertex table as `real [8][3]` 290 (same
+// code). Diagnostic: dead initialised locals at the top of the cone arm, k = 1..8: 479/480/480/484/483/483/479/479
+// (2809-2814 B): no phase, every extra local costs ~190. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

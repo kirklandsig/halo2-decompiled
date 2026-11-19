@@ -714,6 +714,13 @@ struct s_text_line_measurement
 // placed ahead of the kerning call, the offset and the advance 85; between the kerning and the offset 111; between the
 // offset and the advance 111; the metrics in offset, kerning, advance order ahead of the break block 82; offset, advance,
 // kerning 133 (393 B). Retail's early width load does not come from the width's first use moving up.
+// M3 lane 3 r262 (fast with 0x13f700/0x13f0e0, both MATCH; control 77): the comparison accumulated in a named right edge
+// at the test (`right = position->x; right += advance; ... right += width;`) 77 (same code); `real right = position->x +
+// advance + offset + kerning;` after the break-point block with the test `right + width` 77; a width snapshot after the
+// three products used by the break store, the test and the update 77 (same code: propagated); that snapshot updated in
+// place and copied back 77; the accumulated right edge started from the origin read between the offset and the advance
+// 30 (first difference +0xa8; the origin's early load takes the XMM4 slot where retail loads the width, and the advance
+// still has no copy; a one-use field read moved early, not retail's late origin read, not kept).
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

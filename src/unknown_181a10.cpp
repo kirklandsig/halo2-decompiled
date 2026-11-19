@@ -1037,6 +1037,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // entity arm first 310 at 1243 bytes, named coefficient outputs 238,
 // first-node scope ending at input capture 245. NOT kept: frame 0x40 and
 // the second-node spill remain in all eight forms.
+// M3 lane 3 r263 (fast; base 238; compile-only snippet harness for the classifier): every ternary, MIN/MAX nesting and if chain
+// compares against an immediate; only the preset form (`limited = 1; if (limited <= value) { limited = 16; if (limited >= value)
+// limited = value; }`, or a pin helper with that body) keeps the constants in the result register, and it compares
+// `cmp value, limited` where retail has `cmp limited, value`. In the build: the preset clamp 320 (1243 B); the clamp compared
+// with its own `value` 320 (1243 B); the classifier written inline on `second->shape->data` 320 (1243 B); the three early
+// rejections after the component scan as one `||` chain 238 (same code); the component scan with a result local and `break`
+// 333 (1257 B).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

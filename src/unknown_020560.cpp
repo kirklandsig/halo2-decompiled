@@ -1151,6 +1151,14 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // definition, the declaration in src/unknown_023540.cpp and both calls together) 547 each (same code, still EAX), so the
 // arrival register follows the body (the index-scan bodies receive it in EDX), not the slot. The fallback as an early
 // return 591; the override copies as an early return 584. All restored.
+// Round 262 (m3 lane 3, fast with 0x24550, 0x22c30, 0x22750 and the caller 0x23690): the index body (entries read at each
+// use, both distances through distance_sq3f, delta and offset through vector3d_from_points3d, dot3f, the ternary second,
+// `fraction = 0; if (second)`) re-measured 576 (2094 B): scan 1 is retail's but `nearest` stays in memory (retail EDI,
+// stored to +0x14 at the loop exits) and the limit takes EDI; on it the count == 1 copy as an if/else arm with no return
+// 576 (same code); `opposite` declared with `nearest` before scan 1 564 (2089 B: the limit moves to retail's EBP, but
+// red is then loaded into EDI at the entry and `nearest` stays in memory); that with scan 2's distance as
+// length_sq3f(&offset) 660 (2020 B). On this body: `opposite` declared before scan 1 634 (2159 B); the count == 1 copy
+// as an if/else arm 547 (same code).
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
