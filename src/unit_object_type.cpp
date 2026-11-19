@@ -8123,6 +8123,13 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // 258; held query with countdown admission 281.
 // NOT kept: joined results score 188 but add a direction retest and lose the retail prologue. Separate byte
 // results recover both AL tests at 222, a two-point gain from one-use locals.
+// score 2 in a full build with stand-in SDK headers (was 224): 0x113da0 and 0x113df0 are tested as bytes (retail's
+// `test al, al` at 0xc59dd and 0xc59f6); the weapon index starts at NONE and is assigned in an if (retail's
+// `or eax, -1` at 0xc5b4e before the slot test); the zoom scale reads unit->unknown240 in both arms (`movsx edx, bl` at
+// 0xc5bea); and the unit pool is copied into a local declared after `holder`, with the weapon's unit read through it
+// at both definition reads (retail keeps the pool pointer in edi and reads its data pointer twice, 0xc5b35..0xc5b6e).
+// Left: the address operand order of two loads in the hand loop (retail [data + index*12 + 8] at 0xc5c75 and 0xc5cbb,
+// ours the same address with base and index exchanged).
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -8157,13 +8164,13 @@ bool __stdcall function_c58f0(long unit_index)
 
 			if (!(control & 0x8000000) && !((1 << unit->type) & 1 && control & 0x4000))
 			{
-				if (!function_113da0(unit_index))
+				if (!(byte)function_113da0(unit_index))
 				{
 					function_113d20(unit_index, 0.5f);
 					changed = true;
 				}
 			}
-			else if (!function_113df0(unit_index))
+			else if (!(byte)function_113df0(unit_index))
 			{
 				function_113d60(unit_index, 0.5f);
 				changed = true;
@@ -8224,14 +8231,20 @@ bool __stdcall function_c58f0(long unit_index)
 				unit->unknown26c = 0.0f;
 			}
 			s_unit *holder = UNIT_GET(unit_index);
+			s_record_pool *pool = g_4e0300;
 			short index = holder->current_weapon_index;
-			long weapon_index = index != NONE ? holder->weapon_object_indices[index] : NONE;
+			long weapon_index = NONE;
+
+			if (index != NONE)
+			{
+				weapon_index = holder->weapon_object_indices[index];
+			}
 			real scale = 1.0f;
 			long sound;
 
-			if (weapon_index != NONE && *(short *)(UNIT_DEFINITION_GET(UNIT_GET(weapon_index)) + 0x1fe) > 0)
+			if (weapon_index != NONE && *(short *)(UNIT_DEFINITION_GET(((s_unit_header *)pool->data)[(weapon_index) & 0xffff].unit) + 0x1fe) > 0)
 			{
-				byte *local_67e06b = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
+				byte *local_67e06b = UNIT_DEFINITION_GET(((s_unit_header *)pool->data)[(weapon_index) & 0xffff].unit);
 
 				if (unit->unknown240 == NONE)
 				{
@@ -8244,7 +8257,7 @@ bool __stdcall function_c58f0(long unit_index)
 
 					if (levels > 1)
 					{
-						scale = (real)zoom / (real)(levels - 1);
+						scale = (real)unit->unknown240 / (real)(levels - 1);
 					}
 				}
 			}
@@ -8263,7 +8276,7 @@ bool __stdcall function_c58f0(long unit_index)
 
 					if (levels > 1)
 					{
-						scale = (real)zoom / (real)(levels - 1);
+						scale = (real)unit->unknown240 / (real)(levels - 1);
 					}
 				}
 			}
