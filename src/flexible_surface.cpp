@@ -860,6 +860,20 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // or before angle weighting 130/130/130/130. With all draws using one seed
 // pointer 174/174/174/174. NOT kept: shared seed reaches retail length with
 // the frame difference and a higher score.
+// M3 lane 16 r138 (fast with 0x118140, 0x2551f0, 0x1ff360; control 130), trials in the shared rotation helper: the dot's
+// terms ordered j, k, i 130 (same code: the sum is canonicalised, the i product still formed first); cross i computed
+// ahead of the projection 152 (880 B); cross k in two steps (`cross_k = v.i * a.j; cross_k -= v.j * a.i;`, for retail's
+// store/reload of that product at +0x10) 130 here, 0x1ff360 93 and 0x2551f0 59 (lost); cross j in two steps 130 / 93 / 59;
+// the axis j and k captured into locals 151 (880 B; 0x1ff360 104, 0x2551f0 182). All restored.
+// Table-axis reference/direct argument 187/183, separate axis assignment 130,
+// initial-direction/axis library copies 130/130, compound tick product 130,
+// named frame test 130, random-state record reference 130, compound wave gain 130,
+// shared double wind scale on the in-place rotation 154. NOT kept: direct table access
+// shrinks the frame to 0x0c. The shared scale reaches 880 bytes and loses the caller match.
+// Shared rotation cross differences staged as accumulators from products, axis values, or direction values
+// 130/130/130. Named subtracted product, both products, difference with named subtrahend, and subtrahend
+// scaled from the axis or direction 154/154/154/154/154. NOT kept: the frame is still 0x1c and both
+// matched shared rotation callers differ in every preview. The opening shared helper and body are restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1116,6 +1130,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // references 322, direct material arm first 322. NOT kept: the 300/296 forms use a one-use
 // object-index local. Retail reads the definition first. Other forms gain fewer than eight or tie.
 // The record spill, material-call convention and state expansion remain.
+// Existing virtual reference method, material traversal scoped to its output, and immutable named
+// vertex-input results, separately and together, 322 each. Typed index pointer through the existing
+// virtual method and the direct-material arm 322. The record spill, four search-result homes,
+// material-call convention and two draw-state expansions remain.
 // N421 previews: same tag-table pointer for the material kind and its direct reference 322; carry the tag
 // table into the groups lookup and refresh after the virtual call 381; variant table indexed by its actual
 // word elements 322; packed group and variant words masked at the next lookup 322; material reference

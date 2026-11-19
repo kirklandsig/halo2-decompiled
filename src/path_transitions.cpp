@@ -474,7 +474,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 218 (was 218): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// score 218 (was 218): r123 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // M3 lane 11 r113 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 76): actor_index declared first (the stack
 // order and register arguments unchanged; definition, declaration in src/path.cpp and the call together) with corners a, b,
@@ -1064,6 +1064,21 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Diagnostics (reverted at once): 1-7 dead initialised locals on the recipe 291/279/284/284/284/284/284 (only the origin
 // dot's term order moves; at 2 the body is 1280 B, aligned 39); a no-code read of first.j ahead of the projection puts
 // 1.0 in retail's XMM6, one of first.k puts first.j in retail's XMM3 (286/289), one of the parent point's y does nothing.
+// M3 lane 3 r262 (fast with 0x270400 and the caller 0x270d90): lane 11 r113's form rebuilt (actor_index declared first in
+// the definition, the declaration in src/path.cpp and the call; corners a, b, c, d; case 5's position before its direction)
+// 283 at 1284 B, first difference +0x27 (0x270d90 286 as on main). Its case 1 against retail: the projected dot's j and k
+// terms come out k + j where retail has j + k (the parent point's y/z loads swap with the edge vector's j/k registers;
+// the origin dot's tree already agrees), the 1.0 constant in XMM7 for retail's XMM6, and the margin in a fresh XMM6 where
+// retail multiplies the inverse in place. On that form: a pointer local to the parent point's position for the projected
+// dot 283 (same code); the parent position copied into a local vector 332 (1308 B); fraction and margin as divisions by
+// the first length, no inverse 283 (same code); the half-way arm first with the condition negated 283 (same code); a
+// named radius for the test and the margin 298. Diagnostic: dead initialised locals at the top, k = 1..7:
+// 291/279/284/284/284/284/284 (k = 2 gives 1280 B but recolours the origin dot): no phase fixes case 1. Body unchanged.
+// M3 lane 10 r123 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, aligned 70): the actor parameter copied into a
+// `long const` local at the top and used in cases 5 and 2, 219 [70]; case 5's test written `NONE != actor_index` 218 (same
+// code); case 5's test held in a bool computed ahead of the direction 218 (same code); case 5 first in the switch 329; case 2
+// ahead of case 5 353 (1284 B). Retail's case 5 compares the entry-loaded EAX before the direction is formed, while case 2
+// reads the actor from its stack home again, so the entry value is not a whole-function register home for the parameter.
 // Early root and actor allocation still differ. Second-edge start/end/both addresses after the
 // first normalization 311/335/229, or inside the positive-length arm 334/336/361.
 // Both addresses with the second vector scoped there 229/361. All forms regress.

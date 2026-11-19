@@ -662,6 +662,16 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // 414; point and anchor 409; all three indexes 421; group-local best distance
 // 453; group-local distance and all three indexes 427. NOT kept: each regresses;
 // selected defaults keep different homes.
+// M3 lane 16 r138 (fast with 0x29e730; control 382, aligned 268). Round 64's recipe (as saved by m3 lane 7 r146) re-applied to
+// today's file: 155 at 1596 B, aligned 20 (match-only, not kept); its one structural cause is unchanged: retail keeps the
+// table parameter in ESI from the range test to the 0x29de20 call and loads the target point into EDX for the pair
+// distance, ours loads the point into ESI there and reloads the table at the call. On the recipe, for that cause: the
+// table as `s_29de21 *&` bound to the parameter before the pass loop, at the function top, or as a const reference at
+// the range test 155/155/155; the target point read once through its address (`point3f const *const *`) at the call or
+// at the pair distance 155/155 (all the same code: each folds back to the parameter). Diagnostic, reverted at once:
+// pointer-to-volatile group views (local_6, local_11) 155 alone; lane 7's permuter set without them 98 (1604 B, the same
+// ESI exchange left). The table read once through `s_29de21 *const *` taken from the parameter (so its loads could be
+// shared) at the call, the range test or the endpoint search 155/155/155, and 0x29e730 (the caller) drops to 6: not kept.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

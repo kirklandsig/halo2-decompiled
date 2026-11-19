@@ -4533,10 +4533,19 @@ bool __stdcall function_2b278e(long controller_index)
 // reference is still absent after the membership query.
 // The incoming controller reference and the two post-membership index reloads still differ.
 // Dispatch-scope controller index for the initial queries, then with name entry, message permission, both dialog masks, name and permission, name and masks, or all three groups each score 54. All uses with Boolean membership score 199.
+// Callback slot bound before identity, before membership with a fresh index, after
+// membership, or at each dialog: 54 with the existing membership storage in each form.
+// Early identity rejection with the slot and bool, then bool at the other three boundaries:
+// 199/199/199/199. NOT kept: none recovers the two post-membership reads through ESI.
+// The bool forms also shrink case 3 while retaining the initial index in ESI.
 // Named identity-query result 54, index assigned at the identity call 54, Boolean membership with
 // warning assigned on the eligible path 199 or cleared for the excluded kind 192, signed warning result 199,
 // conditional dialog invocation 199, function-scope identity 199, inherited dialog receiver 199.
 // The original controller reference and both index reloads still differ.
+// Separate leave before/after the other actions 215/210; separate name before/after
+// 211/199; message selection last/first 219/248; separate leave with Boolean membership
+// 196; group lower actions before leave 217. The original double pointer and index spill
+// still differ. Isolating leave grows the frame.
 // Copy the dialog controller pointer, index or both 181/54/181; with Boolean membership 205/199/205.
 // Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
 // NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
@@ -5545,6 +5554,13 @@ void function_1486b8(long error, bool keep);
 // with literal store 56; incomplete probe to single return 56. NOT kept:
 // storing the QoS predicate recovers the entry store and stack argument,
 // but changes the completion store and shortens the body.
+// M3 lane 13 r113 (fast): with `bool result = false;` at entry and no else store (re-measured 56, 150 bytes)
+// the entry store is retail's, but completion becomes an EBX register parameter held for the whole body and
+// the task spills; retail splits completion (EDI, then a reload from its stack slot) to give the task EBX.
+// On that form: the final test read through the parameter's address 29 (156 bytes: completion on the stack,
+// its copy still takes EBX); the completion store ahead of the declaration 55; the task declared at the
+// top 56; `if (result && !*completion) return result;` before the call 56; the probe branch calling the
+// cleanup itself and returning 55; `else result = false;` on the no-task path only 52 (156 bytes).
 // @retail 0x2bb04e
 bool function_2bb04e(long task_index, bool *completion)
 {
@@ -5780,7 +5796,8 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
-// score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
+// score 89 (was 97): The friend-query output and later action predicates still use different byte slots.
+// Earlier score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
 // boolean predicates use different byte slots.
 // origin predicate scoped through join eligibility 97; request result scoped through
 // add-member eligibility 97; regular-player predicate scoped through membership
@@ -5821,6 +5838,12 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // guards 392 or selections 396, roster actions under other-user gate 349 or by
 // player status 402, paired modification actions under rank gate 360 or
 // regular-player gate 365. NOT kept: title output byte remains displaced.
+// exclusive title and other join actions 210; exclusive add and remove member actions 160; exclusive mute and
+// unmute actions 146; exclusive change and pending member actions 117; contact and roster predicates declared
+// together 89; session predicates declared together 89; menu predicates declared in action order 89; menu
+// declarations with explicit query and local session names 89. The four declaration forms tie. Each exclusive
+// action branch adds two bytes and moves the first difference ahead of the friend query. Opening executable
+// source restored.
 // Outer title-output scope 89; query outputs before list reset 89; title, player and friend
 // output-to-scalar transfers 89/89/89; roster transfers at first predicate 89; regular contact
 // before pending queries 384; regular-friend test at invitation 400. NOT kept: the first six
@@ -5828,6 +5851,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // Boolean value pairs for join title, join exclusions, invitation, listed friend,
 // regular player, member admission, mute and unmute: 422/421/371/388/379/313/284/289.
 // NOT kept: each regresses; title-state byte and its later reuse still differ.
+// The query byte homes still differ in the 0x844 frame. Mode read once for all actions, roster,
+// membership, feedback/offer, cancellation/removal, and the final membership phase
+// 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
+// NOT kept: these forms shorten the body and move the first difference before the friend query.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
