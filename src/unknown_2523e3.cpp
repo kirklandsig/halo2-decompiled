@@ -102,6 +102,11 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // the dword is loaded twice. In the plain tree that source scores 247 (790 bytes: the iterator is still inlined and the
 // second load shifts every later line), so the body stays as it was; the source is build/r121/held-252554.patch. Needed:
 // the build takes the iterator's copy from a speed-built object (the user's decision, like a flags change).
+// Coordinator trial (Fable, 2026-11-19, full checks): linking unknown_0815e0.obj and then team_balancing.obj first (both
+// speed-built, both use the iterator; either alone loses 0x54590) gives retail's iterator call, and with the accessor above
+// 0x252554 matches (also 0x41640, 0 lost). Nine in-place forms of the two slot reads under that link order do not match.
+// HELD: the accessor is a new steering helper (one caller, a struct copied by value), which is not kept even with a
+// match, so the link-order change is not kept either. Needed: a form without a helper that loads the slot flags twice.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {
