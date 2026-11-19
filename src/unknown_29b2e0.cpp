@@ -634,6 +634,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // with repeated/one gain read 293/288, and separate result arms gain/fallback first
 // 288/301. Narrow yaw phase 314, gain read in the scaling arm 303.
 // NOT kept: all scores rise. Unity and the shared root/yaw slot still differ.
+// Separate XY transfers at the copy or around the current-vector copy 176/176;
+// two-component union copy 356. Early desired-heading test after the first root,
+// current-vector copy or XY copy 408/402/420. Early failure test 387; test after
+// current normalization with component copies 279. NOT kept: early heading
+// and failure tests recover unity in XMM4 but still spill the root at +0x10.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

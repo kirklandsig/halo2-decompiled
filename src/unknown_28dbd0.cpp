@@ -602,6 +602,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // or the shared vector setter 306. Promote through the forward record 246, with
 // the outer cross reading that record 279. Early vector/scalar promotion 311/313.
 // NOT kept: all enlarge and regress. The opening frame and cross homes remain.
+// World-up pointer/reference at the cross 173/173, pointer before forward
+// publication 180. Position reference at the offsets, before forward
+// publication or with saved up pointer 173/173/173. Complete forward/up
+// displacement before publication 227/239. NOT kept: the 0x11c frame
+// persists for the pointer forms and both displacement forms regress.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

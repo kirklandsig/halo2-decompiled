@@ -4555,6 +4555,10 @@ bool __stdcall function_2b278e(long controller_index)
 // conditional admission, qualified membership or scoped identity 199/212/54/199;
 // explicit dialog-present guard 199. NOT kept: the qualified form ties and
 // still reuses the initial controller index. The other forms regress.
+// Shared message parameters, iterator or both 54/54/54; source-scoped iterator
+// and distinct message workspace names 54/54; descending, ascending and
+// message-first if chains 206/207/196. NOT kept: the dialog index still folds
+// into the initial read, and the conditional dispatch regresses.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
