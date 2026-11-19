@@ -887,6 +887,20 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Round 418: Common header flag / common object datum / both / existing header getter with common object datum:
 // 49/49/49/49 with validity result, 77/77/77/77 with attachment result. The typed accesses still share the
 // header address, and the attachment result shortens the body to 160 bytes.
+// m3 lane 10 r121 (fast with 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10/0xbb780, matched throughout; control 49). Lead, match-only
+// (a one-pointer wrapper type): on retail's shape (bool false first, true after the attach, NONE stored in the flagged else; 77
+// alone) the object table's data pointer copied BY VALUE, as a one-pointer aggregate returned from an inline accessor, at the
+// lookups gives 42 at 176 bytes with the first difference at +0x3a: retail's BL result, its `push ebp` / `pop ebp` window
+// around the header test and the data pointer reloaded from the table kept in EDX all appear (an aggregate copy is not merged
+// with another copy or with a plain load). The same 42 with only the flag test, or only the object read, through that accessor
+// and the other through the macro. Left: retail also rebuilds the index (`mov ecx, eax; and ecx, 0xffff; lea ecx, [ecx + ecx*2]`
+// twice, scale 4 in both addresses) where this shares `shl ecx, 2`. On the 42 form: the object read indexed through the
+// entity's field 42; through a dword cast 42; the index as a one-long aggregate local passed by value to a lookup helper 42;
+// the entity's field copied by value from an inline accessor for the object read 42; the raw index returned by value from an
+// inline helper at both lookups 42 (each is forwarded before the merge); the masked index returned by value from an inline
+// helper at both lookups 47 (the multiply is then repeated with scale 4 as in retail, but the mask and the data load are
+// shared again and the data takes EBX). Other forms: the whole 12-byte header returned by value 120 (217 B); no index local,
+// every read from the entity's field through a by-value copy 74 (one data load, f cached in EBP).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

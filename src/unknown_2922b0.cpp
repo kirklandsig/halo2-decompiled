@@ -643,6 +643,17 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 665/654; formed first and published between stores 665; conditional update between the stores 556.
 // NOT kept: selecting the minimum first recovers the success slot but regresses. The conditional
 // update gains only two points and leaves ESP+0x13.
+// m3 lane 10 r121 (fast; control 558, aligned / stack-masked 491 / 415 by this round's counter). Retail's inactive exit is a
+// separate `pop edi; mov al, 1; pop ebp; ret` after the main return, reached by `jbe` from the range test, and the range is
+// loaded once (XMM1), compared, and stored to its home only inside the active arm after EBX and ESI are pushed. The body inside
+// `if (field_48 > 0.0f)` with one shared return 667 (2866 B; 499 / 419: the success flag then lives in BL); the body inside the
+// test with its own `return local_0;` and `return true;` last 669 (2865 B; 486 / 409): retail's block order and exit, the entry
+// then differs only in the homes (success +0x13 for +0x17, hit flags +0x20 for +0x1c, input copy +0x3c for +0x40), the zero
+// in XMM1 loaded ahead of the copies where retail clears XMM0 after the minimum's store, and the range loaded twice; on that the
+// range read once into its local ahead of the test 651 (485 / 409: one load, but its home is stored ahead of the branch where
+// retail stores it in the arm); the success flag declared after the hit flags on those two forms 663 (486 / 411) and 645
+// (486 / 411). Retail's slot counts (stack-tracked) show a 16-reference home at +0x04 that this build does not have and the
+// success byte at +0x0b behind it, so the frame differs by more than declaration order.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
