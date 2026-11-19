@@ -1526,6 +1526,12 @@ PRIVATE inline long score_string_list_1608e0()
 // Staged short horizontal/full-width vertical/both/full-width horizontal/short vertical/both short origins
 // 679/679/679/684/681/681; in the row position, horizontal 675 and both 689.
 // NOT kept: staged row horizontal gains four, still above 30, with the same frame gap.
+// MiniMax A (11-18): no new form, no lower score (679): the length agrees with retail's 2879 bytes, but the frame is
+// 0x798 against retail's 0x79c; retail scales the player index into ebx and adds the player base before the panel work,
+// while this build loads the panel into ebp first and scales the index into edi after the register saves, and the scores
+// pointer's home is +0x50 here against retail's +0x34. Retail also keeps the computed x and y in their own word slots at
+// +0x10 and +0x12 and copies the pair into +0x18 with one dword move; giving this build the same origin pair and a four
+// byte copy into the row position measures 681 at 2888 bytes.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
