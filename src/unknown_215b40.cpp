@@ -378,12 +378,21 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // Common next-unit store 135, adjacent-unit default 177, pass advanced before selection 172,
 // separate next pass 183, pre-incremented output count for disk/built-in 213/164,
 // three-pass and one-pass defaults followed by adjustments 114/114. Cache and zero registers still differ.
+// Matches now that src/unknown_215880.cpp builds as a link-time object (M3 coordinator, 11-19): no native object
+// names g_51ea14 any more, so the compiler carries it in EDX from the entry test to the cached block and reloads it
+// only at the pass latch, as retail does (with a native object naming it, it was reloaded at each use: 114).
+// The forms the match needs, each checked alone on the matching body: the count declared bare and zeroed first
+// thing in the cache block and in the else (the block's first zeroed long takes the zero register, retail's EBX;
+// `long count = 0;` 170); `current` read before the increment, with the generation read through the getter inside
+// the handle's or-chain (a `generation` local 138); the cached index declared ahead of the cached count (declared
+// in the for 4).
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {
-	long count = 0;
+	long count;
 	if (g_51ea14)
 	{
+		count = 0;
 		long units = controller == NONE || controller == 0xff ? 1 : 3;
 		long unit = 0;
 		for (long pass = 0; pass < units && count < *capacity; pass++)
@@ -400,12 +409,10 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 					s_saved_game_file_location location;
 					if (!saved_game_location_iterator_get(&iterator, &location))
 						break;
-					iterator.index++;
+					long current = iterator.index++;
 					if (location.type == type)
 					{
-						long generation = saved_game_storage_get_cache()->generation;
-						indices[count++] = (type & 0xf) | ((unit & 0xf) << 4) |
-							(((iterator.index - 1) & 0x1fff) << 8) | ((generation & 0x1ff) << 22);
+						indices[count++] = (((((saved_game_storage_get_cache()->generation & 0x1ff) << 14) | (current & 0x1fff)) << 4 | (unit & 0xf)) << 4) | (type & 0xf);
 					}
 				} while (count < *capacity);
 			}
@@ -423,8 +430,9 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 		if (include_cached)
 		{
 			s_cached_location_table *files = (s_cached_location_table *)g_51ea14;
+			long index = 0;
 			long cached_count = files->count;
-			for (long index = 0; count < *capacity && index < cached_count; index++)
+			for (; count < *capacity && index < cached_count; index++)
 			{
 				if (files->entries[index].type == type)
 				{
@@ -435,6 +443,10 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 			}
 			sort_4byte(&cached_count, indices, count, function_2163d0, NULL);
 		}
+	}
+	else
+	{
+		count = 0;
 	}
 	*capacity = (word)count;
 }
