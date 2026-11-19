@@ -679,6 +679,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // normalization only, position between input and normalization, or position after
 // normalization 750/998/874/890/998/998. NOT kept: the position home remains
 // unresolved. Moving both producers under admission also raises the caller score.
+// M3 lane 5 r200 (fast; control 489, aligned 178, register-masked 79, frame-blind 45): the velocity-frame cross through the
+// existing cross3f_staged 489 (same code: its operand sides do not follow the helper's spelling); a `velocity` pointer local
+// for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the
+// steering-side block 730 (3463 B); the input copy and its normalize ahead of the position query 762 (3499 B). Diagnostic,
+// reverted: 1..7 dead initialised locals 665/665/665/665/669/500/493.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

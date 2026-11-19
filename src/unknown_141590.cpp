@@ -98,26 +98,29 @@ bool function_143120(vector3f const *forward, vector3f const *left, vector3f con
 quaternionf *g_4687cc;
 extern transform4x3f *g_4687d0;
 
-/* rotates a vector by a unit quaternion */
+/* rotates a vector by a unit quaternion: the vector form of quaternion_rotate_point
+   (src/unknown_11cb00.cpp), written with the same terms in the same order */
 static inline void quaternion_transform_vector(
 	quaternionf const *q,
 	vector3f const *v,
 	vector3f *out)
 {
-	real dot = (q->i * v->i + q->j * v->j + q->k * v->k) * 2.f;
 	real w2 = q->w * 2.f;
-	real s = q->w * q->w * 2.f - 1.f;
-	vector3f cross;
+	real m = q->w * q->w * 2.f - 1.f;
+	real d = (q->j * v->j + v->i * q->i + v->k * q->k) * 2.f;
+	real cx = q->j * v->k - v->j * q->k;
+	real cy = v->i * q->k - q->i * v->k;
+	real cz = q->i * v->j - q->j * v->i;
 
-	cross.i = q->j * v->k - q->k * v->j;
-	cross.j = q->k * v->i - q->i * v->k;
-	cross.k = q->i * v->j - q->j * v->i;
-	out->i = v->i * s + q->i * dot + cross.i * w2;
-	out->j = v->j * s + q->j * dot + cross.j * w2;
-	out->k = v->k * s + q->k * dot + cross.k * w2;
+	out->i = cx * w2 + v->i * m + q->i * d;
+	out->j = q->j * d + cy * w2 + m * v->j;
+	out->k = v->k * m + cz * w2 + d * q->k;
 }
 
 /* the rotation that takes one unit vector to another */
+// score 201 (was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Earlier: Frame 0x1c versus 0x24 and
+// quaternion/cross spill overlap remain.
 // MiniMax I (11-17): no new form, no lower score (205): re-measured the baseline; the first difference is still the
 // frame (ours 0x1c, retail's 0x24) and the rest follows from the stack offsets that move with it: retail keeps the
 // quaternion's sixteen bytes in the same absolute place as this build but spills the transform's terms into the
@@ -125,10 +128,11 @@ static inline void quaternion_transform_vector(
 // quaternion's own bytes; the three rows' term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up
 // rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and retail's second store of the
 // doubled scalar to a slot nothing reads are still not reproduced by any source form tried. The body stands.
-// score 205 (was 205): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier fast scores were 205 with the shared initial dot and 200 with the dot written out.
 // MiniMax E (11-17): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the permuter (39 tries) found no variant below the baseline.
-// score 205 (was 205): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Earlier status line (205, was 205; merged): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 205 (was 205): Frame 0x1c versus retail 0x24 and quaternion/cross spill overlap remain.
+// Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier dot3f for the initial dot 205; the written-out dot 200.
 // Earlier 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
@@ -446,6 +450,25 @@ static inline void quaternion_transform_vector(
 // or forceinline 242/205/246/209/242/205/246/209. All frames remain 0x1c. Shared-root forms reach
 // retail length at 242 or 246. The half-angle and cross spills still need independent homes in
 // frame 0x24.
+// M3 lane 3 r263 (fast; base 205, frame 0x1c against 0x24): retail keeps five 4-byte cells below the quaternion and never
+// reuses its sixteen bytes after loading them, and computes s = 2w*w - 1 ahead of the identity copy. cosine_half and sine_half
+// as plain locals 267 (1297 B); the rotation declared after the half-angle pair 205 (same code); the identity copy as the first
+// statement 320 (1330 B). Diagnostics: s computed ahead of the copy (kept alive through a global store) 263 (1306 B); w2 and s
+// computed once ahead of the copy and passed to a pre-scaled transform helper 292 (1280 B, frame 0x10).
+// M3 lane 3 r265 (fast; base 205): the transform helper written with the matched quaternion_rotate_point's terms and
+// order (w2, m, d; the cross terms and rows as there) 202, with plain half-angle locals in place of the two-member
+// aggregate 201 (kept: frame 0x20, cosine half at +0x10, sine half in the matrix parameter's home and the first
+// transform's cross spills at +0x14/+0x1c as retail); plain halves on the old helper 267. On the 201 form, the helper's
+// scalars in the orders m, w2, d 247 (1317 B); m, d, w2 248; d, m, w2 250 (1317 B); d, w2, m 252; w2, d, m 203; the
+// halves declared at their computation 201 (same code, kept). Not kept: the helper taking the vector by value 417
+// (1443 B), the quaternion by value 428, both 554; the construction's cross product into a separate vector scaled into
+// the rotation 242 (1317 B, frame 0x1c); the aggregate's members swapped 205.
+// separate quaternion axis and scalar, paired halves, in-place construction cross, per-axis quadratic 257,
+// separate quaternion axis and scalar, paired halves, in-place construction cross, pre-copy quadratic 298,
+// separate quaternion axis and scalar, paired halves, separate construction cross, per-axis quadratic 266,
+// Split axis/scalar and paired halves: in-place construction cross with per-axis/pre-copy quadratic 257/298,
+// separate construction cross 266/303. Independent halves in the same order 248/288 and 201/298.
+// NOT kept: the best gains four at 1318 bytes with frame 0x14, farther from retail's 0x24.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -453,7 +476,6 @@ void matrix4x3_rotation_between_vectors(
 	vector3f const *arg_bc44c6)
 {
 	quaternionf rotation;
-	struct { real cosine_half, sine_half; } state;
 	real dot = dot3f(arg_5f338b, arg_bc44c6);
 	real cosine = dot;
 
@@ -466,16 +488,16 @@ void matrix4x3_rotation_between_vectors(
 		cosine = 1.f;
 	}
 
-	state.cosine_half = (real)sqrt((cosine + 1.f) * 0.5f);
-	state.sine_half = (real)sqrt((1.f - cosine) * 0.5f);
-	real sine = state.sine_half * state.cosine_half * 2.f;
+	real cosine_half = (real)sqrt((cosine + 1.f) * 0.5f);
+	real sine_half = (real)sqrt((1.f - cosine) * 0.5f);
+	real sine = sine_half * cosine_half * 2.f;
 
 	if (sine != 0.f)
 	{
 		cross3f_staged(arg_5f338b, arg_bc44c6, (vector3f *)&rotation);
-		real scale = state.sine_half / sine;
+		real scale = sine_half / sine;
 		vector3f_scale((vector3f *)&rotation, scale, (vector3f *)&rotation);
-		rotation.w = state.cosine_half;
+		rotation.w = cosine_half;
 	}
 	else if (cosine < 0.f)
 	{
@@ -988,7 +1010,8 @@ void function_143250(
 	}
 }
 
-// score 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
+// score 939 (was 1333): Frame 0x2fc versus retail 0x300. The scalar homes and coefficient 25/28 schedules still differ.
+// Previous 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
 // frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
 // matrix entries have retail's value tree; band three's entries 8, 25 and 28 and the stack homes (140 of 216 stores) differ.
 // g1A walk (symbolic): retail 0x143600-0x146012 executed as an expression DAG (SSE/x87, f32/f64 and (real) points, association and
@@ -1413,6 +1436,13 @@ void function_143250(
 // 1566; named entry-27 weighted product 939; const weighted products 939;
 // two-step weighted-component consumers and weighted cubic consumers 939/939.
 // The dedicated weighted product homes and the extra frame word still differ.
+// M3 lane 3 r263 (fast; base 939; with stack offsets masked 219 of 1768 lines differ): running sums like entry 8's for entry 12's
+// six products 939, entry 36's six triples 939, entry 40's eight terms 939, entry 22's seven terms 939 (all the same code: sums
+// with constant factors already run left to right); entry 29's seven terms 1253 (10821 B).
+// Third-band shared weighted mixed/first cube/axial component/axial pair/axial square/second cube products
+// 1517/1477/1357/939/1314/1554; both cubes 1589; all independent factors 1629.
+// NOT kept: the mixed product and the two individual cube forms recover frame 0x300 with displaced
+// spill homes and higher scores.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

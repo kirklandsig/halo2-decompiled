@@ -337,6 +337,14 @@ struct s_object_damage_view
 };
 
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
+// after the selected block), ours in EBP through the killer block, which is what turns the three homes round. Both
+// flags in retail's shape (consideration true by default and cleared by the same-team test; friendly false by default
+// and set by its test) 344 (aligned 172; flags set inside a test, and the direct forms are main's 353, so not kept); the
+// friendly flag alone 353; the consideration flag alone 344; the selected record through a record pointer with the
+// consideration flag 449 (1583 B, frame 0x54); both flags with the assist loop reading the record's player index at each
+// use 386 (1564 B). Diagnostic (one-object link screen): renaming the three locals (each alone, and all three in either
+// alphabetical order) leaves their homes and the code unchanged.
 // MiniMax D (11-16): no new form kept, no lower score (353): the permuter refuses this function (the reduced image scores
 // 446, the full image 341), so the round was run by hand; the consideration flag as a true default cleared by the
 // same-team test reproduces retail's store pair and gives 344, but that is a test-set flag (match only, as the 11-05 note
@@ -711,6 +719,20 @@ struct s_object_damage_view
 // in the selection loop, three declaration orders, a history pointer for both loops): best 340 (1544 B: both flags,
 // `self` in the call and the history pointer), then 342 twice and 350; nothing at or under 350 without a flag set by a
 // test, and the unchanged body has the lowest aligned count of all (132, next 137). Body unchanged.
+// M3 lane 11 r119 (fast; masked = aligned count with registers and stack offsets masked, base 57): `j >= i` for both
+// dedupe not-found tests 356 (masked 59: half threaded, a jmp per loop); `friendly` as `bool friendly = false; if (...)
+// friendly = true;` 353 (masked 53: retail's tail, false store first); that with consider_team as the true default
+// cleared by its test 344 (masked 49; the head's code then equals retail's but for the three rotated slots and the +4
+// cursor); on that the killer tests as `if (killer != NONE) { if (killer == reported_player) ... } else if (datum...)`
+// 354 (1532 B, masked 45: retail's fallback block order); on that a record pointer for the selected entry 433 (1567 B).
+// The two flags and the arm order are match-only forms; together they are the closest structure so far.
+// The fallback still keeps the credited player in EBP and the history cursor stays biased by four.
+// Historical candidate from entry or selection, credited player before fallback 378/396;
+// candidate through fallback from entry or selection 324/366; shared candidate for validation
+// and assignment 396; reported provider result 353; selected provider result 446; credited player
+// through the primary award 353.
+// NOT kept: the 324 form splits one credited-player value into two locals. It recovers the
+// damage-code slot but still exchanges the credited-player and victim-team slots.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

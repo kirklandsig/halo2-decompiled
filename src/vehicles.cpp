@@ -803,6 +803,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // work points declared at first store, separate producer scopes and reversing
 // scope all score 116. Tag lookup after the first velocity copy scores 141.
 // NOT kept: none recovers the first velocity-copy receivers or early unity.
+// Round 636: velocity receivers and early unity still differ. Entry dot 281; successive entry squares 120;
+// named planar and third-axis terms 222; entry throttle, steering or both shared with rotation 277/276/286;
+// component-array squares 218; successive squares at both observations 325.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1714,6 +1717,11 @@ long function_10f5f0(long object_index);
 // velocity outputs, alone and combined, and the fully shared workspace declared
 // before the physics state: eight at 561. NOT kept: sharing puts the bounds
 // and velocity at +0x24 and separates the request names. Frame still 0x1990.
+// Boundary response through a separate corrected vector 598, carried vertical speed 565,
+// or one height sample 556. Initialized altitude pair 561, with the corrected vector 598,
+// vertical scalar 565, or height sample 556. Complete radial velocity 599.
+// NOT kept: the altitude pair can reach frame 0x1988, but none meets the score threshold
+// or recovers retail's repeated height reads and 0x1984 frame.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3441,6 +3449,11 @@ real g_47ff30 = 2.5f;
 // shared setter for the final world-space force 679. NOT kept: the shared setter and both in-place weight
 // applications recover frame 0xfc and first difference +0x66, but shorten the body to 3216 or 3220 bytes and
 // raise the score. Acceleration and velocity homes still differ.
+// Existing target-limited rate helper alone, retained rates, named climb limit,
+// direct target argument, per-use mass, shared scales, three-phase mass, and
+// shared scales with retained rates 778/778/778/806/804/812/777/770.
+// Direct target and named climb limit with the inline approach 737/672.
+// NOT kept: the target-limited helper stays out of line and the body shortens.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4647,6 +4660,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // the projection forms. First cross and trig homes remain.
 // Facing forward/up and rotated up field references, seven subsets 184/170/182/166/200/139/133,
 // then all with rotated forward 196. NOT kept: the first preload, cross and trig homes remain.
+// Lateral subtotal, compound subtotal, separate lateral/axial contributions and all three terms named.
+// Existing scale call 193/220/213/202; aggregate projection 193/220/213/202. NOT kept: the first pair fixes
+// the i product but loses the forward j/k preloads. Cross and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -5758,6 +5774,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // shared spin limit 762. NOT kept: the grouped turn cases reach 734 at retail length, but add a selector re-
 // test and merge conversions that retail performs separately. The engine pair gains three, below the keep
 // threshold. The entry definition and SSE homes still differ.
+// Case-local speed magnitude 763; limit then magnitude 749; complete case ratio 749.
+// Local rejection square, engine ratio, all five magnitude boundaries and separate clamp output 749 each.
+// Activity from the dispatched value before its clamp 748. NOT kept: a one-point gain with a different
+// activity operand from retail. The early zero/result registers, entry definition and unity loads still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -6516,6 +6536,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // relative orientation and state rotation to their actual output phases 1051. NOT kept: the scoped relative
 // product reaches frame 0xdc but shortens the body by 44 bytes and raises the score. Moving the declarations
 // alone leaves code generation unchanged. The index is still in EDI rather than retail ESI.
+// Linear velocity through bank, acceleration through force, target through strafe,
+// the three paired scope forms, all three scopes, and all three with a scoped
+// angular query output each score 978. The 0xfc frame and swapped index and
+// displacement remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -3975,6 +3975,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Round 180 (m3 lane 8, fast, base 9; all restored): the switch's default case setting maximum and both permissions with no
 // initialisers 1207 (4856 B); `register` on the shifted input word 9 (same code); mode zero's extra-texture test declared ahead
 // of the mode chain 761; both selectors typed byte with the shifted local kept 861 (4848 B), typed short 480 (4816 B).
+// M3 lane 3 r265 (fast, base 9): the alpha word as the stored RGB word `| 0x8000` with the shifted local kept 948; the
+// clear right after `fixed` 955 (4844 B); the clear ahead of the two selectors 969 (4844 B); the fraction word stored
+// after the RGB input word 14; mode zero's pin as `offset * gain` 9 (same code). Body unchanged.
 // M3 lane 8 r188 (fast, at 9): the exponent loop testing `(real)(1 << exponent) < inverse_span` 9 (same code); the loop
 // as `for (exponent = 0; ...; exponent++) ;` 883 (4928 B); the shifted input as `long input_bits = input << 24` 9 (same
 // code); `input` as `dword` 9 (same code); the input selector computed after the clear, next to its shift 976 (4840 B).

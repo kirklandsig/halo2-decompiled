@@ -1068,154 +1068,14 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 }
 
 /* starts throwing a grenade (type 22) */
-// score 19 (was 19): the three unit lookups are data-first (retail index-first) and the success path carries its own
-// exit copy where retail's success falls into the shared exit and the notice block carries the copy.
-// MiniMax H (11-07): no new form, no lower score (19); the three unit lookups still read the
-// table with the other base and index order (`[ecx + edi + 8]` against retail's
-// `[edi + ecx + 8]`), the success block still stores the flag byte and the result in the other
-// order (ours pops edi and esi, then ORs and stores the result, then sets the flag byte; retail
-// sets the flag byte, stores the result and pops last), and the failure branches still reach the
-// exit copy at a different distance (the permuter managed one try in 308.8 s, best 19, baseline 19,
-// no confirming build).
-// MiniMax D (11-06, run 49): no new form, no lower score (19); the three unit lookups still read the table with the other base and index order (`[ecx + edi + 8]` against retail's `[edi + ecx + 8]`) and the tail still stores the flag byte after the OR.
-// MiniMax H (11-04): no new form, no lower score (19); the earlier rounds' forms still leave the
-// three unit lookups data-first and the exit block with its own copy, so the body stands.
-// MiniMax E (11-01): 16 with the unit's ordinal masked once into a local and the table entry read
-// through it as a raw address cast (`*(s_unit_action_unit **)(g_4e0300->data + ordinal * 12 + 8)`) in all
-// three lookups, so they use retail's address operand order, and the result stored before the action's
-// flag store; not kept (an address-cast read stays only with a byte match). The exit block still follows
-// the notice block; retail has it before the notice block, which ends with its own copy of it.
-// Earlier (19, was 272): Frame, setup and width domains agree; success pop/store/result schedule and
-// failure-branch spans remain. The slot index masked once into a local and the macro's lookup
-// written out by hand at its three uses gave 16 (not kept: a hand copy of UNIT_ACTION_UNIT_GET).
-// Hand getter/result-first/both/split/all-ordinal setup 266/272/266/272/266/272/266/265; common
-// exit 185, plus word hand 174, Boolean active field 39, native player selector 22; ordinal 19
-// (three-point form dropped), without final domains 171; one scope/late false 19/22; success before
-// commit 19/22; paired NULL/false setup 16, result after selection 29. Keep real common result,
-// existing word hand getter, Boolean active field and long player value; only constant setup
-// reordered. Every field read, call tuple and success commit is
-// unchanged.
-// Round 21 (lane 13): the first lookup through UNIT_ACTION_HEADER_GET 19; the grenade test as
-// if/else with the player notice in the else 19; the player notice ending in `return result` 45
-// (958 bytes); immediate and animated throws as one if/else chain 19; animate and player-index
-// tests nested 19. A compile-only model keeps the exit block last for every structured, goto and
-// inline-helper shape; retail's failure jumps reach the success path's exit copy instead.
-// Round 50: `animate` declared with the entry locals 50; the channel declared with them 266
-// (958 bytes); the grenade pointer from one ternary 269 (974 bytes); the immediate throw ending in
-// `return result` 43; `result = true` before function_a8c10 21. The three `[edi + ecx + 8]` unit
-// lookups stay data-first in a compile-only screen for every order of the entry declarations, an
-// unused header pointer and a header pointer for the first lookup.
-// Round 144: all three self lookups through the existing header accessor 19 (same code); the shared bit setter 19;
-// an explicit success goto 19; a computed active value with the result before its store 19 (NOT kept: one-use
-// local, no match); direct success return true/result 264/264 (948 B); an addressed result read 19 (same code);
-// a one-iteration do/break scope 646 (1266 B, frame 0x84). Original body restored.
-// Round 359: byte result 152; signed-byte result 152; short result 285; long result 285; read-
-// only request 19; marker field at each use 19; separate object and weapon rejections 19; seat
-// eligibility assigned directly 203. NOT kept: no qualifying byte match or gain; original body
-// restored.
-// Round 78 (m3 lane 11, fast): the entry lookup through a pool copy `objects` declared first 16 (all three self lookups become
-// retail's index-first `[edi + ecx + 8]`; not kept: a 3-point gain with a one-use copy); all three through that copy 19; one
-// copy per lookup 16; the later two through the copy 17; on the 16 form `result = true` before the active-bit store 16, before
-// function_a8c10 18, the notice block ending in `return result` 42 (958 bytes). Left: retail's success path falls into the
-// shared exit and the notice block carries its own copy; ours pops edi/esi inside the success path, which then carries it.
-// Round 75 (m3 lane 14, fast): re-measured: every goto as `return result` 264 (948 bytes, round 144's code: constants folded);
-// the notice block ending in `return false` 45 (958 bytes, round 21's code; the exit then follows the immediate path); round
-// 21's structured forms combined with `immediate || !active` 19. New: the notice in the then-arm with the rest in its else 19;
-// the animated throw before the immediate 115 (968 bytes); the two early rejections as one condition 19; the marker test as two
-// gotos 19; the active test nested under `!immediate` 19. Without the notice block (diagnostic) the exit follows the success
-// path as in retail (851 bytes); a compile-only model keeps it last for every other shape tried.
-// Round 156 (m3 lane 8, fast): the notice block after `return result`, reached and left by gotos, 19 (same code); the
-// notice as a file-local inline helper under `if (animate)` 96 (909 bytes, kept a call), with `animate` as its parameter
-// 101 (905), with a player-index local 93 (911); the same helpers forced inline 74/74/74 (989 bytes, the player-index
-// getter then inlines too); the existing player value getter for the notice 19 (same code); the pool local for the entry
-// lookup 16 (a repeat). Compile-only: retail's layout comes back only when the success path ends with the a8c10 call
-// (the bit set and `result = true` before it) or without the notice block; every other order or shape keeps ours.
-// Round 153 (m3 lane 7, fast): both builds lay the blocks out alike (success path, an exit, the notice block, an exit);
-// retail's ten failure jumps and the notice block's three go to the first exit and the notice block ends in the copy,
-// ours send them to the last one and merge the first into the success path (hence its early pops). `result = true`
-// ahead of the active-bit store 19 (same code); the notice block ending in `return result` 45 (958 bytes, its result
-// folded to `xor al, al`), with the result set first 45; the immediate throw ending in `return result` 43; both ending
-// in `return result` 74 (956 bytes); the exit label in the function's own scope (no inner braces) 19 (same code), with
-// the three later declarations hoisted without initialisers 19 (same code); the active bit and the result set ahead
-// of the 0xa8c10 call 26 (965 bytes: the copy after the call is then left unmerged, but the jumps still go to the
-// last exit); the notice block after `return result`, entered and left by gotos, 19 (same code; re-measured).
-// The grenade condition as `!(grenade && count > 0)` 19 (same code), as `grenade == NULL || count < 1` 48 (965 bytes,
-// `cmp ax, 1`), as two nested tests jumping over the notice block 19 (same code), held in a named bool 176, as an
-// empty then-arm with the notice in the else 19 (same code).
-// Round 118 (m3 lane 9, fast; same-code spellings, not counted as trials): the seat flag and the 0xee8a0 result as two bools 19; the hand
-// weapon read through a fresh UNIT_ACTION_UNIT_GET (0xe8460's spelling) 19; actions through
-// UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)) (0xe8980's spelling) 19; the busy test with `if (!immediate) goto done;`
-// nested inside it 19; the success code inside a positive `if ((animate && ...) || ...)` 19. Diagnostics: the notice block
-// cut to one unconditional call (295, 885 B), the active and animation tests dropped (245, 892 B), the grenade test as an
-// integer compare (19, same code) and round 156's forced-inline notice helper (74) all keep our block order (the success
-// path carries an exit copy and the notice falls into the last exit), so neither the notice's own tests, the success
-// path's tests, the pointer type nor an inlined helper body sets it. Matched 0xe8460 and 0xe8720 use the `objects` pool
-// local (round 78's 16 form) once beside the macro, so that form is the file's idiom once the exit order is found. No
-// untried code-changing form is left for the exit order (rounds 21, 75, 153 and 156 above). New (counted): the notice as a
-// post-check after `done:` gated by a `no_grenades` flag set in the grenade test 112 (989 B: VC threads the flag, so the
-// grenade test still jumps straight to the notice, the block order stays ours, and 0x14de90 then inlines twice).
-// Round 102 (m3 lane 11, fast): what places the shared exit. With the notice body removed (diagnostic, 329) the exit follows
-// the success path and the immediate throw does not claim it; with the notice jumping to the exit it always follows the
-// notice, also with three more tests in the notice (86) or a store after its call (31), so neither its frequency nor its
-// last block decides it. New forms: the notice after `return result;`, entered by a goto and ending in its own `return
-// result;` 45 (958 B: that return folds to `xor al, al`, and the exit then follows the immediate throw); the immediate throw
-// and that notice both ending in `return result;` 74 (956 B: the exit now follows the success path and all ten failure jumps
-// reach it, as in retail, but both returns fold); that with `result = true` before the active-bit store 42 (960 B: the
-// success tail and exit are then byte-for-byte retail's: `mov eax, [ebx + 4]; or; mov byte [result], 1; mov [ebx + 4], eax`);
-// that with the entry lookup through the file's `objects` pool copy 39 (960 B; every remaining line is the two folded
-// returns, retail reads the result byte there, and the 4-byte shift they cause); the grenade test through a file-local inline
-// predicate 238 (946 B). Diagnostic: the result held with `animate` in one two-byte local aggregate still folds (48). So
-// retail's immediate and notice exits are late copies of the one shared exit, and our build gives that exit to the notice.
-// Re-measured, same code: the whole tail structured with no gotos (19), round 156's notice after the return left by `goto
-// done` (19).
-// Round 247 (m3 lane 3, fast): the notice's tests as early `goto done` exits 19 (same code); the object-type and 0x101440
-// rejections as two ifs 19; `bool result = false;` at its declaration (no later store) 27; `grenade == NULL ||` 19; the
-// grenade's +8 and +0x20 tags named and used twice each 19, the +8 one only 19. Diagnostics (not kept): the notice test as
-// `!grenade` alone keeps the notice in place (244), so the `||` test is what sinks it to the end; a volatile result with
-// the immediate and notice exits as `return result` 19, the notice after `done:` with its own `return result` 19 (volatile)
-// and 45 (plain, folds): identical return blocks are merged before layout and the merged exit always follows the notice,
-// so retail's notice exit is a separate return block whose value is not known there.
-// Round 110 (m3 lane 1, fast): the throw code under a positive grenade test ending `result = true; goto done;` with the
-// notice after it 19 (same code), with the entry lookup through the `objects` pool copy 16; a positive test jumping over
-// the notice to a label 19 (same code); the notice as a forceinline helper taking only the unit index under `if
-// (animate)` 74 (989 B, the player-index getter inlines); the notice after `return result;` entered by a goto with
-// `animate` at function scope 19 (same code). A /GL- compile-only screen of this file reproduces our layout: VC chains
-// the exit after the last placed block that jumps to it. A notice reached by one test stays in place with its own exit
-// copy and the success path falls into the exit (retail's assignment); any `||` (with a call, a field or a constant
-// second operand) makes the notice a join block that is deferred to just before the exit, whatever its source position
-// (after the success code, after the return, in an else, behind a positive test). Dropping the success path's tests
-// does not change it, so it is not a frequency estimate. Retail's notice sits after the exit, which no form here gives.
-// Round 100 (m3 lane 13, fast; round 78's entry pool copy re-measured 16 as the base): the result assigned from the two
-// throw-animation starts (`result = (animate && ...) || ...;`) with the setup under `if (result)` 118 (977 bytes), on the
-// pool copy 115 (the constant store moves ahead of the setup); on the pool copy: the notice's player value read at each use
-// in one combined test (no player_value local) 57 (984 bytes), `result = true` as the success block's first store 58, the
-// notice in the then-arm without its goto and the rest in the else-arm 16. Diagnostic (reverted): an address-taken result
-// with the notice ending in its own `return result;` 257 (969 bytes, the pointer store adds code).
-// M3 lane 12 r134 (fast, base 19): the notice's player value in the matched unit_object_type.cpp idiom (`animate` alone
-// guarding a `player index == NONE ? NONE : table value` ternary) 19 (same code); that with the notice ending in `return
-// result;` 45 (958 B), with the immediate throw ending so too 74 (956 B), both as the listed forms (the returns fold); the
-// grenade count from a ternary on the grenade pointer, tested `<= 0` once, 176; the notice written under `!grenade` and
-// again under the count test (two blocks) 184 (968 B: the copies are not merged).
-// M3 lane 12 r137 (fast): `(void)&result` with the notice after `return result;` entered by a goto and ending in its own
-// `return result;` 45 (958 B: the taken address does not stop the fold to `xor al, al`); the success code first in source
-// order with the immediate throw and the notice after it behind labels 19 (same code: source order does not reach the
-// layout); the count test as `!(count > 0)` 19 (same code); the throw code after the active test in its own braces 19 (same
-// code). Diagnostic (value-wrong, reverted): the result made unknown on the notice path (a `result = true` under an
-// impossible unit test) with the notice ending in `return result;` 261 (974 B): that return still merges with the exit,
-// which still follows the notice, so a separate unfolded return alone does not give retail's layout.
-// M3 lane 2 r100 (fast): with every declaration hoisted (no inner block), the immediate throw and the notice both moved
-// after `return result;` behind labels and ending in `goto done;` 19 (same code); the same with the notice before the
-// immediate throw 19; with `done:` after both moved blocks 19; with the notice's animate test as its own `goto done`
-// 19; the grenade test as two separate `goto notice` tests 176 (the notice then stays in place after the count test,
-// as for one test). Matched 0xed710 in this file has retail's shape (an `||`-entered block laid out after the shared
-// exit) because its `if` is the last statement before the return; here the exit is not chained after the success path.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
 	bool result;
 	{
+		s_record_pool *objects = g_4e0300;
 		s_unit_request_throw_grenade *throw_request = (s_unit_request_throw_grenade *)request;
-		s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+		s_unit_action_unit *unit = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit;
 		s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
 		s_unit_action_grenade *grenade = NULL;
 		long weapon_index = unit_action_hand_weapon_get(unit, 0);
@@ -1253,6 +1113,7 @@ bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 
 		if (!grenade || function_cdff0(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->current_grenade_index) <= 0)
 		{
+			/* no grenade to throw: tell the unit's player */
 			if (animate && unit_get_player_index(unit_index) != NONE)
 			{
 				long player_value = *(short *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c + 0x28);
@@ -1260,61 +1121,64 @@ bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 				if (player_value != NONE)
 					function_2007b3(player_value, 0, 1, NONE);
 			}
-			goto done;
 		}
-
-		if (!throw_request->immediate && TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(actions, 0x16)))
-			goto done;
-
-		c_animation_channel *channel = NULL;
-
-		animate = function_ee8a0(unit_index, 0);
-		function_e69c0(unit_index, 0x16);
-		function_e69c0(unit_index, 8);
-		function_e69c0(unit_index, 0x12);
-		function_e69c0(unit_index, 0);
-		function_e69c0(unit_index, 0xa);
-		function_e69c0(unit_index, 0x1b);
-		function_e68c0(0x13, unit_index);
-
-		if (throw_request->immediate)
+		else
 		{
+			if (!throw_request->immediate && TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(actions, 0x16)))
+				goto done;
+
+			c_animation_channel *channel = NULL;
+
+			animate = function_ee8a0(unit_index, 0);
+			function_e69c0(unit_index, 0x16);
+			function_e69c0(unit_index, 8);
+			function_e69c0(unit_index, 0x12);
+			function_e69c0(unit_index, 0);
+			function_e69c0(unit_index, 0xa);
+			function_e69c0(unit_index, 0x1b);
+			function_e68c0(0x13, unit_index);
+
+			if (throw_request->immediate)
+			{
+				actions->grenade_state = 1;
+				actions->grenade_throw_count = 0;
+				actions->grenade_cancelled = false;
+				function_e7730(unit_index);
+				function_e7900(unit_index, false, &throw_request->origin, &throw_request->direction);
+				goto done;
+			}
+
+			if (!(animate && function_113e90(unit_index, 0x1000006c, 0.1335f, &channel, 0)) &&
+				!function_113e90(unit_index, 0xd000021, 0.1335f, &channel, 0))
+			{
+				goto done;
+			}
+
 			actions->grenade_state = 1;
 			actions->grenade_throw_count = 0;
-			actions->grenade_cancelled = false;
-			function_e7730(unit_index);
-			function_e7900(unit_index, false, &throw_request->origin, &throw_request->direction);
-			goto done;
+			actions->grenade_throw_maximum = 0;
+			actions->grenade_cancelled = throw_request->cancel;
+
+			real event_time = channel->get_event_time();
+
+			if (event_time >= 0.0f)
+				actions->grenade_throw_maximum = (char)function_1469f0(event_time);
+			if (unit->parent_object_index == NONE)
+			{
+				function_edff0(unit_index);
+				function_ee7f0(unit_index, 0x1a + (animate != false));
+				function_c86e0(unit_index, 0);
+			}
+			if (*(long *)((byte *)grenade + 8) != NONE)
+				function_176780(unit_index, NULL, 0.0f, *(long *)((byte *)grenade + 8), 0.0f, NULL, NULL);
+			if (*(long *)((byte *)grenade + 0x20) != NONE)
+				function_bbe90(*(long *)((byte *)grenade + 0x20));
+			function_a8c10(unit_index);
+			result = true;
 		}
-
-		if (!(animate && function_113e90(unit_index, 0x1000006c, 0.1335f, &channel, 0)) &&
-			!function_113e90(unit_index, 0xd000021, 0.1335f, &channel, 0))
-		{
-			goto done;
-		}
-
-		actions->grenade_state = 1;
-		actions->grenade_throw_count = 0;
-		actions->grenade_throw_maximum = 0;
-		actions->grenade_cancelled = throw_request->cancel;
-
-		real event_time = channel->get_event_time();
-
-		if (event_time >= 0.0f)
-			actions->grenade_throw_maximum = (char)function_1469f0(event_time);
-		if (unit->parent_object_index == NONE)
-		{
-			function_edff0(unit_index);
-			function_ee7f0(unit_index, 0x1a + (animate != false));
-			function_c86e0(unit_index, 0);
-		}
-		if (*(long *)((byte *)grenade + 8) != NONE)
-			function_176780(unit_index, NULL, 0.0f, *(long *)((byte *)grenade + 8), 0.0f, NULL, NULL);
-		if (*(long *)((byte *)grenade + 0x20) != NONE)
-			function_bbe90(*(long *)((byte *)grenade + 0x20));
-		function_a8c10(unit_index);
-		actions->active[0] |= 0x400000;
-		result = true;
+		/* a started throw marks the grenade action active */
+		if (result)
+			actions->active[0] |= 0x400000;
 	}
 done:
 	return result;
@@ -4470,6 +4334,14 @@ extern vector3f *g_4687bc;
 // through the array's operator[] 12 (both form the element address first, `lea eax, [ecx + edx]`); the havok-flag and
 // component-index tests as nested ifs 8 (same code); the rigid-body index as `short` (0xb67a0's return type) 25 (1099
 // B, word compare); the material copy-initialised from `c_type_47f957(g_54e898)` 8 (same code).
+// M3 lane 15 r102 (a /GL- compile-only screen of this file, both sites as the linked build has them): the default material
+// passed by value through a forceinline helper taking and returning the material type (a by-value argument of that type, which
+// other functions showed takes no rotation step) 8; built from a const reference to the global 8; copied from a named
+// default material 8 (all the same code); built before the effect tag test 228/214 aligned (the load stays in DX and
+// the store moves above the branch), before the effect tag read and before the definition re-lookup (the material in
+// CX there, but the pool's data then takes EAX and the component EAX/ESI order changes; both sites still differ).
+// Diagnostics: a probe copy between two globals at the function's top, before the definition re-lookup or before the
+// effect tag read leaves both sites as they are; after the tag read it reloads the component index (the store aliases).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

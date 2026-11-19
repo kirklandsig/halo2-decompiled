@@ -838,6 +838,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // into EDI (globals rematerialised). New, on the word mask with plain present: present through a reference-bound name 63,
 // playing through one 63, a one-use team bit for present 63, both accumulators zeroed after the iterator setup 63; on the
 // word mask with the volatile present, the old mask through a reference-bound copy 77 (references fold away).
+// Added/removed playing sets tested separately or as a union, saved dword/word
+// 77/121 and 77/121. Pending word/dword mask seeded from the word snapshot
+// and changed by compound OR or assignment 77/133 and 77/133.
+// The word entry works, but the mask still reloads separately at the join.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -1875,6 +1879,9 @@ short function_15cca0(long player_index, byte code)
 // the p27 arguments written inline 25; team and other_team swapped 24; `!= 0` tests 24; early-return guards 24;
 // pointer-increment countdown loop 24; other player pointer as a named local before or after `team` 24; the
 // other player pointer hoisted above the lookup 74 (the parameter does move to EAX there, but so does the lookup).
+// Round 636: other-player EDX versus retail EAX still rotates the lookup. Shared player pool 24, pool
+// reference 24, typed roster 24 or word slot 68; other team lvalue 52, both team lvalues 82, shared
+// pool with virtual receiver 24, other team field address 52.
 // @retail 0x15cd90
 void function_15cd90(long player_index, short identifier, long other_player_index)
 {
@@ -2066,6 +2073,9 @@ void function_15e460(long object_index, long value)
 // nested ternary return 31; three early returns 30; a local engine pointer with true-first 30; a `long one = 1`
 // local compared against 30, and a long result reused as the comparand (103 bytes) 39: no form makes the early
 // `mov edx, 1` appear ahead of the first branch.
+// Round 636: EDX one and ESI/EDI saves still differ. Option first in the existing branch chain 27,
+// as the gate for the role result 29, as a short-circuit return 30, as a restriction conjunction 40;
+// flag before role 30, with role result 30, with the option gate 36; option-first assignment 31.
 // @retail 0x15eb20
 bool function_15eb20(long player_index)
 {

@@ -792,6 +792,13 @@ void function_1537f0(s_profile_record *record);
 // words merged in EBX); a pointer-stepped entry loop 80 (275 bytes); the four links by one 8-byte 0xff memset 38 (250
 // bytes: base +0x4c, no hoist, two dword -1 fills); the four `entry->` links from one `short const &` bound to NONE 49
 // (hoisted). So the hoist follows the link stores' shape, not the pointer local itself.
+// M3 lane 6 r197 (fast with 0x7f8b0 and 0x1537f0, both matched each time): the links through `entry` as two chained pairs
+// in retail's store order (`unknown58 = previous_other`, `next = next_other`) 49 (NONE in EBP from the head stores, the
+// record's two words merged in EBX); that with the heads as one chain in retail's order 49; with the links set from
+// `0xffff` 49 or from `-1` 49 (all the same code). Diagnostic (value-wrong): the same links with the four head stores
+// deleted 89 at 240 bytes, but the loop is then retail's (base +0x4c, `or eax, -1` per visit, the record's words in
+// EBP/EBX, retail's link order; only the view's byte stores are scheduled later): the hoist is the heads' -1 shared
+// with the four link stores, so what is left is a source form that keeps those two -1s apart.
 // Round 187 (m3 lane 8, fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): the link pointer's chain
 // reversed (`links[3] = ... = links[0]`) 18 (base still +0x5c); one pointer per list (the list and the other list, each
 // as a chained pair) 18 (base +0x5e); the four link stores through the pointer as statements in retail's store order

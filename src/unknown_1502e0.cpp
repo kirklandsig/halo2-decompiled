@@ -1236,6 +1236,12 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // stays a separate load until after allocation); `(word)` and `(short)` conversions 38/38 (same code); full-width reads as
 // `(long)*(void *const *)&`, `*(unsigned long const *)&`, `*(int const *)&`, `*(&player->previous_unit_index - 1)` and
 // `(&player->unit_index)[0]` 17 each (merged early); `(word)tail_player_get(player_index)->unit_index` 43.
+// M3 lane 16 r138 (fast; control 17): the weapon test as `(slot == NONE ? NONE : unit->weapons[slot]) != NONE` 17; the
+// unit through the shared unit_weapon_view_get with unit_weapon_in_slot(unit, (&unit->current_weapon_index)[hand]) 17;
+// the mode test through the existing function_138880() 17 (inlined here, same code); the e68c0 code from the hand
+// (`hand ? 0x13 : 9`) 60 (148 B); a forceinline hand-weapon helper taking the unit index and hand (lookup, slot and
+// NONE-default weapon inside) 17 (all the same code). Re-measured: the getter-reload lead 5 (player address still
+// `mov edx, [edx + 0x44] ... add edx, eax`).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1544,6 +1550,18 @@ void function_150820(dword *bits, bool local_only)
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
+// Round 264 (m3 lane 3, fast with 0x151b80 17, 0x14f820, 0x151940 and the callees; control 43): the cd4e0 arm as
+// `else if (function_cd4e0(...)) result = true;` 47; `result = true;` ahead of the a8f80 call 71 (215 bytes); the mode
+// test inverted with the cd4e0 arm first 72 (219 bytes); the hand as `bool` 89 (197 bytes); the hand set to 0 and then
+// to 1 under `if (!primary)` 45 (211 bytes). Body unchanged.
+// ESI player, EDX unit index and EDI hand still differ. Canonical object header table,
+// canonical player displacement/indexed table/read-only displacement with either header
+// lookup, and canonical displacement with a direct header read all score 43 at 210 bytes.
+// The types and lookup source were restored.
+// Two Boolean rows indexed by hand or selected by policy 43/88. Hand-pair field by policy or slot
+// ordinal 88/78, post-query pair copy or reference 88/88, first-row reference 43, separate hand
+// availability tests 78. NOT kept: neither workspace changes the saved player/hand allocation at
+// 210 bytes. The shorter and longer variants regress. The opening body is restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
