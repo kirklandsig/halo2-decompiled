@@ -883,6 +883,10 @@ real function_30bf0(vector3f *vector);
 // sides elsewhere move); the range read after the delta 87; both 145 (1308 B); the clipped point through the shared
 // vector3f_add_scaled 90; the facing results copied at the end of the facing block in place of the second `if (facing)`
 // 101. The range still loads into XMM2 (retail XMM0) and every 4-byte home but the delta's is where round 81 found it.
+// M3 lane 11 r121 (fast with 0x263740, MATCH each time; control 84): the range as a `real const &` bound to the settings field
+// 215 (1308 B: read at each use); the occupant test as `if (occupant == NONE) continue;` 84 (same code); unused locals inside the
+// facing arm, n = 1, 2, 3, 5: 84, 86, 138, 82 (diagnostic, the same phase round 81 found at the top); the endpoint test written
+// `!actor->unknown007 && endpoint` 88; the seat index declared ahead of the count 84 (same code).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2722,6 +2726,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // base/index order, the players loop (retail's table pointer in EDX, the datum index in EBP, the found index in ESI, the
 // player in EDI, and no jump over the loop-top padding), and the direction's components held in XMM1..XMM3 across the
 // relative and facing dots (retail loads two of them ahead of the relative-length test).
+// M3 lane 11 r121 (fast with 0x25d810, MATCH each time; control 168): the players iterator started through a file-local
+// inline helper returning the iterator by value 383 (2883 B: the whole iterator is copied, the table pointer still misses EAX;
+// diagnostic for a scheduler boundary, not kept); the two NONE stores chained 170; the players iterator declared at function
+// scope 168 (same code); the actor looked up as the byte pointer first with the typed actor derived from it 168 (same code: the
+// iterator start keeps `[eax + ecx + 0x58]`); the byte alias dropped, the raw offsets through `(byte *)actor` 168 (same code).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

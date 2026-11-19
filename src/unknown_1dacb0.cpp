@@ -1462,6 +1462,12 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // compile alike) nor the callee's write order (graph_weapon_type_iterate, in src/unknown_2963f0.cpp, writes mode, class
 // and type in that order); the first difference is still the NONE compare, where retail keeps the compared argument in
 // EDX and the computed -1 in ECX and ours the reverse.
+// M3 lane 11 r121 (fast, both twins measured alike, 0x1dc790/0x1dc8c0 matched each time; control 828): the second request's
+// mode through a `long const &` bound to the found mode 828 (same code); the found mode copied into a named local before the
+// output stores, used for the store and the second request 828 (same code: the copy coalesces); the second request's mode as
+// `found_mode ? *found_mode : iterator_mode` 819 at 2825 B (diagnostic, not kept: a re-read that only steers; the copy is then
+// a separate value, but it takes EBX with its own spill slot and the frame grows to 0x30); the second request's graph from
+// `iterator.graph` 962 (2791 B); the search as `while ((entry = iterate(...)) != NULL)` with a break on a found id 998 (2839 B).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1907,6 +1913,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // direct result and default written by fields 990;
 // default-first result branches with the success test in the named branch 995.
 // NOT kept: All scores rise. The forms at retail length change the frame, and the conditional loop still misplaces the result.
+// M3 lane 11 r121 (fast, both twins measured alike, 0x1dc790/0x1dc8c0 matched each time; control 828): the second request's
+// mode through a `long const &` bound to the found mode 828 (same code); the found mode copied into a named local before the
+// output stores, used for the store and the second request 828 (same code: the copy coalesces); the second request's mode as
+// `found_mode ? *found_mode : iterator_mode` 819 at 2825 B (diagnostic, not kept: a re-read that only steers; the copy is then
+// a separate value, but it takes EBX with its own spill slot and the frame grows to 0x30); the second request's graph from
+// `iterator.graph` 962 (2791 B); the search as `while ((entry = iterate(...)) != NULL)` with a break on a found id 998 (2839 B).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
