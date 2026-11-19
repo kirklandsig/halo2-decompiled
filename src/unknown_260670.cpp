@@ -40,6 +40,10 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// MiniMax B (11-19): score 416 (was 440): the sort array holds 510 entries, so the frame is retail's 0x8a0 and the first
+// difference moves to +0x3b; the early homes still differ (the reference at 0x18 against retail's 0xc, the two flag bytes
+// eight apart at 0xb and 0x13 against retail's adjacent pair at 0xe and 0xf) and the sorted loop still calls 0x2600a0
+// where retail inlines 0x262a30's owner lookup.
 // MiniMax G (11-18): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and the two
 // flag bytes still take homes eight bytes apart (ours 0xb and 0x13, retail 0x6 and 0x7), so every home above
 // them moves with the frame; the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup
@@ -246,7 +250,7 @@ s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *
 	real best_score = 0.0f;
 	s_path_source source;
 	s_path_settings settings;
-	long sorted_indices[512];
+	long sorted_indices[510];
 	long sort_scratch;
 	*has_path = false;
 	((byte *)g_4f55d0)[3] = true;

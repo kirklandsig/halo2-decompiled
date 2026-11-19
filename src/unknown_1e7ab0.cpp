@@ -165,6 +165,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax B (11-19): no new form, no lower score (117): the first difference is still the inlined entry getter's
+// register rotation at +0x31 (ours loads the table global into EAX and the result into ECX, retail loads the table
+// into ECX and the result into EAX), and the getter spellings earlier rounds measured all give the same code. The
+// parent register behind it is settled by retail's 0xd0590 argument order (the iterator in ECX, the object index in
+// EDX) in src/unit_object_type.cpp, which is not this round's file, so I left that declaration alone.
 // MiniMax G (11-18): no new form, no lower score (117): the entry lookup still loads the table global into EAX
 // where retail loads it into ECX (six more getter spellings - the table read before the null result, the pointer
 // add, the count in a local, nested ifs, the count cast and a long return - all measure the same 117), and case 4's

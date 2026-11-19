@@ -75,6 +75,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax B (11-19): no new form, no lower score (76): reading the enable byte at both use points instead of through
+// the bool local gives 103 (the same form MiniMax G measured on 11-18) and a byte local gives 103, so the body is
+// back as it was. What still differs is retail's reload of the enable byte after the counter store (the reload needs
+// the enable byte and the counters to be reachable from one address: BLOCKED-BY include/globals.h and
+// src/unknown_1967d0.cpp), retail's old maximum in ECX against this build's EAX, retail's `xor eax, eax; mov ax,
+// [mem]` read of the fifteen-bit counter against this build's zero-extending word read, and retail's increment of
+// `word ptr [eax + edx + 0x16]` before it forms the row pointer.
 // MiniMax B (11-18): no new form, no lower score (76): this build still holds the enable byte in a bool local across the counter store where retail reloads it into CL, keeps the old maximum in EAX where retail keeps it in ECX, zero-extends the fifteen-bit counter where retail reads it with `xor eax, eax; mov ax, [mem]`, and forms the row pointer before the increment where retail increments `word ptr [eax + edx + 0x16]` first (85 when the increment comes first, where the prologue's kind and player homes swap); this round's forms: the comparison's operands swapped (76, the same code), the old maximum as a short (76, the read becomes sign-extending), the old maximum read as a nested if (101) and the permuter (started, stopped before it printed a result); the enable reload needs one object for the enable byte and the counters (include/globals.h and src/unknown_1967d0.cpp) and the clamp's store through the counter's address is a one-use pointer kept only with a match: BLOCKED-BY both.
 // MiniMax G (11-18, second pass): no new form, no lower score (76): reading the enable byte at both use points gives
 // 103 and at the later one only 103, a short old maximum gives 76 and the comparison's operands swapped gives 76, so

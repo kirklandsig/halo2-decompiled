@@ -12,6 +12,12 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax B (11-19): no new form, no lower score (373): reading the random state through the global instead of
+// through the named local gives 423 (the same form MiniMax G measured on 11-18), so the body is back as it was. What
+// still differs is the 0x4c frame against retail's 0x48, retail holding the third settings pointer in ESI from the
+// entry where this build keeps the random-state pointer in ESI and reloads the third input from its stack slot, and
+// retail's word at +0x7a passed in ECX where this build passes it in EDX. The argument's transport is set by the
+// caller at 0x1fc7e0 and the resolver's copy order belongs to 0x210850, so both are in other files.
 // MiniMax S (11-17): no new form, no lower score (373): the frame is 0x4c against retail's 0x48, retail holds the third settings pointer in esi from the entry and the random-state pointer in ecx where this build caches the random state in esi and reloads the third input from its stack slot, the flag byte is stored at +0xf where ours is at +0xb, and retail passes the third input's word at +0x7a in ecx where ours passes it in edx; the argument's transport is set by the caller at 0x1fc7e0, in another file.
 // MiniMax G (11-18): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, this
 // build still keeps the random-state pointer in ESI from the first draw where retail holds the third settings
