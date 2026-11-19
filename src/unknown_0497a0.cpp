@@ -519,6 +519,10 @@
 // both arms 699/708/709, named origin coordinates 745, setter on both outputs 707,
 // selected-coordinate and output setters 690. NOT kept: all regress. The last reaches
 // frame 0x5c at 2587 bytes. The regular-arm setter raises the reduced caller to 344.
+// M3 lane 11 r122 (fast with the file and 0x4a1e0; control 536, `ret 0x20` as retail): the scale constants first in
+// both add-scaled products 536 (same code); the two wave values as the members of one point2f 634 (2672 B, retail's
+// 0x60 frame, stored and reloaded into XMM as retail but the body grows); the mixed wave halved as `/ 2` 536; the two
+// wave values declared at function scope 536; the plain sine's sum written `x * 5.6f + (double)y` 536 (all same code).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

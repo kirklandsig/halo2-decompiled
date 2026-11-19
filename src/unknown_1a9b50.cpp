@@ -820,6 +820,12 @@ extern point2f *g_468778;
 // Typed actor row after/before settings 375/413; early row base with/without early slot 408/408;
 // early absolute actor slot 375. Settings declared in the admission test, then actor first and
 // typed actor first 409/413/413. NOT kept: ties or regressions, actor/settings/prop homes remain.
+// M3 lane 11 r122 (fast with the file, 0x265d30 and the callees; register-masked aligned count 102 at 375): on the
+// actor-first form with `return !f14 && !f13 && !f2d;` in the arm (393 re-measured, masked 104): the clock and the
+// default distance declared at the top 393 (same code), on the 375 body 375 (same code); the clock read at the top of
+// the settings arm 393; the prop lookup ahead of the clock 393 (same code); the field_12 arm moved after a prop arm
+// tested `!field_12 && prop` 414 (1531 B). Reading: retail gives EBX to the prop ahead of arg_0, which every form here
+// passes to its EBX-argument callees from EBX.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
