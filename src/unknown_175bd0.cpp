@@ -2306,6 +2306,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // on that: the tint named 181 [52/29], both queries named 187 [66/42], an inline type accessor on the definition 184 (same
 // code), the whole colour block as a shared inline helper 184 (same code), the colours read between the spawn stores 185
 // [41/22], the colours before the spawn stores 190 [57/36].
+// Shared placement query as an acceptance arm or rejection guard, with direct or named
+// placement. At-call colors 375/375/371/371. Early color pair 360/360/356/356.
+// NOT kept: the placement call replaces retail's inline cases. The early pair reserves
+// 0x48 instead of 0x44.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3449,11 +3453,6 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
-// score 93 (was 93); m3 lane 8 r186 reached 53 (not kept at review, see its line at the end); on that form: frame 0x54, the system in ESI, the next index and then colour B in EDI, the type
-// MiniMax A (11-18): no new form, no lower score (93): the live mode reads recover the 0x54 frame but move the effect index from the stack into a register, which loses the matched update caller 0x176f60, so the body stands.
-// MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
-// MiniMax G (11-18): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, the system and the
-// next index still take EDI and ESI the other way round, and the definition still has no spill for the per-call mode reads.
 // score 93 (was 93): The frame is 0x4c against 0x54, system/successor use exchanged registers and the definition is unspilled.
 // Earlier score 53 (was 93): m3 lane 8 r186. Frame 0x54, the system in ESI, the next index and then colour B in EDI, the type
 // object in EBX, the tint in the effect index's home and colour A in a frame slot now agree with retail; left: the mode
@@ -3918,6 +3917,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // the address-taken home no longer holds the tint byte: frame 0x50, 352 B, system EDI and the definition in EBX); with the
 // system index read so 128 [19]. A compile-only first pass loads each index once in both mode forms, so it does not
 // predict this convention (a one-object link with the colour and type callees' objects gives EAX/ECX for both forms).
+// Short node snapshot as a complete bit test, explicit sentinel arms, false-default nested
+// tests, or signed range below NONE. Cached mode 93/96/93/111. Per-query mode 108/112/126/97.
+// Per-query mode with a conditional signed result 127 and true-default rejection 108.
+// NOT kept: the 0x54 forms change the matched update caller. The live forms that preserve
+// it reserve 0x50 and raise the score.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

@@ -819,6 +819,11 @@ static inline bool teams_enabled_19e1c0()
 // (diagnostic, not keepable) 691 (same code: the assumption adds no weight); `token` declared `word const *const` 691 (same
 // code); the fallback's clamp as `remaining <= token_length ? remaining : token_length` 693 plain (1168 B), 395 on the
 // volatile result (1432 B). Body unchanged.
+// Shared integer format call for the two local-player tokens, lives and the side timer,
+// all three, or all three with a direct normalized return. Existing result 450/488/522/471.
+// Ordinary result 682/702/746/694.
+// NOT kept: the ordinary result gets frame 0x204 and merges the name paths. The other
+// forms still reserve 0x208. None recovers the token preload.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

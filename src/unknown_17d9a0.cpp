@@ -964,6 +964,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // masked 324). Retail loads 1.0 four times (ours eight): it keeps 1.0 in XMM0 from the reciprocal to the sign and across
 // the four `1 - x` terms. A compile-only dead-local scan over the rotation block moves it with period 8 (best 241 of 225
 // lines at K = 6, 7), so the block's schedule is not a symbol-count state. All restored.
+// Shared pending-face count with secondary count declared first or second,
+// using the secondary guard 533/533, flag then while 532/532, flag early exit 532/532,
+// or transfer before phase admission 537/537.
+// NOT kept: score gains are at most three and the definition spill stays at +0xb4.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
