@@ -503,6 +503,12 @@
 // helper taking the camera point with a real phase and three named double factors 535 (aligned 594); the two wave values
 // as a `real wave[2]` 634 (2670 B, frame 0x60, as the point pair of round 202); the two scaled amounts named before the
 // adds 650 (2594 B). None keeps sin x, cos 7.8y and cos 7.75y on the x87 stack past the mixed wave as retail does.
+// M3 lane 16 r138 (fast with 0x4a1e0; control 536, aligned 420): the cross, both wave values and both scaled adds in a
+// forceinline helper writing the position through a `point3f *` (the camera point read inside) 537 (same frame: the
+// inlined pointer is still known to be the local); the mixed wave's phase and three factors as named real locals 535
+// (aligned 419; they are stored with `fst`, not kept on the x87 stack), with the phase a double 582; the two scaled
+// amounts named before the adds 650 (2594 B, round 136's form re-measured); s1 ahead of the first cross 536 (same code);
+// s1's argument as `x * 5.6 + y` with a double constant 536 (same code).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

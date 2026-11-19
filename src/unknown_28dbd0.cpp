@@ -582,6 +582,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // last 234 (1200 B, back to 0x114); row j or k regrouped 161/213/215; cross k ahead of cross j 214; the crosses after
 // the projection 229 (1227 B), ahead of the cosine 160; sine after the projection 231 (1228 B). NOT kept: every one is
 // the helper's shared-call body written out, with no match.
+// M3 lane 16 r138 (fast with 0x28dab0, MATCH throughout; control 173): the rotation through the shared in-place helper of
+// include/axis_rotation.h (vector, axis, sine, cosine; the one matched 0x2551f0/0x1ff360 inline) 236 (1190 B, frame 0x114);
+// that helper with the jitter offset and both 0.1 updates through vector3f_add_scaled 251 (1232 B); matched 0x177d10's
+// written-out rotation (sine and cosine first, axis k captured, `t`, cross j, k, i, rows `v * c + axis * t - cross * s`) in
+// place on the heading 233 (1209 B, frame 0x114), without the axis k capture 234 (1209 B), with the dot named and the
+// cosine after it 240 (1193 B). Body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

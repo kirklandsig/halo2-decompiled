@@ -2098,6 +2098,21 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Disconnected group cursor with indexed players, ordered bound/nonempty loop/count 702/702/718.
 // With counted players 702/702/718; ordered/equality group bound with a player end 738/738.
 // NOT kept: the one-point gains leave the exit span and width unchanged.
+// M3 lane 16 r138 (fast; control 703, aligned 330 by difflib with addresses masked). Round 136's 696 form re-built (the
+// incomplete arm setting `failed = true`, the request builder's free space named) 696 (2878 B, aligned 318), still one
+// short of the bar. On it: the users loop reading the slot index and properties through 0x647d0 with `inline` on its
+// definition 737 (2842 B, aligned 312; 0x647d0/0x647a0/0x18fd94 stay matched); the request test as retail's flag (`request
+// = false`, set by the state-1 test and by the state-4 elapsed test, then tested; retail's `xor dl, dl ... mov dl, al`) 707
+// (2894 B, aligned 310); the request identity copied into a local (team key by memcpy, owner by assignment) with an
+// indexed duplicate search 839 (2974 B, first difference +0x8); a user record pointer for the users loop 758 (2894 B).
+// LEAD (flag form, match-only): the completion identity picked as a member address (`variant->type == 5 ?
+// completed_values->unknown10 : (const byte *)&completed_values->owner`) on the 696 form gives 688 at retail's 2862 B
+// (aligned 310), with the incomplete arm's `failed = true` or a separate `if (received != 6) failed = true;` (688, same
+// code); the direct accumulator forms lose it: `failed |= received != 6` 705 (2878 B), main's `failed || received != 6`
+// 714 (2894 B), so it is the flag rule's case and not kept. Alone or in other pairs: the completion select 720, with the
+// named space 714, with `failed = true` 706; the request loop's identity select the same way 733, with the completion one
+// 735, with the space 723, all four pieces 704 (2862 B).
+// Body unchanged; the slot test's cmovne still needs the SSE flag.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
