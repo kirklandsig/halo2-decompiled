@@ -232,6 +232,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
    the lowest */
 // score 144 (was 144): earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
 // hull count still live in their own homes where retail keeps them in the dead argument homes. One note, the rounds' entries below.
+// M3 lane 14 r112 (fast with 0x239d50; control 144, aligned 137, masked 65): retail's pass loop is the hull count itself,
+// short, in its own cell at +0x10 (reloaded into EBX at the loop top, `cmp bx, word [count]`, top-tested, back edges from
+// the two departure tests), the flag a byte in the dead indices home, the heading zeroed before the lowest scan, and the
+// compaction calls memcpy. A body written that way (hull count as the while counter, early returns) 269 at 757 B
+// (frame 0x14 and the byte flag in an argument home as in retail, 0x239d50 still matches, but the loop is rotated and
+// points/indices swap ESI/EBP); on main's body: bool flag 264 (0x239d50 80), plus short hull count 252 (793 B), plus the
+// heading first 251, plus memcpy 241 (785 B, 0x239d50 still 80); bool flag with memcpy alone 256 with 0x239d50 MATCHING
+// (memmove is what breaks the caller with a byte flag).
 // MiniMax E (11-17): no new form, no lower score (144): retail keeps the hull count in a frame slot of its own at +0x10
 // with EBX holding the copy, re-reads the count from its argument home as a word for both the hull and the candidate
 // bound, keeps the departure flag as a byte in the dead indices argument home and starts the previous heading at zero
@@ -780,6 +788,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // one hull counter and no flag our build already splits the count as retail does (EBX for the call, EDX for the first scan,
 // its home afterwards); with the flag it gives retail's points ESI, current EDI and indices EBP but keeps the count in EBX. No
 // form gives both.
+// M3 lane 14 r114 (fast with 0x239d50 and 0x239b80; control 144; one-object link screen first, 32 forms): retail's hull loop
+// is not inverted (the `(short)hull count < count` test sits at the loop head, reached by a jmp over the alignment pad, and
+// every back edge from the closure goes to it), the hull count is the only pass counter (reloaded into EBX from +0x10 at
+// the head and after the candidate scan), and the departure flag is a byte in the indices home. On the one-counter
+// `while` body: short counter, bool flag, heading and flag declared before the lowest scan, gotos 265 (759 B; screen best,
+// frame 0x14 as retail, but the loop is inverted); the same with a long counter 264; the declarations after the lowest scan
+// 266; the three exits as returns 265 (749 B); short counter with a long flag 242 (759 B). The loop's end written as
+// `if (!left_start || points2d_differ(...)) continue; goto finished;` on that body (screen only) loses 25 rows.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -912,7 +928,7 @@ bool function_23a160(point2f const *point, real radius, short count, point2f con
 /* true when the point lies on the inner side of every edge of the polygon,
    to within epsilon */
 // @retail 0x23a220
-bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon)
+bool function_23a220(point2f const *points, short count, point2f const *point, real epsilon)
 {
 	bool result = true;
 	for (short i = 0; i < count; i++)

@@ -1181,7 +1181,7 @@ struct s_polygon_context_173910
 };
 
 short function_120850(vector3f const *v);
-bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon);
+bool function_23a220(point2f const *points, short count, point2f const *point, real epsilon);
 
 // score 3 (was 69): the side test uses EAX instead of AL, and the final call sets up the two
 // argument addresses in reverse order.
@@ -1238,7 +1238,7 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 		destination->x = vertex->n[g_440b94[axis * 2 + use_positive_side][0]];
 		destination->y = vertex->n[g_440b94[axis * 2 + use_positive_side][1]];
 	}
-	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
+	return function_23a220(points, (short)polygon->count, &point, 0.0001f) != false;
 }
 
 // score 23 (was 23): logic equals retail (inside test, state <= 0 / >= 3 returns, 1 vs 2 by the sign of the

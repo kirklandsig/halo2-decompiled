@@ -95,8 +95,17 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 // score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // The bitmap path still allocates blend and aspect intermediates differently. The body is 1947 bytes against 1937.
 // Earlier scores 211 and 223.
+// M3 lane 14 r114 (fast with 0x2243c0, which matches throughout; control 162, aligned 127): retail keeps the blend in XMM5
+// from the sequence arm through the aspect block (the arm jumps past a join that reloads it for the other paths), ours
+// computes it in XMM2 and reads it from memory in the aspect block. Extents and reciprocals in retail's order (ax, ay,
+// by, inv_ax, inv_ay, bx, inv_bx, inv_by) 167 (1950 B); that with `remaining_blend` before the first aspect test 252;
+// `remaining_blend` moved alone 225; the aspect defaults assigned in the arms of the first test 223 (1953 B); that with
+// retail's extent order 226 (aligned 119). Diagnostic (one-object link screen): 0 to 32 dead initialised locals leave
+// the blend in memory (129 aligned up to 19, 136 from 20). The two blended next terms declared together, and the two
+// aspect updates without their named next terms, give the same code.
 // MiniMax C (11-15): no new form, no lower score (194): the tint still sits at +0x60 where retail has +0x50 with the
 // second UV set in the other slot, and the aspect block still leaves the blend in XMM5; the tint in a nested scope
 // measures 234 and swapping the two UV declarations gives the same code, so the homes cannot be moved that way.

@@ -1044,7 +1044,17 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	}
 }
 // score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871; 964 before): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
+// M3 lane 14 r114 (fast with 0x73530, which matches throughout; control 871): the convention already agrees (session in
+// EAX, `ret 4` in both). Retail calls 0x192e60 at the top, 0x1932c0, 0x1931a0 and 0x193250, and expands 0x193300, the
+// player loop's variant lookup and 0x631f0; ours expands the top lookup and calls 0x193300 and 0x631f0. Tried: the loop's
+// written-out lookup as a call to 0x192e60 1007 (2620 B: the loop's call stays out of line, the top stays expanded); the
+// two early exits as `result = false; goto done;` with one return at the end 903 (2748 B); both together 1016; the first
+// exit as `{ result = false; return result; }` 871 (same code); `bool result = true;` declared first 871 (same code).
+// Diagnostics (one-object link screen, restored): the top call under one test becomes a call; /d2inlT40-130 on this
+// file alone changes no decision; with the first exit not returning (a behaviour change) the loop's lookup, 0x631f0,
+// 0x1931a0 and 0x193250 all expand, so the exit's frequency halving is what keeps the loop cold here.
 // MiniMax I (11-17): no new form, no lower score (964): re-measured the baseline; retail's session arrives in EAX
 // with a 0xb4 frame against our 0xd4, and that ingress is fixed by the callers in the other files, and the opening
 // 0x192e60 and the capacity test are inlined or called the other way round here (both callees in other files), so
