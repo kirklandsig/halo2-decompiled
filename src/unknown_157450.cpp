@@ -1866,22 +1866,18 @@ short function_15cca0(long player_index, byte code)
 	return result;
 }
 
-// score 24 (was 24): the datum index and the record count are kept in swapped registers through
-// the whole lookup. Receiver and other pointer 37; const other pointer 37; target noinline 24;
-// absolute lookup forceinline 24; mark code 24; mark identifier 24; late absolute index 67;
-// counter declared first 24; existing team helper 50; team helper forceinline 50.
-// b13G (11-17) walk against retail, fast build on r846: every branch sense, field offset, compare and callee argument
-// matches retail; all 24 differing lines are one register rotation. Retail receives other_player_index in EAX (the
-// `and eax, 0xffff` at 0x15ce09; the caller 0xd7b80 does `mov eax, edx` at 0xd7d52), so its lookup temporaries take
-// ECX/EDX (0x15cda5, 0x15cda8) and its team pair is DX/AX pushed 0x15ce1f/0x15ce20; ours receives it in EDX (a LTCG
-// custom convention follows from the body), so the lookup takes EAX/ECX and the pair is AX/DX. New on r846 (all 24
-// unless noted): parameters reordered to other, player, identifier 24 (same bytes); a local engine pointer 51;
-// the p27 arguments written inline 25; team and other_team swapped 24; `!= 0` tests 24; early-return guards 24;
-// pointer-increment countdown loop 24; other player pointer as a named local before or after `team` 24; the
-// other player pointer hoisted above the lookup 74 (the parameter does move to EAX there, but so does the lookup).
-// Round 636: other-player EDX versus retail EAX still rotates the lookup. Shared player pool 24, pool
-// reference 24, typed roster 24 or word slot 68; other team lvalue 52, both team lvalues 82, shared
-// pool with virtual receiver 24, other team field address 52.
+static inline bool game_engine_teams_friendly(short team, short other_team)
+{
+    bool result = false;
+    c_engine_peer *engine = game_engine_get();
+
+    if (engine)
+    {
+        result = engine->p27(team, other_team);
+    }
+    return result;
+}
+
 // @retail 0x15cd90
 void function_15cd90(long player_index, short identifier, long other_player_index)
 {
@@ -1889,10 +1885,7 @@ void function_15cd90(long player_index, short identifier, long other_player_inde
 
 	if (identifier != NONE && player && game_engine_get())
 	{
-		short team = player->team;
-		short other_team = engine_player_get(other_player_index)->team;
-
-		if (game_engine_get()->p27(other_team, team))
+		if (game_engine_teams_friendly(engine_player_get(other_player_index)->team, player->team))
 		{
 			for (long i = 0; i < 8; i++)
 			{
@@ -4172,18 +4165,6 @@ long function_15a640(long tag_index)
 long function_1469f0(real seconds);
 extern point3f g_468d18;
 
-static inline bool game_engine_teams_friendly(short team, short other_team)
-{
-    bool result = false;
-    c_engine_peer *engine = game_engine_get();
-
-    if (engine)
-    {
-        result = engine->p27(team, other_team);
-    }
-    return result;
-}
-
 struct s_player_death_state
 {
     byte active;
@@ -5915,6 +5896,15 @@ void __stdcall function_d6bc0(long object_index);
 // the object pointer (NULL when there is no entry) 204 (852 B); with the local test: case 1 as a direct assignment
 // `schedule = bit;` 129 (877 B), the flag initialised from the index test (`bool schedule = index == NONE; if
 // (!schedule) switch ...`) 130 (874 B).
+// M3 lane 12 r150 (fast with 0x15c150 and the six callees, all matched each time; base 29): the flag form re-measured 7
+// (869 B), with the field test 172 (858 B). On the flag + field-test form: a named timer pointer from the zero test through
+// the delay store, the countdown and the `= 1` reset 177 (854 B: the pointer folds into `[edi + esi*8 + 4]`); the tail
+// re-reading the index into the loop-top local, declared in the loop or at function scope, 172/172 (same code, so the
+// two index ranges are separate and nothing holds EBX between them); the schedule decision in a forced-inline helper
+// taking the index by value (given entries[i].index) with a result flag 172, with direct returns 139 (869 B, aligned 63).
+// Locate-only (a volatile read of the parameter at every use, reverted at once): 198 at 880 B, the timer address is no
+// longer shared at all. Left as before: with the field test `entries` is taken into EDI over the whole loop and the
+// timer into EBX, where retail keeps the timer in EDI and reloads `entries` in each block.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

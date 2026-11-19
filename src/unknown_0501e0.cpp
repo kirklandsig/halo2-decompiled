@@ -611,6 +611,20 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // 221, `0.f > k` sign tests 221 (all the same code). Diagnostic: 1..7 dead initialised locals 222/222/223/223/221/221/221.
 // Point-to-view indexed/aggregate/shared-helper/copied-scale displacement, first endpoint first 335/333/315/331;
 // second endpoint first 328/327/308/330. All shorten away from retail; original helper and body restored.
+// M3 lane 12 r150 (fast with 0x30290 and 0x30bf0, both MATCH each time, 0x4f7e0 unchanged at 325; control 221): a helper taking
+// the camera as a pointer (given &g_4b9e14) with scalar x, y, z copies scaled under the test, as the neighbour file's
+// transform_vector: in place, rows forward-first or right-first, first offsets first 218/218 (same code: the pointer folds
+// and the coefficients stay memory operands), second offsets first 217/217; with separate view outputs 304/304 and
+// 303/303 (1083 B). The neighbour file's transform_vector itself, declared here and inlined at link time, in place 218
+// (1115 B, aligned 272 against the control's 249). One helper for both vectors (each scale step followed by its rows) in
+// place 218, with separate outputs 299 (1089 B); that helper with both scale steps ahead of both sets of rows 263 (1142 B):
+// retail's frame 0x14 and its first seventeen instructions up to register names (the second offsets stored at +8, +0xc,
+// +0x10, copy then scale), but 1.0 is held in XMM7 and the rows after it differ throughout (aligned 269); the three
+// axes copied into locals and passed by pointer to the helper 358 (1213 B). Reading retail again: every product of the
+// first view loads its coefficient and multiplies by the value's register, even at a value's last use, while the second
+// view copies y or loads z and multiplies by the coefficient in memory and only its x products load the coefficient, so
+// the two views do not come from one expansion with direct global operands; right.i alone is carried from the first
+// view into the second (XMM7), across the second scale test.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
