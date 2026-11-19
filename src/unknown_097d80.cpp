@@ -616,6 +616,10 @@ struct c_aggregate : c_child
 // pointer 146 (389 B); the capacity named where it is computed 31 (same code). Diagnostic (not natural, reverted): the
 // count written into the next boundary cell `starts[i + 1]` gives retail's 0x8020 frame but 139 at 389 B, so the frame
 // cell is the separate count slot alone. Body unchanged.
+// Explicit cleanup count reload in for/while 31/31, with the shared call-output carrier 31/31, with
+// the collection count reused as the cleanup bound 70/70. Count declared at cleanup scope 31/31. NOT
+// kept: shared call output reaches 0x8020 with the low homes exchanged, while reusing it for the bound
+// grows to 381 bytes. The callback output still needs the retail spill home.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

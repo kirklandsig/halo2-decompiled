@@ -3622,6 +3622,12 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // position with fields or rotation subrecord 112/110. NOT kept: sharing
 // position reaches 396 bytes but grows the frame and changes the caller,
 // and the other forms leave the seat-stride and camera-base differences.
+// Seat stride still precedes the parent lookup and the scalar camera copies still fold in the source
+// offsets. Separate table and signed ordinal used at each seated read 140; seat reference 91;
+// position pointer before matrix copy 91; unit receiver before matrix copy 91; complete unattached
+// record only 84; both record copies through destination references 132; success before camera stores
+// on the scalar-copy body 91; unattached arm first on the scalar-copy body 91. NOT kept: the 84 form
+// reaches 396 bytes and gains seven, with the seated copy and early stride still different.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -5523,6 +5529,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // projection stored separately from its vertical component 186; first cross updates a copy of basis up in place
 // 217; first cross updates a copy of basis forward in place 238.
 // NOT kept: scalar and planar projections reach 767 bytes at higher scores. The basis scope and forward workspace tie. The first cross still loads up.i early and the x87 forward scale is consumed in the last row.
+// First cross still loads up.i early, and the x87 forward scale does not survive the last row.
+// Complete reconstructed vector with separate stores or initialization 213/213; row-local transverse
+// sums 169; complete transverse vector 272; scaled-vector addition for forward, left or both
+// 272/276/276; staged forward vector 275. NOT kept: the per-row sums tie, and every full-vector stage
+// grows the body.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9514,6 +9525,11 @@ struct s_unit_melee_collision
 // column count 484; fixed-height fan with a bottom-tested row count 484; selected trace type and distance
 // alongside the selected index 542; one parent index for collision admission and resolution 481.
 // NOT kept: one parent index gains three at the original extent and leaves the 0x180 frame. The other forms tie or regress.
+// Frame 0x180 versus 0x17c, with the unit still spilled across the fan. Selected-type name 484;
+// losing-collision guard 494; direct material word assignments 484; defaults before weapon lookup
+// 476; read-only tags 484; conditional damage pair 519; staged fan sum 486; separate fan ordinals and
+// reversed trace workspace order 484. NOT kept: the 476 form shortens to 2215 bytes with frame 0x180.
+// The conditional pair recovers the 0x17c frame at 2233 bytes but increases the score.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

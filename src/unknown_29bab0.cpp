@@ -700,6 +700,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // the j/k scale sides flip); with local_7's fields first in each product 756; mentioned k, j, i 762; the j, k, i
 // mentions with normalize_inline 758 (3508 B). Retail's squares need local_9's fields ranked j, k, i by a direct
 // mention, not by the sum's spelling.
+// Independent collision vector seeded from the existing response default before/after location,
+// after planar normalization or at the collision split, scoped/entry declaration:
+// 790/790, 791/791, 790/790, 794/794. NOT kept: collision-split seeding reaches
+// 3499 bytes and position +0x80, but drops the early vector copy and shifts the heading spills.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

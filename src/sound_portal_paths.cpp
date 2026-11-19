@@ -208,6 +208,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // counter 282 [168] (a moved declaration; retail stores the counter before the limit compare); the held r111 gain
 // helpers on main's base 307 [162] (1359 B); the index advanced at the row latch as 0x18dc90 286 [173] (1364 B, gain of
 // one, not kept); the gain store as if/else 288 [169].
+// Sort count shared with fill 306; fill ordinal as sort scratch 319; unsigned sort count scratch 313.
+// Separate output bounds, available first 287 and cap first 288; in-place cap 287;
+// row ordinal or limit as sort scratch 357/319. NOT kept: the separate bounds reach retail length
+// without a score gain. Starting-cluster register and BSP table reloads still differ.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -433,6 +437,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // 0x14b240 (see 0x18d730's note), the cluster pointer in EBX for EBP.
 // Self-review: the kept form needs the destination resolved before the flag test (retail loads the cluster table base
 // and forms the destination before `test byte [portal + 0x18], 0x28`); nested with the destination after the test 340.
+// Sort scratch scoped at the common row latch 311; late order buffer 315; both 311.
+// Signed fill-count scratch 350; scoped unsigned sort-count scratch 375; row ordinal scratch 371;
+// output bound scratch 311; two bounds at the latch 361. NOT kept: the 311 forms
+// recover 0x428 but gain four and leave the BSP table spills.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

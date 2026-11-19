@@ -2143,6 +2143,10 @@ bool function_1900a5(long index);
 // getters gives the same 720 at 2862 B with 0x199c47, 0x199c94 and the getters' 58 file-mates all still matched in
 // the fast check: retail's evidence fits getters that an /O2 caller may inline and /O1 callers keep out of line. The
 // cmovne row shift (an /arch:SSE question) still dominates the positional count.
+// Copied team key base 703, cached team key base 791, cached player array base 776. Copied/cached keys
+// 791, copied key/player array 776, cached key/player array 776, all three 776, cached owner and team
+// destinations 703. NOT kept: the ties leave the first difference in place and the other forms add
+// sixteen bytes. The status branch, user cursor and slot selection still differ.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

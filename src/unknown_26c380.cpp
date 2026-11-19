@@ -719,6 +719,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // (diagnostic only: a helper body by hand) 41, the cross's row j and the magnitude's sum order then retail's but row i's
 // subtracted product loads the direction first; the same with row j's products written operand-swapped either way 41
 // (identical: the text order of the products is ignored). Body unchanged.
+// Combined first/ordinary/crossed scan state, separate/joined acceptance: enum 364/364,
+// byte 369/369, word 350/350, long 364/364. NOT kept: the byte form leaves success
+// at +0xf, and the wider forms send it to +0x74. The shared cutoff tail remains unresolved.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

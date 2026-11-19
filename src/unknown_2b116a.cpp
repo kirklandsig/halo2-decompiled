@@ -4563,6 +4563,11 @@ bool __stdcall function_2b278e(long controller_index)
 // and distinct message workspace names 54/54; descending, ascending and
 // message-first if chains 206/207/196. NOT kept: the dialog index still folds
 // into the initial read, and the conditional dispatch regresses.
+// The initial index still takes ESI and the dialog masks still reuse it. Dispatch-wide const slot or
+// slot reference 54/54, with Boolean membership 199/199; recipient counts initialized at case entry
+// 76; fresh index at membership 54; unsigned mask bits throughout 54; signed short membership in the
+// existing qualified local 55. NOT kept: slot forms preserve numeric-index reuse, and the Boolean
+// width shortens case 3 without restoring the reloads.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

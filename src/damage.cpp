@@ -5308,6 +5308,7 @@ struct s_damage_object_creation
 // m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
 // score 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
+// Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // the scan) gives 166 with retail's EAX/EDI section-loop registers; a one-use local is match-only, so not kept. With it
 // the first mask still extends before the count guard, and the late detached-mask zero, piece search and final lookups
 // still differ. Earlier: m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
@@ -5563,6 +5564,13 @@ struct s_damage_object_creation
 // 194/129; both intersections as words/dwords 205/202; local/entry-initialized section while scan 178/205.
 // NOT kept: signed bit sign-extends the shift and spills the count; second mask intersection hoists the
 // mask and tests a word. Retail reloads that mask inside the loop and tests the full-width shifted bit.
+// Shared dword/word test bit 178/223, shared dword/word store bit 220/156. Primary mask extraction
+// with separate/shared writes 208/188, secondary mask extraction 200/188. NOT kept: the 156 form
+// hoists the second mask and shares the two store shifts while retail reloads the second mask and
+// shifts separately. The count and detach bitmap homes still differ.
+// Scoped const damage record, immutable count, int scan, early/late bound names,
+// secondary-test continue and body increment 178 each. Both section decisions before the writes 200.
+// NOT kept: the decision locals move the datum-offset spill and spill the section count.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
