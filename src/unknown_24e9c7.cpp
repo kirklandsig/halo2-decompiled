@@ -584,6 +584,12 @@ struct s_24e9c7_points
 // half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
 // 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
 // with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// M3 lane 2 r102 (fast; control 125). Reading: retail's -0xc/-8 pair is the side point (x kept in XMM6, y spilled: first
+// the across-j product, then the scaled side.y in the same slot), so the side is filled with the across products and
+// scaled in place; the plain form of that (no other move) 144 (746 B: across products early as retail, result still at
+// -8); with the half width converted before the result 148; with the side declared ahead of the size 144; with
+// `size * (0.0f - forward_j)` 139 (742 B); zero to seven dead initialised locals on the control 125 each (diagnostic).
+// Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

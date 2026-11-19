@@ -732,6 +732,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // common default and shared uncovered weight 609. NOT kept: the two shared uncovered-weight forms gain three
 // points at 3828 bytes and retain the provider, palette and record assignment gap. The common default block
 // forms regress. The opening executable source is restored.
+// M3 lane 2 r102 (fast; control 607). Reading: retail's NONE stays in EAX from the loop head through the palette arm to
+// the +0xd4 tag test (`cmp edi, eax`), so it outranks the 0x130f60 result, which moves to EDX; ours stops using the NONE
+// register before the tag test (`cmp edi, -1`, the field_f0 store's scratch registers take ECX/EDX), so the result keeps
+// EAX. Tried: the slot as char 700 (re-measure; byte compare in BL, live to the store); char with the store re-reading the
+// byte 666 (retail's CL slot and EBX record; NONE in EDX); the byte at each use with the +0x88 pointer declared ahead of
+// the tag test 678; that with the tag in a named local used for the test and the best-tag store 679 (no NONE register at
+// all); the byte at each use with the handled flag declared before the 0x130f60 call 669. Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

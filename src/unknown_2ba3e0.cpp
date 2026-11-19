@@ -848,6 +848,13 @@ real g_55e618;
 // (the same code: names do not order the product's operands). Every once-computed form multiplies a copy of the normal by the
 // dot (frame 0x118, first difference +0x2); only the compiler's own temporary for the repeated expression is copied and scaled
 // in place as retail does. Body unchanged.
+// M3 lane 2 r102 (fast; control 102). Reading: with any named dot ours copies each normal component and multiplies it by
+// the dot (three copies, the dot kept to the end); retail copies the dot for perp.i/j and multiplies it in place for
+// perp.k, which is what the compiler does only for its own temporary of a repeated expression. On the current body: the
+// velocity pointer, the position setter and the dot written in each product 75 (1536 B; lead only, as before); the
+// same with the dot named once 188 (frame 0x118); that with one to seven dead initialised locals 188/186/186/186/188/189/
+// 189 (diagnostic: the dot's first term turns to retail's side, the products do not); the products written normal first
+// 188 (same code); the normal components in named locals declared ahead of the named dot 190. Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
