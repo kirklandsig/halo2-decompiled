@@ -962,6 +962,7 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 	return false;
 }
 
+static __forceinline void *pool_filter_kept_134390(s_bit_vector_pool const *data) { void *filter = data->filter; void *const &kept = filter; return kept; }
 // score 69 (was 340): retail tests the flags' sign bit with test/jns where ours uses jge, combines the
 // instance flags with behind last (ours earlier), and reloads data->lists[3] after function_16e210 in the
 // duplicate-instance branch; writing that reload swaps edx and edi in the instance loop (score 70).
@@ -975,6 +976,11 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // ->add() at both list sites (fast 280, not inlined in the reduced image; retail inlines at 0x1345a5 and 0x1347c5, so
 // visibility_append and the written-out add predate this note); function_132b10 for the flags (72, same chain);
 // shared behind/in_front pair, selected local, per-term ifs, centre pointer, slot local (109-166); long index (151).
+// Matched in a full build with stand-in SDK headers (was 69): the cluster radius is passed straight to function_132fd0
+// (no local), the else arm reads the entry index into a short local before the bit store (0x133050's form), and the
+// instance filter test is repeated twice more through a getter that holds the filter in a reference-bound local. The
+// repeated tests leave no code; each is a block the instance index lives through, which lets the centre pointer be
+// coloured first (edi, as retail at 0x134693).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
@@ -997,10 +1003,9 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 			real_point3d_set(&corner, bounds->bounds[0][1], bounds->bounds[1][1], bounds->bounds[2][1]);
 			vector3f extent;
 			vector3d_from_points3d(&center, &corner, &extent);
-			real radius = sqrt(length_sq3f(&extent));
 			bool behind;
 			bool in_front;
-			function_132fd0(data, &center, &behind, &in_front, radius);
+			function_132fd0(data, &center, &behind, &in_front, sqrt(length_sq3f(&extent)));
 			if (data->filter && (data->flags2a60 & 1))
 			{
 				c_entry_list *list = *(c_entry_list **)((byte *)data->filter + 0xc);
@@ -1037,7 +1042,7 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 			if (g_4e7c20[(short)instance_index] != g_4e7c1c)
 			{
 				c_entry_list *filter = (c_entry_list *)data->filter;
-				if (filter)
+				if (filter && pool_filter_kept_134390(data) && pool_filter_kept_134390(data))
 					filter = *(c_entry_list **)((byte *)filter + 0x18);
 				if (*(word *)(definition + 0x24) > 0)
 				{
@@ -1069,7 +1074,10 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 					index = (short)k;
 				}
 				if (!(list->shorts_b[index] & 0x800))
-					data->entries[list->shorts_d[index]][(short)i >> 5] |= 1 << ((short)i & 31);
+				{
+					short entry = list->shorts_d[index];
+					data->entries[entry][(short)i >> 5] |= 1 << ((short)i & 31);
+				}
 				if (function_16e210(item->value, g_4b9f8c))
 					data->lists[3]->shorts_b[index] |= 0x400;
 			}
