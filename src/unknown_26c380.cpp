@@ -722,6 +722,17 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // Combined first/ordinary/crossed scan state, separate/joined acceptance: enum 364/364,
 // byte 369/369, word 350/350, long 364/364. NOT kept: the byte form leaves success
 // at +0xf, and the wider forms send it to +0x74. The shared cutoff tail remains unresolved.
+// M3 lane 2 r110 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370, matched throughout; control 244; goto form = the held form with
+// lane 2 r82's tail orders, 32 at 1605 B). Reading: the three XMM homes are a use-count priority. On the goto form the offset has
+// four subtractions in the edge loop and ranks below the normal's components (XMM1-3 = normal j, normal i, offset); with
+// `- line_distance` in each forward branch (five; lane 12's 165 at 1594 B) it outranks the distance parameter too and takes XMM0
+// for the whole function, the scratch moving to XMM1. Retail has it between (distance XMM0, offset XMM1, normal j XMM2, normal i
+// XMM3). New: the line as one 12-byte aggregate with the offset subtracted in each forward branch 309 at retail's 1605 B (slots
+// retail's, normal j/i in XMM2/XMM3 with the in-place `mulss xmm3, [edx]`, XMM0/XMM1 exchanged through the function, plus the
+// cross's row j and the magnitude order); one distance statement after an if/else point choice 420 (1562 B) on the aggregate
+// form and 435 (1552 B) on the goto form; the five tail point computations written with `distance` at each product 319 (1605 B)
+// on the aggregate five-use form and 326 (1612 B) on the plain aggregate form (the offset keeps XMM0). Re-measured: the
+// aggregate goto form 304 (1612 B). Body unchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

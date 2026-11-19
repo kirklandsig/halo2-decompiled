@@ -896,6 +896,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `if (node_index != NONE) do { } while (node_index != NONE);` 2 (same code); the whole scan in a new forceinline
 // inner function taking steps by value 189 (1395 bytes); the scan loop's body in one called per step 118 (1389
 // bytes); the scan through its own copy of the steps pointer 2 (same code, as listed). Body unchanged (286).
+// M3 lane 2 r110 (fast with 0x270930/0x270750, matched; base 286; both builds return with `ret 0x24`): the two-flag lead applied
+// from m3-lane1's saved patch is 2 again at 1388 bytes (the same reload pair). On it: the scan index pre-incremented 2 (same
+// code); the scan condition as `count > j` 4; the step's point pointer declared ahead of the previous point and the edge 332,
+// the edge first 25; a named `&steps[j]` pointer with the point taken from it 2 (same code); the truncation test nested with a
+// named `long last = count - 1` 2, as `if (!(distance > 1600.0f)) continue;` then the index test 2 (same code each); `real const
+// margin` 2 (same code); the delta block as a call to the existing 0x210a30 with `inline` on its /Ob1 definition 428 (1307
+// bytes: it stays a call; 0x210a30 and its six matched callers were listed, its file restored). Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

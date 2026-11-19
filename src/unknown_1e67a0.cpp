@@ -1258,6 +1258,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // diagnostic, K = 1..16 dead initialised locals on that form: 150 145 122 149 139 150 139 163 166 144 112 116 139 150 150
 // 163 (first difference +0x1f3 for every K, never retail's copy-first products); that form with include/axis_rotation.h's
 // helper for the rotation 163; that form with round 112's preset-false moved-away flag 162 (1375 B).
+// M3 lane 2 r110 (fast with 0x1ecf50/0x24590/0x1cd6c0, all MATCH; control 114): `moved_away` as `(a && b) ? true : false` 114
+// and as `alignment > 0.99f ? alignment > dot : false` 114 (same code); named `sine` then `cosine` float locals for the
+// rotation 150 at retail's 1382 B (every rotation product turns axis-loaded-first, the dot's i term too), `cosine` then `sine`
+// 154, with the nested ternary 150; the rotated copy's alignment dot in a named local ahead of the test 140 (1382 B). Reading of
+// the nine rotation products: retail multiplies the copied vector component by the axis from memory everywhere except the
+// vector's i against the axis' j and k, where it loads the axis; ours loads the axis first whenever its component is j or k.
+// Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
