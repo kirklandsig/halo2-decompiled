@@ -638,6 +638,14 @@ struct s_device_machine_view
 	dword flags;
 };
 
+PRIVATE __forceinline word device_group_flags_kept_106d70(s_device_group const *group)
+{
+	word flags = group->flags;
+	word const &kept = flags;
+
+	return kept;
+}
+
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
 // score 2 (was 2): the group's flags still load through the combined address
@@ -1081,6 +1089,9 @@ struct s_device_machine_view
 // [eax + 2]` (the masked byte is a one-use temporary, so the pointer wins EAX); the same with a word local and an unmasked
 // byte copy 121 (byte load, pushed ESI); a `word` bits local `group->flags & 3` 117 (657 B, `movzx eax, byte; and eax,
 // 3`); the machine flags read before that pointer 129 (658 B). Body unchanged.
+// Matched in a full build with stand-in SDK headers (was 2): the group is a pointer local and its two flag bits are
+// tested on the field, with the second bit also tested through a getter that holds the flags in a reference-bound
+// local. The extra test leaves no code; it adds a reference of the flags before registers are chosen.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1106,13 +1117,12 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			function_value = 1.0f;
 		if (device->type == 7 && device->power_group_index != NONE)
 		{
-			word group_flags = DEVICE_GROUP_GET(device->power_group_index)->flags;
+			s_device_group *group = DEVICE_GROUP_GET(device->power_group_index);
 			dword machine_flags = ((s_device_machine_view *)device)->flags;
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			byte group_flag_bits = (byte)(group_flags & 3);
-			if ((group_flag_bits & 1) && (group_flag_bits & 2))
+			if ((group->flags & 1) && (device_group_flags_kept_106d70(group) & 2) && (group->flags & 2))
 				function_value = 1.0f;
 			if (device->power == 1.0f || (machine_flags & 0x10))
 			{
