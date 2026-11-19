@@ -565,6 +565,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
 // MiniMax I (11-17): no lower score (34): a local copy of the player count, so that the parameter is read only once
 // in the copy loop, compiles to the same code, and the count's register home stays the caller's to pick.
 // MiniMax R (11-15): no new form, no lower score (34): the two count arguments still take the other registers - the
@@ -972,6 +973,18 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // the fill's EAX is not what keeps the player count out of EAX. Still BLOCKED-BY 0x7e210 (src/unknown_07a9a0.cpp):
 // retail's call loads the player count into EAX after the pushes and copies the loop's count to EDX last; ours loads
 // the player count into EDX between the pushes and copies the count to EAX last.
+// M3 lane 1 r127 (fast with 0x91e30, MATCH each run, and 0x7e210; control 34): the copy stored ahead of the maximum update
+// 82 (170 B); the player count read through `long const &copied` for both loop bounds 54 (the reference puts it on the
+// stack); the parameters as (player_count, extra_count, party_indices) with the caller's declaration and call changed
+// together 34 (identical code: the incoming registers follow the parameter, as r213 found for the setup order); the total
+// written out at its three uses 74; the maximum test as `party_indices[i] + 1 >= next_party` 35. All restored.
+// M3 lane 12 r146 (fast with 0x91e30 and 0x7e210; control 34): a local cursor over the party list (the parameter no
+// longer stepped) 77 (172 bytes); `party_indices[i] + 1` named once for the test and the store 34 (same code); the
+// excess written against the capacity (`imbalance - (capacity - total)`) 73; the excess as `imbalance + total -
+// team_count * maximum_team_size` with no open-slot local 87 (170 bytes); `bool result;` declared before its
+// assignment 34. A `/Gd` first-pass compile of each (and of the copy guarded by `if (0 < player_count)`, the fill
+// guarded by `player_count < total` or `0 < extra_count`, and the file without `/arch:SSE`) still loads the extra count
+// into EAX and keeps the player count in EBX, where LTCG then gives it EDX.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

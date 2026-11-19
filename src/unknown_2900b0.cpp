@@ -487,6 +487,17 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // perception) and assigned in the arm 28/28/28; the data local copied into the actor pointer first 28. So retail's
 // data value is loaded early in EDX but is a separate value from the actor pointer, and only the two-step form keeps
 // the load early.
+// M3 lane 16 r143 (fast with 0x1e3b60 and 0x28f890): unused initialised long locals at the top, 0-9 of them,
+// 28/30/30/30/30/28/34/28/28/30, and 1-8 inside the actor block the same 30/30/30/30/28/34/28/28 (the symbol count
+// moves the score but never below 28); actor_get ahead of the copy with 0-8 unused locals 38/38/40/40/40/40/38/42/38;
+// the copy as the first statement of the centre update (origin passed in), the actor pointer formed ahead of the call
+// 38; the first creature read into a local ahead of the memset 52 (392 bytes); the one-variable form (`p = data;
+// copy; p += offset;`) with 0-8 unused locals 90 in each but 91 at seven (the add stays in place). Reading: ours is
+// one scratch step ahead of retail from the prologue's pool data on (the data reuses the pool's ECX where retail
+// moves on to EDX, then the origin, the loop's lookup, the reload after the call and the sign extension each sit one
+// register later); a byte load/store probe ahead of the pool read (diagnostic) moves the swarm pointer to EBP (116).
+// Also: the copy from an inline returning the origin point by value 111 (402 bytes: the pool and its data now load
+// ahead of the origin, but the data still reuses the pool's ECX, and the point is held in three registers).
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

@@ -250,6 +250,13 @@ static inline long bungienet_user_voice_setting(short kind)
 // (95 bytes, folded); the controller index read into a reference-bound local 4; both reads through a reference-bound
 // copy of the request pointer 4 (diagnostic); the controller pointer declared at the top and assigned after the
 // selector 4; the availability and selector helpers defined ahead of the controller accessor 4 (all the 4s same code).
+// M3 lane 12 r147 (fast with 0x8c5b0/0x8c660, both MATCH each time; control 4): the body after the reads as a forceinline
+// helper taking (index, kind) from `request->...` at the call 32 (95 B, plain read folded; as a plain inline helper it
+// stays out of line, 24 B); diagnostic, the selector called twice (in the change test and the store) with a plain read 79
+// (135 B, the two expansions do not merge); with the existing read, the selector seeded `setting = 1` with the nested
+// `kind == 1` and availability tests 15; a `bool received = request->kind == 1;` passed to the selector 32; the kind
+// compared with a named enum constant, plain read, 32 (95 B). The identical-arm chain that matched (r104) stays out by
+// the 11-18 ruling: retail shows one compare of the kind, not one per value.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

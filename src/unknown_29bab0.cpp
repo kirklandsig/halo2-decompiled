@@ -679,11 +679,27 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // normalization only, position between input and normalization, or position after
 // normalization 750/998/874/890/998/998. NOT kept: the position home remains
 // unresolved. Moving both producers under admission also raises the caller score.
+// Round 431: planar position pointer/reference before query or after translation 497 each; planar target
+// pointer/reference 497 each; radial-only translation before side selection or before radial difference
+// 764/771. The position and alternate vector homes remain exchanged. Original body restored.
+// Split saved planar components 766, all components 766, point-shaped planar save 762,
+// and split capture with member stores 766. Reuse query lateral/both tail components
+// 746/729, or translated-target lateral/both 734/734.
+// The translated-target forms put the position at +0x80 with frame 0x88, then differ at +0x4e.
+// NOT kept: every form regresses and shortens the body.
 // M3 lane 5 r200 (fast; control 489, aligned 178, register-masked 79, frame-blind 45): the velocity-frame cross through the
 // existing cross3f_staged 489 (same code: its operand sides do not follow the helper's spelling); a `velocity` pointer local
 // for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the
 // steering-side block 730 (3463 B); the input copy and its normalize ahead of the position query 762 (3499 B). Diagnostic,
 // reverted: 1..7 dead initialised locals 665/665/665/665/669/500/493.
+// M3 lane 5 r204 (fast with 0x1f9e70 and 0x110ab0; control 489; all restored): the input normalised through a
+// file-local inline with the sum written j, k, i and the scale sides inverse * i, j * inverse, k * inverse 763 (3501 B:
+// the squares still run k, j, i, so the written order is not what sets them); LEAD: the closing dot written with the
+// copy's fields mentioned j, k, i (`local_9.j * local_7.j + local_9.k * local_7.k + local_9.i * local_7.i`) gives
+// retail's normaliser squares exactly (copy stores and squares i, k, j) but 756 overall (3486 B, homes move from +0x60,
+// the j/k scale sides flip); with local_7's fields first in each product 756; mentioned k, j, i 762; the j, k, i
+// mentions with normalize_inline 758 (3508 B). Retail's squares need local_9's fields ranked j, k, i by a direct
+// mention, not by the sum's spelling.
 // Independent collision vector seeded from the existing response default before/after location,
 // after planar normalization or at the collision split, scoped/entry declaration:
 // 790/790, 791/791, 790/790, 794/794. NOT kept: collision-split seeding reaches
