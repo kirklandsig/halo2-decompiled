@@ -930,6 +930,24 @@ void swarm_leader_detach(long actor_index);
 // with a false-then-set result 216 (966 B; the byte lands in the dead index slot as retail, the same code as the flag
 // form reverted on 11-15, a match-only form), through a helper returning the direct expression 236 (same code). Still
 // BLOCKED-BY 0x26ed40: retail expands it here and its file's inline setting keeps it a call in this build.
+// M3 lane 13 r115 (plain unless marked fast; each step on the one before; lead saved as build/r115/lead-1e1a00.patch
+// in the m3-lane13 worktree; all restored): memory walk as `for (short i...) if (actor->memory[i].type != NONE)` calling
+// a file-local forceinline copy of joint_decline 301 (1006 B, fast); prop walk through 0x26be00/0x26be30 as matched
+// 0x1e23c0 writes it, the view index re-read through prop_node_get after the 0x1e2150 callback 303; the iterator
+// compared against the cached actor 223 (974 B); written `actor != other` (retail's cmp order) 223; the post-callback
+// prop node as a named pointer for the test and the release 196 (prop walk exact); the definition bit as a bool flag
+// (false, set when the definition exists) 218 (980 B, tail exact); `value` as bool at the definition and all eight
+// declarations, passed to 0x203ed0 unconverted, 4 plain and fast: only the slot loop's `lea` of the slot address
+// sits before the handler-table loads where retail has it after the `test`. Slot-loop spellings on that 4: a slot
+// pointer local 4 / passed as the argument 6; the type named first 4; a handler pointer with a stop local 4; the table
+// expression at the test and the call 4; type and handler and stop locals 4; a handler pointer with `handler->stop`
+// tested and called, also const, also with a stop local tested: MATCH on the fast image but 297 plain (996 B, frame
+// 0x24: actor_index leaves EDI in the head and the byte offset takes EBX); the type named with the table read at the
+// test and the call 297. The fast image flips to 297 too once it holds both 0xf0fd0's closure and the file of
+// 0x1fb360/0x1fb510 (each alone keeps the match; their path into 0xcbf60 changes where LTCG enters the cycle
+// 0x1e1a00 -> 0xcbf60 -> 0xcc810 -> 0x1bbdf0 -> 0x1e1a00; with 0x1fb510 emptied, diagnostic, still 297, so 0x1fb360's
+// path decides it); 0x1e1a00's definition moved to the end of its file 297.
+// Permuter on the 4 (600 s): no better variant. Alone on the original body, `value` as bool 288.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

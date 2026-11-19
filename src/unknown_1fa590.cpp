@@ -86,7 +86,7 @@ struct s_tree2d
 
 /* the leaf of the tree the point is in, or NONE */
 // @retail 0x1fa590
-long function_1fa590(long index, s_tree2d const *tree, point2f const *point)
+long function_1fa590(long index, point2f const *point, s_tree2d const *tree)
 {
 	while (index != NONE)
 	{
@@ -110,7 +110,7 @@ long function_1fa590(long index, s_tree2d const *tree, point2f const *point)
 }
 
 // @retail 0x1fa5e0
-long *function_1fa5e0(long index, s_tree2d const *tree, long unknown)
+long *function_1fa5e0(s_tree2d const *tree, long index, long unknown)
 {
 	long *result = 0;
 
@@ -360,6 +360,11 @@ short function_120850(vector3f const *v);
 real *function_120810(real const *point, short axis, byte side, real *out);
 short function_296230(long object_index);
 
+// Matched in a full build with stand-in SDK headers (was 63): the two file-local callees take their parameters in
+// the order (tree, index, unknown) and (index, point, tree), which gives the caller's register-argument moves
+// retail's order; the range test of case 3 is split into its own arms; the leaf value is read through a
+// reference-bound local.
+// Before:
 // score 63 (was 79): the plane lookup is the argument of the axis call, so the plane and the
 // projected point no longer share a stack slot and the frame is retail's 0x18. Left: retail has
 // the result in edi and the structure index in ebx (here reversed), and passes the projected
@@ -414,7 +419,9 @@ long function_1fa3a0(long structure_index, long surface_index, long object_index
                 {
                     s_contact_surface_owner *owner = &table->owners[owner_index];
                     long first = owner->first;
-                    if (first == NONE || surface_index < 0 || surface_index > owner->last - first)
+                    if (first == NONE)
+                        result = NONE;
+                    else if (surface_index < 0 || surface_index > owner->last - first)
                         result = NONE;
                     else
                     {
@@ -430,7 +437,7 @@ long function_1fa3a0(long structure_index, long surface_index, long object_index
                 s_slot_entry_list *bsp = g_4e0340;
                 if (bsp && surface_index != NONE)
                 {
-                    long *leaf = function_1fa5e0(surface_index, (s_tree2d *)table, object_index);
+                    long *leaf = function_1fa5e0((s_tree2d *)table, surface_index, object_index);
                     if (leaf)
                     {
                         byte *surfaces = *(byte **)((byte *)bsp + 0x2c);
@@ -440,7 +447,9 @@ long function_1fa3a0(long structure_index, long surface_index, long object_index
                         byte side = ((real *)&plane)[axis] > 0.0f;
                         point2f projected;
                         function_120810((real const *)point, axis, side, (real *)&projected);
-                        result = function_1fa590(*leaf, (s_tree2d *)table, &projected);
+                        long value = *leaf;
+                        long const &kept = value;
+                        result = function_1fa590(kept, &projected, (s_tree2d *)table);
                     }
                 }
             }

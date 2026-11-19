@@ -2088,6 +2088,13 @@ void function_27dd10(void)
 // the count, 417/417 (1749 bytes; 0x281b60 397, 0x285750 420, 0x28aaa0 165); the count declared, then assigned after
 // the declarations 2; the node index and the cursor initialised (0, NULL) 2; in function_288572 the empty group's
 // index step after the output advance 2 (0x288570 10, 0x289580 9). All restored.
+// M3 lane 15 r106 (fast with 0x281b60 and the matched walk users; all 78 functions of the file for the shared-helper forms):
+// blend 3's `real one = 1.0f;` declared at function_288573's top 2 (the dead literal store is dropped early); the vector
+// and scale blends as `+=` statements 2 (76 others still match); the walk's node index and cursor as pointer parameters 2;
+// quaternion_blend's parameters const 2; the interpolation's root scaling gated on `!in_place` 2 (0x281b60 62).
+// Diagnostics: a used float literal in the blend-1 scale arm fixes this pair (one or two of them); a non-literal float
+// multiply there does not; `g_5044bc += 3` there fixes this pair but reverses pass 1's (EDX flags, ECX count); 15 to 24
+// dead initialised locals in this body 2 each. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2252,6 +2259,19 @@ void function_2818e0(void)
 // the tie); the group end as `index + 8 < count ? index + 8 : count` 53 (all six 9-53); the saved frame index typed long
 // as its field 2; the scale counter under `else if (component == 2)` 2; the output pointer chosen by if/else in place of
 // the ternary 2 (all three the same code). All restored.
+// M3 lane 4 r221 (fast with 0x27dff0 and the five matched walk users): in function_288572 the non-empty arm as
+// `else if (local_2 != 0)` 2 (every user unchanged); the channel counters as a switch on the component with a
+// `default: __assume(0)` 357 (1690 bytes, every walk user regresses); component_decompress as such a switch 352 (1686
+// bytes); the interpolation's output restore written as the top's `local_0 ? local_1 : &g_504430` 2 (0x288570 383,
+// 0x289580 78); the kind-2 clamp as `local_2 >= 2` 2 (same code); the group end as `arg_7 < arg_5 + 8 ? arg_7 :
+// arg_5 + 8` 8 (every walk user 6-8). Diagnostic: `__assume(local_2 != 0)` at the top of the non-empty arm 350. In a
+// compile-only build of the file any `__assume` in the walk (on the flags, on the count, or a switch default) puts
+// the pair in retail's order, but it also stops node_flags_test's bool from folding into the branch (setne/test),
+// and with node_flags_test returning its expression directly the pair stays reversed. Compile-only screens (exact
+// here, with 0x27dff0 and the matched walk users): all 216 orders of the interpolation's three saves, three swaps and
+// three restores best 2 (two save orders give the same code, every other order moves 0x285750 or 0x288570);
+// root_offset_scale's three conditions in all six orders, its product as `*=` or with the operands swapped 2 (same
+// code or only a branch order). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

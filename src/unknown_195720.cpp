@@ -159,6 +159,13 @@ bool function_1946f0(s_bitstream *stream)
 // and read at both addresses 2; a `byte *const &` bound to the field after the index 2; the byte mask named before the
 // index 2 (all four the same code, both LEAs data first); a named next index (`byte_index + 1`) for the count and the
 // clear 24 (the size load moves ahead of the accounting store).
+// M3 lane 4 r221 (fast, with the file's 18 matched functions): the mask's bit offset named right after the pop, at the
+// function's top, 2; the masked byte as `*(stream->data + byte_index) &= ...` 2; the clear's start as
+// `&stream->data[byte_index] + 1` inside the `count > 0` test 2; the two count tests as one `count >= 0 && count != 0`
+// 3; a block-local size read once for the bound test and the count 44 (first difference +0x2a). Compile-only: a
+// block-local pointer to the masked byte (from the field, or from a block-local data local) forms it as
+// `mov edi, [esi]; add edi, edx` (no LEA); a block-local data local or a named start pointer in the clear block keeps
+// the clear LEA data-first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {
