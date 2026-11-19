@@ -1918,6 +1918,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // writable span end 202; last writable entry start 140; entry pointer distance for scan and mask 201;
 // pointer distance in both scans 268; pending-recipient word reused after store 198.
 // The opening capacity, traversal and recipient loads were restored.
+// Channel header for admission and membership 60, queue count held through scan 200, while scan 60,
+// budget test after a completed entry 161, initial count reused then reloaded 60, shared prefix size 196,
+// retained mask from removed entries 91, recipient reduction through the queue field reference 64.
+// EAX still takes the membership load, and capacity rejection keeps its own epilogue.
 // m3 lane 8 r186 (fast with the matched caller 0x56380 in brackets, [0] = still matched; control 60 [0]): retail computes
 // the length before the header stores into EDI and copies it to EAX only at the end (`mov eax, edi` ahead of the shared
 // pops), with EAX holding the entry's zero up to the capacity test. The length in a local where `result` was computed and

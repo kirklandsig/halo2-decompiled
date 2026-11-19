@@ -1059,6 +1059,11 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // destination-only walk with relative source 184, explicit byte bank distance 156, indexed from the
 // object block offset 242, guarded block with output latch 191, named pair count and early copy 141.
 // NOT kept: the input spill and EBX output still differ.
+// Typed object bank size and displacement 171, definition reference 171, tint block reference 167,
+// empty-bank return 179, named flag admission 171, unsigned paired-colour quotient 130,
+// input cursor in the loop initializer 173, object header reference 171. NOT kept: the block
+// reference reaches retail length but gains four. The unsigned quotient omits retail’s signed
+// halving step. The EBX save and input spill still occur early.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

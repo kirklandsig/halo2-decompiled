@@ -692,6 +692,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // velocity as a `velocity = counter == 0 ? g_4687a4 : q` pointer read for qr 663 (2879 B, EBX still d); an unused pointer
 // to d 603 (same code); every d use read through that pointer (diagnostic) 675 (the reads are forwarded, EBX still d);
 // `out->position = *q;` ahead of the position alias 659 (2875 B); the 0.866 test as `dot3f(d, &s->direction)` 604.
+// Whole scaled displacement 744, indexed displacement scaling 673, whole impulse 734,
+// indexed impulse with displacement update 741, settling length before the copy 603,
+// shared activation and normalization motion 676, shared scaled-reference displacement 673,
+// staged target point 717. NOT kept: these forms leave or worsen the sample register and coefficient schedule.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

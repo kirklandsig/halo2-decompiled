@@ -1717,6 +1717,11 @@ long function_10f5f0(long object_index);
 // velocity outputs, alone and combined, and the fully shared workspace declared
 // before the physics state: eight at 561. NOT kept: sharing puts the bounds
 // and velocity at +0x24 and separates the request names. Frame still 0x1990.
+// Boundary response through a separate corrected vector 598, carried vertical speed 565,
+// or one height sample 556. Initialized altitude pair 561, with the corrected vector 598,
+// vertical scalar 565, or height sample 556. Complete radial velocity 599.
+// NOT kept: the altitude pair can reach frame 0x1988, but none meets the score threshold
+// or recovers retail's repeated height reads and 0x1984 frame.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -5761,6 +5766,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // shared spin limit 762. NOT kept: the grouped turn cases reach 734 at retail length, but add a selector re-
 // test and merge conversions that retail performs separately. The engine pair gains three, below the keep
 // threshold. The entry definition and SSE homes still differ.
+// Case-local speed magnitude 763; limit then magnitude 749; complete case ratio 749.
+// Local rejection square, engine ratio, all five magnitude boundaries and separate clamp output 749 each.
+// Activity from the dispatched value before its clamp 748. NOT kept: a one-point gain with a different
+// activity operand from retail. The early zero/result registers, entry definition and unity loads still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

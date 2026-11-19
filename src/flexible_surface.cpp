@@ -860,6 +860,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // ahead of the projection 152 (880 B); cross k in two steps (`cross_k = v.i * a.j; cross_k -= v.j * a.i;`, for retail's
 // store/reload of that product at +0x10) 130 here, 0x1ff360 93 and 0x2551f0 59 (lost); cross j in two steps 130 / 93 / 59;
 // the axis j and k captured into locals 151 (880 B; 0x1ff360 104, 0x2551f0 182). All restored.
+// Table-axis reference/direct argument 187/183, separate axis assignment 130,
+// initial-direction/axis library copies 130/130, compound tick product 130,
+// named frame test 130, random-state record reference 130, compound wave gain 130,
+// shared double wind scale on the in-place rotation 154. NOT kept: direct table access
+// shrinks the frame to 0x0c. The shared scale reaches 880 bytes and loses the caller match.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

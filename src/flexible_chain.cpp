@@ -804,6 +804,11 @@ void __stdcall function_1160c0(real dt)
 // block 144; the segment count named at the loop top for the selection 144; the stiffness product written segment
 // first 144 (all four the same code). Retail's ECX/EDX roles run one step behind ours from the segments base on (base
 // EDX for our EDI, segment EDX for our ECX, the loop end's definition reload EDX for our ECX). Body unchanged.
+// Separate physics point 314, with shared difference 311, reused for the constraint 304, with direction
+// workspace 272, or with complete corrected point 409; in-place length quotient 144, compound stiffness
+// product 144, and default attachment direction with separate physics point 312.
+// NOT kept: the separate physics point expands the frame or worsens the register schedule at retail length.
+// The scalar forms preserve the EDI/ECX segment and the displaced shared spill.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

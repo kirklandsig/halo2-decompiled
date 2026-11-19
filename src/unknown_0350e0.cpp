@@ -398,6 +398,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // after cross partials, or after cross pairs 370/373/359/365. Sine products in their
 // off-diagonal cells 353. Both, with original, early or late diagonal completion 381/348/363.
 // NOT kept: all forms shrink the retail-sized frame and raise the score.
+// Transposed coefficient stores with returned or accumulated row dots 334/334,
+// row aggregates 464, returned matrix 396, output receiver 362, in-place complete
+// or staged row-dot stores 344/532, shared two-turn loop 379.
+// NOT kept: corresponding scalar stores keep the original register assignment.
+// The alternate publications change the frame or extent and raise the count.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2541,6 +2546,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 549, with both transfers 567. Early animated copy or channel initialization 571/557.
 // Shared color beside angles 487, or beside animated tint with both transfers 596.
 // NOT kept: 487 gains five at retail length and the 0x90 frame remains. Other forms regress.
+// Tag and center decoded into the saved record with aggregate, field, indexed field,
+// indexed scalar, pointer or reference publication 476/486/467/488/474/486.
+// Separate decode with record construction from fields or scalars 516/557.
+// NOT kept: the indexed-field lead groups the decoder outputs and keeps
+// frame 0x90. Scalar record construction reaches frame 0x94 but grows by 26 bytes.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -5347,6 +5357,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // corner, either operand order, 1016/1016 (1196 bytes: not inlined here); alpha-only colour 225 (1826 bytes), all four
 // channels 225; alpha-only with the z, y, x read 386, with the scale block y, x, z as well 391, z, y, x as well 230
 // (1830 bytes); all four channels with the z, y, x read 386; scalar alpha with the z, y, x read 390. Body unchanged.
+// Scale reusable offsets in place as point or vector 396/390, or scale value inputs
+// 641/598. With four-channel color 382/382/610/622.
+// NOT kept: the forms at retail length still miss frame 0xe0 and raise the score.
+// The original corner helper and scalar alpha keep the lower count.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

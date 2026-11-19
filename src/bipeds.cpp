@@ -1809,6 +1809,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // grab velocity with animated position 217, with animated velocity 168, with both 186,
 // and with both declared at case entry 186. NOT kept: the 168 form gains seven at
 // retail length, below the keep threshold. The entry constant and frame homes still differ.
+// Chained entry defaults 649, separate immutable entry defaults 650, shared boost unit multiplier 175,
+// boost default after ground velocity 622, immutable tag pointer 175, case-one rate quotient 175,
+// complete recovery rate 175 or named recovery duration 175.
+// NOT kept: the early boost forms change the prologue without recovering the native tag and point homes.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -5296,6 +5300,11 @@ void function_e4300(long arg_159e6d)
 // against 61); the callee's file is not mine, so the boundary cannot be recovered here:
 // BLOCKED-BY 0xe5930.
 // MiniMax R (11-17): no new form, no lower score (91): the reset dispatch expands at this call site, so the body is 113 bytes against retail's 61, and the helper's own file (src/unknown_0e57e0.cpp) is not this lane's: BLOCKED-BY 0xe5930.
+// Reset through a function reference, mutable pointer or constant pointer 11/11/11,
+// or direct address expression 91. Boolean field extraction with reference, pointer
+// or constant pointer 1/1/1. Reference and shared object getter 11.
+// NOT kept: the one-point forms change the reset argument from EAX to ECX.
+// Scoped inline depth with the Boolean field test matched as a diagnostic.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {
