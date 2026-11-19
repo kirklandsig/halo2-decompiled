@@ -5852,6 +5852,11 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // membership, feedback/offer, cancellation/removal, and the final membership phase
 // 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
 // NOT kept: these forms shorten the body and move the first difference before the friend query.
+// Session availability complement 134; origin complement 90; title-join restriction 118;
+// unavailable member/friend complements 211/90; origin after identity check 96;
+// separate membership request availability 89; known-contact exclusion 119.
+// NOT kept: the separate availability form ties and the other forms regress.
+// The query output stays displaced in the retail-length forms.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

@@ -609,6 +609,11 @@ struct c_aggregate : c_child
 // the collection count reused as the cleanup bound 70/70. Count declared at cleanup scope 31/31. NOT
 // kept: shared call output reaches 0x8020 with the low homes exchanged, while reusing it for the bound
 // grows to 381 bytes. The callback output still needs the retail spill home.
+// Available capacity as collection state 151; output pointer plus end-derived capacity 165;
+// output pointer plus carried capacity 166; total plus carried capacity 143; capacity state
+// with published child boundary or terminal table bound 150/150; output pointer through
+// cleanup 186 or through dispatch and cleanup 190. NOT kept: the isolated callback count
+// home still differs, and these forms enlarge the 373-byte body.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

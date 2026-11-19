@@ -1619,6 +1619,11 @@ struct s_pool_view_172840
 // reservation subscript postincrement 228; unsigned selection with signed publication 55.
 // NOT kept: the 55 forms recover the flag homes at 870 bytes but still place the sign extension
 // ahead of the retail link and key schedule and load the sentinel with a five-byte mov.
+// With independent failures and signed publication, template reference after predecessor,
+// key or both identifiers 55/55/55; direct buffer publication before reservation 140;
+// named wrapped enqueue index 55; full queue arm first 59; arena reference 55;
+// unsigned portal bit 55. NOT kept: the 55 forms recover the flag homes at 870 bytes,
+// with the key and list-index schedule still different and a five-byte sentinel load.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1884,6 +1889,10 @@ struct s_camera_reference_171830
 // separate plane result and clear-side assignment 298; indexed basis scales 363. NOT kept: fraction
 // bounds recover the 0xb8 frame at 1215 bytes, with the point still in EBX. The original 1219-byte
 // body is restored.
+// Shared direction workspace 275, with shared collision output 275. Scaled-add helper for sample,
+// refinement or both 270/270/270. Miss-first midpoint selection 291; endpoint decision after the
+// hit test 270; midpoint point setter 270. NOT kept: sharing the direction recovers the frame at
+// 1215 bytes with the point still in EBX. The other forms tie or regress.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2119,6 +2128,11 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
 // Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
 // The collision point still occupies EBX.
+// Guard-scoped adjusted distance 374, guarded input point copy 419, both 447,
+// immutable input point until clamping 473. Projection X through the retained
+// forward axis 357, with direct up fields 369; separate displacement vector
+// 304; three projected coordinates before their stores 295. NOT kept: the
+// guarded copies enlarge the frame or body, and the point still uses EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
