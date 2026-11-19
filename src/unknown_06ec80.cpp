@@ -183,6 +183,12 @@ union s_6ec80
 // M3 lane 3 r267 (fast with 0x6ec10 and 0x5b120; base 5): with the mask scoped in the guard, its test spelled `!local_14 ||
 // !local_2->data[0]` 225, the bits added with `+=` 226, the loop reading the player block through `&arg_0->data4f90` 233
 // (981 B), a dword counter 226; the counter declared beside the mask before the guard and zeroed inside it 5 (same code).
+// M3 lane 7 r190 (fast with 0x6ec10/0x5b120; base 5): the mask scoped with the 0x49c8 read by hand, re-measured 195 (the
+// block pointers EDI/EBX against retail's EBX/EDI); on that, the machines-block pointer declared after the players pointer
+// 195, the two NULL stores players first 189 (the homes swap, the registers do not), the two assignments players first
+// 198; the mask scoped with the machines pointer read through a `const &` bound to it 225; the mask zeroed before the
+// guard as now and again at the guard's top 225 (the first zero dies, so the scoped allocation follows the live range's
+// start, not the source position). All restored.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

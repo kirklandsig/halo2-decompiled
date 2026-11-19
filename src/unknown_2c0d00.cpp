@@ -1517,6 +1517,7 @@ long function_1fa7f0(void);
 // MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
 // and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
 // Earlier at 400 (r123, r125 unchanged; second score line merged into the note's first, r272): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// Earlier (400, was 400): r123, r125 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // M3 lane 11 r123 (fast with 0x2c3030/0x26ccb0, both MATCH): retail never holds the count parameter in a register (every
@@ -2114,6 +2115,14 @@ long function_1fa7f0(void);
 // or clear the saved left result on right failure 400. Right AND left 477,
 // or clear the saved right result on left failure 401. NOT kept: ties or regressions.
 // The aligned 0x114 frame and edge/count homes remain.
+// M3 lane 7 r188 (fast, control 400, aligned 350, register-masked 119): every read of the current step through
+// points[index] with no step pointer at all 473 (1758 B, masked 124); the next step through points[next] with no pointer
+// 400 (same code); the trace start through real_point3d_set 400 (same code); the origin copied member by member 442
+// (1768 B); the loop-top declarations in retail's store order (edge, next, found, link, type, step), with the edge first or
+// the step last 400 each (only the store order moves, masked 116-118). Reading: retail's tail has the existing 0x210a30's
+// body inline (same-index test first, `mulss xmm0, xmm0` on z), and round 169 saw the entry zero move to EBX when it
+// expands here; our build keeps 0x210a30 out of line unless its definition is marked inline, which loses 0x1f45c0:
+// BLOCKED-BY 0x210a30.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

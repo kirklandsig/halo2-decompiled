@@ -953,6 +953,31 @@ void swarm_leader_detach(long actor_index);
 // 0x1e1a00 -> 0xcbf60 -> 0xcc810 -> 0x1bbdf0 -> 0x1e1a00; with 0x1fb510 emptied, diagnostic, still 297, so 0x1fb360's
 // path decides it); 0x1e1a00's definition moved to the end of its file 297.
 // Permuter on the 4 (600 s): no better variant. Alone on the original body, `value` as bool 288.
+// M3 lane 7 r189 (fast with 0xf0fd0, 0x1fb360, the ten callers, 0x26be00, 0x26be30, 0x203ed0, 0x1e22d0, 0x26ed40: this list
+// reproduces the full image's allocation; control 236, nothing kept). Re-built lane 13's lead on today's body (file-local
+// forceinline copy of joint_decline called from a `for (short ...)` memory walk with the test through the entry actor, the
+// prop walk through 0x26be00/0x26be30 with a two-use node pointer, `actor != other`, the definition bit as a false-then-set
+// bool, `value` as bool at the definition and in all eight declarations): 4 at 980 bytes, the only difference being the slot
+// loop, where ours forms the slot address right after the type read and loads the handler into EDX, retail loads handler and
+// stop through ECX and forms the address after the test. On that lead, same code (4 each): the stop read twice with no
+// local; the type in a short or long local; `slot_index >= 4 ? NULL : &slot`; `stop != NULL` with `(*stop)(...)` and
+// `actor->slots + slot_index`; the handler held as a dword or an untyped pointer and cast for the stop read; a handler
+// pointer read once into the stop local; the stop local with the test re-reading the table; one more named local in the tail
+// (the game time). Flips the whole allocation (frame 0x24, the byte offset in EBX, the actor index read from the stack and
+// EDI pushed only before 0x258600): the handler pointer with `handler->stop` tested and called 297 (996 bytes); that with one
+// to seven unused locals 297 each; with the handler const, at function scope, with `other != actor`, with the slot index
+// declared ahead of its loop, with a slot pointer in the call's block or ahead of the loop, with the counts pointer dropped
+// or one more local 297 each; with the direct definition test 289 (990); with a long memory index 494 (1172); the slot
+// pointer named in the call's block 297, between the stop read and its test 297, as the selected argument 298; a pointer to
+// the stop field tested and called 299; the handler pointer with a stop local and the test on the field 297. So any pointer
+// local the loop reads twice, or a named slot address, flips it; integers and once-read pointers are propagated away.
+// The handler-pointer form is byte-exact (MATCH) in a reduced image without src/unknown_1fb350.cpp, and the permuter's
+// baseline shows the flip in the full image too (285 by its count, `sub esp, 0x24`); its 600 s annealed run with 0xf0fd0
+// and 0x1fb360 as context (21 tries) found nothing below that. Diagnostic: this whole file's contents placed in
+// src/actors.cpp (same flags, earlier in source order) 297, so the file's position does not choose the state. Built only
+// from existing functions (joint_decline called, direct definition test, the prop walk, the cached compare, bool value) 397
+// (862 bytes), so no part of the lead is a gain without the expanded helper. Still BLOCKED-BY 0x26ed40 for a natural form
+// (marked inline it also expands in 0x1bead0 and 0x26ef70), and on the link-time state for the handler pointer.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

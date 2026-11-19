@@ -264,6 +264,10 @@ void function_254200(void)
 // M3 lane 4 r223 (single-address fast, control 4): the size as `arg_2 * 2` 4 and as a copy doubled in place
 // (`size *= 2.f`) 4 (same code each); the point copied by an aggregate initialiser from its two fields 88 (1117 B,
 // float loads); the cull mode spelled with its enumerator 4; the size as a copy added to itself 15 (addss).
+// M3 lane 7 r190 (single-address fast, control 4): the shared y + size bound to a `real const &` for vertices 1-2 64
+// (1113 B); the point copied member by member 88 (1117 B); the depth constant through a no-code forceinline accessor at
+// all eight uses 4; every positive sum, x and y, written size first 4; every device call of the body in member form
+// (Begin, 2s, 4f, render state, End) 4. All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

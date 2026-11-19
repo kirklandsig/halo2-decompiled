@@ -1308,6 +1308,17 @@ bool __stdcall function_2399da(long controller_index)
 // the identity test, as a declaration 90 and as an assignment to a function-scope local 90; the redundant block
 // around the membership call and its tests removed 90; the own rank declared const 90; the over-rank refusal tested
 // before the set-rank arm (`rank > own_rank` first) 90.
+// M3 lane 7 r189 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e, 0x239a3d and the three callers 0x2c69b3,
+// 0x2b5f9b, 0x2b5d3b, all MATCH in every trial; control 90, nothing kept): the rank parameter's address discarded at the
+// top (the idiom that keeps 0x2078f0's parameters in memory) 90 (same code); the rank read at the NONE test through a
+// null-checked pointer in an inline helper (the form that stops 0x206090's counter being an induction variable) 90 (same
+// code: the rank is still loaded into EAX); the explicit stack convention dropped from the definition and both declarations
+// 90 (same code, callers still MATCH: the link keeps both parameters on the stack by itself; not kept, no gain); the rank
+// parameter as an unsigned dword with the NONE and own-rank compares cast 90 (same code). Diagnostic: the permission test
+// moved ahead of the identity test, so the identity's reload sits right before the rank's load, 99 (426 bytes): the identity
+// still takes ECX and the rank EAX, so the length of the identity's range is not what loses it EAX. Reading: three
+// cross-block values pick the lowest free of EAX, ECX, EDX in the order rank, identity, own rank here and identity, rank,
+// own rank in retail; the expression temporaries (the 64-bit test, the team address) then take the lowest free one.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

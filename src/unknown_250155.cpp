@@ -1703,6 +1703,20 @@ static __forceinline long matchmaking_maximum_player_count(long *players)
 // player count through a pointer local 83, and with the index fill in branch two 107 (same code as the
 // index fill alone). The homes follow how often each value is read from memory, not its name, its
 // declaration order, its initialisation place or its pointer form.
+// M3 lane 7 r188 (fast; control 83, aligned 51): on today's tree, with no callee edit, the body below reaches aligned 14
+// (138 positional at 434 bytes, so not kept: the count rises): index fills (`for (i = index_count; i < 16; i++) indices[i] =
+// NONE;`) in both branches, the three qsort calls written out (teams && values, teams, values) under `if (mode == 3)` inside
+// branch two's else arm after `item_count = player_count`, and 0x199dc9's output in a block-scoped `long value = 0;` in each
+// branch. Then the mode keeps EBX, index_count takes EDI and is saved around both fills, the homes are retail's (index_count
+// -8, item_count -0xc), and branch two, both fills, the sort and the rows loop are retail's instruction for instruction.
+// Left: branch one's head (ours keeps the entry zero in ESI and puts the query count in EBX and the output at -8; retail
+// gives the count ESI, zeroes with immediates, and puts the output in item_count's cell at -0xc) and one `push`/`jmp` order
+// in the sort. Around it: the output local in one branch only 167/167, at function scope 141, declared before or after the
+// count 136/138/136 (aligned 14 each); the sort at top level (three calls / one call through a pointer) 175/173; without the
+// output local 167; the index fill in branch two only with the calls in the else arm 122 (aligned 31: only the two homes,
+// branch one's pointer fill and the push order differ), with the comparator pointer there 119, with `long item_count = 0;`
+// at its declaration 77 (437 bytes, but a dead store: aligned 32, homes still swapped; not kept); pointer fills with the
+// calls or the comparator pointer in the else arm 137/131.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
