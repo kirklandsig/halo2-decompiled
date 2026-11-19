@@ -148,269 +148,16 @@ short function_c8960(long arg_0, short arg_1);
 long function_155760(long arg_0);
 void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
+short function_cbec0(long unit_index, short grenade_type, short direction);
+bool function_13cb40(void);
+vector2f *function_11df30(vector2f *angles, vector3f const *v);
 
 #pragma inline_depth(0)
-// MiniMax A (11-18): no new form, no lower score (114): the remaining difference is the inlined 0xcbec0 count read [edx + edi] against retail's [edi + edx], with the tail load order and the cold arm still differing: BLOCKED-BY 0xcbec0 (src/unit_object_type.cpp).
-// MiniMax E (11-17): no new form, no lower score (134): the frame agrees; the counted byte is still read without retail's sign extension, the selection comparison still has its operands the other way round, and the inlined count read keeps our [edx + edi] against retail's [edi + edx], which the count helper's body fixes in src/unit_object_type.cpp; the permuter's 22 variants over this body found nothing below the kept form. BLOCKED-BY 0xcbec0.
-// MiniMax C (11-15): no new form, no lower score (134): the body stands as found.
-// MiniMax D (11-14), NOT kept (a 1-point gain, under the 8-point bar): score 133 (was 134): the selection comparison now reads the record's field 212 first
-// (cmp cx, ax against our cmp ax, cx), which is the one difference this round could close; the counted byte
-// is still read without retail's sign extension and the inlined count read keeps our [edx + edi] against
-// retail's [edi + edx], which the count helper's body fixes in another file.
-// MiniMax A (11-13): no new form, no lower score (134): retail's flag block, the tail pair copied as two single floats and the latch with the else arm first each scored 164 and were restored, so the counted byte is still read without retail's sign extension, the selection compare keeps our operand order and the inlined count read keeps our [edx + edi] against retail's [edi + edx], which is fixed by the helper body in another file.
-// MiniMax H (11-14): no new form, no lower score (134): the count helper 0xcbec0 is defined in
-// src/unit_object_type.cpp, one of the files this lane may not edit, so the order of its two operands
-// cannot be changed from here; the body is unchanged.
-// MiniMax H (11-14): no new form, no lower score (134).
-// MiniMax H (11-11): no new form, no lower score (134): the edits tried this round - the field-first
-// comparison and the two single-float stores - scored 136, 164 and 166 and were restored, and the remaining
-// difference is the operand order of the inlined 0xcbec0, whose body lives in another file.
-// MiniMax E (11-11): no new form, no lower score (134): the tail still copies the pair of floats as
-// two whole words where retail moves each of them with a single-float move, the flag block still
-// folds retail's two masks into one and still writes the flag from the mask, and the counted byte is
-// still read without retail's sign extension.
-// MiniMax D (11-10): no new form, no lower score (134); the first difference is the else target of
-// the selection compare, and the counted byte is still read without retail's sign extension.
-// MiniMax S (11-10): no new form, no lower score (134): the equality test on the selected record's field 212
-// has its two operands in the other order (ours compares ax with cx, retail compares cx with ax), the counted
-// byte is read without retail's sign extension (mov al and test al against retail's movsx ax and test ax), and
-// the inlined count read keeps our operand order (edx + edi + 0x23e against retail's edi + edx + 0x23e); that
-// order is fixed by the inlined count helper 0xcbec0, which is in another file.
-// MiniMax E (11-10): no new form, no lower score (134); the counted byte is still read without retail's sign extension and the count test still reaches the other callee, so the body stays 29 bytes short of retail's.
-// MiniMax E (11-09): no new form, no lower score; the counted word is still read through a
-// different address form than retail's and the body is still 29 bytes short of retail's.
-// MiniMax S (11-09): still differs in the first count test: retail sign-extends the counted byte and tests the
-// whole word, ours keeps the byte test; the inlined count read keeps our [edx + edi] against retail's
-// [edi + edx], and the body is 29 bytes short of retail's.
-// MiniMax E (11-05): no new form, no lower score.
-// MiniMax B (11-04): no new form, no lower score.
-// MiniMax S (11-06): no new form, no lower score.
-// MiniMax G (11-12): no new form, no lower score (134): the inlined count read keeps our [edx + edi] against retail's [edi + edx], and the score-1 form still needs a pragma region and a one-caller forceinline wrapper.
-// MiniMax R (11-15): no new form, no lower score (134): the frame agrees; the count byte is still read without
-// retail's sign extension (mov al / test al against retail's movsx ax / test ax, ax), the selection comparison still
-// has its operands the other way round (cmp ax, cx against retail's cmp cx, ax), and the inlined count read still has
-// retail's index operands the other way round, which is set in src/unit_object_type.cpp.
-// MiniMax A (11-18): no new form, no lower score (114): the inlined 0xcbec0 count read still keeps our [edx + edi]
-// against retail's [edi + edx] and that callee's file is not this lane's; the selection comparison's operand order and
-// the counted byte's sign extension still differ, so the body stands.
-// score 114 (was 114): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
-// operand order, cold clear and output/angle scheduling differ.
-// Earlier: frame 0x54 and selection inputs agree; comparison order,
-// MiniMax R (11-01): no new form, no lower score (the score-1 form needs a new inline_depth region
-// and a one-caller forceinline wrapper of 0x14d040; the retail callees stay out of line at inline_depth(0)).
-// Earlier: frame 0x54 and selection inputs agree; comparison order,
-// byte-count extension, cyclic operand order, cold clear and output/angle scheduling differ.
-// MiniMax I run 21 (not kept, m3 review): 113 with 0xcdff0 called at the count test, 0xcbec0(unit, type, 1)
-// for the cycle loop and the field-first selection comparison, both calls inlined only with this function at
-// inline_depth(255) and player_action_initialize behind a forceinline wrapper at inline_depth(0) (as 0x825e0);
-// that wrapper is kept only with a byte match. The same calls with the pragma as here stay out of line: 457.
-// Round 30 (fast; "aligned" = differing lines after a sequence alignment, base 57): retail's
-// first grenade-count test is the existing function_cdff0 inlined (the NONE check, then a short
-// count: `movsx ax`, `test ax, ax`), but calling it there leaves both calls out of line 403;
-// float stores for field_20/24 164 (aligned 71); an object pointer local for the angle block
-// 184 (aligned 81: retail's esi code there, but the tail's scratch registers rotate); both 178
-// (aligned 30); both with the nested 0x40 latch and the 0x60/0x4630200 masks tested apart 166
-// (aligned 28, 1499 bytes). Left in that form: the latch's `field_92 = false` arm placed inline
-// (retail after the return), the field_8/field_4 copy order, the x87 inclination magnitude (retail
-// squares y in place, `fld st(2); fmulp st(3)`; compile-only screens of four spellings give ours),
-// the comparison order, the byte-count extension and one SIB order.
-// Earlier input-convention gaps are absent in this baseline; both selection helpers and the count query match.
-// Positive nested latch with toggle-first/state-first 159/157; state-first with split invalidation 161;
-// field-first selection comparison 133 (one-point gain dropped); zero comparisons 134 each;
-// reversed cyclic subscript 134; request store before record copy 136. Original body restored.
-// Earlier 279 (was 323): frame 0x54 agrees; selection widths/registers at calls differ;
-// named root / first atan2 / second atan2 / first fmod / second fmod results 161 each;
-// both atan2 / both fmod / all results 161 each (frame 0x5c vs 0x54).
-// Native request bit/all request fields 323/323; native clear fields 387; direct held-state output 323, with request bit 323; native reset bit 323; request/clear fields 387; all fields/state output 381.
-// Cyclic result after start 330; candidate before result 331; explicit cyclic step 326;
-// start from field selection 324; traversal storage identities 323; final memcpy 323;
-// native context initializer 323; result lifetime with explicit step 332. All eight forms restored.
-// Unsigned word/dword request 323/331; signed-byte/word/dword reset 323 each;
-// late object pointer fields 306 plain kept (1500/1515); mode-state pointer 323;
-// unsigned word request plus late object fields 306. Keep only late field observations.
-// First/second/both scalar before pair 306/306/306; library angle/scalar/whole-request copies 306/279/321;
-// native output pair/with scalar phase 306/306. Scalar-pair library copy 279 plain kept (1489/1515).
-// Packed source/destination/both selection words 279/279/279; selection memcpy 279;
-// native destination plus final word copy 279; both native words plus final copy 279;
-// native three-word source/output fields 279; native fields with packed selection words 279.
-// Short saturation counter 311; two-use held selection 279; both 311; sentinel first 283;
-// sentinel with short/held/both 315/283/315; int counter with held/sentinel 283.
-// Output angle/vector/scalar pair library copies, each pairwise combination
-// and all three pairs 279 each; angle pair plus complete four-float control copy 314.
-// Complete request flags once before admission at byte/word/short/dword width 279/282/282/267;
-// after admission 279/281/281/266. Dword after admission 266 plain; frame 0x54 agrees.
-// Shared request with bool/byte/word permission 379/379/266; definite short/bool arms 266/379;
-// declaration fallback with short/bool 255/379; combined permission 376; snapshot after object lookup 258;
-// after selection stores with short/bool/byte 252/231/231; late snapshot plus bool/short fallback 366/369.
-// Late coherent request and Boolean permission 231 plain; selection/count and cold output scheduling remain.
-// Round 185 late complete flags byte/word/short/signed byte with bool permission 158/319/319/158;
-// with short permission 279/246/246/288 (fast). Native unsigned byte flags with bool permission
-// kept at 158 plain; every value, observation boundary and call tuple unchanged.
-// Round 189 pulse-latch combined/release-first guards with union/two masks 181/177/165/169;
-// test-derived latch publication 135, with two masks 175; two-use pulse plus publication
-// with union/two masks 172/175. Keep direct latch publication; protected input, count,
-// cold clear and output/angle scheduling remain.
-// Direct selection fallback 327; cyclic result/start/both at long width 289/327/326; high-first
-// saturation 316; logical availability 279; fallback/result 323; cyclic/saturation/availability 331.
-// Native orientation vector 135; coherent unit source 185; source/vector 185; existing state query 304;
-// query/source 310, query/vector 304, all three 310; complete native orientation value 220.
-// Original fields, pointer observations and query guard restored.
-// Round 56: object pointer local in the angle block 185 (retail's esi there; the tail's scratch
-// registers rotate); nested 0x40 latch with the 0x60 and 0x4630200 masks tested apart 164, its
-// latch store first 162, else-first latch 169, with float stores for field_20/24 158 at retail's
-// 1515 bytes. The nested latch and float stores are retail's code (aligned 58 -> 54), but retail
-// puts the `field_92 = false` arm after the return; bool/byte/held locals, store orders and
-// a ternary toggle all leave that arm inline, so the lockstep count shifts.
-// Complete toggle result in bool/byte, union invalidation, early publication 181/184;
-// split masks 182/183; publication after action update 143/184, split masks 185/184.
-// Round 342: Complete inclination squared-product pairs, reversed pairs and named sum 148 each; squared accumulator 150;
-// with symmetric named angle shifts 148/148/148/150. All enlarge the frame to 0x5c; original expressions restored.
-// Round 194: shared initial/count/both object producers 388/212/406; cyclic producer 385;
-// initial/cyclic, count/cyclic and all object producers 416/395/426; all with late header
-// accessor 438. Original observations and numerical/output expressions restored.
-// Round 413: state object/input/view identity observed once 283/431/372; both associations 385;
-// object with input/view/both 419/451/423; all with field-first selection comparison 423.
-// Input/view captures disturb the 0x54 frame; original observations and comparison restored.
-// Round 288: coherent count-pointer/native-array and mutable/readonly unit observations across
-// both count consumers, each with original/field-first selection comparison 389, 389, 389, 389, 384, 384, 384, 384. Restored.
-// Round 194: Coherent request byte at use 134; native request bits alone/with bounded short counter 172/165; native saved output bit alone/with per-use byte/native request bits/native bits plus counter/original snapshot plus counter 406/406/407/403/401. All restored; comparison/count and cold output/angle scheduling remain.
-// Round 27 (lane 11): retail inlines existing helpers here, which the inline_depth(0) pragma blocks. With
-// the pragma only around a forceinline wrapper of 0x14d040 (as 0x84750/0x825e0/0x874c0 keep it out of
-// line), 0xcdff0 called at the first count test (LTCG inlines that site only, as retail), 0x13cb40 for
-// the g_510c50 test, 0xcbec0(unit, type, 1) for the cycle loop and 0x11df30 for the yaw/pitch, plus the
-// 0x40 latch through a toggle flag set in the test (retail's arm after the return), the field-first
-// selection compare, float stores for field_20/24, an object pointer for the angle block and the copies
-// in the order block, field_4, field_8: 1 (plain), only the inlined 0xcbec0 count read [edx + edi]
-// where retail has [edi + edx]. Not kept: the flag form needs a match, and without it the arm stays
-// inline (nested latch 140, original latch 152). Steps: short count ternary 114; flag latch and compare
-// 113; float stores and object pointer 84; y squared in its own statement gives retail's x87 pitch only
-// through the float overloads; pragma removed 569 (0x14d040 inlined); copy orders 9/11/11/5, struct
-// block copy 8; SIB call-site forms (result local, unit index local) 1; permuter 600 s, 21 tries, none
-// below 1. Non-flag latch spellings (else first, named pressed bool, store first) all keep the arm inline.
-// Round 53 (lane 9, fast with every callee listed; the reduced image then scores it as the full build):
-// lane 11's round-27 form reproduced at 1 (1515 bytes); still only the inlined 0xcbec0 count read [edx + edi]
-// against retail's [edi + edx]. On it: the +0x28/+0x214 four-byte copy as a real short/char/char struct
-// member instead of the long cast, with the output copy as a long cast/a struct copy 1/1 (identical code);
-// the cycle loop written out with the unit looked up inside it 316. Diagnostics (all reverted): new-field
-// stores to the control record, the player record or the unit, dropped or duplicated selection stores and dead
-// temporaries before the call or at entry never flip the order. Compile-only probe with an inlinable copy of
-// 0xcbec0's body reproduces [edx + edi]; only a unit read inside the loop gives base first, but then the
-// lookup is scheduled after the NONE normalization (retail has it first), and that body out of line no
-// longer gives retail's 0xcbec0. The score-1 source is saved as build/r53/186ab0.s1.cpp in the m3-lane9 tree.
-// Round 243: Native persistent toggle/pulse/hold byte fields, subsets 1..7
-// 134/134/134/134/134/134/134; all signed byte 134. Original Boolean fields,
-// latch graph and complete body restored; comparison/count and cold output scheduling remain.
-// Round 116 (lane 6, fast): the round 27 lane 11 form still scores 1 on this tree (only the inlined 0xcbec0 count
-// read `[edx + edi + 0x23e]` against retail's `[edi + edx + 0x23e]`, same registers). Retail calls 0xcbec0 out of
-// line only from 0xc5ae3, and that copy reads `[edx + edi]` (type as base) like ours, so the order comes from the
-// inlined instance. On that form: the first count test written out instead of the 0xcdff0 call 29; one unit-index
-// local for the whole selection block 355; a unit-index local for the second count test and the cycle call 1.
-// Compile-only probes of the inlined cycle (result/unit-index/grenade locals, constant or variable direction,
-// nested inlining, a caller-side unit lookup just before the call, callee local renames) all give type as base;
-// only a lookup inside the loop gives unit as base, and it also flips the out-of-line copy and moves the lookup
-// below the NONE test (the LTCG build then shifts everywhere, 316). BLOCKED-BY 0xcbec0 (contributor) as far as
-// found: the inlined order needs a cause outside this body.
-// Round 41 (lane 15, fast): the cycle loop's count read as `*(field_23e + index)` 134 (the same [edx + edi]);
-// a named count-array pointer in place of the unit pointer 309; the first count test as `(short)... == 0` 134
-// (still `mov al; test al, al` against retail's movsx/test ax); the 0x60 and 0x4630200 masks tested apart
-// alone 174 (1493 bytes); the cycle index as a long 183.
-// Round 50 (m3 lane 11, fast, all on round 27's score-1 form, reproduced at 1): 1-8 unused locals at the top 1
-// each; permuter 600 s, 21 tries, nothing (its reduced image scores the form 289); one unit-index local for the
-// whole selection block 366; the first unit lookup through a header pointer 1; the cycle result through a named
-// local 1; the cycle call's unit index masked at the call 1; the NONE test ahead of the request bit 348.
-// Round 42 (lane 14, fast): lane 9's round-53 score-1 source rebuilt on today's file still scores 1 (only
-// the inlined 0xcbec0 count read [edx + edi] against [edi + edx]); with `#pragma inline_depth(8)` after
-// the player_action_initialize wrapper (as 0x84750/0x825e0/0x874c0 use) in place of 255, still 1. On it,
-// latch spellings without the toggle flag (the release arm stays inline, retail's is after the return):
-// `if (pressed && !held) { held = true; toggle; } else if (!pressed) held = false;` 146 (the masked
-// byte is kept and stored as the release value); the same with the toggle before the held store 145;
-// as two ifs (the release test after the toggle block) 147; with a named pressed bool 140; the nested
-// latch with the release store only when held 136. BLOCKED-BY 0xcbec0 (a contributor's function inlined
-// here), and the toggle flag set inside the test needs a byte match to be kept.
-// Round 278: standard signed-counter lower/upper bounds with built-in or native
-// long predicates, eight non-original combinations: 263/285/259/281/301/277/299/299. Original counter restored.
-// Round 81 (m3 lane 12, fast): the first count test through 0xcdff0 with a `__forceinline` declaration here 403
-// (both calls stay out of line under this region's inline_depth(0)); that test as `field_23e[...] == 0` 134 (same
-// code); field_20/24 as two real stores 164; the 0x40 bit named once as `bool pressed` 171; the field-first
-// selection compare with the real stores 163. Original body restored.
-// Round 58 (lane 14, fast with every callee listed): round 27's form reproduced at 1 on today's tree (needs its toggle flag and one-caller wrapper, so not kept without a match). On it,
-// same code each: named grenade argument 1; named index and grenade 1; named result 1; arguments cast 1; else-only form of the cycle test 1; named fallback 1; the two struct
-// locals' declarations swapped 1; first two locals assigned apart from their declarations 1; element pointer for the first unit lookup 1. Direction as a variable 419 (1444 bytes);
-// a one-caller inline wrapper of the cycle call 451 (1431 bytes). Diagnostic only: inline_depth 1, 2 and 3 in place of 255, 1 each.
-// Retail holds two copies of this read: the out-of-line 0xcbec0 (base type) and this site (base unit). BLOCKED-BY 0xcbec0 stands.
-// AC557: Complete held-action session gate as bool/byte/short/long admission
-// and complementary rejection results: eight at 134 (1486/1515). NOT kept:
-// no exact match; original short-circuit gate, cold latch and full body restored.
-// F399: Complete cyclic admission/rejection predicates in bool/byte/short/long
-// truth domains: eight forms 134 each. Earlier first-count ternaries excluded.
-// NOT kept: no gain or equality; original signed count test, short cyclic index,
-// observations and whole body restored. Comparison/count, cyclic ranks and cold clear remain.
-// Round 224 (m3 lane 3, fast with every callee listed; round 27's form still scores 1 at 1515 bytes): on it, the
-// latch without the toggle flag: the held byte read into a local, a conditional `= true` store and a re-test
-// `pressed && !was_held` after the arms 165 (1517 bytes); the same with the release arm first 164; a named
-// `pressed && !held` bool for the store and the toggle 180 (1528); the local with a plain if/else store and the
-// re-test 231 (1503); the nested latch again 140 (1515, aligned 11): the release arm stays inline each time.
-// Diagnostics on 0xcbec0's body for the inlined count read (contributor code, restored at once; none flips ours
-// from [edx + edi] to retail's [edi + edx]): the count compare as `0 < count`, `*(counts + type)`,
-// `type[counts]` or with a `(short)` cast 1 each with 0xcbec0 still matching; result declared before the unit 331
-// (0xcbec0 38); the direction test inverted with its arms swapped 419 (0xcbec0 18); a named counts pointer in
-// place of the unit 288 (0xcbec0 45). BLOCKED-BY 0xcbec0 stands.
-// M3 lane 8 r144 (fast with 0xcbec0, 0xcdff0, 0x13cb40, 0x11df30 and 0x14d040, which stay matched; control 134): round 27's
-// form rebuilt on today's file still scores 1 at 1515 bytes (the diff is build/r144/lead-186ab0.patch), only the inlined 0xcbec0
-// count read [edx + edi] against retail's [edi + edx]. On it, at the cycle call: the grenade type through a named short
-// local 1 (same code); the type argument narrowed to a char 289 (1524 bytes); the result stored through a short pointer 1
-// (same code); the direction as a default argument of the local declaration 1 (same code); the unit index chosen by a
-// conditional on the player index 305 (1528). Body restored. BLOCKED-BY 0xcbec0 stands.
-// Round 187 (m3 lane 4, fast with 0xcbec0, 0xcdff0, 0x13cb40, 0x11df30, 0x14d040): most single-line differences after
-// the first count test are relocation offsets shifted by its two missing bytes (the symbols agree). The hold test as
-// one `&&` bool in place of the false default set in a test 208 (1482 bytes); the reset block's saved bit as
-// `(field_20 & 0x100) != 0` 134 (same code; may overlap the earlier native reset bit form); the stick test through
-// the float fabs 198 (1493 bytes); the object type test as `field_3 == 0` in place of the mask shift 181 (1480 bytes);
-// the reset value as a bool 134 (same code); the final record copy through the existing function_186ab8 160 (1477
-// bytes); the same copy as one assignment without its two one-use pointer locals 134 (same code, kept).
-// M3 lane 13 r92 (fast with 0xcbec0, 0xcdff0, 0x13cb40, 0x11df30 and 0x14d040, all matched each time): round 27's form
-// rebuilt on today's file still scores 1 at 1515 bytes (the inlined 0xcbec0 count read [edx + edi] against [edi + edx]). On it:
-// a symbol-count phase scan, one to seven `long dead_n = n;` locals at the top of the body, 1 each (the base/index order of this
-// read does not follow the symbol phase that orders float operands); the cycle loop written in the body (main's own loop text) in
-// place of the 0xcbec0 call 1 (same [edx + edi]); that with the count read into a named char before its test 1; that with the
-// unit lookup placed after the start-type normalization 316 (the lookup moves, everything after shifts). BLOCKED-BY 0xcbec0 stands.
-// MiniMax I (11-16): no new form, no lower score (134): the permuter tried 22 variants of this body in 300 s and none came below the kept form (112 differing instructions in both images); the remaining difference is still the inlined 0xcbec0 count read [edx + edi] against retail's [edi + edx], and that helper is defined in src/unit_object_type.cpp, which this lane may not edit. BLOCKED-BY 0xcbec0.
-// b8L (11-17) walk against retail, fast build on r836: every statement, jcc direction (NaN included) and constant
-// agrees with retail, so no behaviour difference was found. Kept, retail's evaluation order: the first count as a
-// short local, `count = type == NONE ? 0 : counts[type]; if (!count)` (retail 0x186c64 movsx ax, 0x186c6d test ax,
-// ax; 0xcdff0's body written out, since a call there stays out of line, 403 in earlier lanes) 134 -> 114. Not kept:
-// the selection compare field-first (retail 0x186c22 movsx cx, 0x186c2a cmp cx, ax) 114 -> 113 (alone 133), an
-// operand swap with no behaviour change. Measured on the 113 base and not kept: nested 0x40 latch (0x186eb8 skips the field_92 store while set) with the 0x60 and
-// 0x4630200 masks apart (0x186ed2, 0x186ed9) 140, its arm still inline; + movss stores for field_20/24 (0x186f45,
-// 0x186f56) 136; + one object pointer in the angle block (0x186f88) 143 (commit 03893fe0f); count + pointer 163, +
-// stores 157; latch spellings 150/147/149/145; three sqrt respellings (0x186fbc fld st(2), 0x186fbe fmulp st(3))
-// unchanged. Left: tail load order, cold arm, [edx + edi].
-// M3 lane 3 r258 (fast with every callee listed; control 114): the nested latch on this body, `if (flags & 0x40) { if
-// (!field_92) { field_91 = !field_91; field_92 = true; } } else field_92 = false;` with the 0x60 and 0x4630200 masks
-// apart, 143 (1499 bytes, aligned 38 against 41: the release arm stays inline behind a jmp where retail has it after the
-// return). Round 27's form rebuilt on today's file still scores 1 at 1515 bytes; on it: an explicit `field_2c == NONE ||`
-// ahead of the first 0xcdff0 call 1 (same code); the unit index in a local from the 0xcfe40 call through the cycle call
-// (the span retail keeps it in EDI) 1 (same code); that local from the first count test on 1 (same code); the grenade
-// type in a short local for the second test and the cycle call 371 (1535 bytes). Compile-only probe of the inlined cycle
-// (one file, the helper forced inline and also emitted out of line; it reproduces both of our copies): with the unit a
-// named local set at the top, the count read is index-first in both copies whatever the caller passes (field read,
-// register value, early or late index local, variable direction), with one to six earlier inline calls or shared
-// subexpressions in the caller, with the lookup through an inline function (six spellings), a const or const-pointer
-// unit, a nested member, byte-pointer arithmetic in four orders, or a long index. Unit-first comes only from a lookup
-// hoisted out of the loop (it then lands after the NONE normalization, and the order follows the argument's form: a
-// register value gives unit-first, a field read index-first), a reference-bound unit (the load moves to the loop's
-// head) or a derived pointer (an extra add): none gives retail's out-of-line copy and its inline site together.
-// BLOCKED-BY 0xcbec0 stands.
-// Held-state transitions store-first/toggle-first 119/121; held-first
-// test 151; release or new press store-first/toggle-first 157/151;
-// shared action mask 114; angle unit reference 164; named inclination inputs 114.
-// NOT kept: the held-first latch reaches 1497/1515 bytes but scores 151.
-// The release arm and output/angle schedule still differ.
-// m3 lane 14 r113 (fast with every callee listed; control 114, aligned 55): the 0x60 and 0x4630200 masks tested apart
-// (retail 0x186ed2, 0x186ed9) on the flat latch 154 (1496 bytes), with `||` written without parentheses 154, with `!= 0`
-// on each 154; field_20/24 as two real stores (retail's movss pair) 141 (1500 bytes, masked aligned 41 -> 31); both 144
-// (1515 bytes, retail's length; aligned 75, masked 37). Left: the latch's release arm (retail after the return), the
-// tail's load order and the inlined count read; BLOCKED-BY 0xcbec0 stands.
+static __forceinline void function_186ab9(s_player_action *arg_0)
+{
+    player_action_initialize(arg_0);
+}
+#pragma inline_depth(8)
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {
@@ -453,38 +200,37 @@ void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_acti
         if (local_5 || local_6 == NONE)
             local_1->field_2a = (char)function_cdeb0(local_1->field_0, NONE, local_6, local_5);
         short local_7 = function_cfe40(local_1->field_0);
-        if (local_7 != NONE && local_7 != local_4->field_212)
+        if (local_7 != NONE && local_4->field_212 != local_7)
         {
             local_1->field_2a = (char)local_7;
             local_1->field_2b = NONE;
         }
         if (local_1->field_2a == local_1->field_2b && local_1->field_2a != NONE)
             local_1->field_2b = NONE;
-        short grenade_count = local_1->field_2c == NONE ? 0 :
-            (short)((s_186ab6 *)g_4e0300->data)[local_1->field_0 & 0xffff].field_8->field_23e[local_1->field_2c];
-        if (!grenade_count)
+        if (!function_cdff0(local_1->field_0, local_1->field_2c))
             local_1->field_2c = local_4->field_23d;
         if ((request_flags & 2) || local_1->field_2c == NONE || !function_cdff0(local_1->field_0, local_1->field_2c))
         {
-            s_186ab5 *local_11 = ((s_186ab6 *)g_4e0300->data)[local_1->field_0 & 0xffff].field_8;
-            short local_8 = local_1->field_2c;
-            short local_9 = NONE;
-            if (local_8 == NONE)
-                local_8 = 0;
-            short local_10 = local_8;
+            s_186ab5 const *unit = ((s_186ab6 *)g_4e0300->data)[local_1->field_0 & 0xffff].field_8;
+            short start = local_1->field_2c;
+            short result = NONE;
+            if (start == NONE)
+                start = 0;
+            short type = start;
             do
             {
-                if (local_11->field_23e[local_10] > 0)
+                long index = type;
+                if (unit->field_23e[index] > 0)
                 {
-                    local_9 = local_10;
-                    if (local_10 != local_8)
+                    result = type;
+                    if (type != start)
                         break;
                 }
-                local_10 = local_10 == 1 ? 0 : local_10 + 1;
-            } while (local_10 != local_8);
-            local_1->field_2c = local_9;
+                type = type == 1 ? 0 : (short)(index + 1);
+            } while (type != start);
+            local_1->field_2c = result;
         }
-        if ((!g_510c50 || !((byte *)g_510c50)[5]) && !(g_4ed284->flags10 & 1) &&
+        if (!function_13cb40() && !(g_4ed284->flags10 & 1) &&
             (!g_510c54->active || !g_510c54->unknown01) && !function_155760(local_0->field_28) &&
             local_1->field_0 != NONE && function_c85c0(local_1->field_0))
         {
@@ -541,38 +287,48 @@ void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_acti
             local_1->field_30 = false;
         if ((byte *)g_4e6948 + 8 && ((byte *)g_4e6948)[0xd] != 3)
         {
-            if ((request_flags & 0x40) && !local_1->field_92)
+            bool toggle = false;
+            if (request_flags & 0x40)
+            {
+                if (!local_1->field_92)
+                {
+                    toggle = true;
+                    local_1->field_92 = true;
+                }
+            }
+            else
+                local_1->field_92 = false;
+            if (toggle)
                 local_1->field_91 = !local_1->field_91;
-            local_1->field_92 = (request_flags & 0x40) != 0;
-            if (local_3.field_18 & 0x4630260)
+            if ((local_3.field_18 & 0x60) || (local_3.field_18 & 0x4630200))
                 local_1->field_91 = false;
             if (local_1->field_91 && local_4->field_14 == NONE)
                 local_3.field_18 |= 0x4000;
         }
     }
     function_151110(arg_0, local_1->field_6c);
-    local_1->field_8 = local_3.field_20;
     memcpy(local_1->field_44, &local_3.field_28, sizeof(local_1->field_44));
     local_1->field_4 = local_3.field_18;
+    local_1->field_8 = local_3.field_20;
     local_1->field_18 = local_3.field_0;
-    memcpy(&local_1->field_20, &local_3.field_8, 2 * sizeof(real));
+    local_1->field_20 = local_3.field_8;
+    local_1->field_24 = local_3.field_c;
     if (local_1->field_0 != NONE)
     {
         s_186ab6 *local_4 = (s_186ab6 *)g_4e0300->data + (local_1->field_0 & 0xffff);
         if ((1 << local_4->field_3) & 1)
         {
-            if ((bool)((local_4->field_8->field_348 >> 5) & 1))
+            s_186ab5 *object = local_4->field_8;
+            if ((bool)((object->field_348 >> 5) & 1))
             {
-                local_1->field_10 = (real)atan2((double)local_4->field_8->field_16c, (double)local_4->field_8->field_168);
-                local_1->field_14 = (real)atan2((double)local_4->field_8->field_170,
-                    sqrt((double)local_4->field_8->field_16c * local_4->field_8->field_16c + (double)local_4->field_8->field_168 * local_4->field_8->field_168));
+                function_11df30((vector2f *)&local_1->field_10, (vector3f const *)&object->field_168);
                 local_1->field_10 = (real)fmod((double)(local_1->field_10 + 6.2831854820251465f), 6.2831854820251465);
                 local_1->field_14 = (real)fmod((double)(local_1->field_14 + 9.424777984619141f), 6.2831854820251465) - 3.1415927410125732f;
-                local_4->field_8->field_348 &= ~0x20;
+                object->field_348 &= ~0x20;
             }
         }
     }
-    player_action_initialize(arg_3);
+    function_186ab9(arg_3);
     s_186ab7 *local_4 = (s_186ab7 *)arg_3;
     local_4->field_4 = local_1->field_10;
     local_4->field_8 = local_1->field_14;
@@ -588,4 +344,3 @@ void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_acti
     *(s_186ab8 *)local_4->field_28 = *(s_186ab8 const *)local_1->field_6c;
     memcpy(local_4->field_34, local_1->field_44, sizeof(local_4->field_34));
 }
-#pragma inline_depth(255)

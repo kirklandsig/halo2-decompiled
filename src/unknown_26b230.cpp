@@ -2190,6 +2190,12 @@ void function_269250(long clump_index, long actor_index);
 // result actor latch and the same three variants 87/335/126/339. NOT kept: the actor latch ties, the
 // team-scoped score restores x87 at higher cost, and the clump latch emits two copies of the step.
 // Pool EBX and the memory-only selection remain.
+// M3 lane 6 r199 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510/0x1e46c0/0x269040, all
+// matched each time; control 87): re-measured the in-arm compare 126 and that with the selection from the iterator's datum
+// index 128 (selection memory-only, the pool hoisted into EDI for retail's EBX, the exhausted step threaded to the exit).
+// New: the walk record declared at function scope, ahead of the actor loop, on the in-arm form 126 and on the datum-index
+// form 128 (same code each); the selection and best score declared ahead of the walk record on the in-arm form 129, on
+// the datum-index form 154 (457 B); the score declared beside the best score and assigned in the arm 126 (same code).
 // M3 lane 7 r183 (fast; control 87, in-arm compare re-measured 126 at 480 B): on the in-arm form, the walk's clump index
 // bound by `long const &` before the walk loop 126 (same code); the loop testing the step's result with the group read from
 // the walk's datum field (`group = (s_clump_activity_view *)groups.iterator.datum;`) 128 (480 B: the pool hoisted into EDI
@@ -2205,6 +2211,14 @@ void function_269250(long clump_index, long actor_index);
 // the created arm assigning the loop's `group` instead of declaring a second one 89; the clump walk record declared at
 // function scope 89; the selection and best score declared at function scope and set at the top of each actor 89; the
 // score set by an if/else (`else score = best;`) 128 (484 B).
+// M3 lane 1 r125 (fast; this body 89 fast, 87 plain): on the in-arm compare with the selection from
+// `groups.iterator.datum_index` (128, 480 B): the selection stored before the best 128; plus the best declared before the
+// selection 128; plus the post-loop test written `actor->unknown07c != selected` 128 (all the same code); a file-local walk
+// step that takes the clump from the iterator's datum field after the step (`clump = iterator->iterator.datum;`, the
+// step's result unused) 150 (482 B, frame 0x40: the not-found path then keeps retail's `xor eax, eax` / `test eax, eax`
+// join instead of threading to the exit, but the iterator's index goes to EBP and the actor to the stack). Reading: on the
+// 128 form the remaining register differences (pool EDI for retail's EBX, scan bounds in ESI/EAX for EDI/ESI) follow
+// from the threaded not-found path, which frees EAX through the scan where retail keeps the NULL clump live in it.
 // M3 lane 14 r117 (fast with 0x268bb0, 0x269580, 0x269250, 0x2694d0, 0x269040, 0x1e46c0 and 0x268840 in the image,
 // which reproduces the plain 87 and 0x269580's argument registers): the in-arm compare 126 and the in-arm compare with
 // the iterator's datum index 128 re-measured (that form promotes the pool into EDI, not retail's EBX, puts the

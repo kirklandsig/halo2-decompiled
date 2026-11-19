@@ -605,12 +605,21 @@ struct c_aggregate : c_child
 // slots and puts the callback output in the terminal cell instead of ESP+0x10.
 // Convert typed child elements at collection/dispatch/both 31/31/31; named typed slot table 146/100/126;
 // advancing typed slot cursor 64/108. None recovers the shared output and cursor home.
+// M3 lane 7 r185 (fast with the six file-mates, all still matched; control 31): both child loops bounded by the
+// children array's element count 31; the release query's output as a dword 31; the cleanup's item count named in the
+// for-init 74; the cleanup item read from the block at each use (no object local) 67 (376 B); the room as the blocks
+// array's element count minus the total with `blocks + total` 31 (same code). Frame 0x8024 in each; still BLOCKED by the
+// build flag (round 59's harness: a virtual callee never lets the escaped count share a slot under LTCG).
 // M3 lane 14 r117 (fast with 0x97f60, 0x97fe0, 0x980d0, matched throughout; control 31): the produced count declared in
 // the collection loop's for-init and zeroed in the test arm 42; declared and zeroed at the loop body's top with the add
 // after the test arm 144 (389 B); the collection step (zero, call, add) as a forceinline helper taking the total by
 // pointer 146 (389 B); the capacity named where it is computed 31 (same code). Diagnostic (not natural, reverted): the
 // count written into the next boundary cell `starts[i + 1]` gives retail's 0x8020 frame but 139 at 389 B, so the frame
 // cell is the separate count slot alone. Body unchanged.
+// Explicit cleanup count reload in for/while 31/31, with the shared call-output carrier 31/31, with
+// the collection count reused as the cleanup bound 70/70. Count declared at cleanup scope 31/31. NOT
+// kept: shared call output reaches 0x8020 with the low homes exchanged, while reusing it for the bound
+// grows to 381 bytes. The callback output still needs the retail spill home.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -69,6 +69,8 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     }
     return local_0;
 }
+// score 356 (was 356): frame 0x38 against retail's 0x34; `this`, NONE, zero and index registers differ (retail EDI, ESI,
+// EBX, EBP), and 0x75910's result is tested as a long (BLOCKED-BY 0x75910); earlier notes below.
 
 // MiniMax I (11-17): no new form, no lower score (356): re-measured the baseline; the first difference is still at
 // +0x2, retail's prologue reserves 0x34 with the connection in EDI, the NONE state in ESI and the channel index in
@@ -99,11 +101,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // locals still take, and dropping a home means writing that local's expression out at each of its uses, which
 // this lane's rules forbid; the goto/label shape that carries the result is kept, and the body stands.
 // MiniMax R (11-15): no new form, no lower score (356): the frame is still 0x34 against retail's 0x38 (local_18 still has a stack home where retail keeps it in EBP), and the observer, channel and result homes differ.
-// MiniMax S (11-16): score 356 (was 356): no new form; retail's prologue reserves 0x34 with four register saves
+// MiniMax S (11-16): earlier 356 (was 356): no new form; retail's prologue reserves 0x34 with four register saves
 // and keeps the connection in EDI, the NONE state in ESI and the channel index in EBP, where this build reserves
 // 0x38, keeps the observer in EBP and the argument in ECX, so the two disagree from the first instruction on;
 // the timed-out callee's byte result is the other open item and lives in another file.
-// score 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
+// Earlier 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
 // and counter homes remain.
 // MiniMax R (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
 // still takes a frame pointer where retail keeps the connection in EDI, the packet-availability result still lands
@@ -319,6 +321,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // flag is then reloaded where retail keeps it in BL), with the pacing form 438 (aligned 223). The has-host arm as
 // `arg_3 = arg_4 = true` 355 (one point, re-measured). The window flags read into a byte local first 356 (same code);
 // the window size as `(flags & 8) ? 128 : 0` 397 (1369 bytes, re-measured).
+// M3 lane 1 r127 (fast with 0x765c0/0x75910/0x76520, all MATCH; control 356): local_6 declared ahead of local_26 356
+// (other code: the two NONE stores swap); local_7 declared ahead of the two NONE locals 356 (same code); local_10
+// declared and then assigned from 0x76520 356 (same code); `this` used directly in place of the arg_0 copy 356 (same
+// code); local_2 declared ahead of the channel search 399 (1372 B). Body unchanged.
 // M3 lane 14 r116 (fast with 0x75910, 0x76520, 0x765c0, 0x77940 and 0x89030, all MATCH; control 356): the elapsed count
 // taken from the 64-bit snapshot 426 (1385 B); `local_7 = false` declared ahead of the search (a constant start) 409
 // (1373 B); the send test with the has-host term first 419 (1356 B); diagnostic, the has-host flag started false and set

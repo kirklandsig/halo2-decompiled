@@ -584,6 +584,10 @@ struct s_24e9c7_points
 // half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
 // 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
 // with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// M3 lane 4 r218 (fast with 0x24e59f/0x22a664, both matched each time; control 125): by-value inline helpers (new):
+// the across pair returned by value with side from it 181 (770 B, frame 0x50), side initialised from it and scaled in
+// place 181, side from a by-value scale helper 213 (796 B, frame 0x58), up returned by value 169 (762 B); the in-place
+// side filled inside a block scoping size 144 (746 B). Return copies grow the frame. Body unchanged.
 // M3 lane 2 r102 (fast; control 125). Reading: retail's -0xc/-8 pair is the side point (x kept in XMM6, y spilled: first
 // the across-j product, then the scaled side.y in the same slot), so the side is filled with the across products and
 // scaled in place; the plain form of that (no other move) 144 (746 B: across products early as retail, result still at
@@ -605,6 +609,15 @@ struct s_24e9c7_points
 // Quad aggregate from one shared origin before size, after across, after height or after half width:
 // 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
 // NOT kept: The across-y spill and the returned-height home remain different at retail length.
+// M3 lane 1 r126 (fast with 0x24e59f/0x22a664, both MATCH; control 125, aligned 87): the size read ahead of the bitmap
+// pointer 125; the scale read there too, ahead of the size 125; the side point declared ahead of up 125; back, side, up
+// declared in that order ahead of the up products 125; the corner record declared ahead of up 125 (all the same code).
+// M3 lane 11 r122 (fast with 0x22a664; control 125, register-masked aligned 94; a compile-only /O1 screen reproduces
+// this body): re-measured lane 7 r183's side point set to the across products and scaled later 144 (746 B), with `size *
+// (0.0f - forward_j)` 139 (742 B, masked 105), with compound scaling 139; new: the back point written as the negated
+// half-width products of the across locals (a second use of each) 154 (753 B, masked 109), with `size * (0.0f -
+// forward_j)` 137 (749 B, masked 119). Compile-only, forward i and j read into locals for the across and up products
+// leaves the products late (same order as main). Each early-product form leaves the result home at [ebp-8].
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

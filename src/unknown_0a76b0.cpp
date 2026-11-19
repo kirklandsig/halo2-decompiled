@@ -2280,6 +2280,13 @@ __forceinline char unit_action_round(real value)
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
 // score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below.
+// Round 192 (m3 lane 8, fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470;
+// control 234): goto-free single exit (switch default and mode-else leave the name NONE, `if (name != NONE)` round the
+// play block, `result = true` at the end of each arm with the animation failure skipping it, the tail under
+// `if (result)`) 328 (1224 B: the NONE test is threaded and the 0xe9780 call block is copied onto the mode-1
+// animation path); the 0xe9780 fallback as a switch whose combo cases fall into the 0xe000607 case 252 (1183 B);
+// TEST_FIELD_BIT on the 0x1b test 249 (1193 B); both 275 (1184 B); both with first_person_name = NONE declared first
+// 312 (1178 B).
 // Round 189 (m3 lane 8, fast with 0xe9ed0/0xea090, both MATCH throughout; control 234): the unit lookups through one
 // header pointer local (UNIT_ACTION_HEADER_GET, used for the unit, the 0x1b test and the 0x399 test) 328 (1178 B); for
 // the unit and the 0x1b test only 300 (1184 B); the 0x399 test's lookup through UNIT_ACTION_HEADER_GET 234 (same code);
@@ -2300,6 +2307,7 @@ __forceinline char unit_action_round(real value)
 // reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
 // compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
 // stands.
+// Earlier comparison: MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // Earlier (234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
@@ -2550,6 +2558,10 @@ __forceinline char unit_action_round(real value)
 // at the end 234 (same code: the result is folded either way, where retail keeps it in its stack byte and has one exit);
 // that with first_person_name = NONE declared first 312 (1191 B, aligned 115); that with the 0xe9780 fallback as a switch
 // 237 (1192 B, aligned 126); is_biped without the byte cast 234 (same code).
+// A shared masked datum slot for all three lookups as word/long/dword or through the
+// header accessor with a word 316/311/311/316; each with the short-slot hand getter
+// 319/311/311/319. The long slot forms recover EDI and the saved slot offset; the pool
+// still loads into EDX and the completion byte remains different.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4347,6 +4359,10 @@ extern vector3f *g_4687bc;
 // CX there, but the pool's data then takes EAX and the component EAX/ESI order changes; both sites still differ).
 // Diagnostics: a probe copy between two globals at the function's top, before the definition re-lookup or before the
 // effect tag read leaves both sites as they are; after the tag read it reloads the component index (the store aliases).
+// M3 lane 2 r106 (a one-file LTCG harness with the callee files linked in gives 1098 B and both sites as the check):
+// 0-8 dead locals at the top, or 1-8 just ahead of the material (diagnostics) 8 each, so neither scratch choice is a
+// symbol-count tie; the node count in a named local 8; the element through a const reference to the rigid-body array 8;
+// the element as `index + rigid_bodies.data` 8 (all the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
