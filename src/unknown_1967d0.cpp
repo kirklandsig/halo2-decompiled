@@ -913,8 +913,8 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 100 (was 100; earlier 191): the teams flag is read before the configuration copy and address-index
-// store, and the third team-score read expands where retail calls 0x1587f0.
+// score 100 (was 100): the teams flag is read before the configuration copy and address-index
+// store, and the third team-score read expands where retail calls 0x1587f0. Earlier score 191.
 // Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
 // entry 314, combined team guard 333, team read before flag 309, record reference 191,
 // native counter field 191, and branch-local score stores 192.
@@ -997,6 +997,12 @@ static inline long team_score_195ed0(long team)
 // rank and score through indexed team 105, short team rank ordinal 205,
 // named player rank and slot 100, native in-range score with short selection 191.
 // NOT kept: the early flag load remains and the native score call still inlines.
+// Counter bound beside the record or after publishing its address index 100/100,
+// native counter value with low-bit mask 100, bool team-mode sample 100,
+// full-width lower default 177, nested inclusive score selection 165,
+// inclusive upper selection with local or native interior query 100/191.
+// The tied forms still load the teams flag before the copy, and the native
+// interior query still inlines.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

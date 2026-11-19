@@ -738,6 +738,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // compound reciprocal weights 162, both compound weight pairs 162.
 // NOT kept: staging both pivot contributions grows the frame. The best forms leave the blend spill
 // and fixed-arm displacement different.
+// Blend before both frame pointers, between them, or after bounds 373/190/245.
+// Horizontal scale reused at width calculation, secondary-aspect join,
+// after inverse spans, or after encodes 162/170/173/423.
+// Scoped size workspace 162. Blend still spills at the bitmap join.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

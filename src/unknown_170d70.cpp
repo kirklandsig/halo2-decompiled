@@ -306,6 +306,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // named copy decision 142, existing placement cross for left 68 or with explicit deadline cursor 125.
 // NOT kept: the explicit cursor restores the traversal at 1413 bytes, and the other forms leave the
 // deadline and group homes exchanged.
+// Direct j/k/i up reconstruction 137, or with independent deadline 133.
+// Six named cross products 126, or with independent deadline 125.
+// Independent deadline with captured up components 134, one orientation
+// acceptance result 125, shared copy width 120, or shared inner index 127.
+// The independent deadline recovers the slot order in the traversal,
+// but the retained correction schedule still differs and the body grows.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -885,6 +891,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // both count field bindings 129, reserved volume name 129, named projection result 129.
 // NOT kept: the cluster array changes extent, and the projected slot changes the prologue.
 // The other forms leave the opening register exchange.
+// Shared capacity result with a loop break 125, with joined cluster address 139,
+// early camera key 118, camera base 125, common plane store 118, signed
+// successor 122, widened volume slot 125, paired group cells 125,
+// post-reservation camera key 125, and map miss first 132.
+// NOT kept: the 118 forms leave cluster creation inline and move the camera
+// key ahead of the count store or merge the separate plane stores.
+// The signed-successor form gains seven.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

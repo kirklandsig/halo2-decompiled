@@ -929,6 +929,11 @@ static inline long font_character_pixel(long alpha, long color)
 // 240 each. Typed helper parity, expanded alpha, both, or typed parity with
 // shared cases 265/265/265/276. NOT kept: dword parity and typed alpha shorten
 // the body, and the shared cases change the opening register allocation.
+// Conditional opacity increment, byte parity set, or selected parity 224/216/240.
+// Unsigned or signed parity remainder 240/187. Descending packed bit offset
+// with byte parity 163, wide parity 181, or short offset and wide parity 226.
+// Parity still narrows in the opening packed stores, and the two-byte
+// literal assembly and EBX run are unresolved.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
