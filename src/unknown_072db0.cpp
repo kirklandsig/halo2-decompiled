@@ -1662,7 +1662,8 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     if (arg_0) local_0 = arg_0;
     return local_0;
 }
-// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
+// score 703 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
 // variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
@@ -2098,6 +2099,8 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Disconnected group cursor with indexed players, ordered bound/nonempty loop/count 702/702/718.
 // With counted players 702/702/718; ordered/equality group bound with a player end 738/738.
 // NOT kept: the one-point gains leave the exit span and width unchanged.
+// Offline-first arm/return using direct status 703/703, shared availability 810/810, one task index 703/703,
+// conditional task status 812/812. The shared and conditional forms change the opening schedule and raise the score.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

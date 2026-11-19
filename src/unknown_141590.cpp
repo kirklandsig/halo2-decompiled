@@ -988,7 +988,8 @@ void function_143250(
 	}
 }
 
-// score 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
+// score 939 (was 1333): Frame 0x2fc versus retail 0x300. The scalar homes and coefficient 25/28 schedules still differ.
+// Previous 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
 // frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
 // matrix entries have retail's value tree; band three's entries 8, 25 and 28 and the stack homes (140 of 216 stores) differ.
 // g1A walk (symbolic): retail 0x143600-0x146012 executed as an expression DAG (SSE/x87, f32/f64 and (real) points, association and
@@ -1413,6 +1414,10 @@ void function_143250(
 // 1566; named entry-27 weighted product 939; const weighted products 939;
 // two-step weighted-component consumers and weighted cubic consumers 939/939.
 // The dedicated weighted product homes and the extra frame word still differ.
+// Third-band shared weighted mixed/first cube/axial component/axial pair/axial square/second cube products
+// 1517/1477/1357/939/1314/1554; both cubes 1589; all independent factors 1629.
+// NOT kept: the mixed product and the two individual cube forms recover frame 0x300 with displaced
+// spill homes and higher scores.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
