@@ -533,6 +533,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax G (11-19): no new form, no lower score (116): what is left is the velocity copy's colouring (i in ECX where
+// retail holds it in EAX, so both loads and the first store differ) and the entry magnitude's SSE order (the 1.0 in xmm2
+// against retail's xmm3, and the first addss after the fsqrt); the entry magnitude written out flat measures 123, the
+// two-term nested form 123, dot3f of the throttle vector 281 and the velocity copy x first 120, so the body stands.
 // score 116 (was 116): earlier 218 before the reversing test had retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
 // retail's; left: SSE register colouring (the 1.0 constant in xmm2 against retail's xmm3, the normalized
 // forward/heading in other registers), the blend rows' k copy (the one extra instruction) and store order, the
@@ -1500,6 +1504,10 @@ long function_10f5f0(long object_index);
 // buffer's), retail's six bit results still go to a byte slot at esp+0x13 that this build drops, and the point sum is
 // still unrolled four times where retail counts down; the countdown form (597), the pointer-to-value form (579), the
 // bit test's own local (577) and the permuter's tries all score no lower.
+// MiniMax G (11-19): no new form, no lower score (561): the 12-byte frame difference is retail sharing one stack slot
+// between the six-real buffer and the linear velocity where this build keeps them apart, and retail's five dead
+// flag-result byte stores at [esp+0x13] are a byte flag here, which reproduces retail's shift form but measures 577;
+// sharing the slot would need a local moved in scope, so the body stands.
 // score 561 (was 561): earlier 562; frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // earlier at 561 (was 562). Frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // stores), sum-loop unrolling, the flags348 write/read forms and scalar/SSE homes remain.
@@ -5574,6 +5582,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // every site, and it is rematerialised even from a local), the zero and the result in XMM2/XMM1 against this build's
 // XMM4/XMM5, and retail's per-site 1.0 against this build's hoisted constant; a definition local for all thirty-four
 // sites (999), the same as a const local (999) and the seven-site form (1027) all score no lower.
+// MiniMax G (11-19): no new form, no lower score (749): the first difference is the entry's zero and result SSE
+// allocation (this build zeroes xmm4 and takes the 1.0 into xmm5 before the frame is set up where retail zeroes xmm2 and
+// copies it with movaps), then the push order and the case-dispatch chain; the frame and the length agree, so it stands.
 // score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).
 // MiniMax S (11-10): no new form, no lower score (749); the definition pointer is re-derived from the tag table at each use while retail keeps one copy in a callee-saved register (used at seven of its sites) and re-derives it at nine others; the zero and the result take different SSE registers and the 1.0 is loaded once per site here.
 // MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.

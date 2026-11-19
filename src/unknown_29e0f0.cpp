@@ -3,6 +3,7 @@
 #include "unknown_2626b0.h"
 #include "unknown_20fe20.h"
 #include "slot_handler.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <string.h>
 // @flags /O2 /Ob1 /arch:SSE /Gr
@@ -686,6 +687,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // control 391): the per-pass found flag declared once at function scope and cleared at each pass 391 (same homes); the
 // result flag declared ahead of the selected indexes 393; the selected indexes declared in reverse 391; the pass loop's
 // direction declared after its start index 366 (9 rows short); the group bitmap cleared by a chained assignment 391.
+// MiniMax G (11-19): the group bitmap cleared with memset and the group index tested and set through the shared bit vector helpers (the index kept as a long): 382 -> 367.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
@@ -712,13 +714,15 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                     s_29e0f1 *local_11 = local_6->field_70;
                     point3f marker_position;
                     function_210850((s_type_c3b527 const *)local_8, &marker_position);
-                    dword visited_groups[2] = {0, 0};
+                    dword visited_groups[2];
+                    memset(visited_groups, 0, sizeof(visited_groups));
                     for (short local_14 = 0; local_14 < local_10->field_80; ++local_14)
                     {
-                        short local_15;
+                        long local_15;
+                        if (bit_vector_test(visited_groups, local_10->field_84[local_14].field_0)) continue;
                         local_15 = local_10->field_84[local_14].field_0;
-                        if ((visited_groups[local_15 >> 5] & (1 << (local_15 & 31))) || local_15 < 0 || local_15 >= local_11->field_40) continue;
-                        visited_groups[local_15 >> 5] |= 1 << (local_15 & 31);
+                        if (local_15 < 0 || local_15 >= local_11->field_40) continue;
+                        bit_vector_set(visited_groups, local_15, true);
                         dword visited_points[1] = {0};
                         short local_17 = local_10->field_84[local_14].field_2;
                         short local_18 = local_17;
