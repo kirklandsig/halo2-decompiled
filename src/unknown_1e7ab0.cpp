@@ -551,6 +551,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // caller 165 (2312 bytes): the getter is then retail's byte for byte, and the 4 extra bytes are case 4's child test (`test cl, 1`
 // against retail's `test al, 1`, one byte) moving the jump table's alignment pad (three bytes); what is left there is case 4's
 // parent and definition registers and per-case scratch rotations. BLOCKED-BY 0xd0590 stands.
+// m3 lane 15 r108 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all matched each time; control 117): the entry lookup
+// ahead of the player index 585 (first difference +0x3); case 4's parent seat flags read through `seats[seat]` without
+// the seat pointer 456; the definition pointer folded into the seats expression 117 (same code); the seat index typed
+// long 199; the parent re-read from the unit for the iterator call 117 (same code). Case 4's parent stays in ECX
+// because retail's call sets ECX before EDX (0xd0590's declared order), so BLOCKED-BY 0xd0590 stands.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
