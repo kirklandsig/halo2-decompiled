@@ -737,6 +737,10 @@ void function_3dd10(long object_index, bool force);
 // unsigned late variant byte 97.
 // Kept the late unsigned byte with signed decoding at the index calculation. The byte compare gates the
 // lookup and the index sign-extends at use as in retail. The 0x54 frame and 1034-byte length agree.
+// Last ordinal, eligibility mask or weight initialized at scan entry 199/191/286;
+// mask and weight 275; all three 312; all three with signed bound 562.
+// Last ordinal gates selection 232; one choice-name read 106.
+// NOT kept: regressions in the scan and saved-register layout.
 // M3 lane 13 r113 (fast with 0x1318d0, 0x131a00, 0x3dd10, control 97): the first scan as a do-while like the second 230
 // (995 bytes); a redundant `if (0 < count)` around the outer loop 77 (not kept, steering: the object then takes EDI and
 // the bank/entry web ESI as retail, but the index's zero store sinks after the guard's jle, where retail stores it
@@ -756,6 +760,25 @@ void function_3dd10(long object_index, bool force);
 // fields 97; native tint block, position and variant fields 97; complete native tint object with shared datum
 // lookup 97. All eight previews retain 1034 bytes and the same initial register mismatch. The native tag-
 // index form adds spill differences. Opening executable source restored.
+// M3 lane 8 r191 (fast with 0x1318d0/0x131a00/0x3dd10, control 97; the guard diagnostic 77 re-measured): the first scan
+// bounded by `entry->count` read in its condition 647 (1316 B, unrolled), with the guard 645; `inline` on both HSV
+// converter definitions 224 (they inline and three matched callers are lost), on the rgb-to-hsv one 237, on the
+// hsv-to-rgb one 143. Compile-only (object in EDI as retail there, not exact): the signed scan still unrolls with the
+// weight as an aggregate member, through an inline scan helper writing weight, mask and last through pointers or
+// returning the weight, as a while, with a dword index, with `continue`, or with the choice pointer stepped. Body unchanged.
+// M3 lane 9 r144 (fast with 0x1318d0/0x131a00/0x3dd10, control 97): a one-object screen (this file with the two
+// callee files, frame 0x54 as retail) unrolls the signed first scan by four with or without /GL, so the unroll is
+// not an LTCG effect; it stays rolled only with a volatile weight, last, eligible or variant (each of the four is
+// memory-resident in retail's loop); taking their addresses (passed to an opaque call), a named eligibility bool,
+// a named bit, nested or ternary eligibility tests, indexed field reads, byte-offset element access, the weight
+// added first, `weight = weight + w` and a weight test all still unroll. Real trials: the scan locals declared
+// ahead of the count test 315 (999 bytes); the first scan as a `for` with `!=` 97 (same code); a signed eligible
+// mask 97 (same code); weight/eligible/last/variant declaration order 97; target before the running sum 100.
+// Round 127 (m3 lane 10, fast with 0x131c20's file listed): the found block as a call to the existing 0x131c20
+// (result, lower, upper, 1, blend) stays a call, 398 (838 bytes); with `inline` on 0x131c20's definition still a call
+// 404 (0xd1a30 149, 0x131d60 52, 0xc0c80 319 lost); with a forceinline declaration of it in this file still a call 398;
+// the choices read through an inline element accessor with a signed `<` first scan 638 (unrolled, 1309 bytes); the
+// three clamps through a by-reference pin helper 197.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
@@ -885,7 +908,10 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 
-// score 171 (was 91): the flag mask and success share BL, and the input spills early.
+// score 130 (was 171): the 0x24 frame, immediate flag test and advancing EBX output agree.
+// The input takes EDI and spills before the count guard.
+// Earlier score 171 (was 91): retail saves EBX after the flag test and spills the input after the count test.
+// the flag mask and success share BL, and the input spills early.
 // The earlier allocation was different.
 // retail keeps the destination pointer in EBX and the source pointer only in its stack
 // retail saves EBX after the flag test and spills the input after the count test.
@@ -1088,6 +1114,15 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // destination-only walk with relative source 184, explicit byte bank distance 156, indexed from the
 // object block offset 242, guarded block with output latch 191, named pair count and early copy 141.
 // NOT kept: the input spill and EBX output still differ.
+// Counted walk of separate bank cursors 130, Counted walk of separate bank cursors and input advanced at copy
+// 156, Separate cursors bounded by the input end 135, Separate cursors bounded by the input end and input
+// advanced at copy 178, Separate cursors bounded by the output end 177, Separate cursors bounded by the output
+// end and input advanced at copy 175, Separate bank cursors with remaining count 130, Separate bank cursors with
+// remaining count and input advanced at copy 156. The separate counted bank cursors recover the immediate flag
+// test and delay the EBX save until after it. Both cursors advance at the loop end as retail does. Plain check
+// confirms 130 at 582 bytes with frame 0x24. NOT kept: Pointer-end tests change the signed count guard, the input
+// advance at copy in the counted form shortens the body past retail, and the remaining-count form ties the
+// counted walk.
 // Typed object bank size and displacement 171, definition reference 171, tint block reference 167,
 // empty-bank return 179, named flag admission 171, unsigned paired-colour quotient 130,
 // input cursor in the loop initializer 173, object header reference 171. NOT kept: the block
@@ -1108,10 +1143,10 @@ bool __stdcall function_be8e0(long object_index)
     {
         color3f *base = (color3f *)(object + *(short *)(object + 0x126));
         long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
+        color3f *current = base + count;
         for (long i = 0; i < count; i++)
         {
             s_colour_choices_ab *entry = &((s_colour_choices_ab *)definition->tint_sets.address)[i];
-            color3f *current = base + count;
             *current = *base;
             for (long j = 0; j < entry->function_count; ++j)
             {
@@ -1137,6 +1172,7 @@ bool __stdcall function_be8e0(long object_index)
             current->blue = current->blue < 0.0f ? 0.0f : current->blue > 1.0f ? 1.0f : current->blue;
             result = true;
             base++;
+            current++;
         }
     }
     return result;

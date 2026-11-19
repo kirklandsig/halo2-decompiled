@@ -3617,6 +3617,17 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // acceleration copies 91/91/91/91/91; typed full-record assignment 132, aggregate
 // snapshot 250, typed sources with byte result 85 (396 bytes). NOT kept: best gains
 // six and merges the retail's three epilogues.
+// Shared matrix position 110; both axes by fields, ordinals or cursors
+// 105/105/105; rotation subrecord 91; axis value copies 163. Shared
+// position with fields or rotation subrecord 112/110. NOT kept: sharing
+// position reaches 396 bytes but grows the frame and changes the caller,
+// and the other forms leave the seat-stride and camera-base differences.
+// Seat stride still precedes the parent lookup and the scalar camera copies still fold in the source
+// offsets. Separate table and signed ordinal used at each seated read 140; seat reference 91;
+// position pointer before matrix copy 91; unit receiver before matrix copy 91; complete unattached
+// record only 84; both record copies through destination references 132; success before camera stores
+// on the scalar-copy body 91; unattached arm first on the scalar-copy body 91. NOT kept: the 84 form
+// reaches 396 bytes and gains seven, with the seated copy and early stride still different.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -5518,6 +5529,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // projection stored separately from its vertical component 186; first cross updates a copy of basis up in place
 // 217; first cross updates a copy of basis forward in place 238.
 // NOT kept: scalar and planar projections reach 767 bytes at higher scores. The basis scope and forward workspace tie. The first cross still loads up.i early and the x87 forward scale is consumed in the last row.
+// First cross still loads up.i early, and the x87 forward scale does not survive the last row.
+// Complete reconstructed vector with separate stores or initialization 213/213; row-local transverse
+// sums 169; complete transverse vector 272; scaled-vector addition for forward, left or both
+// 272/276/276; staged forward vector 275. NOT kept: the per-row sums tie, and every full-vector stage
+// grows the body.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6921,6 +6937,13 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // NOT kept: the word slot reaches 1052 bytes at the same score. The other forms tie or regress. The early
 // weapon/mode register assignment and readiness stores still differ.
 // MiniMax R (11-17): no new form, no lower score (298): the prologue differs - this build takes the first index in ebx before the frame is set up where retail takes it in edi from the stack - and the state pointer's index is taken through ebx where retail keeps it in ebp.
+// Round 433. Weapon and mode register allocation, dead flag stores and the shared post-request test still differ.
+// mode two fallthrough 305; validation produces readiness 291; hand after readiness 292; setup request workspace
+// 298; readiness defined by mode two and other paths 304; secondary compatibility produces readiness 298; shared
+// setup readiness before hand 331; mode setup cases 298.
+// NOT kept: the validation result reaches retail length at 291, a seven-point gain below the keep threshold.
+// Moving hand selection reaches the length at 292 with a smaller 0x4c frame. The common readiness form shortens
+// the body by 44 bytes.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7230,6 +7253,12 @@ done:
 // in-place facing 264, and wide side selection 240. The timer's signed field with two stores
 // 187. Direct store and the combined turn guard 187/187. Kept the direct signed timer store and clamp.
 // Earlier counts were 250, 254.
+// Round 433. The scale still loads x before the divide. The dead flag stores, separate weapon lookups and state
+// slot still differ.
+// normalizer single length result 187; normalizer result first 187; normalizer indexed components 187; normalizer
+// component loop 187; combined side override 187; default value first 227; fixed state receiver 187; fixed weapon
+// results 187.
+// NOT kept: seven forms tie at the original extent, and handling the default value first regresses.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8090,6 +8119,12 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // loop's holder read, shared with the inlined 0xcbd50, and the inlined 0xe6fe0 read keep [off + data + 8] for the
 // spilled offset); that loop holder as unit_at_masked_index, header pointer plus index, object_get 2 each, through
 // `unit` 193. The 2 form rests on the match-only forms above, so the body stands.
+// Round 433. The animation query result widths, zoom lookup reload and second-hand address operands still differ.
+// joined completion long 188; joined completion bool 188; joined completion byte 188; independent byte completion
+// results 222; independent completion bit tests 224; unsigned countdown tests 226; shared requested zoom level
+// 258; held query with countdown admission 281.
+// NOT kept: joined results score 188 but add a direction retest and lose the retail prologue. Separate byte
+// results recover both AL tests at 222, a two-point gain from one-use locals.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -9490,6 +9525,11 @@ struct s_unit_melee_collision
 // column count 484; fixed-height fan with a bottom-tested row count 484; selected trace type and distance
 // alongside the selected index 542; one parent index for collision admission and resolution 481.
 // NOT kept: one parent index gains three at the original extent and leaves the 0x180 frame. The other forms tie or regress.
+// Frame 0x180 versus 0x17c, with the unit still spilled across the fan. Selected-type name 484;
+// losing-collision guard 494; direct material word assignments 484; defaults before weapon lookup
+// 476; read-only tags 484; conditional damage pair 519; staged fan sum 486; separate fan ordinals and
+// reversed trace workspace order 484. NOT kept: the 476 form shortens to 2215 bytes with frame 0x180.
+// The conditional pair recovers the 0x17c frame at 2233 bytes but increases the score.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

@@ -858,6 +858,10 @@ struct s_item_collision_bsp
 // Spin k finished in each branch, carried to the join, published with angular velocity, or finished with a
 // shared factor. Real factors 233/233/233/197; double factors 238/250/250/238. NOT kept: the shared real
 // factor recovers spin, axis and speed homes and the x87 scale at 197, but raises the score overall.
+// Round 640: contact point accumulates normal displacement 199; updates a marker copy 267;
+// shared scale and point setter 199; indexed projection 190; two coordinate passes 492;
+// complete point initializer 190; named displacement components 194; scaled vector plus
+// indexed marker sum 199. Transformed plane and contact point homes still differ.
 // Marker X and Z kept for both calculations, Z declared first 190.
 // Marker X and Z kept for both calculations, X declared first 190.
 // Marker X Y and Z captured with the distance terms' Z Y X order 190.
@@ -869,6 +873,12 @@ struct s_item_collision_bsp
 // NOT kept: six marker coordinate forms tie at 190. The complete point copy grows the body
 // and the split distance expression loses two points. The transformed normal and contact
 // position still use different XMM homes, and the spin scale still spills.
+// Axis-wide field passes 194, Up scale helper with axis-wide field additions 194, Left and forward multiply-add
+// helpers 194, Shared scale and multiply-add helpers for all axes 194, Indexed normal with a complete component
+// expression 196, Indexed normal with a field accumulator 192, Separate scaled left vector before the first sum
+// 248, Separate scaled forward vector before the final sum 194. NOT kept: The forward-vector form reaches 1365
+// bytes at 194. The indexed field accumulator scores 192 at 1366 bytes. The transformed-plane and spin homes
+// still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1281,6 +1291,8 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// score 824 (was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
+// stack homes still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so
 // forty bytes of frame are unaccounted for and every stack home sits further out than retail's; the entry flags are
 // still held in registers where retail keeps them in stack bytes, and the forms the earlier rounds tried all grow
@@ -1319,7 +1331,7 @@ struct s_item_flags_view_10b850
 // in both, so the forty spare bytes lie below the homes and the rest of the gap is in the block bodies, which this round
 // did not move.
 // MiniMax E (11-16): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c, retail keeps the two entry flags in stack bytes where this build holds them in registers, and the item walk still differs.
-// score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
+// Earlier score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
 // `update_position = fixed` skipped the position update after a bounce when the bit was clear (retail 0x10c136
@@ -1605,6 +1617,20 @@ struct s_item_flags_view_10b850
 // 829/944/949/944; component ray and direct cross with real absolute value 923. NOT kept: the real absolute
 // value recovers the 0x12c frame at 923 and 4029 bytes. The entry flags and later code still differ, and
 // all forms raise the score.
+// Lateral absolute value with ordered conditional 853, Lateral absolute value with unary negation 859, Named
+// lateral distance from conditional 853, Lateral distance adjusted after initialization 854, Lateral distance
+// selected by full branch 853, Float result of the absolute-value call 824, Float absolute-value function 849,
+// Signed lateral interval 856. NOT kept: The ordered absolute value preserves 4096 bytes and cuts the frame to
+// 0x150 at score 853. A float result from the original call ties 824 without changing the frame. The opening body
+// is restored.
+// Collision origin pointer used through integration and fallback 824, Collision origin reference used through
+// integration and fallback 824, Linear-velocity field pointer shared across the carrier query 824, Linear-
+// velocity field reference shared across the carrier query 824, Collision origin and linear-velocity field
+// pointers 904, Collision origin and linear-velocity field references 904, Collision origin bound for the
+// complete motion phase 868, Linear-velocity pointer scoped through the two carrier samples 824, Point-difference
+// helper on the original collision origin 824, Point-difference helper on the shared collision origin 823. NOT
+// kept: Paired fields cut the frame to 0x148 but score 904 at 4051 bytes. The ray helper with the shared origin
+// saves one difference, below the retention threshold. The opening body is restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

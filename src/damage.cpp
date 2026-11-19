@@ -2987,9 +2987,16 @@ struct s_unit_event
 // the region argument's dead home), ours holds object_index in ESI and leaves EDI free, so our constant 1 goes to EDI
 // from the 0x20000 test on (`push edi`, `or [x + 0x30], edi`) where retail uses immediates there and ESI = 1 only from
 // the vehicle block to the state compare.
+// One type byte per drop/effect 420; one shifted type mask 421; shared vehicle datum 420;
+// one datum per drop/effect 479; unsigned 16-bit slot for datum reads 549; shared weapon-slot
+// lookup 420; one attachment index per notification 420; one flags read per drop 420.
+// NOT kept: no gain and the region/permutation register assignments still differ.
 // Round 636: region and permutation receivers remain exchanged. Pool retained through drops 460, through
 // effects 460, through vehicle 481; retained from entry 451, from region update 513; pool and 16-bit
 // slot through drops and vehicle 555 or from entry 566; pool retained for both early notifications 420.
+// Round 640: region lvalue, permutation lvalue, both, or both read-only 420/420/420/420.
+// Region word mask/lvalue/shared setter 533/420/420. Typed seat label cursor and
+// index 419/420. NOT kept: the cursor gains one and the register assignments still differ.
 // Attachment index read once for each notification with a shared local 420.
 // Attachment observations using separate values 420.
 // Attachment observations using separate immutable values 420.
@@ -5297,7 +5304,11 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
+// score 178 (was 146): The section bound and primary mask exchange registers, and the bitmap zero precedes node-scan admission.
+// m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
 // score 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
+// Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
+// Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // the scan) gives 166 with retail's EAX/EDI section-loop registers; a one-use local is match-only, so not kept. With it
 // the first mask still extends before the count guard, and the late detached-mask zero, piece search and final lookups
 // still differ. Earlier: m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
@@ -5536,6 +5547,12 @@ struct s_damage_object_creation
 // same code (the address folds away once inlined); `~piece_nodes` named once for the update and the node mask 146 (same
 // code). Diagnostic: one to three dead initialised locals on the for/break lead 221/222 each, so the flip is not a
 // symbol-count phase. Every search with retail's for/break shape hands the mask a register (frame 0x13dc).
+// Scan-local primary mask and signed/unsigned bitmap: zero after capture 164/164,
+// at scan admission 217/217, separate zero after the lookup 217/217, or
+// combined with marking-loop initialization 217/217. Positive node count owns
+// marking and creation 171 with direct masks, 158 with the scan-local primary.
+// NOT kept: the 164 form clears the bitmap before the section-mask branch;
+// the 158 form moves the datum spill and adds a second node-count test.
 // Nullable bound, assigned bound and nullable while 178/183/178; scoped unsigned first mask 166 (one-use local, match-only: not kept);
 // mask shared through detachment 155; nullable bound/shared bit 221; shifted mask tests 180;
 // scoped damage record with first mask 166; first mask inside scan or with shared test bit 178/178;
@@ -5543,6 +5560,17 @@ struct s_damage_object_creation
 // NOT kept: sharing the first mask through detachment loses the retail EAX/EDI roles and word admission;
 // moving the bitmap zero on the scoped-mask form changes the frame allocation and grows to 811 bytes.
 // Plain confirmation of the scoped first mask changes only this function among 65 checked markers.
+// Round 431: word/signed-short shared section bit 223/142; first/second word mask intersection
+// 194/129; both intersections as words/dwords 205/202; local/entry-initialized section while scan 178/205.
+// NOT kept: signed bit sign-extends the shift and spills the count; second mask intersection hoists the
+// mask and tests a word. Retail reloads that mask inside the loop and tests the full-width shifted bit.
+// Shared dword/word test bit 178/223, shared dword/word store bit 220/156. Primary mask extraction
+// with separate/shared writes 208/188, secondary mask extraction 200/188. NOT kept: the 156 form
+// hoists the second mask and shares the two store shifts while retail reloads the second mask and
+// shifts separately. The count and detach bitmap homes still differ.
+// Scoped const damage record, immutable count, int scan, early/late bound names,
+// secondary-test continue and body increment 178 each. Both section decisions before the writes 200.
+// NOT kept: the decision locals move the datum-offset spill and spill the section count.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

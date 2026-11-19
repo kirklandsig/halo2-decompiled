@@ -800,6 +800,23 @@ struct s_physical_block_iterator
 // M421: Sufficient-pages take/refinement 262; exhaustive take/retention 253/262; nested eligibility 253;
 // first-candidate take with direct/shared eligibility 261/300; refined take with earlier-or-tied/equality result 270/270.
 // NOT kept: the complete admission results shift the prefix and do not recover the retail policy join.
+// M3 lane 1 r124 (fast with the file's six functions and 0x13d320, all MATCH each run). Lane 9 r109's 93 lead rebuilt (93,
+// 1213 B, aligned 43). LEAD 40 (1213 B, first difference +0x356, aligned 18, masked 13; the permuter's full-image baseline
+// also 40; patch build/r124/lead-0x13d370-40.patch; kept only with a match): on the 93 lead, the two insertion stages
+// tested through one `bool at_head = best.previous == NONE;` used by both. The deletion walk's scan then takes retail's
+// count EDI / bit EBX, and the insertion takes retail's result EDI / NONE EBX with the allocation test on an immediate
+// (a direct second `best.previous == NONE` test adds a NONE use that pulls the NONE register ahead of that test; the
+// single-stage insertion lets the head arm reuse ESI as the NONE value, 101). Left on 40: the walk's found path (retail
+// keeps best.offset in EDI for both overlap compares with a `mov edx, edi` copy and builds the datum in ECX, copied to
+// EBX at the call; ours re-reads best.offset and builds the datum in EBX) and a `sete dl; test dl, dl` from the bool where
+// retail branches on `cmp esi, ebx`. On 93 (each 93, the same code): the walk's block offset named, `best.offset + pages`
+// named, the allocation in its own local; one `entry->previous = NONE` ahead of the first test 102. On 40: the overlap
+// test best-first 108; `pages + best.offset` 40; `best.offset < end` second 40; through a by-value four-value helper 40,
+// a (block, start, end) helper 40; the datum index in a local 40; `long start = best.offset` 40; the block end named 40
+// (each the same code); the bool declared ahead of `blocks` 46, ahead of the allocation 39 (first difference +0xcc,
+// aligned 23); the bool used only by the second stage (first stage a direct test) 96 (1220 B), only by the first 93; a
+// flag cleared and set in the first stage's head arm 93 (the lead's code); the single-stage insertion with the
+// per-arm NONE stores 96; the permuter (30 tries) none below 40. On main: only the two-stage bool tail 212.
 // M3 lane 4 r217 (fast with the file and 0x13d320, all MATCH; control 201, aligned 87, masked 56). On main: both ages
 // `MAX(x, 0)` 209 (1228 B; retail clamps both on the unsigned clock, main's `MAX(0, x)` folds away), with case 0 as
 // `if (...) better = true;` 209 and as an if / else-if pair setting it 209 (same code: only a helper boundary gives retail's
@@ -823,6 +840,22 @@ struct s_physical_block_iterator
 // where retail loads it into EAX); on it the clock read once into a `dword now` used by both ages 209, the comparison
 // written `candidate->pages * best_age < best.pages * age` 209, the products as `age * best.pages > best_age *
 // candidate->pages` 209; both ages as unclamped `dword` locals with MAX() inside the products 373 (first difference +0x11).
+// M3 lane 3 r267 (fast with 0x13d320, MATCH throughout; base 201, aligned 118): case 0's flag written false and set by an
+// `if` 201 (same code, still jump-threaded); `bool better = !have_best;` with `if (better)` 222 (1228 B); the arms in the
+// order default, 1, 0 204, in the order 1, 0, default 201; case 0 as `better = candidate->time < best.time; if (equal
+// times) better = candidate->pages < best.pages;` 235 (1178 B) but aligned 93: case 0 is then not threaded and the three
+// arms sit in retail's place, so the layout follows from case 0's threading. Match-only chain (a one-caller helper, not
+// kept): case 0 through a file-local inline helper in 0x13d320's result style 237 (1178 B, aligned 90; case 0's `xor al,
+// al ... mov al, 1` and the arm layout are retail's), as one `return` expression 204, forceinline 204; plus the second
+// age as `MAX(physical->time - best.time, 0)` 115 (the default arm then byte for byte); plus the ring successor written
+// at both uses 113; plus the insertion with the successor in a local and the before block re-read through the pool 101
+// (1213 B); with the earlier 93 recipe's two-stage insertion 93. On the 115 form: the overlap sum as `pages +
+// best.offset` 115, the second overlap test reversed 115 (same code each). On 93: an inline overlap helper (block and
+// range, or four values) 93/93, the walk through plain locals 107, through the
+// file's 0x13d8b1 iterator 93 / 107 with plain locals, `dword result` 93, `best` declared first in the function or before
+// `candidates` 93, 1-8 dead locals 93; permuter on the 93 form (900 s, 94 tries) best 93. Left on 93: one EBX/EDI swap
+// over the whole tail (the walk's high-water mark and bit, the overlap test's data and sum registers, and the
+// insertion's result EDI / NONE EBX in retail, here the other way round with NONE also taking the `result != NONE` test).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

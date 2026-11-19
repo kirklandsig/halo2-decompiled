@@ -83,6 +83,13 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
 // separate byte rather than the dead argument slot.
 // point bitmap, endpoint homes and x87 scheduling differ.
+// M3 lane 11 r123 (fast with 0x29e730/0x29de20, both MATCH): the length helper through the existing vector3d_from_points3d
+// and length_sq3f 382 (same count, one reload moves); the squared helper the same way 386; the output written to
+// &arg_4->field_30[count] (no output pointer) 387 (aligned 403 -> 385); with the group record pointer named before the
+// loop 388; with a separate output cursor as well (retail's output loop: start compared with the original selected point)
+// 382 (aligned 378, register-masked 174 -> 146; the selected point's home moves from +0xc to +0x20, retail +0x28); that
+// with the selected endpoint as a short 390. The round-64 recipe (m3 lane 6 r194 copy) re-measures 155; a permuter run on
+// it (76 tries in 912 s) found only 154 through constant temporaries and a volatile pointer, not usable.
 // MiniMax E (11-17): no form kept; the score is unchanged at 382. Re-measured the 11-15 forms (the selected endpoint as
 // a short 383, the candidate point as a short 456, both together 441) and found that the selected point and the selected
 // endpoint keep their homes whichever order they are declared in: the point index stays at +0x4 and the endpoint at +0x14
@@ -658,6 +665,13 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // flag set first in the success block 152 (stored from AL but first, not last); the candidate sum with the first distance's
 // operands swapped 158; written `local_31 + second + first` 164; accumulated in three statements 426 (1612 B); both
 // distances' operands swapped 164.
+// Route-table reference, record-array reference, read-only record base, candidate reference,
+// candidate state local, and separate sign guard 382 each. Record-array reference or route-table
+// reference with a short selected terminal 383 each. The selected default slots stay displaced.
+// Group-end publication of group, point or anchor 397/433/422; group and point
+// 414; point and anchor 409; all three indexes 421; group-local best distance
+// 453; group-local distance and all three indexes 427. NOT kept: each regresses;
+// selected defaults keep different homes.
 // M3 lane 16 r138 (fast with 0x29e730; control 382, aligned 268). Round 64's recipe (as saved by m3 lane 7 r146) re-applied to
 // today's file: 155 at 1596 B, aligned 20 (match-only, not kept); its one structural cause is unchanged: retail keeps the
 // table parameter in ESI from the range test to the 0x29de20 call and loads the target point into EDX for the pair
@@ -672,6 +686,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // First or current link reference and signed table-search bound 382 each.
 // Promoted group with a retained link array 453 at 1560 bytes.
 // The selected-index homes and link-list and group-table registers still differ.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, within 7 rows of the fast build; aligned rows against retail,
+// control 391): the per-pass found flag declared once at function scope and cleared at each pass 391 (same homes); the
+// result flag declared ahead of the selected indexes 393; the selected indexes declared in reverse 391; the pass loop's
+// direction declared after its start index 366 (9 rows short); the group bitmap cleared by a chained assignment 391.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
