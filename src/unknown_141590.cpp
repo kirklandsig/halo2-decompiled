@@ -98,26 +98,29 @@ bool function_143120(vector3f const *forward, vector3f const *left, vector3f con
 quaternionf *g_4687cc;
 extern transform4x3f *g_4687d0;
 
-/* rotates a vector by a unit quaternion */
+/* rotates a vector by a unit quaternion: the vector form of quaternion_rotate_point
+   (src/unknown_11cb00.cpp), written with the same terms in the same order */
 static inline void quaternion_transform_vector(
 	quaternionf const *q,
 	vector3f const *v,
 	vector3f *out)
 {
-	real dot = (q->i * v->i + q->j * v->j + q->k * v->k) * 2.f;
 	real w2 = q->w * 2.f;
-	real s = q->w * q->w * 2.f - 1.f;
-	vector3f cross;
+	real m = q->w * q->w * 2.f - 1.f;
+	real d = (q->j * v->j + v->i * q->i + v->k * q->k) * 2.f;
+	real cx = q->j * v->k - v->j * q->k;
+	real cy = v->i * q->k - q->i * v->k;
+	real cz = q->i * v->j - q->j * v->i;
 
-	cross.i = q->j * v->k - q->k * v->j;
-	cross.j = q->k * v->i - q->i * v->k;
-	cross.k = q->i * v->j - q->j * v->i;
-	out->i = v->i * s + q->i * dot + cross.i * w2;
-	out->j = v->j * s + q->j * dot + cross.j * w2;
-	out->k = v->k * s + q->k * dot + cross.k * w2;
+	out->i = cx * w2 + v->i * m + q->i * d;
+	out->j = q->j * d + cy * w2 + m * v->j;
+	out->k = v->k * m + cz * w2 + d * q->k;
 }
 
 /* the rotation that takes one unit vector to another */
+// score 201 (was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Earlier: Frame 0x1c versus 0x24 and
+// quaternion/cross spill overlap remain.
 // MiniMax I (11-17): no new form, no lower score (205): re-measured the baseline; the first difference is still the
 // frame (ours 0x1c, retail's 0x24) and the rest follows from the stack offsets that move with it: retail keeps the
 // quaternion's sixteen bytes in the same absolute place as this build but spills the transform's terms into the
@@ -125,7 +128,6 @@ static inline void quaternion_transform_vector(
 // quaternion's own bytes; the three rows' term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up
 // rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and retail's second store of the
 // doubled scalar to a slot nothing reads are still not reproduced by any source form tried. The body stands.
-// score 205 (was 205): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier fast scores were 205 with the shared initial dot and 200 with the dot written out.
 // MiniMax E (11-17): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the permuter (39 tries) found no variant below the baseline.
 // Earlier status line (205, was 205; merged): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
@@ -451,6 +453,14 @@ static inline void quaternion_transform_vector(
 // as plain locals 267 (1297 B); the rotation declared after the half-angle pair 205 (same code); the identity copy as the first
 // statement 320 (1330 B). Diagnostics: s computed ahead of the copy (kept alive through a global store) 263 (1306 B); w2 and s
 // computed once ahead of the copy and passed to a pre-scaled transform helper 292 (1280 B, frame 0x10).
+// M3 lane 3 r265 (fast; base 205): the transform helper written with the matched quaternion_rotate_point's terms and
+// order (w2, m, d; the cross terms and rows as there) 202, with plain half-angle locals in place of the two-member
+// aggregate 201 (kept: frame 0x20, cosine half at +0x10, sine half in the matrix parameter's home and the first
+// transform's cross spills at +0x14/+0x1c as retail); plain halves on the old helper 267. On the 201 form, the helper's
+// scalars in the orders m, w2, d 247 (1317 B); m, d, w2 248; d, m, w2 250 (1317 B); d, w2, m 252; w2, d, m 203; the
+// halves declared at their computation 201 (same code, kept). Not kept: the helper taking the vector by value 417
+// (1443 B), the quaternion by value 428, both 554; the construction's cross product into a separate vector scaled into
+// the rotation 242 (1317 B, frame 0x1c); the aggregate's members swapped 205.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -458,7 +468,6 @@ void matrix4x3_rotation_between_vectors(
 	vector3f const *arg_bc44c6)
 {
 	quaternionf rotation;
-	struct { real cosine_half, sine_half; } state;
 	real dot = dot3f(arg_5f338b, arg_bc44c6);
 	real cosine = dot;
 
@@ -471,16 +480,16 @@ void matrix4x3_rotation_between_vectors(
 		cosine = 1.f;
 	}
 
-	state.cosine_half = (real)sqrt((cosine + 1.f) * 0.5f);
-	state.sine_half = (real)sqrt((1.f - cosine) * 0.5f);
-	real sine = state.sine_half * state.cosine_half * 2.f;
+	real cosine_half = (real)sqrt((cosine + 1.f) * 0.5f);
+	real sine_half = (real)sqrt((1.f - cosine) * 0.5f);
+	real sine = sine_half * cosine_half * 2.f;
 
 	if (sine != 0.f)
 	{
 		cross3f_staged(arg_5f338b, arg_bc44c6, (vector3f *)&rotation);
-		real scale = state.sine_half / sine;
+		real scale = sine_half / sine;
 		vector3f_scale((vector3f *)&rotation, scale, (vector3f *)&rotation);
-		rotation.w = state.cosine_half;
+		rotation.w = cosine_half;
 	}
 	else if (cosine < 0.f)
 	{

@@ -794,6 +794,11 @@ void __stdcall function_1160c0(real dt)
 // conditional segment addresses against the interior bound 304, preceding-ordinal loop bound 294,
 // shared prediction add 204, predicted z after the node update 157.
 // NOT kept: the retail-length forms still raise the score and leave the segment and rotation homes different.
+// M3 lane 3 r265 (fast with 0x116750, matched throughout; base 144): the segments base named at the loop top 145; the
+// segment bound as `s_chain_segment const &` 144; vertical, axis, the rotation and the predicted rows in their own `{}`
+// block 144; the segment count named at the loop top for the selection 144; the stiffness product written segment
+// first 144 (all four the same code). Retail's ECX/EDX roles run one step behind ours from the segments base on (base
+// EDX for our EDI, segment EDX for our ECX, the loop end's definition reload EDX for our ECX). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
