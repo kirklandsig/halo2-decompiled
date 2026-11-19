@@ -3975,6 +3975,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Round 180 (m3 lane 8, fast, base 9; all restored): the switch's default case setting maximum and both permissions with no
 // initialisers 1207 (4856 B); `register` on the shifted input word 9 (same code); mode zero's extra-texture test declared ahead
 // of the mode chain 761; both selectors typed byte with the shifted local kept 861 (4848 B), typed short 480 (4816 B).
+// M3 lane 8 r188 (fast, at 9): the exponent loop testing `(real)(1 << exponent) < inverse_span` 9 (same code); the loop
+// as `for (exponent = 0; ...; exponent++) ;` 883 (4928 B); the shifted input as `long input_bits = input << 24` 9 (same
+// code); `input` as `dword` 9 (same code); the input selector computed after the clear, next to its shift 976 (4840 B).
+// Left as before: retail copies the input to EAX and shifts it after the clear (ours shifts EBX in place before it),
+// and at both gain sites retail reloads the spilled inverse span into XMM3 before the 1.0f constant into XMM2. A
+// compile-only build of this file alone does not reproduce the shift (it lands after the clear there).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

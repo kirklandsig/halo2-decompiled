@@ -2121,6 +2121,13 @@ void function_195a40(void);
 // the options pointer named ahead of the stores with mode read after them 5. With it: the watcher read
 // once into a local for the call and the stores 18. Diagnostic: a probe taking only g_4cf771's address 4
 // (the read stays behind that store, g_4cf772's sinks below it), so both flags must be address-taken.
+// M3 lane 8 r188 (fast; control 3): a scan of retail for a zeroing run over 0x4cf770..0x4cf787 (an inlined memset of a
+// globals block would leave only direct stores) finds none: the init at 0x67e30 stores other values, so the address-taken
+// cause stays dropped code (BLOCKED). With the barrier between the stores and the mode read: the options pointer named
+// before the stores with the distribution declared first 14; the pointer named and the mode read at both compares 23;
+// the pointer as `s_game_options_view const *` 10 (prologue exact; the 0x68c00 call loads the world into EAX and the
+// 0x4cf784 argument early, as round 132's named pointer); main's body with the distribution in an if/else 33 (129 B);
+// the mode test on `g_4e6948->mode` at both compares 23.
 // @retail 0x67ee0
 void function_67ee0(void)
 {
