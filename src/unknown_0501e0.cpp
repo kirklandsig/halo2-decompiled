@@ -611,6 +611,17 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // 221, `0.f > k` sign tests 221 (all the same code). Diagnostic: 1..7 dead initialised locals 222/222/223/223/221/221/221.
 // Point-to-view indexed/aggregate/shared-helper/copied-scale displacement, first endpoint first 335/333/315/331;
 // second endpoint first 328/327/308/330. All shorten away from retail; original helper and body restored.
+// In-place transform pointer, direct scaled default 221.
+// In-place transform reference, direct scaled default 221.
+// In-place transform pointer, scaled default used by the scale branch 221.
+// In-place transform reference, scaled default used by the scale branch 221.
+// In-place transform pointer, separate raw input retained for the scale branch 355.
+// In-place transform reference, separate raw input retained for the scale branch 355.
+// In-place transform pointer, scale result chosen before the raw default store 310.
+// In-place transform reference, scale result chosen before the raw default store 310.
+// NOT kept: the pointer and reference forms tie with the default copy and in-place scale.
+// A separate raw snapshot or branch-owned copy raises the score and grows past retail length.
+// The original 0x20 frame, raw displacement homes and coefficient schedule remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

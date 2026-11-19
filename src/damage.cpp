@@ -2990,6 +2990,17 @@ struct s_unit_event
 // Round 636: region and permutation receivers remain exchanged. Pool retained through drops 460, through
 // effects 460, through vehicle 481; retained from entry 451, from region update 513; pool and 16-bit
 // slot through drops and vehicle 555 or from entry 566; pool retained for both early notifications 420.
+// Attachment index read once for each notification with a shared local 420.
+// Attachment observations using separate values 420.
+// Attachment observations using separate immutable values 420.
+// Attachment observations using references to each attachment field 494.
+// Attachment observations using separate read-only object pointers 416.
+// Attachment observations using separate read-only object references 416.
+// Loop over the two notification bits with a separate read for each guard and call 792.
+// Loop over the two notification bits with one attachment index per iteration 792.
+// NOT kept: the separate object pointers and references gain four points at 1868 bytes, below
+// the eight-point threshold. Both put the second notification's pool and pointer loads in retail's
+// order, but the region index and permutation receiver still use exchanged registers.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
