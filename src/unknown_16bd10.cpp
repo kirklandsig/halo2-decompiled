@@ -1274,6 +1274,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `s_camera_point_state const &` for the case-2 block 395 (1700 bytes); the field-of-view's `active = false` before
 // the default field-of-view read 126 (same code); the matrix position through a `vector3f *` local for plane.d and
 // the scaled add 395 [106]. Body unchanged.
+// Direct squared-length condition, field-of-view fallback arm, mutable target through blend,
+// ordered fraction clamp, staged angle accumulation, named angular delta, branch-local command
+// field stores, and a role-named projection scale: 126/141/390/126/126/395/154/126.
+// NOT kept: The direction-k preload and length/zero register split remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

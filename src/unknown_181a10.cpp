@@ -1039,6 +1039,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // data member: four at 238. Each with the short material output beside the input
 // snapshots reaches 230 and frame 0x44. NOT kept: the declaration moves the first
 // node out of its retail slot and does not recover the second-node and origin reuse.
+// Classifier outside result from successive tests, positive inline-index result, upper test on
+// the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
+// origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.
+// NOT kept: The frame and second-node home still differ, as does the classifier data reload sequence.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

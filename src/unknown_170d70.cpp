@@ -1158,6 +1158,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Ratio computed before and stored after the capture 349. Shared forward address through both rotations 365.
 // NOT kept: the one-point gains leave unity in XMM3. Split captures and the shared forward address
 // change the matched initializer. The opening body is restored.
+// Sine j/k before cosine and i after; double i sine intermediate; descriptive trig names
+// Axis reference, matrix output reference, immutable original forward, symmetric matrix
+// with signed corrections, and the builder returning its output pointer: 370/364/346/346/346/346/395/346.
+// NOT kept: Two first-axis squares still spill across the half-angle tangent and unity starts in XMM3.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

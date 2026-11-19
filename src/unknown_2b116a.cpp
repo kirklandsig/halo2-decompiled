@@ -5847,6 +5847,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // membership, feedback/offer, cancellation/removal, and the final membership phase
 // 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
 // NOT kept: these forms shorten the body and move the first difference before the friend query.
+// Session-presence name, player/change names, selection/request names, host/pending names,
+// addressed byte declarations after the dwords, pending false default, invalid-selection
+// guard with common completion, and immutable mute decisions: 89/89/89/89/89/353/89/89.
+// NOT kept: The session output and later membership results still use different byte slots.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

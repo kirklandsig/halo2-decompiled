@@ -698,6 +698,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `&choices[choice_count++]` 972 (3287 B: the pointer becomes an induction variable), that with the stores in retail's order
 // (tag, source, decibels, cluster) and the three 1.0f defaults as statements 972; on main's body the four stores in retail's
 // order 846 (code changes, score ties).
+// Accepted ordinal captured at increment, after the header, or from the incremented count;
+// post-increment choice reference; full-width choice count with captured ordinal; full-width counts
+// with header increment; target count as conversion ordinal; target count published after conversion: 932/932/950/967/954/941/914/951.
+// NOT kept: The entry zero, accepted count register and the separate count and buffer homes remain displaced.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
