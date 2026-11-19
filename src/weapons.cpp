@@ -2973,6 +2973,11 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // two pointers spilled, and retail's switch is a comparison tree whose root branches jle to the less-or-equal
 // side where this build's branches jg and tests the two activity names before the switch; the single
 // 27-case switch with retail's pivots measures 412.
+// MiniMax A (11-19): score 389 (was 389): no new form, no lower score; the body stands as the earlier rounds
+// left it, with retail opening on one four-byte slot and taking the table entry into EBP where this build
+// reserves eight bytes and keeps the weapon index in EBP with two pointers spilled, and with the two activity
+// names tested before the switch where retail has them as cases of a tree whose root branches jle to the
+// less-or-equal side.
 // score 389 (was 389): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
 // tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
 // all 27 selectors, every field offset (0x180/0x184/0x18c/0x175/0x16c/0x16e/0x17e/0x248, barrels 0x1a4+0x34*i,
@@ -3351,6 +3356,11 @@ struct s_ammo_conversion_entry
 // transfer's two accumulators as long 214, the goto body as it stands 206, `int` for the loop index 278 (785 bytes), the
 // transfer's accumulators as int 191 and the acquisition flag with retail's polarity 211; a 300 s permuter run found
 // nothing below 190, and the frame, the length and every other function in this file are unchanged.
+// MiniMax A (11-19): score 190 (was 190): no new form, no lower score; retail opens with `push ebp` and keeps the
+// definition pointer in EBP, without a frame pointer, where this build pushes esi and edi, keeps EBP as the frame
+// pointer and leaves the definition pointer in EDI, and retail reads the definition table after the weapon lookup
+// where this build reads it before, so the saved-register set and the destination home differ before the first
+// case body; the frame size and the length still agree.
 // score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
