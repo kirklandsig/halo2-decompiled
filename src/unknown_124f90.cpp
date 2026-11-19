@@ -4586,7 +4586,8 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
+// score 81 (F432: the second pending test through a one-use byte view of flags gives 50, a steering alias, match-only, reverted): with it, the second pending test reads a byte; pin scratch registers and controller compares differ.
+// Earlier at 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store. The countdown now uses byte operations.
 // Earlier at 122: the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
 // and sets the bit in memory, both pin sums trade EAX/EDX with the field_c store one slot late, and the synchronisation byte is
@@ -4858,6 +4859,11 @@ struct s_128ca0
 // Countdown variants using the packed byte: long 122, char 189, byte 147, sentinel-first long 122,
 // char default 189, bitfield read with a packed write 129, masked byte update 147, per-arm store 187.
 // Default before the effect gate: char 189, packed byte 81, existing bitfields with byte count 81.
+// Low-byte view: completion mask or bitfield 65/65; pending shift or bitfield 50/50; paired pending
+// and completion 94/94. Byte pending test with byte set 53 and with both set and clear 53.
+// NOT kept: pairing the narrow accesses or changing the pending writes shortens past retail.
+// Publication effect index 81; inactive publication arm first 212; countdown uses decoded count 91;
+// effect index and countdown reuse 91.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

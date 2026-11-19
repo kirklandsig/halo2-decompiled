@@ -599,6 +599,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // NOT kept: the reduced 910 and 913 forms retain the larger frame and shorten the body away from retail.
 // The type reference closes four frame bytes and regresses in score and length. Reduced control 926.
 // Opening body restored.
+// Chained limits together or in pairs, chained direction defaults, both combinations and
+// default assignments after declarations 920 each; settings-action mask with paired/original
+// defaults 918/918. NOT kept: two points below the retention threshold and frame 0x2cb4 persists.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
