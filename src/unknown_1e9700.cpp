@@ -754,6 +754,14 @@ struct s_object_damage_view
 // (!consider_team) continue; else {...}` 353 (same code each); `if (killer != NONE) { if (killer == reported_player)
 // damage_code = code; } else if (reported valid) {...}` (retail's arm order) 363 (1532 B); the team byte read again for
 // the 0x1df560 argument, killer_team kept for the end 358 (1552 B).
+// M3 lane 14 r119 (fast with 0x1e9ce0/0x1ea770/0x1ea880, all MATCH each time; control 353): the assist stores reading
+// the record's player index again (retail's `mov edx, [ebx]` at each store) 392 (1564 B, the frame moves: first
+// difference +0x8); with the related player re-read for its store 392; retail's arm order (`if (killer != NONE) {...}
+// else if (reported valid)`, re-measured 363, 1532 B) with the assist re-reads 377 (1548 B); retail's arm order with the
+// team byte passed to 0x1df560 at the call 354 (1548 B); all four together 393 (1564 B). Note for later rounds: the
+// related-unit block loads the object table's data pointer before the 0xbaf80 call into ESI, where retail loads it
+// after the call into EDX (0xbaf80 only reads memory; matched callers 0xbba20/0x1c35f0 keep the pointer across it,
+// 0x138ab0 reloads it after).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

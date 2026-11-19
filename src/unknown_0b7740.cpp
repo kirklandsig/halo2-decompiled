@@ -1150,6 +1150,14 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // propagates every one of these copies back to the parameter, so result and the parameter stay one value in ESI). Re-measured
 // the 0xbfe20 clear 262 (813 B: ours keeps `definition` in EAX across the mask copy, retail stores it and reloads it from
 // the slot it later gives the render-node count). Body unchanged.
+// M3 lane 14 r119 (fast with 0xbdb60/0xbfe60, both MATCH each time; control 240, aligned 182 in the reduced image):
+// `result` as a non-const pointer cast from the parameter 240 (same code); the sample arm's three assignments with
+// orientations last and the periodic arm's with orientations first 244; matrices and final_matrices set by one chained
+// assignment in each arm 240 (same code); the model index read from the definition at both uses (no local) 240 (same
+// code); final_matrices declared at the top and `result` initialised from it 240 (aligned 146: both homes are then
+// stored at entry, retail stores the result copy at entry and final_matrices after the definition loads; a declaration
+// move, not kept). Diagnostic: K = 0 to 33 (0, 1 and odd) dead initialised longs at the top 240 at every K (aligned
+// 182 each: the entry roles and the frame are not a symbol-count tie).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
