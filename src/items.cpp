@@ -1276,6 +1276,8 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// score 824 (was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
+// stack homes still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so
 // forty bytes of frame are unaccounted for and every stack home sits further out than retail's; the entry flags are
 // still held in registers where retail keeps them in stack bytes, and the forms the earlier rounds tried all grow
@@ -1314,7 +1316,7 @@ struct s_item_flags_view_10b850
 // in both, so the forty spare bytes lie below the homes and the rest of the gap is in the block bodies, which this round
 // did not move.
 // MiniMax E (11-16): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c, retail keeps the two entry flags in stack bytes where this build holds them in registers, and the item walk still differs.
-// score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
+// Earlier score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
 // `update_position = fixed` skipped the position update after a bounce when the bit was clear (retail 0x10c136
@@ -1606,6 +1608,14 @@ struct s_item_flags_view_10b850
 // Signed lateral interval 856. NOT kept: The ordered absolute value preserves 4096 bytes and cuts the frame to
 // 0x150 at score 853. A float result from the original call ties 824 without changing the frame. The opening body
 // is restored.
+// Collision origin pointer used through integration and fallback 824, Collision origin reference used through
+// integration and fallback 824, Linear-velocity field pointer shared across the carrier query 824, Linear-
+// velocity field reference shared across the carrier query 824, Collision origin and linear-velocity field
+// pointers 904, Collision origin and linear-velocity field references 904, Collision origin bound for the
+// complete motion phase 868, Linear-velocity pointer scoped through the two carrier samples 824, Point-difference
+// helper on the original collision origin 824, Point-difference helper on the shared collision origin 823. NOT
+// kept: Paired fields cut the frame to 0x148 but score 904 at 4051 bytes. The ray helper with the shared origin
+// saves one difference, below the retention threshold. The opening body is restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
