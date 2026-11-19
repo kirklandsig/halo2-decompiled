@@ -1878,6 +1878,12 @@ struct s_camera_reference_171830
 // conditional ray masks 302, distinct names for center and winning fractions 270.
 // NOT kept: the pair boundary restores the frame at 1211 bytes. Conditional masks shorten
 // the resolver to 1200 bytes and leave the point ingress unresolved.
+// Point still arrives in EBX, where retail saves the sample ordinal. Post-tested samples 273;
+// ascending refinement pass 270; displacement bounds 283; fraction bounds 275; nested sample
+// admission 270; cluster record reference 270; unsigned short sample 270; narrow-by-default 296;
+// separate plane result and clear-side assignment 298; indexed basis scales 363. NOT kept: fraction
+// bounds recover the 0xb8 frame at 1215 bytes, with the point still in EBX. The original 1219-byte
+// body is restored.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

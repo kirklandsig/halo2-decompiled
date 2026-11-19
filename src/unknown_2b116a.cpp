@@ -4550,6 +4550,11 @@ bool __stdcall function_2b278e(long controller_index)
 // Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
 // NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
 // and the index-only copy folds into the original read.
+// The initial index still takes ESI and the dialog masks still reuse it. Dispatch-wide const slot or
+// slot reference 54/54, with Boolean membership 199/199; recipient counts initialized at case entry
+// 76; fresh index at membership 54; unsigned mask bits throughout 54; signed short membership in the
+// existing qualified local 55. NOT kept: slot forms preserve numeric-index reuse, and the Boolean
+// width shortens case 3 without restoring the reloads.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

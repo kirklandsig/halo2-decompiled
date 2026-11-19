@@ -3617,6 +3617,12 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // acceleration copies 91/91/91/91/91; typed full-record assignment 132, aggregate
 // snapshot 250, typed sources with byte result 85 (396 bytes). NOT kept: best gains
 // six and merges the retail's three epilogues.
+// Seat stride still precedes the parent lookup and the scalar camera copies still fold in the source
+// offsets. Separate table and signed ordinal used at each seated read 140; seat reference 91;
+// position pointer before matrix copy 91; unit receiver before matrix copy 91; complete unattached
+// record only 84; both record copies through destination references 132; success before camera stores
+// on the scalar-copy body 91; unattached arm first on the scalar-copy body 91. NOT kept: the 84 form
+// reaches 396 bytes and gains seven, with the seated copy and early stride still different.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -5502,6 +5508,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // direction components read at each use instead of the three named copies 262 (682 bytes). Retail keeps
 // forward_scale on the x87 stack to the end (popped with cosine, `fld [m]; fmul st(n)` in all three rows) where
 // ours consumes it in the k row with an fxch. Not kept; original body restored.
+// First cross still loads up.i early, and the x87 forward scale does not survive the last row.
+// Complete reconstructed vector with separate stores or initialization 213/213; row-local transverse
+// sums 169; complete transverse vector 272; scaled-vector addition for forward, left or both
+// 272/276/276; staged forward vector 275. NOT kept: the per-row sums tie, and every full-vector stage
+// grows the body.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9468,6 +9479,11 @@ struct s_unit_melee_collision
 // 529; plus the player index NONE first 531; that with the rows reading unit->unknown168 466 (2219 bytes; the
 // aim mix the review reverts unless it matches). In the 466 form the 0xcfc90 arm moves out of line to the end
 // (retail keeps it inline after 0xa9260's jmp), which is most of what is left there. Not kept; body restored.
+// Frame 0x180 versus 0x17c, with the unit still spilled across the fan. Selected-type name 484;
+// losing-collision guard 494; direct material word assignments 484; defaults before weapon lookup
+// 476; read-only tags 484; conditional damage pair 519; staged fan sum 486; separate fan ordinals and
+// reversed trace workspace order 484. NOT kept: the 476 form shortens to 2215 bytes with frame 0x180.
+// The conditional pair recovers the 0x17c frame at 2233 bytes but increases the score.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
