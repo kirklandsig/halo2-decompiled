@@ -1144,6 +1144,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax I (11-17): no new form, no lower score (529): the reduced build of this function is not faithful on its
 // own - a single-address reduced image reads 602 and 2139 bytes where the wider reduced image and the full image
 // read 529 and 2189 - so this round's forms were judged on the full check. The one that lowers the reduced score,
@@ -1156,7 +1157,6 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // against retail's 0x28, and the selection result still spills where retail keeps it in a register; the
 // parameter order that would fix the swap is retail's and the callers' declarations are in files this lane
 // may not edit.
-// score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
 // MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
 // MiniMax C (11-16): 529, was 529: no new form, no lower score; the call boundaries agree with retail's
@@ -1570,6 +1570,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // MiniMax G (11-18): no new form, no lower score (529): this build's frame is 0x2c against retail's 0x28 and the
 // selected result still spills; retail's own parameter order is (type, query, block), with the block in EAX and the
 // query in EDX, and this lane may not change the parameter order, so the lead that needs it stays blocked.
+// M3 lane 7 r184 (fast with 0xd4080, 0x3db00, 0x3dfe0; control 529, aligned 365, masked 176): the caller's unread
+// parameter passed on as an unread first parameter (every declaration and call) 530; that with the block moved last
+// (flag, type, query, record, base, lightmap, block) 530; the block last without the flag 529 (same code: the
+// convention follows the body); `bool result = false;` first with `if (parameters)` and `result = true;` last 573
+// (0x3db00 lost), `result = true;` first 547 (frame 0x30, 0x3db00 lost); those without the count wrapper (mask before
+// a `for (i < block->count)` loop) 585 (2160 B, frame 0x28, 0x3db00 lost) and 567 (0x3db00 kept).
 // M3 lane 13 r114 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21; aligned/masked [365/176]): the lightmap pin
 // ahead of the base pin 560 (2193 B) [362/151]; the square right after the direction1 negate 555 [373/173]; `real
 // bias = parameters->bias;` for the three adds 559 (0x3db00 lost, 8; 0xd4080 508); (type, query, block) with
@@ -1579,6 +1585,17 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Conditional last-row selection 529, with an entry receiver 530, combined mask 571, or general bit first 531.
 // Return true in the selected branch 566, with the entry receiver 563; explicit empty-block
 // failure with the receiver 560 or combined mask 571. The selection spill and register homes still differ.
+// M3 lane 7 r186 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/401):
+// (type, query, block) alone 529 (same code; 0xd4080 455, masked 293 -> 277); + `if (!parameters) return false;` and
+// `return true;` 568 (2168 B, frame 0x28, 518/377); + one count test (mask in the test) 564 (2153 B, 514/372); on that the
+// square after the direction1 negate and the lightmap pin ahead of the base pin 588 (2158 B, 475/344, best aligned); that
+// with `if (parameters) { ... return true; } return false;` 576 (2166 B, 466/331); on the one-test form `color3f adjusted =
+// *lightmap;` with the bias added in place 569, `vector3f normal = *input_normal;` after magnitude3d 586, both with the bias
+// local 568, all with retail's order 585 (2204 B): each aggregate copy moves `parameters` to EBP and `record` to ESI, so
+// record becomes a register parameter (`ret 8`), 0x3db00 is lost (8) and 0xd4080 rises to 495-504. Diagnostic (not
+// keepable): retail's order with record read once through its address 586 (2215 B; block EAX -> EBX as retail, record on
+// the stack but homed in ESI, parameters EBP; 0xd4080 380). Retail homes parameters ESI, query EDI, block EBX, record EBP:
+// with retail's statement order this build ranks record above parameters.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

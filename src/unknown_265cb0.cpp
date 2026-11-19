@@ -899,6 +899,13 @@ real function_30bf0(vector3f *vector);
 // M3 lane 6 r200 (fast; control 84): distance_squared and everything after it in its own `{}` block 84; `vector3f delta`
 // declared ahead of the range 84; the endpoint test as two nested `if`s 84; the posture switch with a `default: break;`
 // 84; the range `real const` 84 (each the same score; homes and the two seat-loop products unchanged).
+// M3 lane 7 r186 (fast with 0x263740, 0x25c9d0, 0x26d370, all MATCH; control 84, aligned/masked 57/22): the occupant and
+// player tests combined in one `&&` test 90 (1308 B; 70/36); `i++` for `++i` 84 (same code); the squared distance as
+// dot3f(&delta, &delta) 84 (same code); the facing query writing `secondary`/`primary` directly (no facing copies, no
+// re-test) 196 (1328 B, on this base); the vehicle index as the typed `actor->unknown26c` 84 (same code). Diagnostic, not
+// kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
+// retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
+// the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2758,6 +2765,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // declared in that order 170; `close` as one direct `||` expression 620 (first difference +0x0); the other-actor ternary
 // with the test negated and the arms swapped 173. Still left on the recipe: the players iterator's table pointer in ECX for
 // retail's EAX (`mov eax, [abs]` is a byte shorter), which shifts the loop pad and everything after it.
+// M3 lane 7 r186 (fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740, 0x25d810, all MATCH; control 168, aligned/masked
+// 107/88): `player` cleared before the first search and the slot search on a long counter 376 (702 rows; the slot search
+// becomes retail's pointer walk, the NONE test threads); the player through the existing ai_player_get with the long slot
+// search 849 (2642 B: ai.cpp's /Ob1 keeps it a call, re-measured); ai_player_get's shape written out (player NULL first,
+// short index copied to a long for its NONE test, long slot counter) 383 (107/83: both searches are retail's instruction for
+// instruction, but the players table then loads into ECX, a 6-byte load against retail's 5-byte EAX load, so the loop-top
+// pad becomes `jmp` plus `lea ecx, [ecx]` and every later row is one off); plus the decrease test as `!(distance > 3.5f)`
+// 317 (108/84); plus the established arm nested in `if (established || !(far && slow)) { ...; positive = score > 0; }`
+// 377 (2882 B, 99/75: retail's block order for the far-and-slow test). Left: the players table's register at the iterator
+// setup (the matched siblings' identical three statements load it into EAX) and the direction components, which retail
+// keeps in XMM1-3 from the relative dot to the facing dot.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

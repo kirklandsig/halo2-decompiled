@@ -389,6 +389,14 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Paired axis reads shared by squares and sine products, with separate mixed-product reads:
 // k/i/j 412/358/341; ki/kj/ij 409/412/477; all 385; all with earlier j square 476.
 // NOT kept: The paired reads change both expansions without recovering the early squared-k spill.
+// M3 lane 7 r185 (fast with 0x173ba0, 0x246cd0, 0x30bf0, 0x11d000 and 0x142eb0, all MATCH; control 219, aligned 225): the
+// rotation helper in the sibling spellings of this math elsewhere in the code base (all three hosts unmatched): named
+// complement, squares and a shared k*complement with the rows in matrix order and `j * complement * i` 394 (1824 B,
+// aligned 340); squares, complement and named ij/ik/jk products with `(1 - s) * c + s` diagonals 392 (aligned 354); the
+// same with `s + (1 - s) * c` diagonals 393; the kept statement order with a named complement, k*complement shared by
+// ik and jk and `j * complement * i` 497 (1712 B); named complement, squares, k*complement and ij with matrix-order
+// rows 399. Retail's code ahead of the jump tables is a few bytes longer (a `lea ecx, [ecx]` pad where ours ends
+// with int3 padding), so the equal length is a coincidence of the schedule.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

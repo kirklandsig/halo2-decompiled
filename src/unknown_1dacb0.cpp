@@ -1493,6 +1493,17 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // type, class, mode 829; the three outputs declared after the iterator's stores 826 (two points, a declaration move: not
 // kept). Retail's post-loop test reads the result's index as a word from memory (`cmp word ptr [esp + 0x1e], si`) and
 // pushes the result from ECX; ours loads the dword, shifts and reloads it for the push.
+// M3 lane 7 r186 (fast with the twin, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddd00, 0x1ddc70, 0x1ddb90, 0x1dd560, 0x2963f0, 0x1236f0,
+// 0x1ce180, 0x1cb230; control 828, aligned/masked 580/76): the siblings' loop (first iterate ahead of `while (!found && entry)`,
+// `found = true` or re-iterate in the else arm) with the early return kept 995 (2825 B; the weapon_class argument now
+// in EDX and the NONE in ECX as retail, first difference +0x1c); on it the lookup through an inline helper returning the
+// id 995 (same code); a copy of the
+// found mode taken after the search for the found_mode store and the second request 995 (same code: the copy folds, so the
+// calls are known not to write the found mode and its per-kind reads are an allocation choice); the iterator stored graph,
+// step, entries, then keys (retail's store order) 995 (575/93); diagnostic, the three output stores dropped 1032 (2791 B:
+// LTCG then drops the output parameters). Reading: in the second request ours gives EBX/EBP to the shared mode-table temp and
+// `this` (reloaded per kind) and reads the found mode from memory; retail gives them to `this` (once) and the found mode, and
+// leaves the table temp spilled in found_mode's dead home.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1956,6 +1967,17 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // type, class, mode 829; the three outputs declared after the iterator's stores 826 (two points, a declaration move: not
 // kept). Retail's post-loop test reads the result's index as a word from memory (`cmp word ptr [esp + 0x1e], si`) and
 // pushes the result from ECX; ours loads the dword, shifts and reloads it for the push.
+// M3 lane 7 r186 (fast with the twin, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddd00, 0x1ddc70, 0x1ddb90, 0x1dd560, 0x2963f0, 0x1236f0,
+// 0x1ce180, 0x1cb230; control 828, aligned/masked 580/76): the siblings' loop (first iterate ahead of `while (!found && entry)`,
+// `found = true` or re-iterate in the else arm) with the early return kept 995 (2825 B; the weapon_class argument now
+// in EDX and the NONE in ECX as retail, first difference +0x1c); on it the lookup through an inline helper returning the
+// id 995 (same code); a copy of the
+// found mode taken after the search for the found_mode store and the second request 995 (same code: the copy folds, so the
+// calls are known not to write the found mode and its per-kind reads are an allocation choice); the iterator stored graph,
+// step, entries, then keys (retail's store order) 995 (575/93); diagnostic, the three output stores dropped 1032 (2791 B:
+// LTCG then drops the output parameters). Reading: in the second request ours gives EBX/EBP to the shared mode-table temp and
+// `this` (reloaded per kind) and reads the found mode from memory; retail gives them to `this` (once) and the found mode, and
+// leaves the table temp spilled in found_mode's dead home.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

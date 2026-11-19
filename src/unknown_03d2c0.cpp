@@ -516,6 +516,13 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // cache_index (NONE on that path) instead of the literal: main 77, 9 form 9, closing-test form 87 (same code each: VC
 // folds cache_index to -1 first); the result as the one field of a local aggregate (diagnostic) 77/9/87 (same code:
 // the field is tracked like a scalar).
+// M3 lane 7 r185 (fast with 0x3d2c0, 0x3db00 and 0x3dd10, all MATCH; control 77): the found arm re-reading the cache
+// field (`result = *(long *)(object + 0xcc);`) on main 77, on lane 8's `!initialize || result != NONE` merge 83 (508 B), on
+// the 9 form 9 (519 B; all three the code of their base: the re-read is merged with the tested load and the found edge is
+// still not threaded); that merge with the walk's exit as `goto done` to the only return 85 (504 B: the walk exit becomes
+// retail's `je`, but both epilogues merge on ESI and the merge block reloads the result into EAX); that merge with the
+// walk's return moved to close the else arm 86 (506 B). On the 9 form only two points differ: ours reloads the result
+// before the merge test because the found edge enters it, and the walk's NONE return folds to `or eax, -1`.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

@@ -1066,12 +1066,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
 // (all sixty-four operand spellings of it compile to the same code), and the general arm's k row still ends in XMM2
 // where retail's ends in XMM0, so the first arm's out.k store is not shared with it and the tail shift remains.
 // MiniMax I (11-17): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where retail uses EDX, and the two cross-product terms that involve up.k keep the other side in the register where retail keeps up.k (commuting the shared cross helper's six products leaves the code, and the file's nine matched functions, unchanged), and the general arm's k row still ends in XMM2 where retail's ends in XMM0, so the first arm's out.k store is not shared with it; the body is unchanged.
-// score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // frame 0x30 agrees. Damping allocation, delta homes and vertical store sharing differ.
 // Earlier m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
@@ -1589,6 +1589,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // with disabled/direct first 614/650; three-way motion selection 628; general before direct 612;
 // enabled-input dispatch 635; gravity retained from bounded-step admission 453. NOT kept: all
 // scores rise and the original damping extraction and vector-home differences remain.
+// M3 lane 7 r184 (fast with 0x1f0450 and 0x24590, both MATCH; control 234, aligned 158): 1..12 dead locals (diagnostic)
+// 358-561, never below 234 (this body already sits in the best symbol state); the four flag declarations in all 24
+// orders, with the input pointer before or after them (47 forms): best flying, direct, damping, gravity 230 (the damping
+// bit then takes EDX as retail; first difference +0x31, the gravity spill store after the input lea), flying, direct,
+// gravity, damping 233, the rest 235-265; that best order with the input pointer after the flags 246 (the entry block
+// exact to +0x3d, but the cross and scale product sides flip); 1..10 dead locals on either of those two 352-562.
+// Not kept: a declaration order picked by score, four under the bar.
 // M3 lane 11 r120 (fast; base 234, difflib-aligned 192): K initialised dead locals at the top (diagnostic, reverted),
 // K=score: 1=484 (3053 B), 2=481, 3=364, 4=366, 5=358, 6=362, 7=560 (3040 B), 8=561, 9=477, 10=481, 11=364, 12=366, 13=358,
 // 14=362, 15=560, 16=565, 18=481, 20=500, 22=497, 23=429, 24=555, 26=501, 28=500, 30=497, 31=429: no count comes near, so the
