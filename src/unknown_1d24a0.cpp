@@ -104,6 +104,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// score 949 (was 949): Frame 0x1f0/0x1d4 (ours 28 bytes larger), entry argument/flags in EAX/ECX against retail ECX/EAX,
+// byte-flag homes and the record/vector homes still differ; the forms below were measured.
 // MiniMax B (11-18): no new form, no lower score (949, was 949): the frame is still 0x1f0 against retail's
 // 0x1d4, so every stack home differs; retail unrolls the scale helper into three multiplies with both
 // vectors in memory while this build rolls the loop, retail reloads the delta from its stack copy after the
@@ -130,9 +132,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // stack home below the top differs, and the loop head's shape is still decided by the callee 0xbadc0, whose file
 // this lane may not edit.
 // MiniMax S (11-16): no new form, no lower score (902); retail's scale helper is still unrolled while this build's loop is rolled, the frame stays 0x1f0 against retail's 0x1d4, and the contact array's destructor that blocks the unroll is set in another lane's header.
-// score 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier at 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // MiniMax A (11-18): no new form, no lower score (949 in the reduced image): the first difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, ours the other way round) and the frame (0x1f0 against retail's 0x1d4), so every stack home below the top is out of step.
-// score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier at 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Walked against retail block by block (b2A, 11-06): conditions, fields, callees, argument order and loop/removal shape agree. One precision
 // difference fixed: the angular block's x87 dot product (0x1d31a6-0x1d31f2) adds (i + k) + j, where the helper's other two sites (0x1d289c, 0x1d2c6d) add
 // (k + j) + i. The source spells out (i*i + k*k) + j*j; ours adds k*k + i*i first and then j*j, the same grouping. Same score 902.
@@ -501,6 +503,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // body is then 83 to 103 bytes short, mostly the loop head that 0xbadc0 decides), so none is kept; aligned, the three
 // cross-file causes (destructor-free release, `inline` 0x24590, opaque 0xbadc0) account for about half of what differs.
 // Body, header and both other files restored.
+// M3 lane 13 r115 (fast, all restored): the body as one `if (flags & 0x104000) { ... }` with no early return 949 (same
+// code); the flags word read once into a named local for both entry tests 962 (4283 B); the was-active bit tested as
+// `!(flags & 0x2000)` 951; the activity flag and response maximum declared before the two entry flags 956; the
+// contact array pointer read once before the loop test 1003 (4287 B).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

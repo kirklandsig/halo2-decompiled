@@ -661,6 +661,10 @@ union s_185be7
 // the unclamped fraction 823.
 // NOT kept: the typed seat-table field (396 plain, no gain; body kept stable for the held 0x24590 inline lead);
 // naming the upper speed or magnitude gains only two points in preview, and the separate clamp forms regress.
+// M3 lane 13 r115 (fast, all restored): the range-fraction clamp as `if (v < 0) v = 0; else if (v > 1) v = 1;` 396 (same
+// code); the fraction declared without a value and cleared in an else arm of the span test 942 (3740 B), with the
+// if/else clamp too 942; the quotient clamped inside one PIN expression 932 (3791 B); the exponent named for the test
+// and the power call 634.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

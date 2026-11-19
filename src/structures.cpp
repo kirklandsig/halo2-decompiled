@@ -775,6 +775,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // without the count test's early return 236 (708 B, no zero register); one more range read ahead of the loop 227 (zero
 // still in EBP). So the zero register appears only when both dword zero stores (section, unknown18) are in the body, and
 // range does not outrank it. Not kept: 208 is a rise, and 133 is a declaration order picked by score with [75] aligned.
+// M3 lane 13 r115 (fast, 0x14a8e0, 0x14af40, 0xd47d0 MATCH throughout; all restored): lane 7 r123's form rebuilt 208 at
+// 726 B (zero still in EBP); on it: definition and section cleared by statements after the declarations 208; the empty
+// count's early return giving `result` 208; `if (!section) return result;` with the loop unnested 212; the count test
+// as `!= 0` around the rest of the arm, no early return 227 (707 B); the section declared as a const pointer 208.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
