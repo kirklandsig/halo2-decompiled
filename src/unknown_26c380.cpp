@@ -700,6 +700,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // predecessor veto after node admission 297, early predecessor eligibility 392;
 // first-edge or first-edge/hit initialization after the target test 265/265.
 // The two byte homes stay exchanged. Nested transition guards reproduce the opening code.
+// Return default after sector clear, both index clears, requested distance,
+// transition distance, all output defaults or both distance defaults:
+// 386/387/388/388/389/390. False result before/after unobstructed finalization
+// 385/386. NOT kept: the two byte homes and shared cutoff tail remain different.
 // M3 lane 5 r200 (fast with 0x26c380 and 0x270600, both MATCH; control 244): `success = false;` before each cutoff's
 // `next_sector_index = NONE; break;` 229 at retail's 1605 B (not kept: success is already false there, a redundant store; but
 // retail stores it too: `mov byte ptr [esp + 0xe], 0` at 0x26cb08 is reached only from the two cutoffs, so retail's cutoff
@@ -710,6 +714,14 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // either order 305/305. Trace success and crossing or either order 305/305. All three with
 // success or first edge first 363/363. NOT kept: the paired records move the result byte outside
 // its retail slot. Grouping all three shrinks the frame. The opening body is restored.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, faithful to the fast build: 1 row; aligned rows against retail,
+// this body 109, the held goto form 43 = positional 34): on the goto form, the up cross written out member by member
+// (diagnostic only: a helper body by hand) 41, the cross's row j and the magnitude's sum order then retail's but row i's
+// subtracted product loads the direction first; the same with row j's products written operand-swapped either way 41
+// (identical: the text order of the products is ignored). Body unchanged.
+// Combined first/ordinary/crossed scan state, separate/joined acceptance: enum 364/364,
+// byte 369/369, word 350/350, long 364/364. NOT kept: the byte form leaves success
+// at +0xf, and the wider forms send it to +0x74. The shared cutoff tail remains unresolved.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

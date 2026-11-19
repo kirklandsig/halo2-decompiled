@@ -168,12 +168,20 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // join and copies to EDI for 0xd1850; no force-arm reload), on it one game-time read shared by both elapsed values 216, the
 // three late object-index uses through one named copy 216 (same code each). Eight dead locals at the top (diagnostic) 21:
 // removed before allocation.
+// M3 lane 16 r141 (fast with 0x3d2c0 and 0xd1850, control 21): force as `!initialized` then `if (!valid) force = true;` 76
+// (834 B); force as `!(initialized & valid)` 239; the force arm as `update = force` 52; `update |= force;` then
+// `if (!force && hidden) return;` 231; the update-time NONE test as a signed long 21 (same code).
 // M3 lane 13 r113 (fast with 0xd1850, control 21; update-first re-measured 218: object EBX load, homes and slots as retail,
 // left the timestamps in EDI/ESI, the false store after the home store and no force-arm reload): force and update in one
 // declaration 21 (same code); the hidden return as `if (!force && flag) return;` with update as one predicate
 // `force || update-time NONE || update elapsed > 1` declared at its test 220 (829 bytes); sample started from the
 // sample-time NONE test with the thresholds under `if (!sample)` on the kept order 222 (831 bytes); the cache bound as a
 // reference 21 (same code); update started from force with the hidden test on update 228.
+// M3 lane 4 r220 (fast with 0x3d2c0 and 0xd1850, control 21): the object bound by reference to its lookup copy 21; the
+// hidden-object test through a forced-inline accessor 21; the cache pointer const 21; the hidden test on a fresh lookup
+// of the object 21 (same code each: folds into the first lookup); the sample decision moved right after the elapsed
+// clamp, ahead of the force arm, 217; update-first re-measured 218 (retail's object EBX load and homes; the timestamps in
+// EDI/ESI, the false store after the object's home store, no force-arm reload).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

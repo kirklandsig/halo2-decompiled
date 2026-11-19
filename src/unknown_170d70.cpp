@@ -1168,6 +1168,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Ratio computed before and stored after the capture 349. Shared forward address through both rotations 365.
 // NOT kept: the one-point gains leave unity in XMM3. Split captures and the shared forward address
 // change the matched initializer. The opening body is restored.
+// Sine j/k before cosine and i after; double i sine intermediate; descriptive trig names
+// Axis reference, matrix output reference, immutable original forward, symmetric matrix
+// with signed corrections, and the builder returning its output pointer: 370/364/346/346/346/346/395/346.
+// NOT kept: Two first-axis squares still spill across the half-angle tangent and unity starts in XMM3.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1561,7 +1565,7 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 134 (was 205): The entry now saves ESI and initializes AL at retail length. The flag stack homes and false-return tail still differ.
+// score 134 (was 205): The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return still differ.
 // Earlier comparison at 221.
 // the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
 // (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
@@ -1633,6 +1637,10 @@ struct s_pool_view_172840
 // reservation subscript postincrement 228; unsigned selection with signed publication 55.
 // NOT kept: the 55 forms recover the flag homes at 870 bytes but still place the sign extension
 // ahead of the retail link and key schedule and load the sentinel with a five-byte mov.
+// One state read 153, separate exclusions 153, branch admission 196, both sets separate 196, grouped per state 153.
+// Selected exclusion mask 217, traversability conditional 207, one state read with independent limit results 249.
+// Chained narrow publication then signed index 134, signed index first 86, with independent limits 243/241.
+// NOT kept: the 86 form shrinks to 860 B and retains the displaced flag homes. Independent limits recover 868 B at 241.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1837,7 +1845,9 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 270 (was 284): the winning displacement spills before the side offsets are stored
+// score 270 (was 284): The 0xbc frame and point in EBX differ from the 0xb8 frame and stack-passed point in
+// retail. The center trace stays matched.
+// Earlier score 270 (was 284): the winning displacement spills before the side offsets are stored
 // and reloads for refinement. The frame and point convention still differ.
 // Earlier logic walk against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
@@ -1892,6 +1902,25 @@ struct s_camera_reference_171830
 // conditional ray masks 302, distinct names for center and winning fractions 270.
 // NOT kept: the pair boundary restores the frame at 1211 bytes. Conditional masks shorten
 // the resolver to 1200 bytes and leave the point ingress unresolved.
+// Point still arrives in EBX, where retail saves the sample ordinal. Post-tested samples 273;
+// ascending refinement pass 270; displacement bounds 283; fraction bounds 275; nested sample
+// admission 270; cluster record reference 270; unsigned short sample 270; narrow-by-default 296;
+// separate plane result and clear-side assignment 298; indexed basis scales 363. NOT kept: fraction
+// bounds recover the 0xb8 frame at 1215 bytes, with the point still in EBX. The original 1219-byte
+// body is restored.
+// One collision result for sampling and refinement 270, Shared collision result declared at center trace return
+// 270, Shared collision result declared in the entry phase 270, One direction workspace for both collision loops
+// 275, Shared result and direction across the two loops 275, Unsigned ray masks in both phases 270, Shared
+// collision result with unsigned ray masks 270, Both shared workspaces with unsigned ray masks 275. NOT kept: A
+// shared direction workspace recovers frame 0xb8 but leaves the point in EBX, shortens the body to 1215 bytes and
+// raises the score to 275. Shared collision storage with separate directions and unsigned masks tie at 270. Both
+// checked controls retain their opening scores.
+// Long sample ordinal 296. Unsigned word sample ordinal 270. Byte sample ordinal 287. Independent long
+// displacement ordinal 269. Independent word displacement ordinal 270. Sample sign and axis from quotient and
+// remainder 298. Unsigned sample with second-pair comparison 295. Short refinement budget 270. NOT kept: The
+// long displacement ordinal gains one at retail length. The long and byte sample counts, quotient and
+// remainder, and pair comparison recover the 0xb8 frame while preserving the EBX point ingress and moving
+// away from retail length.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2127,6 +2156,22 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
 // Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
 // The collision point still occupies EBX.
+// Two horizontal offset channels by value with component expressions 385.
+// Two horizontal offset channels by value with shared dot product 385.
+// Two horizontal offset channels by value with shared cross product 385.
+// Two horizontal offset channels by value with both shared products 385.
+// Two horizontal offset channels by view with component expressions 364.
+// Two horizontal offset channels by view with shared dot product 364.
+// Two horizontal offset channels by view with shared cross product 364.
+// Two horizontal offset channels by view with both shared products 364.
+// NOT kept: the horizontal offset vector forms increase scores and lengths. The four read-only
+// views keep the 0x20 frame at 2146 bytes, but the collision point in EBX still displaces the state.
+// Addressed view for camera publication 415. Addressed view in the follow branch 330. Addressed view for
+// projection and clamps 314. Addressed view for projection and cluster lookup 379. View reference across
+// calibration and output 529. Indexed state by reference 295. Projection through the retained forward axis
+// 388. Addressed view for the cluster lookup only 357. NOT kept: The view reference restores the opening EBX
+// state base and delays the first difference to +0x2c, but shortens the body by 96 bytes and raises the
+// score. The indexed state reference ties. The other receiver scopes regress.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

@@ -1651,6 +1651,10 @@ void function_2422d0(long slot)
 // unused type-mask parameter 7; the object and slot in an inner block with an accept flag (reject under `if (!accepted)`
 // via an empty accept arm) 7; a `register` index 7; the three loop locals declared bare, then assigned 7 (all the 7s
 // the same code). Redundant parens, 1-3 deep, around the getter call, the table test or the stored index 7 each (9 forms).
+// Round 116 (m3 lane 13, fast with 0x2447f0, 0x243a80, 0x2422d0 and 0x15e130): the slot as a `short const &` bound to the
+// object's field and passed as `(long)slot` 79; the team entry copied whole into a local for the index 117 (316 bytes);
+// the accept test and store through one `long &` to the table element 79 (268 bytes); the first loop's body in its own
+// block 7; a `dword` index with a `short` slot 7 (both the same code).
 // @retail 0x2423f0
 bool function_2423f0()
 {

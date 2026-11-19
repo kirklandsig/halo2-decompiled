@@ -51,7 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 176): r123 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// score 176 (was 176): r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
 // stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
 // return value 267 and the length local initialised before the call 171, all dropped; the helper's locals renamed
@@ -630,6 +630,24 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Unity remains in XMM5 and the root still shares the pitch slot. Separate desired/bounded/difference
 // angle pairs 269/269/244. Desired plus bounded, desired plus difference, bounded plus difference,
 // or all three 269/265/265/265. One lower bound for both angular clamps 284.
+// M3 lane 10 r125 (fast with 0x29b990/0x11cc90/0x11ce20, all MATCH; control 176; the r123 harness gives the slot groups):
+// ours groups the normalizer roots, the inlined yaw helper's arc-cosine result and the planar magnitude with the first
+// and final pitch (+0x10) and gives the yaw only the clamp input, where retail groups them with the yaw (+0xc) and keeps
+// the final pitch in the scale parameter's home. Fast: the second pitch angle computed before the first 283 (1706 B);
+// the yaw's field_38 scale moved after the pitch difference 312 (1718 B); the else arm's zeros stored before the
+// fallback vector copy 176 (same code); the pitch kept in local_11 through both clamps with local_9 first assigned at the
+// final add 176 (same code: the homes follow the value webs, not the names); that on the single-exit normalizer with the
+// XY vector first 174. Harness only: the yaw helper written with a returned conditional (in a copy of its file) worse;
+// local_8/local_9 initialised to zero at their declarations gives each its own slot (aligned 253). Body unchanged.
+// Single yaw-gain read, in-place/conditional update 212/212. Separate projected yaw
+// with repeated/one gain read 293/288, and separate result arms gain/fallback first
+// 288/301. Narrow yaw phase 314, gain read in the scaling arm 303.
+// NOT kept: all scores rise. Unity and the shared root/yaw slot still differ.
+// Separate XY transfers at the copy or around the current-vector copy 176/176;
+// two-component union copy 356. Early desired-heading test after the first root,
+// current-vector copy or XY copy 408/402/420. Early failure test 387; test after
+// current normalization with component copies 279. NOT kept: early heading
+// and failure tests recover unity in XMM4 but still spill the root at +0x10.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
