@@ -231,6 +231,14 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // after/before invalidation 576/581. Both OR 556, logical finite with range OR 558,
 // logical range 791. NOT kept: smallest frame 0x8a4 still exceeds retail's 0x8a0
 // and every smaller-frame form raises the score. The call boundaries still differ.
+// m3 lane 9 r145 (plain control 440; trials fast unless noted, 0x2600a0 checked each time): retail passes the sort's unused first
+// argument as the address of frame 0x14 (the actor offset's dead slot); ours puts that word at 0x88. Retail's 0x2600a0 weighs more at
+// the link-time inliner than ours (lane 15 r97), so spellings of 0x2600a0 that keep its 60 bytes were tried, each with the first
+// pass here as `function_2600a0(actor_index, context, NULL)`: `!= 0` on the mask test 604, the mask in a named local 604, the
+// iterator declared before the loop 604, `&g_44adf0[0]` with `!= NULL` 604, the result through a named local 604 (all 3077 bytes,
+// both sites still inlined), an indexed loop 526 (re-measured); spellings that change 0x2600a0's bytes: `!= false` on the proc
+// result 705 (plain; 0x2600a0 65 bytes, 15), `result ? true : false` 656 (0x2600a0 65 bytes), `result && proc(...)` 704 (74 bytes).
+// None moves the sorted-loop site to a call. Both files restored.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

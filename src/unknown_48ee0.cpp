@@ -368,6 +368,12 @@ extern real g_4c9798[36];
 // first bit with dword height limit 243; reused pixel cap before height alignment 323, with dword height 351;
 // pixel cap between rounding calls 323; cap with separate width alignment 323.
 // NOT kept: every form regressed. Mode flag register, mode and size homes, and rounding reloads still differ.
+// m3 lane 9 r145 (fast with 0x48e70 and 0x1cf50, both matched; control 174, 105 rows with addresses masked): retail reads the size and
+// the aspect back from their homes after each 0x48e70 call (our build keeps both in XMM registers across it: the link-time code
+// generator knows 0x48e70 leaves them alone), and its clamp stores the size to its home in both arms. On this body: the height
+// limit as a long (retail's dword load at the product) 250 (217 masked: the limit slots move); the clamp as one nested ternary 174
+// (same code); both 250; the clamp through a reference-bound `real &` to the size 180 (1491 bytes); the mode as one ternary chain
+// 174 (same code). BLOCKED-BY 0x48e70's link-time register summary (held `inline` on its definition, machine 1's file).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

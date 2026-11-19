@@ -383,6 +383,12 @@ const dword g_455978[81] = {
 // read separately at setup and cleanup, 298. Axis loop seeding both bounds with explicit fourth
 // components 509, with either or both exception macros 509. The two optional-state homes
 // and the selective location and release expansions remain.
+// m3 lane 9 r145 (fast with 0x11bed0, 0x14a280, 0x21a100 and 0x11be90; control 298): retail calls 0x11bed0 from all its callers, ours
+// expands it here and in 0x21a100, so 0x11bed0 was respelled to look for a form with retail's bytes that the link-time inliner leaves
+// out of line (that file is this machine's): the leaf branch as if/else with the stores in each arm 298 (0x11bed0 8), the bsp index
+// read once into a short local 297 (0x11bed0 5), an early return for the no-bsp case 298 (0x11bed0 still matches, still expanded
+// here), the arms swapped 311 (0x11bed0 90 bytes), the cluster preset to NONE and set under `if` 295 (0x11bed0 76 bytes). 0x11bed0
+// restored. Still BLOCKED-BY 0x11bed0's expansion here and 0x279740's first-release expansion (its file's inline restriction).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
