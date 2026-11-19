@@ -706,6 +706,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // either order 305/305. Trace success and crossing or either order 305/305. All three with
 // success or first edge first 363/363. NOT kept: the paired records move the result byte outside
 // its retail slot. Grouping all three shrinks the frame. The opening body is restored.
+// Inverted clear-path result 412; result initialized after trace fields 389; paired obstruction
+// publication 419; hit-conditioned scan 451; first flag after target check 265; combined crossing
+// result 413; per-edge vertex base 608; nested pathfinding guard 244. The nested guard preserves
+// the opening code. The two byte homes and shared cutoff exit still differ.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

@@ -301,6 +301,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // advances 88/74, paired corrected-up stores 70, rejecting orientation disjunction 64.
 // NOT kept: the explicit cursor grows the orientation tail, and the in-place subtraction grows
 // the body. The time and group stack slots still trade places in the opening form.
+// Deadline in loop initializer 129; deadline before constant term 129; coefficient-width cell 88;
+// copy-width cell 143; retained current-channel base 446; shared elapsed-time predicate 267;
+// force-inlined motion test 64; nested orientation acceptance 64. The explicit deadline forms
+// grow to 1413 bytes. The time and group homes and linear coefficient latch still differ.
+// Separate finite-value guard in the motion predicate 64.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -875,6 +880,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // New cluster counts/heads/both with fill 124/123/145 or fill_n 125/123/135. Complete initialization 187,
 // record clear with index/head stores 128. NOT kept: best gains six and reaches retail length but grows to
 // an eight-byte frame. The complete initializer changes the matched caller.
+// Mapped slot reference 129; traversal cluster after creation join 159; cluster or volume
+// count reference 129/129; cluster array capacity 129; shared volume array and capacity 131;
+// group count postincrement 129; success default with one return 125. NOT kept: the last
+// form restores the EBX/BP roles and the first 0xe bytes, but gains four and leaves creation inline.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1431,6 +1440,10 @@ struct s_point_pool_173520
 // before entry lookup 147, arena reference 115, real cap result 117, named expanded edges 96,
 // edge values shared with corners 103. NOT kept: the word reference shrinks the frame and the
 // other forms leave or worsen the reservation, cap reload and edge-store gaps.
+// Actual pool subobject 96; pool object reference 96; retained count field 96; shared visited-bit
+// accessors 96; projected point setter 96; corner setter 109; nested cull guard 96; named capacity 96.
+// The pool and cull forms keep the opening code. The corner setter grows to 878 bytes. The pool
+// commit/state order, stride spill and x87 compare-and-reload still differ.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {

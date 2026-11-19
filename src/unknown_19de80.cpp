@@ -794,6 +794,10 @@ static inline bool teams_enabled_19e1c0()
 // names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
 // with an ordinary result. NOT kept: the minimum stays out of line and needs
 // a larger frame. The 415 form restores the opening extent, with the preload still missing.
+// First comparison before both locals 390/691; native comparison count 390/691; signed name
+// length published after the clamp 438/692; missing-index sentinel in dispatch 454/736
+// (existing result and ordinary result, respectively). The ordinary count recovers the
+// 0x204 frame while merging the name-copy paths. Token preload and capacity home still differ.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
