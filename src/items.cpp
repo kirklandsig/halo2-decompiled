@@ -1173,6 +1173,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
 // The square's products come out i, k, j whatever their source order; retail's j, i, k come only
 // from a separate statement for the dot product, which then folds facing loads into mulss: 173-175.
+// Staged cross / returned cross / output axis with aggregate / in-place fallback / common branch cross
+// workspace / item dot / native rotation / output axis with setter / returned fallback / separate axis
+// with setter / staged output axis with setter: 130/248/207/160/130/130/133/117/281/130/117.
+// NOT kept: the two 117 forms recover the 0xb4 frame but spill the intermediate axis k to the
+// result k home before its final store. Retail keeps that intermediate in a register.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

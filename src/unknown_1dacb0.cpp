@@ -1501,6 +1501,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // pass 755 (same code); the flag assigned directly (`found = result.index != NONE; if (!found)` re-iterate) 990 (2841 B); the
 // entry pointer declared at its first iterate call 755 (same code); diagnostic, the second request's mode as
 // `found_mode ? *found_mode : iterator_mode` 816 (2841 B). Body unchanged.
+// The class and NONE registers are exchanged. A resolved output takes the candidate's argument home. resolved
+// default paired with the mode key 828, class key 828, mode/class keys 828, type key 828, mode/type keys 828,
+// class/type keys 828, all keys 828, all paired defaults declared at their keys 828. NOT kept: All eight
+// initializer pairings tie at 828 and leave the same early register allocation, shifted stack homes and missing
+// later EBP zero.
 // M3 lane 6 r200 (fast, both twins at once, control 828/828): the three iterator outputs declared `register` 828 (same
 // score); the outputs as dword with long-pointer casts at the iterate call 828 (the NONE constant is still shared by the
 // compare, the result and the outputs, where retail makes a second NONE for the outputs); the per-pass candidate declared

@@ -219,6 +219,11 @@ __forceinline long portal_path_gain(real distance, real range)
 // arrays 373 (1348 B); the seed through its own `start` pointer with the loop's pointer declared after it 382; a short
 // other index 250; the nearest distance declared ahead of the cluster pointer 250; the portal looked up before the
 // short index is named 334. Restored to main.
+// Two seed-index pairs 303, first pair 303, portal/bitmap pair 287, short seed plus
+// bitmap index 372. Decode ordinal at stores 287, derive it from portal position 410.
+// Packed entry read at both decodes 287, direct seed and search pointer 368. Computing
+// the ordinal from the table position recovers EBP but grows the body; both table
+// bases still need retail's per-visit loads.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -318,6 +323,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 }
 
 // score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// score 305 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
 // positional/aligned; on main 304/232): lane 13's r111 held form re-applied (lane 2's rebuilt patch) 15/16 at 1363 B,
 // the twin 244/17. Only the cluster pointer (ours EBX, retail EBP) and the widened portal index (ours EBP, retail
@@ -455,6 +461,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // 15/16; the other cluster index as a short 15/16; the portal index cast to short before the mask 19/20. Diagnostics:
 // the loop's cluster compare through `bsp->clusters[cluster_index]` 371 (1393 B); a portal-index test added 351 (1380 B).
 // Main's body unchanged at 305.
+// Named output homes 305, separate rank and missing-distance fills 332/336.
+// Selected sort key 681, cap-first empty arm 311, empty-first cap 310.
+// While with common latch 305, positive bound scope 310. The 0x42c frame and both
+// BSP table lifetimes remain.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

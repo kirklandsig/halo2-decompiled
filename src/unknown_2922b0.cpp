@@ -664,6 +664,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Mode-specific returns from the direction copy/projected output/both arms 558/554/558;
 // with inactive exit last 669/657/669; one range read with both returns and with
 // inactive exit last 661/651. NOT kept: projecting first gains four; the success slot stays at +0x13.
+// Success, hit flags and direction-copy homes remain displaced. The minimum and frame size agree. origin cursor
+// with countdown tail 561, origin and hit cursors with countdown tail 558, origin cursor with count head 559,
+// origin and hit cursors with count head 558, origin cursor with ordinal bound 708, origin and hit cursors with
+// ordinal bound 703, origin cursor with end bound 683, origin and hit cursors with end bound 658. NOT kept: Both
+// cursor-countdown forms tie at 2876 bytes and leave the success byte at +0x13. The ascending ordinal and origin-
+// end bounds change the prologue and regress.
 // M3 lane 11 r122 (fast with 0x1e5450, 0x30bf0, 0x1697c0; control 558, aligned/masked [491/208]): the active test
 // positive with `else return true;` 669 (2865 B, [486/200], re-measure); with the range read into its local ahead of the
 // test 651 ([485/201]: the range is then loaded once as retail, but the zero stays in XMM1 and the range's home moves),

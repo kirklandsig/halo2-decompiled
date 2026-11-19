@@ -1492,6 +1492,9 @@ void function_143250(
 // s21_s2, and the copies move behind it). s21_s2 declared after s7_s2_s21 1104 (10780 B); right after s105_s2_s21 1021
 // (10775 B); beside s21_s35 1299 (10774 B); band three's r6_r3/r6_r0 as `r3 * r6`/`r0 * r6` 939 (same code); band two's r6_r3
 // and r6_r0 written into their four uses 1718 (10752 B). Body unchanged.
+// First-band matrix carries r0/r1/r4 into the higher-band computations:
+// singles 1736/1739/1657, pairs 1770/1732/1750, all 1782 before or after
+// the order guard. NOT kept: the reloads regress and retail uses independent scalar homes.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

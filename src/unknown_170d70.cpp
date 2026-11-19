@@ -321,6 +321,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // or the staged in-place up cross product 119. With an independent deadline cursor 125/123/435/124.
 // NOT kept: the cursor can recover both loop homes, but grows the correction tail. The shared
 // basis reference changes the frame and the matched caller.
+// Separate deadline with shared basis base 124, basis references 125, post-tested six-group
+// walk 125, coefficient-width cursor 348, copy-width cursor 341, staged orientation
+// deviations 121, early basis addresses 121, or early signed ordinal 135. NOT kept:
+// the shared basis base gives 1401 bytes and restores the traversal through +0x2b7.
+// The orientation tail still differs. Separate width cursors grow the frame.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -915,6 +920,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // and early camera key with direct, early, or post-reservation rectangle address 123/123/123,
 // an early camera pointer 123, or the shared rectangle type 123. NOT kept: the six-point
 // gains leave the register exchange and extent unchanged.
+// Default incomplete with shared return 142, miss-first creation 144, local count
+// postincrement 142, failed admission first 142, map-cell reference 142, wide count 150,
+// fixed camera record extent 142, and one resolved plane store 142. NOT kept: these
+// shared-return forms shorten the body and change the matched caller.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1487,6 +1496,11 @@ struct s_point_pool_173520
 // before bounds 120, clipped count with classification 117, source and clip metadata before reservation
 // 120, bounds before source metadata 130, stride in loop update 96, explicit direction assignment 96.
 // NOT kept: the best forms tie and the pool publication, stride spill and x87 clamp remain.
+// Capacity rejection inside the miss path 233, last reservable index 232, count from the
+// reserved pointer 200, reserved pointer through all point writes and recount 196, default
+// forward index 172, nonnegative count 184, guarded postdecrement 96, ascending counter with
+// separate source cursor 968. NOT kept: the postdecrement ties, the ascending counter unrolls,
+// and the reservation forms do not recover retail's count and state-test order.
 // score 45 in a full build with stand-in SDK headers (was 96): the four corners read result->bounds by name instead
 // of through the `bounds` reference the inflate writes through, so the inflated bounds are copied back out of memory
 // as retail does (0x173796 on).

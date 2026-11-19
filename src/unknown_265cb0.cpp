@@ -931,6 +931,11 @@ real function_30bf0(vector3f *vector);
 // all eight forms. The earlier range reads also change the matched caller 0x25c9d0 in the reduced image.
 // Empty seat list when the actor has no vehicle. Conditional then default count, each with indexed
 // then pointer traversal, scores 186/204/102/204 with short counts and 202/206/199/206 with long counts.
+// Empty-or-half-open seat range 207 or with step at lookup 202, signed admission with
+// equality latch 152, nonnegative indexed bound 188, indexed advance after lookup 161,
+// seat array extent 84, separate clipped fraction 245, scalar names 84, inclusive last
+// seat 204. NOT kept: the extent and names tie. The indexed advance and separate clip
+// fraction reach 1308 bytes but keep the result and clip homes displaced.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

@@ -680,6 +680,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // both in place with point2f difference 197; direct inverses and both in place with point2f difference 207.
 // NOT kept: The in-place point forms retain the extra frame word. Resolving inverse depth independently shortens the
 // function to 974 bytes but raises the score to 207.
+// Returned depth with planar point or separate planar scalars 195/195, depth computed
+// first 195/195, direct inverse factors 207/207, reversed input reusing displacement
+// 195/195. NOT kept: the depth return folds to the existing transform. Direct use of
+// the inverse factors shortens the body to 974 bytes and shrinks the frame to 0x1c.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

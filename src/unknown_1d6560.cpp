@@ -535,6 +535,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 94 [0]; the rigid body as a reference binding 24 [0] (same code); the object index as a `long const &` binding to the
 // component's field 96 [208]; a word absolute index 98 [13]; re-measured, a long type 89 [0] (retail's one `movzx` at the load,
 // the headers/object-index/rigid-body colouring unchanged, everything one line off). Body unchanged.
+// The model chain is acquired first and the header type is still read on separate kind routes. unsigned slot
+// remainder at special type 96, ordinary type 96, both types 96, shared byte type after body 94, shared byte type
+// before body 106, shared byte type from captured headers 25, separate types and case-zero object from one base
+// 111, shared byte type and case-zero object from one base 25. NOT kept: Both shared-header single-type forms
+// reach 25 at 256 bytes and change the matched caller 0x1d5bf0 to 13 by exchanging the component and rigid-index
+// registers. The caller-compatible forms tie or regress.
 // M3 lane 7 r185 (fast with the file and the caller 0x1d5bf0, caller in brackets; control 96 [0]): round 60's 24 form
 // rebuilt 24 at 256 B [0]; every dependency-respecting order of its five locals (object index o, absolute index a, rigid
 // body r, header array h, type t), each with a byte and a long type: oarht 24/89 [0], oahrt 88/97 [0], ohart 83/91 [0],

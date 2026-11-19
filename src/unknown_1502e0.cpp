@@ -1610,6 +1610,11 @@ void function_150820(dword *bits, bool local_only)
 // word ordinal with signed-byte slot 67, separate admission with signed-byte slot 20. NOT kept: The word ordinal
 // produces MOVZX. Separate admission restores the saved roles at 18 and 20 and folds the player add and move into
 // LEA. It reloads the unit handle. The 18-point form grows to 212 bytes.
+// unit-index field pointer 73, unit-index field reference 73, selected query output pointer 43, selected query
+// output reference 43, indexed object header pointer 70, indexed object header reference 70, selected query
+// output pointer after the call 43, nested query with selected output pointer before the call 43. NOT kept: The
+// field aliases fold the unit field address into LEA and leave the saved registers exchanged. The header forms
+// lengthen the body and the query output forms tie.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

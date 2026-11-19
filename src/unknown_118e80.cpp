@@ -470,6 +470,11 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // 1..7 unused locals 27 six times then 25 (the two i products are never right together); both agreements named 25; the
 // forward store first 27; only the forward field's pointer named 25; a named pointer to the requested-forward field
 // for the early call 27, for all three uses 148 (1021 B).
+// discarded-left name last 51, shared basis name first 51, adjusted-up name first 51, special-arm facing pointer
+// 49, special-arm control pointer 49, both special-arm vector pointers 51, shared setters for both axes 73,
+// shared setters for all outgoing vectors 100. NOT kept: The best named special-arm addresses gain two, below the
+// retention threshold and short of the exact match required for a one-use pointer. The stack names tie and shared
+// vector setters lengthen the body.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

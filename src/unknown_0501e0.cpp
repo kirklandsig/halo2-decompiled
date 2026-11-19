@@ -631,6 +631,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // view copies y or loads z and multiplies by the coefficient in memory and only its x products load the coefficient, so
 // the two views do not come from one expansion with direct global operands; right.i alone is carried from the first
 // view into the second (XMM7), across the second scale test.
+// shared scale after offsets, both in place 306, second offset copied 290, first offset copied 287, both offsets
+// copied 266, entry scale, both in place 306, second offset copied 290, first offset copied 286, both offsets
+// copied 266. NOT kept: Every shared scale gate regresses. The lowest is 266 at 1152 bytes with both offsets
+// copied, and the opening frame mismatch remains.
 // Round 640: shared vector setter 221. Right/up/forward vector products through
 // scale and scaled-add, three scaled axes, two scaled axes, or a separate forward
 // product 281/256/267/271. Endpoint traversal in two passes, fused, or axis-first
