@@ -4554,6 +4554,10 @@ bool __stdcall function_2b278e(long controller_index)
 // Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
 // NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
 // and the index-only copy folds into the original read.
+// Round 642 native membership forms: dword dialog masks 199, identity ID field 199,
+// warning exit 199, confirmation exit 199, identity rejection with ID field 199,
+// send fallback as an else 199, recipient payload lvalue 199, combined iterator conditions 199.
+// NOT kept: the initial index stays in ESI, both dialog reloads are absent and the body shortens.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

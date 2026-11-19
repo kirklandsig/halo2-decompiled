@@ -100,12 +100,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // ternary gives 114, and the user index as a short gives 107 - a gain of three, under the review bar, so the body
 // stands with the 32-bit index retail reads - and this link still knows that 0xbadc0 writes no memory and merges the
 // unit fetches where retail fetches the unit again: BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp).
-// Earlier 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
+// Retail reloads the object pool after both calls even though 0xbadc0 neither writes memory nor calls another function.
 // MiniMax H (11-18): no new form, no lower score (110): the two unit fetches still merge across the two 0xbadc0 calls
 // because this link knows that callee writes no memory, and the unit index stays in ESI where retail has EDI; that
 // callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
-// score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
-// 0xbadc0 calls although retail's 0xbadc0 neither writes nor calls; ours merges the fetches (rounds below).
 // MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls
 // where this build merges the two fetches, because that callee writes no memory, and the callee's body is in
 // src/unknown_0bad50.cpp, which this lane may not edit; the alternative that tests the weapon index against NONE
@@ -377,6 +375,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // defaulted after the weapon query or in the preserve arm: 131/128/130/129/129/126/128/127.
 // NOT kept: the post-query unit fetch stays merged, and the later level
 // comparison shortens the body farther from retail.
+// Round 642 forms: shared object accessor at both sites 110, shared reset accessor 110,
+// shared header field at both sites 110, shared weapon view and slot helper 110,
+// named second player index 110, view-entry reference 110, scoped weapon receiver with
+// view-entry reference 110, missing weapon return 113.
+// NOT kept: the lookup views still fold the second pool read and the sound return shortens the body.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

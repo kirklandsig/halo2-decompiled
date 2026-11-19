@@ -1607,6 +1607,11 @@ void function_1e3b60(long actor_index);
 // the index in EAX (0x262ba7 `mov ebx, eax`), ours keeps a stack parameter, so nothing in this caller can change it;
 // the other `!!` lines are call targets of the reduced image. No new form tried here; the fix is in 0x262ba0's body
 // (BLOCKED-BY above).
+// Round 642 forms: layout-derived clear extent 25, typed reset span and sentinels 25,
+// byte-distance reset extent 25, typed dword sentinel 25, unsigned child test 25,
+// typed prefix with child count > 0 at 26, const typed update view 25, scoped
+// layout-derived reset 25, callee __cdecl declaration and definition 71.
+// NOT kept: the call still pushes the actor index. The __cdecl form also adds caller cleanup.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
