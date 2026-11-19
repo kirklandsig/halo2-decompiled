@@ -282,6 +282,13 @@ static __forceinline long real_to_long(real value);
 // from that constant too 347 (aligned 131), the written cross with only the output rows through the constant 347
 // (same code as the composite). Left on the composite: the resolver's copy order, a copy of the k*0 product ahead of
 // its two uses in the side vector, and the output rows' register copies. BLOCKED-BY 0x210850 (single-site expansion).
+// M3 lane 6 r202 (fast with 0x1fe410/0x2104b0 unless noted; control 373, register-masked aligned 193). Diagnostics: the
+// random-state global named by a native (non-LTCG) object (a stub-file function reading it; plain check) gives retail's
+// head through +0x50 (frame 0x48, the third input in ESI from the entry) but 472 at 1829 B, and a full check with it loses
+// 83 matched functions, so retail's global is clean and the reload after the resolver is not a poisoned global; 1 to 4
+// and 6 dead initialised longs at the top 373 each (masked 193); the side vector normalised without taking its address
+// 378 (the five seed reloads stay). Forms: the sign step and draws one and three through a named `dword *seed` 423; that
+// with the second draw through function_259d0 on the same pointer too 438 (1856 B, masked 175: closer in shape).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

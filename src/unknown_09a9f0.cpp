@@ -1352,6 +1352,11 @@ bool c_projectile_type::v8(long a, long b)
 // the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the
 // matched 0xa1f70 offset form with that group offset 12, on it the call's mask from `b` and the flags local declared
 // after the call 12; the 0x400 arm's result bit set before its store 14. Word-read body kept (5).
+// M3 lane 6 r202 (fast with 0xa5e70, matched each time; word read 5, mask 12): with the full-width mask, 1 to 32 dead
+// initialised longs ahead of the object (K = 1-6, 8, 10, 12, 14, 16, 20, 24, 28, 32) 12 each, so the pair is no symbol-count
+// tie; a 12-byte group element typed (identifier, flags, value, desired value) through a pointer indexed `[index & 0xffff]` 12,
+// indexed `[(word)index]` 5 (movzx); that typed pointer with the 0x800 test and the NONE test combined 12; the a5e70 call ahead
+// of the object lookup with the typed pointer 18. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
