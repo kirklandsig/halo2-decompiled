@@ -75,6 +75,7 @@ void function_2232a0(void)
 // index in the register and folds the base into the displacement), the tail call's arguments still need 0x2b5d0's own
 // body, which is stubbed in src/stubs/lane_k.cpp: BLOCKED-BY 0x2b5d0, and part of the reduced-image count is the
 // pushed global addresses, which the reduced image places at other addresses than retail's.
+// MiniMax C (11-19): no new form, no lower score (47): retail folds the record base into the displacement of the terminal stores (eax keeps the scaled index) where this build adds the base to the index register first, and typing the global's element as the callee's own record type (so the cast disappears) does not change it; the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // score 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // MiniMax C (11-15): no new form, no lower score (79, was 79): retail's outer loop carries a pretest our do-while lacks, the slot scan holds its pointer in EDX and its predicate in CL where ours holds them in ECX and AL, the terminal stores fold the record base into the displacement where ours adds it to the index register, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found
