@@ -584,6 +584,12 @@ struct s_24e9c7_points
 // half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
 // 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
 // with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// M3 lane 5 r201 (fast, 0x22a664 matched; control 125): the across products written through references bound to the side
+// values and then scaled in place by the half width (keeps them early, as retail: size * (0 - forward_j) and size * forward_i
+// right after size), side as two scalars 148 (746 B) / with `0.0f -` 143 (742 B), side as a point 144 / with `0.0f -` 139
+// (742 B); on the scalar `0.0f -` form back as scalars, and up too, 143/143 (same code); the first corner's base copy right
+// after the half width 146 (739 B) / unary 132; result assigned after the half width, scalar/point 150/146 (`0.0f -`),
+// 152/148 (unary). The early products then spill elsewhere and the result home moves to -0xc, not retail's -0x10.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
