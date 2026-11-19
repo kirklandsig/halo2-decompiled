@@ -281,7 +281,7 @@ void function_245400(s_source_245400 const *source, long index,
 		material->field_04, material->field_05, point, material->field_06);
 }
 // score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
-// score 206 (was 206): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in retail.
+// retail's 0x2c; the source now arrives in ECX as in retail (earlier note: 206, was 206).
 // Earlier 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix;
 // m3 lane 16 r130 and r132 at the end.
 // MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
@@ -837,6 +837,12 @@ void function_245400(s_source_245400 const *source, long index,
 // 206; all those names 206. First/second/both signed extensions before the word
 // test 205/207/207; extensions at the word acquisitions 207. NOT kept: the early
 // first extension gains one at retail length with the frame and matrix load still displaced.
+// Lane 13 r114 (fast with 0x245aa0, MATCH; control 164, aligned/masked [134/50]): the j row's forward product
+// written edge-first 164 (same code); the edge scale as a select (edge_i/j/k copied, `edge_i = arg_2->scale *
+// local_6.i` in the arm; vector3f_scale written out, match-only) 164 [123/47] (retail's select shape, the edge in
+// XMM4-6 against XMM3-5); that with the edge as three member differences 211 at 783 B [97/53]; the side bits through
+// a forceinline helper taking the long code by const reference 232 (752 B, folds as the shifted sides); select,
+// member differences and `(local_2 >> 15) & 1` sides together 237 (746 B). Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

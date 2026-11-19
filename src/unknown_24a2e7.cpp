@@ -241,6 +241,22 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // indexed/cached terminator 79/92. With the indexed clear, form the destination before conversion 67
 // or publish the result before the clear 80. NOT kept: the closest 208-byte forms still use frame 0x24
 // and keep the list base in a register instead of reloading it after concatenation.
+// M3 lane 13 r114 (fast; aligned/masked [28/11] on this body). Lane 10 r119's two-member aggregate re-measured 39
+// [17/3]; on it a plain `if (append && entries[i].field_4c[0]) { entry ... } else ...; break;` 39 (same code), every
+// access indexed 64, the terminator through `buffer` 65 or `entry` 54, the ascii argument indexed 52, no `buffer`
+// local 109 (256 B); `entries + i`, i declared outside the for, a writable result used as the buffer, the terminator
+// after `result = buffer`, the plain arm first, unsigned byte-offset products for the entry or the terminator,
+// `(dword)i` in the terminator: 39 each (the product i*0x248 stays shared with the terminator, so i never needs EBX
+// across the calls); the permuter on it reached 32 differing instructions from 34 before it was stopped. A loop-top
+// entry pointer (`s_entry_24a64d *entry = &entries[i]; if (entry->index == index)`) with the indexed terminator and
+// no aggregate 75 [8/4] (196 B): frame 0x28, the base spill, i in EBX and the re-formed terminator are retail's;
+// left is ours keeping the loop cursor live in ESI where retail re-forms the found entry from i (`imul`). On it:
+// with the aggregate 75, the pointer declared outside the loop 75, a `continue` form 75, a found flag 75, the found
+// path indexed 84, the field test indexed 73, the ascii argument indexed 71, both 74, the plain arm through `entry`
+// 83, a second pointer in the arm 52, the terminator through `entry` 91. The search loop with the loop-top pointer
+// and then `if (i < count)` 69 [5/5] (the cursor is copied to ESI each iteration and the count test is not
+// threaded); an indexed search then `if (i < count)` with the entry formed after it 87 (product shared again); a
+// found flag 90; `entry = NULL` then `if (entry)` 88. Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

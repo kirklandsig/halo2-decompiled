@@ -1272,6 +1272,11 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P557: Actual three-output query workspace in six field orders, then Boolean output pair with
 // probability second/first: 273/273/273/273/273/273/270/269. NOT kept: unmatched local grouping;
 // original independent outputs/defaults, sentinel/cleanup graph and complete body restored.
+// M3 lane 13 r114 (fast; control 237): the squad bit as `squad ? (bool)(... & 1) : false` 339; the replacement
+// decision as one `if (!(forced ? 0x203900(...) : enabled)) break;` 349; the placement read through `placement` at
+// each use (no `data` copy) 340 (first difference +0x2); probability declared at the block top 237 (slots
+// unchanged); the loop as `for (long next = ...; next != NONE; next = ...)` with `character_index = next;` 531 (1415
+// B, 0x1e4990 inlined). Body unchanged.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2252,6 +2257,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // use 255 (1218 B, frame 0x10); that with block 2's queries written like block 1's (0xcbd50, slot from a fresh lookup) 269
 // (1217 B), without the `long` index 279 (listed); the `long` index with `short rounds[2] = { 0, 0 };` 277 (1190 B);
 // re-measured: the `long` index alone 278 (1191 B).
+// M3 lane 13 r114 (fast; control 251). Diagnostics, reverted at once: 0x1469f0's inline asm replaced by plain C 251
+// (the pool global is still reloaded at each lookup), that plus src/unknown_0259a0.cpp without /GL- 306 (still
+// reloaded: neither opaque callee is what keeps the pool global out of EDI). Forms: the clump counter through the
+// existing element_502420_get 251 (one `mov` fewer, the index in the actor's register as retail; no gain), with `+=
+// 1` 251; a per-iteration `long weapon = weapons[i];` 251 (same code); `long weapons[2]` at function scope 251; the
+// `long` index with the rounds pair at function scope 278 (1191 B, as the `long` index alone). Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

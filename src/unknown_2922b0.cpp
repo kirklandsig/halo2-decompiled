@@ -643,6 +643,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 665/654; formed first and published between stores 665; conditional update between the stores 556.
 // NOT kept: selecting the minimum first recovers the success slot but regresses. The conditional
 // update gains only two points and leaves ESP+0x13.
+// M3 lane 13 r114 (fast; control 558, aligned/masked [348/117]): retail lays the inactive exit out as its own
+// epilogue at the very end (`jbe` to `pop edi; mov al, 1`). The active test positive with one `return local_0;` 667
+// (2866 B: the success flag is then held in BL); `return local_0;` closing the active block and `return true;` after
+// it 669 (2865 B) [350/116]; `else return true;` then `return local_0;` 669; descriptive names for five locals 558
+// (same code); `bool local_0;` assigned true in both arms of the active test 552 (first difference +0x2e; six
+// points, a flag form). Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
