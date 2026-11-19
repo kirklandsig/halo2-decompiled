@@ -584,6 +584,9 @@ struct s_24e9c7_points
 // half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
 // 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
 // with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// Quad aggregate from one shared origin before size, after across, after height or after half width:
+// 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
+// NOT kept: The across-y spill and the returned-height home remain different at retail length.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

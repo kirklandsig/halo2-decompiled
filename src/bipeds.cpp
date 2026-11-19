@@ -3985,7 +3985,6 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // against retail's 2712, so the two cold exits land in a different place in the body.
 // Earlier: round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax B (11-18): no new form, no lower score (612 measured, main's note says 548): the prologue's pool offset is still computed in EBX where retail keeps it in EBP, the flag byte still sits at [esp+0x12] against retail's [esp+0x11], and the body is 2743 bytes against retail's 2712, so the cold exits land elsewhere; the frame 0x78 and the flight-call homes are unchanged.
-// score 548 (was 548): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax B (11-14): no new form, no lower score (548); the prologue already differs - retail computes the pool offset in EBP
 // (pushing EBP before the shift) and keeps it there, while ours computes it in EBX and pushes EBP later, so the first field load
@@ -4250,6 +4249,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // sits at +0x12 where retail keeps it at +0x11, the mode's special flag is held as a long in the dword home at +0x14
 // where retail keeps a byte at +0x12 (the byte form measures 656), and the flight call carries its arguments in ecx,
 // edx and eax where retail uses edx, eax and ecx.
+// Saved animation key, signed/unsigned, tested after orientation with entry or walking-only state base:
+// 620/620/643/643. Test at the consumer with the same base choices: 626/626/627/627.
+// Reduced control 612, full 548. NOT kept: The two 2712-byte forms change the entry schedule,
+// and none of the forms improves the reduced score or recovers the full result and flight homes.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

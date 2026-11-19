@@ -706,6 +706,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // wrapped frame ordinals 162; frame references 162; blend published after geometry or after aspect
 // 401/409; conditional draw angle 179. NOT kept: both deferred blend forms expand the frame to 0x64,
 // and the 1939-byte count-gate form changes the entry schedule and raises the score.
+// Blend still spills at the bitmap join. Next inverse products at their divisions, with current products
+// at the complement or late in two axis schedules: 260/241/241. Current products at the complement
+// with late next products: 313/313. Next products at the complement: 255. Both pairs there: 265/265.
+// NOT kept: Earlier weighting leaves the blend spill and changes the frame or grows the body.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
