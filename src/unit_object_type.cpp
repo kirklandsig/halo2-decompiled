@@ -2255,6 +2255,11 @@ struct s_unit_motion
 
 /* advances a position and velocity along the motion for a time; whether
    time remains after its last phase */
+// MiniMax B (11-19): no new form kept, no lower score (104): the accumulator spelling still measures 28 at retail's
+// 227 bytes, but this round traced the chain that lead needs - the two matched callers 0x1e5af0
+// (src/unknown_1e67a0.cpp) and 0x1faf80 (src/unknown_118e80.cpp) lose with it, and 0xc7840 has to be rewritten to
+// retail's XMM convention - and those files are not this lane's, so the lead is out of reach here:
+// BLOCKED-BY 0xc7840's call sites.
 // MiniMax E (11-16): no new form tried this round, no lower score (104): the body still keeps the position and velocity on the
 // stack (ret 0xc) and is 265 bytes against retail's 227; the accumulator spelling still measures 28 at retail's 227 bytes, but
 // this link then inlines the body into 0xc7840 and flips the matched 0x1e5af0 and 0x1faf80, and the only source form that keeps
@@ -2438,6 +2443,15 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// MiniMax B (11-19): no new form kept, no lower score (1): this round worked out why the equality spelling cannot be
+// used - with `unit_index != NONE` VC proves the value to be -1 at the exit and folds the returned copy to a constant,
+// so the copy survives only with the `> NONE` spelling and its `jle`; retail's exit block has a single predecessor
+// as well, so no merge of two paths can restore the unfolded copy, and the one-instruction difference stands. A separate
+// `long result` local, assigned the parameter at the top and the parent index in the seat branch, with the entry test
+// on the parameter, scores 47: the extra phi moves the unit pointer from EAX to ECX and the exit copies out of place.
+// The single-exit spelling of that body (one `return result` at the end) measures 113: it hoists retail's lazy pushes
+// into the prologue, and the matched 0xbaf40 and 0x6a690 show that an unfolded exit needs a two-predecessor phi,
+// which retail's single-predecessor NONE exit does not have.
 // MiniMax R (11-16): no new form, no lower score (1): the entry branch is still `jle` where retail has `je`; the
 // `!= NONE` spelling gives retail's `je` but VC folds the NONE exit to the constant again (2), and dropping the
 // inner returns to merge the exits moves retail's lazy pushes into the prologue (62 for all three, 12 for the
@@ -3028,6 +3042,11 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
+// MiniMax B (11-19): no new form tried this round, no lower score (97): the body is still retail's 350 bytes with the
+// same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and
+// re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into
+// EAX before the pushes and hoists the unit index into EBX, and the call's register arguments follow the 0x188180
+// helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax I (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into EAX before the pushes and hoists the unit index into EBX, and the call's register arguments follow the 0x188180 helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax S (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; the prologue still differs in that this build loads the object globals pointer into EAX before the pushes and hoists the unit index into EBX, while retail reads the unit index from the incoming stack slot into EAX and keeps the globals pointer in EDI, and the hoisted parameter differs too (retail's EBP holds the definition index, this build's EBP the material index); the call's register arguments follow the 0x188180 helper's own body, in another file: BLOCKED-BY 0x188180.
 // score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
@@ -4742,6 +4761,15 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
+// MiniMax B (11-19): no new form kept, no lower score (2): the only difference left is the order of two instructions -
+// the x87 spill of the sampled speed (`fstp dword ptr [esp + 0x18]`) sits after `add ecx, 0x168` here and before it
+// in retail, and both write the same slot and pass the same pointer. This round tried the speed's expression with the
+// sum and the product swapped, without the explicit cast, and with the direction declared before it: all three give
+// the same two instructions, so the placement is the scheduler's and not the expression's; the file was restored.
+// Named locals for the cone's forward pointer, for its angle and for its result pointer measure 2 as well, and the
+// cone call moved up next to the sampled speed measures 129.
+// The rest of the call setup (the forward, result and seed operands) still follows the cone helper's own convention in
+// a file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax I (11-16): no new form, no lower score (4): the body is retail's length and the frame agrees, and only the four instructions that set up the random_vector_in_cone call differ - this build forms the forward, result and seed operands while retail spills the sampled speed first and forms them after - and that order is the cone helper's own convention in a file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax S (11-16): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - this build forms the forward, result and seed operands while retail spills the sampled speed first - and that order is the cone helper's own convention in a file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax C (11-15): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - this build forms the forward, spill, seed and result operands while retail spills the sampled speed first and then forms the forward, result and seed ones - and that order is the cone helper's own convention in src/unknown_146240.cpp, which this lane may not edit; the eight source shapes tried before all give these four bytes, and the permuter (300 s, 5 tries) found nothing below its baseline of 4: BLOCKED-BY 0x146320.

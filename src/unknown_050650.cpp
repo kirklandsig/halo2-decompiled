@@ -2285,6 +2285,11 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
+// 0xc8 and the local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines
+// below it, where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four
+// bytes higher - so every stack home differs; 0x1fdd90 is still expanded here where retail calls it out of line:
+// BLOCKED-BY 0x1fdd90.
 // MiniMax B (11-18, round 2): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
 // local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines below it,
 // where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four bytes
