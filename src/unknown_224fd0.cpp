@@ -363,6 +363,13 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // library copy 490; pointer and orientation with library copy 490; reference and orientation with library copy
 // 490.
 // NOT kept: All eight forms shrink the frame to 0x60 and the body to 1720 bytes at a higher score.
+// M3 lane 3 r262 (fast with 0x246cd0/0x142eb0/0x30bf0/0x11d000/0x173ba0, all MATCH): retail's second rotation case (the
+// g_4687b0 axis, in ECX) forms the cross terms as (t * i) * j and t * k, the operand order of the axis rotation written
+// out in the matched 0x1544e0 (squares, sine products, forward.i, t, tij, left.i, forward.j, left.j, tk, tki, up.i,
+// forward.k, up.k, tkj, up.j, left.k); its first case forms (j * t) * i and k * t. That statement order in the rotation
+// helper, squares as scalars 457 (1748 B, frame 0x60), squares and sine products as vector locals 457 (same code); on
+// this helper the ij term as `(1.0f-cosine)*axis->i*axis->j` 219, a shared `tk` for ik and jk 220, the i sine product as
+// `axis->i*sine` 219. Retail's code before the jump tables ends 1-4 bytes later (a `lea ecx, [ecx]` pad before the tables).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
