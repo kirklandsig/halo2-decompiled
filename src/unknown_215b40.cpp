@@ -608,6 +608,9 @@ bool function_2160b0(long file_index, char *path)
 char *function_216400(long memory_unit, char *buffer, short capacity);
 bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long language);
 
+// Matched in a full build with stand-in SDK headers (was 2): the type is passed through a reference-bound local
+// (`kept`), which gives the argument its place in retail's order.
+// Before:
 // score 2 (was 11): only the argument setup before 0x216da0 differs: retail masks the type (`and ecx, 0xf`) before
 // pushing display_name, ours after. Earlier: argument-setup scheduling and call-layout differences. Permuter:
 // 292 tries in 600 s, best 4 only by swapping the name/display_name arguments
@@ -642,7 +645,9 @@ void __stdcall function_215e60(long file_index)
                 if (function_1249f0(unit, &drive))
                 {
                     local_0.name.text[0] = 0;
-                    local_0.name.fill(file_index & 15, location.display_name, location.language);
+                    long type = file_index & 15;
+                    long const &kept = type;
+                    local_0.name.fill(kept, location.display_name, location.language);
                     XDeleteSaveGame(function_216400(unit, root, 8), local_0.name.text);
                 }
             }
