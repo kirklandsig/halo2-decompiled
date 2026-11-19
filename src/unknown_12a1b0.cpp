@@ -1400,6 +1400,10 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // the NULL test is not threaded into the index test, registers unchanged); the duration or the curve read once through its
 // own address 24/24; the guard reading the first index through its own address 60 (211 B); the next step's links bound as
 // `s_looping_track_links &` 24.
+// M3 lane 12 r145 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870; `ret 8` and 210 B in both builds): a const first
+// index parameter 24; the iterator's count as a short 41 (214 B; 0x21b870 8, 0x21bd00 18, restored); the loop index
+// declared at function scope with the iterator in the guard 24; the loop test as `NONE != (index = ...)` 24. Diagnostic
+// (0x126df0's fade-in half written out on a named element, not keepable without a match) re-measured 35 at 211 B.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

@@ -1898,6 +1898,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // look outputs 196/196, shared aim-velocity pointer 206, unit reference 188.
 // NOT kept: independent look locals reduce the frame to 0x28 and raise
 // the score. The paired outputs keep both retail clamp homes at frame 0x30.
+// M3 lane 12 r145 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): retail keeps unit (later the zoom
+// value) at -0x1c, mode at -0x18 and spring_d with the active byte at -0x14; ours unit and the active byte at -0x18, mode at
+// -0x1c, spring_d and zoom at -0x14 (every other slot agrees; ours leaves a dword at -0x30 unreferenced). Renames for the
+// name-order tip: mode as weapon_mode or animation_mode, unit as aiming_unit, zoom as aim_speed, active as weapon_active,
+// 188 each (same code: these spill slots do not follow names); the active test passed straight to the set-active call 378
+// (2192 B). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

@@ -676,6 +676,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Full-width choice count before target storage, before the cluster gate, at cluster-arm entry,
 // or after the query output clear: 979/979/964/963. With the full query result: 979/979/965/965.
 // NOT kept: ESI becomes the entry zero, but target count and primary remain displaced and the extent drops to 3264 bytes.
+// M3 lane 12 r145 (fast with 0x18bb80 and 0x18ab70, both MATCH): retail's override loop re-reads the target count from its
+// home each pass and the choice count is stored to its home after each increment with `&choices[count]` recomputed from it.
+// The override add through the shared decibel value type 846 (same code), with the gain as such a local built from its bits
+// 846 (same code); long query/choice counts with the query count read directly and each choice through
+// `&choices[choice_count++]` 972 (3287 B: the pointer becomes an induction variable), that with the stores in retail's order
+// (tag, source, decibels, cluster) and the three 1.0f defaults as statements 972; on main's body the four stores in retail's
+// order 846 (code changes, score ties).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

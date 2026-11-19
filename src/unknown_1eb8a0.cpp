@@ -679,6 +679,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // carry the upper-bound value in activation step and activation distance and active output 693;
 // all upper-bound carriers with the lower bound initialized first 691.
 // NOT kept: All scores rise. The first-activation forms also disturb the matched caller's convention.
+// M3 lane 12 r145 (fast with 0x1eb6f0 and 0x1ed4a0, MATCH each time; the fast control gave the full 603): retail loads q
+// (the fourth stack argument) into EBX at entry, reads d from its stack home at each of its five uses, borrows EBX for the
+// `s->start = *pos` copy and reloads q into EBX after the first direction refresh call; ours keeps d in EBX. The zero-tick
+// velocity as a `velocity = counter == 0 ? g_4687a4 : q` pointer read for qr 663 (2879 B, EBX still d); an unused pointer
+// to d 603 (same code); every d use read through that pointer (diagnostic) 675 (the reads are forwarded, EBX still d);
+// `out->position = *q;` ahead of the position alias 659 (2875 B); the 0.866 test as `dot3f(d, &s->direction)` 604.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
