@@ -1700,6 +1700,9 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 	memcpy(settings, &g_54e5d0.settings, sizeof(settings));
 }
 
+// Matched in a full build with stand-in SDK headers (was 2): the base handler is called at one place and its result
+// returned through a reference-bound local (`handled`), which gives `event` retail's register.
+// Before:
 // score 2 (was 2): the event push and ECX receiver setup are reversed before the matched base call.
 // Earlier: the base-call argument push and this-pointer move are
 // reversed; the base handler already matches. Retry, 20 reduced variants:
@@ -1773,24 +1776,22 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 // @retail 0x2c87fe
 bool c_screen_45d2b8::v10(s_widget_event *event)
 {
-    bool result;
-    switch (event->type)
+    if (event->type == 5)
     {
-    case 5:
         switch (event->param)
         {
         case 1:
         case 13:
             if (changed)
                 memcpy(&g_54e5d0.settings, settings, sizeof(g_54e5d0.settings));
-            result = c_class_1473c9::v10(event);
-            goto done;
+            break;
         }
-        break;
     }
-    result = c_class_1473c9::v10(event);
-done:
-    return result;
+
+    bool result = c_class_1473c9::v10(event);
+    bool const &handled = result;
+
+    return handled;
 }
 
 /* the emblem screen (vtable 0x45d328) */
@@ -2258,6 +2259,9 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 	delegate_register(&item_handlers, &handler);
 }
 
+// Matched in a full build with stand-in SDK headers (was 7): the looked-up record is kept in a local read through a
+// reference (`kept`), so the test stays a register compare as in retail.
+// Before:
 // score 7 (was 7): retail clears ESI before the lookup-result comparison and uses that zero for field_c.
 // Early null return 7, typed pointer test 7, success-path request value initialization 62,
 // function-scope value initialization 64, callback local 49, separate request-mode test 54,
@@ -2277,7 +2281,10 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 // @retail 0x2c8719
 void c_controller_settings_edit_list::handle_item(s_controller_reference **controller, long *item)
 {
-	if (record_pool_lookup(data, *item))
+	byte *found = record_pool_lookup(data, *item);
+	byte *const &kept = found;
+
+	if (kept)
 	{
 		short index = *(short *)item;
 		s_screen_parameters parameters;
