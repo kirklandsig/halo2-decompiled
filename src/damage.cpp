@@ -5536,6 +5536,9 @@ struct s_damage_object_creation
 // with separate/shared writes 208/188, secondary mask extraction 200/188. NOT kept: the 156 form
 // hoists the second mask and shares the two store shifts while retail reloads the second mask and
 // shifts separately. The count and detach bitmap homes still differ.
+// Scoped const damage record, immutable count, int scan, early/late bound names,
+// secondary-test continue and body increment 178 each. Both section decisions before the writes 200.
+// NOT kept: the decision locals move the datum-offset spill and spill the section count.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

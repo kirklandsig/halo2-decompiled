@@ -1284,6 +1284,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Indexed byte rows with low word/mask/available first/guarded assignment 237/252/353/371.
 // Typed rows with the same four lookup forms 237/252/353/371. NONE is still in EDI;
 // retail reloads the squad index and holds NONE in ESI.
+// Shared present/missing squad test after settings 245/245, before settings 267/267.
+// Shared signed/unsigned low-half selector before/after settings 237 each.
+// NOT kept: the tests add a materialized flag and the selector forms tie with NONE in EDI.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

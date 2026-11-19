@@ -684,6 +684,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the
 // steering-side block 730 (3463 B); the input copy and its normalize ahead of the position query 762 (3499 B). Diagnostic,
 // reverted: 1..7 dead initialised locals 665/665/665/665/669/500/493.
+// Independent collision vector seeded from the existing response default before/after location,
+// after planar normalization or at the collision split, scoped/entry declaration:
+// 790/790, 791/791, 790/790, 794/794. NOT kept: collision-split seeding reaches
+// 3499 bytes and position +0x80, but drops the early vector copy and shifts the heading spills.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

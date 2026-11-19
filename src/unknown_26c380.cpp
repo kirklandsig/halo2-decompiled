@@ -706,6 +706,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // either order 305/305. Trace success and crossing or either order 305/305. All three with
 // success or first edge first 363/363. NOT kept: the paired records move the result byte outside
 // its retail slot. Grouping all three shrinks the frame. The opening body is restored.
+// Combined first/ordinary/crossed scan state, separate/joined acceptance: enum 364/364,
+// byte 369/369, word 350/350, long 364/364. NOT kept: the byte form leaves success
+// at +0xf, and the wider forms send it to +0x74. The shared cutoff tail remains unresolved.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

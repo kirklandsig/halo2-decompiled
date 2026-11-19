@@ -5946,6 +5946,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Biped and forward pointer lexical ranks: biped before angle or after sine 79/79, forward before
 // biped or after sine 79/79, both before cosine or after sine 79/79, and mixed early/late ranks 79/79.
 // NOT kept: all tie. The first rotation spill and the final cross memory operands stay in place.
+// Alternate inline/outlined axis normalization 208/239; inline normalization of both published vectors 445.
+// Immutable normalized axis by copy/component initialization 258/225; typed header reference 153;
+// common header accessor 79; absolute-index word 123. NOT kept: the accessor ties, and the index word
+// reaches 887 bytes with a different frame and a sibling regression. The complement spill and final cross remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
