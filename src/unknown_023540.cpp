@@ -3430,6 +3430,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // helper plain `inline` 54 (same code); sine first in the first pair only 249 (2006 B); sine first in the second pair only
 // 128 (2022 B). Left as before: at each tie in both corner sets retail issues the SSE step ahead of the x87 one (the
 // coordinates 3, 4 and 5 of each set run on x87 in both builds).
+// MiniMax I (11-19): no new form, no lower score (54): the corner block holds the same 111 instructions in the same registers as retail's and only the schedule differs (first at +0x527, where we store the x87 coordinate 3 before `subss xmm1, [esp+0x90]` and retail does the sub first); our first set's stores still come out 0,3,4,6,7,1,2,5 against retail's 0,3,4,7,1,6,2,5, and the helper's spellings, both sets' 24 call orders and the eight separate statements were tried earlier without a lower score.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
