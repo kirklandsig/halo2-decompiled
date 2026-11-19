@@ -1278,6 +1278,11 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax B (11-18, round 2): no new form, no lower score (121): retail takes the initial velocity in xmm6 and this
+// build passes it on the stack, and the six-float signature may not change, so the three float temporaries keep their
+// own registers (this build xmm7, xmm2 and xmm1 for the duration and the two ramp times, retail xmm5, xmm7 and xmm1);
+// the body is retail's length and the ramp-down minimum written as an if-statement measures 121 in every arrangement
+// tried, so the clamp's XMM homes stand.
 // MiniMax B (11-18): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6; an early use of it (squared 142, copied 121) does not promote it, and the ramp-down minimum written as an if-statement measures 121 in every arrangement tried, so the clamp's XMM homes stand.
 // score 121 (was 121): Frameless at retail length. Retail keeps ramp-down in memory and takes
 // initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.
@@ -2503,6 +2508,11 @@ bool function_0b6760(s_index_pair const *pair);
 // the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off and the body is
 // sixteen bytes short of retail's 1495; the only form under 250 needs a one-use rate local (58/60), a form the coordinator
 // ruled out without a byte match, and dropping the volatile on the definition alone measures 386.
+// MiniMax A (11-18): no new form, no lower score (250): the prologue saves ebp, esi and edi where retail saves ebx, ebp
+// and esi, takes the entry pointer in edi where retail takes esi, and builds the index in esi where retail builds it in
+// ebx, so the body follows one register rotation off and stays sixteen bytes short of retail's 1495; the only form
+// below 250 needs a one-use rate local, which the coordinator ruled out without a byte match, and dropping the volatile
+// on the definition alone measures 386.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

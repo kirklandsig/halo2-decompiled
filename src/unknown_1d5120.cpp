@@ -94,6 +94,7 @@ void function_1d56f0(s_havok_component *component)
 // header this lane may not edit; the success tail still pushes the component and the index where retail
 // hands them over in EBX and ECX, and that tail is BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp), whose
 // convention is fixed over its own call cycle, so the body stands.
+// MiniMax A (11-18): no new form, no lower score (77): the rigid-body lookup still reads [eax + edx + 0x40] where retail reads [edx + eax + 0x40], and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // MiniMax G (11-18): no new form, no lower score (77): an annealed permutation search over this body (11 tries,
 // 320 s) found no better variant: best 73 differing instruction pairs against a baseline of 73 on both images; the
 // reduced image it needs pulls in 541 sources, so one try takes many minutes.
