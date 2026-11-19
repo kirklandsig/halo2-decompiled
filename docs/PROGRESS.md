@@ -2,6 +2,26 @@
 
 The newest entry comes first.
 
+## 2026-11-19: 10716 functions match
+
+```
+matched 10716 of 11326 game functions (2089339 of 2786206 bytes, 74.99%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+0 new matches, none lost:
+- @andrewnakas's #1359: closer scores and notes, no new match.
+
+## 2026-11-19: 10716 functions match
+
+```
+matched 10716 of 11326 game functions (2089339 of 2786206 bytes, 74.99%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1358: `0x94bf0` and `0x258880` match.
+
 ## 2026-11-19: 10714 functions match
 
 ```
