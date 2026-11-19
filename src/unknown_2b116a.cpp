@@ -2933,6 +2933,9 @@ long c_class_232671::get_item_count()
 }
 
 /* a playlist the list knows: its saved game file type and index */
+/* the index of a playlist, as a record */
+struct s_playlist_index_2b221d { long value; };
+
 struct s_playlist_entry
 {
 	s_playlist_entry();
@@ -2969,7 +2972,7 @@ public:
 
 	void handle_item(s_controller_reference **controller, long *item);
 	void fill();
-	long *find_playlist(byte type, long index);
+	long *find_playlist(byte type, s_playlist_index_2b221d index);
 
 	c_class_14750b items[16];
 	s_playlist_entry playlists[16];
@@ -3151,15 +3154,18 @@ void playlist_list_focus_playlist(c_playlist_saved_game_file_list *list)
 // named array reference 24; nested comparisons 9; exhaustion exit 10.
 // NOT kept: the success projection restores retail registers but adds a
 // second bounds check and grows to 64 bytes.
+// Matched in a full build with stand-in SDK headers (was 9): the playlist index parameter is a one-member struct
+// passed by value (the caller in v20 passes the item's index as that struct). A struct parameter is not a register
+// candidate in the loop's first block, which gives the cursor retail's register.
 // @retail 0x2b221d
-long *c_playlist_saved_game_file_list::find_playlist(byte type, long index)
+long *c_playlist_saved_game_file_list::find_playlist(byte type, s_playlist_index_2b221d index)
 {
 	dword i;
 	long *result = 0;
 
 	for (i = 0; i < 16; i++)
 	{
-		if (playlists[i].type == type && playlists[i].index == index)
+		if (playlists[i].type == type && playlists[i].index == index.value)
 		{
 			result = &playlists[i].unknown08;
 			break;
@@ -3203,7 +3209,7 @@ void c_playlist_saved_game_file_list::v20(c_class_1a2c81 *widget, long index)
 				}
 				else
 				{
-					long *playlist = find_playlist(0, item->index);
+					long *playlist = find_playlist(0, *(s_playlist_index_2b221d const *)&item->index);
 
 					if (playlist)
 					{
