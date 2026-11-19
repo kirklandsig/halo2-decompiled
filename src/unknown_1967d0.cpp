@@ -965,6 +965,10 @@ static inline long team_score_195ed0(long team)
 // `*((byte *)&g_511000 - 0x225)` 373 (the flag after the copy, the address not folded). Third score read: the two
 // clamp tests through the file's inline copy and the value through the existing 0x1587f0 191 (1237 B: the link
 // inlines 0x1587f0 there and calls 0x161e60 and 0x162030 from it). build/r120/storage-lead holds the head-only header.
+// Unsigned player/team ordinals 254/153, direct guarded team-table stores 246,
+// installed-team and active-team references 100/100, count-first rank comparison 100,
+// admitted clamp with a shared result 177, unsigned terminal player inequality 732.
+// The flag still leads the configuration copy and the final score call still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
