@@ -913,6 +913,16 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // for the two lookups 49 (same code); those getters on the early bool result set after the attach 77 (160 B); early returns
 // for NONE and the flagged header with a constant true at the end 77 (155 B). A scan of retail for a header-flag test
 // followed by a second load of the table's data pointer from the same register finds only this function.
+// M3 lane 7 r186 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10, 0xbb780, 0xa3c70, matched throughout; control 49,
+// aligned/masked [35/27 best]): retail's shape (bool false first, true after the attach, NONE in the flagged else) 77 (160 B,
+// re-measured: retail's BL result, but `f` cached in EBP); one combined test `object_index != NONE && !(flags & 0x10)` with
+// the entity's index stored in each arm 66 (176 B: the store between the test and the object read makes the data pointer
+// reload from the kept table pointer as retail [45/37]); that with the object read and attach through the stored index 65;
+// with the store and attach through the existing 0xbb780 66. Diagnostics (a cast that only steers, not keepable): on the
+// combined form the header indexed by `(word)object_index` 64 [35/27: the object read is then retail's instruction for
+// instruction]; on retail's shape alone 72 (index rebuilt as retail, data load still shared). Reading: retail's reload of
+// the data pointer needs a store between the header test and the object read, and its rebuilt index needs the header
+// lookup built from a different index expression than the object read's; retail's only store is before the NONE test.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

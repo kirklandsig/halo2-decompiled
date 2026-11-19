@@ -1585,6 +1585,17 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Conditional last-row selection 529, with an entry receiver 530, combined mask 571, or general bit first 531.
 // Return true in the selected branch 566, with the entry receiver 563; explicit empty-block
 // failure with the receiver 560 or combined mask 571. The selection spill and register homes still differ.
+// M3 lane 7 r186 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/401):
+// (type, query, block) alone 529 (same code; 0xd4080 455, masked 293 -> 277); + `if (!parameters) return false;` and
+// `return true;` 568 (2168 B, frame 0x28, 518/377); + one count test (mask in the test) 564 (2153 B, 514/372); on that the
+// square after the direction1 negate and the lightmap pin ahead of the base pin 588 (2158 B, 475/344, best aligned); that
+// with `if (parameters) { ... return true; } return false;` 576 (2166 B, 466/331); on the one-test form `color3f adjusted =
+// *lightmap;` with the bias added in place 569, `vector3f normal = *input_normal;` after magnitude3d 586, both with the bias
+// local 568, all with retail's order 585 (2204 B): each aggregate copy moves `parameters` to EBP and `record` to ESI, so
+// record becomes a register parameter (`ret 8`), 0x3db00 is lost (8) and 0xd4080 rises to 495-504. Diagnostic (not
+// keepable): retail's order with record read once through its address 586 (2215 B; block EAX -> EBX as retail, record on
+// the stack but homed in ESI, parameters EBP; 0xd4080 380). Retail homes parameters ESI, query EDI, block EBX, record EBP:
+// with retail's statement order this build ranks record above parameters.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
