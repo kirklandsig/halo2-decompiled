@@ -2029,6 +2029,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // setter with early nearest reset 597. NOT kept: the 570 form grows to 2893
 // bytes and leaves the projected-point homes and late remainder.
 // Component loop with a shared projection scale 614.
+// Count and clearance homes still differ before the query, with the frame and ESI zero intact.
+// Accepted-count names 551; clearance names 551; both 551; both with prism-index name 551.
+// Chained count initialization 551; chained clearance initialization 551; both 553; both with paired names 553.
 // Count and radius homes, nearest-distance storage and signed remainder timing still differ.
 // Tried scalar face sums 601; scalar edge sums 554; scalar face and edge sums 622;
 // scalar sums initialized at the original reads 622; scalar sums initialized through one origin pointer 622;

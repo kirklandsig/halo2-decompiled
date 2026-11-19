@@ -847,6 +847,14 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // again for the final apply, whose tail retail shares with the first arm. So retail's `collection` behaves like a
 // common subexpression of `&watcher->players` held over that region (which ranks it with the invariants in the key
 // sum) rather than a loop-top variable; no listed form gives that without folding the key into the cursor.
+// M3 lane 1 r121 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): `collection` declared in the else arm
+// just before the slot search, the first arm's apply given `&watcher->players`, 28 (same code); that on the swap order
+// (collection, player, update, other) 32 (same code as the swap-order base); on the swap order a `players` array pointer
+// (`collection->players`) declared ahead of the slot search for the occupied key 27 (1062 bytes: every row but the
+// occupied block's head is retail's; the key sum is (offset + cursor) + (collection + 4)); the same pointer declared in
+// the occupied block with the late `collection` 30; the pointer ahead of the slot search on main's order 33. Reading:
+// retail's sum is (collection + offset) + cursor + 4, as if the key's tree were `collection + i * size` with the base
+// first, so the strength-reduced index flattens into it; ours keeps the index's replacement (offset + cursor) whole.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

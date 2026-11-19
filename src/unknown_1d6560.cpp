@@ -100,6 +100,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax A (11-18): no new form, no lower score (96): the type read once at the entry (24 at 256 B with the caller matched) needs a one-use object-index and a one-use absolute-index local, so it stays unkept; the one-use-free forms (the header base first, the header base second, the type local alone, a long type) score 83 to 136 and demote the matched caller 0x1d5bf0 to 2, 13 or 213, so the body stands.
 // MiniMax B (11-18): no new form, no lower score (96): the type is still read in both kind routes where retail reads it once at the entry; the single-read form reaches 68 only with a one-use local and a score-picked declaration order, and the one-use-free form (98) demotes the matched caller 0x1d5bf0, so the read stays as it is.
 // score 96 (was 96): unchanged in round 252; left: retail reads the type once at the entry with the header data
 // loaded first, which every keepable form here either repeats in both branches or pays for with the caller's register
@@ -492,6 +493,19 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // M3 lane 7 r177 (fast with the file and the caller 0x1d5bf0, all MATCH; control 96): the rigid body bound by reference
 // 96 (same code); the two flag selections as ternaries 98 (272 B); case 11 as one nested ternary 96 (same code); `long
 // result` declared first 96 (same code); case 0 through the header array with the component's index 96 (same code).
+// M3 lane 8 r186 (fast with the caller 0x1d5bf0 in brackets, [0] = still matched; control 96 [0]): the one-read form
+// rebuilt (object_index, absolute_index, rigid body, headers, type through absolute_index; case 0 through
+// `headers[component->object_index & 0xffff]` with main's shift spelling) byte type 28 [0] at 256 bytes, long type 89 [0]
+// (both listed; not kept: object_index and absolute_index are each used once). New on the long form: the kind-7 route as
+// `return type == 1 ? 0xc : 1;` 101 [0]; the header array through a named pool pointer (`pool = g_4e0300`, then
+// `pool->data`) 89 [0] (same code); the rigid body as `owner->model->rigid_bodies + rigid_body_index` 89 [0] (same code);
+// one header element pointer for the type with case 0 re-read through the global and the component 123 [194] at 280
+// bytes, with a byte type 125 [189]. Forms with every local used twice (object_index, rigid body, headers, byte type; no
+// absolute_index): type and case 0 both through `headers[object_index & 0xffff]` 133 [213] at 220 bytes (case 0's index
+// is shared with the type read); case 0 through `headers[(word)object_index]` 98 [13], the type read so spelled instead 98
+// [13], the first with a long type 97 [13]; headers declared ahead of the rigid body, both through `& 0xffff` 128 [213]
+// at 224 bytes, case 0 through `(word)` 36 [13] (the listed 36 form). Every twice-used form moves the component and the
+// index between EAX and ECX and loses the caller, so none is kept. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
