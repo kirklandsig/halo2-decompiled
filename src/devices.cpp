@@ -1074,6 +1074,13 @@ struct s_device_machine_view
 // after the machine test, but its load rises above the group lookup: 16 (654 B); the same local declared bare and assigned
 // before the power test, or declared just before it, keeps the pushed ESI; declared ahead of the group pointer 32 (screen).
 // So a float live across the group tests moves the pointer to EAX, while retail's power load stays below them.
+// M3 lane 5 r205 (fast): the group pointer before the machine flags with the word flags read after the machine test under a
+// re-test of the group index (threaded away) 122 (pushed ESI); that pointer with the lane S bits read from it after the
+// machine test, `(byte)(group->flags & 3)`, 115 (655 B): retail's `lea eax, [eax + edx*4]` before the machine flags and the
+// load after the machine arm with the pointer in EAX, left only `mov al, [eax + 2]; and al, 3` for retail's `mov ax,
+// [eax + 2]` (the masked byte is a one-use temporary, so the pointer wins EAX); the same with a word local and an unmasked
+// byte copy 121 (byte load, pushed ESI); a `word` bits local `group->flags & 3` 117 (657 B, `movzx eax, byte; and eax,
+// 3`); the machine flags read before that pointer 129 (658 B). Body unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1299,6 +1306,8 @@ bool function_108530(long device_index, long name)
 // (`duration - ramp_up_time - ramp_down_time`), then the position and cruise stores, distance declared at its fabs.
 // Still differs: the ramp-down time keeps a register through its clamps (retail compares its stack slot), 528 bytes
 // against 523.
+// score 127 (was 121): the initial velocity now arrives in XMM6 with `ret 0x14` as retail's (both callers match); the
+// duration/position registers are exchanged and the ramp-down is still cached in a register through its clamps.
 // MiniMax B (11-18, round 2): no new form, no lower score (121): retail takes the initial velocity in xmm6 and this
 // build passes it on the stack, and the six-float signature may not change, so the three float temporaries keep their
 // own registers (this build xmm7, xmm2 and xmm1 for the duration and the two ramp times, retail xmm5, xmm7 and xmm1);
@@ -1306,6 +1315,7 @@ bool function_108530(long device_index, long name)
 // tried, so the clamp's XMM homes stand.
 // MiniMax B (11-18): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6; an early use of it (squared 142, copied 121) does not promote it, and the ramp-down minimum written as an if-statement measures 121 in every arrangement tried, so the clamp's XMM homes stand.
 // Earlier 121 (was 121; a second stacked first line, merged in r108): Frameless at retail length. Retail keeps ramp-down in memory and takes
+// Earlier at 121: Frameless at retail length. Retail keeps ramp-down in memory and takes
 // initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.
 // MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
 // but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
@@ -1666,6 +1676,16 @@ bool function_108530(long device_index, long name)
 // PIN(ramp_up_time, 0.0f, duration) ahead of the ramp-down zero clamp 141 (530 B, 31/13). Left as before: the ramp-down
 // held in XMM2 from its zero clamp to the minimum (retail compares the slot) and duration/position in XMM3/XMM5
 // (retail XMM5/XMM3).
+// M3 lane 8 r191 (fast with 0x108600/0x108670, control 127, both callers MATCH; a compile-only build of this file gives
+// this body exactly except the velocity's one load, which LTCG turns into the XMM6 parameter): the denominator through
+// `remaining` 139 (534 B, callers 31/13); both length tests as early returns 127, the duration test alone 127 (same
+// code); 700 plan-block orders and 1500 clamp-and-order variants screened: no order keeps the XMM6 velocity with the
+// ramp-down uncached (when the ramp-down loses its register the duration takes XMM6; the one order that gives retail's
+// XMM5/XMM7 duration and ramp-up caches the ramp-down in XMM6). A velocity copy at the top folds away (same code). The plan order start, half ramp-up, acceleration zero, position, cruise zero, velocity, half
+// ramp-down, target, denominator, deceleration 75 at 523 B (retail's uncached clamp pair and tail, but the duration takes
+// XMM6, so the target becomes the register parameter instead; callers 26/28; a statement order, not kept); velocity,
+// position, cruise zero, target, halves, acceleration zero, start, denominator, deceleration 132 (527 B, `ret 0x18`).
+// Body unchanged.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1916,6 +1936,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // model) 328, fstp unmoved; the three tag lookups through the shared TAG_GET macro 131 (same code). Diagnostic only (the
 // harness links the callee's old object, so its convention moved): the render model as a one-member aggregate argument.
 // Compile-only (no /GL) hoists the render model's load into EDI above the flag branch, so there the block starts at the fld.
+// M3 lane 5 r205 (fast): the render model through a file-local forceinline accessor taking the model 2; `__assume(render_model
+// != 0)` at the top of the flag block 2 (no block boundary, unlike the real test); the render model zero-initialised at
+// function scope and assigned at its lookup 2; had_animation set at the end of the flag block 270 (fstp unmoved); a const
+// channel reference with the time read before the animation 2. Diagnostic (reverted at once): any real branch between the
+// two flag-block sample calls (an integer parameter test) moves the time to SSE (`movss; mulss`, its store after all four
+// pushes), so retail's x87 time needs both calls in one block.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

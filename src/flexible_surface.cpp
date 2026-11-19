@@ -880,6 +880,18 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 130/130/130. Named subtracted product, both products, difference with named subtrahend, and subtrahend
 // scaled from the axis or direction 154/154/154/154/154. NOT kept: the frame is still 0x1c and both
 // matched shared rotation callers differ in every preview. The opening shared helper and body are restored.
+// M3 lane 14 r115 (fast with 0x118140, 0x117c80, 0x30bf0, 0x1462e0 and 0x2551f0, all matched each time; control 130):
+// 0x146320's rotation shape (dot summed k, j, i, cross j and k named, cross i inside the i row) as a file-local inline
+// taking the axis as three scalars, with both table draws through random_unit_vector 162 (880 bytes), with sine and
+// cosine named before the draw 163, with only the axis draw through it 162, with both draws through random_index 162;
+// the same shape taking the axis by pointer 147 (884 bytes), with random_index draws 147; re-measured: both draws
+// through random_unit_vector with the shared helper 125 (888 bytes, under the bar alone).
+// Named cosine complement before direction input 152, Named cosine complement after direction input 152, Named
+// cosine complement after unweighted dot 152, Weighted projection after first cross difference 152, Weighted
+// projection after second cross difference 151, Weighted projection after all cross differences 156, Projection
+// accumulator weighted after first cross difference 130, Projection accumulator weighted after all cross
+// differences 154. NOT kept: The 880-byte forms keep the 0x1c frame and score 151 or higher. Later weighting
+// changes matched users 0x1ff360 and 0x2551f0. The opening shared helper and wind body are restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

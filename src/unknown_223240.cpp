@@ -64,6 +64,17 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)&g_47f0f8[0]);
 }
 
+// score 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// Round 192 (m3 lane 8, fast with 0x223240/0x2232a0/0x223080): the view count declared after the loop, right before the
+// terminal record 40 (575 B, but aligned 20 -> 25: the two zero byte stores move off a shared register, the record base
+// still forms early; a moved declaration, not kept); the stub call's count written as `local_2 + 1` 47 (same code);
+// without the found arm's second `local_5 = 0` 110; the source declared and zeroed inside the loop 47 (same code); the
+// terminal record through a reference 47 (same code). Still BLOCKED-BY 0x2b5d0 (its stub drops the count).
+// MiniMax B (11-19): no new form, no lower score (47): the terminal record's address is still formed differently
+// (this build adds the array's base into the register and stores at [eax + 4] and [eax + 8], retail keeps the scaled
+// index in the register and folds the base into the displacement), the tail call's arguments still need 0x2b5d0's own
+// body, which is stubbed in src/stubs/lane_k.cpp: BLOCKED-BY 0x2b5d0, and part of the reduced-image count is the
+// pushed global addresses, which the reduced image places at other addresses than retail's.
 // score 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // MiniMax C (11-15): no new form, no lower score (79, was 79): retail's outer loop carries a pretest our do-while lacks, the slot scan holds its pointer in EDX and its predicate in CL where ours holds them in ECX and AL, the terminal stores fold the record base into the displacement where ours adds it to the index register, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found

@@ -620,6 +620,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
 // Earlier: coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// Earlier again at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115; a second stacked first line, merged in r108): Frame 0x1ec agrees. The near-plane x coefficient loads late and exchanges the coefficient and zero registers.
 // MiniMax S (11-17): no new form, no lower score (115): the first plane's dot still loads view->vector_e4.i after the
@@ -1076,6 +1077,16 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // offsets 152. Offset before normal copy 444, with shared dot 446,
 // separate classification stores 747. NOT kept: copied-normal-first
 // retains the extent but exchanges the first coefficient registers.
+// M3 lane 5 r203 (fast with 0x1648d0 and 0x320b0, matched throughout; control 115): lane 12 r123's match-only 18 form
+// (build/r123/1652e0-r123-18.patch in worktree m3-lane12) rebuilt on current main 18. Diagnostic on it, 0-8 unused
+// initialised locals after `culled`: 18/34/41/14/18/162/154/14/18, so the rest follows the symbol count; at 3 (or 7)
+// only 14 are left: the clip deltas are computed y, z, x (retail x, z, y, with the same register for each component)
+// and `total` takes ECX (retail EAX). On the 3-local form: the four projection-block statements (culled, out, total,
+// cursor) in nine orders 14-15 (`cursor += 2` ahead of `total += 2` gives `total` EAX, the stores then out of order);
+// the denominator in retail's x, z, y order with no, one, two or three named deltas over 0-7 locals: best 27 (y
+// named), 28 (x named), none named 240-270 (first +0x60), two named 62-273, three named 239-261; each product's
+// operands either way round (24 forms) no change; the denominator as one expression in all six orders 27 (one canonical
+// order). Nothing kept (the 18 form is match-only and the 14 needs unused locals).
 // Round 264 (m3 lane 3, fast with 0x1648d0 and 0x320b0, both matched each time; control 115, aligned 73, masked 30): plane
 // 0's d accumulated in the plane (`d = j term; d += k term; d += i term`) 287 (1867 bytes), the same with each term
 // normal-first 287, accumulated k, j, i 287; accumulated j, k, i in a local `distance` then stored 251 (1867 bytes, aligned
@@ -1094,6 +1105,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // as a vector3f (no cast at the forward pointer) 115 (same code); the first plane's normal copied by memcpy 115 (same
 // code); the camera vector through a const pointer for plane 0's d 251 (1867 B); plane 0's d grouped `i + (k + j)` 145,
 // `i + (j + k)` 176 (first +0xaf): VC keeps source grouping, so only the flat sum gives retail's (j + k) + i adds.
+// M3 lane 12 r147 (fast with 0x1648d0/0x320b0, both MATCH each time; control 115), existing exported helpers not tried
+// before: the far plane's negated vector through vector3f_negate (src/unknown_0b7740.cpp) 257 (1830 B); both planes'
+// normals negated in place through it 129; the intersection through point_along_vector_221e30 (src/unknown_221da0.cpp)
+// with the delta left unscaled 119 (first +0xb6); that with plane3f planes and `total` declared first 121; both planes
+// built through the plane-through-point helper of src/unknown_17d9a0.cpp 310 (and 0x17d9a0 itself stops matching in
+// the fast image, 256). The point memcpy after the segment clear re-measured 193 (a listed form).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

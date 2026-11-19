@@ -531,6 +531,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // body with a plain string holds the string in EBP for the whole function (so LTCG passes it in a register) with retail's
 // scan registers (counter ECX, walk EDX) and retail's `lea edx, [edi + esi]` compare; nothing else wants EBP there, since
 // the destination is first loaded after the scan. A plain form needs the string reloaded in that first pass.
+// M3 lane 14 r115 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the function as a member of the
+// 512-byte text type with the destination as the object (volatile string parameter kept, natural body) 28 [9] (start EDX
+// for life, walk EDI, as the natural body), without the volatile 48 (93 bytes) [88]; the same with the count tested first
+// 40 [37]; a const member with the string as the object, count first, source at the copy 45 (103 bytes) [81]; the natural
+// body reading start once through its own address at the copy's sum 35 [25].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -810,6 +810,11 @@ void function_1537f0(s_profile_record *record);
 // field through it and the links as two chained pairs in retail's store order 49 (NONE in EBP); the four links as one chain
 // through `entry` in retail's store order (`next = next_other = unknown58 = previous_other = NONE`) 49, with `entry` a const
 // pointer 49; main's link pointer declared `short *const` 18 (same code). Without the callees the reduced image scores 84.
+// M3 lane 14 r115 (fast with 0x7f8b0, 0x1537f0 and 0x80490, all matched each time; control 18): the record split into an
+// identity local and a source local of their own types (no grouping record) with main's link pointer 81 (236 bytes: the
+// identity's zeros are forwarded and its home goes, frame 0x90), that with the links as four `entry->` statements in
+// retail's store order 80, with the link pointer's stores in retail's order 81, with the `entry->` links and the heads as
+// one chain 80, with the source declared before the identity 81.
 // @retail 0x7f930
 void function_7f930(void)
 {

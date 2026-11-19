@@ -180,6 +180,9 @@ union s_6ec80
 // (nested ifs, no flag) 226 (NONE moves to EDI as soon as the mask's zero no longer precedes the first pointer test); the
 // scoped mask re-measured 225; with the mask zeroed before the guard as now: the guard as two nested ifs 5, the do loop
 // ending `while (++local_15 < 16)` 5, the active test cast `(bool)` 5, explicit `!= NULL` pointer tests 5 (all the same code).
+// M3 lane 3 r267 (fast with 0x6ec10 and 0x5b120; base 5): with the mask scoped in the guard, its test spelled `!local_14 ||
+// !local_2->data[0]` 225, the bits added with `+=` 226, the loop reading the player block through `&arg_0->data4f90` 233
+// (981 B), a dword counter 226; the counter declared beside the mask before the guard and zeroed inside it 5 (same code).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

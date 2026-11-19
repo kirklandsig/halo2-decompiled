@@ -1045,6 +1045,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 }
 // score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call (two stacked first lines merged in r108).
+// score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
@@ -1613,6 +1614,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // histogram 936; the top variant lookup moved after the summary and capacity 870 (2784 B; 0x73530 MATCH -> 1, not kept).
 // Reading: retail calls the top 0x192e60 at frequency one (unconditional) and expands the colder 0x193300 and the loop's
 // lookup, so the difference is the inliner's site choice, not a statement form here.
+// M3 lane 7 r185 (fast with 0x73530, 0x71730, the team-balance callees and 0x192e60's/0x193300's file-mates; control 871,
+// aligned 1016; both builds return with `ret 4`): re-measured on today's body, the loop's written-out lookup as a call
+// to 0x192e60 1007 (2620 B, aligned 986), with a `__forceinline` declaration of 0x193300 here 1007 (the same code: the
+// declaration does not expand it); the type-5 block's `if (!result) return result;` moved after the block 871 (same
+// code); `inline` on 0x193300's definition 872 (2796 B, aligned 921: the capacity switch is then expanded here as in
+// retail, but 0x705f0 and 0x72330 expand it too and lose their matches, 3 and 49), with the loop lookup through
+// 0x192e60 997 (2636 B, aligned 941). Retail expands 0x193300 only at this frequency-1 site and calls it under the
+// deeper tests of 0x705f0/0x72330, so the split is the link's inline threshold, not a source form.
+// Inner lookup candidate held for validation, selected from validation, or cleared on failure
+// 876/885/885. With the shared availability test 875/905/903, direct pointer publication with the
+// shared test 885, complete nullable expression 871. NOT kept: the expression ties, and the other
+// forms regress. The opening lookup still expands and no trial reaches the retail frame.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

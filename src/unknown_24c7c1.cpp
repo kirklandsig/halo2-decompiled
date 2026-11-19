@@ -556,8 +556,16 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 115 (was 114): earlier 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// score 115 (was 115): earlier 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
+// M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
+// `short const &` for the bounds store 191 (1888 bytes; the reference folds away and `left` is still stored as a dword);
+// the text height clamped as `height = bottom - top; if (height < 0) height = 0;` 452 (1888 bytes); the timed colour as
+// `alpha *= fraction > 1.0f ? 1.0f : fraction` 115 (same code); the scripted test as two nested ifs 115 (same code); a long
+// loop index 420 (1877 bytes); a long count 197 (1883 bytes). Diagnostic, reverted at once: with `left`'s address taken
+// the store is still a dword (395): this build widens a short store into its four-byte home whenever the upper half is
+// free, so retail's word store means the two bytes above `left` belong to something it never touches (the two-short
+// aggregate the earlier rounds found).
 // MiniMax R (11-17): no new form, no lower score (114; 115 in the batch of all fourteen, whose reduced image is wider): retail's timer message, left coordinate and view pointer still sit in byte and word homes where this build gives them dwords, and the difference still rests on the text buffer's call convention in 0x15f120: BLOCKED-BY 0x15f120.
 // MiniMax R (11-14, run 65): no new form, no lower score (114 in the reduced image, 115 in the full one): retail
 // keeps the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at -0x3c, while this build
@@ -819,6 +827,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // The full build reads 115 once src/unknown_1ee340.cpp's constructor stores its vertices through the component accessor
 // (this round's 0x1edd00 match) and 114 with that file as before (plain checks of both trees): the reload pair before the
 // flag setup (`mov edi, [ebp - 0x64]` against retail's `mov ecx, [ebp - 0x40]`) follows the whole-image link, as in round 97.
+// M3 lane 1 r124 (fast with the file's other 21 functions, all MATCH each run; control 115, difflib-aligned 113): nearly
+// every difference is a frame home. 0x24ce9d (same file, matched, no longer held) taking `left` and `top` as `short`
+// 182 (1883 B; 0x24ce9d stays matched); `left` as a `short const` initialised where it is computed 115 (same code); the
+// timer flag as a bool 191 (1888 B: timer -0xe, tutorial -0xd, scripted still packed at -2 beside the split-screen byte,
+// where retail has -0xf/-0xe/-0xd below `origin`), with `origin` declared ahead of the split-screen flag 191 (same
+// code); `origin` scoped to its own block around the top/left computation 115, with the bool timer 191 (same code each).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

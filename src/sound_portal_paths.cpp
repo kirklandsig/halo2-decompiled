@@ -117,6 +117,11 @@ __forceinline long portal_path_gain(real distance, real range)
 }
 
 // score 287 (was 296): Advancing the required index output restores gain-based output addressing.
+// Round 192 (m3 lane 8; one-file harness, see 0x18dc90's note): on the r111 held form 244 positional, 17 aligned at
+// 1364 B, the same cluster/portal-index EBX/EBP swap as the twin plus the padding it shifts; the twin's ten forms
+// applied to both bodies give 244 here each, except a long portal index 323 and the cluster through a reference 244
+// (aligned 21).
+// Advancing the required index output restores gain-based output addressing.
 // The 0x428 frame agrees. The starting-cluster register, table loads, validity words
 // and sort scratch offset differ.
 // Before the sort scope, the frame was 0x42c.
@@ -198,6 +203,15 @@ __forceinline long portal_path_gain(real distance, real range)
 // held form rebuilt on this body 244 (1364 B, aligned 17); without the forms the review list reverts unless a match (the
 // clear moved, the seed order, the arm order, the for-init limit) 353 (1355 B); main's body with only the callee
 // change 358. See 0x18dc90's note for the register-pair screens (same leftover here).
+// M3 lane 14 r118 (fast with 0x18dc90, 0x14b240, 0x249d60 and 0x18ae50; difflib-aligned in brackets, base 287 [172]):
+// `dword encoded` 308 [183]; the limit as `if (limit > 64) limit = 64;` 287 [176]; the limit in the for-init after the
+// counter 282 [168] (a moved declaration; retail stores the counter before the limit compare); the held r111 gain
+// helpers on main's base 307 [162] (1359 B); the index advanced at the row latch as 0x18dc90 286 [173] (1364 B, gain of
+// one, not kept); the gain store as if/else 288 [169].
+// Sort count shared with fill 306; fill ordinal as sort scratch 319; unsigned sort count scratch 313.
+// Separate output bounds, available first 287 and cap first 288; in-place cap 287;
+// row ordinal or limit as sort scratch 357/319. NOT kept: the separate bounds reach retail length
+// without a score gain. Starting-cluster register and BSP table reloads still differ.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -297,6 +311,18 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 }
 
 // score 315 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
+// positional/aligned; on main 304/232): lane 13's r111 held form re-applied (lane 2's rebuilt patch) 15/16 at 1363 B,
+// the twin 244/17. Only the cluster pointer (ours EBX, retail EBP) and the widened portal index (ours EBP, retail
+// EBX) differ in both. On that form: the nearest test nested 15; the nearest distance stored before the index 16; the
+// side bit named 19; the environment compare operands swapped 16; the seed's bit set through
+// `bsp->clusters[cluster_index]` 359; the travel call taking `cluster - bsp->clusters` 358; a const cluster pointer
+// 15; `bsp->portals + portal_index` 15; a long portal index 324 (the pair stays, the portal pointer moves); the
+// implicit short conversion 15; a short other index 15; a short encoded entry 15; the cluster through a reference
+// 19. Not kept (held form unchanged: needs a match).
+// r118 wrote the path loop as its twin 0x18d730 does (destination resolved before the flag
+// test, one nested condition, long portal index, the valid words cleared by memset). Advancing the required index at the
+// row latch brings the entry frame to 0x42c.
 // Retail's 0x428 frame keeps the starting cluster in EBP, reloads both BSP table bases per path entry
 // and resolves the destination before testing flags. Both extra table-base spills persist.
 // Before the cursor change the frame was 0x430. Tried: const portal 354; const views 354; endpoint mask
@@ -398,17 +424,35 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // the nearest distance stored first 16; the portal record indexed from the packed value 317 (1379 B); 53 random
 // combinations of 14 code-neutral toggles 15-21. Without the reverted-unless-match forms the rewrite is 351 (1354 B);
 // main's body with only the callee change 349.
+// M3 lane 14 r118 (fast with 0x18d730, 0x14b240, 0x249d60 and 0x18ae50; the kept form plain-confirmed with 0x18ae80,
+// 0x18bb80, 0x13de30, 0x2197f0; difflib-aligned in brackets, base 315 [232]): written as 0x18d730's body (its scoped
+// sort scratch and index cursor at the stores included) 291 [176] (1365 B; the scope is match-only); without the scope
+// 305 [208] (1365 B); that with the index advanced at the row latch 305 [209] (1363 B, kept). Its parts alone on the old
+// body: memset 358, long portal index 353, nested condition with the destination first 367, cursor at the stores 362;
+// on the kept form: short portal index 356, the `= { 0, 0 }` initialiser for memset 368; memset and long index with the
+// old `continue`s 340. On 305: `dword encoded` 304 [207]; the limit as `if (limit > 2) limit = 2;` 305; the limit in
+// the for-init after the counter (retail sets the counter before the compare and jumps from the capped arm past the
+// entry test) 300 [205]; the held r111 gain helpers (aggregate pin, fraction and curve helpers, both twins) 313 [165]
+// (1354 B); the gain store as if/else 305. Left: both table bases hoisted and spilled where retail reloads them after
+// 0x14b240 (see 0x18d730's note), the cluster pointer in EBX for EBP.
+// Self-review: the kept form needs the destination resolved before the flag test (retail loads the cluster table base
+// and forms the destination before `test byte [portal + 0x18], 0x28`); nested with the destination after the test 340.
+// Sort scratch scoped at the common row latch 311; late order buffer 315; both 311.
+// Signed fill-count scratch 350; scoped unsigned sort-count scratch 375; row ordinal scratch 371;
+// output bound scratch 311; two bounds at the latch 361. NOT kept: the 311 forms
+// recover 0x428 but gain four and leave the BSP table spills.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
 {
 	s_portal_path_cluster *cluster = &bsp->clusters[cluster_index];
-	dword valid[2] = { 0, 0 };
+	dword valid[2];
 	real distances[64];
 	long nearest_portals[64];
 	long order[64];
 	long nearest_clusters[64];
 	real nearest_distance = FLT_MAX;
+	memset(valid, 0, sizeof(valid));
 	if (cluster->environment_index != NONE)
 	{
 		nearest_clusters[cluster->environment_index] = cluster_index;
@@ -420,33 +464,34 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 	for (long i = 0; i < paths->count; i++)
 	{
 		short encoded = paths->portals[i];
-		short portal_index = (short)(encoded & 0x7fff);
+		long portal_index = (short)(encoded & 0x7fff);
 		s_portal_path_portal *portal = &bsp->portals[portal_index];
 		long other_index = portal->clusters[(encoded >> 15) & 1];
-		if (portal->flags & 0x28) continue;
 		s_portal_path_cluster *other = &bsp->clusters[other_index];
-		if (other->environment_index == cluster->environment_index) continue;
-		real travel = function_249d60((s_structure_bsp_view *)bsp, cluster_index, other_index);
-		real distance = function_14b240((s_14b240_owner *)bsp, (s_bsp3d_disk *)portal, point) + travel;
-		if (nearest_distance >= distance && cluster->environment_index != NONE)
+		if (!(portal->flags & 0x28) && other->environment_index != cluster->environment_index)
 		{
-			nearest_portals[cluster->environment_index] = portal_index;
-			nearest_distance = distance;
-		}
-		if (other->environment_index != NONE)
-		{
-			s_portal_path_environment *environment = &bsp->environments[other->environment_index];
-			real limit = environment ? environment->range : maximum_range;
-			if (limit >= travel)
+			real travel = function_249d60((s_structure_bsp_view *)bsp, cluster_index, other_index);
+			real distance = function_14b240((s_14b240_owner *)bsp, (s_bsp3d_disk *)portal, point) + travel;
+			if (nearest_distance >= distance && cluster->environment_index != NONE)
 			{
-				if (valid[other->environment_index >> 5] & (1 << (other->environment_index & 31)))
-					limit = distances[other->environment_index];
-				if (limit >= distance)
+				nearest_portals[cluster->environment_index] = portal_index;
+				nearest_distance = distance;
+			}
+			if (other->environment_index != NONE)
+			{
+				s_portal_path_environment *environment = &bsp->environments[other->environment_index];
+				real limit = environment ? environment->range : maximum_range;
+				if (limit >= travel)
 				{
-					distances[other->environment_index] = distance;
-					nearest_clusters[other->environment_index] = other_index;
-					nearest_portals[other->environment_index] = portal_index;
-					portal_path_set_bit(valid, other->environment_index);
+					if (valid[other->environment_index >> 5] & (1 << (other->environment_index & 31)))
+						limit = distances[other->environment_index];
+					if (limit >= distance)
+					{
+						distances[other->environment_index] = distance;
+						nearest_clusters[other->environment_index] = other_index;
+						nearest_portals[other->environment_index] = portal_index;
+						portal_path_set_bit(valid, other->environment_index);
+					}
 				}
 			}
 		}

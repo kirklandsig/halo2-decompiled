@@ -483,6 +483,15 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // true;` 110 (522 B), with `if (result != NONE) initialize = true;` 115 (506 B), with `initialize = true;` 102 (493 B); the
 // walk iterating in cache_index itself 77 (same code), that with `if (result != NONE) initialize = true;` closing the
 // else arm 85 (504 B, round 99's code). Body unchanged.
+// M3 lane 6 r199 (fast with 0x3db00 and 0x3dd10, both MATCH each time; control 77): on lane 11 r104's 83 form (merge test
+// `!initialize || result != NONE`, re-measured 83 at 508 B: only the walk's NONE exit differs, inline with `or eax, esi`
+// where retail jumps to a trailing `mov eax, esi` epilogue) the walk exit returning cache_index 83 (same code); the walk's
+// pick in its own `oldest_index` local copied into result after the loop 169 (524 B); `initialize = true;` ahead of the
+// walk's exit test, outside the walk block, on main 145 and on the 83 form 145 (508 B); the else arm closed by `if (result ==
+// NONE) return result; initialize = true;` with the record block unconditional (no outer test): without the walk's own
+// return 86 (506 B: VC drops the merge test because both paths into it know the result, so the found path enters the
+// record lookup as retail but retail's redundant `cmp esi, -1; mov cl, 1; je` is gone), with it 86 (same code), with
+// `initialize = true;` ahead of that test 145.
 // M3 lane 7 r183 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77): lane 11 r104's merge (`!initialize || result
 // != NONE`) re-measured 83 (508 B): from the found test to the end only the walk's NONE return differs, and it differs
 // because ours folds the returned value to the known -1 (`or eax, esi` with ESI as the -1 source) where retail returns
@@ -507,6 +516,13 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // cache_index (NONE on that path) instead of the literal: main 77, 9 form 9, closing-test form 87 (same code each: VC
 // folds cache_index to -1 first); the result as the one field of a local aggregate (diagnostic) 77/9/87 (same code:
 // the field is tracked like a scalar).
+// M3 lane 7 r185 (fast with 0x3d2c0, 0x3db00 and 0x3dd10, all MATCH; control 77): the found arm re-reading the cache
+// field (`result = *(long *)(object + 0xcc);`) on main 77, on lane 8's `!initialize || result != NONE` merge 83 (508 B), on
+// the 9 form 9 (519 B; all three the code of their base: the re-read is merged with the tested load and the found edge is
+// still not threaded); that merge with the walk's exit as `goto done` to the only return 85 (504 B: the walk exit becomes
+// retail's `je`, but both epilogues merge on ESI and the merge block reloads the result into EAX); that merge with the
+// walk's return moved to close the else arm 86 (506 B). On the 9 form only two points differ: ours reloads the result
+// before the merge test because the found edge enters it, and the walk's NONE return folds to `or eax, -1`.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
