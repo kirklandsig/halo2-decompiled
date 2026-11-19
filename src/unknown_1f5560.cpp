@@ -1869,6 +1869,11 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // assigning y first 261 (aligned 158, shape 50); the forwarding function alone on the kept body 252 (1190 B), with
 // one return 243, with the goto and one return 263. Open: what gives the radius XMM5 and the direction XMM2/XMM3 once
 // the result holds XMM0, and why retail does not thread the left type-zero arm.
+// M3 lane 8 r191 (fast with 0x29a190/0x29cbb0, control 239): the convention already matches retail (target in EDX, the type
+// as the first stack argument), so no parameter reorder is needed. The type exit by `goto done` 260 (1173 B: the zero
+// takes XMM1 as retail, but the result is stored from it with no XMM0 copy); with the sign applied to the result and one
+// return 255 (1187 B); `real result = 0.0f;` as the first statement 262; result declared after the radius 239 (same code);
+// the sign applied to the result with the type exit's own return kept 244 (1178 B). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

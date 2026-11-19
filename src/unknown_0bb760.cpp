@@ -748,6 +748,12 @@ void function_3dd10(long object_index, bool force);
 // fields 97; native tint block, position and variant fields 97; complete native tint object with shared datum
 // lookup 97. All eight previews retain 1034 bytes and the same initial register mismatch. The native tag-
 // index form adds spill differences. Opening executable source restored.
+// M3 lane 8 r191 (fast with 0x1318d0/0x131a00/0x3dd10, control 97; the guard diagnostic 77 re-measured): the first scan
+// bounded by `entry->count` read in its condition 647 (1316 B, unrolled), with the guard 645; `inline` on both HSV
+// converter definitions 224 (they inline and three matched callers are lost), on the rgb-to-hsv one 237, on the
+// hsv-to-rgb one 143. Compile-only (object in EDI as retail there, not exact): the signed scan still unrolls with the
+// weight as an aggregate member, through an inline scan helper writing weight, mask and last through pointers or
+// returning the weight, as a while, with a dword index, with `continue`, or with the choice pointer stepped. Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

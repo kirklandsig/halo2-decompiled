@@ -1299,13 +1299,15 @@ bool function_108530(long device_index, long name)
 // (`duration - ramp_up_time - ramp_down_time`), then the position and cruise stores, distance declared at its fabs.
 // Still differs: the ramp-down time keeps a register through its clamps (retail compares its stack slot), 528 bytes
 // against 523.
+// score 127 (was 121): the initial velocity now arrives in XMM6 with `ret 0x14` as retail's (both callers match); the
+// duration/position registers are exchanged and the ramp-down is still cached in a register through its clamps.
 // MiniMax B (11-18, round 2): no new form, no lower score (121): retail takes the initial velocity in xmm6 and this
 // build passes it on the stack, and the six-float signature may not change, so the three float temporaries keep their
 // own registers (this build xmm7, xmm2 and xmm1 for the duration and the two ramp times, retail xmm5, xmm7 and xmm1);
 // the body is retail's length and the ramp-down minimum written as an if-statement measures 121 in every arrangement
 // tried, so the clamp's XMM homes stand.
 // MiniMax B (11-18): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6; an early use of it (squared 142, copied 121) does not promote it, and the ramp-down minimum written as an if-statement measures 121 in every arrangement tried, so the clamp's XMM homes stand.
-// score 121 (was 121): Frameless at retail length. Retail keeps ramp-down in memory and takes
+// Earlier at 121: Frameless at retail length. Retail keeps ramp-down in memory and takes
 // initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.
 // MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
 // but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
@@ -1658,6 +1660,16 @@ bool function_108530(long device_index, long name)
 // nearest 75 aligned lines from retail), about 480 leave the ramp-down uncached as retail does (the nearest 53), none
 // does both with retail's body. A diagnostic with the cruise time's ramp-down term dropped gives retail's exact
 // uncached clamp pair, so the ramp-down sits one reference from losing its register.
+// M3 lane 8 r191 (fast with 0x108600/0x108670, control 127, both callers MATCH; a compile-only build of this file gives
+// this body exactly except the velocity's one load, which LTCG turns into the XMM6 parameter): the denominator through
+// `remaining` 139 (534 B, callers 31/13); both length tests as early returns 127, the duration test alone 127 (same
+// code); 700 plan-block orders and 1500 clamp-and-order variants screened: no order keeps the XMM6 velocity with the
+// ramp-down uncached (when the ramp-down loses its register the duration takes XMM6; the one order that gives retail's
+// XMM5/XMM7 duration and ramp-up caches the ramp-down in XMM6). A velocity copy at the top folds away (same code). The plan order start, half ramp-up, acceleration zero, position, cruise zero, velocity, half
+// ramp-down, target, denominator, deceleration 75 at 523 B (retail's uncached clamp pair and tail, but the duration takes
+// XMM6, so the target becomes the register parameter instead; callers 26/28; a statement order, not kept); velocity,
+// position, cruise zero, target, halves, acceleration zero, start, denominator, deceleration 132 (527 B, `ret 0x18`).
+// Body unchanged.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
