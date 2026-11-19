@@ -1570,6 +1570,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // MiniMax G (11-18): no new form, no lower score (529): this build's frame is 0x2c against retail's 0x28 and the
 // selected result still spills; retail's own parameter order is (type, query, block), with the block in EAX and the
 // query in EDX, and this lane may not change the parameter order, so the lead that needs it stays blocked.
+// M3 lane 13 r114 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21; aligned/masked [365/176]): the lightmap pin
+// ahead of the base pin 560 (2193 B) [362/151]; the square right after the direction1 negate 555 [373/173]; `real
+// bias = parameters->bias;` for the three adds 559 (0x3db00 lost, 8; 0xd4080 508); (type, query, block) with
+// 0xd4080's call to match and the guard `0 < count` 570 (0xd4080 380) [359/179]; that with the lightmap pin first
+// 559 [354/152], with the square moved too 565 [336/142], plus `if (!parameters) return false; ... return true;` 581
+// (2171 B) [329/138]. Every retail-order form lowers the masked count and raises the positional one. Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

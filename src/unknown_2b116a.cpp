@@ -5536,6 +5536,13 @@ void function_1486b8(long error, bool keep);
 // with literal store 56; incomplete probe to single return 56. NOT kept:
 // storing the QoS predicate recovers the entry store and stack argument,
 // but changes the completion store and shortens the body.
+// M3 lane 13 r113 (fast): with `bool result = false;` at entry and no else store (re-measured 56, 150 bytes)
+// the entry store is retail's, but completion becomes an EBX register parameter held for the whole body and
+// the task spills; retail splits completion (EDI, then a reload from its stack slot) to give the task EBX.
+// On that form: the final test read through the parameter's address 29 (156 bytes: completion on the stack,
+// its copy still takes EBX); the completion store ahead of the declaration 55; the task declared at the
+// top 56; `if (result && !*completion) return result;` before the call 56; the probe branch calling the
+// cleanup itself and returning 55; `else result = false;` on the no-task path only 52 (156 bytes).
 // @retail 0x2bb04e
 bool function_2bb04e(long task_index, bool *completion)
 {

@@ -806,6 +806,17 @@ struct s_physical_block_iterator
 // materialised case 0). On lane 9 r109's lead rebuilt on this base (93, aligned 36, masked 14): 1..7 unused initialised
 // locals 93 each (diagnostic, no symbol-count tie); the walk in 0x13d8b0's form (plain iterator and block locals through
 // function_13d8b1) 107 (frame 4 bytes smaller, swap unchanged); the allocation test as `NONE != result` 93 (same code).
+// Lane 13 r112 (fast with 0x13d320; control 201, aligned 118, registers masked 86): lane 9 r109's 93 lead rebuilt on today's
+// base 93 (1213 B, aligned 43, masked 18; match-only, not kept). On it, each the same code (93): best.offset in a local
+// inside the walk used by both overlap tests; the overlap end named with best.offset read directly; both named; best.offset
+// copied to a local ahead of the walk; the two overlap tests nested with that local; the tests through a pointer to the
+// best candidate; the take test as `!(have_best && !better)`; the allocation test as `!(result == NONE)`. On the kept body:
+// case 0 as `!(time > best.time || (time == best.time && pages >= best.pages))` 222 (1220 B); as `time <= best.time && (time
+// != best.time || pages < best.pages)` 222 (1220 B); as `(time < best.time && time != best.time) || (time == best.time &&
+// pages < best.pages)` 201 (same code); the take test as `!(have_best && !better)` 201 (same code). Read again on the lead:
+// retail keeps the count in EDI and the bit in EBX in the walk and then EDI for best.offset and the result, EBX for the
+// data, the page sum, the handle and NONE; the sum goes into the pages register and best.offset's copy feeds the second
+// test (`mov edx, edi; cmp eax, edx`), which is what a best.offset with two readers gives and ours never keeps.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

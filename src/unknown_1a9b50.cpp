@@ -792,6 +792,16 @@ extern point2f *g_468778;
 // calls that take it in EBX (0x1e4f90, 0x1a9d80, 0x1a9e00) 392 (all four pushes at entry and the prop in EBX as retail,
 // but the actor EDI and spilled, settings ESI, slot EBP; masked 114); both of those together 404 (1562 bytes: arg_0
 // ESI). Neither the settings' register nor arg_0's EBX preference alone is what separates the two colourings.
+// Lane 13 r112 (fast, control 375, aligned 263, registers masked 124): re-measured the actor-first form with `if (!settings
+// || f13 || f14 || f2d) return false;` and the final expression returned 393 (aligned 266, masked 126). On it: the final
+// result as `!(f14 || f13 || f2d)` 393 (same code); the entry test as `!(settings && !f13 && !f14 && !f2d)` 393 (same code);
+// the end as `if (f14 || f13 || f2d) return false; return true;` 413 (1523 B, masked 108); the slot pointer declared between
+// the actor and the settings call 393 (same code). On the kept body: the result as `!(f14 || f13 || f2d)` 375 (same code);
+// the entry test as an early `return result;` 440 (1517 B, frame 0x3c). Diagnostics, restored: three, eight and sixteen
+// extra byte reads through the prop pointer in the facing arm on the actor-first form 436/481/546: the prop then takes ESI
+// (with a copy kept in arg_1's home), arg_0 moves to EBP and the actor stays in EDI, never retail's slot ESI / arg_0 EDI /
+// prop EBX / actor EBP. Read from the listing again: retail evicts arg_0 from EDI for the view pointer in the facing block
+// and reloads it from its parameter home at the tail, where ours evicts the settings from ESI for the facing pointer.
 // MiniMax G (11-18): no new form, no lower score (375): computing the actor block before the settings call, as
 // retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
 // pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the

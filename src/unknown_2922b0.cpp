@@ -654,6 +654,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // retail stores it in the arm); the success flag declared after the hit flags on those two forms 663 (486 / 411) and 645
 // (486 / 411). Retail's slot counts (stack-tracked) show a 16-reference home at +0x04 that this build does not have and the
 // success byte at +0x0b behind it, so the frame differs by more than declaration order.
+// M3 lane 13 r114 (fast; control 558, aligned/masked [348/117]): retail lays the inactive exit out as its own
+// epilogue at the very end (`jbe` to `pop edi; mov al, 1`). The active test positive with one `return local_0;` 667
+// (2866 B: the success flag is then held in BL); `return local_0;` closing the active block and `return true;` after
+// it 669 (2865 B) [350/116]; `else return true;` then `return local_0;` 669; descriptive names for five locals 558
+// (same code); `bool local_0;` assigned true in both arms of the active test 552 (first difference +0x2e; six
+// points, a flag form). Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
