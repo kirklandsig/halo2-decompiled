@@ -176,6 +176,10 @@ union s_6ec80
 // EDI); without the second_id test 241; without the 0x49c8 NONE test 195 (entry registers retail's, first difference
 // +0x101: the two block pointers' EBX/EDI swapped); one more read of the machines block after the loop 172 (979 B, the
 // same picture). So retail's machines pointer outweighs NONE's extended web, and players outweighs the machines pointer.
+// Round 181 (m3 lane 7, fast with 0x6ec10/0x5b120; base 5): the mask declared and zeroed between the two pointer tests
+// (nested ifs, no flag) 226 (NONE moves to EDI as soon as the mask's zero no longer precedes the first pointer test); the
+// scoped mask re-measured 225; with the mask zeroed before the guard as now: the guard as two nested ifs 5, the do loop
+// ending `while (++local_15 < 16)` 5, the active test cast `(bool)` 5, explicit `!= NULL` pointer tests 5 (all the same code).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

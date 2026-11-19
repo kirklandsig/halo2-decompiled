@@ -939,6 +939,9 @@ void function_2a0580(long definition_index)
 long function_1765e0(point3f const *point, vector3f const *direction, vector3f const *normal, long tag_index, long mode, long deterministic);
 
 /* creates an effect at a cutscene flag, facing the flag's direction */
+// Matched in a full build with stand-in SDK headers (was 6): the flag's position pointer is passed through a
+// reference-bound local (`kept`).
+// Before:
 // score 6 (was 6): only the order of the pushes: retail pushes esi and both
 // constant arguments before the x87 work, ours interleaves push esi and the
 // second push 1 with the fld/fcos; four source rewrites all scored 6.
@@ -1045,16 +1048,25 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // yaw cosine and sine, then scaled by `*= cosf(pitch)` 29 (93 bytes); a named scenario view with the flag as
 // `cutscene_flags + index` 6. In every form the scenario add and the first fld still pass `push esi` and the second
 // `push 1`.
+// M3 lane 9 r139 (fast with 0x2a1120 and 0x1765e0, both matched each time): the element as `cutscene_flag_index +
+// table` (index-first pointer arithmetic) 6; that through a named table local 6; that bound as a `T *const &` 6; that
+// with the position passed inline 6; that with forward declared before the flag 6 (all the same code).
+// M3 lane 9 r141 (fast with 0x2a1120 and 0x1765e0, both matched each time): the flag table field bound by const
+// reference (`T *const &flags = view->cutscene_flags;`, the element `&flags[index]`) 6; that with the element also bound
+// as `T *const &` 6; with the position passed inline 6; with the element as `flags + index` 6; with a const element and
+// a pointer-to-const position 6 (all the same code: the table add still issues ahead of `push esi`). Redundant parens,
+// 1-3 deep, around each component's right side 6 each (9 forms, the same code: the schedule does not follow the count).
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
 	s_scenario_cutscene_flag_view *flag = &((s_scenario_cutscene_flags_view *)g_4e0350)->cutscene_flags[cutscene_flag_index];
 	point3f *position = &flag->position;
+	point3f *const &kept = position;
 	vector3f forward;
 	forward.i = cosf(flag->yaw) * cosf(flag->pitch);
 	forward.j = sinf(flag->yaw) * cosf(flag->pitch);
 	forward.k = sinf(flag->pitch);
-	function_1765e0(position, &forward, g_4687b0, effect_index, 1, 1);
+	function_1765e0(kept, &forward, g_4687b0, effect_index, 1, 1);
 }
 
 struct s_effect_owner;

@@ -844,6 +844,12 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // found-name record by pointer at the request level 674 (1830 bytes; the names are then read at each group); that
 // with an urgent-only request (the constant false dropped) 637 (1798 bytes); the graph passed as the state's tag
 // lookup at the call instead of the local 633 (re-measure of round 12's fresh graph: 0x1cd070 213).
+// M3 lane 15 r104 (fast with 0x1cd070 210, 0x1cccd0 and 0x1dc8c0 MATCH throughout; control 348, all restored): the graph
+// read through its address at the request (diagnostic) 348 (folds, same code); the graph fetched through graph_get() at
+// the request 633 (0x1cccd0 lost); `success` declared ahead of the graph 348 (same code); in the request helper (src/
+// unknown_1dacb0.cpp) the inherited graph named before its group request 348 (same code; 0x1dc8c0 stays MATCH: that
+// matched user of the helper also keeps the graph in EBX and graph+0x34 in EBP, so the swap here comes from this caller);
+// the found names copied into an aggregate for the request 504 (1766 B, the frame changes).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1112,6 +1118,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // retail's slots but leaves its constructor at the entry (353); re-initialising it in the block adds the
 // block-entry stores but the entry constructor stays (353); no C++ scoping gives both. Blend-query lifetime
 // (retail keeps the blend byte in memory across 0xe6800) and the result/loop byte homes also differ.
+// Earlier 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; ID homes and blend-query lifetime still differ.
 // Round 15: inline channel query 210; early success with separate name comparisons 256; separate comparisons
 // with late success 265; bitwise separate comparisons 256; inline transition-find 210 (callee still matched);
 // fraction clamp workspace 287; signed-byte result 210; primary-ID lexical rename 210. Original body restored.
@@ -1271,6 +1278,10 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // channel test 210; the 0x200 test with its arms swapped 214 (1133 B); the fraction declared where first set 210; the
 // transition set declared at its initialisation 210. Diagnostic: the channel test's id use dropped 337 (1116 B): the id
 // then stays in memory, but the id slots stay swapped and the set still does not take EBP. All restored.
+// Completed transition ID copied at admission, before clear or after start 210/210/210.
+// Completed primary ID copied at lookup return alone or with those transition
+// copies 210/210/210/210. Primary copy before clear with transition copy at
+// admission 210. All leave the ID slots and blend lifetime where they were.
 // Lookup inputs from the set, mode, weapon fields or all name fields 210/210/210/210;
 // resolved set or resolved mode and set at lookup return 210/210; complete record lookup with
 // early resolved set 210; early set under split lookup admission 210. NOT kept: all forms
@@ -1301,6 +1312,15 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // at the join, state_flags reloaded into EBX right after that call, one shared `and byte ptr [edi+0x6e], 0xfe`), the
 // frame position's single load, the flag-4 block's place, and a scratch-register rotation at the 0x1cccd0 and 0x1cb410
 // calls. BLOCKED-BY 0xe6800 for the blend byte only if retail built that callee as opaque; not shown.
+// M3 lane 15 r104 (fast with 0x1ccda0, which stays MATCH, and 0x1cc3f0 348; control 210, all restored): the animation id
+// renamed to sort after the transition id 210 (same code; a re-measure of lane 10 r13's form); the blend flag reused for
+// the unflagged state (retail's [esp+0x50] holds both) 210 (same code: ours still keeps it in DL); `result = true;` first
+// in the channel_start success block (retail's `mov byte ptr [esp + 0x54], 1` there) 274 (1139 B); a named pointer to
+// channels[2] declared after the unflagged state and used for its set, frame and unflagged calls 237 (1133 B as retail,
+// first +0xa9: both id slots and the transition id's memory compares as retail; left: names.set not cached in EBP and
+// the blend flag kept in DL across 0xe6800); on that, a resolved-set local for the three later set uses 237 (same code);
+// on that, transition_find's blend parameter read through its address (diagnostic) 285 (1136 B; the transition id
+// moves to [esp+0x4c]).
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

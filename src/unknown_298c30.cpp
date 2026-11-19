@@ -115,6 +115,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // float, and the body is still 40 bytes shorter than retail's.
 // MiniMax R (11-16): no new form, no lower score (382): the first sum still lands in xmm3 where retail keeps it in xmm0, retail keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4, and the inner cursor, the wrapped angle and the candidate width still take other homes.
 // score 305 (was 305): 1732 bytes and frame 0x64 as retail (305 since the staged y, 382 before it). First +0x57
+// 1732 bytes, frame 0x64 and `ret 0x1c` as retail. First +0x57
 // loads unity into XMM1 instead of XMM2. Near cosine precision, inner cursor,
 // wrapped-angle homes and candidate width differ.
 // Earlier 382 (1692 bytes), after 393, 408, and 395 before the two fixes below.
@@ -545,6 +546,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // near continue 305, complete signed endpoint initializer 305.
 // NOT kept: the real radial bound restores the first unity load but shortens
 // the body by 15 bytes. Near cosine and candidate ordinal homes remain.
+// Signed candidate total with earlier projections (both, velocity, facing, facing between
+// endpoints, velocity between, both between, both before radius sign) 471/469/468/469/469/469/471.
+// Earlier projections with a cached positive radius 384. NOT kept: signed total shortens
+// the body and changes the caller convention. The unity register remains on the cached-radius form.
 // Unity still uses XMM1, and the near cosine still lacks the retail spill. Conditional radial cap 305, in-place
 // radial quotient 305, conditional tangent cap 305, separate tangent bound tests 330, branch-specific radial angle
 // call 331, shared signed endpoint writer 305, normalization before translated sum 359, unit score first 313.
@@ -581,6 +586,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // scaled by cos and then the perpendicular added, through a point or two scalars: all x87; x and y copied to locals:
 // `y * cos` SSE with the cosine spilled as retail, the rest x87 from stack copies; x and y by value to an inline
 // rotation, two parameter orders: all SSE; a by-value scale helper: same code as now; x and y scaled in place: x87.
+// M3 lane 15 r104 (fast with 0x29a190 and 0x298c30, both matched throughout, and 0x29cbb0 378; control 305, all restored):
+// the candidate count `short` (retail's 16-bit BP) 469 (1686 B, `ret 0x18`: arg_3 then arrives in a register and lives in
+// EBX, the outer counter takes EDI; 0x29a190 684); that with arg_3 read once through its address into a local used at
+// every arg_3 use 411 (1704 B, `ret 0x1c`; the magnitude then takes arg_3's dead home; 0x29a190 127); that with the outer
+// counter `long` 483 (1675 B, `ret 0x18`); one shared inline rotation of the facing direction (cos x - sin y, cos y + sin x)
+// for both near-arm emissions and the far arm 382 (1692 B); the existing normalize2d_fast for both normalizations (their
+// results are unused) 305 (same code).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1223,6 +1235,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // multiplies by the negated radius, with no shared tail; ours copies the radius and shares the tail), the sweep arms
 // (retail keeps the two arms whole, 32 instructions more), the pivot home (+0x94, ours +0xa0). Also: the offset helper's
 // products written component first 569 (same code); the reversed direction formed ahead of the pivot offset 784.
+// MiniMax A (11-18): no new form, no lower score (569): the radius is still promoted into xmm5 at the entry and kept for the
+// whole body, where retail loads it from its home in each block, and that follows from this build's link-time summary of
+// 0x2108a0 and 0x210770, whose definitions are in another lane's file; the frames agree at 0x114 and the two trace results
+// sit at the same homes (+0xd0 and +0xf4) but are taken in the opposite order, and the pivot's home is +0xa0 here against
+// retail's +0x94.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

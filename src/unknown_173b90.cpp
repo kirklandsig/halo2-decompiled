@@ -472,6 +472,18 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// score 42 (was 42): row i of both rotations, the offset's zero store before the list test, the 1.0 defaults' order
+// and three reload pairs differ. M3 lane 14 r112 (fast with 0x173c10/0x2477b0, both MATCH; control 42): scale first 40
+// (two points, not kept); indexed definitions without scale first 115; the translation through the existing
+// vector3f_add 122 (1136 B); both rotations through vector3f_rotate_into_axes 84; scale first with the definition formed
+// before the emitter lookup 45. Compile-only screen of the rotation block (it reproduces the LTCG block exactly; scored
+// with registers masked against retail's 62 block lines): this body already has the rotation order of round 120's
+// indexed-plus-motion-reference form (7 lines off: only row i of both rotations, ours left/up/forward, retail
+// left/forward/up); the indexed form moves it to 35 and nothing natural brings it back: 56 single and paired rewrites
+// on it (declaration orders of the frame outputs and colour, the particle pointer hoisted, the index declared at the
+// top or stepped first, `+=` translation, const masks, `!= 0`, the definition first, the next index read late) all 35;
+// dead initialised locals of any type 11 at best (four or five), placed after the first rotation no effect; private
+// helper texts (operand order, component locals, by-value vector) 22 to 37.
 // MiniMax B (11-18): no new form, no lower score (42): a local copy of the emitter definition for the three property
 // tests measures 125 and a local copy of the emitter flags for the same three tests 181, both above the plain body; the
 // permuter's annealed run (900 s) finds nothing below 39, so row i of both rotations still sums the up product before
@@ -486,7 +498,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // the forward one and that term order is the shared rotation helper's own text in include/matrix_transform.h, a file
 // this lane may not edit.
 // MiniMax S (11-16): no new form, no lower score (42): the emitter walk wrapped in an if with the offset's zero store inside it puts the store after the list test but shrinks the frame to 0x94 against retail's 0x98 (306), and moving the cache call ahead of the definition's test puts the two reloads in retail's order but flips the prologue's push order (140); the rotation's call sites (a temporary copy, a separate result, the two calls swapped and the origin added the other way round) leave the row-i order alone, as does the particle mask read before the particle loop.
-// score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
+// Earlier at 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
 // scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
 // reassociates each row's three-term sum, retail row i (left*y + forward*x) + up*z, ours (up*z + forward*x)
@@ -2103,6 +2115,11 @@ bool function_17afd0(long effect_index, long value);
 // M3 lane 7 r180 (fast with 0x174420 and 0x1751d0; control 12; P = the plain `owner != NONE && g == owner && available`
 // conjunction, re-measured 138 at 510 B): the owner typed dword on P 138, on this body 12 (same code), on P NONE-defaulted
 // 138 (508 B); a redundant `if (index != NONE)` guard around the walk 12 on this body, 138 on P (same code each).
+// M3 lane 4 r216 (fast; control 12, P re-measured 138 at 510 B): the clearing test split into two consecutive ifs
+// (owner/view, then `!available`) 115 (507 B); same_view false after the availability and set by a nested
+// `if (owner != NONE && g == owner) { if (available) same_view = true; }` 141 (513 B); P with every local of the arm
+// declared bare at the arm's top and assigned in retail's order 138 (P's code); `long owner = NONE;` at the loop body's
+// top, set only for a valid effect index, on this body 12 (same code), on P 171 (510 B).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
