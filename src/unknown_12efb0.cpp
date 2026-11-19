@@ -780,6 +780,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // declared once at function scope and reset per cluster 607 (same code); the weight clamp as two independent ifs 607 (same
 // code); the three per-cluster source resets ahead of the 0x130f60 call 713 (3836 B); the scenario lookup with the global
 // tested in its own `if` around the bounds test 607 (same code). All restored.
+// Select record base and ordinal before forming the pointer. Short slot with default
+// base, guarded/conditional 705/716; explicit base 709/617. Signed byte slot with
+// default base 721/720; explicit base 677/698. NOT kept: the provider and palette
+// registers remain different, including the 3818-byte guarded form. Original body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

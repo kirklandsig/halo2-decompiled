@@ -3541,6 +3541,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // (... != NONE || ... || (flags & 0x14))` expression 614 (2519 B); the seed pointer chosen after track_alternate 629 (2508 B);
 // track_alternate computed after the created block 641; track_definition declared after the track and seed pointers 596
 // (a declaration move under the keep bar).
+// Separate playback state initialized at entry/definition guard/availability/lookup
+// 734/732/723/690. Promote after finding or creating the sound, assignment/conditional
+// 725/714; inside the valid-sound block 725/745. NOT kept: all grow the frame to 0x40
+// and regress the matched caller. The early BL load and track-loop state home still differ.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

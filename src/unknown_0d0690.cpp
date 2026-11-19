@@ -1596,6 +1596,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // keepable): retail's order with record read once through its address 586 (2215 B; block EAX -> EBX as retail, record on
 // the stack but homed in ESI, parameters EBP; 0xd4080 380). Retail homes parameters ESI, query EDI, block EBX, record EBP:
 // with retail's statement order this build ranks record above parameters.
+// Workspace order for the three addressable 12-byte locals, all six name orders 529 each;
+// both orders of the two color declarations at the start of the selected block 529/529.
+// The entry still reserves 0x2c and spills the selection byte. Original body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
