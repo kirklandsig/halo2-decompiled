@@ -1593,6 +1593,18 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // frame homes still differ from retail's.
 
 // score 828 (was 828): r200 unchanged. Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
+// MiniMax E (11-19): score 828 (was 828): no new form, no lower score. Read from the listing again: the two listings were
+// compared side by side with this build's own image, and the difference is the frame's five homes. Both make a frame of
+// 0x2c and both put the iterator's seven words in the same slots, and the call to the callee passes the iterator in ESI and
+// the third output in EBX with two arguments on the stack in both. Retail keeps the animation id in the slot of the
+// found-mode pointer, which dies after the prologue, and the three iterator outputs in the frame at -0x2c, -0x28 and
+// -0x24 with the result's two words at -0x20; this body keeps one iterator output in that borrowed slot, the other two at
+// -0x2c and -0x28, the result's two words at -0x24 and the id at -0x20, so every later displacement shifts with them.
+// Two spellings of that swap were measured and dropped: the id declared at function scope and the id declared in the
+// block that holds the iterator, both 926. The first of them gives a body of exactly retail's 2825 bytes with the
+// iterator's words where retail has them, but it adds a four-byte zero fill and an extra argument load that retail has
+// not. The loop's compare on the found index was measured with the other graph index instead (1002) and dropped. The
+// argument order that follows from retail's own calls is a report-only item, as a declaration's order may not be changed.
 // Earlier: Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.

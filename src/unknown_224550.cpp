@@ -95,6 +95,13 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 // score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// MiniMax E (11-19): score 162 (was 162): no new form, no lower score. Read from the listing again: the first
+// difference is still at +0x29c, where the blend sits in XMM2 and retail keeps it in XMM5 from the sequence arm through
+// the aspect block; retail's flagged branch also reorders the bounds' four words into frame+0x60..frame+0x6c from the
+// context flags, a step our body does not have, and the body is still 1947 bytes against retail's 1937. This round split
+// the four reciprocals and the four bounds spans into separate declarations, alone and together, and in the order that
+// puts the second bounds first; all four forms compile to the same 162, so neither the division order nor the choice of
+// the blend's register is set by the declarations' shape.
 // The bitmap path still allocates blend and aspect intermediates differently. The body is 1947 bytes against 1937.
 // Earlier scores 211 and 223.
 // M3 lane 14 r114 (fast with 0x2243c0, which matches throughout; control 162, aligned 127): retail keeps the blend in XMM5
