@@ -415,6 +415,8 @@ extern point2f *g_468778;
 
 // score 375 (was 375): Frame 0x40 agrees. The actor loads after the settings call, and actor, settings and prop homes still differ.
 // Earlier score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
+// MiniMax C (11-19): no new form, no lower score (375): retail loads the actor table before the register saves, keeps the actor block in EBP across the call to 0x1e4f90 and the settings pointer in ESI, while this build calls 0x1e4f90 first, keeps the actor in EBX and the settings in EBP; the result declared after the three lookups measures 409 and the actor-first order 413, so the body stands.
+// score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
 // Earlier: Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax B (11-18): no new form, no lower score (375): the direct final return (true in the tail, false after the
 // entry test) drops 32 bytes and measures 440, and the actor-first body with that return measures 393 (listed), so the

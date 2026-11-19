@@ -76,6 +76,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 }
 
 // score 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// MiniMax C (11-19): no new form, no lower score (558): the success byte still sits at +0x13 where retail has +0x17, the four hit flags sit at 0x20..0x23 against retail's 0x1c..0x1f, the collision copy lands at 0x3c against retail's 0x40, and the comiss operand order and the exit layout still differ.
+// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // M3 lane 10 r119 (fast; control 558): `*arg_5 = 0.0f;` ahead of the minimum's initializer 559; the hit flags as `{ 0 }`
 // 689 (2819 B, block store); the success flag declared after the hit flags 552 (first difference +0x2e; the success store
