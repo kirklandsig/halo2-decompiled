@@ -564,6 +564,9 @@ static inline real contrail_scale_if_17c0e0(word flags, word mask, real scale, r
 	return value;
 }
 
+// Tried (full build with stand-in SDK headers, where this function starts at 54, not the SDK build's 96): the test
+// that the marker has not moved evaluated into a bool first (`bool same_place = false; if (previous) same_place =
+// !memcmp(...) && !force; if (same_place)`) 28; not kept, a test-and-set flag stays only in a byte match.
 // @retail 0x17c0e0
 void function_17c0e0(long contrail_index, short count, bool force)
 {
