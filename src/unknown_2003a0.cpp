@@ -3119,13 +3119,17 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // dominating use of the constant 1 (round 169's lead) with compares that might fold to their zero form: the delay test as
 // `< 1` 51 (`cmp ..., 1; jge`), the count test as `!(count < 1)` 55 (580 B), the trigger byte as `!= true` 116 (578 B);
 // none folds, and the reload stays in each.
+// Matched in a full build with stand-in SDK headers (was 50): the first test reads the definition's bit as bit 8 of
+// the word at +0x23 instead of bit 0 of the byte at +0x24. The compiler narrows it to the same `test byte [..+0x24], 1`,
+// but only after register candidates are formed, and that keeps the squad pointer in ebp across the block (retail's
+// `mov eax, ebp`) instead of reloading it.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
     byte *local_1 = (byte *)squad_get(arg_1);
     if (arg_0 != NONE && (!(local_1[2] & 0x40) ||
         *(short *)(local_1 + 0x2a) == NONE ||
-        !((*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(local_1 + 0x2a) * 0x7c)[0x24] & 1)))
+        !(*(word *)((*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(local_1 + 0x2a) * 0x7c) + 0x23) & 0x100)))
         function_202e90(arg_1, (short)arg_0, false);
     else if ((local_1[2] & 0x40) && *(short *)(local_1 + 0x2a) != NONE)
     {
