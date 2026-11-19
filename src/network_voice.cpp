@@ -1927,6 +1927,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the block's end 155 [137] at 462 bytes; the length local with `return length;` ending the block 216 [73] at 494 bytes;
 // the length local with the statements before the capacity test in retail's order (kept, written, capacity, size) 153
 // [13] at 434 bytes. Body unchanged.
+// Complete-entry capacity with the byte gate: written bound 157; remaining count 177;
+// end on final write 185; positive remaining count 177. Quotient as the gate, same
+// scan forms: 168/185/168/185. All add division and change the matched caller.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4156,6 +4159,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the member fetch with the NONE test after it 145 (EBP still the member); the entry order size, consumed, cursor,
 // stride 164; the cursor advanced ahead of the size and consumed updates 167. No form moved the channel into EBP.
 // Body unchanged.
+// Pre-dispatch budget debit, consumed increase after guard, both updates, and consumed
+// increase before guard: indexed 159/163/176/172; independent cursor 169/166/173/168.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -605,6 +605,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // `(void)ta.x; (void)ta.y;` 251 (988 B); the direct-inverse form re-measured 207 (974 B), with `(void)tb.z;` 207, with the
 // displacement reference for the sums 205. Compile-only (the stream agrees with the real build but two lines): mentions of the
 // displaced point's or the retransform point's components, before or after their sums, in every ordered subset, change nothing.
+// Origin reciprocal before the displaced transform, before displaced-point creation,
+// before the perspective block, or before fallback: zero default 246/228/211/211;
+// direct factor 240/253/232/232. The native extent alone leaves the larger frame.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

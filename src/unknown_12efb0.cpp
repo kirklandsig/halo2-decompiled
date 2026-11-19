@@ -732,6 +732,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // common default and shared uncovered weight 609. NOT kept: the two shared uncovered-weight forms gain three
 // points at 3828 bytes and retain the provider, palette and record assignment gap. The common default block
 // forms regress. The opening executable source is restored.
+// Select table and ordinal, table and byte offset, conditional scenario table and ordinal,
+// or nested scenario table with late byte offset: short 719/720/724/724; signed byte
+// 619/696/619/619. The best measured forms disturb the matching clear prefix.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

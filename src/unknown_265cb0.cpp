@@ -2722,6 +2722,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // base/index order, the players loop (retail's table pointer in EDX, the datum index in EBP, the found index in ESI, the
 // player in EDI, and no jump over the loop-top padding), and the direction's components held in XMM1..XMM3 across the
 // relative and facing dots (retail loads two of them ahead of the relative-length test).
+// Shared actor displacement with pool pointer, pool reference, refreshed data or field reads:
+// 167 each, first +0x1a7. Typed indexing across the same reads: 168 each.
+// NOT kept: the one-point SIB gain is below the retention threshold.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
