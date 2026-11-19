@@ -2232,6 +2232,11 @@ void function_2818e0(void)
 // M3 lane 4 r214 (the shared-walk trials listed above 0x27dff0): inheritance local in function_288571 397 (1682
 // bytes); count assigned after the declarations 2; node index and cursor initialised 2; empty group's step after
 // the output advance 2 (0x288570 10, 0x289580 9). All restored.
+// M3 lane 4 r216 (fast, this function alone): 1 to 14 dead initialised locals in the body 2 each (not a symbol-count
+// tie); the wrapper written out as three function_288572 calls with one count 2, with translation and scale count copies
+// 2, with per-pass counts read from the settings global 400 (1684 bytes), in three declaration orders each; the
+// inheritance through a `s_graph_inheritance const *const &` local with one count 62 (the translation pass's fold
+// order flips, the reload pair stays), with the count copies 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
