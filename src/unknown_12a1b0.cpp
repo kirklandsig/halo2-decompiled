@@ -1444,6 +1444,7 @@ struct s_looping_detail_request
 	vector3f offset;
 	byte unknown68[0x8c - 0x68];
 	short tracking_data_size;
+	byte unknown8e[0x94 - 0x8e];
 };
 
 // MiniMax I (11-16): no new form, no lower score (110): retail calls the first-player query 0x14dde0 out of
@@ -2037,6 +2038,28 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// MiniMax B (11-18): 450 -> 448: the detail request's tail grows to 0x94 bytes (six bytes after
+// tracking_data_size, which sits at 0x8c), which makes this function's frame 0x128, retail's. The frame
+// follows the tail's size: 0x8e and 0x92 to 0x94 give 0x128, 0x96 and 0x98 give 0x12c, 0x9c gives
+// 0x130, 0xa0 gives 0x134 and 0xa4 gives 0x138, and every size above 0x94 scores 450 again, so
+// retail's request (0x98 to 0x138 in its frame, 0xa0 bytes) is modelled here at 0x94. The first
+// difference is now at +0x48, the loop header, and it is one instruction: retail's header (0x21b124)
+// reloads the index into EDI and the sound pool global into ESI and falls into the body at 0x21b130,
+// while ours reloads the index into EDI, jumps to the body, and reloads the global into ECX inside the
+// body; the extra jmp shifts every instruction after it. A do-while inside an `if (index != NONE)`
+// compiles to the same code (VC7 normalises it), a pool local in the body scores 531 and one before the
+// loop 472 (501 when only the sound pointer uses it), and the permuter (30 tries) found nothing.
+// MiniMax B (11-18): 479 -> 450: the pitch-range count is read once into a local before the first
+// pitch-range loop and reused by the second, as retail reads it into a stack slot in each loop
+// (movsx eax, byte ptr [edi + 0xa] into [esp + 0x38]); the function's length now agrees with retail's
+// 1923 bytes and the frame is 0x124 against retail's 0x128. Extending this file's view of the detail
+// request from 0x90 to 0x9c or 0xa0 bytes moves the frame to 0x120 or 0x124 but leaves the score at
+// 479, so the frame is not what the rest of the difference is made of. What is left: the ring homes
+// (retail's sounds and gains arrays at [esp + 0x50] and [esp + 0x74], ours eight bytes higher), the
+// sound pointer's home (retail reuses [esp + 0x14], ours keeps [esp + 0x10]), the pool reload at the
+// loop head (retail reloads it into ESI, ours into ECX) and retail's bottom-tested loop, which a
+// do-while inside an `if (index != NONE)` reproduces only in the source (450, the same code). The
+// permuter (30 tries over the reduced image) found no better variant.
 // MiniMax I (11-16): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128 - this
 // file's view of the detail request stops at 0x90 where retail's play state is 0xa0 - and retail still keeps the
 // playback pointer in EDI where ours keeps it in a stack slot; extending the request's view to 0x9c gives 301, a
@@ -2489,7 +2512,8 @@ void function_21b0e0(bool update)
 							if (entry->definition_index == definition_index && entry->state == 2)
 								sounds[entry->pitch_range_index] = current;
 						}
-						for (long i = 0; i < playback->pitch_range_count; ++i)
+						long pitch_range_count = playback->pitch_range_count;
+						for (long i = 0; i < pitch_range_count; ++i)
 						{
 							s_permutation_set *set = &g_51ebd4->sets[playback->pitch_range_base + i];
 							s_looping_pitch_bounds *bounds = &((s_looping_pitch_tables *)g_51ebd4)->bounds[*(short *)((byte *)set + 2)];
@@ -2499,7 +2523,7 @@ void function_21b0e0(bool update)
 							if (clamped == pitch)
 								active_mask |= 1 << i;
 						}
-						for (long i = 0; i < playback->pitch_range_count; ++i)
+						for (long i = 0; i < pitch_range_count; ++i)
 						{
 							dword active = active_mask & (1 << i);
 							if (!active && sounds[i] != NONE)
