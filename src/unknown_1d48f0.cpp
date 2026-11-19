@@ -379,6 +379,10 @@ const dword g_455978[81] = {
 // (diagnostic, restored) 306: the nested second release still expands. Guards that emit code: `if (arg_5)` 310 (2063 B,
 // 0x11bed0 called), `if (!local_0)` 309 (2061 B). The point copy through real_point3d_set 320 (2133 B); 0x11bed0's else
 // arm through the existing 0x11be90 298 (re-measured, 0x11bed0 still matches).
+// SDK exception-mask setter 298, exception-state clearer 298, both 298; one named control word,
+// read separately at setup and cleanup, 298. Axis loop seeding both bounds with explicit fourth
+// components 509, with either or both exception macros 509. The two optional-state homes
+// and the selective location and release expansions remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

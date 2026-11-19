@@ -605,6 +605,20 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // `(void)ta.x; (void)ta.y;` 251 (988 B); the direct-inverse form re-measured 207 (974 B), with `(void)tb.z;` 207, with the
 // displacement reference for the sums 205. Compile-only (the stream agrees with the real build but two lines): mentions of the
 // displaced point's or the retransform point's components, before or after their sums, in every ordered subset, change nothing.
+// M3 lane 2 r102 (fast; control 195 at 985 B): the point helper given 0x142570's own parameter-address read (a named
+// `s_camera const *const *` to the camera, the scale tested through it) 234 at 971 B: the frame becomes retail's 0x2c and
+// the second transform spills one value into the scale parameter's home as retail does, but the first transform's x, y, z
+// rotate to XMM0, XMM1, XMM4 (retail XMM4, XMM0, XMM1) and the second gives the spill to y; with the rows in 0x142570's
+// order 234; the reference declared after the coordinates 234; the helper as 0x142570 written out (separate coordinate
+// declarations, returning the output) 234; the scale read through a cast of the parameter's address instead 195 (same
+// code: no new symbol); on the named-pointer form, zero to seven dead initialised long locals and zero to three real ones
+// at the top 234 each (diagnostic: the rotation is not a symbol-count state). Body unchanged.
+// m3 lane 5 r202 (fast with 0x30bf0 and the callers 0x4f7e0/0x4ff50, unchanged at 325/43; control 195, aligned 80): the point
+// helper testing the scale through a const pointer to its camera parameter (0x142570's shape) 234 (971 B: the frame becomes
+// 0x2c, but the defaults land at +8 and in an argument slot); the helper's x row summed term by term (forward*z, up*y,
+// right*x, then position) with the y/z rows in that order 228 (972 B, frame 0x2c); both 216 (966 B); that product order as
+// single expressions 195 (same code); the existing out-of-line 0x142570 called for the three transforms 718 (475 B: a call
+// from this /Ob1 file).
 // Round 140 (m3 lane 9, fast with 0x30bf0 and 0x30710): retail sums z = d.k + a.z (XMM0, stored first), x = d.i + a.x
 // (XMM7), y = a.y + d.j (XMM6). The written operand order is ignored, but statement order and a new origin local move
 // it; the compile-only harness reproduces the sum code exactly (96 combinations of order, per-sum spelling and the

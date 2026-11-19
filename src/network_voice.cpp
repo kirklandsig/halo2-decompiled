@@ -1918,6 +1918,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // writable span end 202; last writable entry start 140; entry pointer distance for scan and mask 201;
 // pointer distance in both scans 268; pending-recipient word reused after store 198.
 // The opening capacity, traversal and recipient loads were restored.
+// Channel header for admission and membership 60, queue count held through scan 200, while scan 60,
+// budget test after a completed entry 161, initial count reused then reloaded 60, shared prefix size 196,
+// retained mask from removed entries 91, recipient reduction through the queue field reference 64.
+// EAX still takes the membership load, and capacity rejection keeps its own epilogue.
 // m3 lane 8 r186 (fast with the matched caller 0x56380 in brackets, [0] = still matched; control 60 [0]): retail computes
 // the length before the header stores into EDI and copies it to EAX only at the end (`mov eax, edi` ahead of the shared
 // pops), with EAX holding the entry's zero up to the capacity test. The length in a local where `result` was computed and
@@ -1927,6 +1931,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the block's end 155 [137] at 462 bytes; the length local with `return length;` ending the block 216 [73] at 494 bytes;
 // the length local with the statements before the capacity test in retail's order (kept, written, capacity, size) 153
 // [13] at 434 bytes. Body unchanged.
+// m3 lane 5 r202 (fast with 0x56380, 0x564c0, 0x53b00 and 0x56000, all matched; control 60): the entry size as
+// `11 + (include_mask ? 2 : 0)` 145 (a neg/sbb/and select, the size still in EBP), as `(include_mask ? 2 : 0) + 11` 145
+// (same code), as `2 * (include_mask ? 1 : 0) + 11` 146, as `include_mask ? 11 + 2 : 11` 147 (461 B); include_mask
+// typed `byte` in the definition with the size as `11 + 2 * (include_mask != 0)` 146.
 // Round 140 (m3 lane 9, fast with 0x56380/0x564c0/0x53b00/0x56000; control 60): retail forms the size last with
 // `xor ebx, ebx; cmp byte [flag], bl; setne bl; lea ebx, [ebx+ebx+0xb]`, so it needs a byte register (EBX) and the
 // bit gets EBP. The flag parameter typed `byte` with `11 + 2 * (include_mask != 0)` in the current order 146 (setne
@@ -1934,6 +1942,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // coalesced setne sequence and the live EAX zero are retail's, but the size takes EDX, the cursor EDI and the player
 // goes on the stack); that with `include_mask ? 13 : 11` 137; the other five orders of kept/written/capacity ahead of
 // the size 137/137/154/154/154 (0x56380 13 each); the size declared at the block top and assigned last 137.
+// The opening zero still drops out of EAX before the capacity gate.
+// Separate payload and header size 60, with header addition after the count byte 164.
+// Single membership/index transfer to the final return 60/60; accepted membership/index first 74/60;
+// direct membership/index failure return 172/173. NOT kept: direct returns change the matched caller,
+// while the other forms leave the capacity exit and player-bit allocation unresolved.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4153,6 +4166,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor with four named slot roles 164; forwarding mask comparison 181;
 // forwarding mask comparison with cursor 168; packet-kind clamp 182; packet-kind clamp with cursor 188.
 // NOT kept: the cursor with recipient-set comparison recovers EBP but drops the member slot and shortens the body.
+// One-based packet number with consumed offset, ordinal offset, separate cursor or
+// cursor-distance result: long 156/165/163/180; short 156/162/163/179. The channel
+// still needs EBP at entry and the member needs its own spill.
 // m3 lane 8 r186 (fast with the matched caller 0x564c0, matched throughout; control 139): on the packet-cursor form
 // (`byte *packet = data + 2;` beside the count, advanced at the loop's end; re-measured 164 at 478 bytes, the member in
 // EBP): the relay arm's talker result in a named bool 164; both arms' talker results named 164; the member's NONE test

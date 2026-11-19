@@ -1652,6 +1652,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // where the two outputs, the unit index and the reuse flag are declared and first set (function top, result block,
 // mode block; with or without a NONE initialiser) give `or` only with a store ahead of the test; the outputs declared
 // between the kept-unit block and the result test stop the result test's threading (287 lines for 282).
+// M3 lane 6 r197 (fast with 0xa9440 and 0x14f040, both matched; compile-only screens agree): with the outputs moved into
+// the mode block (each at 1031 bytes, `mov eax, 0xffffffff` after the folded byte compare): declared third_person first
+// 45; declared bare and set by `third_person = tag_index = NONE;` 43; the second output initialised from the first 43;
+// the test as `4 != g_4e6948->mode` 43; the result and mode tests merged into one `!result && mode != 4` condition 43.
+// Compile-only (same code each): `tag_index = third_person = NONE;` 43-form; `mode != (char)4` 43-form. Retail's
+// 0xb8540 returns nothing (its EAX is clobbered), so no value of its own can hold EAX across the test.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2720,6 +2726,16 @@ static __forceinline long player_round_ticks(real value)
 // 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
 // MiniMax I (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this
 // build still expands 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files.
+// M3 lane 4 r215 (fast, control 701; aligned/masked = difflib-aligned exact/register-masked counts, control 450/166): BLOCKED-BY
+// 0x151b80 (unmatched, 17; its file is another lane's this round). Retail passes constants at both 0x151b80 calls (`xor cl, cl`,
+// `mov cl, 1`) and expands neither; ours expands the first. Diagnostic, not kept (a local holding a constant): the first call's
+// false through a named bool with each request declared in its own block gives 676 at 2735 B, frame 0x6c (retail 0x74), aligned
+// 421, masked 151, and exactly retail's 33 calls; what is left there: the candidate `input + 0x28` held in ESI where retail
+// recomputes it at each call and keeps the 0xfffd mask in ESI, EBX pushed late, the scaled unit index not kept in EBX.
+// A noinline redeclaration of 0x151b80/0xccd20 in this file changes nothing (701: LTCG ignores it). Trials: each request
+// in its own block 804 (2842 B; listed); with the 0x80 test as its own block around the `||` 804 (still expanded); with the
+// candidate written as `input + 0x28` at each of its four uses 810; the 0x80 block's `a || b` in a named bool 701 (same
+// code, still expanded), with the block requests 804.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3372,6 +3388,13 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // carries it in EDI to the final store); 0xe4050 now matches and the web is unchanged. What follows from the web, as
 // before: loop 1's datum and unit swap ESI/EDI, NONE is an immediate where retail keeps -1 in EDX, the last unit sits
 // in EBP where retail keeps it in memory for loop 2.
+// M3 lane 4 r215 (fast with round 34's widened image + 0x14d3a0 and 0x13cb40, control 103; aligned/masked = difflib-aligned
+// exact/register-masked counts, control 75/18): loop 2's two player tests through the `flags` bitfields 103, `globals` as a
+// const pointer 103, loop 2's datum as `s_player const *` 103, its index local renamed player_index 103 (all the same code); the
+// failures counted in a `long` (`++failures`, `if (failures) return;`) 150 (588 B; aligned 53, masked 13). Re-measured as a
+// base only: round 46's split failure test 91 (608 B, aligned 55, masked 13; flag form, not keepable without a match); left on
+// it is loop 1's inlined iterator step (retail keeps NONE in EDX and datum/unit in EDI/ESI, and stores no iterator.data before
+// loop 1). BLOCKED-BY 0xb8540/0xb7b40 stands (both still disabled stubs: nothing on loop 2's call tree is seen to write g_4e8c20).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

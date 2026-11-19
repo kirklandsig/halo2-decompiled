@@ -838,6 +838,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // into EDI (globals rematerialised). New, on the word mask with plain present: present through a reference-bound name 63,
 // playing through one 63, a one-use team bit for present 63, both accumulators zeroed after the iterator setup 63; on the
 // word mask with the volatile present, the old mask through a reference-bound copy 77 (references fold away).
+// Added/removed playing sets tested separately or as a union, saved dword/word
+// 77/121 and 77/121. Pending word/dword mask seeded from the word snapshot
+// and changed by compound OR or assignment 77/133 and 77/133.
+// The word entry works, but the mask still reloads separately at the join.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -1883,6 +1887,9 @@ short function_15cca0(long player_index, byte code)
 // player array of g_4e8c24 24. Diagnostics (24 each): 1 to 8 dead initialised locals; the parameter copied into a
 // local; `+ (other - other)` on the other team; a private lookup copy without the index local 24, without the
 // datum local 71, with early returns 81.
+// Round 636: other-player EDX versus retail EAX still rotates the lookup. Shared player pool 24, pool
+// reference 24, typed roster 24 or word slot 68; other team lvalue 52, both team lvalues 82, shared
+// pool with virtual receiver 24, other team field address 52.
 // @retail 0x15cd90
 void function_15cd90(long player_index, short identifier, long other_player_index)
 {
@@ -2084,6 +2091,9 @@ void function_15e460(long object_index, long value)
 // compare in the else 33; true-first with `return result` for the guard and the special case and the compare
 // returned 30; the options pointer declared first (re-measured) 29. Compile-only grid (no fit): five options
 // spellings x eight arm shapes x two compare spellings x bool/char/byte/long result x declaration order.
+// Round 636: EDX one and ESI/EDI saves still differ. Option first in the existing branch chain 27,
+// as the gate for the role result 29, as a short-circuit return 30, as a restriction conjunction 40;
+// flag before role 30, with role result 30, with the option gate 36; option-first assignment 31.
 // @retail 0x15eb20
 bool function_15eb20(long player_index)
 {
@@ -5918,6 +5928,12 @@ void __stdcall function_d6bc0(long object_index);
 // set per case) 367 (724 B: not inlined, called), with the loop-top index test 349; the predicate `__forceinline`
 // with returns 139 (869 B: `entries` in EDI, the delay block laid out before the case code, `and al, 1` for the
 // returned bit), with a result set per case 172 (858 B).
+// M3 lane 8 r188 (fast): the flag recipe re-measured 7 (869 B; left the index test on the local and case 1 in CL); on it,
+// with the field test: the object pointer declared at function scope (assigned NULL at the loop top) 172 (858 B), no
+// loop-top index local at all (every read through the field, the object block too) 172 (858 B), the schedule test on
+// the object pointer (NULL when there is no entry) 204 (852 B); with the local test: case 1 as a direct assignment
+// `schedule = bit;` 129 (877 B), the flag initialised from the index test (`bool schedule = index == NONE; if
+// (!schedule) switch ...`) 130 (874 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -2073,6 +2073,21 @@ void function_27dd10(void)
 // no-code forceinline accessor at the group clamp 2 (0x281b60 2, 0x288570 120), at the outer loop bound 2 (0x288570 120);
 // the bit test through the accessor 2; the group end declared in the inner for's init 2; the blend frame state copied in
 // reverse order before the second decode 11 (0x281b60 11, 0x285750 9, 0x288570 9; the pair unchanged). All restored.
+// M3 lane 1 r123 (a compile-only build of the file is exact here: this function 2, 0x281b60 2, 0x285750 0; agreed with
+// --fast): all 243 placements of the walk's node index, bit-flags pointer, flags, group end and destination index as
+// walk-local, one wrapper local by reference or one per pass (apply in each arm) best 2 (the current one); a variant walk
+// for this function and 0x281b60 only, 600 random combinations of those placements with the clamp operands reversed, the
+// counters as a switch, the empty-group step after the pointer advance, the in-place flag declared after the output
+// pointer, the saves or the restores fraction first: best 2. The interpolation's output restore between the frame
+// restores 8 (--fast; 0x281b60 8, 0x285750 6), before them 13; the output store to the second frame ahead of the frame
+// swaps 14; the frame restores reversed 12; the output saved and restored through a local 337; the frame state as one
+// 12-byte aggregate copy (integer copies, frame 0x34). Diagnostic: without the `= &g_504430` restore 0x281b60's pair is
+// in retail's order. All restored.
+// M3 lane 4 r214 (fast with 0x281b60 and the five matched walk users): in function_288571 the inheritance read once
+// into a local passed to the three passes (compute_orientations_inheritance_mapping's form), declared after or before
+// the count, 417/417 (1749 bytes; 0x281b60 397, 0x285750 420, 0x28aaa0 165); the count declared, then assigned after
+// the declarations 2; the node index and the cursor initialised (0, NULL) 2; in function_288572 the empty group's
+// index step after the output advance 2 (0x288570 10, 0x289580 9). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2224,6 +2239,14 @@ void function_2818e0(void)
 // function_288573 2 (diagnostic). All restored.
 // M3 lane 8 r183 (the shared-walk trials listed above 0x27dff0): count accessor at the clamp 2, at the loop bound 2;
 // bit test through the accessor 2; group end in the inner for's init 2; frame state copied in reverse order 11. All restored.
+// M3 lane 4 r214 (the shared-walk trials listed above 0x27dff0): inheritance local in function_288571 397 (1682
+// bytes); count assigned after the declarations 2; node index and cursor initialised 2; empty group's step after
+// the output advance 2 (0x288570 10, 0x289580 9). All restored.
+// M3 lane 4 r216 (fast, this function alone): 1 to 14 dead initialised locals in the body 2 each (not a symbol-count
+// tie); the wrapper written out as three function_288572 calls with one count 2, with translation and scale count copies
+// 2, with per-pass counts read from the settings global 400 (1684 bytes), in three declaration orders each; the
+// inheritance through a `s_graph_inheritance const *const &` local with one count 62 (the translation pass's fold
+// order flips, the reload pair stays), with the count copies 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

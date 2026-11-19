@@ -481,6 +481,26 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // ahead of the state or the sound pointer, `real seconds` and the max stores as ifs, singly and in pairs (56 forms);
 // 1 to 12 dead initialised locals at the top or after the 0x21d110 call. Diagnostic: the end test without bit 8
 // 29 at 463 B (request in EBX).
+// M3 lane 6 r196 (fast with the ten matched callers, 0x221810 and 0x21d110; base 32 with all twelve matched): re-measured,
+// `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` 45 (476 B, the request goes to EBP and onto the stack, ten
+// of the twelve lost). On that form: the variant pointer read from the request at each use 45; the variant bytes stored
+// through the local 88 (470 B); the source read from the request at each use 45; both 45; the sound tag's byte at +2 in a local used
+// by both 0x221810 calls 98 (on the base 90, 456 B, all matched). Compile-only screens (the request home only; the base
+// keeps EBX): the end test as `((flags >> 8) & 1) || ((flags >> 11) & 1) || !audible`, `flag8 || (flags & 0x800) ||
+// !audible`, `(flags & 0x100) || ((flags >> 11) & 1) || !audible` and `flag8 || flag11 || audible == 0` all fold back to
+// `test ch, 9`; the byte-first spellings `TEST_FIELD_BIT((flags >> 8) & 1) || TEST_FIELD_BIT((flags >> 11) & 1)`, the
+// flag8 test with a plain `(flags >> 11) & 1`, `audible == 0`, the audible test first, and the whole test inverted with an
+// empty arm all put the request in EBP; so do, on the bitfield test, the first maximum as an if, a const sound pointer, an
+// early `return result` when 0x21d110 fails, a const pointer to the flags the second
+// 0x221810 call returns, and `game_time + 10 + ticks`.
+// Round 636: the merged tail test remains. Reduced control 41, caller-context control 32. Single-exit
+// rejection with split masks or direct fields 41/41, Boolean fields 50, nested bit 8 or audible 65/50,
+// audible first 58; bit 8 then audible then bit 11 56; direct return on rejection 82.
+// Direct flag-8 field with boolean flag-11 conversion 60, with word extraction 32;
+// those tests with the flag-11 field store 60/32. Eligibility before the primary maximum 42;
+// audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
+// NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
+// keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

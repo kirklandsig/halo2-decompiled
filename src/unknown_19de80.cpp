@@ -782,6 +782,18 @@ static inline bool teams_enabled_19e1c0()
 // remaining`) never move it. Real: volatile result with the teams read at each use and the reversed compare 388 (1437
 // B); the compare with a `long` team 421; teams at use, compare, `long` team and the single switch-side exit 461; teams
 // at use with the first clamp `remaining < result` 466; the plain result with all five 652 (1211 B, tails merged).
+// M3 lane 11 r120 (a one-file LTCG harness of this file with its callees' objects; positional counts; control 396 at
+// 1437 B, plain result 416 at 1170 B with token EDI, token_length EBX, event EBP, result ESI, `remaining` on the stack):
+// plain result with the switch-side failure as `result = remaining;` 416 (1129 B, token EDI); plain result with the four
+// name clamps spelled `>`, `<`, `>=`, `<=` 407 (1353 B, token EDI); `token` as a one-pointer aggregate parameter (with
+// 0x19e0f0's pointer type to match) 416 (scalarised, same code as the plain result). Diagnostics (reverted): one to eight
+// extra uses of `remaining` inside the name cases leave token in EDI; dropping the fallback's two token uses leaves it in
+// EDI; only an entry test of `remaining` gives it EBP. So uses inside the cases weigh far less than the thirteen
+// compares on the dispatch path, and retail's token in memory needs fewer or lighter token uses on that path.
+// Standard signed minimum after a single name-length call. Player/team/all names/all
+// names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
+// with an ordinary result. NOT kept: the minimum stays out of line and needs
+// a larger frame. The 415 form restores the opening extent, with the preload still missing.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

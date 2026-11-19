@@ -2280,6 +2280,12 @@ __forceinline char unit_action_round(real value)
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
 // score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below.
+// Round 189 (m3 lane 8, fast with 0xe9ed0/0xea090, both MATCH throughout; control 234): the unit lookups through one
+// header pointer local (UNIT_ACTION_HEADER_GET, used for the unit, the 0x1b test and the 0x399 test) 328 (1178 B); for
+// the unit and the 0x1b test only 300 (1184 B); the 0x399 test's lookup through UNIT_ACTION_HEADER_GET 234 (same code);
+// `current` as NONE plus an if 234 (same code); first_person_name declared right after actions 312 (1191 B), that with
+// the short-slot hand getter 314 (1195 B). Reading: retail keeps the result in its stack byte at every exit and merges
+// them into one, which is what a spilled phi of 0 and 1 gives; every goto-free spelling in these notes folds it.
 // MiniMax I (11-17, run 103): no new form, no lower score (234): retail still keeps the pool global in EBP with the unit
 // index in EDI and compares the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this
 // build keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
@@ -2294,7 +2300,7 @@ __forceinline char unit_action_round(real value)
 // reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
 // compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
 // stands.
-// score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
+// Earlier (234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
 // `goto done`s, which the rules drop. Body unchanged.
@@ -4328,6 +4334,14 @@ extern vector3f *g_4687bc;
 // through the array's operator[] 12 (both form the element address first, `lea eax, [ecx + edx]`); the havok-flag and
 // component-index tests as nested ifs 8 (same code); the rigid-body index as `short` (0xb67a0's return type) 25 (1099
 // B, word compare); the material copy-initialised from `c_type_47f957(g_54e898)` 8 (same code).
+// M3 lane 15 r102 (a /GL- compile-only screen of this file, both sites as the linked build has them): the default material
+// passed by value through a forceinline helper taking and returning the material type (a by-value argument of that type, which
+// other functions showed takes no rotation step) 8; built from a const reference to the global 8; copied from a named
+// default material 8 (all the same code); built before the effect tag test 228/214 aligned (the load stays in DX and
+// the store moves above the branch), before the effect tag read and before the definition re-lookup (the material in
+// CX there, but the pool's data then takes EAX and the component EAX/ESI order changes; both sites still differ).
+// Diagnostics: a probe copy between two globals at the function's top, before the definition re-lookup or before the
+// effect tag read leaves both sites as they are; after the tag read it reloads the component index (the store aliases).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

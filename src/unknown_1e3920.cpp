@@ -890,15 +890,15 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
+// score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
+// mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
+// other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // MiniMax E (11-16): no new form tried this round, no lower score (237): the frame and the length agree with retail's and the squad
 // entry index is taken as a word as in retail, but the -1 sentinel is still held in edi where retail keeps it in esi, and the
 // successor and query homes still sit at other frame offsets, so the blocks after the first call are laid out differently.
 // MiniMax R (11-16): no new form, no lower score (237): the -1 sentinel still loses esi here - this build gives the squad index edi
 // (with `or edi, 0xffffffff`) where retail keeps it in esi - and the squad's address is still built with a movzx and an imul into ecx
 // where retail masks eax and multiplies it there; the frame and the length (1272 bytes) agree.
-// score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
-// mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
-// other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // M3 lane 6 r188 (fast with the file's functions, control 237): masked (registers and esp offsets), the one large difference
 // is the creation arm, laid out after the swarm arm here and after the actor block's case 2 in retail. The swarm failure as
 // `return NONE;` 345; the cleanup arm first 327; `if (!flags) return NONE;` 345. Round 78's loop (squad index in the guard and
@@ -1272,6 +1272,18 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P557: Actual three-output query workspace in six field orders, then Boolean output pair with
 // probability second/first: 273/273/273/273/273/273/270/269. NOT kept: unmatched local grouping;
 // original independent outputs/defaults, sentinel/cleanup graph and complete body restored.
+// M3 lane 13 r114 (fast; control 237): the squad bit as `squad ? (bool)(... & 1) : false` 339; the replacement
+// decision as one `if (!(forced ? 0x203900(...) : enabled)) break;` 349; the placement read through `placement` at
+// each use (no `data` copy) 340 (first difference +0x2); probability declared at the block top 237 (slots
+// unchanged); the loop as `for (long next = ...; next != NONE; next = ...)` with `character_index = next;` 531 (1415
+// B, 0x1e4990 inlined). Body unchanged.
+// The build still keeps the full squad index in ESI and the NONE sentinel in EDI.
+// Direct mode word, local short/word mode, earlier mode read, retained mode address, scoped
+// balance ordinal, and the ordinal paired with the word read or mode address all score 237.
+// The query byte homes, loop entry and unit-creation block layout still differ.
+// Indexed byte rows with low word/mask/available first/guarded assignment 237/252/353/371.
+// Typed rows with the same four lookup forms 237/252/353/371. NONE is still in EDI;
+// retail reloads the squad index and holds NONE in ESI.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2252,6 +2264,17 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // use 255 (1218 B, frame 0x10); that with block 2's queries written like block 1's (0xcbd50, slot from a fresh lookup) 269
 // (1217 B), without the `long` index 279 (listed); the `long` index with `short rounds[2] = { 0, 0 };` 277 (1190 B);
 // re-measured: the `long` index alone 278 (1191 B).
+// M3 lane 13 r114 (fast; control 251). Diagnostics, reverted at once: 0x1469f0's inline asm replaced by plain C 251
+// (the pool global is still reloaded at each lookup), that plus src/unknown_0259a0.cpp without /GL- 306 (still
+// reloaded: neither opaque callee is what keeps the pool global out of EDI). Forms: the clump counter through the
+// existing element_502420_get 251 (one `mov` fewer, the index in the actor's register as retail; no gain), with `+=
+// 1` 251; a per-iteration `long weapon = weapons[i];` 251 (same code); `long weapons[2]` at function scope 251; the
+// `long` index with the rounds pair at function scope 278 (1191 B, as the `long` index alone). Body unchanged.
+// The actor, options and pool still miss ESI, EBP and EDI. First-phase pool 251; second-phase
+// pool 251; separate phase pools 251; pool after grenade metadata 302; first-phase header
+// array 251; header array after grenade metadata 301; shared header accessor 251; primary
+// weapon result inside the flag/delay gate 251. The late pool and header forms still give the
+// actor and options different registers.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
