@@ -605,6 +605,11 @@ struct c_aggregate : c_child
 // slots and puts the callback output in the terminal cell instead of ESP+0x10.
 // Convert typed child elements at collection/dispatch/both 31/31/31; named typed slot table 146/100/126;
 // advancing typed slot cursor 64/108. None recovers the shared output and cursor home.
+// M3 lane 7 r185 (fast with the six file-mates, all still matched; control 31): both child loops bounded by the
+// children array's element count 31; the release query's output as a dword 31; the cleanup's item count named in the
+// for-init 74; the cleanup item read from the block at each use (no object local) 67 (376 B); the room as the blocks
+// array's element count minus the total with `blocks + total` 31 (same code). Frame 0x8024 in each; still BLOCKED by the
+// build flag (round 59's harness: a virtual callee never lets the escaped count share a slot under LTCG).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
