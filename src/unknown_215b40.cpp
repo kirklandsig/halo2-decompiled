@@ -343,6 +343,11 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // On it: the scan as 0x2157e0's `while` over the getter with the capacity test after a match 114; the cached scan's
 // index declared ahead of the cached count 114; the location declared beside the iterator 114 (all same code); an
 // early `return` with `*capacity = 0` when the cache is missing 212 (600 B). Still BLOCKED-BY the build flag above.
+// M3 lane 5 r207 (fast with 0x2157e0, 0x215880, 0x2163d0 and 0x1249f0, all MATCH; control 114): both scans storing the
+// handle and stepping the count as two statements 114; the unit step's no-controller cases as the switch's default (no
+// assumed default) 175 (580 B); the drive letter declared at the function top 114; `long const` unit count with the
+// cached scan's type test written type first 114; the unit scan's type test written type first 114 (all 114s the same
+// code). Masked, the rest is the entry cache/zero registers, the pass-latch cache reload and the packing chain.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

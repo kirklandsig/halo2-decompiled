@@ -886,6 +886,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // same code, the getter still matching); the tail's live and 0x5dd0 tests through a forceinline copy of the existing
 // 0x5dd0 getter (0x63e00's form) 127 (451 bytes: the limit helper's live test merges; both callers lost); the two
 // buffer clears swapped 26; the player buffer declared and cleared first 26.
+// M3 lane 5 r207 (fast with 0x6e500 and 0x72700; control 22): the preset stored pair under the flag alone 46 (re-measured
+// with the live test 46): register-masked it is retail but for one line, the copy loop's count spill ahead of the two
+// leas, and the callee-saved permutation (ours session ESI, index EDI, player pointer EBX; retail index ESI, pointer EDI,
+// session EBX); 1-7 dead initialised locals on that form 46 each (not a symbol-count tie); the pair set in both arms of
+// the flag test 46; the opening's condition held in a named bool 218 (361 B: the address tests fold inside `&&`); the
+// pair as two flag ternaries on the countdown copy 156 (499 B, callers match); the variant named between the pair and
+// its test with the summary inside 152 (495 B).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
