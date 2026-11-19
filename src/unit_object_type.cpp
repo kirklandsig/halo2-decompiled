@@ -5160,6 +5160,21 @@ void __stdcall function_cc810(long vehicle_index)
 // stopping-position addition update 162; quadratic first with discriminant update 170.
 // NOT kept: ties or regressions. The x87 discriminant and extra eight-byte frame remain.
 // MiniMax R (11-17): no new form, no lower score (162): this build still allocates eight frame bytes and spills the two floats retail keeps in the dead argument homes (the inverse acceleration in the speed limit's home, the stop time in the velocity's), so every later slot sits eight bytes off and the motion pointer is read from a different home.
+// Round 103 (m3 lane 15, fast, screened first with a compile-only listing): the discriminant named and read through
+// `real const &radicand = discriminant;` 163 (708 bytes: the discriminant stays in SSE, stored to the dead motion
+// home for the fsqrt, and the eight-byte frame goes, as retail). On that: moving_away declared after stop_time (its
+// set then sits between the stop-time fstp and the first test, as retail), the first test as `(stop_time * 0.5f) *
+// velocity * 0.5f` and the stop position as `(velocity * 0.5f) * stop_time` (explicit parentheses stop the compiler
+// folding the two halves into 0.25 and sharing stop_time * velocity; retail keeps three multiplies by one 0.5
+// register), the root choice as `time = first; if (!(...)) time = ...`, the acceleration stores after the speed
+// limit and peak by if/else 109 (711 bytes); plus done written to motion->done and tested there (retail's
+// `mov eax, 1`) 97 (715 bytes). A harness search over the natural spellings then gave 63 (712 bytes, first
+// difference at +0x182): `2.0f * velocity`, `(b * b) - (a * stop_position) * 4.0f`, `2.0f * a`, the if/else root
+// choice, `real peak = time;`, `stop_position * inverse_acceleration` and the stores right after the root choice;
+// with the stores after the speed limit instead 71. What is left at 63: the early stores make the compiler load
+// acceleration into XMM6 at the branch (retail keeps the 2.0 constant there and reads acceleration from its home),
+// and with the late stores time no longer shares first's register, so the tail's time/peak/negative registers
+// rotate. Not kept (every step is a form kept only with a byte match); original body restored.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -5476,6 +5491,12 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // projection with angle record 169; complete yaw phase first 190.
 // NOT kept: the projection rewrite ties in six forms. The complete yaw phase reaches 767 bytes with a different
 // frame and scores 190. The first cross schedule and x87 forward-scale lifetime remain.
+// Round 103 (m3 lane 15, fast): the forward product written at its three uses instead of forward_scale 169 (same
+// code: it is the same common subexpression); cross3f_staged for the first product only 169 (same code); the
+// forward product as `cosine * (real)cos(yaw)` 169 (same code); `left` declared beside up and forward 169; the
+// direction components read at each use instead of the three named copies 262 (682 bytes). Retail keeps
+// forward_scale on the x87 stack to the end (popped with cosine, `fld [m]; fmul st(n)` in all three rows) where
+// ours consumes it in the k row with an fxch. Not kept; original body restored.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9675,6 +9696,13 @@ struct s_unit_melee_collision
 // ordinary cross 528, exclusive fan counters 485, separate scaled basis 572, selected object type
 // read once 485, long surface type 487. NOT kept: ray-local range restores the 0x17c frame but
 // gains only three and shortens the body to 2201 bytes. Native unit, tag and loop counter homes remain.
+// Round 103 (m3 lane 15, fast): the range field read in each ray row with no range local (retail's [esi+0x1b8]
+// in every row) 531 (2205 bytes); plus the rows reading unit->unknown168 (retail's [edi] for i, [ebx+0x16c] and
+// [ebx+0x170] for j and k) 521; no aim pointer at all, the address passed to 0x11d000 and cross3f_staged 549
+// (2200 bytes); the range rows with TEST_FIELD_BIT on both seat tests (retail's dword load, shr 11, test 1)
+// 529; plus the player index NONE first 531; that with the rows reading unit->unknown168 466 (2219 bytes; the
+// aim mix the review reverts unless it matches). In the 466 form the 0xcfc90 arm moves out of line to the end
+// (retail keeps it inline after 0xa9260's jmp), which is most of what is left there. Not kept; body restored.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

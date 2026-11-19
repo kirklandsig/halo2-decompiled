@@ -3482,6 +3482,17 @@ struct s_ammo_conversion_entry
 // Retained kind expression 207.
 // Initial transfer flags 196.
 // Both definition indices 190.
+// Round 103 (m3 lane 15, fast): the other definition's type byte read at each of its three tests (retail reloads it
+// after each call) 212; the conversion scan ended on `j >= count` with the entry picked by index 202 (718 bytes; the
+// re-test is not threaded); a separate transfer count started at 0, set in the same-definition arm and in the scan's
+// found arm (retail's shape: no null test, source cleared just before the definition compare, the count tested again
+// after the same-definition `setg`) 202 (716 bytes); that with retail's flag polarity (acquired false at entry,
+// `= transfer > 0`, `= true` in the scan, returned) 208 (709 bytes); plus the total's operands swapped 208 (same
+// code); plus `retained` as a ternary (retail's `xor al, al` in the else arm) 215 (702 bytes); plus the type byte
+// at each use 205 (719 bytes). The last form matches retail's opcode shape in 180 of 215 instructions (158 before);
+// what is left: retail keeps the weapon in EBP and pushes EDI only after the loop guard (the early exit returns the
+// cleared flag in AL), the scan count is spilled with the index in EBP, and the found entry is reached through the
+// pointer formed in the scan. Not kept: no count below 190. Original body restored.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3725,6 +3736,16 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // holder before the inventory test 637. Shared absolute slot 643. Read-only weapon, barrel and both definition
 // views 643 each. Declared definition flags 643. Named barrel scale store 643. Weapon item bitfield 636. NOT
 // kept: the holder default and item bitfield each gain fewer than eight in the preview.
+// Round 103 (m3 lane 15, all plain, control 607): the plain unit index set to NONE first (retail caches it in EDI and
+// reloads it from its frame home only after the redirect, an ordinary spill) 648 (2506 bytes, frame 0x1c60); the
+// firing-effect entry formed before the two barrel stores (retail loads the effect table before them) 636 (2522
+// bytes; the effect loop then lines up with retail); both 654 (2506 bytes; opcode shape 570 of 634, against 535);
+// that entry form with the redirected unit as a ternary argument 637; the `scale_a = 0.0f` store retail makes in
+// the not-fired arm (movss [esp+0x20] at 0x103462) 609 (2543 bytes); the plain unit, the entry and the store
+// together 646 (2512 bytes, shape 571). Left over: the per-call instruction counts are within five of retail's
+// everywhere, so the positional count comes from drift: retail keeps the weapon index in EBX up to the first
+// fire call, the magazine definition in EBX across the 0x106030/0xd1210 calls and the barrel offset in EDI.
+// Not kept: no count below 607. Original body restored.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4105,6 +4126,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Owner player field 1420.
 // Dual and blend homes 1420.
 // Pool after animation 1420.
+// Round 103 (m3 lane 15): both definition flag tests through WEAPON_BIT_AT (retail's shr) 1419; with blocked/down/up
+// as bool 1413 plain at 5684 bytes, frame 0x34 against 0x38 (a gain of seven, and a retype); plus a bool result
+// 1494; plus blocked cleared at entry and set in its test 1433; the owner-unit call nested in the scale call 1413.
+// Not kept: none reaches the gate. Original body restored.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
