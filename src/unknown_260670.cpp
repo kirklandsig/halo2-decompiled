@@ -227,6 +227,10 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // lookup still a call); that with the sort scratch in its block 518 [199/165] (3057 bytes, frame 0x8a0, first difference
 // +0x3b); the first pass as a pointer walk, `possible && e->proc` 604 [252/219] (3077 bytes), `e->proc && possible` 440
 // (same code); the pointer walk with the sorted index as long 611 [252/218] (3069 bytes). Lockstep score rises: not kept.
+// Finite-distance OR/logical OR/conditional accumulation 585/610/440. Range OR
+// after/before invalidation 576/581. Both OR 556, logical finite with range OR 558,
+// logical range 791. NOT kept: smallest frame 0x8a4 still exceeds retail's 0x8a0
+// and every smaller-frame form raises the score. The call boundaries still differ.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

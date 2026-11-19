@@ -655,6 +655,48 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
+// MiniMax B (11-18): later still, ~170 spellings tried in total: VC7 gives EDX to whichever operand of the
+// entry test carries the plus or minus one, so every spelling that increments the index (`index + 1 >=
+// count`, the same with the index or the count in an int, long, short or char local, the increment folded
+// into the local's initialiser, the test negated, both sides widened, either side cast to char or short,
+// and the same test with an addend on each side) puts the index+1 in EDX and the count in EAX and so
+// changes the load order as well (4 to 6). The one spelling that reproduces retail's entry test exactly
+// (`inc eax; cmp eax, edx; setge al`, the count in EDX and the index+1 in EAX) reads the count through a
+// function-scope path pointer at actor+0x50c: `actor->unknown53a + 1 >= path->field_2d` scores 2, because
+// the second dot product's i term then takes the direction as multiplicand where retail takes the point;
+// with the index read through the path as well (`path->field_2e + 1 >= path->field_2d`) the whole float
+// block re-rotates (the j and k terms swap, score 10), and the path declared before the definition line
+// scores 10 too. That i term does not move under the helper's argument order, under a named local for
+// either pointer or under the two dot products in locals (2, 4), so the committed body (score 1) stands.
+// MiniMax B (11-18): later still, ~140 spellings tried in total: the path-pointer entry test and the two
+// dot products cannot both be right at once. With the path-pointer test `path->field_2e + 1 >=
+// path->field_2d` and the current point still read through the actor (`unknown53c[unknown53a]`), retail's
+// `inc eax` comes out but the whole float block re-rotates (the j and k terms swap, score 10); with the
+// current point read through the path the float block keeps retail's shape and only the second dot
+// product's i term flips (score 2). The second dot product's i term is invariant under the helper's
+// argument order (`dot3f(point, direction)` and `dot3f(direction, point)` compile the same), under a
+// named local for the input pointer and under `&point->n[0]`, so it is an allocator tie; the committed
+// body (score 1) stands.
+// MiniMax B (11-18): later, ~80 more spellings tried: a function-scope `s_1f9762 *path` (count, index and
+// entries all read through actor+0x50c) with the entry test written `path->field_2e + 1 >= path->field_2d`
+// reproduces retail's `inc eax`/`cmp eax, edx`/`setge al` exactly, but the second dot product's i term then
+// takes the direction as multiplicand where retail takes the point (score 2, worse than the committed 1).
+// A 16-way grid over arm/previous/approach/projection read through the path or the actor's own fields
+// (`unknown53c`, `unknown539`, `unknown53a`) scores 2 at best and always differs in the same two
+// instructions (`movss xmm2, [eax]`/`mulss xmm2, [ecx]` against retail's `movss xmm2, [ecx]`/
+// `mulss xmm2, [eax]`); the `arm=actor` rows score 17-39 because retail folds the path base into
+// `esi + 0x50c` (`lea eax, [ecx + esi + 0x50c]`) and the actor form loses that base. The i-term operand
+// choice is an allocator tie that source-level reordering, named pointer locals and helper argument
+// swaps do not move, so the body stands.
+// MiniMax B (11-18): score 1 (unchanged): the entry test is the only difference (`dec edx` where retail has
+// `inc eax`; every other byte agrees). Tried here (~30 spellings of that one test): `count <= index + 1` (4)
+// and `count - 1 <= index` (3) put the count in EDX and the index in EAX exactly as retail does, but the
+// adjustment then lands on the EDX side and the condition comes out setle; `index + 1 >= count` (4) and the same
+// with the index or the count held in int/long/short/char locals, the increment folded into the local's
+// initialiser, a pre-increment local and `index++` (6 each) hoist the index load ahead of the definition chain
+// and fuse the increment into EDX (`inc edx; cmp edx, eax`), so the load order changes as well; the baseline
+// (`index >= count - 1`) keeps retail's load order but decrements the count instead of incrementing the index.
+// No spelling found puts the incremented index in EAX against the count in EDX, so the body stands.
 // MiniMax A (11-18): score 1 (was 4): the entry test is written `index >= count - 1` (the same test as
 // `index + 1 >= count`), which loads the count into EDX and the index into EAX as retail does; left: the
 // test ends in `dec edx` where retail has `inc eax` (the count is decremented, the index is not).
@@ -894,359 +936,80 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
-// score 135 (was 135):
-// M3 lane 14 r112 (fast; control 135): retail's speed-fail edge goes straight to `test dl, dl` with the first result
-// still in DL, the retry-fail edge reloads DL from the dead target slot, and the retry-success edge stores 1, reloads DL
-// and jumps past the test; both short exits return the live register (`mov al, dl`, `mov al, bl`), where this build folds
-// them to one `xor al, al` exit (the 12 bytes). Tried: the last `return false` as `return valid` 135 (still folded to
-// `xor al, al`); one exit through `bool success = valid; ... success = result; return success;` 135 (folded too); the first
-// result as `result = false; if (call) result = true;` 182 (935 B, retail's length, but the frame drops to 0x44 and the
-// result takes a cell of its own); the call compared `!= 0` (diagnostic, redundant) 119; one to eight dead initialised
-// locals (diagnostic) 135 each, listings unchanged.
-// MiniMax I (11-09): no new form, no lower score (135); the first difference is the trajectory result's
-// register home: retail copies the call's return into DL (`mov dl, al`), loads the force flag into AL and
-// stores DL to the reused target-parameter slot only afterwards, while ours stores AL to that slot at once
-// and takes AL for the force flag; a force copy before the call, inside the valid block and right after the
-// call, the separate declaration, a char result, the direct return in the request arm and the swapped
-// condition order all compile to the same code (the swapped order only sinks the store past the speed
-// compare). Still different: the home register (DL against AL), the store before the force test, the tail's
-// register order (`mov ecx,[esp+0x2c]`, `mov edx,[esp+0x30]` against `mov eax,[esp+0x2c]`,
-// `mov ecx,[esp+0x30]`) and the size (935 bytes against 923).
-// MiniMax R (11-09): the annealed permuter over 900 s ends at 134, its best being the two flag stores swapped, a gain of one that the review threshold drops, and the volatile globals pointer and the placed point store it also made give 135 on their own; the score stands at 135.
-// MiniMax R (11-08): no new form, no lower score (135); the threshold, the request point copy, the direct request return, the result's type and the retry spelling all score 135 or worse, and only the trajectory result compared against zero reaches 120, which is a redundant compare kept only with a byte match.
-// MiniMax R (11-06): no new form, no lower score (135).
-// MiniMax G (11-04), not kept (coordinator): 59 with the trajectory result compared against zero
-// (`fa1a0(...) != 0` on a bool call; retail has no setne, it only moves the result to DL, so the
-// compare steers registers: 165 without it), the request point copied component by component and the
-// threshold as !(base * 1.2 >= chosen); a redundant compare is kept only with a byte match.
-// G's notes on what still differed at 59:
-// Still different: retail caches the trajectory result in DL (`mov dl, al`), loads the force flag
-// into AL and stores DL to the stack slot afterwards, while ours tests the result, loads the force
-// flag and stores the comparison - one byte longer, which shifts every later constant and jump;
-// retail copies the request point through integer registers and returns the request call's result
-// directly, and the unit-state table goes to ESI rather than EDX.
-// MiniMax H (11-04): the trajectory result hoisted to function scope 135, the invalid tail
-// returning the valid flag 135 and the comparison written as !(a >= b) 135; no lower score.
-// MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven
-// stack operands where ours passes ten plus EDX, and retail keeps the trajectory result in DL
-// (`mov dl, al`, then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL directly.
-// MiniMax D (11-01): the fast flag's test moved into the valid arm 301, a separate trajectory
-// variable 278, `force = force || fast` 253: the result stays memory-homed in every form; no
-// lower score.
-// MiniMax E (11-06): no new form, no lower score; retail keeps the trajectory result in DL and returns
-// the validity flag in BL on the short exits, where ours keeps the result on the stack and folds that
-// exit to a cleared AL (12 bytes short on every path).
-// MiniMax H (11-07): no new form, no lower score (135); retail copies the fast flag through DL
-// before storing it (`mov dl, al` then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL
-// directly, and the trajectory result still stays on the stack here while retail keeps it in DL.
-// MiniMax D (11-14): no new form, no lower score (135): retail's fallback exit returns a frame byte the
-// function never writes (`mov al, byte ptr [esp + 0x50]`), so that path's value cannot come from a local we
-// set, and the trajectory call still uses our callee's shorter convention (ours passes ten stack operands
-// and EDX and returns with ret 0x28, retail eleven and ret 0x2c), which is 0xfa1a0's own body in a
-// contributor's file.
-// MiniMax D (11-16): no new form and no lower score (135): retail still caches the trajectory result in DL across the force test (`mov dl, al`, `mov al, byte ptr [esp + 0x60]`, `test al, al`, `mov byte ptr [esp + 0x5c], dl`) where this build stores AL to its home at once, so the request, the facing stores and the returned flag stay off by that register turnover; retail's unit-request path returns the request's value straight in AL, so its result has two assignments and not three - returning `function_e6900(...)` directly from that branch drops the third assignment but scores 182 (919 bytes) because the exits are then split differently, and is restored.
-// Earlier: frame 0x48 agrees and the code matches retail to the first trajectory call;
-// retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
-// exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
-// goes to EDX not ESI, the first facing store loads EAX/ECX, and the validity flag comes back in BL
-// where ours folds that exit to `xor al, al`, 12 bytes short in all.
-// goes to EDX not ESI and the first facing store loads EAX/ECX; retail also returns the validity
-// flag (`mov al, bl`) where ours folds that exit to `xor al, al`, 12 bytes short in all.
-// The trajectory helper uses retail ret 0x2c; the older extra-EDX blocker is absent.
-// frame 0x48, entry initialization and trajectory convention agree.
-// The found-type scan has an extra bound test; trajectory result registers, retry scalar homes,
-// object/query allocation and separate movement-return tails still differ.
-// Forms tried: search then selection 172; unsigned scan 178; fixed do/while 191; types arm first 191;
-// fallback setters 195; split plus unsigned scan 223; signed-long search 192; signed-byte search 188;
-// exact exhaustion 210; named first normalization result 172; low-bit presence guard 228; native type
-// clamp 236; branch-defined chosen speed 220; target snapshot 234; bounded for search 172; unsigned
-// byte scan 233; chosen speed after query 190; planar component stores 265; native masks/metadata
-// snapshot 172 each; retry requirement 196; first type from bits 277; validity initialized in typed arm
-// 241; first type initialized by branch 198; read-only metadata 172; read-only speed tables 172;
-// vertical output branches 187; shared movement flag stores 174; retry speed first 172; native planar
-// output copies 172; query inline/noinline declarations 174/172; byte/word validity 172/170; byte/word
-// first-type state 172/208; decisions after query 177; both byte decisions 172; separate retry force
-// 196; long first-type result 235; minimum after speed query 228; first type after speed query 175;
-// shared movement destination 172; native request copy 172; earlier result declaration 172; minimum
-// and retry force 227; retry/movement/both threshold products 172 each; clamped upward result 172, with
-// both products 172; retry/movement/both eligibility results 172 each; validation after query 220, with
-// late minimum 220; early query output 171; minimum first 174; early output/minimum 170; first-type
-// first 172; shared Boolean initialization 173; early output with late validation 218; fast-byte memset
-// 172; actual actor/requested-type/maximum-type references 172 each; actual destination/origin
-// references 172 each; read-only unit view 172; native two-component normalization workspace 206; both
-// lookup globals at each use 172; request point setter 175; entry direction workspace 172;
-// globals/setter 175; globals/workspace 172; setter/workspace 175; all 175; word trajectory result 211;
-// initial/retry/both scalar outputs at method entry 172 each; retry outputs at valid scope 172; first
-// entry plus retry valid 172; both entry with false validity return 172; retry valid with false
-// validity return 172; false validity return alone 172; complementary validation/base-check/trajectory/
-// validation-base/validation-trajectory/base-trajectory/all/byte trajectory 217/173/223/172/212/226/
-// 225/223; post-query force OR/guarded/conditional/complete arms 303/197/172/273; exact search bound
-// 211; mask-first search 228; complete requested-byte snapshot 240; snapshot plus force OR 300; shared
-// validation/query result 172; two-use unit index 172; native origin value 229; result+index 172;
-// result+origin 229; index+origin 229; all 229; complete origin memcpy 229; word validity with early
-// query, early query/minimum, post-query first type and all three 169/169/173/174 (best at 935 bytes);
-// byte validity with the same four 171/171/175/177; global optimization off 542; inline depth zero 231.
-// Round 61: selection inside a `for` scan with `break` 191; the flag declared first 171; declarations
-// in retail's store order (actor, minimum, flag, validity, first type) 168, kept; then the scan with
-// the selection and `break` inside 183 (matches retail up to the first 0xfa1a0 call at +0x111; the
-// six saved bytes shift the rest); retry outputs declared horizontal first 168; first normalization
-// tested `> 0.0f` with an early store-return 215 (890 B, our stores merge), in if/else arms 215;
-// `base_speed * 1.2f >= chosen_speed` early return 212 (retail's jae polarity).
-// Round 151: two-use retry success with logical/bitwise/reversed logical joins before/after publication
-// 216/239/218/254/215/243; promoted long/word result joins 200/203. Native vector setter for planar
-// zeros/actor fallback/default axis 172/218/187; zero-actor/zero-axis/actor-axis/all 218/187/211/211; all
-// plus request setter 222.
-// Round 63: validity and trajectory result in one success variable 229 (908 B); `!(base_speed * 1.2f >=
-// chosen_speed)` (retail's comiss/jae) 167; `return valid;` on the invalid path 168 (folded to xor al, al);
-// retry outputs assigned horizontal first 168 (retail's slot sharing with the speed, aligned 83 -> 79);
-// those two with the `for` scan and break 183 (aligned 75; matches retail through +0x111).
-// Round 31 (lane 12): first normalization as `!(... > 0.0f)` 167; with `!(base_speed * 1.2f >= chosen_speed)`
-// 166; then the success store as the `if` arm 192 (942 B); the scan with selection and break on that graph
-// 183 (matches through +0x111); 0xfa1a0 time scale read once into a value 166 (0xfa1a0 262, still EDX).
-// Round 10 (lane 11): both of those with `return valid` 167; with a plain `for`/`break` scan 167; with a
-// bottom-tested scan 207; with the selection inside the scan 183; retry vertical renamed to sort first 168.
-// Round 236: native request/movement/selected-type result and all combinations, then native table
-// fields 171 each; all restored.
-// Round 162, with the corrected trajectory convention: found-bit selection, both output-pair orders,
-// false-validity return, overall result and the combined output/result form 174 each; early first-type
-// 230; byte/word trajectory success 189/177. Coordinated trajectory inline declarations on the
-// original/found-bit graphs 171/174. All bodies, call tuples and outside declarations restored.
-// Round 224: Native initial/retry speed pairs with full-width result, seven subsets
-// 174/172/175/199/199/202/202; both pairs with enclosing retry scope 175. No match; all pair
-// storage, result width and body restored.
-// Round 224 continuation: Native planar normalization/output workspace on the corrected trajectory convention, crossed with
-// earlier result, entry planar declaration and complete memcpy publication, eight forms 267 each.
-// Original 3D output, planar uses, declarations, comparisons and full body restored.
-// Round 72 (lane 8): kept 135: the `for` scan with the selection and `break` inside, the facing
-// fallback in its own `vector3f facing` local (retail's separate first-success store and shared
-// facing store, default-axis store with the dead k store), retry outputs assigned horizontal first,
-// and the request result assigned to `result` in an `if`/`else if` with the planar arm. Tried on the
-// way: one result for validity and trajectory with a single exit 284, with the original returns 171
-// (invalid exit still folded), with the new tail 182/236/243; inline unit-state helper call 171
-// (same code); explicit returns in both facing arms 206 (result takes EBX, target leaves it), in one
-// arm 135; typed or per-field request point 135/199; `result` declared at the top, before validity
-// or before the actor 135 each; fast-to-force inside the valid block 246; `return valid;` 135 (folded);
-// the original while scan on this graph 204 (935 B); `!(base_speed * 1.2f >= chosen_speed)` 135 (gives
-// retail's comiss/jae, same count).
-// Round 412: Native unit-state accessor 135; fallback-vector setters 192; joined two-use retry
-// result 213; accessor/setters 192; accessor/retry 213; setters/retry 187; all three 187; all with
-// short result 213. All restored.
-// Early trajectory-failure exit on the retained facing graph, bool/byte/long/short result
-// 135/186/151/159; each with direct request return 182/193/173/153. All restored.
-// Separate trajectory admission/final result, bool/byte/word/long carrier 199/157/149/150;
-// each with the final result declared before outputs 199/157/149/150. All restored.
-// Round 430: One selected-speed lifetime through retry, with entry result declaration, valid-scope
-// retry outputs and both native axis-pair names: all eight 204 at 917/935 bytes. Original two speed
-// lifetimes and complete body restored.
-// Lane 15 round 18: retail's trajectory result is a spilled register candidate (DL copy, store after the
-// force test, DL reloaded after the retry and returned by a shared `mov al, dl` exit; the request arm
-// returns its call's AL); ours keeps it memory-homed (immediate store, dead store before the request
-// return, folded false exit). Request result returned from its arm 182 (919 B); early false return after
-// the retry 135; retry admission and call joined by && 135; unit index local 135; validity block
-// flattened into an early false return 232. All restored.
-// Lane 16 r46: `return valid;` folds to `xor al, al` (VC propagates the branch value), so retail's
-// `mov al, bl` returns a value it cannot prove zero. `bool result = valid;` with one exit 236 (877 B,
-// result takes BL); `result = false; if (query) result = true;` 182; the facing fallback written into
-// `direction` 135 (same code); both speed lookups as calls to the existing 0x26f290 (same body) 316
-// (/Ob1 file, stays out of line even with a __forceinline redeclaration; a local inline copy 135, same
-// code); the result renamed reachable/arrived/success 135 each.
-// Round 208: Retry-outcome-owned chosen-speed defaults with early result declaration, valid-scope
-// retry outputs and horizontal-first pair declarations, masks 0..7: 212 each at 914/935 bytes.
-// Original chosen-speed initialization and complete body restored; retained DL result and
-// movement/request exits remain unresolved.
-// Round 38 (lane 1): validity reused for the trajectory result with one final `return validity`
-// and the request call returned from its arm 236 (877 B: every exit `mov al, bl`, retail keeps two
-// variables, BL validity and a DL trajectory result); the request call returned from its arm
-// alone 182 (919 B, result still memory-homed), also with the first-type test as its own `if` 182;
-// the retry admission as `minimum < speed * 1.25f` 135; the retry success flag set after the
-// output copies 135 (same code). The compile-only harness gives the result BL, so it cannot screen
-// the LTCG memory-homing; the unmatched trajectory callee (frame 0x28 against 0x30) may feed it.
-// Round 216: Native direction/request/facing declarations at entry, seven subsets 135 each; all with entry result 135. Request scope changes lookup/copy registers, not DL residence; all restored.
-// Round 40 (lane 11, fast): `if (valid == true)` with `return valid;` 138 (cmp bl, 1, but the invalid
-// exit is retail's unfolded `mov al, bl`: VC folds the value only from a test against zero); a copy
-// `bool result = valid;` tested, `return valid;` 135 (copy propagated, folded); the jump publication
-// as a __forceinline helper 135 (same code); the request arm returning its call with the movement
-// test as its own `if` 182 (919 B). Diagnostics, all reverted: the facing normalization removed 358,
-// the retry removed 485, the type scan removed 496; the result stays memory-homed in all three, so its
-// homing does not come from the retry call, the facing calls or the scan.
-// Round 19 (lane 18): retail's 0x1f84ef `mov al, dl` exit is shared by the result-false, first-type and
-// speed paths, so VC never knew the value there; ours sends result-false to the invalid exit's folded
-// `xor al, al`. A compile-only screen shows VC folds the false exit after any equality test against
-// zero (bool/char/long, early return, goto, else); `> 0` tests do not fold but give jbe; one shared
-// `return` keeps `mov al, bl`. Real (fast): one exit with `result = false` at entry 204 (911 B, result
-// in BL); request arm returning its call with `return valid;` 182 (aligned 41 -> 40: the request
-// store goes, DL caching and the shared exit do not appear); one exit with `bool result = valid;`
-// plus the request return 219; chosen speed declared after the first call 160; result declared first
-// in the valid block 135 (same code).
-// N271: complete actor/unit/speed-table receiver observations at use, seven subsets
-// 308/135/135/324/308/135/324; all with existing request point setter 336.
-// Original receivers and body restored; DL success retention and movement/request exits remain.
-// Round 319: Coordinated byte/signed-char return domains with bool/byte trajectory storage 135/135/135/135; each with validity-byte invalid tail 135/135/135/135. Original return contract, both declarations and full body restored.
-// DL240: Coordinated force formal byte/signed-byte/word/short: 135/135/246/246; with direct
-// request return 182/182/253/253. Original Boolean formal, body and both declarations restored; DL
-// trajectory residence and shared return transport remain.
-// DL242: Canonical result == true / > 0 as bool 179/135, each with validity == true 180/138;
-// byte/signed-byte == true 163/163 and > 0 186/186. Original result domain, guards and body
-// restored; DL retention and folded false exit remain.
-// AC484: Multi-use origin pointer at entry/valid scope, with late/early result declaration,
-// 135 each; each with direct request return 182. Original field addresses, result scope
-// and complete body restored; retained DL success and distinct return transport remain.
-// Round 545: Negative trajectory outcome producers, original/complementary unit-state arms,
-// assigned/terminal request results 182/120/187/141/189/113/193/156.
-// NOT kept: 120 adds a Boolean canonicalization absent in retail; 113 also moves length away.
-// Original request/movement graph and body restored; retained DL result and return transport remain.
-// DH317: Complete successful trajectory output merge at the existing result admission,
-// logical/reversed/bitwise/branch joins in bool/byte retry storage:
-// 195/193/170/144/195/193/185/144. Branch joins reach 935 bytes but regress;
-// original output lifetimes, result flow and full body restored; DL residence remains.
-// AC498: Retry-force logical/reversed/bitwise/conditional producers 253/217/304/135;
-// force true/nonfalse/positive/inverse conditional admission 182/135/135/135.
-// Original complete body restored; initial DL retention and movement/request returns remain.
-// B388: Independent trajectory outcome transferred to outer validity at the final join,
-// bool/byte/short/long 186/186/159/153; direct request-to-sole-exit companions
-// 193/193/153/173. All regress; original two producers, calls and return graph restored.
-// DH321: Immediate successful retry-output publication with bool/byte/word/long two-use
-// retry outcomes and logical/bitwise success joins on the retained facing graph:
-// 219/198/219/203/225/201/223/212. Original output guards, result transport and complete body restored.
-// AC503: First-type/speed/normalized completion guards, seven subsets 135 each; terminal
-// request with all guards 73 (901/935 bytes), recovering DL. NOT kept: length moves away and
-// gain appears only with combined forms. Original full body restored; separate facing/default
-// and invalid return paths remain.
-// J247: Native request-point/direction/facing memcpy subsets on the retained 3D graph:
-// 135/135/135/135/135/135/135; all three memmove 234 (873 bytes, frame 0x54).
-// NOT kept: no gain; original complete body restored. AL/DL force-result and return homes remain.
-// J249: Coordinated long/dword force formals, original/complete OR producers with
-// assigned/terminal request results 141/256/186/255 and 141/256/186/255.
-// NOT kept: all regress; OR forms lose a matched caller, and full-width input differs
-// from native byte admission. Original Boolean formal/body and both declarations restored.
-// F360: Initial trajectory true-default/exhaustive result producers in bool/byte/short/long:
-// 182/195/169/175/120/156/168/176. NOT kept: no exact initial-result/DL repair; retail does not materialize a query predicate.
-// Original complete body and helpers restored.
-// B408: Existing final planar setter first/facing/both, ordinary then forced expansion:
-// 165/186/222/165/186/222; both with existing complete facing construction 223/223
-// (provider-rooted control 135; exact provider survives). Initial omitted-provider previews
-// excluded. NOT kept: DL/return graph remains; original copies, declarations and body restored.
-// M345: Trajectory result char/word/unsigned-int/dword at its call or before all
-// trajectory outputs: 186/186/159/159/153/153/153/153. Native request/facing graph retained.
-// NOT kept: scalar carrier domains miss; original Boolean result and complete body restored.
-// M347: Request-state admission outcome, direct bool/byte/short/long then
-// test-produced bool/byte/short/long: 135/135/135/135/135/135/135/135.
-// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
-// DH334: Standard typed request-point/normalized-planar/facing-planar record ranges,
-// seven subsets then complete backward ranges: 144/180/194/185/197/198/202/205. NOT kept: all regress;
-// original publications and complete body restored; retained DL and return transport remain.
-// DL260: Complete persistent/candidate outputs, directions and speed identities; matched initial-speed provider ordinary inline: 135/135/135/135/135/135/135/135/141.
-// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
-// DH373: Original-site facing-height zero/nonzero outcomes in bool/byte/short/long:
-// eight at 135. NOT kept: no native DL/return recovery or equality; original fallback
-// admission, result, outputs and complete body restored. Frame 0x48 still agrees.
-// DL262: Successful movement-producer identity long/dword/short/byte, zero then invalid-index absence:
-// 189/189/182/192/184/184/185/176. NOT kept: no byte equality; original independent result/validity
-// producers and complete body restored; DL retention and movement/request returns remain.
-// M389: Double queried/chosen/retry speed receivers, seven subsets, then all
-// with double base speed: 257/188/279/135/257/191/277/266. NOT kept: ties/regressions;
-// queried/chosen domains disturb native frame setup. Original real speed producers,
-// numerical predicates, address-passed outputs, calls and complete body restored.
-// AC554: Uninitialized independent completed result, actual invalid-branch production and
-// sole return, bool/byte/char/signed-char/short/word/int/long 208/189/189/189/179/179/186/186.
-// NOT kept: no exact DL/return-join repair; original independent validity and full body restored.
-// DL267: Existing request point setter; direction/facing zero setters; actor/default facing vector setters; actor/direction/default point setters: 166/135/175/135/229/175/135/229.
-// NOT kept: no byte match or eligible native repair; original executable source restored.
-// DL272: Default persistent vertical/horizontal, their pair, retry vertical/horizontal, retry pair, all four and all with direction; native DL and separate return transport remain. Scores 118/117/157/138/137/158/190/221.
-// NOT kept: output default stores are absent in native code and the unmatched defaults are not retained; original executable source restored.
-// DL274: Own force/initial-target/retry-target home reads, seven subsets then request-target home: 135/134/134/134/134/134/134/134.
-// NOT kept: native DL retention and separate request/invalid return transport remain; no eligible byte match or native repair.
-// Original complete executable source restored.
-// DH382: Completed invalid type admission at absent definition/rejected forced mask/
-// exhausted short search, seven subsets 136/244/253/238/253/267/267; all typed-first 249.
-// NOT kept: all regress and disturb the native entry/type prefix; original entire body,
-// trajectory inputs, movement/request stores and independent result producers restored.
-// P402: Successful initial/retry scalar output selection by mutable/readonly axis-pair, speed or all
-// addresses, then function-entry axis receivers:
-// 189/189/161/161/185/185/189/189. NOT kept: all grow native frame 0x48 to 0x4c/0x50; local-address forms
-// require equality. Original output copies, both exits and complete body restored; native DL/retry/return
-// transport remains.
-// MiniMax R (11-10): no new form, no lower score (135): ours is 923 bytes against retail's 935, so the
-// first difference is only a jump displacement at +0x111; what is still missing is those twelve bytes
-// and the DL retention with the separate request and invalid return transport, and the forms the
-// earlier rounds record (the trajectory result domains, the request-point and facing copies, the
-// force-result producers, the result declared first in the valid block) all measure 135 or worse.
-// MiniMax H (11-12): no new form, no lower score (135): retail carries the trajectory result in dl across the
-// request and hands the validity flag back in bl on the short exit, ours keeps the result only on the stack and
-// folds that exit to `xor al, al`; the permuter's 128 tries bottom out at 124 differing instructions (133 by the
-// check's metric) and a component-wise request copy reaches retail's 935 bytes but scores 164, so neither is kept.
-// P442: Deferred complete initial/retry truth join at movement admission, original success-only
-// output publication, initial-first/retry-first/bitwise/conditional with bool then byte retry:
-// 195/194/163/199/195/194/166/199. NOT kept: no exact DL/return repair; original result graph and full body restored.
-// MiniMax G (11-13): no new form, no lower score (135): retail's short exit hands the validity flag
-// back in BL (`mov al, bl`) and ours folds that exit to `xor al, al`, because MSVC folds a returned
-// bool that was tested against zero; the trajectory result stays on the stack instead of in DL.
-// T104: Independent neutral request success, joined with unchanged trajectory result,
-// logical then bitwise bool/byte/short/long: 136/136/152/151/167/167/161/158.
-// NOT kept: no equality; native-length forms still miss DL/return transport. Original entire body restored.
-// T107: Original force/fast inputs kept independent until retry admission,
-// logical/reversed/bitwise/conditional forms 301/301/304/301/301/301/304/301.
-// NOT kept: all regress and shorten away; original fast merge and full body restored.
-// P498: Actual request/fallback-facing/retry-output declarations within the admitted path, seven subsets, then complete graph with early uninitialized result. The exact first-query prefix survives; native retained DL and independent request/movement/invalid return transport remain.
-// Scores 135/135/135/135/135/135/135/135. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
-// P511: Original-site direction/facing normalizer results in real/none, none/real, real/real,
-// double/none, none/double, double/double, real/double, double/real: 135/135/135/170/153/175/153/170.
-// NOT kept: real captures tie; double receivers grow away from native extent and regress.
-// Original full body restored; initial DL retention and separate request/invalid return transport remain.
-// P513: Original-site movement-speed eligibility/exclusion outcomes, bool/byte/short/long,
-// on the retained separate facing/request graph: 135/135/135/135/135/135/135/135. NOT kept: no DL/return
-// repair or equality; original observations, thresholds, calls and complete body restored.
-// P515: Independent trajectory/validity/first-type/retry binary enumerations, positive then complementary:
-// 172/141/202/135/192/253/213/135. NOT kept: no native DL/return equality; original
-// independent producers, trajectory tuples, request/facing graph and full body restored.
-// P527: Actual actor definition/unit/facing member-lvalue graphs, seven subsets then
-// all addresses from acquisition: 135/135/135/173/173/173/173/173. NOT kept: no native DL/independent-return
-// repair; original live field reads, trajectory/request tuples and complete body restored.
-// P533: Existing trajectory/validity/type truth at original movement flag stores:
-// 113/113/161/267/267/247/135/135. NOT kept: 113 reloads the trajectory byte for a flag
-// where retail stores immediate one; no native DL repair or byte match. Original complete body restored.
-// P545: Standard type/scan minima, vertical maximum, retry addition, speed/movement
-// eligibility and first/fallback planar predicates: 257/282/168/172/169/185/175/163.
-// NOT kept: none recovers native DL/independent-return transport; vertical maximum
-// reaches 935 bytes but regresses. Original complete body and all providers restored.
-// P560: Sole common return with an uninitialized outcome, false/valid invalid assignment,
-// declared at entry/after speed/before force/before valid admission: eight 208 at 907/935.
-// NOT kept: common result takes BL, invalid zero still folds and length moves away; original
-// independent trajectory/request/invalid returns, all call tuples and complete body restored.
-// P573: Original-site forced type-mask admission, accepted/rejected outcomes in
-// bool/byte/short/long: eight 135. NOT kept: no native DL/independent-return repair;
-// original mask observations, validity/type producers and complete body restored.
-// P588: Fixed original actor/type/unit/selected-table/base-table bindings,
-// immutable retry speed, fixed requested-type and target inputs: eight 135 at
-// 923/935 bytes. NOT kept: no native DL or independent-return repair; original body restored.
-// b8J (11-17) walk against retail, fast build on r836 (score 135 before and after): the chosen-speed test is now
-// `!(base_speed * 1.2f >= chosen_speed)`. Retail does `comiss xmm0, xmm3` then `jae` to the shared exit (0x1f83f7,
-// 0x1f83fa), so an unordered compare (NaN chosen speed) falls through into the movement stores; the old
-// `base_speed * 1.2f < chosen_speed` compiled to `comiss xmm3, xmm0; jbe` and skipped them on NaN. A behaviour fix.
-// The other branches already agree with retail's polarity, NaN included: retry on `speed * 1.25f > minimum`
-// (0x1f82d9, 0x1f82de), vertical `> 1.2f` (0x1f8400, 0x1f8419), planar `> 0.0f` (0x1f843b, 0x1f843e), facing height
-// `!= 0.0f` (ucomiss/jnp 0x1f847a, 0x1f8489) and the normalized-facing test (0x1f849d, 0x1f84a0). Correction to the
-// 11-14 note above: the `mov al, byte ptr [esp + 0x50]` at 0x1f84c2 is the result, not an unwritten byte: three pops
-// (0x1f84af, 0x1f84b0, 0x1f84bd) precede it, so it reads frame +0x5c, the target slot that holds the trajectory result
-// (0x1f82c5, 0x1f8336); retry speed shares the force slot (0x1f82f6 `fstp [esp+0x6c]`). Our build reads the same slot.
-// Constants checked: 1.25f (0x45dc88), 0.03f (0x4508f8), 1.2f (0x45dce8). Offsets, call tuples and the force/fast and
-// scan logic agree statement by statement; no other logic difference found. Callers 0x1be8f0, 0x1f7c70 still MATCH.
-// F417: Terminal request with first-type/speed/normalized-facing returns,
-// their three single forms and three pairs 182 each; non-request arm first with
-// speed or normalized-facing return 178 each. NOT kept: both lengths shorten and
-// DL and independent invalid return remain. Original result and body restored.
-// One evolving attempt speed or reused query speed 135/135; with late chosen-speed default 207/204.
-// Direct request return on those four forms 182/182/208/205.
-// NOT kept: neither lifetime recovers DL, and direct returns shorten the body.
-// MiniMax G (11-18): no new form, no lower score (135): the first difference stays the trajectory result. Retail keeps the
-// call's bool in dl across the `force` test (`mov dl, al`, the `force` load, the test, then the store to the result slot),
-// while this build stores the bool to the slot before the test; the later rows then pair with the wrong row after that
-// two-byte shift, and what is left after it are register choices (the object pool in ecx against retail's edx, the result
-// in al against retail's dl, the request copy's fields in ecx and edx the other way round). The permuter (1200 s) wrote
-// nothing and its one-point form was under the keep bar. Three more forms this round: the test spelled `result != 0`,
-// the result declared before the other block locals with a separate assignment (both compile to the identical code),
-// and the request path returning the call's value directly (182, worse: the body shortens). The result held in a byte
-// instead of a bool is 186 (worse: the body shortens by nine bytes).
+/* tries to launch the actor at a point on a ballistic arc: the trajectory at the given speed, then (when
+   forced, or when the speed allows it) again at just above the minimum speed the first query reported. A
+   unit in action state 5 gets the launch as a unit request; any other unit, unless the first movement
+   type was chosen or the base speed already covers it, has the launch speeds and a planar facing stored
+   on the actor. Retail inlines this into 0x1f8160 with its own result and exits: the caller's validity
+   flag takes the returned value, which is why its invalid exit returns the flag itself, and the minimum
+   is the caller's local (cleared at its entry), so it comes in by address. */
+static __forceinline bool actor_try_ballistic_launch(s_actor_view *actor, point3f const *target, real speed, bool force,
+    bool first_type, real *minimum)
+{
+    vector3f direction;
+    real vertical;
+    real horizontal;
+    real chosen_speed = speed;
+    bool result = function_fa1a0(speed, 1.0f, &actor->position, target, minimum, NULL, NULL, true,
+        &direction, NULL, NULL, NULL, &vertical, &horizontal);
+    if (force || speed * 1.25f > *minimum)
+    {
+        real retry_speed = *minimum + 0.03f;
+        real retry_vertical;
+        real retry_horizontal;
+        if (function_fa1a0(retry_speed, 1.0f, &actor->position, target, minimum, NULL, NULL, true,
+            &direction, NULL, NULL, NULL, &retry_vertical, &retry_horizontal))
+        {
+            result = true;
+            horizontal = retry_horizontal;
+            vertical = retry_vertical;
+            chosen_speed = retry_speed;
+        }
+    }
+    if (result)
+    {
+        byte *unit = (byte *)object_get(actor->unknown018);
+        if (*(short *)(unit + *(short *)(unit + 0x346) + 0x36) == 5)
+        {
+            s_unit_request request;
+            request.type = 0x2e;
+            *(point3f *)((byte *)&request + 4) = *target;
+            return function_e6900(actor->unknown018, &request);
+        }
+        if (!first_type)
+        {
+            real base_speed = 0.0f;
+            byte *globals = (byte *)g_4e034c;
+            if (globals && *(long *)(globals + 0xc8) > 0)
+                base_speed = *(real *)(*(byte **)(globals + 0xcc) + 0x80);
+            if (base_speed * 1.2f >= chosen_speed)
+                return result;
+            actor->unknown464 = true;
+            actor->unknown466 = true;
+            *(real *)((byte *)actor + 0x470) = horizontal;
+            *(real *)((byte *)actor + 0x474) = vertical > 1.2f ? vertical : 1.2f;
+            direction.k = 0.0f;
+            if (normalize2d((point2f *)&direction) > 0.0f)
+            {
+                *(point2f *)((byte *)actor + 0x468) = *(point2f *)&direction;
+            }
+            else
+            {
+                vector3f facing = actor->unknown290;
+                if (facing.k != 0.0f)
+                {
+                    facing.k = 0.0f;
+                    if (normalize2d((point2f *)&facing) <= 0.0f)
+                        facing = *g_4687a8;
+                }
+                *(point2f *)((byte *)actor + 0x468) = *(point2f *)&facing;
+            }
+            return result;
+        }
+    }
+    return result;
+}
+
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1296,71 +1059,8 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
     if (fast)
         force = true;
     if (valid)
-    {
-        vector3f direction;
-        real vertical;
-        real horizontal;
-        real chosen_speed = speed;
-        bool result = function_fa1a0(speed, 1.0f, &actor->position, target, &minimum, NULL, NULL, true,
-            &direction, NULL, NULL, NULL, &vertical, &horizontal);
-        if (force || speed * 1.25f > minimum)
-        {
-            real retry_speed = minimum + 0.03f;
-            real retry_vertical;
-            real retry_horizontal;
-            if (function_fa1a0(retry_speed, 1.0f, &actor->position, target, &minimum, NULL, NULL, true,
-                &direction, NULL, NULL, NULL, &retry_vertical, &retry_horizontal))
-            {
-                result = true;
-                horizontal = retry_horizontal;
-                vertical = retry_vertical;
-                chosen_speed = retry_speed;
-            }
-        }
-        if (result)
-        {
-            byte *unit = (byte *)object_get(actor->unknown018);
-            if (*(short *)(unit + *(short *)(unit + 0x346) + 0x36) == 5)
-            {
-                s_unit_request request;
-                request.type = 0x2e;
-                *(point3f *)((byte *)&request + 4) = *target;
-                result = function_e6900(actor->unknown018, &request);
-            }
-            else if (!first_type)
-            {
-                real base_speed = 0.0f;
-                byte *globals = (byte *)g_4e034c;
-                if (globals && *(long *)(globals + 0xc8) > 0)
-                    base_speed = *(real *)(*(byte **)(globals + 0xcc) + 0x80);
-                if (!(base_speed * 1.2f >= chosen_speed))
-                {
-                    actor->unknown464 = true;
-                    actor->unknown466 = true;
-                    *(real *)((byte *)actor + 0x470) = horizontal;
-                    *(real *)((byte *)actor + 0x474) = vertical > 1.2f ? vertical : 1.2f;
-                    direction.k = 0.0f;
-                    if (normalize2d((point2f *)&direction) > 0.0f)
-                    {
-                        *(point2f *)((byte *)actor + 0x468) = *(point2f *)&direction;
-                    }
-                    else
-                    {
-                        vector3f facing = actor->unknown290;
-                        if (facing.k != 0.0f)
-                        {
-                            facing.k = 0.0f;
-                            if (normalize2d((point2f *)&facing) <= 0.0f)
-                                facing = *g_4687a8;
-                        }
-                        *(point2f *)((byte *)actor + 0x468) = *(point2f *)&facing;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-    return false;
+        valid = actor_try_ballistic_launch(actor, target, speed, force, first_type, &minimum);
+    return valid;
 }
 
 long function_1fa7f0(void);
@@ -1921,7 +1621,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
-// score 239 (was 238): The zero and radius have different XMM homes, and unsupported types use a separate return path.
+// score 239 (was 239): The zero and radius have different XMM homes, and unsupported types use a separate return path.
 // The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
 // M3 lane 14 r112 (fast; control 239, aligned 198, register-masked 85): retail keeps the result in XMM0 from its zero
 // (`movaps xmm0, xmm1`, then the spill to +0x10) up to the type exit, which jumps past the final reload with XMM0 still
@@ -2147,6 +1847,28 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // 238.
 // NOT kept: The trace-origin point recovers retail length and gains one. It samples the height and stages
 // the planar input ahead of the retail trace.
+// Round 182 (lane 7, fast; nothing kept, every form raises the count while the xmm ranks stay off): retail returns in
+// XMM0 and holds the result there from `result = 0.0f` (`movaps xmm0, xmm1`, zero in XMM1) up to the type exit, which
+// jumps into the shared exit past the reload at 0x1f9e55; the short-forward, trace-hit and not-left exits share that
+// reload, so retail has one `return result;` and never treats the result as a known zero. Retail's radius argument to
+// the trace goes through a stack temporary (0x1f9d91, 0x1f9d99), the mark of a by-value float parameter of an inlined
+// forwarding function, and the left type-zero arm jumps to the type-one arm's `+ target.y` and re-tests the flag
+// (0x1f9c2f) where this build threads it. Counts below; "shape" is the aligned count with xmm numbers masked (the
+// kept body is 98, aligned 198).
+// Type exit by `goto done` 260 (1173 B, aligned 191; result only in memory); with `if (left) result = 0.0f - result;`
+// and one return 255 (1187 B; the type exit gets its own `movaps xmm0, xmm2`); side offset as if/else arms with the
+// products in each arm 279 (aligned 175, shape 64); arms with the goto 280; arms with the goto and one return 255
+// (1185 B, shape 63: entry is then retail's `movaps xmm0, xmm1` and store from XMM0, radius XMM4 against XMM5 and the
+// direction XMM6/XMM2 against XMM2/XMM3); result declared after the radius on the arms 279; that single-exit form with
+// the trace through a forceinline forwarding function taking its arguments by value 265 (1193 B, aligned 192, shape 47:
+// the argument block is then retail's), with one more unread parameter 265, with the pathfinding pointer from an inline
+// getter 265 (both the same code); a dead-local scan K = 0..31 on it 265 at every K (diagnostic; the xmm ranks do not
+// follow the symbol count here); origin read directly on it 282 (the side test's loads become retail's, but the target
+// takes EDI and the origin EBX); the whole body after the lookups as an inline function 292 (1131 B); the type-zero
+// centre through one signed radius 260 (1173 B, shape 130); product-first centre expressions with the not-left arm
+// assigning y first 261 (aligned 158, shape 50); the forwarding function alone on the kept body 252 (1190 B), with
+// one return 243, with the goto and one return 263. Open: what gives the radius XMM5 and the direction XMM2/XMM3 once
+// the result holds XMM0, and why retail does not thread the left type-zero arm.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

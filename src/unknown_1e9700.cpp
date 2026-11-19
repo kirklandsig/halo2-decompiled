@@ -719,6 +719,20 @@ struct s_object_damage_view
 // in the selection loop, three declaration orders, a history pointer for both loops): best 340 (1544 B: both flags,
 // `self` in the call and the history pointer), then 342 twice and 350; nothing at or under 350 without a flag set by a
 // test, and the unchanged body has the lowest aligned count of all (132, next 137). Body unchanged.
+// M3 lane 11 r119 (fast; masked = aligned count with registers and stack offsets masked, base 57): `j >= i` for both
+// dedupe not-found tests 356 (masked 59: half threaded, a jmp per loop); `friendly` as `bool friendly = false; if (...)
+// friendly = true;` 353 (masked 53: retail's tail, false store first); that with consider_team as the true default
+// cleared by its test 344 (masked 49; the head's code then equals retail's but for the three rotated slots and the +4
+// cursor); on that the killer tests as `if (killer != NONE) { if (killer == reported_player) ... } else if (datum...)`
+// 354 (1532 B, masked 45: retail's fallback block order); on that a record pointer for the selected entry 433 (1567 B).
+// The two flags and the arm order are match-only forms; together they are the closest structure so far.
+// The fallback still keeps the credited player in EBP and the history cursor stays biased by four.
+// Historical candidate from entry or selection, credited player before fallback 378/396;
+// candidate through fallback from entry or selection 324/366; shared candidate for validation
+// and assignment 396; reported provider result 353; selected provider result 446; credited player
+// through the primary award 353.
+// NOT kept: the 324 form splits one credited-player value into two locals. It recovers the
+// damage-code slot but still exchanges the credited-player and victim-team slots.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -1043,7 +1043,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // score 871 (was 871; 964 before): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
+// Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
 // M3 lane 14 r114 (fast with 0x73530, which matches throughout; control 871): the convention already agrees (session in
 // EAX, `ret 4` in both). Retail calls 0x192e60 at the top, 0x1932c0, 0x1931a0 and 0x193250, and expands 0x193300, the
@@ -1064,6 +1067,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
 // Earlier: 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
+// Earlier score 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Earlier at 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Frame 0xd0 versus retail 0xb4, with an expanded opening variant lookup
 // and a capacity selector call. The dword histogram trials reduce the frame to 0xb0.
@@ -1569,6 +1573,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Admitted player count for availability or also output count 947/908; mode before the minimum or both capacity tests 883/883.
 // Early mode with carried count 927/899; named capacity bounds with carried count 908/927.
 // NOT kept: frame and opening lookup still differ, and every form scores higher.
+// native network id indexed copy 871; native network id cursor 969; opaque 64-bit id indexed copy 871; opaque
+// 64-bit id cursor 969; native network id indexed copy with dword histogram 911; native network id cursor
+// with dword histogram 1013; opaque 64-bit id indexed copy with dword histogram 911; opaque 64-bit id cursor
+// with dword histogram 1013. The indexed copies with word buckets tie. Indexed copies with dword buckets
+// reserve 0xb0 and score 911 at 2748 bytes. The dword cursor forms recover 0xb4 but shorten to 2612 bytes.
+// All four cursor forms lose the matched 0x73530 caller in reduced checks. Opening executable source
+// restored.
 // Tried rating-loop identity cursors 946; first-rating cursors 906; identity and first-rating cursors 910; group
 // and adjusted output cursors 907; identity and group outputs 909; first ratings and group outputs 929; all
 // rating-pass cursors 916; all rating-pass cursors with dword histogram 947.
@@ -1578,6 +1589,24 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 948; entry-sized library copy 936; paired ID cursors 968; ID snapshot 963; ID copy after
 // counter clears 950; workspace scoped through party counts 959. NOT kept: every form moves
 // the body farther from retail's 2828 bytes and scores higher. The opening lookup still expands.
+// M3 lane 11 r119 (fast with 0x73530 (MATCH throughout unless noted) and 0x71730 (387); masked = aligned count with
+// registers and stack offsets masked, base 416). Retail's long histogram shares the machine-id copy's storage (both at
+// +0x34 of the frame, cleared with `rep stosd` of 16 dwords), so retail's frame has no separate histogram. Diagnostic: the
+// top lookup guarded (`variant_index != NONE ? function_192e60(variant_index) : NULL`) 886 (2732 B, masked 370): one more
+// test ahead of the call keeps 0x192e60 out of line as retail (round 146's finding again). Tried: the first histogram
+// clear through memset 892 (2764 B); `long player_count` named for `available` and the output count 908 (0x73530 8).
+// Lead: retail's inline party-bound code zeroes the result first and compares the flag byte in memory (`xor edx, edx;
+// cmp ecx, 5; ...; cmp byte ptr [ebp + 0x604], 0`), the shape of the matched 0x1933d0/0x1933a0; the file's minimum,
+// maximum and spread selectors rewritten that way (`long result = 0; if (...) result = ...; else if (...) result =
+// ...; return result;`) give that code exactly, 894 (2728 B, masked 357); with the team-count and imbalance selectors
+// in 0x193440/0x193400's default-first form too 916 (2724 B, masked 348). Not kept (the body shrinks, so the score
+// rises), but it is retail's code: keep it once the inline choices (top lookup a call, capacity switch and 0x631f0
+// inline) give back the length.
+// Machine ID dwords split around group clears, after identity, or between the clears
+// 867/929/867/867. Whole-ID block copy before group statistics 978. Separate ID loop before
+// group statistics or before histogram 914/914. Split store with dword histogram 933.
+// NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
+// The opening variant lookup still expands and the frame still differs.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

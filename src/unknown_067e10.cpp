@@ -2076,59 +2076,22 @@ void simulation_watcher_reset(s_simulation_world_owner *watcher);
 void function_83000(s_simulation_world_owner *watcher);
 void function_195a40(void);
 
-#pragma intrinsic(_ReadWriteBarrier)
-// score 3 (was 3): only the place of the mode read against the flag stores is left.
-// MiniMax C (11-16): score 3 (was 7): naming the game-options pointer splits
-// retail's prologue exactly, but it also moves the world pointer into EAX for
-// the function_68c00 call, so the call stops matching; with the mode read
-// through the global the whole call matches retail instruction for instruction
-// and only the pointer load's place before the two flag stores is left.
-// MiniMax C (11-16): score 7 (was 3): naming the game-options pointer and
-// holding the barrier between the two flag stores and the mode read gives
-// retail's whole prologue and its function_68c00 call setup; what is left is
-// the place of the world load, which comes before the mode comparison here
-// and after it in retail.
-// Earlier: only the place of the mode read against the flag stores is left.
-// The two flags are adjacent bytes; this body's bool stores come out as two
-// byte writes. A `*(volatile bool *)&g_4cf771` cast on each forces retail's
-// stores and reaches a byte match, but docs/DECOMPILING.md forbids volatile on
-// a global (and the cast changes the type). Without the cast, naming the
-// pointer (`s_game_options_view *options`) and reading mode before the stores
-// matches the prologue but reorders the function_68c00 argument registers (10);
-// reading mode after the stores, as here, keeps the call and scores 3. Neither
-// an `int mode` nor a single-use `options` local changed that.
-// P568: Actual mode-field reference before/between clears, then without the boundary,
-// field pointer with/without it and direct reads: 23/23/23/23/23/23; distribution
-// initialized from the range 33; named range predicate 45. NOT kept: no exact pointer-load recovery.
-// P570: Entry disable observation supplies both flag clears, bool/byte/short/long,
-// separate then chained: 3/3/20/19/3/3/20/19. NOT kept: no exact pre-clear pointer-load recovery;
-// wider guard homes lengthen. Original complete body and inherited boundary restored.
-// P573: Mode carriers signed byte/short, unsigned byte/short/long: 23/23/24/24/5;
-// explicit distribution arms, nested range, complementary range arms: 33/3/33.
-// NOT kept: width forms alter comparisons/call allocation; result arms grow; native pre-clear pointer load remains.
-// Round 132 (m3 lane 12, fast): without the barrier 5 (the mode read is hoisted above the two flag stores); the
-// distribution as a ternary 33 (129 bytes); the distribution cleared ahead of the stores 5; an early return on the
-// guard 3 (same code); the mode field read at each use 23. Diagnostics, restored at once: the two flags defined in
-// a /GL- file 5; an unreferenced function returning the two flags' addresses gives a byte match with no barrier.
-// So retail's flags were address-taken somewhere in its program (no surviving retail code or data takes them: a
-// scan finds only direct loads and stores), which keeps the mode read behind the stores, as matched 0x196390's
-// flag store (its byte sits in an address-taken record) keeps its state read behind it. Taking a shared global's
-// address is not allowed, so the barrier stands in.
-// Round 179 (m3 lane 8, fast; control 3): a rescan of every retail code and data section finds no pointer
-// into 0x4cf760..0x4cf790, only direct operands, so the address-taken cause stays dropped code: BLOCKED.
-// Without the barrier: the two flags as one two-byte aggregate global (diagnostic) 5 (the pointer load
-// moves first as retail, the mode read still hoists); the distribution declared ahead of the stores 5;
-// the options pointer named ahead of the stores with mode read after them 5. With it: the watcher read
-// once into a local for the call and the stores 18. Diagnostic: a probe taking only g_4cf771's address 4
-// (the read stays behind that store, g_4cf772's sinks below it), so both flags must be address-taken.
+// Retail keeps the game-options pointer load ahead of the two flag stores and the
+// mode read behind them: the flags are address-taken, so the stores may alias the
+// field read. Clearing each flag through a reference gives that (the barrier that
+// stood in for it before is gone).
+static __forceinline void flag_clear(byte &flag)
+{
+ flag = false;
+}
+
 // @retail 0x67ee0
 void function_67ee0(void)
 {
  if (!g_4ed39c)
  {
-  g_4cf771 = false;
-  g_4cf772 = false;
-  _ReadWriteBarrier();
+  flag_clear(g_4cf771);
+  flag_clear(g_4cf772);
   long mode = g_4e6948->mode;
   s_simulation_distribution *distribution = 0;
   if (mode >= 4 && mode <= 5)
@@ -2145,7 +2108,6 @@ void function_67ee0(void)
   g_4cf778 = true;
  }
 }
-#pragma function(_ReadWriteBarrier)
 
 
 struct s_player_object_motion

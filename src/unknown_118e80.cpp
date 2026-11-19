@@ -187,7 +187,7 @@ real function_30bf0(vector3f *vector);
 void function_118e80(long object_index, vector3f *forward);
 bool function_1faf80(long object_index, void const *settings_pointer, vector3f const *control,
 	real threshold, vector3f *facing, real *turn);
-void function_11f0d0(vector3f *position, vector3f *forward, vector3f const *target, real rate, real max_angle, real scale);
+void function_11f0d0(vector3f *forward, vector3f const *target, real rate, vector3f *position, real max_angle, real scale);
 void function_11d180(vector3f const *in, vector3f const *up, vector3f *forward, vector3f *left, vector3f *out);
 real function_11ce20(vector3f const *a, vector3f const *b);
 void object_dispatch_moved(long object_index, long a, long b, long c);
@@ -248,7 +248,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // addresses by adding to ebp where retail leas them, so the tail's registers differ, and the frame stays 0x78 against
 // retail's 0x6c; that frame needs 0x11f0d0's named double local and double parameter, whose body is in
 // src/unknown_11eed0.cpp, which this lane may not edit: BLOCKED-BY 0x11f0d0.
-// score 218 (was 218; earlier 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
+// score 218 (was 218; earlier 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0 and 0x1faf80. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
 // callee's double local makes this function keep 8-byte stack parity, so it pads its frame and cannot
@@ -426,6 +426,18 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // code, this frame unchanged while the named double quotient stays); 85 orders and types of its seven declarations all
 // give the same seventh product (compile-only). Still BLOCKED-BY 0x11f0d0's double local; the 46 form stays a lead
 // (a one-caller helper and block scopes need a match).
+// M3 lane 7 r182 (fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80; body unchanged at 218):
+// round 255's lead (build/r258/lead-1197b0.r255.patch in m3-lane3: 0x11f0d0's position step through a file-local
+// forceinline helper with a double distance and `real angle`, block scopes here) re-measured 46 (1030 B, aligned 36). On it:
+// the turn velocity stored before the orientation test 69; the two agreements named (`real up_agreement = dot3f(...)`,
+// `real forward_agreement = ...`, both rows) 28 (aligned 26: the tail's up and forward copies are then retail's, interleaved
+// with direct offsets, no `lea ecx`), the same with the dots' arguments local-first, forward local-first or up local-first
+// 28 each (same code). Left at 28: both dots' i products (retail loads the local first), the zero-limit copy's pointer
+// register, the second 0x11f0d0 call's `mov esi, ebx` (retail `lea esi`) and the 0x1faf80 call's setup: retail pushes turn,
+// rate, control and settings and only then loads the requested forward into EBX, ours loads EBX after the first push
+// (argument evaluation in declared order), so that one needs 0x1faf80's parameter order, which lane 3 found unmatches
+// 0x1faf80 (BLOCKED-BY 0x1faf80). A dead-local scan on 0x11f0d0 with the helper form (K = 0..20, diagnostic) left its
+// cross-product tie at 2 at every K but one (K = 4: 37), so that tie is not the symbol count.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -454,7 +466,7 @@ void function_1197b0(long object_index)
 	{
 		function_118e80(object_index, &forward);
 		turn_velocity = object->turn_velocity;
-		function_11f0d0(&turn_velocity, &forward, &object->requested_forward, g_510c54->rate, max_angle, acceleration);
+		function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
 	}
 	vector3f up;
 	world_up_1197b0(object_index, &up);
@@ -464,7 +476,7 @@ void function_1197b0(long object_index)
 	function_11d180(&forward, &up, &forward2, &left, &up);
 	if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
 	{
-		function_11f0d0(&temporary_velocity, &up, &target_up, g_510c54->rate, max_angle, acceleration * 2.0f);
+		function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
 		function_11d180(&forward, &up, &forward2, &left, &up);
 	}
 	else

@@ -226,7 +226,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): The entry saves EBP instead of EBX for the byte result. The header flag and object reads
+// score 49 (was 49): r123 unchanged. The entry saves EBP instead of EBX for the byte result. The header flag and object reads
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
@@ -887,12 +887,32 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Round 418: Common header flag / common object datum / both / existing header getter with common object datum:
 // 49/49/49/49 with validity result, 77/77/77/77 with attachment result. The typed accesses still share the
 // header address, and the attachment result shortens the body to 160 bytes.
+// m3 lane 10 r121 (fast with 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10/0xbb780, matched throughout; control 49). Lead, match-only
+// (a one-pointer wrapper type): on retail's shape (bool false first, true after the attach, NONE stored in the flagged else; 77
+// alone) the object table's data pointer copied BY VALUE, as a one-pointer aggregate returned from an inline accessor, at the
+// lookups gives 42 at 176 bytes with the first difference at +0x3a: retail's BL result, its `push ebp` / `pop ebp` window
+// around the header test and the data pointer reloaded from the table kept in EDX all appear (an aggregate copy is not merged
+// with another copy or with a plain load). The same 42 with only the flag test, or only the object read, through that accessor
+// and the other through the macro. Left: retail also rebuilds the index (`mov ecx, eax; and ecx, 0xffff; lea ecx, [ecx + ecx*2]`
+// twice, scale 4 in both addresses) where this shares `shl ecx, 2`. On the 42 form: the object read indexed through the
+// entity's field 42; through a dword cast 42; the index as a one-long aggregate local passed by value to a lookup helper 42;
+// the entity's field copied by value from an inline accessor for the object read 42; the raw index returned by value from an
+// inline helper at both lookups 42 (each is forwarded before the merge); the masked index returned by value from an inline
+// helper at both lookups 47 (the multiply is then repeated with scale 4 as in retail, but the mask and the data load are
+// shared again and the data takes EBX). Other forms: the whole 12-byte header returned by value 120 (217 B); no index local,
+// every read from the entity's field through a by-value copy 74 (one data load, f cached in EBP).
 // MiniMax G (11-18): no new form, no lower score (49): setting the result where retail sets it (at the attachment,
 // before the value test) gives 80, with the else arm also clearing it 74, with the true set after the value test 82,
 // and the clamped value read as a word, an unsigned short or a short gives 98/98/116; a bool result compared against
 // NONE gives 69 and a bool result set at the attachment gives 77, because this build then spills the flag to the
 // stack and keeps a parameter in EBP; this build still holds the validity result in EBP with a setne and CSEs the
 // table's data pointer, where retail keeps the result in BL and reloads the header's data pointer.
+// M3 lane 10 r123 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10, 0xbb780, matched throughout; control 49): a 600 s
+// permuter run (48 tries) found only the flagged arm returning false at once, 48 (fast 48: one point); that with the object
+// read through the entity's field 48; slot_handler.h included at the top and the existing inline header and object getters
+// for the two lookups 49 (same code); those getters on the early bool result set after the attach 77 (160 B); early returns
+// for NONE and the flagged header with a constant true at the end 77 (155 B). A scan of retail for a header-flag test
+// followed by a second load of the table's data pointer from the same register finds only this function.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1320,6 +1340,11 @@ bool c_projectile_type::v8(long a, long b)
 // group power through a pointer declared after the flags or inside the 0x800 block; a `real const *` to the group's power
 // in place of the entry pointer; `b` throughout or the flags local. Every form without the state-power and group-power
 // pointers 12 (same code); the group-power pointer 15; the state-power pointer 16; both 19. The object/flags pair never moved.
+// M3 lane 13 r113 (fast with 0xa5e70, matched each time; mask control 12: the group data then reuses ESI after the flags,
+// retail after the object), all with the full-width mask: a `long` group offset local `(index & 0xffff) * 12` added to
+// the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the
+// matched 0xa1f70 offset form with that group offset 12, on it the call's mask from `b` and the flags local declared
+// after the call 12; the 0x400 arm's result bit set before its store 14. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

@@ -193,91 +193,6 @@ void juggernaut_set(long player_index, bool juggernaut)
 	juggernaut_update_teams();
 }
 
-// score 20 (was 20): the loop counter and the g_510c9c pointer sit in the other two callee-saved
-// registers than retail (count in ebp, the pointer in ebx); the instruction order is the same.
-// Tried: count declared first (20), the store and increment as two statements (21), count != 0
-// (21), the waiting test inside the if (20), a local copy of g_510c9c in the loop (20), a for loop
-// (20), the bit index cast to word (74), the mask tested by shifting (60), count as dword (19,
-// but wrong: the modulo becomes an unsigned div and the count test jbe where retail has
-// cdq/idiv and jle). The argument arrives as in retail (on the stack, ret 4) and the caller
-// 0x192530 calls it as retail does (push -1), so the caller does not decide this.
-// Round 99 (lane 16): the existing juggernaut_is((short)player_index) for the bit test 74 (233 bytes); a
-// named absolute index as in 0x192530 20; one named bool for the whole candidate test 20; the bit test as
-// a `continue` guard 20; the players word in a local 20; iterator.player read at each use 20; the waiting
-// test as nested ifs with `continue` 77 (251 bytes); `if (count <= 0) return;` 20. All the 20s are the
-// same code.
-// Round 173 (m3 lane 5, fast): 1-7 unused locals copied from the parameter at the top 20 each (no symbol-count effect);
-// a function-scope copy of g_510c9c read before the loop 36 (the pointer then lives from entry); the random choice in a
-// named local 20; `player_index != excluded_player_index` 21; count assigned after the iterator setup 22; waiting as
-// `waiting = function_15d770(i); if (!waiting) waiting = function_15db30(i);` 20; the player pointer read after waiting 20.
-// A 600 s permuter run (47 tries) found 19 only with `(dword)` on the random value (an unsigned modulo, wrong) and the
-// bit and exclusion tests nested.
-// Round 93 (m3 lane 11, fast): every player index read from `iterator.index` 20; candidates and count declared before
-// the iterator 20; `juggernaut_is((short)(player_index & 0xffff))` 74 (233 bytes: the global is reloaded in the loop); the
-// whole test as one condition 20; player_index at function scope 20; nested bit and exclusion tests 20, with the store in
-// braces 20; an eligibility flag set in if/else arms 69 (245 bytes); a 16-form screen of `waiting` folded into the test, a
-// named selected candidate, `if (count <= 0) return;` and a named absolute index 20 each; `!(waiting || unit == NONE)`,
-// `(flags & 3) == 0`, `(players & bit) == 0`, `!((waiting || unit == NONE) && (flags & 3))`, `!(excluded == index)` 20 each.
-// Diagnostics (not kept): with the draw removed count takes EBX and the pointer EBP as in retail; a second real use of the
-// pointer in the loop gives the same swap, a CSE'd duplicate read does not; count used twice after the loop keeps EBP. So
-// the allocator ranks the pointer below count here and above it in retail, counting only uses that survive CSE.
-// Round 160 (m3 lane 8, fast): the register order follows whether count is read inside the draw's block, not how often
-// it is read. Diagnostics: the draw as `candidates[0]` or with `& 15` for the modulo (count read only by the guard) gives
-// retail's count EBX / pointer EBP (the `& 15` form is 8: only the and/idiv lines differ); the modulo kept without the
-// guard 65 and `candidates[count - 1]` 59 both keep count in EBP. Tried on the real body, 20 each (same code): a dword
-// count with `(long)` at the guard and the modulo; a named total copied from count before the guard, or inside it; the
-// store and the increment in braces as two statements; the draw through random_next(), through a named seed pointer,
-// with the generator step written out, and with NULL/0 for the file and line; the players word through a pointer to the
-// field; the absolute index and the mask named.
-// Round 195 (m3 lane 4, fast): a named absolute index plus a `word flags` local read after waiting 75 (253 bytes); the
-// store and `count += 1` as two statements 20; the iterator's index set before its absolute index 22; the candidate test
-// as `waiting ? !(flags & 3) : unit != NONE || !(flags & 3)` 94 (263 bytes); a long waiting flag 20. Diagnostics: the
-// flags local alone (read after waiting) gives retail's count EBX and pointer EBP (75: waiting is then materialized in AL
-// and the flags word loaded into DX ahead of its test), so the pair follows the loop body's IL, not the draw alone; the
-// flags local read before waiting 102 (258 bytes); the store written in both arms of `if (...) else if (...)` 20 (merged).
-// Round 200 (m3 lane 4, fast): the pair alone makes the 20: retail's `movzx eax, word ptr [ebp]` is a byte longer than
-// ours through EBX, which shifts every later branch and call. The player pointer read at the loop top 20; `waiting`
-// declared at function scope 20; the player pointer declared at function scope 20; `waiting` as `function_15d770(i) ?
-// true : function_15db30(i)` 20 (all the same code); count assigned after the iterator setup 22 (re-measured: only the
-// xor moves). A 693 s permuter run (seed 2001, 44 tries) found 17 only with an unsigned count (wrong modulo) and volatiles.
-// Round 184 (m3 lane 6, fast): the modulo draw through an inline helper taking the seed and count 20; the candidate test
-// as an inline predicate of the player and the waiting flag 20, the predicate computing waiting itself from the index and
-// the player 20; the draw split into a named choice and a named chosen index 20 (all the same code); the waiting test as an
-// if with the flags test nested and the unit test in an else-if, each storing 69 (245 bytes, the stores do not merge).
-// Round 128 (m3 lane 9, fast): the exclusion test ahead of the bit test 29; the bit test's operands swapped (`(1 << index)
-// & players`) 20; the candidate test's `||` operands swapped (flags first) 76 (249 bytes); the candidate stored from
-// `iterator.index` 20; an `int` count 20 (all the 20s the same code).
-// Round 129 (m3 lane 9, fast): a const player pointer 20; the bit mask cast to `word` 62; the bit test through
-// TEST_FIELD_BIT 20; 0x15db30 with early returns in place of its result local 20 (0x15db30 itself 24 at 60 bytes, so not
-// usable); count renamed candidate_count 20. Diagnostic: without the 0x15db30 call count takes EDI and the pointer EBP.
-// Round 91 (m3 lane 2, fast with 0x192530): the draw guarded by `0 < count` 20; `bool const waiting` 20; `long const
-// player_index` 20; the mask as `1L << ...` 20; the random value cast to `int` before the modulo 20 (all the same code).
-// Restored.
-// Round 94 (m3 lane 2, fast with 0x192530): count bound by reference (`long &total = count;`) at every use 20, in
-// the loop only 20, `long const &` in the draw only 20; the candidate list through a `long *const &` 20; the player
-// pointer bound by reference to the iterator's field 20; the draw through an inline range helper (lower + random %
-// (upper - lower), called with 0 and count) 20 (all the same code). The compile-only screen does not reproduce
-// this body (without link-time code generation g_510c9c is not hoisted), so trials need the fast check.
-// Round 116 (m3 lane 10, fast with 0x192530, matched throughout): the iterator and the loop in their own block 20; the
-// loop test as `!= false` 20; the iterator's data pointer stored last 27; the globals read through a const view 20;
-// the draw guard as `0 < count` 20; the bit index as `(char)player_index` (as juggernaut_update_teams spells it) 74,
-// as `(char)iterator.index` 74. Retail pushes the count's register at entry and the pointer's only on the path into
-// the loop (shrink-wrapped), as ours does with the pair swapped.
-// Round 110 (m3 lane 14, fast with 0x192530, 0x15db30 and 0x15d770, all matched each time; control 20): 0-30 dead initialised
-// locals at the top 20 each (the pair is not a symbol-count state). Diagnostic (value-wrong): a second real read through the
-// global pointer in the loop's first test 61 (241 bytes) with retail's count EBX / pointer EBP. Read with 0x2423f0's
-// diagnostics this fits callee-saved registers handed out ESI, EDI, EBP, EBX by reference count: retail's pointer carries
-// at least as many references as its count, ours one fewer. Tried: the three rejections as `continue`s with the store at
-// the loop's top level 20 (same code); the draw in its own block with the count copied to a local for the modulo and a
-// named choice 20 (same code); the players word through a `word const &` bound to the global's field at the loop top 20
-// (same code); the candidates written through an end pointer with the count taken from it after the loop 81 (248 bytes).
-// Round 118 (m3 lane 10, fast with 0x192530, matched throughout): the scan as a forceinline helper returning the count
-// to the caller's own count 20 (same code; as a plain inline it stays out of line, 243, and 0x192530 5); a
-// function-scope copy of g_510c9c re-measured 36: the pointer then loads at entry into EBX and count still takes EBP,
-// so the pointer's longer range does not flip the pair; `dword player_index` 20; the waiting calls folded into the
-// candidate condition with the store in braces 20; a named absolute index with the bit and exclusion tests as two
-// `continue` guards (`player_index == excluded`) 21; a trivial forceinline accessor returning the players word for the
-// bit test 20 (same code).
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {
@@ -297,7 +212,7 @@ void function_192a30(long excluded_player_index)
 			s_juggernaut_player *player = iterator.player;
 			bool waiting = function_15d770(player_index) || function_15db30(player_index);
 
-			if (!waiting && player->unit_index != NONE || !(player->flags & 3))
+			if (!waiting && player->unit_index != NONE || !(player->flags & 1) && !(player->flags & 2))
 				candidates[count++] = player_index;
 		}
 	}
