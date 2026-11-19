@@ -1043,9 +1043,20 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 964): The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
+// score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871; 964 before): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
+// M3 lane 14 r114 (fast with 0x73530, which matches throughout; control 871): the convention already agrees (session in
+// EAX, `ret 4` in both). Retail calls 0x192e60 at the top, 0x1932c0, 0x1931a0 and 0x193250, and expands 0x193300, the
+// player loop's variant lookup and 0x631f0; ours expands the top lookup and calls 0x193300 and 0x631f0. Tried: the loop's
+// written-out lookup as a call to 0x192e60 1007 (2620 B: the loop's call stays out of line, the top stays expanded); the
+// two early exits as `result = false; goto done;` with one return at the end 903 (2748 B); both together 1016; the first
+// exit as `{ result = false; return result; }` 871 (same code); `bool result = true;` declared first 871 (same code).
+// Diagnostics (one-object link screen, restored): the top call under one test becomes a call; /d2inlT40-130 on this
+// file alone changes no decision; with the first exit not returning (a behaviour change) the loop's lookup, 0x631f0,
+// 0x1931a0 and 0x193250 all expand, so the exit's frequency halving is what keeps the loop cold here.
 // MiniMax I (11-17): no new form, no lower score (964): re-measured the baseline; retail's session arrives in EAX
 // with a 0xb4 frame against our 0xd4, and that ingress is fixed by the callers in the other files, and the opening
 // 0x192e60 and the capacity test are inlined or called the other way round here (both callees in other files), so
@@ -1578,6 +1589,24 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 948; entry-sized library copy 936; paired ID cursors 968; ID snapshot 963; ID copy after
 // counter clears 950; workspace scoped through party counts 959. NOT kept: every form moves
 // the body farther from retail's 2828 bytes and scores higher. The opening lookup still expands.
+// M3 lane 11 r119 (fast with 0x73530 (MATCH throughout unless noted) and 0x71730 (387); masked = aligned count with
+// registers and stack offsets masked, base 416). Retail's long histogram shares the machine-id copy's storage (both at
+// +0x34 of the frame, cleared with `rep stosd` of 16 dwords), so retail's frame has no separate histogram. Diagnostic: the
+// top lookup guarded (`variant_index != NONE ? function_192e60(variant_index) : NULL`) 886 (2732 B, masked 370): one more
+// test ahead of the call keeps 0x192e60 out of line as retail (round 146's finding again). Tried: the first histogram
+// clear through memset 892 (2764 B); `long player_count` named for `available` and the output count 908 (0x73530 8).
+// Lead: retail's inline party-bound code zeroes the result first and compares the flag byte in memory (`xor edx, edx;
+// cmp ecx, 5; ...; cmp byte ptr [ebp + 0x604], 0`), the shape of the matched 0x1933d0/0x1933a0; the file's minimum,
+// maximum and spread selectors rewritten that way (`long result = 0; if (...) result = ...; else if (...) result =
+// ...; return result;`) give that code exactly, 894 (2728 B, masked 357); with the team-count and imbalance selectors
+// in 0x193440/0x193400's default-first form too 916 (2724 B, masked 348). Not kept (the body shrinks, so the score
+// rises), but it is retail's code: keep it once the inline choices (top lookup a call, capacity switch and 0x631f0
+// inline) give back the length.
+// Machine ID dwords split around group clears, after identity, or between the clears
+// 867/929/867/867. Whole-ID block copy before group statistics 978. Separate ID loop before
+// group statistics or before histogram 914/914. Split store with dword histogram 933.
+// NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
+// The opening variant lookup still expands and the frame still differs.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -519,6 +519,13 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// score 59 (was 85): the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
+// retail zeroes a thirty-two bit register first (xor ecx, ecx; mov cl, al; and ecx, 1), the literal word
+// is still built from two byte loads and a multiply (movzx eax, byte [edi+1]; movzx edx, byte [edi+2];
+// shl eax, 8; add eax, edx) where retail loads the low byte into ax and the high byte into ch, the type 3
+// run is still folded to a constant (add eax, 2; add esi, 2) where retail adds the run register
+// (add eax, ebx; add esi, ebx), and the body is still eight bytes longer than retail's; the frame, the
+// fill loops, the switch layout and the exit agree.
 // MiniMax B (11-18, round 2): no new form, no lower score (59): retail widens the alpha's parity to thirty-two bits
 // at all three decode sites, and dropping the cast from the shared helper reproduces retail's pixel sequence exactly
 // (xor ecx, ecx; mov cl, al; add eax, eax; and ecx, 1; or ecx, eax), but that moves the run to EBP and the count
@@ -898,6 +905,11 @@ static inline long font_character_pixel(long alpha, long color)
 // 161/232. Long and dword inputs give the same scores. NOT kept: the 504-byte forms regress;
 // full-width parity after raw masking recovers the pixel sequence but moves the run to EBP
 // and merges the fills.
+// The 0xc frame agrees. Parity still narrows before masking and the packed run is folded.
+// Literal by whole header, type first, or combined zero fields 207/121/111. Literal after packed
+// commands, before dispatch, or after the nonzero lower command 173/180/182. Shared consumed
+// length from the raw header before dispatch or in the lower class 212/204.
+// NOT kept: the 504-byte form changes the cursor allocation and all eight scores rise.
 // Joined packed count with advancing/indexed pair stores and byte/full parity: pair-first 207/203/211/213,
 // single-first 205/212/209/213. NOT kept: the joined count shortens the body below retail and leaves
 // the run register and literal assembly different.

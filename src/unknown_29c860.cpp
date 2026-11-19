@@ -292,6 +292,24 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // left vector stored component by component 378. Retail evidence: its side test reads the left vector's own home (+0x84),
 // so retail does not forward left_i into local_13 there (0x299460 receives &local_13; its retail body only reads it and
 // passes it to the matched 0x210770, as ours does).
+// m3 lane 10 r121 (fast, control 378; screen = this file compiled alone for LTCG and linked with chosen objects, which prints the
+// frame and each home by name, build/r121/lt29c.sh). The extra frame word is the side test's product kept across the 0x299460
+// call (named temporary in the screen; local_25 then loses the slot it shares with local_22 in retail), and it exists exactly when
+// the linker can see 0x210770 from 0x299460: the screen with every object of the fast image gives 0x5b8, and the same link with
+// only 0x210770 left out of its file gives retail's 0x5b4 at the same instruction count; leaving out only 0x2108a0 keeps 0x5b8.
+// So BLOCKED-BY 0x210770 as 0x299460 sees it (0x299460's own entry is BLOCKED-BY 0x2108a0 the same way: with 0x2108a0 opaque
+// 0x299460 is retail's 3372 bytes with its first difference at +0xd0). Both callees are matched LTCG code with register
+// arguments, so retail knew their conventions but not their summaries; what gives that is not found. Tried, all reverted:
+// 0x2108a0 declared __stdcall (retail's shape: its one caller pushes the argument and it ends `ret 4`) 378, 0x299460 unchanged;
+// 0x2108a0 in its own file without SSE 378; in a file that links after its caller 378; __stdcall in a file built without LTCG
+// 378 here (0x299460 gets retail's length, 0x2108a0 itself 36 as native code, so retail's is not native); the whole 0x20fe20 file
+// without LTCG: frame 0x5b4, first difference +0xab (626: every call into that file changes). Screen: 0x299460's vector parameter
+// non-const 0x5b8; 0x299460's file with /Ob1, /Ob0, /Oy-, /Oa or /Ow 0x5b8 each; a call from the 0x20fe20 file back into
+// 0x299460's file, or that object first on the link line: the callee is still known. The inlined flag setter 0x1e4290 is not
+// the cause: a plain body for it (the parameter re-assigned and re-tested, no pointer to it) leaves this function at 378 and
+// costs 0x1e4290 its own match (44: the flag then arrives in CL, where retail keeps it on the stack and stores back to it).
+// Retail's slot counts (stack-tracked) agree with ours everywhere else below +0x90; the actor offset's home has three
+// references in retail (one store, a reload at each tail setter) and two in ours (one reload into EBX).
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

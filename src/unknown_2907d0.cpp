@@ -180,6 +180,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // each time). Tried: `__assume(arg_2 != NULL)` at the top 19, `__assume(arg_3 != NULL)` 19 (same code each); the node
 // count initialised to 0 113 (453 B); the address local declared only in the else arm, the node arm reading the parameter
 // directly, 19 (same code); the else arm copying the forward before the position 68.
+// M3 lane 12 r143 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): 1-12 unused initialised locals
+// at the top 19 except K = 1 and K = 9 (113, 453 B: the convention changes; the EBX/EBP pair never moves); the bounds
+// test split into `arg_1 < 0` and `arg_1 >= node_count` after the lookup 83 (462 B); the rotate helper scaling in place
+// (`local_0 *= arg_0->scale;`) 19 (same code); `return arg_3->field1c != 0;` 19 (folds, the 1 stays shared); re-measured:
+// the else arm through a const reference to the transform 19, the position stored field by field 141 (485 B). Diagnostic,
+// removed: the rotate call ahead of the point call 96 (471 B). Reading: the callee-saved registers go ESI, EDI, EBP, EBX
+// by priority, so ours ranks the point's y above the transform (EBP/EBX) and retail the transform above the y.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

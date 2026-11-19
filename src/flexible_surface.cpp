@@ -851,10 +851,25 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 130/130/152/130. With the shared vector sampler for both table draws, 126 each.
 // NOT kept: the sampler's four-point gain misses the eight-point bar and leaves the 0x1c frame.
 // The named short factor reaches 880 bytes but raises the score.
+// The 0x1c frame and seed load still differ. Shared rotation cross names, original-k name,
+// both, and reordered crosses with both names 130 each. Named cosine complement 152.
+// Named left/right cross products 154/154. Named unscaled alignment 152.
+// NOT kept: the complement, product and alignment forms reach 880 bytes but keep frame 0x1c and raise
+// the score. Both product forms lose 0x2551f0 and 0x1ff360. The alignment form loses 0x1ff360.
 // Initial-direction flag read before time, before the first draw, after the draw,
 // or before angle weighting 130/130/130/130. With all draws using one seed
 // pointer 174/174/174/174. NOT kept: shared seed reaches retail length with
 // the frame difference and a higher score.
+// M3 lane 16 r138 (fast with 0x118140, 0x2551f0, 0x1ff360; control 130), trials in the shared rotation helper: the dot's
+// terms ordered j, k, i 130 (same code: the sum is canonicalised, the i product still formed first); cross i computed
+// ahead of the projection 152 (880 B); cross k in two steps (`cross_k = v.i * a.j; cross_k -= v.j * a.i;`, for retail's
+// store/reload of that product at +0x10) 130 here, 0x1ff360 93 and 0x2551f0 59 (lost); cross j in two steps 130 / 93 / 59;
+// the axis j and k captured into locals 151 (880 B; 0x1ff360 104, 0x2551f0 182). All restored.
+// Table-axis reference/direct argument 187/183, separate axis assignment 130,
+// initial-direction/axis library copies 130/130, compound tick product 130,
+// named frame test 130, random-state record reference 130, compound wave gain 130,
+// shared double wind scale on the in-place rotation 154. NOT kept: direct table access
+// shrinks the frame to 0x0c. The shared scale reaches 880 bytes and loses the caller match.
 // Shared rotation cross differences staged as accumulators from products, axis values, or direction values
 // 130/130/130. Named subtracted product, both products, difference with named subtrahend, and subtrahend
 // scaled from the axis or direction 154/154/154/154/154. NOT kept: the frame is still 0x1c and both
@@ -1121,6 +1136,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // references 322, direct material arm first 322. NOT kept: the 300/296 forms use a one-use
 // object-index local. Retail reads the definition first. Other forms gain fewer than eight or tie.
 // The record spill, material-call convention and state expansion remain.
+// Existing virtual reference method, material traversal scoped to its output, and immutable named
+// vertex-input results, separately and together, 322 each. Typed index pointer through the existing
+// virtual method and the direct-material arm 322. The record spill, four search-result homes,
+// material-call convention and two draw-state expansions remain.
 // N421 previews: same tag-table pointer for the material kind and its direct reference 322; carry the tag
 // table into the groups lookup and refresh after the virtual call 381; variant table indexed by its actual
 // word elements 322; packed group and variant words masked at the next lookup 322; material reference

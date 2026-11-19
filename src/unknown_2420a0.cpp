@@ -1638,6 +1638,16 @@ void function_2422d0(long slot)
 // `s_slot_object *const &` 7; the slot as `long const &` 7; both 7 (all the same code); the index as a `long const &`
 // to a cast copy of the team entry 104 (267 bytes: the cast folds and the reference reads the entry again after the
 // call); the bound object with no slot local 79.
+// M3 lane 9 r139 (fast with 0x2447f0, 0x243a80, 0x2422d0 and 0x15e130): `__assume(object != NULL);` at the end of the
+// first loop's body 7, `__assume(object->slot >= NONE);` there 7 (diagnostics of reference weight at the join,
+// reverted); the accept test split with a `long *entry` to the table slot under the 0x243a80 test, `continue` after
+// the accept and the reject code after it 7 (all the same code); the team array base read into a local before the
+// first loop 82, at the function top 65.
+// M3 lane 9 r141 (fast with 0x2447f0, 0x243a80, 0x2422d0 and 0x15e130): the table test nested under the 0x243a80
+// test with the reject code written in both failing arms 79 (284 bytes); the lookup through a new inline getter with an
+// unused type-mask parameter 7; the object and slot in an inner block with an accept flag (reject under `if (!accepted)`
+// via an empty accept arm) 7; a `register` index 7; the three loop locals declared bare, then assigned 7 (all the 7s
+// the same code). Redundant parens, 1-3 deep, around the getter call, the table test or the stored index 7 each (9 forms).
 // @retail 0x2423f0
 bool function_2423f0()
 {

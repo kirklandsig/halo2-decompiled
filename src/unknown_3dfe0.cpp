@@ -168,6 +168,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // join and copies to EDI for 0xd1850; no force-arm reload), on it one game-time read shared by both elapsed values 216, the
 // three late object-index uses through one named copy 216 (same code each). Eight dead locals at the top (diagnostic) 21:
 // removed before allocation.
+// M3 lane 13 r113 (fast with 0xd1850, control 21; update-first re-measured 218: object EBX load, homes and slots as retail,
+// left the timestamps in EDI/ESI, the false store after the home store and no force-arm reload): force and update in one
+// declaration 21 (same code); the hidden return as `if (!force && flag) return;` with update as one predicate
+// `force || update-time NONE || update elapsed > 1` declared at its test 220 (829 bytes); sample started from the
+// sample-time NONE test with the thresholds under `if (!sample)` on the kept order 222 (831 bytes); the cache bound as a
+// reference 21 (same code); update started from force with the hidden test on update 228.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

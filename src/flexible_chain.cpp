@@ -790,11 +790,37 @@ void __stdcall function_1160c0(real dt)
 // terminal-node identity 306, both node identities 305. Position-derived ordinal for root 300, terminal test 307,
 // full segment selection 292, and root plus segment selection 295. NOT kept: the address-based tests regress and
 // change the loop comparison.
+// M3 lane 15 r101 (fast with 0x116750, matched throughout; base 144): the node as `record->nodes + i` 144 (same code); the
+// last segment chosen as `i - 1` 145 (1369 B); the stiffness product written segment first 144; `++node->ticks` ahead of
+// the stiffness 148; `predicted` through vector3f_add(&position, &offset, &predicted) 204 (retail's 1368 B, but aligned 151
+// against the body's 109). Diagnostic (not counted): 1-8 dead initialised locals at the top 144/144/146/146/146/144/144/144,
+// so the homes and the rotation are no symbol-count tie on this body either. Body unchanged.
+// The segment address still uses EDI/ECX and spills at +0x20 rather than EDX and +0x14.
+// Direct displacement reused as the scaled-add target 162, scaled then added in place 238,
+// scaled into a separate vector before addition 238. Shared point difference followed by
+// those three target forms 273/270/223. Native vector target 144, with direction used for
+// the unclamped displacement 298. NOT kept: the separate vector target ties, and forms
+// that shorten the target workspace change the frame from retail's 0xa4.
 // The segment still needs EDX and +0x14. Conditional attachment point by value/address/interior first
 // 304/304/304, segment reference with named ordinal 144, terminal-predicate subtraction 285,
 // conditional segment addresses against the interior bound 304, preceding-ordinal loop bound 294,
 // shared prediction add 204, predicted z after the node update 157.
 // NOT kept: the retail-length forms still raise the score and leave the segment and rotation homes different.
+// M3 lane 3 r265 (fast with 0x116750, matched throughout; base 144): the segments base named at the loop top 145; the
+// segment bound as `s_chain_segment const &` 144; vertical, axis, the rotation and the predicted rows in their own `{}`
+// block 144; the segment count named at the loop top for the selection 144; the stiffness product written segment
+// first 144 (all four the same code). Retail's ECX/EDX roles run one step behind ours from the segments base on (base
+// EDX for our EDI, segment EDX for our ECX, the loop end's definition reload EDX for our ECX). Body unchanged.
+// Separate physics point 314, with shared difference 311, reused for the constraint 304, with direction
+// workspace 272, or with complete corrected point 409; in-place length quotient 144, compound stiffness
+// product 144, and default attachment direction with separate physics point 312.
+// NOT kept: the separate physics point expands the frame or worsens the register schedule at retail length.
+// The scalar forms preserve the EDI/ECX segment and the displaced shared spill.
+// The segment still needs EDX and the +0x14 spill. Separate array and signed ordinal,
+// used directly for stiffness, length and rest offset. Ordinal first, terminal count,
+// terminal ordinal, interior first and terminal decrement 272/269/272/269.
+// Array first, same selectors 275/273/275/273. NOT kept: direct indexing
+// moves the stiffness read ahead of the address addition and raises the score.
 // Separate physics point with fields, point setter or shared point difference 314/361/311.
 // Updating the physics point before publication, same forms 391/391/406. Early tag index
 // with separate or updated point 314/391. NOT kept: every split widens the frame and leaves the segment spill different.
