@@ -27,6 +27,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
     arg_2->j = g_4b9e14.right.j * scaled.i + g_4b9e14.up.j * scaled.j + g_4b9e14.forward.j * scaled.k;
     arg_2->k = g_4b9e14.right.k * scaled.i + g_4b9e14.up.k * scaled.j + g_4b9e14.forward.k * scaled.k;
 }
+// MiniMax C (11-19): no new form, no lower score (221): the two offset loops written as explicit component assignments
+// reach 218 (1115 B) on the reduced image, three points under the keep bar, so the loops stay; no other new form lowers
+// the score.
 // score 221 (was 234): Frame 0x20 versus retail 0x14. The second displacement and first rotation coefficients still have different homes.
 // MiniMax R (11-16): no new form, no lower score (206): re-measured in this round's nine-address set, the body is 1140 bytes against retail's 1136 and the frame is 0x18 against retail's 0x14; retail keeps the first point's three offsets in registers (XMM1, XMM3 and XMM5) and spills the second point's, where this build materialises both offset vectors in the frame, and the orthographic dot still runs i, j, k where retail runs j, k, i.
 // MiniMax C (11-16): no new form, no lower score (206): retail keeps the first point's three offsets in registers

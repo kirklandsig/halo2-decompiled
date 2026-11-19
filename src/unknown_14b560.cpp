@@ -781,6 +781,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax C (11-19): no new form, no lower score (43): every difference is the one carrier swap (the datum pointer in
+// EBX for EDI, the unit index in EDI for EBX); the root walk's shape is what decides it and that walk is the out-of-line
+// 0xbaf80 in another file, which this lane may not edit.
 // MiniMax H (11-18): no new form, no lower score (43): the player datum is still computed in EBX where retail has
 // EDI and the unit index in EDI where retail has EBX; writing retail's walk (the root NONE, the entry test before
 // the loop, the step object recomputed in the loop) makes the compiler peel the first iteration (109), and the same
@@ -2550,6 +2553,9 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
+// still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
+// files this lane may not edit, so the body stands.
 // MiniMax A (11-19): no new form, no lower score (701): retail still calls 0x151b80 where this build inlines it, the frame is still 0x4c against retail's 0x74, and the loop's index scratch is still in EBX where retail keeps it in ESI; the body is unchanged. BLOCKED-BY 0x151b80's inlining decision in src/unknown_1502e0.cpp.
 // MiniMax R run 92 (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
 // this build still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees
@@ -3402,6 +3408,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // base only: round 46's split failure test 91 (608 B, aligned 55, masked 13; flag form, not keepable without a match); left on
 // it is loop 1's inlined iterator step (retail keeps NONE in EDX and datum/unit in EDI/ESI, and stores no iterator.data before
 // loop 1). BLOCKED-BY 0xb8540/0xb7b40 stands (both still disabled stubs: nothing on loop 2's call tree is seen to write g_4e8c20).
+// MiniMax C (11-19): no new form, no lower score (103): retail's loop 1 steps the pool itself, with the pool in EBX, the
+// index in EBP and no store of the iterator's data field before it, while ours keeps the shared iterator; writing that
+// step into the loop does not reach retail's shape either (the reduced image 214 against 193, the plain check 103).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
