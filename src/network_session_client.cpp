@@ -877,6 +877,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // argument) all fold; the variant accessor after the summary, before the count or between the loops gives ESI. So
 // retail's unfolded read after its own copy registers needs one more scratch temporary between the copy loop and the
 // mask test than any of these forms creates.
+// Round 200 (m3 lane 5, fast with both callers; control 22): the 0x49c8 value named before the player loop on this body
+// 130 (493 bytes); a named player pointer for the test and the call 25 (the loop step moves to ECX); the copy counters
+// declared count first 22, a const reference to the copy source 22, the variant at the top of the state block 22 (all
+// the same code).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

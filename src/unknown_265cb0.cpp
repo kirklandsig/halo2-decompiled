@@ -883,6 +883,11 @@ real function_30bf0(vector3f *vector);
 // sides elsewhere move); the range read after the delta 87; both 145 (1308 B); the clipped point through the shared
 // vector3f_add_scaled 90; the facing results copied at the end of the facing block in place of the second `if (facing)`
 // 101. The range still loads into XMM2 (retail XMM0) and every 4-byte home but the delta's is where round 81 found it.
+// M3 lane 5 r200 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84, frame-blind 9): the endpoint clip block
+// through a new forced-inline helper 417 (1392 B); the facing pair declared first 84 and distance_squared declared before
+// the clip block 84 (same code); the posture switch as an if/else-if chain 131 (1308 B); `use_facing && !actor->unknown007`
+// 86. Diagnostic, reverted: 1..7 dead initialised locals 84/86/138/138/82/82/82. Reading: retail shares one slot between the
+// clip amount and distance_squared ([esp+0x1c]) with the result lowest; ours gives the clip amount the lowest slot.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2722,6 +2727,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // base/index order, the players loop (retail's table pointer in EDX, the datum index in EBP, the found index in ESI, the
 // player in EDI, and no jump over the loop-top padding), and the direction's components held in XMM1..XMM3 across the
 // relative and facing dots (retail loads two of them ahead of the relative-length test).
+// M3 lane 5 r200 (fast with the eight callees, all MATCH; control 168; on lane 3 r261's 163 form unless noted): `visible` as
+// `reference == NONE || prop_ref_get(reference)->unknown27 >= 1` 423 (the frame changes); the iterator's NONE fields chained
+// 165; the player as a ternary on the found index 367; both searches in ai_player_get's shape (player NULL first, a long copy
+// of the short index for its NONE test, a long second counter) 378 (register-masked aligned 41 -> 39: both searches are then
+// retail's line for line, one line late because the iterator's table load takes ECX where retail's takes EAX); on that, the
+// NONE fields first 380, the iterator set up before the vehicle lookup 401 (2889 B), the NONE fields chained 380.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
