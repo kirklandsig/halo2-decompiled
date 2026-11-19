@@ -1869,6 +1869,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // assigning y first 261 (aligned 158, shape 50); the forwarding function alone on the kept body 252 (1190 B), with
 // one return 243, with the goto and one return 263. Open: what gives the radius XMM5 and the direction XMM2/XMM3 once
 // the result holds XMM0, and why retail does not thread the left type-zero arm.
+// M3 lane 2 r108 (fast; control 239): the direction normalized by the shared header's 2-D normalizer (through a
+// vector2f cast, as unit_object_type.cpp does) 239 (same code), the desired point too 240; ten locals renamed to sort
+// first (result, radius, direction, side, left, center, perpendicular, difference, side_radius, lateral) 239 each;
+// const radius/side/flag/perpendicular 239; the side offset as if/else arms with a named negative radius plus the
+// shared normalizer 287 (1193 B). Reading: retail's left type-zero arm shares the type-one arm's last instruction
+// (`addss xmm0, [ebx + 4]`, center.y in XMM0 in both), so the tail merge happens before threading; ours gives the two
+// arms' center.y different registers, so nothing merges and the arm is threaded: one register-allocation cause.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

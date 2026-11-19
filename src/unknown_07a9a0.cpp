@@ -1043,8 +1043,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
-// score 871 (was 871; 964 before): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// selector remains a call (two stacked first lines merged in r108).
 // The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
@@ -1607,6 +1607,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // group statistics or before histogram 914/914. Split store with dword histogram 933.
 // NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
 // The opening variant lookup still expands and the frame still differs.
+// M3 lane 2 r108 (fast with 0x73530; control 871): `long histogram[16];` plus a memset at its declaration (retail's
+// dword cells: 16-dword rep stosd at 0x7e66c/0x7e6a5, 4-byte increments) 936 (2716 B, frame 0xb0); `long histogram[16]
+// = {0};` 911 (2748 B); the machine-ID copy loop in its own block 871 (same code); that block with the memset dword
+// histogram 936; the top variant lookup moved after the summary and capacity 870 (2784 B; 0x73530 MATCH -> 1, not kept).
+// Reading: retail calls the top 0x192e60 at frequency one (unconditional) and expands the colder 0x193300 and the loop's
+// lookup, so the difference is the inliner's site choice, not a statement form here.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

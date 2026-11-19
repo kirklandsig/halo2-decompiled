@@ -194,6 +194,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // Direct list/portal/both indexed records/direct list and portal 358/374/392/329.
 // Live-length link cursor/positive end cursor/consumed count/empty-range cursor 374/359/373/364.
 // The direct list form recovers the initial EBP save; both table reloads remain unresolved.
+// M3 lane 2 r106 (one-file LTCG harness with the callee files; main 272 positional for this note's 287): lane 13's r111
+// held form rebuilt on this body 244 (1364 B, aligned 17); without the forms the review list reverts unless a match (the
+// clear moved, the seed order, the arm order, the for-init limit) 353 (1355 B); main's body with only the callee
+// change 358. See 0x18dc90's note for the register-pair screens (same leftover here).
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -383,6 +387,17 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Required index cursor at the stores 362 or row latch 315 (kept, plain); required-index
 // position/end 390/388; separate sorted cursor/sorted end 369/383; scoped sort scratch or
 // validity memset with the index cursor 359/359. The latch restores gain-based row addressing.
+// M3 lane 2 r106 (one-file LTCG harness with the callee files; main 304 positional for this note's 315): lane 13's r111
+// held form rebuilt on this body 15 (1363 B, aligned 16): only the cluster pointer in EBX and the widened portal index in
+// EBP are left. Diagnostics (wrong code): one more cluster read anywhere in the loop or in the seed block, or the nearest
+// block storing a constant instead of the portal index, flips the pair to retail's (aligned 2-8), so the two tie; 1-8
+// dead locals do not (19). No flip from: const cluster or path list; `if (paths->count > 0)` on the loop 17; `short
+// encoded`; the guard's operands swapped 16; the seed index in a local 341; the nearest index assigned in the test 19;
+// the portal index at function scope (short, short = NONE, long declared first 324); the loop locals declared at the
+// top; the cluster after the nearest distance or after the clear 15/17; the 23 other seed statement orders (15 at best);
+// the nearest distance stored first 16; the portal record indexed from the packed value 317 (1379 B); 53 random
+// combinations of 14 code-neutral toggles 15-21. Without the reverted-unless-match forms the rewrite is 351 (1354 B);
+// main's body with only the callee change 349.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

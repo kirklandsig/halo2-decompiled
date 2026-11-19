@@ -852,6 +852,12 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // own-parameter read 32 (component in EDX, callers lose), with the vector at function scope 47 (139 B: the byte still
 // goes to BL with the component in EDX, so BL does not follow the component's range). Diagnostic: a non-const
 // `hkRigidBody **` slot with the body read after the conversion 29 (same code as this body).
+// M3 lane 2 r106 (fast, and a one-file LTCG harness that gives 28 for this body): the slot as an element pointer
+// (`slot->rigid_body` at the test and after the conversion) 31 (a dead `add eax, edx`, the load still shared). Harness:
+// early returns for flag1 and m_fixed with the slot pointer and the body read after the conversion 46 (141 B: retail's
+// reload with no volatile, the byte in BL), with 0-9 dead initialised locals 46 each (no symbol-count tie); the fixed
+// test read directly or through the getter with the slot pointer formed after it 46/46; nested blocks with the test
+// read directly 34 (135 B); the body for the test in its own const local, or the byte in a named bool, 46/46.
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -1832,6 +1838,18 @@ PRIVATE __forceinline real const &component_time_step()
 // xmm0`, and the global load hoists above the mass test; the rate's address handed back through a helper's out parameter
 // 17/14 (same); the reference accessor, or a pointer accessor, called again at each product 17/14 (same). Each with the
 // stop-first test 36/36 (462 B forms 133/41, ternary 115/35). Every spelling folds `base + 4` at both reads.
+// M3 lane 2 r106 (the same harness, positional/aligned): the scale helper with the acceleration as its default and the
+// power arm assigning over it 131/16 (468 B); the helper as two ternaries 107/11 (473 B, head retail's but the step
+// loaded first after `movaps xmm1, xmm0`); its result through a one-member aggregate return 116/16 (492 B); `result =
+// result / mass`, and the step through a pointer to the accessor's reference 17/14 (same code); the mass ternary alone
+// 107/11, with the field read directly 107/11, with the time-step reference bound first 131/38. Diagnostic (not kept):
+// with 3, 11 or 19 extra dead locals (symbol count 3 mod 8; main's helper or the mass ternary) the head and the first
+// product are retail's (`mulss xmm0, [eax + 4]` in place) at 465 B, 104/6; only `add eax, 4` with the second product
+// from `[eax]` is missing, and the stop-first test then swaps the zero and stop registers (105/29; other counts 36/36).
+// On that dead-3 base: the step through a pointer local at both products 104/6, the pointer then the reference 104/6
+// (still `[eax + 4]` twice); the first product read directly or through the accessor with the reference bound after it
+// 17/14 (the head reverts). So the head is a symbol-count tie: a natural +3 names is worth trying once `add eax, 4` has
+// a cause.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -3439,6 +3457,10 @@ byte *__fastcall function_30c170(hkWorld *world);
 // them 15, with that temp declared first in the arm 15, with it at function scope 15; the equal arm through a
 // `transform4x3f const &` to pair->frame_a 15 (all the same code: after inlining the arm's block is identical); the
 // equal arm converted into a local hkTransform and copied with hkTransform::set 351 (1325 B).
+// M3 lane 2 r106 (one-file LTCG harness with src/unknown_1d77d0.cpp, 15 as the check): both halves through one
+// forceinline helper (search, relative frame, conversion) 309 (1228 B); the converter's translation through an inline
+// helper returning the Havok vector by value (an aggregate-return scheduler boundary) 15 (same code); all four parts by
+// value 354 (1456 B, copied through a temp); the three columns by value 354; column 0 only by value 355 (1389 B).
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,

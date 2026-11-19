@@ -2124,6 +2124,14 @@ bool function_1900a5(long index);
 // add sixteen bytes and retain the opening frame and exit-span mismatch.
 // Offline-first arm/return using direct status 703/703, shared availability 810/810, one task index 703/703,
 // conditional task status 812/812. The shared and conditional forms change the opening schedule and raise the score.
+// M3 lane 2 r108 (fast; control 703, aligned 500 by difflib with addresses masked): retail's request loop branches on
+// the type-5 test once, copies the 12-byte key into a stack local (+0x34, the users loop's identity slot) in the
+// team arm, scans with an index counter and leaves a found entry straight to the next player (`je` to the step).
+// Tried: the key as a by-value XUID local, the scan indexed with `if (k < records_used) continue;` 858 (2990 B, frame
+// 0xc8); with the users loop's identity variable reused for it 858 (same frame); the indexed scan with `continue` on
+// the pointer key 798 (2942 B, frame 0xc8); the key pointer assigned in the arms of the existing type-5 test (no
+// ternary) 737 (2894 B, aligned 472: the select is then retail's branch, a lead once the slot's conditional move is
+// settled); that plus the completion loop's key pointer assigned by if/else 737 (2894 B, aligned 450).
 // @retail 0x74aa0
 void function_074aa0(void)
 {
