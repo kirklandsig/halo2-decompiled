@@ -95,7 +95,10 @@ struct s_planar_camera_source
 
 PRIVATE inline void matrix_cross(vector3f const *a, vector3f const *b, vector3f *out);
 
-// score 4 fast (was 7): only the operand order of two products in the inlined matrix_cross differs (retail loads
+// Matched in a full build with stand-in SDK headers (was 4): the left axis is stored into the state's matrix
+// directly and its address passed to 0x30bf0, with no `left` pointer local; the two products of the inlined
+// matrix_cross then load up.j / up.k first as retail does.
+// Before, 4 fast (was 7): only the operand order of two products in the inlined matrix_cross differs (retail loads
 // up.j then multiplies by left.i, 0x4420e/0x4421c, and loads up.k then multiplies by left.i, 0x44221/0x44226; ours
 // loads left.i first in both). Swapping the operands in matrix_cross (k and j terms, four spellings) gives identical
 // bytes: the compiler canonicalizes them; 0x3c9a0 shares the helper and stays MATCH.
@@ -113,9 +116,8 @@ void function_441b0(s_planar_camera_source const *source, s_planar_camera *state
 {
 	memset(state, 0, sizeof(*state));
 	state->disabled = false;
-	vector3f *left = &state->matrix.left;
-	*left = source->horizontal;
-	function_30bf0(left);
+	state->matrix.left = source->horizontal;
+	function_30bf0(&state->matrix.left);
 	vector3f *up = &state->matrix.up;
 	up->i = 0.0f - source->normal.i;
 	up->j = 0.0f - source->normal.j;
