@@ -190,6 +190,22 @@ static inline void *function_xc5914d(long thread_index, short size)
 // `(long *)(void *)arguments` 95 (266), `&arguments[0]` with `result = NULL` first in the arm 83 (277); the allocator
 // `__forceinline` with null first 83, with the volatile home 12 (same code); both pool getters `__forceinline` with null
 // first 83. Re-measured: `result = NULL` first in the arm 83.
+// M3 lane 9 r141 (fast with 0x2099f0): the expression pool read once into a named local used by every lookup (init block,
+// type test, arm update), volatile-free with `result = NULL` first in the arm 93 (268 bytes), volatile-free with the
+// result cleared last 95 (266), with the volatile home 29 (279); volatile-free null-first with the count test written
+// `parameter_count > argument_index` 83 (277, same code), with the type test's operands swapped 89 (285); volatile-free
+// with the count test swapped 95 (266). In the null-first form the pointer takes EAX for the whole function (it feeds the
+// return), the NULL goes to ESI and is copied at the end, and the pool is reloaded in each block, so nothing presses the
+// pointer into a spill; retail's result is a copy that is never propagated into the return.
+// M3 lane 12 r142 (fast with 0x2099f0, which stays matched; volatile-free forms; the kept volatile body re-measured 12
+// in the baseline): a grid of the allocator's own locals against the body's result form, to see whether the set of
+// inlined locals decides the spill (one shared loop index did for 0x12eb00's homes). Body forms: the result copy at
+// the top / one variable set to NULL in the arm / `result = NULL` first in the arm / two returns / the result set in an
+// else arm. With the current allocator (frame, size pointer, result) 95/95/83/90/90; without the size pointer the
+// same five; with a thread pointer local as well the same five; with the result started at the frame's data and
+// stepped by the size the same five; with a size local and no result local (`frame->size = offset + size; return
+// data + offset`) 92/92/83/92/92 (264, 264, 272, 264, 264 bytes); with no frame local (the frame read at each use)
+// 112/112/106/103/112 (248-256 bytes). No form spills the pointer: the allocator's locals do not decide it.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

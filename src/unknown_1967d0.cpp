@@ -969,6 +969,14 @@ static inline long team_score_195ed0(long team)
 // with native final score and separate stores 192, or admitted-arm selection 191; paired team/player
 // rank cursors 186/165 with indices or 186/174 with remaining counts. The final query still expands
 // on the native-call forms, and the post-copy flag order remains.
+// Short score through explicit bounds 191, named lower test 191, nested score validation 100,
+// early unavailable score return 170, static score query 322, eligibility from the mask tests 151,
+// one receiver for the score table 204, signed rank bound retained at entry 100. The teams flag
+// still precedes the copy, and the in-range score call remains expanded.
+// Unsigned player/team ordinals 254/153, direct guarded team-table stores 246,
+// installed-team and active-team references 100/100, count-first rank comparison 100,
+// admitted clamp with a shared result 177, unsigned terminal player inequality 732.
+// The flag still leads the configuration copy and the final score call still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

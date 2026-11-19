@@ -735,6 +735,37 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Select table and ordinal, table and byte offset, conditional scenario table and ordinal,
 // or nested scenario table with late byte offset: short 719/720/724/724; signed byte
 // 619/696/619/619. The best measured forms disturb the matching clear prefix.
+// M3 lane 2 r102 (fast; control 607). Reading: retail's NONE stays in EAX from the loop head through the palette arm to
+// the +0xd4 tag test (`cmp edi, eax`), so it outranks the 0x130f60 result, which moves to EDX; ours stops using the NONE
+// register before the tag test (`cmp edi, -1`, the field_f0 store's scratch registers take ECX/EDX), so the result keeps
+// EAX. Tried: the slot as char 700 (re-measure; byte compare in BL, live to the store); char with the store re-reading the
+// byte 666 (retail's CL slot and EBX record; NONE in EDX); the byte at each use with the +0x88 pointer declared ahead of
+// the tag test 678; that with the tag in a named local used for the test and the best-tag store 679 (no NONE register at
+// all); the byte at each use with the handled flag declared before the 0x130f60 call 669. Body unchanged.
+// m3 lane 5 r202 (fast with 0x131030, 0x1317a0 and 0x130f60, all matched; control 607, aligned 354, masked 146): the
+// touched flag declared ahead of the out value and the 0x130f60 call 609; the three per-cluster source resets stored
+// weight, index, kind 607 (store order only); the best-weight and best-index declarations swapped 609 (first difference
+// +0x2b); the palette arm's source-index store re-reading the +0x6f byte (retail re-reads it there) 703 (3831 B, aligned
+// 332); the record pointer declared NULL ahead of the palette test 607 (same code).
+// M3 lane 15 r102 (fast with 0x130f60; control 607): the palette byte read from the cluster at each use as a char
+// (`*(char *)(cluster + 0x6f)` at the test, the bounds, the index and the source-index store; retail re-reads it with
+// a fresh movsx for the store) 666 (3827 B); with the NULL record assigned in the else arm 666 (same code); with a
+// file-local forceinline lookup that assigns NULL, tests g_4e0350 and the bounds and returns the entry (retail's
+// `xor ebx, ebx` ahead of the global test and the `mov ebx, ecx` copy of the returned entry) 599 at 3818 B, the best
+// count seen here, NOT kept (a new one-caller helper; lead: retail's lookup is an inline returning the entry with the
+// global test inside); that lookup with the short palette local 604 (3822 B); the per-use char reads with 0x12eb00's
+// existing entry_at_index behind an outer `g_4e0350` test (a local copy, as a header move would give) 603 (3822 B),
+// the same as an if/else or a ternary around it 603/603; the short palette local with the ternary 667 (frame moves).
+// Under the per-use reads the cluster index leaves EDI (retail keeps it there for the arg_0 compare).
+// Palette read before the kind store, between kind and index, or between index and weight, then between
+// kind and index with a separate promoted lookup index. Signed byte 700/700/700/749; long 706/706/706/704.
+// NOT kept: the byte comparison width agrees at 700, but BL remains the slot carrier and EAX still holds
+// the tag result.
+// MiniMax A (11-18): no new form, no lower score (607): retail reads the palette byte into a byte register and compares it
+// with the low byte of the -1 it also stores to the record, while this build keeps the slot in a 16-bit register and holds
+// the -1 in ecx; the record's three initial stores sit before the palette read here and after it in retail, and moving
+// them into the palette branch measures 725, the palette byte read before the stores 607, and a signed palette byte read
+// before the stores 700.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

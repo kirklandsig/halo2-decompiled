@@ -433,6 +433,15 @@ __forceinline bool function_184448(long arg_0)
 // reads through the coordinate setter 1007, advancing 3D vertex pointer with direct
 // reads/shared projection 992/1033. NOT kept: the 992 form recovers the frame but
 // shortens the body and loses a caller match in the reduced image. All scores regress.
+// M3 lane 1 r122 (fast with the callers 0x9cca0/0x184250 and the callees, all MATCH throughout; LCS-aligned 711 on
+// this body): the worklist cursor declared before the world-bounds loop with the loop as a while re-measured 958
+// (aligned 710; seven points and a moved declaration, not kept). On that 958: the record defaulted to NULL at its
+// declaration with only the list chosen in both arms 959; the group count read into a local for the range test 958;
+// the first face through an element pointer for its group read 958; the seed stored before the count 958 (same code
+// each); the record through a block local with the list computed from it and the record assigned last 967 (4573
+// bytes). Read in the entry block: retail takes the start face (arg_3) in EDI, clears the record's home with an
+// immediate store and never holds the record or the list in a callee-saved register, where ours takes the face in
+// ESI and keeps the record in EDI and the list in EBX; none of the five forms moves that.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
@@ -599,7 +608,7 @@ void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, lo
                     local_45.y += local_30.j * local_47;
                     local_45.z += local_30.k * local_47;
                     point2f local_48 = { local_45.n[local_23], local_45.n[local_24] };
-                    if (!function_23a220(&local_48, local_27, local_2, 0.0f))
+                    if (!function_23a220(local_2, local_27, &local_48, 0.0f))
                         continue;
                     vector3f local_49;
                     vector3d_from_points3d(&arg_2->field_30, &local_45, &local_49);
