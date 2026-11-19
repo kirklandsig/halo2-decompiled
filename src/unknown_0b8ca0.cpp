@@ -1890,6 +1890,11 @@ done:
 // offset, size 27; the definition and its reads in an inner block assigning outer palette offset and datum 27; a short
 // type local 27; on main's body a short type local 115 (267 B). Retail's load, use, copy (`mov esi, eax`) shape occurs
 // nowhere else in the image, and no out-of-line getter of the type table exists to inline.
+// M3 lane 16 r143 (fast with 0xbf0f0/0xbf090): an inline taking the definition pointer that reads size and placement
+// offset and returns the datum, the palette offset read in the caller, 32 (scenario ECX, index SI, type EDX); the
+// palette through an inline taking the definition pointer on the 27 form 33; on main's body the placement offset and
+// the placements read ahead of the size 18 (237 B), that with the size as a long 27 (236 B, type still ESI); the 27 form
+// with 1-8 unused initialised locals 27 each (not a symbol-count state: the type stays ESI in every count).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

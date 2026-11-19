@@ -1652,6 +1652,11 @@ static inline s_players_globals *players_globals_14f2e0()
 // the test as `4 != g_4e6948->mode` 43; the result and mode tests merged into one `!result && mode != 4` condition 43.
 // Compile-only (same code each): `tag_index = third_person = NONE;` 43-form; `mode != (char)4` 43-form. Retail's
 // 0xb8540 returns nothing (its EAX is clobbered), so no value of its own can hold EAX across the test.
+// M3 lane 16 r143 (fast with 0xa9440, 0x14d3a0 and 0x14f040; control 5): the mode test held in a bool read ahead of the
+// output declarations 5 (same code: the stores are still scheduled ahead of the compare); the test as `== 4` with an
+// empty arm and the body in the else 5 (same code); the mode read into a char local in the result block with the
+// outputs in the mode block 43 (1031 B); the outputs in one declaration in the mode block 43; the outputs declared with
+// their NONE initialisers at the function top beside the unit index 275 (the -1 is set up at entry).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
