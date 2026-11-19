@@ -1274,6 +1274,14 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `s_camera_point_state const &` for the case-2 block 395 (1700 bytes); the field-of-view's `active = false` before
 // the default field-of-view read 126 (same code); the matrix position through a `vector3f *` local for plane.d and
 // the scaled add 395 [106]. Body unchanged.
+// M3 lane 7 r187 (fast with 0x142d10, 0x16c2b0, 0x16c6f0, 0x16be50, 0x23d090, all MATCH; plain control 126 = fast). Tried:
+// 0x142d10's parameters as (out, forward, up) at its definition, declaration and call (retail sets up ECX up, EDX forward,
+// EAX out in that order) 124 (re-measured, the pan arm's two `lea`s); that with `0.0f != length_squared` 123, and with the
+// timer as `0.0f != time_scale ?` too 123 (gains under 4, not kept); a pointer local to camera->point.left used for the
+// plane copy, the length dot and the add-scaled call 393 (1700 B: the length then preloads left.j into XMM1 as retail,
+// but the first dot's products and the copy's registers turn round); the pointer at the length dot and add-scaled only 393,
+// at the copy and add-scaled only 395, at the length dot only 394. Diagnostic (not kept): one more `unknowna4 = 0.0f`
+// store at entry 459 (the zero is then held in XMM1 through the function).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

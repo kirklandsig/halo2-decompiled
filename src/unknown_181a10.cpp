@@ -1039,6 +1039,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // data member: four at 238. Each with the short material output beside the input
 // snapshots reaches 230 and frame 0x44. NOT kept: the declaration moves the first
 // node out of its retail slot and does not recover the second-node and origin reuse.
+// M3 lane 7 r187 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238). Reading: the byte test at
+// +0x1e with `setne al; test al, al` occurs in retail only inline (here, 0x1c5400 and 0x1d4880; no standalone copy), and
+// matched 0x1c5400 loads the data word once for its zero test, clamp and byte test, where this body loads it three times.
+// Tried: the byte test through a file-local inline bool helper on the shape 238 (same code), the same helper `static`
+// without forceinline 238 (same code); the clamp's data bound to a `dword const &` 294 (1249 B, still one data load);
+// the exclusion's last three tests nested under `if (component != NONE && kind != 24)` 238 (same code); the clamp's
+// ternary written upper bound first 238 (same code).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

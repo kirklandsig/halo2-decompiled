@@ -698,6 +698,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `&choices[choice_count++]` 972 (3287 B: the pointer becomes an induction variable), that with the stores in retail's order
 // (tag, source, decibels, cluster) and the three 1.0f defaults as statements 972; on main's body the four stores in retail's
 // order 846 (code changes, score ties).
+// M3 lane 7 r187 (fast with 0x18bb80 and 0x18ab70, both MATCH; control 846, difflib-aligned 1004). Reading: retail forms the
+// choice as `&choices[count]` from the incremented count (`inc esi; mov [esp+0x34], esi; lea esi, [esi+esi*4]; lea esi,
+// [esp+esi*8+0x10]`), stores tag, source, decibels, cluster through it, and reloads the count into ESI after the distance
+// call; the count is never an induction pointer. Tried: long query and choice counts with `choice = &choices[choice_count++]`
+// up front, stores in retail's order, the 1.0f defaults as three statements 972 (3287 B; the pointer is strength-reduced
+// into [esp+0x18]); the same with the pointer formed from the count and `choice_count++` after the distance 966 (3264 B,
+// ESI is then the entry zero as retail), that with the loops bounded by `count` directly 966 (same code); that with a
+// short choice count 938 (3280 B, aligned 986); with a short query count 965 (3264 B).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

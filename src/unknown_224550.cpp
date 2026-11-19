@@ -94,8 +94,8 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
-// score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
 // The bitmap path still allocates blend and aspect intermediates differently. The body is 1947 bytes against 1937.
 // Earlier scores 211 and 223.
 // M3 lane 14 r114 (fast with 0x2243c0, which matches throughout; control 162, aligned 127): retail keeps the blend in XMM5
@@ -729,6 +729,13 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // at the complement or late in two axis schedules: 260/241/241. Current products at the complement
 // with late next products: 313/313. Next products at the complement: 255. Both pairs there: 265/265.
 // NOT kept: Earlier weighting leaves the blend spill and changes the frame or grows the body.
+// M3 lane 7 r187 (fast with 0x2243c0, MATCH each time; control 162). Reading: at the point after the reciprocals retail
+// holds 1.0, ax, ay, bx, by, inv_bx, inv_by and the blend (XMM5) in the eight XMM registers and keeps inv_ax/inv_ay in
+// memory (+0x88/+0x18); ours holds inv_ax (XMM5) in the blend's place, so the blend is read from memory. Tried: the
+// bitmap arm reading the blend through a `real const &` bound at the arm's top 162 (same code); the second set's extents
+// declared by, bx 170 (1950 B); the extents and reciprocals declared `real const` 162 (same code); the extents through
+// the inverse sums in a nested block, with aspect, inverse sums and flip declared ahead 173 (1951 B); the flip computed
+// after the inverse sums, just ahead of the encodes 318 (1957 B, the entry changes).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

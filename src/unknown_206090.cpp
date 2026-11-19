@@ -84,12 +84,12 @@ struct s_206091
 
 PRIVATE __forceinline void function_206092(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2)
 {
-    real second_i = arg_1->i;
-    real second_j = arg_1->j;
-    real second_k = arg_1->k;
-    arg_2->k = arg_0->i * second_j - arg_0->j * second_i;
-    arg_2->j = arg_0->k * second_i - arg_0->i * second_k;
-    arg_2->i = arg_0->j * second_k - arg_0->k * second_j;
+    real first_i = arg_0->i;
+    real first_j = arg_0->j;
+    real first_k = arg_0->k;
+    arg_2->k = first_i * arg_1->j - first_j * arg_1->i;
+    arg_2->j = first_k * arg_1->i - first_i * arg_1->k;
+    arg_2->i = first_j * arg_1->k - first_k * arg_1->j;
 }
 
 PRIVATE __forceinline real function_206093(vector3f const *arg_0)
@@ -139,7 +139,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1375 (was 1375): Frame 0x5d0 versus retail 0x58c, component and velocity homes, and contact indexing still differ.
+// Earlier header (merged into the note above the function in m3 lane 7 r187): 1375 (was 1375): Frame 0x5d0 versus retail 0x58c,
+// component and velocity homes, and contact indexing still differ.
 // Earlier: earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
@@ -537,7 +538,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 
-// score 1375 (was 1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
+// score 1346 (was 1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// header line, 1375 (was 1375), sits further up this file).
 // P452: Independent magnitude/velocity-publication/query-origin/tangent/direction/velocity/friction-input/impact-normal memmove boundaries:
 // 1436/1376/1409/1397/1440/1407/1425/1376. NOT kept: 1376 leads retain nonnative record-transfer boundaries and excess frame; no byte equality. Original captures, all helpers, call tuples and full body restored; matched caller survives.
 // P454: Existing magnitude snapshot as aggregate/shared setter, five remaining native component-store
@@ -732,6 +734,18 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // One magnitude workspace at contact phase or entry, assignment/memcpy, 1515 each. Separate root and
 // normalization workspaces at the same scopes, assignment/memcpy, 1457 each. NOT kept: the frames shrink
 // to 0x5a0/0x5a8 but the body loses 120/88 bytes and retail's component homes still differ.
+// M3 lane 7 r187 (plain each, 0x2056e0 MATCH each time; control 1375, difflib-aligned 1402). Kept: function_206092 holds
+// its first operand in locals and reads the second through its pointer at each use (it held the second): 1346 at 6243 B
+// (aligned 1399); the same with other local names 1346. Retail evidence: the contact loop's cross loads local_5's three
+// components once (`movss xmm4/xmm3/xmm2, [esp+0xc0/0xc4/0xc8]`) and reads field_40's at each use (two loads each).
+// Tried: the first loop's cross through cross3f_staged (before the kept change) 1422 (6243 B); on the kept change the
+// contact cross written straight into field_4c with local_4 added there (no contact_velocity copy; retail's `lea ebx,
+// [edi+0x4c]` shape) 1419 (6185 B, frame 0x5c8); the first loop's cross through function_206092 1405 (6238 B: k, j, i
+// stores as retail, but the products interleave where retail computes all six first); cross3f_staged at the three
+// function_206092 sites 1357 (6243 B: the second contact cross then reads both operands at each use and stores after all
+// products, as retail, with some products' operand loads the other way round); the first loop's cross through
+// cross3f_staged on the kept change 1421 (6238 B); the kept helper computing k, j, i into locals before its three stores
+// 1386 (6243 B, aligned 1388).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
