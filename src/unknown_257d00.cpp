@@ -2489,6 +2489,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Retail evidence for a lead: case 18 reads every value (unknown04, selector, both references, held across the two validation
 // calls in [esp+0x38] and ESI) before the first store into the record, as an inlined setter taking them as arguments would;
 // ours re-reads the references after the byte stores. Case 6's two ORs stay separate in retail (0x29, then 0x48 from the copy).
+// M3 lane 4 r217 (fast; control 433, aligned 111, masked 75): case 2's turn vector as an aggregate copy with case 4's facing
+// read from the state at each use 624 (2384 B, masked 61: retail's code there, actor EDI / state EBX); that with plain
+// `return 1` / `return 0` exits and no result local 639 (2368 B, masked 75); with case 18's references in two named locals
+// checked one at a time and case 6's flag byte named for two stores 624 (masked 54; case 6 still folds to `or 0x69`); case
+// 18's named references alone 528 (2424 B, swapped); case 13 through the shared exit 478 (2400 B, masked 84).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

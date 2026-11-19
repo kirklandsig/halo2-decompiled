@@ -800,6 +800,12 @@ struct s_physical_block_iterator
 // M421: Sufficient-pages take/refinement 262; exhaustive take/retention 253/262; nested eligibility 253;
 // first-candidate take with direct/shared eligibility 261/300; refined take with earlier-or-tied/equality result 270/270.
 // NOT kept: the complete admission results shift the prefix and do not recover the retail policy join.
+// M3 lane 4 r217 (fast with the file and 0x13d320, all MATCH; control 201, aligned 87, masked 56). On main: both ages
+// `MAX(x, 0)` 209 (1228 B; retail clamps both on the unsigned clock, main's `MAX(0, x)` folds away), with case 0 as
+// `if (...) better = true;` 209 and as an if / else-if pair setting it 209 (same code: only a helper boundary gives retail's
+// materialised case 0). On lane 9 r109's lead rebuilt on this base (93, aligned 36, masked 14): 1..7 unused initialised
+// locals 93 each (diagnostic, no symbol-count tie); the walk in 0x13d8b0's form (plain iterator and block locals through
+// function_13d8b1) 107 (frame 4 bytes smaller, swap unchanged); the allocation test as `NONE != result` 93 (same code).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

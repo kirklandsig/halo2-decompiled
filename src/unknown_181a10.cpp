@@ -2,6 +2,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "unknown_1cec30.h"
 #include <float.h>
 #include <xmmintrin.h>
 
@@ -501,29 +502,11 @@ struct s_batch_contact
 	s_batch_contact_node *first;
 	s_batch_contact_node *second;
 };
-struct s_batch_entity_property
-{
-	long key;
-	long value;
-};
-struct s_batch_entity_view
-{
-	byte field_0[0x30];
-	s_batch_entity_property *properties;
-	long count;
-};
 
 PRIVATE __forceinline s_batch_contact_node *batch_contact_root(s_batch_contact_node *node)
 {
 	while (node->next) node = node->next;
 	return node;
-}
-PRIVATE __forceinline long batch_contact_component(hkEntity *entity)
-{
-	s_batch_entity_view *view = (s_batch_entity_view *)entity;
-	for (long i = 0; i < view->count; ++i)
-		if (view->properties[i].key == 0x2001) return view->properties[i].value;
-	return 0;
 }
 PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shape)
 {
@@ -1037,6 +1020,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // entity arm first 310 at 1243 bytes, named coefficient outputs 238,
 // first-node scope ending at input capture 245. NOT kept: frame 0x40 and
 // the second-node spill remain in all eight forms.
+// M3 lane 4 r217 (fast with the file's other seven functions, all MATCH; control 238, aligned 138, masked 63). Kept: the 0x2001
+// property scan through include/unknown_1cec30.h's existing havok_entity_property_get in place of the hand-written private
+// copy (same code, 238; the copy and its two view types removed; the root walk stays written out, as 0x183da0's file is
+// built /GL- and cannot be inlined). Tried: the exclusion's data test through a `dword const *` to the field 318 (still one
+// data load: retail reads it three times, as three LTCG-inlined helpers would); the kind-24 shape in a local declared after
+// the kind test and used for the material call 327 (the shape then takes EBX and its spill like retail's, but the second
+// node moves to ESI where retail keeps both in EBX and one slot); that with the non-24 arm written first 330; the root's
+// entity named once (`root->type == 1 ? root->entity : 0`) 238 (same code).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
@@ -1044,7 +1035,7 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 	s_batch_contact_node *second = contact->second;
 	s_batch_contact_node *root = batch_contact_root(second);
 	if (root->type != 1 || !root->entity) return;
-	long component = batch_contact_component(root->entity);
+	long component = havok_entity_property_get(root->entity, HAVOK_PROPERTY_COMPONENT_INDEX);
 	batch_contact_root(second);
 	if (component != NONE && second->shape->shape_kind() != 24 && second->shape->data &&
 		batch_shape_pointer(second->shape) && ((byte *)second->shape->data)[0x1e] != 0xff) return;
