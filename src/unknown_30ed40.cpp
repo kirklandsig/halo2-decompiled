@@ -13,7 +13,7 @@ struct pair_body_30ed40
 	long unknown0;
 	unsigned long id;
 
-	unsigned long get_id() const { return id; }
+	unsigned long read_id() const { return id; }
 };
 
 // an agent of a pair; a pair both islands held calls slot 5 of its agent
@@ -47,16 +47,16 @@ inline bool pair_less_30ed40(pair_30ed40 const *a, pair_30ed40 const *b)
 {
 	pair_body_30ed40 const *const mine = a->first;
 	pair_body_30ed40 const *const other = b->first;
-	unsigned long const id = mine->get_id();
-	if (id < other->get_id())
+	unsigned long const id = mine->read_id();
+	if (id < other->read_id())
 	{
 		return true;
 	}
-	if (a->first->get_id() == b->first->get_id())
+	if (a->first->read_id() == b->first->read_id())
 	{
 		pair_body_30ed40 const *const second = a->second;
 		pair_body_30ed40 const *const other_second = b->second;
-		return second->get_id() < other_second->get_id();
+		return second->read_id() < other_second->read_id();
 	}
 	return false;
 }
@@ -64,7 +64,7 @@ inline bool pair_less_30ed40(pair_30ed40 const *a, pair_30ed40 const *b)
 // whether two pairs hold the same bodies
 inline bool pair_same_30ed40(pair_30ed40 const &a, pair_30ed40 const &b)
 {
-	return a.first->get_id() == b.first->get_id() && a.second->get_id() == b.second->get_id();
+	return a.first->read_id() == b.first->read_id() && a.second->read_id() == b.second->read_id();
 }
 
 ELEMENTS_2D91D0(pairs_30ed40, pair_30ed40);
