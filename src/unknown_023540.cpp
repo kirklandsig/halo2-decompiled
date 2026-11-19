@@ -2427,6 +2427,18 @@ dword __cdecl function_131fc0(real alpha);
 // reached 54 reads a global twice through a volatile, which the rules ban; re-measured at 140 (1729 bytes, as
 // retail's). BLOCKED-BY the callee.
 // MiniMax R (11-15): no new form, no lower score (140): the preserve_alpha load is still hoisted above the `simple` branch where retail loads it after the branch and again in bl, and retail's two writes of the chosen default into the parameter's own home are still missing; the callee 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp. BLOCKED-BY the callee.
+// MiniMax I (11-19): 100 -> 14 (fast, the reduced image; the length is now retail's, 1729 bytes): the u coordinate is
+// written as a division by the width, which the compiler turns into retail's single division per dimension and the
+// multiply by the stored reciprocal, so the whole vertex block now matches retail. Left: the width and the height
+// trade their homes (retail keeps the width at 0x10 and the height at 0x14) and the bottom edge's two v products
+// load the coordinate where retail loads the reciprocal. The width and the height are declared in retail's order
+// (the width first); declaring them the other way measures 12, but that is only a reordering of two equal
+// initialisers picked by the score, so it is not kept.
+// MiniMax I (11-19): 100 -> 77 (fast, the reduced image): the two default rectangles are now stored in retail's
+// order (the corner pairs 0, 2, 1, 3 for the source and the same for the destination). Left: retail divides the
+// width and the height once and multiplies the coordinates by the stored reciprocals, this build multiplies the
+// coordinates by named reciprocals and folds the other operand, so retail's reciprocal registers, its dimension
+// homes (the width at 0x10, the height at 0x14) and the bottom edge's v products still differ.
 // score 100 (was 140): 1733 bytes against 1729; everything up to the default rectangles now equals retail (the
 // flag loads, the short arm's reload and the two parameter-home writes included). Left: the order of the eight
 // default stores, the reciprocals' registers and the operand order of the UV products (see round 117 below).
@@ -2811,31 +2823,30 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_1cc30(12);
     function_1c710(g_51f0f0);
     default_source[0] = 0.0f;
-    default_source[1] = width;
     default_source[2] = 0.0f;
+    default_source[1] = width;
     default_source[3] = height;
     default_destination[0] = 320.0f - width * 0.5f;
-    default_destination[1] = 320.0f + width * 0.5f;
     default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
+    default_destination[1] = 320.0f + width * 0.5f;
     default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
     if (!source) source = default_source;
     if (!destination) destination = default_destination;
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
-    real inverse_width = 1.0f / width;
     real inverse_height = 1.0f / height;
-    D3DDevice_SetVertexData2f(1, source[0] * inverse_width, source[2] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[0] / width, source[2] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[0], destination[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] * inverse_width, source[2] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[1] / width, source[2] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[1], destination[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] * inverse_width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[1] / width, source[3] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[1], destination[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[0] * inverse_width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[0] / width, source[3] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[0], destination[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)

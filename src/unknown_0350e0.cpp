@@ -3018,6 +3018,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax I (11-19): no new form, no lower score (170): the raw current magnitude still shares the clamped length's slot where retail keeps it in a slot of its own ([esp + 0xc]) and reloads it for both clamp tests, and the dot's promotion still widens to a spill; the named raw length (251) and the clamped pair (320) recorded below still measure worse, so the body is unchanged.
 // score 170 (was 170): the raw current length, the dot's double copy and the angle reload (below).
 // MiniMax S (11-17): no new form, no lower score (170): retail still keeps the raw current length in its own slot
 // and the pinned value in another, where this build reuses one slot for both, so the later homes shift; retail
@@ -5221,6 +5222,7 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
     corner->z += 0.001f;
 }
 
+// MiniMax I (11-19): no new form, no lower score (231): the frame is still 0xd0 against retail's 0xe0 and the radius, the negated radius and the scaled zero still take other spill slots; the four-channel colour and the `-radius` forms recorded below still land at 225/226 with a longer body, so the body is unchanged.
 // score 231 (was 231): Frame 0xd0 versus 0xe0. The radius, negative radius and scaled zero occupy other spill slots.
 // MiniMax H (11-06): no new form, no lower score (231).
 // The corner geometry does not match retail: retail's four corners are (-r,-r), (-r,+r), (+r,+r) and
