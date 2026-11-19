@@ -299,6 +299,11 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // (`i = -d.j; j = d.i`), the two mode-1 points declared negative first, the centre bound to `point3f const &` for the row,
 // the scaled x offset named and then added, the minus row as `+ -(product)`: the x row still loads the centre first; the
 // side x component copied into a local for the row changes the block (the z centre loads first), still no fold.
+// M3 lane 9 r141 (fast with 0x1e55d0; control 20): redundant parens, 1-3 deep, around the whole right side of each mode-1
+// row (x, y, z plus, x minus), of each side vector row, or around the x row's product: 20 each (21 forms, identical code;
+// unlike 0x153d10's products, this row does not follow the expression count); both x rows reading `arg_1[0].x` 20; the
+// mode-1 rows through a `point3f const &` bound to the centre 20 (same code); both mode-1 points through the existing
+// vector3f_add_scaled, the minus point with `-spacing`, 239 (1186 bytes).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

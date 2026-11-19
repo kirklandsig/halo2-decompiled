@@ -670,6 +670,13 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // `cache_block_index` (0x12de70's apply spelling, a second use of the block in the arm) 71 (the arm forms its own index
 // product, EBP unused); the one-use physical block local dropped (time pointer straight from the lookup) 27 and a named
 // `linked` flag in the real build 27 (both the same code).
+// M3 lane 9 r141 (fast with 0x12e210, which stays matched; control 27, round 85's field-pointer form re-measured 14):
+// the group read through the field pointer into a local ahead of the loop's linked test (test direct) 14 (266 B: the
+// read still sinks into the arm and loads `[edi + 8]` after the pool data); the test through the field pointer with the
+// group read directly ahead of it 14 (same code); that first form with the tail's block local 18; the field-pointer form
+// with the tail's block local 18; one field pointer declared in the loop for both the test and the arm 27 (merged, base
+// code), with the tail's block local 51 (EDI/EBP swap). Redundant parens, 1-3 deep, around the release address's shifted
+// offset or the time decrement 27 each (6 forms, the same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

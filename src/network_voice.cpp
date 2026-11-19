@@ -1550,6 +1550,8 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
+// a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax C (11-16): no new form, no lower score (60): the head still keeps the player bit in ebx where retail keeps
 // it in ebp, makes the entry size in ebp where retail makes it in ebx, shifts before the word load instead of after it,
 // tests include_mask after the entry copy instead of before it, and ends with an extra zero-return exit block.
@@ -1585,8 +1587,6 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // and the capacity is still carried in a register where retail decrements it in place; the permuter (annealing, 420 s) found
 // no variant below 60 - the best it wrote ties the baseline and only respells the constants (a constant-only local, `== 0`
 // for `!x`, `capacity = capacity - n`), so it was reverted.
-// score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
-// a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // m3 lane 5 r185 (fast with 0x56380/0x564c0/0x53b00/0x56000, control 60; both builds return with ret 0xc): one loop
 // counter declared at function scope for both loops 60 (same code); the membership result in a named bool 60 (same
 // code); the entry size typed short 145 (456 B, 0x56380 13); the include_mask arms swapped with the test negated 72;
@@ -1931,6 +1931,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // `11 + (include_mask ? 2 : 0)` 145 (a neg/sbb/and select, the size still in EBP), as `(include_mask ? 2 : 0) + 11` 145
 // (same code), as `2 * (include_mask ? 1 : 0) + 11` 146, as `include_mask ? 11 + 2 : 11` 147 (461 B); include_mask
 // typed `byte` in the definition with the size as `11 + 2 * (include_mask != 0)` 146.
+// Round 140 (m3 lane 9, fast with 0x56380/0x564c0/0x53b00/0x56000; control 60): retail forms the size last with
+// `xor ebx, ebx; cmp byte [flag], bl; setne bl; lea ebx, [ebx+ebx+0xb]`, so it needs a byte register (EBX) and the
+// bit gets EBP. The flag parameter typed `byte` with `11 + 2 * (include_mask != 0)` in the current order 146 (setne
+// into CL, size still EBP); with retail's order kept, written, capacity, size 137 (445 B, `ret 0x10`, 0x56380 13: the
+// coalesced setne sequence and the live EAX zero are retail's, but the size takes EDX, the cursor EDI and the player
+// goes on the stack); that with `include_mask ? 13 : 11` 137; the other five orders of kept/written/capacity ahead of
+// the size 137/137/154/154/154 (0x56380 13 each); the size declared at the block top and assigned last 137.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3816,6 +3823,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
+// homes differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (139): the rewrite that advances the packet cursor on its
 // own measures 164 at 478 bytes against retail's 488 - the same form lane A measured - so the split stands: retail
 // keeps the channel in ebp from the entry and the cursor in edi, this build keeps the data pointer in ebp and
@@ -3837,8 +3846,6 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // MiniMax S (11-16): no new form, no lower score (139): retail still keeps the channel in ebp from the entry and spills the member, while
 // this build loads the data pointer and keeps the member in ebp; the cursor and route homes are as before.
 // MiniMax B (11-18): no new form, no lower score (139): retail still takes the channel in EBP from the entry and spills the member to a frame slot, while this build keeps the member in EBP and the data pointer in a register, and the cursor's absolute start and the route home still differ; the recorded forms (the local channel 139, the advanced cursor 164/159/180) do not move the split.
-// score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
-// homes differ.
 // MiniMax D (11-11): no new form, no lower score (139).
 // MiniMax G (11-12): no new form tried this round, no lower score (139): retail keeps the channel in ebp from the
 // entry and spills the member, while ours loads the data pointer and keeps the member in ebp.
@@ -4157,6 +4164,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the member fetch with the NONE test after it 145 (EBP still the member); the entry order size, consumed, cursor,
 // stride 164; the cursor advanced ahead of the size and consumed updates 167. No form moved the channel into EBP.
 // Body unchanged.
+// Round 140 (m3 lane 9, fast with 0x564c0, matched each time): retail's ten extra bytes are a fourth exit on the loop's
+// zero-trip edge, `mov eax, ecx` returning consumed's initial 2 from ECX (a tail copy of `return consumed;`). On the
+// packet-cursor form (re-measured 164): the arms swapped with the test negated 157 (488 B, EBP then `packet + 3`); the
+// cursor advanced in the for header 166; the counter declared before the loop 164; `members` declared before the loop
+// 164; the advances ordered cursor, size, consumed 167. The compile-only harness keeps the cursor in ESI here (no help).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
