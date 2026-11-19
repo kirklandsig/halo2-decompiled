@@ -888,6 +888,12 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax A (11-19): no new form, no lower score (90): the frame (0xf00) and every stack home agree, but after the
+// membership query the selected identity is reloaded into ecx where retail reloads it into eax and the requested rank
+// takes eax where retail's takes ecx, so the copy into eax before the removal call is still needed and its two bytes
+// are what move every later jump; the forms the earlier rounds list (the identity in a local of its own, the rank
+// copied into a local, the identity test spelled five ways, the identity held in an integer) all compile to the same
+// bytes, and the removal callee's argument order cannot change.
 // score 90 (was 90): the identity pointer takes ECX and the requested rank EAX (retail EAX/ECX), so a `mov eax, ecx`
 // before the removal call adds the two bytes that move every later jump. M3 lane 3 r268 (fast with 0xac050, 0xac360,
 // 0x2399da, 0x23955e, 0x2b278e, all MATCH): the over-rank and rank-3 refusals as guard returns inside `rank != NONE`

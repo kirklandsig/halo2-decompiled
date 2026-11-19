@@ -2302,6 +2302,12 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // the body; the calls and their arguments are in retail's order.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax H (11-13): no new form, no lower score (542); the locals sit in other stack slots and the indexed compare uses the other operand order.
+// MiniMax A (11-19): no new form, no lower score (542): the frame is 0x90 as in retail and the calls and their
+// arguments are in retail's order, but this build's status and mesh homes sit 0xc bytes above retail's (the status
+// at 0x30 against retail's 0x24 and the mesh at 0x2c against retail's 0x20) while its colour homes sit below
+// retail's (0x48/0x40/0x44 against retail's 0x64/0x4c/0x48), so every store and reload differs;
+// the frame's slot count can only change by expanding a helper that lives in another file, and the orderings the
+// permuter searched gave no lower score.
 // MiniMax C (11-16): score 542 (was 542): no new form, no lower score; the frame is 0x90 as in retail and the
 // logic agrees (offsets, constants, condition directions, call arguments, result values and the final colour
 // stores all match), but the status, mesh, colour and sample homes still sit in other stack slots and the
