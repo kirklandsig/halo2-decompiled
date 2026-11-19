@@ -525,6 +525,16 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 	return result;
 }
 
+struct s_block_reference_12e290
+{
+	s_geometry_block_info *block;
+};
+
+PRIVATE __forceinline s_block_reference_12e290 cache_block_reference_12e290(s_cache_block const *cache_block)
+{
+	return *(s_block_reference_12e290 const *)&cache_block->block;
+}
+
 // score 27 (was 27): ours loads the pointer into esi where retail uses edx or ecx, and the result fields are
 // read in a different order. In the loop retail loads the block into edx and copies it to esi for the
 // release call; after the loop ours loads it into edx and copies it to ecx. Tried: an inline helper taking
@@ -696,6 +706,9 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // local with the loop's argument re-read from the field 51; the loop read at each use with the argument through
 // `geometry_cache_block_get(block_index)->block` and the tail block local 115 (293 bytes); the arm's physical block named
 // before the call 27 (same code).
+// Matched in a full build with stand-in SDK headers (was 27): the block pointer passed to
+// fixup_group_release_resources is read through a getter that returns it as a one-member struct by value (not folded
+// into the call's argument, so it is loaded into its own register and copied, as retail does).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
@@ -716,7 +729,7 @@ void __stdcall function_12e290(long block_index)
 			s_geometry_block_info *local_1 = cache_block->block;
 			if (local_1->runtime_linked)
 			{
-				fixup_group_release_resources((s_fixup_group *)local_1, (byte *)(physical_block_get(block_index)->offset << physical_object_get()->page_shift) + g_4e6494);
+				fixup_group_release_resources((s_fixup_group *)cache_block_reference_12e290(cache_block).block, (byte *)(physical_block_get(block_index)->offset << physical_object_get()->page_shift) + g_4e6494);
 			}
 		}
 		if (cache_block->block->runtime_linked)
