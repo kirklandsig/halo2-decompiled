@@ -2042,6 +2042,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // zero-based edge loop (`points[edge_index]`, `points[(edge_index + 1) % point_count]`) 602 (2885 B); `bool inside = true;`
 // right after the plane distance 549; the nearest reset right after the plane distance 548 (masked 443; both moves under the
 // keep bar); the plane distance through dot3f 567 (2893 B); the squared radius ahead of the shape query 616 (2857 B).
+// M3 lane 4 r215 (fast, control 551; aligned/masked = difflib-aligned exact/register-masked counts, control 363/139): the
+// edge loop from 0 with `long next_vertex = (vertex + 1) % prism->point_count;` named at its top 619 (2904 B, frame
+// 0xb968, aligned 361, masked 115: the clamp, the early inc/idiv and the loop tail are then retail's shape); with
+// `radius * radius` written in the test (no radius_squared local) 601 (2888 B, aligned 344, masked 114: the product is
+// computed after the guard and `push ebx` as retail; the frame keeps one compiler temporary too many). On that form:
+// the modulo inline in the second reconstruction 600 (frame 0xb964 as retail, but aligned 423, masked 137);
+// radius_squared named in the prism loop 617 (2900 B); first/second declared at prism scope 601 (same code).
+// Lead: the 601 form is the closest structure yet; what is left is one frame temporary and the cursor/point EBX/EBP swap.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
