@@ -1132,6 +1132,9 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // Size first through short or long 171/171, signed displacement local 171, both native words 171,
 // stored-colour count before halving 171, named flags with mask equality 171, unsigned size read
 // first 171, base address between the two divisions 171. All reproduce the opening allocation.
+// Matched in a full build with stand-in SDK headers (was 171): both colour banks are indexed from the base
+// (`&base[i + count]` and `base[i]`) instead of walking the base pointer, so the base stays in its stack cell and is
+// stepped in memory as retail does (0xbe954, 0xbe97b, 0xbeaea).
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
@@ -1143,11 +1146,11 @@ bool __stdcall function_be8e0(long object_index)
     {
         color3f *base = (color3f *)(object + *(short *)(object + 0x126));
         long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
-        color3f *current = base + count;
         for (long i = 0; i < count; i++)
         {
             s_colour_choices_ab *entry = &((s_colour_choices_ab *)definition->tint_sets.address)[i];
-            *current = *base;
+            color3f *current = &base[i + count];
+            *current = base[i];
             for (long j = 0; j < entry->function_count; ++j)
             {
                 s_colour_function_ab *function = &entry->functions[j];
@@ -1171,8 +1174,6 @@ bool __stdcall function_be8e0(long object_index)
             current->green = current->green < 0.0f ? 0.0f : current->green > 1.0f ? 1.0f : current->green;
             current->blue = current->blue < 0.0f ? 0.0f : current->blue > 1.0f ? 1.0f : current->blue;
             result = true;
-            base++;
-            current++;
         }
     }
     return result;
