@@ -1183,6 +1183,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Setter with separate unsent/pending rejection 89/89 or paired mask comparison 106.
 // Setter on saved word and assignment 35. NOT kept: the byte OR changes the entry and loop
 // allocation, and the saved word ties with the same full-word store.
+// Early message initialization with flag-word lvalue / direct flag reads / paired flag mask
+// 59/59/73. Separate flag rejection / scan-scoped cursor / selected record lvalue 59/59/59.
+// Scan-scope conditional 90; nested send and count guards 59. NOT kept: the byte OR and
+// message registers come with a displaced initialization and output setup.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

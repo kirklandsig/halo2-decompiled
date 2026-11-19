@@ -279,6 +279,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Entry base named early/late, ordinal early/late, display result early, formatted
 // destination late, and adjacent base/count ranked early/late all score 67.
 // NOT kept: lexical order leaves the frame at 0x24 and the derived buffer live.
+// Bound destination array with direct/indexed clear 67/84. Bound name array 88. Bound
+// suffix array and derived conversion limit 84. Destination extent for indexed clear 84.
+// Scan entry for suffix test 77, also for both input strings 67. Separate scan cursor 84.
+// NOT kept: the 205-byte form recovers frame 0x28 and ties but spills the moving cursor
+// at EBP-8, leaving the base in a register.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

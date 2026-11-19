@@ -796,6 +796,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // frame 0x14 as retail, but the loop is inverted); the same with a long counter 264; the declarations after the lowest scan
 // 266; the three exits as returns 265 (749 B); short counter with a long flag 242 (759 B). The loop's end written as
 // `if (!left_start || points2d_differ(...)) continue; goto finished;` on that body (screen only) loses 25 rows.
+// Still-at-start state as bool/byte/short/long with short-circuit update 264/264/265/265;
+// explicit update 262/262/260/263. NOT kept: the 0x14 frame returns, but each form shortens
+// the body by at least 21 bytes and changes the matched caller's convention.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
