@@ -185,6 +185,19 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
     }
 }
 
+PRIVATE __forceinline long game_ticks_2ba100(void)
+{
+	return g_510c54->game_time;
+}
+
+PRIVATE __forceinline real game_tick_length_2ba100(void)
+{
+	return g_510c54->rate;
+}
+
+// Matched in a full build with stand-in SDK headers (was 46): the tick count and tick length are read through two
+// inline getters (retail loads both before converting), wind.i is read into a local before the amount is computed,
+// and the velocity is updated with vector3f_add.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {
@@ -239,18 +252,17 @@ void function_2ba100(s_particle_properties_2ba const *definition, void *system, 
                 wind_index = *(short *)(*(byte **)((byte *)g_4e0348 + 0xa0) + cluster * 0xb0 + 0x76);
             vector3f wind;
             function_211b70(wind_index, particle->position.n, 8, &wind);
-            real time = g_510c54->game_time * g_510c54->rate;
+            real time = game_ticks_2ba100() * game_tick_length_2ba100();
             real phase = function_17c900(10, time + properties_values[1] * scale);
+            real wind_i = wind.i;
             real amount = (phase - 0.5f) * scale;
             *(real *)((byte *)particle + 0x34) += amount * properties_values[2];
             amount *= properties_values[0];
             vector3f delta;
-            delta.i = amount * wind.i;
+            delta.i = amount * wind_i;
             delta.j = wind.j * amount;
             delta.k = wind.k * amount;
-            particle->velocity.i += delta.i;
-            particle->velocity.j += delta.j;
-            particle->velocity.k += delta.k;
+            vector3f_add(&particle->velocity, &delta, &particle->velocity);
         }
     }
 }
