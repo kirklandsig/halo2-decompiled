@@ -363,6 +363,52 @@ complete:
     return final_value;
 }
 
+static __forceinline byte *record_format_groups_4e0d0(long tag_index)
+{
+	long *reference;
+	dword const *kind_pointer = (dword const *)g_4e3b44[(short)tag_index].unknown00;
+	dword const *const &kept_kind = kind_pointer;
+	dword kind = *kept_kind;
+	if (kind == 0x5052544d || kind == 0x70727433)
+	{
+		c_record_reference_view *provider = (c_record_reference_view *)function_137bd0(tag_index);
+		reference = provider->reference();
+	}
+	else
+	{
+		byte *definition = g_4e3b44[tag_index & 0xffff].bytes;
+		byte *const &kept_definition = definition;
+		reference = *(long **)(kept_definition + 0x24);
+	}
+	byte *format = g_4e3b44[*reference & 0xffff].bytes;
+	byte *const &kept_format = format;
+	return *(byte **)(kept_format + 0x5c);
+}
+
+static __forceinline byte *record_material_4e0d0(long tag, long pass, long stage, long entry)
+{
+	byte *groups = record_format_groups_4e0d0(tag);
+	word const *group_pointer = (word const *)(*(byte **)(groups + 4) + pass * 10);
+	word const *const &kept_group = group_pointer;
+	long group = *kept_group & 0x1ff;
+	word const *first_pointer = &(*(word **)(groups + 0xc))[group + stage];
+	word const *const &kept_first = first_pointer;
+	long first = *kept_first & 0x1ff;
+	byte const *shader_entry = *(byte **)(groups + 0x14) + (first + entry) * 10;
+	byte const *const &kept_entry = shader_entry;
+	long material = *(long const *)(kept_entry + 4);
+	byte *shader = g_4e3b44[material & 0xffff].bytes;
+	byte *const &kept_shader = shader;
+	byte *block = *(byte **)(kept_shader + 0x20);
+	byte *const &kept_block = block;
+	return *(byte **)(kept_block + 4);
+}
+
+// Matched in a full build with stand-in SDK headers (was 88): private inline copies of the two record helpers read
+// each table pointer through a reference-bound local (kind, group word, first word, shader entry, definition,
+// format, shader, block), which gives every `.bytes` load the register of its own index as in retail; the pair
+// pointer is read the same way, and the 0x4dfa0 tail returns the union's ready byte directly.
+// Before:
 // score 88 (was 88): logic walked block by block against retail, no logic or behaviour difference. Retail returns 4cbb0's
 // al directly (call 4cbb0; pop; ret) and `xor al,al` on the false path; the draft's `result` byte costs a push ebx/setne/test.
 // The 4dfa0 union form (availability.ready, return false) gives that tail (381 bytes) but scores 109, because retail also
@@ -375,14 +421,15 @@ complete:
 // @retail 0x4e0d0
 bool __stdcall function_4e0d0(long tag, long context, long pass, long stage, long entry, long handle, s_sort_record *out)
 {
-	byte result = 0;
 	(void)&tag; (void)&context; (void)&pass; (void)&stage;
 	(void)&entry; (void)&handle; (void)&out;
 	byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
 	byte *blocks = *(byte **)(table + 0x14);
 	byte *record = *(byte **)(table + 0x1c) + (((dword)handle >> 8) & 0x3fffff) * 24;
 	s_geometry_block_info *block = (s_geometry_block_info *)(blocks + *(short *)(record + 6) * 0x2c);
-	long record_tag = (*(long **)((byte *)g_4e0350 + 0x37c))[(signed char)record[0] * 2 + 1];
+	long const *pair = &(*(long **)((byte *)g_4e0350 + 0x37c))[(signed char)record[0] * 2];
+	long const *const &kept_pair = pair;
+	long record_tag = kept_pair[1];
 	byte *definition = g_4e3b44[record_tag & 0xffff].bytes;
 	byte *part = *(byte **)(definition + 0x14) + record[1] * 20;
 	if (function_12de70(block, 3) && *(word *)(record + 0xe) > 0)
@@ -391,7 +438,7 @@ bool __stdcall function_4e0d0(long tag, long context, long pass, long stage, lon
 		out->unknown04 = 0;
 		out->group = 4;
 		out->subkey = 0xffff;
-		byte *material = record_material(tag, pass, stage, entry);
+		byte *material = record_material_4e0d0(tag, pass, stage, entry);
 		out->value10 = (dword)material;
 		switch (part[4])
 		{
@@ -400,9 +447,11 @@ bool __stdcall function_4e0d0(long tag, long context, long pass, long stage, lon
 		default: out->value08 = 0; break;
 		}
 		out->unknown14 = 0;
-		result = function_4cbb0(*(long *)(material + 0x100), out->value08) != 0;
+		union { long value; bool ready; } availability;
+		availability.value = function_4cbb0(*(long *)(material + 0x100), out->value08);
+		return availability.ready;
 	}
-	return result;
+	return false;
 }
 
 typedef bool (__stdcall *t_record_fill)(long, void *, long, long, long, void *, s_sort_record *);
