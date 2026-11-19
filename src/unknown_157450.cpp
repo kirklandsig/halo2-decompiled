@@ -842,6 +842,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // 77/121 and 77/121. Pending word/dword mask seeded from the word snapshot
 // and changed by compound OR or assignment 77/133 and 77/133.
 // The word entry works, but the mask still reloads separately at the join.
+// both changes evaluated eagerly with dword mask 120, both equalities evaluated eagerly with dword mask 120,
+// conditional change guard with dword mask 94, unchanged early exit with dword mask 32, both changes evaluated
+// eagerly with word mask 113, both equalities evaluated eagerly with word mask 113, conditional change guard with
+// word mask 90, unchanged early exit with word mask 77. NOT kept: The dword early exit ties at 390 bytes. The
+// word early exit recovers the opening mask spill but leaves the post-loop reload split. Eager comparisons and
+// conditional selection regress.
 // @retail 0x158140
 void function_158140(void)
 {

@@ -921,6 +921,10 @@ static inline long font_character_pixel(long alpha, long color)
 // and color before upper opacity 203, Compose upper opacity and parity as a word 222. NOT kept: The byte parity
 // split ties. The full-width variants shorten the decoder to 444 bytes and move the run out of EBX. The word
 // opacity variant scores 222 at 456 bytes. The original helper and body are restored.
+// common long command count 165, common word command count 151, shared run count 172, shared run count and
+// default span 135, long command count with full parity 170, word command count with full parity 162, shared run
+// count with full parity 174, shared run count and default span with full parity 152. NOT kept: A separate word
+// count reaches 504 bytes at 151. The other forms change the extent, and all eight raise the score.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

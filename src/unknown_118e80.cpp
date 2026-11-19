@@ -450,6 +450,11 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // short-circuited 49, Left output declared before the shared basis output 51. NOT kept: The explicit union and
 // named one-use agreement require an exact match. The other scopes tie or trail the retained phased body. The
 // selected role name describes both discarded outputs.
+// discarded-left name last 51, shared basis name first 51, adjusted-up name first 51, special-arm facing pointer
+// 49, special-arm control pointer 49, both special-arm vector pointers 51, shared setters for both axes 73,
+// shared setters for all outgoing vectors 100. NOT kept: The best named special-arm addresses gain two, below the
+// retention threshold and short of the exact match required for a one-use pointer. The stack names tie and shared
+// vector setters lengthen the body.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

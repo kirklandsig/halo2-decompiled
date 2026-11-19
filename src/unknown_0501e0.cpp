@@ -617,6 +617,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // 221, `0.f > k` sign tests 221 (all the same code). Diagnostic: 1..7 dead initialised locals 222/222/223/223/221/221/221.
 // Point-to-view indexed/aggregate/shared-helper/copied-scale displacement, first endpoint first 335/333/315/331;
 // second endpoint first 328/327/308/330. All shorten away from retail; original helper and body restored.
+// shared scale after offsets, both in place 306, second offset copied 290, first offset copied 287, both offsets
+// copied 266, entry scale, both in place 306, second offset copied 290, first offset copied 286, both offsets
+// copied 266. NOT kept: Every shared scale gate regresses. The lowest is 266 at 1152 bytes with both offsets
+// copied, and the opening frame mismatch remains.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
