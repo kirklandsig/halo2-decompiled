@@ -119,6 +119,14 @@ static inline void quaternion_transform_vector(
 
 /* the rotation that takes one unit vector to another */
 // score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// MiniMax A (11-19): no new form, no lower score (201): retail's frame is 0x24 against our 0x20 because retail spills the
+// quadratic term twice (a dead store at [esp+0x18] and a live one at [esp+0x20]) where our third row reuses the cell of
+// the cross term; the dot's associations, the cross terms and the term orders already agree with retail's listing. Tried:
+// the dot written into each output (484, 1497 B), the dot's terms written vector first (244, 1309 B), the same with the
+// rows' terms reordered (244), the doubled scalar and the quadratic term passed to the helper (305, frame 0x14), the scale
+// computed before the cross product (240) and the quadratic term associated differently (205) - all worse than the body as
+// it stands, so the body is unchanged.
+// score 201 (was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Earlier: Frame 0x1c versus 0x24 and
 // quaternion/cross spill overlap remain.
 // M3 lane 2 r107 (fast = plain 201): retail's 2.0 for the forward dot and w2 is a fresh load after the dot (its first 2.0,

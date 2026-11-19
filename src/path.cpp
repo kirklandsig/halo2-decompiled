@@ -375,6 +375,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax A (11-19): no new form, no lower score (286): rebuilt the body on retail's own listing (the rep stosd fill, the
+// split link copy, the walkable bit as a byte local, the dword previous/count homes, the node-index loop variable and the
+// per-arm distance through vector3d_from_points3d/length_sq3f): the two fill loops and the flag form reach retail's frame
+// and its `movsx`/`shr`/`and` walkable bit but score 403 and 362 (the byte local and the flag home move the whole frame),
+// the dword previous/count homes with the split copy reach 343, and a `data` pointer at function scope changes the caller's
+// convention (state leaves EBX) - all worse than the body as it stands, so the body is unchanged.
 // MiniMax R (11-17): no new form, no lower score (286): the node pointer at function scope with the previous pointer's NULL
 // initializer dropped gives retail's frame (0xe4) and the same parameter homes, but the body grows by three bytes and the score
 // rises to 357, so the body is as it was.

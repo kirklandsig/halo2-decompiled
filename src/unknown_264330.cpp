@@ -436,6 +436,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // frame, 0xa4 against retail's 0xa0, and the actor index, which retail takes in EAX because it inlines 0x2641c0 at its
 // caller, so this body's own signature cannot change: BLOCKED-BY 0x2641c0 (its noinline declaration is in
 // src/unknown_265cb0.cpp, another lane's file).
+// MiniMax A (11-19): no new form, no lower score (412): retail still takes the actor index in EAX (and keeps it in EBX)
+// and gives the frame 0xa0, while ours takes it from the stack and gives the frame 0xa4; the slot offset and the actor
+// pointer that retail saves at [esp+0x28] and [esp+0x20] are the values its inlined 0x2641c0 reuses, and ours saves the
+// pointer at [esp+0x18] instead. The inline of 0x2641c0 and the calling convention are outside this file (its noinline
+// declaration lives in another lane's file), so the difference cannot be closed here; the body is unchanged.
 // MiniMax H (11-18): no new form, no lower score (412): the frame stays 0xa4 against retail's 0xa0 and the early
 // homes keep their order (ours the actor base at 0x18, the flag byte at 0x17 and the constant 1 at 0x1c, where retail
 // has the index at 0x28, the actor base at 0x20, the constant 1 at 0x1c and the flag byte at 0x13, since retail saves
