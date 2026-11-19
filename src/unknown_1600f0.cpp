@@ -1508,6 +1508,9 @@ PRIVATE inline long score_string_list_1608e0()
 // Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
 // reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
 // independent score visibility for name/caption 687, with explicit caption-width branches 687.
+// Round 431: staged horizontal/vertical coordinates, title far edge from row cursor (bottom/right),
+// common caption vertical extent/horizontal origin and separate title/caption fade locals all 679.
+// The separate origin and viewer homes still differ. Original body restored.
 // M3 lane 12 r143 (fast with 0x1600f0, 0x1603f0, 0x161420; control 679), aimed at the scroll clamp (retail reads the user
 // index in each arm, EDX then EAX, and converts the limit once after `0 > scroll`; ours hoists one index load above the
 // branch and converts the limit twice): a `short user` read in each arm 694 (2888 B: the hoist is gone, two conversions

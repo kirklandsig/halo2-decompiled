@@ -992,6 +992,11 @@ static inline long team_score_195ed0(long team)
 // re-measured the early-return score helper 170. Reading: retail's second expansion repeats the range and mask tests
 // (`shl eax, cl; test edx, eax; setne al`) where ours reuses the first expansion's setne result in BL, and the inline
 // budget runs out one level deeper in ours (the team test) than in retail (the whole third read).
+// Indexed configuration records 181, indexed configuration and player ranks 156,
+// combined copied-team admission 301, rank division before team entry 100,
+// rank and score through indexed team 105, short team rank ordinal 205,
+// named player rank and slot 100, native in-range score with short selection 191.
+// NOT kept: the early flag load remains and the native score call still inlines.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

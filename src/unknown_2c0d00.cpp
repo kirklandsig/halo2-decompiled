@@ -611,6 +611,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // NOT kept: the reduced 910 and 913 forms retain the larger frame and shorten the body away from retail.
 // The type reference closes four frame bytes and regresses in score and length. Reduced control 926.
 // Opening body restored.
+// Chained limits together or in pairs, chained direction defaults, both combinations and
+// default assignments after declarations 920 each; settings-action mask with paired/original
+// defaults 918/918. NOT kept: two points below the retention threshold and frame 0x2cb4 persists.
 // M3 lane 10 r123 (fast with 0x2c2060 at 400 and 0x2c3030 MATCH; fast control 926, aligned 655): retail forms the actor
 // address once and reads its unit field from that address before storing the pointer to the actor home; ours stores
 // into the volatile home and reads it back. The actor fetched into a plain local that the head reads (unit field and the

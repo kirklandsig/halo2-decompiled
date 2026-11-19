@@ -509,6 +509,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // object index read once into a named local for the flag step and the state copy 50; the variant tests through
 // `request->variant` with no local 50; the sound pointer const 50; the second lookup's result const 50; the three
 // set-or-clear steps as if/else statements 50; none flips the pair. Main's body with if/else steps 41 fast (same code).
+// Bit-8 and bit-11 conditional admission 45/75, accumulated and default admission 45/77,
+// prior secondary maximum and selected maximum 45/46, variant flag after both stores 43,
+// marker copy using the published size 150. NOT kept: split-test forms move the request
+// onto the stack and lose callers, or change the matching prefix. The merged mask remains.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

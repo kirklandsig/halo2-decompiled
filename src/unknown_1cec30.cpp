@@ -2878,6 +2878,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // bindings 8; property word by const reference 8; const property value 8; nonzero contact arm first 161;
 // zero contact arm returns directly 8; scaled velocity and destination role names 8.
 // The i product and store and both zero-property registers still differ.
+// Round 431: indexed velocity/sample/both material inputs 91/377/377; indexed output
+// alone or with material inputs 91/91; lateral axes through array 377; bound output array 99;
+// shared material addition with indexed output 139. Early j/k loads and property zero still differ.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

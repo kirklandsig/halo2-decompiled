@@ -679,6 +679,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // normalization only, position between input and normalization, or position after
 // normalization 750/998/874/890/998/998. NOT kept: the position home remains
 // unresolved. Moving both producers under admission also raises the caller score.
+// Round 431: planar position pointer/reference before query or after translation 497 each; planar target
+// pointer/reference 497 each; radial-only translation before side selection or before radial difference
+// 764/771. The position and alternate vector homes remain exchanged. Original body restored.
 // M3 lane 5 r200 (fast; control 489, aligned 178, register-masked 79, frame-blind 45): the velocity-frame cross through the
 // existing cross3f_staged 489 (same code: its operand sides do not follow the helper's spelling); a `velocity` pointer local
 // for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the

@@ -803,6 +803,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // work points declared at first store, separate producer scopes and reversing
 // scope all score 116. Tag lookup after the first velocity copy scores 141.
 // NOT kept: none recovers the first velocity-copy receivers or early unity.
+// Selective vector2f velocity, input and perpendiculars, alone, paired and together 116 each;
+// indexed velocity 116; existing in-place initial normalizer 131. NOT kept: velocity-copy
+// registers and the late unity load persist.
 // Round 636: velocity receivers and early unity still differ. Entry dot 281; successive entry squares 120;
 // named planar and third-axis terms 222; entry throttle, steering or both shared with rotation 277/276/286;
 // component-array squares 218; successive squares at both observations 325.
@@ -3475,6 +3478,9 @@ real g_47ff30 = 2.5f;
 // shared setter for the final world-space force 679. NOT kept: the shared setter and both in-place weight
 // applications recover frame 0xfc and first difference +0x66, but shorten the body to 3216 or 3220 bytes and
 // raise the score. Acceleration and velocity homes still differ.
+// Independent directional/force/torque mass snapshots, const early/late/all, scoped final
+// snapshots and the separate/both scale helpers 710 each. NOT kept: frame 0xfc and retail
+// length recover, but the acceleration spill remains at +0x20 and the total score rises.
 // Existing target-limited rate helper alone, retained rates, named climb limit,
 // direct target argument, per-use mass, shared scales, three-phase mass, and
 // shared scales with retained rates 778/778/778/806/804/812/777/770.
@@ -6575,6 +6581,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // relative orientation and state rotation to their actual output phases 1051. NOT kept: the scoped relative
 // product reaches frame 0xdc but shortens the body by 44 bytes and raises the score. Moving the declarations
 // alone leaves code generation unchanged. The index is still in EDI rather than retail ESI.
+// State copy at first tensor product 978; direct state input with late whole/rowwise copy
+// 979/1112; rowwise copy at original/acquired-at-product positions 1114/1114; independent
+// relative with late whole/direct/rowwise state inputs 1044/1047/1083. NOT kept: separate
+// relative recovers frame 0xdc but alters extent and raises the score.
 // Linear velocity through bank, acceleration through force, target through strafe,
 // the three paired scope forms, all three scopes, and all three with a scoped
 // angular query output each score 978. The 0xfc frame and swapped index and

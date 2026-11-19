@@ -852,6 +852,12 @@ void function_245400(s_source_245400 const *source, long index,
 // Diagnostic, restored: on that helper form, the second vertex pointer stored to a scratch global inside the plane test
 // 207 (786 B, [114]): the first vertex pointer is then formed before its loads and the edge lands at retail's offsets.
 // Not kept: a new one-caller helper for one point.
+// Round 433. The frame, independent decoded material homes and late matrix load still differ.
+// decoded plane indices word 224; second material comparison first 164; geometry scoped plane receivers 206;
+// geometry scoped plane table and receivers 200; ordered thresholds before sides 201; paired rejected orientations
+// 214; cross dot running sum 227; cross dot named products 213.
+// NOT kept: reversing the material comparison ties. The scoped plane forms regress and disturb the caller in the
+// reduced image. The alternatives keep the frame short of 0x2c.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -1749,6 +1749,9 @@ long function_2197f0(real gain);
 // Hold then transition 121, plain then composite 87, hold return 182, common interpolation 204,
 // shared release duration 92, shared attack duration 95, previous index snapshot 160,
 // named release window 87. The reciprocal, separate gain read and release-to-attack join still differ.
+// Round 431: composite remainder before reciprocal 87; common remainder after attack or hold
+// admission 160/160; same-ambience fade/hold/both snapshots 160/162/116; existing scalar sum for
+// the composite gain (bit copy or native construction) 87/87. The original body is restored.
 // M3 lane 2 r104 (fast with 0x1251e0/0x221810, both matched; aligned exact/stack-masked/register-masked 54/56/20 at
 // 87): retail keeps arm 1's fade-out test load in XMM1 for the product (`mulss xmm0, xmm1`), which pushes the
 // reciprocal to XMM2 and elapsed to XMM3; ours reloads it from memory. A fade-out local for the test, the sum and the
@@ -4244,6 +4247,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // shaped like 0x16bbc0 (start/index/result, the pool global passed so its load follows the ternary) 78. Retail's loop
 // end reads as 0x16bbc0 inlined, but that function sits in an /Ob1 file our LTCG does not inline from. The range as a
 // const reference bound to the pointer temporary in case 0 78.
+// Round 433. The pool reload still precedes the next-slot choice.
+// word seed extraction 68; mode one falls to advance 49; while with bottom advance 49; while with separate search
+// and salt 49; while with separate entry and advance pools 49; unready mode path first 115; separate class and
+// range gates 8; while with zero mode admission 92.
+// NOT kept: separate class and range tests tie. The bottom-advance loops lose the native mode comparison and leave
+// the pool reload early.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4628,6 +4637,7 @@ struct s_128ca0
 
 // score 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
+// The second pending test through a one-use low-byte view scores 50. That alias was reverted.
 // Earlier at 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store. The countdown now uses byte operations.
 // Earlier at 122: the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
@@ -4900,6 +4910,11 @@ struct s_128ca0
 // Countdown variants using the packed byte: long 122, char 189, byte 147, sentinel-first long 122,
 // char default 189, bitfield read with a packed write 129, masked byte update 147, per-arm store 187.
 // Default before the effect gate: char 189, packed byte 81, existing bitfields with byte count 81.
+// Low-byte view: completion mask or bitfield 65/65; pending shift or bitfield 50/50; paired pending
+// and completion 94/94. Byte pending test with byte set 53 and with both set and clear 53.
+// NOT kept: pairing the narrow accesses or changing the pending writes shortens past retail.
+// Publication effect index 81; inactive publication arm first 212; countdown uses decoded count 91;
+// effect index and countdown reuse 91.
 // M3 lane 2 r104 (fast with 0x1293f0 and the callees, all matched; plain confirmed; aligned exact/stack-masked/
 // register-masked 68/68/23 at 81). Lead, NOT kept (a width cast is kept only with a match; the body is main's):
 // 81 -> 64 (58/58/21): flag6 set through the flags' low byte, `*(byte
@@ -4914,6 +4929,10 @@ struct s_128ca0
 // the word load is shared again), `long count = NONE` with a byte-cast load 122. Left: the pins' EAX/EDX, the field_c store's slot, the
 // controller compares' immediates (retail EDX = NONE), the inner chunk push order, the chunk-set call's argument
 // loads, and the flag6 / stream stores' forms swapped (ours load/or/store then memory or, retail the reverse).
+// Signed permutation gain parts 81, named gain operands 81, separate pinned result 81,
+// unclamped bits held through the pin 81, post-pin channel indices 81, nullable controller 130,
+// update-before-start dispatch 144, pinned decibel round-trip 81. NOT kept: the tied pin
+// forms retain the register exchange and the controller and dispatch forms regress.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
