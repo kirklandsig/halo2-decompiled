@@ -1210,6 +1210,7 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
+// score 679 (P622: a one-use caption-phase local at the division gives 671, match-only, reverted): Frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
@@ -1226,7 +1227,7 @@ PRIVATE inline long score_string_list_1608e0()
 // the body is off.
 // MiniMax E (11-01): no new form, no lower score; left: the entry register roles (retail loads the
 // player index first), the colour/bounds local homes and the missing bytes.
-// score 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
+// Earlier at 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // limit conversion in retail) and coordinate/color homes remain.
 // Earlier (score 689, was 689): baseline frame 0x78c versus retail 0x79c; early player/panel roles and coordinate/color homes remain.
 // this round's reduced listing shows the frame at 0x790 against retail's 0x79c
@@ -1501,6 +1502,11 @@ PRIVATE inline long score_string_list_1608e0()
 // Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
 // reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
 // independent score visibility for name/caption 687, with explicit caption-width branches 687.
+// first division uses the converted count that initializes the retained divisor 687; first division
+// uses the immutable converted count that initializes the retained divisor 687; title division uses
+// the row total at its expression 687; separate title phase at the division 686; separate caption
+// phase at the division 671; separate title and caption phases at both divisions 679; separate title
+// delay at its scaled division 686; separate title and caption delays at both scaled divisions 686.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

@@ -448,7 +448,9 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
+// score 97 (was 123): The object and tint entry exchange EDI and ESI.
+// The choice count, mask and blend use other homes. The first scan exits on inequality.
+// Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
 // MiniMax I (11-17): the variant byte read before the blend value 123 (was 132): the byte is then held in BL across the fmod and the blend's store follows the call, so the compare moves behind it, but the colours pointer now takes EBX where retail uses EBP; the not-found exit still joins the clamp entry's 1.0 load and the first scan still leaves on inequality.
 // MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
 // still the order of the 1.0f load and the zero xorps before the first clamp; the blend still sits at [esp+0x38]
@@ -732,6 +734,11 @@ void function_3dd10(long object_index, bool force);
 // The 0x54 frame and 1034-byte extent agree. The object and tint entry exchange EDI and ESI.
 // Lexical ranks for the object and tint entry before definition or after output score 97 each,
 // alone and in all four pairs. Neither saved register moved. The blend spill and signed scan still differ.
+// choice count named for the number of available choices 97; choice count named for the number of
+// tint permutations 97; eligible flags named for the choice mask 97; count after the mask in lexical
+// order 97; shared read-only choice array at the positive-count entry 262; shared read-only choice
+// array at the first scan 117; shared array with an advancing weight-scan cursor and indexed
+// selection 196; shared array with indexed weights and an advancing selection cursor 116.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

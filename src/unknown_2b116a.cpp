@@ -5776,7 +5776,8 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
-// score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
+// score 89 (was 97): The 0x844 frame agrees. The title-state address and later eligibility byte reuse still differ.
+// Earlier observation: The retail frame agrees, but the friend-query outputs and later
 // boolean predicates use different byte slots.
 // origin predicate scoped through join eligibility 97; request result scoped through
 // add-member eligibility 97; regular-player predicate scoped through membership
@@ -5825,6 +5826,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // membership, feedback/offer, cancellation/removal, and the final membership phase
 // 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
 // NOT kept: these forms shorten the body and move the first difference before the friend query.
+// promotion decision at emission 307; add-friend decision at emission 427; player-removal decision at
+// emission 345; other-title join decision at emission 406; unmute decision at emission 328; both mute
+// decisions at their emissions 321; join, removal and promotion decisions at emission 420; all six
+// captured-input decisions at emission 454.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

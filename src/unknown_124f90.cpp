@@ -1349,6 +1349,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 87 (was 87): Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
 // and the first difference is the elapsed time's register (retail XMM3, this build XMM2) with the reciprocal one
 // lower to match (retail XMM2, this build XMM1); the copy of the fade-in time dropped so that the inverse is
@@ -1359,7 +1360,6 @@ long function_2197f0(real gain);
 // register, this build reloads the field from memory); the clamp with the division made eager (`real t = time /
 // ducking->fade_in_time; if (!(1.0f > time * inverse)) t = 1.0f;`) measures 143, a fade-out local 92 and the inverse
 // taken from the field 94, so the body stands.
-// score 87 (was 87): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
 // MiniMax G (11-18): no new form, no lower score (87): the elapsed time and its reciprocal still take different registers
 // (XMM2 against retail's XMM3), the first gain load is still separate, and the release-to-attack join still differs.
 // Earlier at 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
@@ -1746,6 +1746,10 @@ long function_2197f0(real gain);
 // Hold then transition 121, plain then composite 87, hold return 182, common interpolation 204,
 // shared release duration 92, shared attack duration 95, previous index snapshot 160,
 // named release window 87. The reciprocal, separate gain read and release-to-attack join still differ.
+// composite duration named attack duration 87; composite duration named transition duration 87;
+// composite time named overlap time 87; composite time named adjusted attack time 87; composite
+// fraction named transition fraction 87; composite fraction named attack fraction 87; attack duration
+// and fraction with adjusted attack time 87; transition duration and fraction with overlap time 87.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3218,11 +3222,12 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// score 96 (was 96): The result byte takes four extra frame bytes. The entry loads and failure tail still differ.
 // MiniMax B (11-18): no new form, no lower score (96): retail keeps the outcome in AL (set at the entry, cleared on the
 // failure path with xor bl, bl and moved back) while this build keeps it in a stack byte at [esp+0xf], so the frame
 // is 0xc against retail's 8; the closest form (15) needs a goto into an arm, a redundant store and a moved
 // declaration, and the file-local search helper taking `long type` on its own regresses to 127, so the body stands.
-// score 96 (was 96): MiniMax I (11-16, round 2): no new form, no lower score: our prologue still sets the frame up
+// Earlier observation: MiniMax I (11-16, round 2): no new form, no lower score: our prologue still sets the frame up
 // before reading the voice index and loads two globals ahead of it, where retail reads the index first and keeps the
 // outcome in AL; our frame is 0xc against retail's 8, both with the saved ebx, so one local is spilled that retail
 // keeps in a register. Body unchanged.
@@ -3633,6 +3638,8 @@ static inline short sound_voice_find_available_channel(char type)
 // the search 129/132; provisional byte 151; assigned outcome in each admission arm 135;
 // existing-channel outcome first 135.
 // NOT kept: the Boolean paths recover the eight-byte frame but change entry and failure joins.
+// Entry channel result with plain/complemented status: bool has-channel 135/138,
+// bool needs-channel 182/185, byte has-channel 176/179, byte needs-channel 182/185.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
