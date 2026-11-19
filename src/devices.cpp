@@ -1299,7 +1299,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
-// score 116 (was 127): Both denominator arms compute the cruise speed, then a shared
+// score 116 (was 127): Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
+// Previously noted: Both denominator arms compute the cruise speed, then a shared
 // store publishes it at the join. The body is 523 bytes and both callers still match.
 // Duration and position use different XMM registers. The ramp-down clamp caches its value,
 // and deceleration keeps the cruise result in a register where retail reloads the field.
@@ -1696,6 +1697,10 @@ bool function_108530(long device_index, long name)
 // result through acceleration, name both square differences, or select the result with a
 // conditional 116 each. The early span loses both callers. The retained source uses the
 // common store and preserves both formulations of the later field calculation.
+// Separate ramp-down floor 129, upper-limit default 122, scoped floor with explicit alternatives 129, both limit
+// intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
+// trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
+// form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

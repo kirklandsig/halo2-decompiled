@@ -1296,7 +1296,8 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
-// score 43 (was 43): The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
+// score 43 (was 43): Frame and extent agree. The player, hand and first unit handle use different registers.
+// Previously noted: The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
 // the first unit-index load uses ECX instead of EDX.
 // Earlier score 43 (was 43): The 210-byte extent still agrees. Retail uses ESI for the player, EDI for the hand and EDX for the unit index. This build assigns those values to EDI, ESI and ECX.
 // Earlier score 43 (was 43): a one-step scratch rotation (ours ECX/EAX/EDX where retail has EDX/ECX/EAX) and the player/hand
@@ -1587,6 +1588,11 @@ void function_150820(dword *bits, bool local_only)
 // Integer player address and separate unit-index lookup 73, Integer player and unit-header addresses 43. NOT
 // kept: The separated player lookup recovers the saved registers but folds the player address into LEA and raises
 // the score. The other seven address forms preserve the original allocation and tie.
+// Local word ordinal 64, word ordinal before hand 64, word ordinal after header table 64, word ordinal with
+// captured prequery handle 64, separate admission with word ordinal 67, separate admission with full ordinal 18,
+// word ordinal with signed-byte slot 67, separate admission with signed-byte slot 20. NOT kept: The word ordinal
+// produces MOVZX. Separate admission restores the saved roles at 18 and 20 and folds the player add and move into
+// LEA. It reloads the unit handle. The 18-point form grows to 212 bytes.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

@@ -1144,7 +1144,8 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
-// score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
+// score 529 (was 529): The 0x2c frame has an extra word. The selection result spills and the block and query use exchanged registers.
+// Previously noted: frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax I (11-17): no new form, no lower score (529): the reduced build of this function is not faithful on its
 // own - a single-address reduced image reads 602 and 2139 bytes where the wider reduced image and the full image
 // read 529 and 2189 - so this round's forms were judged on the full check. The one that lowers the reduced score,
@@ -1596,6 +1597,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // keepable): retail's order with record read once through its address 586 (2215 B; block EAX -> EBX as retail, record on
 // the stack but homed in ESI, parameters EBP; 0xd4080 380). Retail homes parameters ESI, query EDI, block EBX, record EBP:
 // with retail's statement order this build ranks record above parameters.
+// Lightmap copy before normal and length 555, length before lightmap and normal copies 552, lightmap copy between
+// normal and length 552, lightmap copy between length and store 555, early lightmap copy with shared bias 559,
+// channel initializer after length 562, early lightmap copy with clamp scope 555, early lightmap copy with branch
+// returns 556. NOT kept: All early adjusted-color forms raise the score and move the record argument into a
+// register. They lose the matched 0x3db00 caller.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
