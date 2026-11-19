@@ -318,6 +318,11 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // pointer to the target's x field at its direct reads (side vector j, three mode-2 x rows) 20 (same code); both field
 // pointers 26 (1175 B: another row's fold moves, the mode-1 x row still loads the centre first); mode one's two probe
 // points as a two-point array 68 (frame slots move).
+// Round 116 (m3 lane 13, fast with 0x1e55d0; control 20): the side vector's j row before its i row 26; its k, j and i rows
+// in that order 28; the mode-1 negative point's rows before the positive point's 225 (1175 bytes); the mode-1 rows
+// interleaved plus/minus per axis on this body 68; the side vector from named dx/dy differences 260 (1183 bytes). Retail's
+// 0x1b0400 evaluates the arg_7 compare while EBX still holds the actor and moves arg_0 into EBX after it, which needs
+// arg_0 declared before arg_7's group, so the folding orders (arg_4 after arg_8) still lose that caller.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

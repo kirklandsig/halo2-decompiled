@@ -214,6 +214,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // convention then takes the parameter count in EDX, `ret 0xc`, and the frame loads through the reference in EBX).
 // Reading: retail's frame takes EAX because the result copy is made only after the second frame load; every volatile-
 // free form gives the pointer and the result one web, so the pointer takes EAX and the frame ESI.
+// Round 116 (m3 lane 13, fast with 0x2099f0; volatile-free forms, control re-measured 95 at 266 bytes): a `long *const *`
+// to the pointer with the element read through it 95; the result filled by `memcpy(&result, &arguments, sizeof(result))`
+// 95; `(void)frame;` ahead of the initialisation test 95; the pointer declared `long *const` 95; the size as
+// `(long)parameter_count * sizeof(long)` 95 (12 with the volatile, the same code). All promoted into one register.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

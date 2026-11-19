@@ -1879,12 +1879,46 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // through a const cast 114, the write local read through the field's address 114, the close argument rebuilt from the table
 // element 114, the count declared at the mismatch block's scope 114, the invalid-handle constant first 114. Matched 0x2141f0 writes
 // the same header through a named `s_file_handle handle = file->file;` local, so the write local is the code base's idiom.
+// M3 lane 6 r199 (fast with 0x213760, 0x213800, 0x2138f0, all MATCH each time; control 33). Lane 9 r132's 5 form rebuilt
+// from its saved patch, 5 at 930 B (left: the write's flags zero in EAX ahead of the handle load). On it: a plain write
+// handle local (`s_file_handle write_handle = *handle;`) before the header strings 114 (917 B: the write call is then
+// retail's, the close call loses its `mov ecx, eax` copy and a loop pad), after the header strings 114, at the top of the
+// resized block 114 (same code each); the flags as a `s_file_write_flags const` object at the function's top 5; `written`
+// declared at the loop body's top beside `valid` 5 (same code each). Body unchanged.
 // M3 lane 7 r183 (fast with 0x213800, matched throughout; control 33): the listed 7 form rebuilt 7 (left: the write call's
 // handle loaded after the flags zero, the zero in EAX, and the checksum load in EDX; the range bound already sits in ESI
 // as retail's). On it: the write flags from a forced-inline function returning the zero flags (diagnostic, one caller) 7;
 // the write-success bool declared before the resize 7; the checksum compare with the read header's word first 7 (each the
 // same code); the header check and checksum as one `valid = function_213800(...) && stored == read;` 78; that on main 98.
 // Body unchanged.
+// M3 lane 1 r125 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33). The empty-header write as a
+// forceinline helper taking the handle by value, writing its own block-scoped count and returning `bytes_written == 0x800`,
+// called as `if ((!resized || !write(*handle, &done)) && open)` 119 (914 B): the write is retail's exactly (handle loaded
+// first, zero in ECX), the count/size homes and the not-resized jump to the close test are retail's; plain `inline` 355 (834 B,
+// kept out of line). With the header read as `else if (cache_file_header_read(index))` + `valid = true` 114 (917 B, the
+// write-local plateau: only the close's `mov ecx, eax` copy and the checksum register left). On that: the close as a
+// forceinline helper taking `s_file_handle *` 114; its test through a by-value predicate 114; its handle through a named
+// copy 114 (checksum then EAX as retail); the helper returning the count compared by the caller 114; its result through
+// `bool written = ...; return written;` 114, through `if (...) written = true;` 114; `bool written = resized && write(...)`
+// 114; the write as an empty-header helper over a generic buffer-write helper (by value through both) 114; a by-value close
+// helper for the call 114 (also with the pointer write 119); a by-value handle accessor at the write 5 (handle loaded
+// after the zero), at the close 114; own `done` flags in the write and close helpers 135 (pointer write: 26, separate
+// slots); the resize and write in one helper with an early return 134. The write helper taking `s_file_handle const *`
+// (unnamed `*file` argument) with the else-if read 7 (the 7 plateau without a set-in-test write flag), plus the listed
+// reference-bound checksum 5 (left: only the write's handle load after the flags zero). Diagnostics (probe = one global
+// load and store, removed): on the by-value write + close helper + reference-bound checksum form, a probe after the
+// write's wait gives retail's code except the probe itself (close copy and checksum EAX both right), so that form lacks
+// exactly one scratch-rotation step between the write's header temp and the close's copy; a probe before the write on the
+// 5 form hoists the handle load to the top (ECX) as retail does but shifts the rest. Body unchanged.
+// M3 lane 14 r117 (fast; control 33; lane 9 r132's 5 form rebuilt at 5: only the write call's flags zero in EAX ahead
+// of the handle load is left). On the 5 form: one s_file_handle local copied at the top of the size-mismatch block for
+// the resize, write and close calls 153 (914 B), with the close test through it too 152; that local declared just ahead
+// of the write block for the write and close calls 127 (915 B), with the close test through it 147; the write as a
+// file-local forceinline helper taking the handle by value (header, write, wait) 114 (917 B, the write-local code: the
+// write exact, the close's `mov ecx, eax` copy lost; as a plain inline it stays out of line, 347 at 850 B); that helper
+// with the close as a pointer-taking forceinline (test, close, wait, invalidate) 114; the close helper alone 5 (same
+// code); the close call through a by-value forceinline (close and wait; test and invalidate in the body) 119 on the 5
+// form, 114 on the write-local and write-helper forms. Body unchanged at 33.
 // @retail 0x213970
 void function_213970(void)
 {

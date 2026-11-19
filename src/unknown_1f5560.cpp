@@ -709,6 +709,13 @@ struct s_1f9762
 // Writing the test the other way round (`index + 1 >= count`, `count <= index + 1`, the same test negated and
 // the same test with both sides widened) all measure 4: the increment moves to EDX with the index and the count
 // takes EAX, so the compare and the load order change as well. The body stands.
+// MiniMax A (11-19): score 1 (unchanged): the entry test reads the count through a function-scope path pointer at
+// actor+0x50c (`actor->unknown53a + 1 >= path->field_2d`) and then reproduces retail's `inc eax`/`cmp eax, edx`/
+// `setge al` byte for byte, leaving only the second dot product's i term taking the direction as multiplicand
+// where retail takes the point (score 2). That multiply's operand order does not move under the helper's
+// argument order, a subtract-assignment form, a named local for the input pointer, the current point read
+// through the path or through the actor's own field, or the first dot's argument order; reading the index
+// through the path instead rotates the whole float block (score 10). The committed body (score 1) stands.
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
@@ -1886,6 +1893,18 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // assigning y first 261 (aligned 158, shape 50); the forwarding function alone on the kept body 252 (1190 B), with
 // one return 243, with the goto and one return 263. Open: what gives the radius XMM5 and the direction XMM2/XMM3 once
 // the result holds XMM0, and why retail does not thread the left type-zero arm.
+// M3 lane 2 r108 (fast; control 239): the direction normalized by the shared header's 2-D normalizer (through a
+// vector2f cast, as unit_object_type.cpp does) 239 (same code), the desired point too 240; ten locals renamed to sort
+// first (result, radius, direction, side, left, center, perpendicular, difference, side_radius, lateral) 239 each;
+// const radius/side/flag/perpendicular 239; the side offset as if/else arms with a named negative radius plus the
+// shared normalizer 287 (1193 B). Reading: retail's left type-zero arm shares the type-one arm's last instruction
+// (`addss xmm0, [ebx + 4]`, center.y in XMM0 in both), so the tail merge happens before threading; ours gives the two
+// arms' center.y different registers, so nothing merges and the arm is threaded: one register-allocation cause.
+// M3 lane 8 r191 (fast with 0x29a190/0x29cbb0, control 239): the convention already matches retail (target in EDX, the type
+// as the first stack argument), so no parameter reorder is needed. The type exit by `goto done` 260 (1173 B: the zero
+// takes XMM1 as retail, but the result is stored from it with no XMM0 copy); with the sign applied to the result and one
+// return 255 (1187 B); `real result = 0.0f;` as the first statement 262; result declared after the radius 239 (same code);
+// the sign applied to the result with the type exit's own return kept 244 (1178 B). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

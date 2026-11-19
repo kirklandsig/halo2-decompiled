@@ -254,6 +254,13 @@ void function_254200(void)
 // ahead of the reservations), top ahead of left 174, only the two y edges named 126 (1119 B), only the two x edges 153
 // (1119 B). Diagnostic: 0x2548f0's body moved above this function in the file 4 (0x2548f0 2), so the order in which the
 // constant's pool entry is first used in the file does not set the pair either.
+// M3 lane 4 r220 (single-address fast, control 4; the reload triple after the second and third reservations is retail
+// x, constant, y + size, ours x, y + size, constant): vertices 2 and 3 through the member 4f form 4; y + size named as a
+// const local ahead of the state calls 206; the four edges as const locals after the colour call 173; integer zero
+// literals for the bitmap calls' real arguments 4 (same code); both cached render-state stores embedded in the call
+// arguments 4, with the triple then constant, x, y + size (one alone leaves ours); the cache read back as the argument
+// the same 4. Diagnostic: 6 or 7 float probe stores ahead of the size give retail's triple, 0-5 and 8 ours, and with the
+// embedded stores 1, 2, 3, 5 and 7 all give ours: a hash-like tie that no natural form has reached.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -610,6 +617,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // 0x254200) 2; the draw-ready flag defined as bool 2; the two lookup helpers defined after the colour helper 2; all
 // four together 2 (all the same code). No matched caller of the reservation helper has a true two-value reload pair,
 // so no matched function shows this build emitting retail's first-defined-first order.
+// M3 lane 16 r142 (fast with 0x254490 4 and 0x254200 matched; control 2): the scale parameter declared `real const` 2;
+// the inline-depth reset after the first quad's end call and the depth-0 start before the second block's blend-state setter pair
+// dropped (function_14390 is a call either way) 2 (same code; kept, one pragma pair fewer); the closing `inline_depth(255)`
+// dropped 2, as `inline_depth()` 2 (same code); the colour pointer declared `const` 2. In retail every call after the first
+// quad's second vertex stays out of line except the border-colour stage call, the shape of an inline budget spent there.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
@@ -666,9 +678,7 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			D3DDevice_SetVertexData2f(1, arg_1 * 0.5f + 0.5f, arg_1 * 0.5f + 0.5f);
 			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, 0.f, 64.f, 16777215.f, 16777215.f);
 			D3DDevice_End();
-			#pragma inline_depth()
 			function_14390(0, (s_type_7ba8e9 *)local_1, 0.f);
-#pragma inline_depth(0)
 			function_0222d0(D3DRS_SRCBLEND, 0);
 			function_0222d0(D3DRS_DESTBLEND, 0x302);
 #pragma inline_depth()

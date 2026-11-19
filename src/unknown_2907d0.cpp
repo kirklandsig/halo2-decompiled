@@ -193,6 +193,12 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // the else arm through a const reference to the transform 19, the position stored field by field 141 (485 B). Diagnostic,
 // removed: the rotate call ahead of the point call 96 (471 B). Reading: the callee-saved registers go ESI, EDI, EBP, EBX
 // by priority, so ours ranks the point's y above the transform (EBP/EBX) and retail the transform above the y.
+// M3 lane 4 r220 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): `(void)&arg_2;` with the
+// parameter read directly in place of the address local 33 (464 bytes: folds, the transform arrives in ECX); forced-inline
+// accessors returning the transform's forward or position address, used in both arms, 19 / 19, both 19 (same code: the
+// accessor's copy does not take a use from the transform); the address local and the branch in their own block ending
+// before the record fill 19 (same code). Both builds give the transform and the point's y the same uses, so the pair is
+// a tie-break the source has not reached.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

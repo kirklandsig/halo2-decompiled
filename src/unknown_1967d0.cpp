@@ -913,7 +913,7 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 100 (was 191): the teams flag is read before the configuration copy and address-index
+// score 100 (was 100; earlier 191): the teams flag is read before the configuration copy and address-index
 // store, and the third team-score read expands where retail calls 0x1587f0.
 // Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
 // entry 314, combined team guard 333, team read before flag 309, record reference 191,
@@ -985,6 +985,18 @@ static inline long team_score_195ed0(long team)
 // installed-team and active-team references 100/100, count-first rank comparison 100,
 // admitted clamp with a shared result 177, unsigned terminal player inequality 732.
 // The flag still leads the configuration copy and the final score call still expands.
+// M3 lane 4 r219 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH each time; control 100): the score
+// helper reading its result through a private inline copy of the statistics getter, as 0x1587f0's own source does, 100;
+// the score helper `__forceinline` 100 (the third read still calls 0x161e60 from inside it); the team test with an early
+// `return false` 100; the score helper as three nested ifs 100; the teams flag declared `bool` 100 (all the same code);
+// re-measured the early-return score helper 170. Reading: retail's second expansion repeats the range and mask tests
+// (`shl eax, cl; test edx, eax; setne al`) where ours reuses the first expansion's setne result in BL, and the inline
+// budget runs out one level deeper in ours (the team test) than in retail (the whole third read).
+// Indexed configuration records 181, indexed configuration and player ranks 156,
+// combined copied-team admission 301, rank division before team entry 100,
+// rank and score through indexed team 105, short team rank ordinal 205,
+// named player rank and slot 100, native in-range score with short selection 191.
+// NOT kept: the early flag load remains and the native score call still inlines.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

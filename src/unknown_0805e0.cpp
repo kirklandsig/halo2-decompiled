@@ -805,6 +805,11 @@ void function_1537f0(s_profile_record *record);
 // (2, 0, 3, 1) 18 (base +0x5e); the pointer and its chain ahead of the record and the 0x7f8b0 call 72 (269 bytes); the
 // entry as `g_4cf98c + index` with main's link pointer 18 (same code). Through the pointer the loop base always lands on
 // a link store (+0x5c or +0x5e), never on the builder's +0x4c.
+// M3 lane 14 r115 (fast with 0x7f8b0, 0x1537f0 and 0x80490, all matched each time; control 18): the record split into an
+// identity local and a source local of their own types (no grouping record) with main's link pointer 81 (236 bytes: the
+// identity's zeros are forwarded and its home goes, frame 0x90), that with the links as four `entry->` statements in
+// retail's store order 80, with the link pointer's stores in retail's order 81, with the `entry->` links and the heads as
+// one chain 80, with the source declared before the identity 81.
 // @retail 0x7f930
 void function_7f930(void)
 {

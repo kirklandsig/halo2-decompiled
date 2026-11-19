@@ -698,6 +698,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // local, 51; a tail block local with the loop's arm through a new inline release step taking the cache block 51.
 // Diagnostic: an unused block read after the release call 27, with a tail block local 51 (a read after the call does not
 // move the tie; the r177/r87 reads stood before it).
+// Round 116 (m3 lane 13, fast with 0x12e210, which stays matched; control 27): the physical object and its page shift named
+// in the loop's arm ahead of the block lookup 27 (same code), with a tail block local 51 (EDI/EBP swap); the tail block
+// local with the loop's argument re-read from the field 51; the loop read at each use with the argument through
+// `geometry_cache_block_get(block_index)->block` and the tail block local 115 (293 bytes); the arm's physical block named
+// before the call 27 (same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

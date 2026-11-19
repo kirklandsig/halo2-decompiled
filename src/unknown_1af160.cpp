@@ -190,11 +190,22 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // swapped and the low slots 0x12-0x1c move, so retail's frame is the escaped-integer one; the other eleven callers stay
 // MATCH; restored); the actor pointer const 12, the actor, node and 0x25d690 result const 12 (same code); the 0x262b40
 // result's +0x14 field named for its two tests 14; the three 0x261280 outputs declared ahead of the scratch fetch 12.
+// M3 lane 16 r141 (`--fast 0x1af160 0x1e1f20`, control 12): 1..8 dead initialised locals at the top 12 each; diagnostics in
+// 0x260670 (reverted): its read of the flag output dropped 12, the flag pointer stored to a global 9 (the bool output then takes
+// the lowest home; retail's 0x260670 reads and writes the flag as ours does, so the lever is elsewhere on that chain); the bool
+// output passed as `local_14 != false` 172 (978 B); the definition range test with its operands swapped 12 (same code).
 // M3 lane 13 r113 (`--fast 0x1af160 0x1e1f20`, control 12): the bool output alone in a block spanning its uses (the
 // reference result declared outside) 12; the actor offset `(arg_0 & 0xffff) * size` as a named local at both actor lookups
 // 12, renamed to sort last 12 (the CSE temporary's slot does not follow a user name); the three outputs in a block with
 // the reference result outside 44; the node looked up through a fresh actor lookup ahead of the actor local 79; the
 // equal arm's actor lookup through a named local 12 (same code).
+// M3 lane 4 r220 (`--fast 0x1af160 0x1e1f20`, control 12; homes ours offset 0x24 / actor 0x28 / node 0x30 / bool output
+// 0x34, retail actor 0x24 / offset 0x28 / bool output 0x30 / node 0x34): the bool output declared at the top with a const
+// pointer to it passed to 0x261280 12; the two marker/short arrays declared ahead of the cleared flag 12, the short array
+// ahead of the marker array 12; the 0x261280 result declared bare at the top and assigned at the call 12 (same code each);
+// the bool output passed to 0x2626b0 as `local_14 != false` 172 (978 bytes). Re-measured: the three outputs declared at
+// the top 12, the node pointer const 12. 0x260670 (ours, on the bool output's chain) is still 440 at 3097 bytes against
+// 3077 (frame 0x8a8 against 0x8a0).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
