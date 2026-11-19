@@ -3009,6 +3009,14 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // M3 lane 14 r116: 330 -> 354 with no change here: 0x22cf0 now takes the position pointer in EDX as retail's does, so
 // both calls gain retail's `mov edx, eax` (the only change in this function's code) and the body is 4 bytes longer.
+// score 249 (was 354): the render-memory allocation now rounds the byte count up to a dword boundary, keeps the
+// handle's NONE test and takes the output pointer through the masked handle, as retail does; the loop's pair
+// pointer, the level's table entry and the second 0x235a0 copy still differ.
+// MiniMax H (11-19): no new form below the committed score (249): the level's table entry was tried as a byte pointer
+// with the record's own twelve byte stride (296, the entry still loads folded), as a byte pointer with a four byte
+// stride (224 but the record's stride is wrong), as a named offset local (325) and with the level's limit as a named
+// local (253); the limit still comes down with a decrement where retail takes it with a lea, so the level's table
+// entry and the second 0x235a0 copy still differ.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3039,13 +3047,24 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
         long total = function_023540(count, buckets, &g_4b89b0[g_5093e8], stride);
         long bytes = total * stride * sizeof(real);
         if (!bytes) goto done;
+        long remainder = bytes % 4;
+        if (remainder)
+        {
+            bytes -= remainder;
+            bytes += 4;
+        }
         long next = g_487b18.size + bytes;
         if (next <= 0x27000)
         {
             long handle = g_487b18.size & 0x0fffffff;
             g_487b18.size = next;
+            if (handle == -1)
+            {
+                result = false;
+                goto done;
+            }
             g_4b89b0[g_5093e8].data_handle = handle;
-            real *output = (real *)(g_487b18.data + handle);
+            real *output = handle < 0 ? 0 : (real *)(g_487b18.data + (handle & 0x0fffffff));
             for (long bucket = 0; bucket < count; ++bucket)
             {
                 byte const *pair = (byte const *)vertices + 4 + bucket * 4;
