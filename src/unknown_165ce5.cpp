@@ -1906,6 +1906,22 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // used is the same; ours has one unreferenced dword below the look pair (frame 0x30), and packs the weapon-active byte
 // with the unit/flags home (-0x18) and the zoom, indices pointer and idle globals with the spring_d home (-0x14), where
 // retail packs the active byte with spring_d (-0x14) and the zoom group with unit/flags (-0x1c), mode at -0x18.
+// M3 lane 15 r105 (fast, plain where marked; aligned/masked = difflib counts with addresses / also registers masked, 60/57
+// at 188): retail's zoom logic as positive bools (zoomed = speed > 0.1f, scoped = zoomed && the 0xc8a10 query, both cleared
+// on the 0xd03b0 query, scoped cleared when the overlay lookup fails; rate `if (zoomed) { scoped ? 1 : pin } else if
+// (scoped) 1`; clear test `!zoomed && !scoped || scoped && set != 0x60000d8 || !scoped && set == 0x60000d8`) with the play
+// as a shared flags/set if/else 375 (2182 B, aligned 43); the play written per arm under `if (scoped) ... else if (zoomed)`
+// 365 (2186 B, aligned 31); with `scoped = zoomed && function_c8a10(...)` 371 (2197 B, aligned 26); with the callback as
+// `field_x11c898 == 0 ? right : left`, the channel byte in a `long` local tested `& 0xa`, the overlay set read once into a
+// local and the active preset (`active = false; if (...) active = true;`) 368 (2193 B, aligned 24); that with a plain
+// `else` for the play 371; the active flag as `active = false; if (unit && weapon) active = !0x155760 && 0xb6780;` (retail's
+// preset store and branch shape) 338 (2197 B, aligned 12, masked 9: every frame slot is then retail's); the channel byte
+// tested as `(flags & 2) || (flags & 8)` 40, plain 40 (2199 B, retail's length, aligned 10, masked 7; lead, saved as
+// build/r105/lead-0x166d75-40.diff in the m3-lane15 worktree); on it the clear test as a ternary 278. Not kept: the lead
+// needs the implied `else if (zoomed)`, the swapped callback ternary, the one-use channel-byte local and the active preset,
+// all match-only, and the function stays BLOCKED by the stand-in (ESI/EDI saved at entry). Left on the lead: those saves,
+// frame 0x30 against 0x2c, the weapon reload into EDI one statement late, the overlay set loaded ahead of the scoped test
+// and the +0xb8 channel pointer in ECX (retail ESI).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

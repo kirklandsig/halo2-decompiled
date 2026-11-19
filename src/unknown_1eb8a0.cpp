@@ -183,13 +183,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// score 603 (was 603): m3 lane 14 r105 put the settling align through the existing dot3f
+// The score was 636 before the settle factor.
+// (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // MiniMax E (11-16): no new form, no lower score (622 plain, 614 fast): retail keeps q (the fourth stack
 // argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and the first clamp
 // still computes t before the 12/8 factor is selected; a named local copy of q at the function entry (732) and
 // one just before the output copy (665) both score worse and both leave d in EBX, so the body is unchanged.
-// score 603 (was 603): m3 lane 14 r105 put the settling align through the existing dot3f
-// The score was 636 before the settle factor.
-// (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // MiniMax I (11-17): no new form, no lower score (622 plain, 614 fast): retail keeps q, the fourth stack argument, in EBX from the activation block on (its fallback is the cmove ebx, [0x4687a4]) and reads d from its stack slot at each of its five uses, this build keeps d in EBX and reloads q, and d is used here four times against q's three, so the choice is not reachable from the source; the body is unchanged.
 // Earlier at 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
@@ -679,6 +679,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // carry the upper-bound value in activation step and activation distance and active output 693;
 // all upper-bound carriers with the lower bound initialized first 691.
 // NOT kept: All scores rise. The first-activation forms also disturb the matched caller's convention.
+// M3 lane 15 r105 (plain with 0x1eb6f0 and 0x1ed4a0, [0] = both still matched; aligned = difflib count with addresses
+// masked, 458 at 603): retail selects the 12/8 factor into a register through AL before t in all three clamps, and its
+// counter block computes in EDX and pops EDI/EBP/EBX ahead of the closing tests. The output clamp's factor read before t
+// 603 [0] (aligned 460); the void return with `s->counter++` and the closing test reading the field 604 [0] (2887 B); both
+// 604 [0]; both with the factor first in the two activation clamps too 693 (0x1eb6f0 22: the fast byte again leaves `a`
+// without ECX); both with the factor first in the first clamp only 710 (0x1eb6f0 22).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
