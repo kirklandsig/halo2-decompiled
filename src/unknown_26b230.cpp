@@ -2190,6 +2190,12 @@ void function_269250(long clump_index, long actor_index);
 // result actor latch and the same three variants 87/335/126/339. NOT kept: the actor latch ties, the
 // team-scoped score restores x87 at higher cost, and the clump latch emits two copies of the step.
 // Pool EBX and the memory-only selection remain.
+// M3 lane 7 r183 (fast; control 87, in-arm compare re-measured 126 at 480 B): on the in-arm form, the walk's clump index
+// bound by `long const &` before the walk loop 126 (same code); the loop testing the step's result with the group read from
+// the walk's datum field (`group = (s_clump_activity_view *)groups.iterator.datum;`) 128 (480 B: the pool hoisted into EDI
+// with retail's split reload, the selection memory-only, but the not-found step threads to the exit and the selection, best
+// and score homes rotate to +0x1c/+0x18/+0x14); on that form the selection renamed to sort first 128, best declared before
+// the selection 128, the score declared at actor scope 128 (each the same code). Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

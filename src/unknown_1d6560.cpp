@@ -506,6 +506,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // [13], the first with a long type 97 [13]; headers declared ahead of the rigid body, both through `& 0xffff` 128 [213]
 // at 224 bytes, case 0 through `(word)` 36 [13] (the listed 36 form). Every twice-used form moves the component and the
 // index between EAX and ECX and loses the caller, so none is kept. Body unchanged.
+// M3 lane 7 r183 (fast, caller 0x1d5bf0 in brackets; control 96 [0]): round 60's 24 form rebuilt 24 at 256 B [0] (left: object
+// index EDX, headers ESI, rigid body in place in ECX, `mov al` + `movzx` type). On it: the rigid body from a named byte offset
+// (`index * sizeof`) 96 [0]; a model local declared first 21 [2] (the owner then arrives in EAX and the component on the
+// stack); the header pool read into a pool local first 24 [0] (same code); a model local in place before the rigid body 24 [0]
+// (same code); headers and the model ahead of the type with the rigid body last 124 at 276 B [189]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

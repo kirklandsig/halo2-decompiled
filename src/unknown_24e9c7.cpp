@@ -584,6 +584,13 @@ struct s_24e9c7_points
 // half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
 // 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
 // with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// M3 lane 7 r183 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125). Reading: retail's [ebp-8] is the side
+// point's y home (written with the across j product, then with the half-width product, read back three times) and its
+// x home [ebp-0xc] is never used, so retail's side point owns the two slots above result. Tried, the corner copies left in
+// place: the side point set straight to the across products with no across locals and scaled later by the half width 144
+// (746 B), with compound scaling 144 (same code), with `size * (0.0f - forward_j)` 139 (742 B), with the side point
+// declared before the size 144 (same code); on main the side point declared at the drawing block's top 125 (same code).
+// Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

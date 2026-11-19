@@ -1865,6 +1865,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `*handle` argument takes the step that leaves the close call its `mov ecx, eax`; retail has the write call's
 // handle loaded first as such an unnamed argument (EAX, the flags zero then ECX) and one more step before the
 // checksum compare.
+// M3 lane 7 r183 (fast with 0x213800, matched throughout; control 33): the listed 7 form rebuilt 7 (left: the write call's
+// handle loaded after the flags zero, the zero in EAX, and the checksum load in EDX; the range bound already sits in ESI
+// as retail's). On it: the write flags from a forced-inline function returning the zero flags (diagnostic, one caller) 7;
+// the write-success bool declared before the resize 7; the checksum compare with the read header's word first 7 (each the
+// same code); the header check and checksum as one `valid = function_213800(...) && stored == read;` 78; that on main 98.
+// Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
