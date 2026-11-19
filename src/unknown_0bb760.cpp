@@ -1047,6 +1047,10 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // destination-only walk with relative source 184, explicit byte bank distance 156, indexed from the
 // object block offset 242, guarded block with output latch 191, named pair count and early copy 141.
 // NOT kept: the input spill and EBX output still differ.
+// The byte-mask test still saves EBX early, and the input spills before count admission.
+// Size first through short or long 171/171, signed displacement local 171, both native words 171,
+// stored-colour count before halving 171, named flags with mask equality 171, unsigned size read
+// first 171, base address between the two divisions 171. All reproduce the opening allocation.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

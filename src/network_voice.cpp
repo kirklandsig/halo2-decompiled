@@ -1927,6 +1927,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the block's end 155 [137] at 462 bytes; the length local with `return length;` ending the block 216 [73] at 494 bytes;
 // the length local with the statements before the capacity test in retail's order (kept, written, capacity, size) 153
 // [13] at 434 bytes. Body unchanged.
+// The opening zero still drops out of EAX before the capacity gate.
+// Separate payload and header size 60, with header addition after the count byte 164.
+// Single membership/index transfer to the final return 60/60; accepted membership/index first 74/60;
+// direct membership/index failure return 172/173. NOT kept: direct returns change the matched caller,
+// while the other forms leave the capacity exit and player-bit allocation unresolved.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

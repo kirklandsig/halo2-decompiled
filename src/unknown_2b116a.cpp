@@ -4537,6 +4537,10 @@ bool __stdcall function_2b278e(long controller_index)
 // warning assigned on the eligible path 199 or cleared for the excluded kind 192, signed warning result 199,
 // conditional dialog invocation 199, function-scope identity 199, inherited dialog receiver 199.
 // The original controller reference and both index reloads still differ.
+// Copy the dialog controller pointer, index or both 181/54/181; with Boolean membership 205/199/205.
+// Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
+// NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
+// and the index-only copy folds into the original read.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

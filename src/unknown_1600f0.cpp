@@ -1501,6 +1501,11 @@ PRIVATE inline long score_string_list_1608e0()
 // Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
 // reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
 // independent score visibility for name/caption 687, with explicit caption-width branches 687.
+// The viewer multiply still follows the panel save, leaving the viewer in EDI and the frame four bytes short.
+// Separate byte displacement 679, explicit pool base and displacement 679, word viewer slot 714,
+// record reference 679, word slot with record reference 714, typed array base 679, word slot
+// with byte displacement 714, displacement with record reference 679.
+// NOT kept: the word slot changes the prologue without recovering the viewer register or origin word.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

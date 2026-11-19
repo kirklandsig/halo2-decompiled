@@ -947,6 +947,11 @@ struct s_collision_result_buffer_1697c0
 // and scaled in place 354; default direction before fraction 267.
 // NOT kept: the three-point gain retains the wrong zero register and transfer word. The ray copy
 // also raises the caller's score.
+// The pitch-axis j product still takes a reciprocal copy instead of preloading j.
+// Paired horizontal components 270, with the axis setter 296; copied-then-negated lateral component 361.
+// Magnitude supplied to the scaling stage directly, named for the axis, named for both outputs,
+// all named, or immutable 333/333/335/335/333. NOT kept: the split magnitude enlarges the frame
+// and leaves the initial zero register and later random/trigonometric transfer different.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
