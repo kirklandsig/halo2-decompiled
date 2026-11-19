@@ -4432,6 +4432,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // retail's up.i*cosine term computed in each arm before the join where ours computes it in the shared
 // block.
 
+// MiniMax C (11-19): no new form, no lower score (117): the projection's i-product loads the other input, three cross products take the facing side into the register, and the flip block's forward rotation adds the cosine term first and keeps the sine and cosine in the opposite stack homes.
 // score 118 (was 118): the projection i-product loads the other input at +0x99, followed by cross-product register order and the sine/cosine stack homes.
 // projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
