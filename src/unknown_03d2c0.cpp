@@ -480,6 +480,13 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // true;` 110 (522 B), with `if (result != NONE) initialize = true;` 115 (506 B), with `initialize = true;` 102 (493 B); the
 // walk iterating in cache_index itself 77 (same code), that with `if (result != NONE) initialize = true;` closing the
 // else arm 85 (504 B, round 99's code). Body unchanged.
+// M3 lane 7 r183 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77): lane 11 r104's merge (`!initialize || result
+// != NONE`) re-measured 83 (508 B): from the found test to the end only the walk's NONE return differs, and it differs
+// because ours folds the returned value to the known -1 (`or eax, esi` with ESI as the -1 source) where retail returns
+// ESI unfolded from a trailing epilogue. Tried: the walk exit compared against the allocation's index (`if (result ==
+// cache_index) return result;`) 77 (same code), on the 83 merge 83 (same code: still folded); the exit returning
+// cache_index on that merge 83 (same code); diagnostic, reverted: the walk as a forced-inline function returning its pick,
+// on the merge, 169 (524 B); the merge as `initialize ? result != NONE : true` 81 (522 B). Body unchanged.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

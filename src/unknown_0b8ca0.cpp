@@ -1879,6 +1879,11 @@ done:
 // on it the three definition reads in one declaration 27, the datum in one expression with the placement offset read inline
 // 27, the placements read folded into the datum with a placement-offset local 27 (all the 27 form's code); the slot lookup
 // as `NONE` then an `if` (for the ternary) 59 (243 B), that on the 27 form 59 (240 B).
+// Round 181 (m3 lane 7, fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x2a12f0, all matched): long palette offset, size
+// and placement offset with an `index * size` datum local and the palette formed at the call 33 (236 bytes: the definition
+// stays in EAX and the size is read last, so no copy; type EDX, scenario ECX, index SI), with `size * index` 33, with the
+// call adding `datum + placements` 33; the datum named before the placement offset read 30 (placements become the add's
+// destination); the palette pointer named after the datum 30.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

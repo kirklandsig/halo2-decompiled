@@ -596,6 +596,12 @@ struct s_24e9c7_points
 // (742 B); on the scalar `0.0f -` form back as scalars, and up too, 143/143 (same code); the first corner's base copy right
 // after the half width 146 (739 B) / unary 132; result assigned after the half width, scalar/point 150/146 (`0.0f -`),
 // 152/148 (unary). The early products then spill elsewhere and the result home moves to -0xc, not retail's -0x10.
+// M3 lane 7 r183 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125). Reading: retail's [ebp-8] is the side
+// point's y home (written with the across j product, then with the half-width product, read back three times) and its
+// x home [ebp-0xc] is never used, so retail's side point owns the two slots above result. Tried, the corner copies left in
+// place: the side point set straight to the across products with no across locals and scaled later by the half width 144
+// (746 B), with compound scaling 144 (same code), with `size * (0.0f - forward_j)` 139 (742 B), with the side point
+// declared before the size 144 (same code); on main the side point declared at the drawing block's top 125 (same code).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

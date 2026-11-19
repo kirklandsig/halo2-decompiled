@@ -374,6 +374,13 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // sine products, forward.i, (t*i)*j, t*k reused for both k products) for the second axis's cases only 459 (1752 B), for
 // the first axis's only 447 (1756 B); the same with the squares kept as a vector3f 459/447 (same code: both scalarize
 // and shrink the body); the rotation helper's output matrix passed by reference 219 (same code).
+// M3 lane 7 r183 (fast, control 219): the rotation helper's parameters as (axis, cosine, sine, out), definition and both
+// calls, 219 (same code); the helper written as the other files write the same rotation: 0x350e0's text (named squares,
+// complement and three cross terms, rows in matrix order) 392 (frame 0x60), 0x22850's (complement, squares, k*complement,
+// rows in matrix order) 394 (1824 B), 0x17fd20's (complement, squares, named cross terms, square plus scaled complement)
+// 393 (frame 0x60); diagnostic, reverted: the second-axis arm through a one-caller copy of the helper with its two vectors
+// declared sine first 219 (retail's second copy has them the other way round in the frame; the declaration does not move
+// them). Body unchanged.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

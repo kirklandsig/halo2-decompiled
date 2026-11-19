@@ -1328,6 +1328,21 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // 463: crossing normal components shared by denominator and numerator, before/after deltas
 // and in x/y or y/x order, 263 each; with named numerator products 270 each. NOT kept:
 // longer crossing code leaves the count load and prior-side home different.
+// Round 182 (m3 lane 7, fast; body unchanged at 129): with every register masked the kept body is 28 aligned lines
+// from retail (the count load, the previous side's home, the crossing's product operands). Retail holds count in ECX
+// only from the alias join to the entry guard (the loop's bottom test and `result = count` read its home), so it is the
+// stack parameter enregistered over that stretch, which takes ECX before the previous side is defined. Distance from
+// `points[i].y` / `points[i].x` with `current` named after it 129 (same code: this build already loads indexed and
+// forms the pointer afterwards, from EDI where retail uses ECX); the entry distance from `points[count - 1]` at both
+// reads 268 (896 B, the stride goes to ECX and the previous side is reloaded into CL ahead of the loop); the side test
+// as `inside ^ previous_inside` 184. Re-measured on this tree, guard forms (match-only): `if (count > 0)` around the
+// loop 211 (893 B, aligned 38); with the fraction as if/else and the clamp inside 96 (890 B, aligned 35), the same with
+// the denominator's terms swapped 96 (same code); with dx written at its two uses 151 (887 B, aligned 30, first
+// difference +0x9e: zero XMM2, entry and loop head as retail); on that, the clamp as if/else-if 151 and the x output
+// as `fraction * (...)` 151 (same code each), the clamp as if/else-if after the if/else 147 (aligned 27). Left on that
+// form: `i = 0` stored after the guard's branch (retail before it), dy/dx/denominator in XMM3/XMM1/XMM0 against
+// retail's XMM0/XMM3/XMM1 with dy first in both its products, retail's zero-fraction arm sitting between the two
+// clamp tests, and count hoisted into ECX for `result = count` where retail reads its home.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

@@ -518,6 +518,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // it, each a true pointer `__assume` (a code-free block boundary): on the rigid body after its definition 28, on headers 28, on
 // component at the top 28, on owner ahead of the rigid body 28 (all the same code: the entry colouring, object index EDX /
 // headers ESI / rigid body ECX in place, does not move); the kind-7 route as `switch (kind) { case 7: ... }` 95 (256 B).
+// M3 lane 7 r183 (fast, caller 0x1d5bf0 in brackets; control 96 [0]): round 60's 24 form rebuilt 24 at 256 B [0] (left: object
+// index EDX, headers ESI, rigid body in place in ECX, `mov al` + `movzx` type). On it: the rigid body from a named byte offset
+// (`index * sizeof`) 96 [0]; a model local declared first 21 [2] (the owner then arrives in EAX and the component on the
+// stack); the header pool read into a pool local first 24 [0] (same code); a model local in place before the rigid body 24 [0]
+// (same code); headers and the model ahead of the type with the rigid body last 124 at 276 B [189]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
