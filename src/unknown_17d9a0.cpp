@@ -943,6 +943,16 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // 532; three `/= length` statements 560 (3631 B); three `*= inverse` statements 559 (3631 B, the 1.0 still divided in place);
 // the limits index named once as a short local 741. Diagnostic, reverted: 1..7 unused initialised locals
 // 535/570/568/699/702/533/533, so no symbol count fits and the frame order is not a symbol-count state here.
+// M3 lane 15 r106 (plain each with 0x17d9a0/0x17ef10; base 535, aligned 672, stack-masked 497, stack- and register-masked
+// 355): the rotation in matched 0x1544e0's order (sine products in a `sine_axis` vector after the squares, forward.i, then
+// one_minus_cosine, cosine_j_i, left.i, forward.j, left.j, `cosine_k = one_minus_cosine * axis.k` named for cosine_k_i and
+// cosine_k_j, up.i, forward.k, up.k, up.j, left.k) 648 (frame 0x21e4, masked 340); with `sine_axis` filled k, j, i 629 (frame
+// 0x21e4; masked 251, the face and secondary counts take retail's +0x20/+0x54; LEAD); that with three scalar sine products
+// k, j, i 673 (3615 B, frame 0x21dc, masked 295); without the sine products named 528 (frame 0x21e4, masked 322; -7 from a
+// statement reorder, not kept); `sine_axis` and `cosine_k` with the rows in this body's order 567 (3663 B, frame 0x21ec,
+// masked 324). Retail loads 1.0 four times (ours eight): it keeps 1.0 in XMM0 from the reciprocal to the sign and across
+// the four `1 - x` terms. A compile-only dead-local scan over the rotation block moves it with period 8 (best 241 of 225
+// lines at K = 6, 7), so the block's schedule is not a symbol-count state. All restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

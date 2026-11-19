@@ -1617,6 +1617,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // renamed 347, scoped around the two products 569, with the 2-D helper 445, products written rotated-first 347; with the
 // one-use `maximum` passed straight 442 (347 on the plain both-statements form). Also: step before delta 560, limited
 // declared before delta 347, the rotation's second row written the other way 347.
+// M3 lane 15 r106 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; base 234, aligned 194, stack- and register-masked
+// 119): the four flag bools as `(bool)((x >> n) & 1)` 232 (3050 B; two points, not kept); the contact flags read once into a
+// `dword flags` local 614; both lengths through magnitude3d (`&state->input`, `&change`) re-measured 485 (3047 B, masked 186);
+// only the history maximum 509 (3057 B, masked 125); only the input length, through `input`, 297 (3036 B, masked 144).
+// Diagnostic: 1-16 initialised dead locals on the both-magnitude3d form 594-617 (2994-3013 B), none near. All restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

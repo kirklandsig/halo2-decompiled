@@ -2088,6 +2088,13 @@ void function_27dd10(void)
 // the count, 417/417 (1749 bytes; 0x281b60 397, 0x285750 420, 0x28aaa0 165); the count declared, then assigned after
 // the declarations 2; the node index and the cursor initialised (0, NULL) 2; in function_288572 the empty group's
 // index step after the output advance 2 (0x288570 10, 0x289580 9). All restored.
+// M3 lane 15 r106 (fast with 0x281b60 and the matched walk users; all 78 functions of the file for the shared-helper forms):
+// blend 3's `real one = 1.0f;` declared at function_288573's top 2 (the dead literal store is dropped early); the vector
+// and scale blends as `+=` statements 2 (76 others still match); the walk's node index and cursor as pointer parameters 2;
+// quaternion_blend's parameters const 2; the interpolation's root scaling gated on `!in_place` 2 (0x281b60 62).
+// Diagnostics: a used float literal in the blend-1 scale arm fixes this pair (one or two of them); a non-literal float
+// multiply there does not; `g_5044bc += 3` there fixes this pair but reverses pass 1's (EDX flags, ECX count); 15 to 24
+// dead initialised locals in this body 2 each. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
