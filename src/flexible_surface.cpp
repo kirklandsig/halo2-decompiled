@@ -870,6 +870,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // named frame test 130, random-state record reference 130, compound wave gain 130,
 // shared double wind scale on the in-place rotation 154. NOT kept: direct table access
 // shrinks the frame to 0x0c. The shared scale reaches 880 bytes and loses the caller match.
+// Shared rotation cross differences staged as accumulators from products, axis values, or direction values
+// 130/130/130. Named subtracted product, both products, difference with named subtrahend, and subtrahend
+// scaled from the axis or direction 154/154/154/154/154. NOT kept: the frame is still 0x1c and both
+// matched shared rotation callers differ in every preview. The opening shared helper and body are restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

@@ -1045,6 +1045,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 }
 // score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // score 871 (was 871; 964 before): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
+// Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
 // M3 lane 14 r114 (fast with 0x73530, which matches throughout; control 871): the convention already agrees (session in
 // EAX, `ret 4` in both). Retail calls 0x192e60 at the top, 0x1932c0, 0x1931a0 and 0x193250, and expands 0x193300, the
@@ -1065,6 +1067,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
 // Earlier: 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
+// Earlier score 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Earlier at 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Frame 0xd0 versus retail 0xb4, with an expanded opening variant lookup
 // and a capacity selector call. The dword histogram trials reduce the frame to 0xb0.
@@ -1570,6 +1573,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Admitted player count for availability or also output count 947/908; mode before the minimum or both capacity tests 883/883.
 // Early mode with carried count 927/899; named capacity bounds with carried count 908/927.
 // NOT kept: frame and opening lookup still differ, and every form scores higher.
+// native network id indexed copy 871; native network id cursor 969; opaque 64-bit id indexed copy 871; opaque
+// 64-bit id cursor 969; native network id indexed copy with dword histogram 911; native network id cursor
+// with dword histogram 1013; opaque 64-bit id indexed copy with dword histogram 911; opaque 64-bit id cursor
+// with dword histogram 1013. The indexed copies with word buckets tie. Indexed copies with dword buckets
+// reserve 0xb0 and score 911 at 2748 bytes. The dword cursor forms recover 0xb4 but shorten to 2612 bytes.
+// All four cursor forms lose the matched 0x73530 caller in reduced checks. Opening executable source
+// restored.
 // Tried rating-loop identity cursors 946; first-rating cursors 906; identity and first-rating cursors 910; group
 // and adjusted output cursors 907; identity and group outputs 909; first ratings and group outputs 929; all
 // rating-pass cursors 916; all rating-pass cursors with dword histogram 947.

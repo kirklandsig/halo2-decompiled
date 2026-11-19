@@ -731,6 +731,9 @@ struct s_text_line_measurement
 // predicate index/width first 117/117. One-branch effective break index,
 // previous-index default and joined index publication 77/72/77.
 // NOT kept: 68 emits a second break test. The single-test 72 gains five.
+// Running width read after the raw kerning, offset, advance or all three pixel loads. Direct update
+// 77/77/77/77; fitting-path accumulator 77/77/77/77. NOT kept: every form ties at 415 bytes and retains the
+// late width load and single advance register.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

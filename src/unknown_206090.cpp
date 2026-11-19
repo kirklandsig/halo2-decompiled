@@ -139,7 +139,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1375 (was 1375): The 0x5d0 frame, component and velocity homes and contact indexing still differ from retail.
+// score 1375 (was 1375): Frame 0x5d0 versus retail 0x58c, component and velocity homes, and contact indexing still differ.
 // Earlier: earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
@@ -729,6 +729,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // direct or named term 1568/1558; double accumulator 1591; shared squared-length helper 1637;
 // staged float root 1599; ascending component accumulator 1625. NOT kept: all regress and
 // shorten. Direct scalar forms recover frame 0x590, still four bytes above retail.
+// One magnitude workspace at contact phase or entry, assignment/memcpy, 1515 each. Separate root and
+// normalization workspaces at the same scopes, assignment/memcpy, 1457 each. NOT kept: the frames shrink
+// to 0x5a0/0x5a8 but the body loses 120/88 bytes and retail's component homes still differ.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

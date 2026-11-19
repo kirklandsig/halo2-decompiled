@@ -451,6 +451,7 @@ void function_3dd10(long object_index, bool force);
 // score 97 (was 97): the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
 // spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
 // The late variant byte restores the output/delta registers and keeps retail length.
+// The object and tint-table saves still trade ESI and EDI. The blend store, weight-scan exits and fallback unity reload also differ.
 // MiniMax I (11-17): the variant byte read before the blend value 123 (was 132): the byte is then held in BL across the fmod and the blend's store follows the call, so the compare moves behind it, but the colours pointer now takes EBX where retail uses EBP; the not-found exit still joins the clamp entry's 1.0 load and the first scan still leaves on inequality.
 // MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
 // still the order of the 1.0f load and the zero xorps before the first clamp; the blend still sits at [esp+0x38]
@@ -538,6 +539,7 @@ void function_3dd10(long object_index, bool force);
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
 // Earlier 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
+// Earlier score 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
 // Earlier opening state (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
 // and the variant byte is read before the second remainder. The first scan's `!=` exits
 // differ from retail's signed `<` loop (unrolled by 4 in every
@@ -741,6 +743,11 @@ void function_3dd10(long object_index, bool force);
 // The 0x54 frame and 1034-byte extent agree. The object and tint entry exchange EDI and ESI.
 // Lexical ranks for the object and tint entry before definition or after output score 97 each,
 // alone and in all four pairs. Neither saved register moved. The blend spill and signed scan still differ.
+// shared object datum lookup 97; shared object header lookup 97; shared slot object lookup 97; shared object
+// datum with native tag index 106; native tint block size and displacement 97; native tint block and position
+// fields 97; native tint block, position and variant fields 97; complete native tint object with shared datum
+// lookup 97. All eight previews retain 1034 bytes and the same initial register mismatch. The native tag-
+// index form adds spill differences. Opening executable source restored.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

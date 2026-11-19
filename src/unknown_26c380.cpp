@@ -702,6 +702,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // source assigns success; ours emits the store but returns to the loop tests rather than jumping into the tail); each cutoff
 // writing the clear-result tail with `success = false; goto done;` 696 (1302 B); the up cross through cross3f_staged 244 (same
 // code); a `stop` flag tested after the edge loop 374 (1613 B); the redundant store with the post-loop test as `!edge` 437.
+// Trace success and first edge or either order 305/305. Per-sector first edge and crossing or
+// either order 305/305. Trace success and crossing or either order 305/305. All three with
+// success or first edge first 363/363. NOT kept: the paired records move the result byte outside
+// its retail slot. Grouping all three shrinks the frame. The opening body is restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

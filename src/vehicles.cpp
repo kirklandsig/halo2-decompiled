@@ -4660,6 +4660,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // the projection forms. First cross and trig homes remain.
 // Facing forward/up and rotated up field references, seven subsets 184/170/182/166/200/139/133,
 // then all with rotated forward 196. NOT kept: the first preload, cross and trig homes remain.
+// Lateral subtotal, compound subtotal, separate lateral/axial contributions and all three terms named.
+// Existing scale call 193/220/213/202; aggregate projection 193/220/213/202. NOT kept: the first pair fixes
+// the i product but loses the forward j/k preloads. Cross and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

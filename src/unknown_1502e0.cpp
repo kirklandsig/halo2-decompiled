@@ -1558,6 +1558,10 @@ void function_150820(dword *bits, bool local_only)
 // canonical player displacement/indexed table/read-only displacement with either header
 // lookup, and canonical displacement with a direct header read all score 43 at 210 bytes.
 // The types and lookup source were restored.
+// Two Boolean rows indexed by hand or selected by policy 43/88. Hand-pair field by policy or slot
+// ordinal 88/78, post-query pair copy or reference 88/88, first-row reference 43, separate hand
+// availability tests 78. NOT kept: neither workspace changes the saved player/hand allocation at
+// 210 bytes. The shorter and longer variants regress. The opening body is restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

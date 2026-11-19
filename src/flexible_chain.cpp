@@ -235,7 +235,8 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// score 144 (was 171): earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
+// score 144 (was 171): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
+// earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
 // Earlier score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
@@ -820,6 +821,9 @@ void __stdcall function_1160c0(real dt)
 // terminal ordinal, interior first and terminal decrement 272/269/272/269.
 // Array first, same selectors 275/273/275/273. NOT kept: direct indexing
 // moves the stiffness read ahead of the address addition and raises the score.
+// Separate physics point with fields, point setter or shared point difference 314/361/311.
+// Updating the physics point before publication, same forms 391/391/406. Early tag index
+// with separate or updated point 314/391. NOT kept: every split widens the frame and leaves the segment spill different.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
