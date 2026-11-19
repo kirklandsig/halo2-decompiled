@@ -5214,13 +5214,18 @@ dword function_db810(long object_index, long node_index)
 // eax for the tag entry and its field where this build masks the index after both pushes and takes the entry in edx; a
 // permuter run over the body (27 tries) found nothing below the four, and the frame still lacks retail's extra dword.
 // MiniMax R (11-17): no new form, no lower score (4): retail still masks the model tag index before it pushes ebp and reuses eax for the tag entry and its field where this build masks the index after both pushes and takes the entry in edx; the typed model_tag_index field, a local for the masked index and a local for the tag bytes all compile to the same four instructions.
+// Matched in a full build with stand-in SDK headers (was 4): the tag entry's data pointer is held in a local that a
+// const reference names before the model index is read from it; retail then masks the tag index before the second
+// push and reuses eax for the entry and its field.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
 	long result = 0x7fffffff;
 	long lowest_rank = 0x7fffffff;
-	long model_index = *(long *)(g_4e3b44[object->tag_index & 0xffff].bytes + 0x38);
+	byte *pointer = g_4e3b44[object->tag_index & 0xffff].bytes;
+	byte *const &kept = pointer;
+	long model_index = *(long *)(kept + 0x38);
 
 	if (model_index != NONE && object->node_index != NONE)
 	{
