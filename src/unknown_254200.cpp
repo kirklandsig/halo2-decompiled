@@ -238,6 +238,10 @@ void function_254200(void)
 // 136 (1113 B); the four edges computed into a four-real array ahead of the calls 173; the depth pair from a two-real local
 // array 4 (same code); the first vertex's corner in a point copy updated in place (x -= size, y += size) and reused 206
 // (1114 B); two corner points (low, high) computed ahead of the calls 173. The constant and y + size still reload in our order.
+// M3 lane 15 r100 (single-address fast, control 4): the two dimension shorts through named width/height fields of the
+// file's bitmap view 4; the draw-ready flag global typed bool 4; the readiness test as an early return 4; the point copy
+// through memcpy 4 (all the same code); the vertex register spelled 0 as in unknown_01cf50.cpp's quads 8 (not the same
+// register: the opcode word changes).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

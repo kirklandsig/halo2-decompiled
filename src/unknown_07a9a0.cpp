@@ -1057,8 +1057,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // files.
 // Earlier: 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Earlier score 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
+// Earlier at 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Frame 0xd0 versus retail 0xb4, with an expanded opening variant lookup
 // and a capacity selector call. The dword histogram trials reduce the frame to 0xb0.
+// Independent dword histograms reduce the frame to 0xb0.
 // Earlier score 942 (was 964): 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Earlier: frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
 // frame 0xd0 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
@@ -1567,6 +1569,15 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // reserve 0xb0 and score 911 at 2748 bytes. The dword cursor forms recover 0xb4 but shorten to 2612 bytes.
 // All four cursor forms lose the matched 0x73530 caller in reduced checks. Opening executable source
 // restored.
+// Tried rating-loop identity cursors 946; first-rating cursors 906; identity and first-rating cursors 910; group
+// and adjusted output cursors 907; identity and group outputs 909; first ratings and group outputs 929; all
+// rating-pass cursors 916; all rating-pass cursors with dword histogram 947.
+// NOT kept: The mixed cursor forms grow the frame and shorten the body. Dword histogram with all cursors reaches
+// 0xc0 but still expands the opening lookup and raises the score.
+// One indexed signed/unsigned dword ID and histogram workspace 959/959; advancing workspace
+// 948; entry-sized library copy 936; paired ID cursors 968; ID snapshot 963; ID copy after
+// counter clears 950; workspace scoped through party counts 959. NOT kept: every form moves
+// the body farther from retail's 2828 bytes and scores higher. The opening lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

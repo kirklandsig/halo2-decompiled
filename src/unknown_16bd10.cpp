@@ -1230,6 +1230,14 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // basis dots for all three projection products 412; component assignment and basis dot for length 439;
 // basis dots for constant and signed distance 412.
 // NOT kept: the basis length changes the preload to i and retains the length and zero registers. The other component and basis forms regress.
+// Direction k still loads before the normal copy where retail loads j. Plane after basis stores 126, shared typed
+// offset 395, accumulated zero-first scale 454, plane scoped to the factor 126, plane and const length after basis
+// stores 126, complete translated-vector local 427, in-place offset copy 470, separate scale and add 409.
+// NOT kept: the scope forms tie and the translated vectors enlarge the body.
+// Copied normal for final scaled point 427. Conditional plane constant 406, with copied normal 427.
+// Named distance and quotient 394. Signed numerator before division 395.
+// Timer published after both axes with conditional expression or branch result 378/378,
+// or elapsed seconds named on the nonzero path 377. The j preload and zero register still differ.
 // Direction j still needs the initial load and XMM1 still holds zero in the point path.
 // Tried both point cases share the basis reset before projecting 489, recognized point types share the
 // basis setup 489, contiguous point types share the basis setup 487, recognized types reset the basis

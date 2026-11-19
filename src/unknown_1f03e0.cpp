@@ -1571,6 +1571,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // i, j, k, re-measured, 543 (aligned 193); that with the flags declared flying, direct, damping, gravity, the input pointer
 // after them and the first arm clearing gravity first 543 (aligned 192; the first difference moves to +0x3d, the entry
 // block exact). Body unchanged.
+// MiniMax G (11-18): no new form, no lower score (234); `contact_cross` writes its three products in the operand order the
+// other matched functions in this file use, while retail's first arm reverses only the two `a->j * b->X` products, and the
+// shared helper cannot be changed without moving the functions that already match; the damping's first extraction, the
+// vector homes and the vertical output tail also still differ.
 // MiniMax A (11-18): no new form, no lower score (234); what still differs is the damping's first extraction (ours keeps it in
 // ECX), the vector homes and the vertical output tail; the homes only move when the arms' shapes change, which raises the
 // score, so the body stands.
@@ -1581,6 +1585,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // optional gravity correction 486. The final vertical conditional is closest at 236 and retains retail length
 // and the same entry mismatch. The other forms score 486 to 660. All four matched controls hold. Opening
 // executable source restored.
+// Entry contact-word snapshot 610; scoped settings/contact reads 630; shared motion mask
+// with disabled/direct first 614/650; three-way motion selection 628; general before direct 612;
+// enabled-input dispatch 635; gravity retained from bounded-step admission 453. NOT kept: all
+// scores rise and the original damping extraction and vector-home differences remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
