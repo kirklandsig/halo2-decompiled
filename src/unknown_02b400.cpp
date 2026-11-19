@@ -607,70 +607,98 @@ struct s_28580_definition
     real turn;
 };
 
+static __forceinline dword random_next_28580(dword *seed)
+{
+    *seed = *seed * 1664525 + 1013904223;
+    return *seed >> 16;
+}
+
+static __forceinline real random_real_28580(void)
+{
+    return (real)random_next_28580(&g_4e7408->seed) * (1.0f / 65535.0f);
+}
+
+
+static __forceinline real random_real_range_28580(real lower, real upper)
+{
+    real random = random_real_28580();
+    return lower + (upper - lower) * random;
+}
+
+static __forceinline real normalize2d_inline_28580(point2f *v)
+{
+	real m = (real)sqrt(v->x * v->x + v->y * v->y);
+	if (!(fabs(m) < k_real_epsilon))
+	{
+		real inv = 1.f / m;
+		v->x = v->x * inv;
+		v->y = inv * v->y;
+		return m;
+	}
+	return 0.f;
+}
+
 long g_4b9a00;
 s_28580_view g_4b9a04[5];
 
+// score 151 (was 296) in a full build with stand-in SDK headers: rewritten from retail: the state is addressed as
+// g_4b9a04[view_index].field (no state pointer), the random fractions are float with the exponent 1.0f - turn, the
+// seed steps through an inline helper taking &g_4e7408->seed (retail reloads the seed after the pow call), the sign
+// test is (seed & 0x80000000) > 0, the blend works through a point2f pointer with x/y read before keep = 1.0f -
+// blend, and the first normalize is an inlined copy while the second stays a call to 0x2b400 as in retail. Left:
+// the x row's load order, the == 0 compare after the inlined normalize, the speed lerp's folded load, the order of
+// the target rows and of the out rows' products.
 // @retail 0x28580
 void function_28580(long tag, real time, vector3f *out)
 {
     s_28580_definition const *definition =
         (s_28580_definition const *)g_4e3b44[tag & 0xffff].data;
-    s_28580_view *state = &g_4b9a04[g_4b9a00];
-    point2f *direction = &state->direction;
-    real delta = time - state->previous_time;
-    state->previous_time = time;
+    long view_index = g_4b9a00;
+    point2f *direction = &g_4b9a04[view_index].direction;
+    real delta = time - g_4b9a04[view_index].previous_time;
+    g_4b9a04[view_index].previous_time = time;
     if (definition->speed_high > 0.0f)
     {
+        point2f *target = &g_4b9a04[view_index].target_direction;
+        real x = direction->x;
+        real y = direction->y;
+        real keep = 1.0f - definition->blend;
+        x *= keep;
+        y *= keep;
+        direction->x = x;
+        direction->y = y;
         real blend = definition->blend;
-        direction->x *= 1.0f - blend;
-        direction->y *= 1.0f - blend;
-        direction->x += state->target_direction.x * blend;
-        direction->y += state->target_direction.y * blend;
-        real magnitude = (real)sqrt(direction->x * direction->x +
-            direction->y * direction->y);
-        if (!(fabs(magnitude) < k_real_epsilon))
-        {
-            real inverse = 1.0f / magnitude;
-            direction->x *= inverse;
-            direction->y *= inverse;
-        }
-        else magnitude = 0.0f;
-        if (magnitude == 0.0f)
+        direction->x = target->x * blend + x;
+        direction->y = target->y * blend + y;
+        if (normalize2d_inline_28580(direction) == 0.0f)
         {
             direction->x = 1.0f;
             direction->y = 0.0f;
         }
-        state->speed = (1.0f - definition->blend) * state->speed +
-            definition->blend * state->target_speed;
-        if (time - state->changed_time >= state->duration)
+        real speed_blend = definition->blend;
+        g_4b9a04[view_index].speed = (1.0f - speed_blend) * g_4b9a04[view_index].speed + speed_blend * g_4b9a04[view_index].target_speed;
+        if (time - g_4b9a04[view_index].changed_time >= g_4b9a04[view_index].duration)
         {
+            real turn = (real)pow(random_real_28580(), 1.0f - definition->turn);
             g_4e7408->seed = g_4e7408->seed * 1664525 + 1013904223;
-            double fraction = (double)(g_4e7408->seed >> 16) * (1.0f / 65535.0f);
-            real turn = (real)pow(fraction, 1.0 - definition->turn);
-            g_4e7408->seed = g_4e7408->seed * 1664525 + 1013904223;
-            real sign = (g_4e7408->seed & 0x80000000) ? -1.0f : 1.0f;
+            real sign = (g_4e7408->seed & 0x80000000) > 0 ? -1.0f : 1.0f;
+            real side = sign * turn;
             real cross_x = 0.0f - direction->y;
             real cross_y = direction->x;
-            state->target_direction.x = (1.0f - turn) * direction->x + sign * turn * cross_x;
-            state->target_direction.y = (1.0f - turn) * direction->y + sign * turn * cross_y;
-            if (normalize2d(&state->target_direction) == 0.0f)
+            target->x = direction->x * (1.0f - turn) + side * cross_x;
+            target->y = direction->y * (1.0f - turn) + side * cross_y;
+            if (normalize2d(target) == 0.0f)
             {
-                state->target_direction.x = 1.0f;
-                state->target_direction.y = 0.0f;
+                target->x = 1.0f;
+                target->y = 0.0f;
             }
-            g_4e7408->seed = g_4e7408->seed * 1664525 + 1013904223;
-            double speed_fraction = (double)(g_4e7408->seed >> 16) * (1.0f / 65535.0f);
-            state->changed_time = time;
-            state->target_speed = (real)(definition->speed_low +
-                (definition->speed_high - definition->speed_low) * speed_fraction);
-            g_4e7408->seed = g_4e7408->seed * 1664525 + 1013904223;
-            double duration_fraction = (double)(g_4e7408->seed >> 16) * (1.0f / 65535.0f);
-            state->duration = (real)(definition->duration_low +
-                (definition->duration_high - definition->duration_low) * duration_fraction);
+            g_4b9a04[view_index].changed_time = time;
+            g_4b9a04[view_index].target_speed = random_real_range_28580(definition->speed_low, definition->speed_high);
+            g_4b9a04[view_index].duration = random_real_range_28580(definition->duration_low, definition->duration_high);
         }
     }
-    out->i = direction->x * state->speed * delta;
-    out->j = direction->y * state->speed * delta;
+    out->i = direction->x * g_4b9a04[view_index].speed * delta;
+    out->j = direction->y * g_4b9a04[view_index].speed * delta;
     out->k = 0.0f;
 }
 
