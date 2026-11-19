@@ -1266,6 +1266,13 @@ bool __stdcall function_2399da(long controller_index)
 // comparisons increased code size and score in all eight forms. The selected identity and requested rank
 // still compete for EAX. The original integer comparisons, callee interfaces and complete body are
 // restored.
+// MiniMax G (11-18): no new form, no lower score (90): the frame (0xf00) and every stack home agree; after the
+// membership query the selected identity is reloaded into ecx where retail reloads it into eax and the requested rank
+// takes eax where retail's takes ecx, so the copy into eax before the removal call is still needed and the two bytes it
+// adds are what move every later jump. The forms the earlier rounds list (the requested rank copied into a local, the
+// may-change flag spelled as a mask test, the identity and the rank declared at other positions, the identity test
+// spelled five ways, the identity held in an integer) all compile to the same bytes. The identity test spelled
+// `xuid != NULL && xuid->qwUserID != 0` also compiles to the same bytes (90).
 // score 90 (was 90): MiniMax D (11-17): no new form, no lower score (90): the identity pointer and the requested rank still
 // take the two registers the other way round, so this build copies the identity into eax before the removal call and that
 // copy costs the two bytes that move every later jump; the forms the earlier rounds list (the requested rank copied into a

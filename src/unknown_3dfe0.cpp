@@ -162,6 +162,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // pointer 21 (same code), on update-first 218; update-first with `sample` started as the sample-time NONE test and the
 // thresholds under `if (!sample)` 168 (sete/test; the timestamps stay EDI/ESI); the hidden-object test through a bool
 // scoped to the else arm 21 (same code).
+// M3 lane 7 r180 (fast with 0x3d2c0, 0xd1850, 0xd4080, 0x3e4e0; control 21, aligned 12): force as `initialized ? !valid :
+// true` 225, with update declared ahead of force 228; update right after the zero-elapsed return re-measured 216 (aligned
+// 26: ESI/EDI swapped for both timestamps and the late object index, which retail loads into ESI on both paths into the
+// join and copies to EDI for 0xd1850; no force-arm reload), on it one game-time read shared by both elapsed values 216, the
+// three late object-index uses through one named copy 216 (same code each). Eight dead locals at the top (diagnostic) 21:
+// removed before allocation.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
