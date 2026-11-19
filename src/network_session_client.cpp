@@ -886,6 +886,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // same code, the getter still matching); the tail's live and 0x5dd0 tests through a forceinline copy of the existing
 // 0x5dd0 getter (0x63e00's form) 127 (451 bytes: the limit helper's live test merges; both callers lost); the two
 // buffer clears swapped 26; the player buffer declared and cleared first 26.
+// Round 116 (m3 lane 13, fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22): the NULL-preset stored pair with a
+// `const dword *` mask pointer named before the summary 46, with the member count read above the pair 136, with the
+// summary fetched above the pair 55, with the variant and the summary above the pair 55; the summary fetched above the
+// three-test opening with the variant after it 59 (session ESI and both callers lost in each). Re-measured: the variant
+// and the summary above the opening 32. Compile-only first pass (lane 5's round 175 harness): a 0-16 dead-local sweep on
+// the preset pair keeps ESI, and mask or 0x49c8 pointer locals named before the summary are propagated back (ESI), so
+// the preset pair's flip is a ranking change, not a symbol-count tie.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

@@ -369,6 +369,13 @@ void function_1d56f0(s_havok_component *component)
 // code); the result flag set before the transform-set call 78; the settled count published after the transform-set call
 // 64 (aligned 21: retail stores it at 0x1d53a1, before the call, so this is a statement moved by score, not
 // kept); the settled count in a named local 77 (same code). BLOCKED-BY 0x1d0cf0's convention stands.
+// M3 lane 13 r117 (fast with 0x1d56f0, MATCH each time; control 77): the rigid-body lookup written as the array's
+// own subscript, as `(data + index)->`, as `(index + data)->`, through a named body pointer, and as byte arithmetic
+// with the data pointer first or the scaled index first: 77 each, the same code (`[eax + edx + 0x40]`): the spelling
+// does not set which register is the base. Diagnostic on the blocker, its file restored at once: 0x1d0cf0's whole body
+// as a forceinline inner function behind its entry point leaves 0x1d0cf0 at 65 with the component still on the
+// stack and this function at 77, so an inner function is not what gives retail's EBX argument. Still BLOCKED-BY
+// 0x1d0cf0 for the success tail.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

@@ -895,6 +895,8 @@ bool __stdcall function_2399da(long controller_index)
 // inline rank getter 90; a named team-identity pointer in the removal arm 90; have_member and may_change declared
 // together at their first assignments 90; `rank != NONE` tested first with the removal in the else arm and the
 // over-rank refusal as the nested else 92. Identity ECX/rank EAX remain in all five.
+// the identity pointer and the requested rank take EAX/ECX the other way round, so one extra copy into
+// EAX before the removal call shifts every later jump by two bytes; the forms below were measured.
 // MiniMax B (11-18): no new form, no lower score (90, was 90): the identity pointer and the requested rank
 // still take the two registers the other way round, so this build copies the identity into EAX before the
 // removal call into the matched callee 0xac050 and that copy is the one extra instruction whose two bytes
@@ -941,6 +943,7 @@ bool __stdcall function_2399da(long controller_index)
 // permutation search over this body (300 s, annealed, one job, with the callees in the reduced image) tried 34
 // variants and none scored below the baseline.
 // Earlier 90 (was 90): the difference is purely the register colouring of the two values the
+// Earlier at 90 (was 90): the difference is purely the register colouring of the two values the
 // matched callee 0xac050 takes: retail reloads the selected identity pointer into eax and the
 // requested rank into ecx, so the callee needs no copy, ours keeps the pointer in ecx and the
 // rank in eax and copies the pointer into eax before the call, two bytes that shift every later
@@ -1292,6 +1295,10 @@ bool __stdcall function_2399da(long controller_index)
 // so either order hands the callee the team there: the gain is the shorter call, the identity stays in ECX and the rank in
 // EAX, and the present order is retail's. Restored. Same code (90 each): the identity pointer declared non-const; the
 // task index declared with the function's other locals; the rank parameter typed int.
+// M3 lane 13 r115 (fast, all 90 at 434 B; restored): the own-rank read moved right after the membership call, ahead of
+// the identity test, as a declaration 90 and as an assignment to a function-scope local 90; the redundant block
+// around the membership call and its tests removed 90; the own rank declared const 90; the over-rank refusal tested
+// before the set-rank arm (`rank > own_rank` first) 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

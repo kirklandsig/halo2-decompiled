@@ -400,6 +400,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // MiniMax G (11-12): no new form, no lower score (286): frame 0xe8 against retail's 0xe4; the acquisition, the flags
 // and the scalar homes remain, and the geometry now uses shared differences.
 
+// score 286 (was 286): frame 0xe8 against retail's 0xe4, and from there the link test, the flag homes and the
+// scan differ; the two-flag form of round 71 below (match-only) gives 2 at 1388 bytes, left: two reloads at the scan
+// loop's latch in the other order (`mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]`). Rounds follow, newest last.
 // MiniMax A (11-14): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4 (the extra dword
 // is the `previous` pointer) and the node depth is read at one address here and through a materialised node there;
 // dropping that pointer's initializer gives retail's frame but measures 357.
@@ -886,6 +889,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // parameters 382/236, one to three register-free blocks on two undefined globals 236 each (1391 bytes, aligned 46,
 // the callee 385-421): this function's allocation follows that unmatched callee's code well beyond the pair, so
 // the pair may not be decidable here while 0x26f3f0 differs. BLOCKED-BY 0x26f3f0 (not shown to be the cause).
+// M3 lane 13 r117 (fast with the file's 16 functions, 0x210a30, 0x2104b0 and 0x26f3f0; the file's other functions
+// MATCH each time): the two-flag form rebuilt from the saved lead on the current file 2 again, fast and plain. On that 2:
+// one permuter run (fast, annealed, 84 tries in 905 s after a 112 s opening build) none below 2 (8 variants at 2,
+// 10 at 4); the traversal's two predecessor stores under `if (node_index != NONE)` 358; the traversal written
+// `if (node_index != NONE) do { } while (node_index != NONE);` 2 (same code); the whole scan in a new forceinline
+// inner function taking steps by value 189 (1395 bytes); the scan loop's body in one called per step 118 (1389
+// bytes); the scan through its own copy of the steps pointer 2 (same code, as listed). Body unchanged (286).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

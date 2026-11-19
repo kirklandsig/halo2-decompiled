@@ -92,7 +92,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
-// score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list in round 199): our link knows it writes
+// score 110 (was 110): retail fetches the unit again after the two inlined 0x14de90 calls to 0xbadc0; ours merges that
+// fetch into the entry fetch, so the entry saves and every later register differ. BLOCKED-BY 0xbadc0 as reached through
+// the inlined 0x14de90 (see round 117 at the end: retail's 0xbadc0 itself has the no-write summary).
+// Earlier (round 199, 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list in round 199): our link knows it writes
 // no memory and merges retail's second unit fetch into the entry fetch. Round 199 (m3 lane 5, fast): the weapon lookup's unit
 // fetched into a named pointer 110 (same code); the weapon slot held in a char 114 (355 bytes); the weapon array through a
 // named pointer 110 and the weapon's definition index named 110 (both the same code).
@@ -104,7 +107,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // MiniMax H (11-18): no new form, no lower score (110): the two unit fetches still merge across the two 0xbadc0 calls
 // because this link knows that callee writes no memory, and the unit index stays in ESI where retail has EDI; that
 // callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
-// score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
+// Earlier note, 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
 // 0xbadc0 calls although retail's 0xbadc0 neither writes nor calls; ours merges the fetches (rounds below).
 // MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls
 // where this build merges the two fetches, because that callee writes no memory, and the callee's body is in
@@ -377,6 +380,24 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // defaulted after the weapon query or in the preserve arm: 131/128/130/129/129/126/128/127.
 // NOT kept: the post-query unit fetch stays merged, and the later level
 // comparison shortens the body farther from retail.
+// M3 lane 13 r117 (0xbadc0's file was edited for two diagnostics only and restored at once; base 110): with a scratch
+// indirect store in 0xbadc0 (a pointer to a whole local written through; 0xbadc0 and 0xbae20 still MATCH) and this
+// function's three listed forms (the `== NONE` weapon ternary, the zoom flag declared after the weapon flag, the
+// early-return sound helper) this function MATCHES byte for byte in the fast image and in a full check; those three
+// forms without the scratch store 128 (348 bytes, plain), so they are not kept. The full check with the scratch store
+// loses 19 matched functions (0x3d2c0, 0x683a0, 0xd74e0, 0x101fb0, 0x10a390, 0x112dc0, 0x153d10, 0x16c2b0, 0x19188c,
+// 0x23cbb0, 0x24d8d3, 0x24da7d, 0x25c9d0, 0x264b50, 0x265050, 0x265680, 0x269580, 0x2aa970, 0x2aaab0) and gains only this
+// one: retail's 0xbadc0 does have the no-write summary (0x10a390 keeps the pool's data pointer in EDI across its
+// 0xbadc0 call), so the reload here is local to this function's two calls, which reach 0xbadc0 through the inlined
+// 0x14de90. The other retail functions read with the same inlined pair of 0xbadc0 calls (0xd03e0, 0xe8de0, 0xee7f0,
+// 0x29ffb0, all matched, and 0xbf600) are not among the 19 and keep no load across those calls. Also measured: a
+// self-assignment of the pool
+// global in 0xbadc0 128 (folded, no reload); the real 0x14de90 (declared, defined in another file) in place of the
+// file's own inline copy 128 (same code as the copy: inlined, still merged); that with no direct reference to
+// 0xbadc0 left in this file 128 (same code). So the blocker is narrower than the
+// earlier notes say: what makes the calls that come from the inlined 0x14de90 lose the callee's summary in retail.
+// One compiler-setting diagnostic, reverted: the aliasing-across-calls optimize pragma around the helper, or around
+// this function, 128 (no reload).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

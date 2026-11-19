@@ -643,6 +643,14 @@ extern "C" void _ReadWriteBarrier(void);
 // 463: four-field iterator with shared current-datum setter and either index scan. A local or
 // field index with the iterator pool scores 152, and with an entry pool scores 149. NOT kept:
 // the entry pool gives frame 0x14 at retail length, but one pool store and the register split differ.
+// M3 lane 13 r115 (fast, plain agrees on the 20; 0x1fb360, 0x1fb4c0, 0x1fb6f0, 0x1fb760 MATCH throughout; restored):
+// lane 11 r115's 20 form rebuilt (20 plain too); on it: the element pointer declared in the loop 20; the finished flag
+// at function scope 20; the lookup result at function scope 20; the pool local declared first and feeding the
+// iterator's data 159 (464 B); the arms swapped (`!unit || (flags & 1)` first, tick arm in the else) 20; the file's
+// unit getter with a named datum-index local for the release 20; the permuter on the 20 (600 s, 21 tries on a
+// 500-source image) nothing better. The 20 form's step with main's single `if (unit)` and `continue` 120 (477 B).
+// The rotation reads as a weight tie: retail ranks the datum index above the lookup's header (EDI, then EBP shared
+// by the pool data and the header), this build the header above the datum index.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
