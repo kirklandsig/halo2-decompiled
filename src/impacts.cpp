@@ -983,6 +983,23 @@ void impact_orientation_get(
 }
 
 
+/* a rigid body's angular velocity */
+static __forceinline void havok_component_rigid_body_angular_velocity_get(s_havok_component const *component, long rigid_body_index, vector3f *velocity)
+{
+	s_havok_component_rigid_body const *rigid_body = &component->rigid_bodies.data[rigid_body_index];
+
+	*velocity = rigid_body->angular_velocity;
+}
+
+/* Squared length of a vector, with its components summed in the order k, i, j. */
+static inline real squared_length_kij(vector3f const *v)
+{
+	real sum = v->k * v->k;
+	sum += v->i * v->i;
+	sum += v->j * v->j;
+	return sum;
+}
+
 // score 241: walked against retail statement by statement (11-05): no logic difference (both switches, every branch,
 // constant and field; the pool constants at 0x45e294 and 0x45e298 are 1/3.95 and 2.4674013, as in the source). Not kept,
 // though closer to retail's structure (opcode alignment 0.84 -> 0.95): the angular velocity read and subtracted through a
@@ -998,6 +1015,9 @@ void impact_orientation_get(
 // Permuter, 35 minutes (11-05): full image 180 only with volatile locals and casts that change no value. Its plain
 // parts (rotation_threshold declared after physics_type, component->unknown20 read at each use, the sliding/rolling
 // else-if chain inverted, speed_ratio declared first, velocity k stored before j) give 239 fast at best (k before j).
+// Matched in a full build with stand-in SDK headers (was 241): see the pull request for the nine steps; the plain
+// ones are the angular velocity of body b read through a pointer and subtracted member by member, the third branch
+// as `maximum_speed = 7.0f; if (...) maximum_speed = 0.5f;` with the ratio as a ternary, and unknown91 as one store.
 // @retail 0x228f30
 void impact_type_update(
 	long impact_index,
@@ -1039,23 +1059,38 @@ void impact_type_update(
 	}
 	rotation_threshold = physics_type ? 0.5f : 1.0f;
 
+	vector3f const *body_angular_velocity;
+	havok_component_rigid_body_angular_velocity_get(component, rigid_body_index_a, &angular_velocity);
+	real rotation_speed = impact->unknown8c;
 	strength = 0.0f;
-	angular_velocity = component->rigid_bodies.data[rigid_body_index_a].angular_velocity;
 	if (impact->component_b != NONE)
 	{
-		s_havok_component_rigid_body const *rigid_body_b = &havok_component_get(impact->component_b)->rigid_bodies.data[rigid_body_index_b];
-
-		angular_velocity.i -= rigid_body_b->angular_velocity.i;
-		angular_velocity.j -= rigid_body_b->angular_velocity.j;
-		angular_velocity.k -= rigid_body_b->angular_velocity.k;
+		body_angular_velocity = &havok_component_get(impact->component_b)->rigid_bodies.data[rigid_body_index_b].angular_velocity;
+		angular_velocity.i -= body_angular_velocity->i;
+		angular_velocity.j -= body_angular_velocity->j;
+		angular_velocity.k -= body_angular_velocity->k;
 	}
 	impact->type = NONE;
-	if ((impact->unknown8c > rotation_threshold * rotation_threshold ||
-		length_sq3f(&angular_velocity) > 2.4674013f) &&
+	if ((rotation_speed > rotation_threshold * rotation_threshold ||
+		squared_length_kij(&angular_velocity) > 2.4674013f) &&
 		impact->unknown40 > minimum_impulse)
 	{
 		impact->type = 0;
-		strength = (MIN(impact->unknown40, maximum_impulse) - minimum_impulse) / (maximum_impulse - minimum_impulse);
+		real impulse;
+
+		if (impact->unknown40 > maximum_impulse)
+		{
+			impulse = maximum_impulse;
+		}
+		else if (impact->unknown40 < maximum_impulse)
+		{
+			impulse = impact->unknown40;
+		}
+		else
+		{
+			impulse = impact->unknown40;
+		}
+		strength = (impulse - minimum_impulse) / (maximum_impulse - minimum_impulse);
 	}
 	else if (impact->unknowne)
 	{
@@ -1075,8 +1110,8 @@ void impact_type_update(
 				s_impact *other = &((s_impact *)g_51ebfc->data)[other_index & 0xffff];
 
 				if (!other->unknowne &&
-					impact->material_a == other->material_a &&
-					impact->material_b == other->material_b &&
+					impact->material_a == c_type_47f957(other->material_a) &&
+					impact->material_b == c_type_47f957(other->material_b) &&
 					other->unknownd != NONE)
 				{
 					switch (other->type)
@@ -1120,12 +1155,8 @@ void impact_type_update(
 		if (impact->unknownd == NONE)
 		{
 			maximum_speed = 0.5f;
-			speed_ratio = 1.25f;
 		}
-		else
-		{
-			speed_ratio = 8.0f;
-		}
+		speed_ratio = impact->unknownd != NONE ? 8.0f : 1.25f;
 		rigid_body = component_a->rigid_bodies.data[rigid_body_index_a].rigid_body;
 		if (!rigid_body->m_fixed)
 		{
@@ -1185,14 +1216,7 @@ void impact_type_update(
 		}
 		impact->unknown10 = 0;
 	}
-	if (PIN(impact->type, 2, 3) == impact->type)
-	{
-		impact->unknown91 = MIN(impact->unknown91 + 1, 0x7e);
-	}
-	else
-	{
-		impact->unknown91 = 0;
-	}
+	impact->unknown91 = PIN(impact->type, 2, 3) == impact->type ? MIN(impact->unknown91 + 1, 0x7e) : 0;
 }
 
 // @retail 0x22a060
