@@ -571,6 +571,11 @@ struct s_ai_scene_assignment
 // named at the top of the found arm, the copy stepped (`++role`) for the recursion, on the int copy 12, on the direct
 // maximum 59 (same code each: the copy is merged with the parameter, its reload still heads the block). The int copy's
 // three differences are unchanged: the movsx, and the role's dword reload ahead of the actor index load.
+// M3 lane 15 r100 (fast with 0x291b40/0x291800; int-copy form 12, direct maximum 59 at 350 B): on the direct maximum,
+// `short const &role = role_index` at every use 59 (folds); a long next-role local for the flag and the recursion 59 at 347
+// B (re-measured as a base: retail's head, then the stores movsx the role from its slot and the variant store moves up);
+// the leaf and recursion arms swapped 65; the last-role flag declared ahead of the role pointer 103; the iterator loop as
+// `for (iterator_new; iterator_next; )` 59 (same code).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
