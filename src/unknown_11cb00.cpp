@@ -314,9 +314,12 @@ real function_11e000(
 
 PRIVATE inline real function_11e5e1(vector3f const *arg_0, vector3f const *arg_1)
 {
-	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_0->i * arg_1->i;
+	return arg_0->i * arg_1->i + arg_0->j * arg_1->j + arg_0->k * arg_1->k;
 }
 
+// Matched in a full build with stand-in SDK headers (was 10): the delta is computed in i, j, k order and the
+// file-local dot helper adds its terms in i, j, k order.
+// Before:
 // score 10 (was 28): the delta components are computed i, k, j and the
 // commutative 0x11e5e1 dot product is called as (&delta, &d); both change the
 // SSE register schedule. The residual is the y/z XMM pair (xmm4/xmm5) and the
@@ -332,8 +335,8 @@ bool function_11e5e0(
 	real c;
 
 	delta.i = segment_start->x - arg_28f920->x;
-	delta.k = segment_start->z - arg_28f920->z;
 	delta.j = segment_start->y - arg_28f920->y;
+	delta.k = segment_start->z - arg_28f920->z;
 	c = function_11e5e1(&delta, &delta) - radius * radius;
 
 	if (c < 0.f)
