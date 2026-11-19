@@ -398,6 +398,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // after cross partials, or after cross pairs 370/373/359/365. Sine products in their
 // off-diagonal cells 353. Both, with original, early or late diagonal completion 381/348/363.
 // NOT kept: all forms shrink the retail-sized frame and raise the score.
+// Symmetric pairs seeded and corrected by pair, chained or mirrored, with direct
+// or named sine products 350/351/338/357. All pairs seeded before row corrections
+// in the same four forms 343/399/367/376. NOT kept: even the closest form
+// shrinks the frame, and the frame-preserving named-sine form grows to 1794 bytes.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5284,6 +5288,11 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // The same four with color4f: 225/225/225/225. NOT kept: color recovers frame
 // 0xe0 and the collision home, but the radius stays at +0xc and the six-point
 // gain grows to 1826 bytes against retail 1819.
+// Shared vector scale into a distinct offset, direct/cached scale, with scalar
+// alpha or color 507/516 and 507/516. Choosing the original or scaled offset
+// by assignment or conditional 616/622 and 628/634. NOT kept: the complete
+// vector recovers frame 0xe0 with scalar alpha but moves the radius to +0x1c
+// and grows to 1934 bytes. Color grows that frame to 0xe4.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

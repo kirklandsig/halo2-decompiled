@@ -536,6 +536,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // near continue 305, complete signed endpoint initializer 305.
 // NOT kept: the real radial bound restores the first unity load but shortens
 // the body by 15 bytes. Near cosine and candidate ordinal homes remain.
+// Signed candidate total with earlier projections (both, velocity, facing, facing between
+// endpoints, velocity between, both between, both before radius sign) 471/469/468/469/469/469/471.
+// Earlier projections with a cached positive radius 384. NOT kept: signed total shortens
+// the body and changes the caller convention. The unity register remains on the cached-radius form.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

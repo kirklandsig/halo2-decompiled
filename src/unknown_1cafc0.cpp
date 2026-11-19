@@ -1098,7 +1098,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // retail's slots but leaves its constructor at the entry (353); re-initialising it in the block adds the
 // block-entry stores but the entry constructor stays (353); no C++ scoping gives both. Blend-query lifetime
 // (retail keeps the blend byte in memory across 0xe6800) and the result/loop byte homes also differ.
-// score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; ID homes and blend-query lifetime still differ.
+// Earlier 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; ID homes and blend-query lifetime still differ.
 // Round 15: inline channel query 210; early success with separate name comparisons 256; separate comparisons
 // with late success 265; bitwise separate comparisons 256; inline transition-find 210 (callee still matched);
 // fraction clamp workspace 287; signed-byte result 210; primary-ID lexical rename 210. Original body restored.
@@ -1258,6 +1258,10 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // channel test 210; the 0x200 test with its arms swapped 214 (1133 B); the fraction declared where first set 210; the
 // transition set declared at its initialisation 210. Diagnostic: the channel test's id use dropped 337 (1116 B): the id
 // then stays in memory, but the id slots stay swapped and the set still does not take EBP. All restored.
+// Completed transition ID copied at admission, before clear or after start 210/210/210.
+// Completed primary ID copied at lookup return alone or with those transition
+// copies 210/210/210/210. Primary copy before clear with transition copy at
+// admission 210. All leave the ID slots and blend lifetime where they were.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {
