@@ -1019,6 +1019,7 @@ union solver_pointer_phase_31c940
 	float const *inverse_time;
 };
 // Ordinary score 2268 after explicit stored normal values (review baseline 2397).
+// Follow-up: audit scalar storage ownership against the retail stack frame.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // Retail directly tests for friction opcode 8 after the second normal pair;
