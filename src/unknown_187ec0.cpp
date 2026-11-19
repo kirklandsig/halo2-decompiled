@@ -831,6 +831,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // into the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body
 // is in src/unknown_175bd0.cpp; the flag-line lever of the earlier round reaches no further, because the threshold
 // that decides the inline comes from the generated ballast and not from this file: BLOCKED-BY that file.
+// Matched in a full build with stand-in SDK headers (was 46): the first loop's counter is a dword.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	c_type_47f957 entry_element_index, long effect_value, s_location const *location, real scale)
@@ -864,7 +865,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 	position.compressed_forward = vector3d_compress(forward);
 	position.velocity = *g_4687a4;
 	position.location = *location;
-	for (short j = 0; j < sizeof(first_values) / sizeof(first_values[0]); j++)
+	for (dword j = 0; j < sizeof(first_values) / sizeof(first_values[0]); j++)
 	{
 		if (first_values[j] != NONE)
 		{
