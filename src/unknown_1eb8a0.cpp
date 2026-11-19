@@ -679,12 +679,23 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // carry the upper-bound value in activation step and activation distance and active output 693;
 // all upper-bound carriers with the lower bound initialized first 691.
 // NOT kept: All scores rise. The first-activation forms also disturb the matched caller's convention.
+// M3 lane 11 r118 (fast with 0x1eb6f0 and 0x1ed4a0, MATCH throughout; control 603): the counter conversion without its
+// volatile 702 (2857 B), that with the 0.866 test as dot3f(&s->direction, d) 702; the 0.866 test and the output stage's
+// w both as dot3f 679 (2877 B); the sample copy as one aggregate `qr = *q` 665 (2880 B); no count local, `(real)counter`
+// at its three uses 706 (2853 B); the count tests in integers (`counter < 5`, `(real)(3 - counter)`) 687 (2845 B).
+// Retail loads q into EBX at entry, uses EBX and EDI as scratch for the activation's target copy and reloads q after
+// the 0x30bf0 call; d is read from its stack slot at five sites (the alignment dot, the two fallback copies, the 0.866
+// test with its copy, the settle dot).
 // M3 lane 12 r145 (fast with 0x1eb6f0 and 0x1ed4a0, MATCH each time; the fast control gave the full 603): retail loads q
 // (the fourth stack argument) into EBX at entry, reads d from its stack home at each of its five uses, borrows EBX for the
 // `s->start = *pos` copy and reloads q into EBX after the first direction refresh call; ours keeps d in EBX. The zero-tick
 // velocity as a `velocity = counter == 0 ? g_4687a4 : q` pointer read for qr 663 (2879 B, EBX still d); an unused pointer
 // to d 603 (same code); every d use read through that pointer (diagnostic) 675 (the reads are forwarded, EBX still d);
 // `out->position = *q;` ahead of the position alias 659 (2875 B); the 0.866 test as `dot3f(d, &s->direction)` 604.
+// Whole scaled displacement 744, indexed displacement scaling 673, whole impulse 734,
+// indexed impulse with displacement update 741, settling length before the copy 603,
+// shared activation and normalization motion 676, shared scaled-reference displacement 673,
+// staged target point 717. NOT kept: these forms leave or worsen the sample register and coefficient schedule.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

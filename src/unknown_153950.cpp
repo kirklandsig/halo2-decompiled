@@ -729,6 +729,10 @@ struct s_player_axes_153d10
 	vector3f up;
 };
 
+/* the cross and dot block: MSVC orders the operands of each product and sum by
+   its own expression keys, so the k row's parenthesized products, its forward.j
+   read through the forward pointer and the forward dot accumulated in two
+   statements give retail's operand orders (any other spelling flips one of them) */
 // score 2 (was 2): one product is built with its operands in the other order: retail multiplies up.k by
 // forward.i, ours multiplies forward.i by up.k. Everything else is identical. Retail keeps every
 // cross product's text order; ours orders all six by the axis pointers' age. Round 14 (plain):
@@ -974,9 +978,10 @@ void __stdcall function_153d10(long user_index, long tag_index, void *owner, voi
                 vector3f relative;
                 cross.i = axes->forward.j * axes->up.k - axes->forward.k * axes->up.j;
                 cross.j = axes->forward.k * axes->up.i - axes->up.k * axes->forward.i;
-                cross.k = axes->forward.i * axes->up.j - axes->forward.j * axes->up.i;
+                cross.k = (axes->forward.i * axes->up.j) - (forward->j * axes->up.i);
                 relative.i = cross.k * delta.k + cross.j * delta.j + cross.i * delta.i;
-                relative.j = forward->k * delta.k + forward->j * delta.j + forward->i * delta.i;
+                relative.j = forward->k * delta.k + forward->j * delta.j;
+                relative.j += forward->i * delta.i;
                 relative.k = up->k * delta.k + up->j * delta.j + up->i * delta.i;
                 *(real *)((byte *)slot + 0x8c) = relative.i;
                 *(real *)((byte *)slot + 0x90) = relative.k;

@@ -1094,6 +1094,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
 
+// score 234 (was 347): Damping extraction still uses ECX in place of EDX. The gravity store, input address and later vector homes also differ.
 // Earlier 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // Earlier 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
@@ -1577,10 +1578,26 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // MiniMax A (11-18): no new form, no lower score (234); what still differs is the damping's first extraction (ours keeps it in
 // ECX), the vector homes and the vertical output tail; the homes only move when the arms' shapes change, which raises the
 // score, so the body stands.
+// gravity result assigned in each motion path 604; gravity defaults off until an active path selects it 660;
+// gravity result selected with the bounded step 597; gravity admitted by the enabled and gravity flag mask
+// 558; named enabled decision shared with gravity admission 628; gravity selection at the final vertical sum
+// 236; gravity and plain vertical values selected before the output sum 486; bounded vertical value with an
+// optional gravity correction 486. The final vertical conditional is closest at 236 and retains retail length
+// and the same entry mismatch. The other forms score 486 to 660. All four matched controls hold. Opening
+// executable source restored.
 // Entry contact-word snapshot 610; scoped settings/contact reads 630; shared motion mask
 // with disabled/direct first 614/650; three-way motion selection 628; general before direct 612;
 // enabled-input dispatch 635; gravity retained from bounded-step admission 453. NOT kept: all
 // scores rise and the original damping extraction and vector-home differences remain.
+// M3 lane 11 r120 (fast; base 234, difflib-aligned 192): K initialised dead locals at the top (diagnostic, reverted),
+// K=score: 1=484 (3053 B), 2=481, 3=364, 4=366, 5=358, 6=362, 7=560 (3040 B), 8=561, 9=477, 10=481, 11=364, 12=366, 13=358,
+// 14=362, 15=560, 16=565, 18=481, 20=500, 22=497, 23=429, 24=555, 26=501, 28=500, 30=497, 31=429: no count comes near, so the
+// operand orders and homes that differ are not a symbol-count offset (the current numbering is the best state).
+// Trials (fast with 0x1f0450 and 0x24590, both MATCH): the first arm's left through the shared cross3f 234 (same code);
+// through cross3f_staged 501 (3057 B); through this file's function_1f087b 505 (3057 B); the first arm's three output rows
+// through a `vector3f *` local for out + 0xc 589 (3027 B); the direct arm's rotation and the positive-normal arm's desired.i/j
+// (the same planar rotation of the input by the facing) through one two-caller file-local helper writing a point2f, plain
+// `inline` or forceinline, 489 each (3047 B: the helper's bound parameters shift the numbering as K = 2 does).
 // M3 lane 12 r143 (fast with 0x1f0450 and 0x24590, both MATCH; control 234). Retail's tail structure: the first arm clears
 // gravity and cross-jumps into the general arm's `movss [edi + 0x14], xmm0`; the direct arm stores i, j, then k from XMM1
 // and jumps past it; the general arm stores each row as formed (XMM3, XMM0, XMM0, current loaded first). The cross-jump

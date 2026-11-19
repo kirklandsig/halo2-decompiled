@@ -370,6 +370,10 @@ const dword g_455978[81] = {
 // 295). One compiler-setting diagnostic: without the inline restriction on src/unknown_279740.cpp both releases expand the
 // range check (418 at 2215 bytes, as `inline` on its definition did), so that file's flags are not the lever either.
 // Still BLOCKED-BY 0x11bed0: the original has slightly more in it than ours when the expansion is decided.
+// SDK exception-mask setter 298, exception-state clearer 298, both 298; one named control word,
+// read separately at setup and cleanup, 298. Axis loop seeding both bounds with explicit fourth
+// components 509, with either or both exception macros 509. The two optional-state homes
+// and the selective location and release expansions remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

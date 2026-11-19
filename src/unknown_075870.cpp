@@ -757,6 +757,23 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // Native state or connection-index local 170; conditional connection pointer 293; two separately named snapshots 134.
 // Unqualified argument with owner cursors 176 (caller losses); entry connection initialization 137;
 // one observer snapshot with a registration reload and indexed owners 134 (retail length, plain confirmed).
+// m3 lane 5 r202 (fast with 0x75da0, 0x76a40, 0x785d0, 0x78880, 0x78900, 0x784a0, 0x77330; control 170, aligned 55):
+// the plain parameter read once through its address into an observer local 245 (833 B, ret 8: both parameters on the
+// stack, observer EBX, channel index EDI; callers lost), with the parameters swapped 245, with the address read only at
+// the channel lookup 245, with a second read through the address before the registration loop 245 (propagated);
+// `(void)&observer;` without the volatile 177 (aligned 36: observer passed in EBX, channel index on the stack); the
+// plain parameters swapped 177 (same code). Lead re-measured, not kept (a copy plus parameter reads): the volatile
+// parameter copied once for the dispatch and the invalidation loop and read again in the registration loop 124 at
+// 821 B with every caller matching (masked 13): left the copy in ESI and the zero/loop counter in EDI (retail EDI/ESI),
+// the load ahead of `push edi` and the 64-bit subtraction's high dword in ESI. On it: the copy assigned again before the
+// registration loop 134, the connection local declared at the top 126, one owner index for both loops 124; one or two
+// set-state calls given the parameter (fewer copy uses) 176/221 without flipping ESI/EDI.
+// Round 140 (m3 lane 9, fast with 0x78880, 0x76a40, 0x75da0, 0x785d0): with the volatile dropped (177) ours homes the
+// index in EDI and observer in EBX, retail homes observer in EDI (split by the owner cursor and the memset, then re-read
+// from its stack home) and the index in EBX. Volatile dropped and observer read once through `s_network_observer *const
+// *` to itself 245 (833 B, both arguments on the stack, callers lost); the same with the parameters (index, observer)
+// everywhere 245; the two owner-notify loops as one two-caller inline helper 333 (705 B), the same without the volatile
+// 359 (701 B); volatile dropped with one function-scope loop counter 177 (callers lost).
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {
@@ -2337,7 +2354,7 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
     return observer_round(local_0);
 }
 
-// score 2 (was 89; the text up to the round 135 paragraph describes the older 205 layout): no behaviour difference found. Still differs: (1) the stack
+// score 2 (was 2; the text up to the round 135 paragraph describes the older 205 layout): no behaviour difference found. Still differs: (1) the stack
 // slots of rate/j and count/float temp are swapped (retail rate+j at esp+0xc,
 // count at esp+0x10; moving rate's or count's declaration did not change it);
 // (2) retail rereads the refresh word g_485ac0 (movsx) in each of the three
@@ -2364,6 +2381,15 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
 // Branch additions 211; chosen base before adjustment 212; increment and base locals 146; inverted selector 142;
 // default prior budget 285; clear-flag base with adjustment 212; shared configuration view 211.
 // NOT kept: the reduced variants do not recover the full-image frame slots and flag register.
+// Round 140 (m3 lane 9, plain with 0x78090, 0x78190, 0x75da0): retail's 0x140 load between `test al, al` and `je` reads
+// as a head merge, both arms of a two-arm sum starting with `mov eax, [ecx+0x140]` (the 4e28 arm then loads EDX and
+// falls into the shared add). The two-arm forms give the flag AL, but the 4e28 arm always loads 4e28 into EAX and 0x140
+// into EDX, so nothing merges: `flag ? 4e28 + c140 : rate + c140` 245, c140 written first in both arms 245, if/else
+// arms each `budget = c140; budget += x;` 245, a `long const *` to the 0x140 field used in both arms 246; the ternary
+// alone then `budget += c140` 251. Compile-only (the stream matches the real build here): the arm's operand order
+// follows the base, not the spelling (observer fields and globals load before configuration fields; two configuration
+// fields, a diagnostic, give retail's exact merged shape); a pointer or reference to 4e28, a `this` member body, a
+// configuration local and an earlier mention of c140 all leave it.
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {
@@ -2791,9 +2817,9 @@ void network_observer_recreate_connections(s_network_observer *observer)
 		s_network_observer_channel *channel = &observer->channels[i];
 		if (channel->state)
 		{
-			XNADDR const *remote_address = (XNADDR const *)channel->remote_id;
+			XNADDR const *channel_xnaddr = (XNADDR const *)channel->remote_id;
 			char name[256];
-			format_title_address(remote_address, name, sizeof(name), false);
+			format_title_address(channel_xnaddr, name, sizeof(name), false);
 			long connection = link_connection_allocate((long)name, 0x38);
 			channel->connection_index = connection;
 			if (connection != NONE) link_connection_get(connection)->owner = (c_connection_owner *)observer;

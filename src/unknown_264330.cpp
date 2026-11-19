@@ -753,6 +753,15 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // keeps the argument on the stack. Left: the EAX convention, the slot offset saved at entry ([esp+0x28], which the
 // inlined 0x2641c0 reuses) and the walk. BLOCKED-BY 0x2641c0's inline (its noinline declaration is in another lane's
 // file this round).
+// M3 lane 7 r182 (fast with 0x1e34e0, 0x263210, 0x2641c0, 0x264210, 0x264b50, 0x264330, 0x265680; control 412, aligned 342):
+// case 3's decrement as an if/else on the current target 412 (same count); `sampled_one = true` ahead of the counter reset
+// 413; the tail's early return as if/else arms with one final maximum store 412. Diagnostics, reverted: the `update` flag
+// folded into `sampled_one` 458 (1596 B, frame 0xa0) and the parameter copied into a const local used everywhere 412 (same
+// code): in both the actor index is still a stack argument, so neither the byte register `update` takes nor the
+// parameter's own uses keep it there. No named double sits in this function's call tree (searched nine levels; 0x265550's
+// `(double)range` is a cast in a test), so it is not the stack-parity effect that pads 0x1197b0, and the walk model
+// (m3-lane5 build/r195 search.py, run on this build's image) gives 0x262ba0 the custom convention, so it is not the walk
+// either. What keeps the argument on the stack is still open; BLOCKED-BY 0x2641c0's inline stands.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

@@ -500,6 +500,13 @@ struct s_visibility_bound_record
 // views read and the active test 434. A compile-only screen shows the early zero (`xor; cmp eax, reg; cmp [state +
 // 0x2a78], reg`) for per-list setup in three orders, separate count stores, `active == 0`, the parts flag set by an if,
 // the flags tested first, and even with the active test removed: the `> 0` count test alone joins the store zero.
+// MiniMax A (11-18): no new form, no lower score (430): retail forms the entry address with a lea into ebx from the scaled
+// index after the first register save and reads the tag through that pointer, while this build reads the tag through a
+// displacement from the scaled index and only then materializes the entry pointer; retail loads the tag table into esi
+// after the tag compare and this build hoists it into ecx at the very top, and the entry's spill is at [esp+0x48] here
+// against retail's [esp+0x30]. The geometry lookup goes through the header's visible_entry_geometry, whose own
+// &g_4ba138[index] is what the based-pointer folding applies to; the source permuter's best variant was one differing
+// instruction better and carried a declaration split and a pointer-to-a-local.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
