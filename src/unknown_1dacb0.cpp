@@ -1486,6 +1486,12 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // a reload only on the loop's exit; ours ends that EBX range at the loop and gives `this` EBP in the second request
 // (the +0x34 table pointer takes EBX from its second kind), also when the second request is keyed by the `mode`
 // parameter (829), so the found mode being address-taken is not what keeps it out of EBP.
+// M3 lane 8 r194 (fast, both twins, with 0x1dc790, 0x1dc8c0 and 0x2963f0, all MATCH; control 828): on the 755 form (the
+// siblings' `if (weapon_class != NONE)` block, iterator store order and found-flag loop, re-measured 755; with the early return
+// kept 995): the result set only in the found arm 1043 (2859 B); the found test on the candidate with the result copied every
+// pass 755 (same code); the flag assigned directly (`found = result.index != NONE; if (!found)` re-iterate) 990 (2841 B); the
+// entry pointer declared at its first iterate call 755 (same code); diagnostic, the second request's mode as
+// `found_mode ? *found_mode : iterator_mode` 816 (2841 B). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1942,6 +1948,8 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Conditional complete candidate copy 951; default then overwrite at hit 989; head-tested branch copies 840.
 // Implicit cursor zero initialization 828; zero or graph initializer before key stores 996/996;
 // candidate initialized from lookup outcome 978. NOT kept: best gain 2, candidate and mode homes remain.
+// M3 lane 8 r194: the five forms of 0x1db170's note of this round, applied to both twins, give the same scores here (1043, 755,
+// 990, 755, 816). Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
