@@ -833,6 +833,23 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // The complete found-name record at request entry, initialized, const-initialized, assigned or
 // field-initialized: 504/504/504/407. The same forms with Boolean success: 497/497/497/503.
 // NOT kept: the snapshots disturb the agreeing prefix and leave the graph/base reloads unresolved.
+// M3 lane 1 r122 (fast with the callers and callees, 0x1cd070 unchanged at 210; aligned 36 on the kept body, which
+// is far closer than its 348 by position: 21 extra bytes shift the tail). Diagnostic, reverted: the three request
+// helpers copied here in member form on a type derived from the graph (`this` for the graph at all three levels,
+// the inherited graph as the object of the inner call) 348, the same bytes: `this` is copied into EBX exactly as
+// the first formal is, so the member form does not give retail's in-memory graph. bool success re-measured 478
+// (1809 bytes, aligned 80): retail's un-normalised return and the graph in EBP, but `lea eax, [ebp+0x34]` at each
+// group and the zero in EBX (retail: the sum in EBX, `xor ecx, ecx` for the inheritance loop's two stores and its
+// `cmp eax, ecx`); the member form with bool success 478 (same bytes as bool alone). The member form taking the
+// found-name record by pointer at the request level 674 (1830 bytes; the names are then read at each group); that
+// with an urgent-only request (the constant false dropped) 637 (1798 bytes); the graph passed as the state's tag
+// lookup at the call instead of the local 633 (re-measure of round 12's fresh graph: 0x1cd070 213).
+// M3 lane 15 r104 (fast with 0x1cd070 210, 0x1cccd0 and 0x1dc8c0 MATCH throughout; control 348, all restored): the graph
+// read through its address at the request (diagnostic) 348 (folds, same code); the graph fetched through graph_get() at
+// the request 633 (0x1cccd0 lost); `success` declared ahead of the graph 348 (same code); in the request helper (src/
+// unknown_1dacb0.cpp) the inherited graph named before its group request 348 (same code; 0x1dc8c0 stays MATCH: that
+// matched user of the helper also keeps the graph in EBX and graph+0x34 in EBP, so the swap here comes from this caller);
+// the found names copied into an aggregate for the request 504 (1766 B, the frame changes).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1269,6 +1286,41 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // resolved set or resolved mode and set at lookup return 210/210; complete record lookup with
 // early resolved set 210; early set under split lookup admission 210. NOT kept: all forms
 // tie with the primary and transition ID homes exchanged.
+// M3 lane 1 r122 (fast with 0x1ccda0, 0x1cccd0, 0x1ccae0, 0x10f430, 0x1cb410; aligned counts in brackets, the kept body
+// [103]; nothing kept: every form below is closer when aligned and further by position). The set parameter refreshed
+// from names.set in the block and used at the three later places 210 (same code); the channel byte held in the blend
+// variable 210 (same code); both 210; the set parameter at the three later uses re-measured 277 [99] (1133 bytes;
+// callers 0x10f430 80, 0x10fd40 13, 0x119650 8, 0x118510 2, 0x1ccae0 2). Lead A (round 64's form rebuilt): bool
+// result, `result = true;` as the first statement after channel_start, `if (!result && (state_flags & 4)) result =
+// true; if (result) {...}` and three name-change bools joined with `||` after the store 249 [51] (1140 bytes, first
+// +0xb1: the two id homes, the memory transition id and the set in EBP are then retail's); A with the request's three
+// arguments read through stored_names (retail reads `[eax]`, `[edi+0x78]`, `[edi+0x74]`) 249 [47]; A2 with the
+// transition channel in a pointer local declared between the id test and the graph test (`if (id != NONE) { channel =
+// &channels[2]; if (graph != NONE && channel->set(...))`, three uses) 282 [35] (1142 bytes: the channel byte is then
+// memory-resident with retail's `and byte ptr [esp+0x50], al` and `lea ebx, [edi+0x40]` sits where retail has it); the
+// pointer declared inside the two-test block instead 282 [48] with the frame position local; the frame position in a
+// local declared after the frame count 261 [59] (retail's single load and in-place pin, but position and count
+// exchange XMM0/XMM1), declared before it 269 [62] (1153 bytes, loaded ahead of the call), with the pointer 206 [50]
+// (1155 bytes; positional accident, not kept). The store through a forced inline helper called on the success path and
+// on the flag-4 path 560/547 (two copies, not merged); the same helper not forced 442/448 (out of line); the flag-4
+// block written after the return and reached by goto (diagnostic) 249 [47], the same code as A2: the build lays that
+// block ahead of the store whatever the text order, where retail has it after the epilogue jumping back; an early
+// `return result` form without gotos 272 [112]. Diagnostics, reverted at once: the blend query's callee swapped for an
+// undefined extern 253 [33]: the blend byte then goes through memory around that call but in EBX, not retail's
+// load/store at every `&=`; the blend byte's address also passed to an undefined extern 331 [96] (frame 0x3c). Left on
+// A2 [35]: the blend byte is never register-resident in retail (stored before the 0xe6800 call, reloaded after it and
+// at the join, state_flags reloaded into EBX right after that call, one shared `and byte ptr [edi+0x6e], 0xfe`), the
+// frame position's single load, the flag-4 block's place, and a scratch-register rotation at the 0x1cccd0 and 0x1cb410
+// calls. BLOCKED-BY 0xe6800 for the blend byte only if retail built that callee as opaque; not shown.
+// M3 lane 15 r104 (fast with 0x1ccda0, which stays MATCH, and 0x1cc3f0 348; control 210, all restored): the animation id
+// renamed to sort after the transition id 210 (same code; a re-measure of lane 10 r13's form); the blend flag reused for
+// the unflagged state (retail's [esp+0x50] holds both) 210 (same code: ours still keeps it in DL); `result = true;` first
+// in the channel_start success block (retail's `mov byte ptr [esp + 0x54], 1` there) 274 (1139 B); a named pointer to
+// channels[2] declared after the unflagged state and used for its set, frame and unflagged calls 237 (1133 B as retail,
+// first +0xa9: both id slots and the transition id's memory compares as retail; left: names.set not cached in EBP and
+// the blend flag kept in DL across 0xe6800); on that, a resolved-set local for the three later set uses 237 (same code);
+// on that, transition_find's blend parameter read through its address (diagnostic) 285 (1136 B; the transition id
+// moves to [esp+0x4c]).
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

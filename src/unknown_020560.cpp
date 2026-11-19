@@ -838,7 +838,8 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the nearest index, a pass counter, the sample list, the offset vector and the delta vector, where this build opens
 // 0x18 and keeps the count in edx with no home, and retail takes the position pointer as its third parameter (edx)
 // while this build takes it in eax - a parameter order that may not change here.
-// score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
+// Earlier (547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
+// Earlier header (merged r139): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // MiniMax S (11-17): no new form, no lower score (547): retail opens a 0x2c frame with homes for the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector, where ours opens 0x18 and keeps the count in edx with no home; retail's nearest scan is a four-wide unrolled pass over the samples with two induction pointers and the closest index in edi, where ours walks a pointer and keeps the closest sample.
 // MiniMax D (11-17): no new form, no lower score (547, was 547); retail's 0x2c frame still needs its
 // offset.x home at +0x24, the dead store each pass, the pass counter at +0x18 and the hoisted entries
@@ -1146,6 +1147,30 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Round 630: direct opposite winner with indexed records, nearest pointer/ordinal 742/712;
 // with a count-bounded cursor 830/781. Convert the winning pointer once after the walk,
 // pointer-bounded 711/735, count-bounded 766/762. The frame and query register differences remain.
+// M3 lane 1 r123 (fast with 0x23690, 0x24550, 0x22750, 0x22c30, 0x146020): retail's two calls push source, red, green,
+// blue, order and direction and pass the position last in EDX; the position parameter first, second or sixth (the
+// definition, the declaration in src/unknown_023540.cpp and both calls together) 547 each (same code, still EAX), so the
+// arrival register follows the body (the index-scan bodies receive it in EDX), not the slot. The fallback as an early
+// return 591; the override copies as an early return 584. All restored.
+// Round 262 (m3 lane 3, fast with 0x24550, 0x22c30, 0x22750 and the caller 0x23690): the index body (entries read at each
+// use, both distances through distance_sq3f, delta and offset through vector3d_from_points3d, dot3f, the ternary second,
+// `fraction = 0; if (second)`) re-measured 576 (2094 B): scan 1 is retail's but `nearest` stays in memory (retail EDI,
+// stored to +0x14 at the loop exits) and the limit takes EDI; on it the count == 1 copy as an if/else arm with no return
+// 576 (same code); `opposite` declared with `nearest` before scan 1 564 (2089 B: the limit moves to retail's EBP, but
+// red is then loaded into EDI at the entry and `nearest` stays in memory); that with scan 2's distance as
+// length_sq3f(&offset) 660 (2020 B). On this body: `opposite` declared before scan 1 634 (2159 B); the count == 1 copy
+// as an if/else arm 547 (same code).
+// M3 lane 16 r139 (fast with 0x24550 and the caller 0x23690): the index body (`source->entries[i]` at each use, scan 1 and
+// scan 2's distance through distance_sq3f(sample, position), delta and offset through vector3d_from_points3d, dot3f, the
+// ternary `second`, `fraction = 0; if (second)`) re-measured 576 (2094 B, frame 0x20; 0x23690 330 -> 354). Its head is
+// retail's but for the frame and the shared zero; scan 2 matches retail's shape except that delta.j and delta.k are spilled
+// where retail spills only delta.k and gives the offset its own 12-byte home (offset.i stored each pass, never read): that
+// home is the 0x2c frame's missing 12 bytes (retail: opposite +0, nearest +4, pass counter +8, count +0xc, samples +0x10,
+// offset +0x14, delta +0x20 shared with the fallback vector; other_distance reuses the source argument's slot). On it: the
+// offset through a pointer local to it with length_sq3f 654 (2033 B), with distance_sq3f 576 (same code: the pointer folds
+// and the offset still has no home); the nearest index renamed so that it sorts after `opposite` 576 (same code: names do
+// not move these slots); the fraction as a ternary on `second` 576 (same code); opposite and its distance declared ahead
+// of `first` 576 (same code).
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

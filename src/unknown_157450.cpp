@@ -1879,6 +1879,9 @@ short function_15cca0(long player_index, byte code)
 // the p27 arguments written inline 25; team and other_team swapped 24; `!= 0` tests 24; early-return guards 24;
 // pointer-increment countdown loop 24; other player pointer as a named local before or after `team` 24; the
 // other player pointer hoisted above the lookup 74 (the parameter does move to EAX there, but so does the lookup).
+// Round 636: other-player EDX versus retail EAX still rotates the lookup. Shared player pool 24, pool
+// reference 24, typed roster 24 or word slot 68; other team lvalue 52, both team lvalues 82, shared
+// pool with virtual receiver 24, other team field address 52.
 // @retail 0x15cd90
 void function_15cd90(long player_index, short identifier, long other_player_index)
 {
@@ -2070,6 +2073,9 @@ void function_15e460(long object_index, long value)
 // nested ternary return 31; three early returns 30; a local engine pointer with true-first 30; a `long one = 1`
 // local compared against 30, and a long result reused as the comparand (103 bytes) 39: no form makes the early
 // `mov edx, 1` appear ahead of the first branch.
+// Round 636: EDX one and ESI/EDI saves still differ. Option first in the existing branch chain 27,
+// as the gate for the role result 29, as a short-circuit return 30, as a restriction conjunction 40;
+// flag before role 30, with role result 30, with the option gate 36; option-first assignment 31.
 // @retail 0x15eb20
 bool function_15eb20(long player_index)
 {
@@ -5894,6 +5900,12 @@ void __stdcall function_d6bc0(long object_index);
 // loop-top index local at function scope 172; the object pointer declared before the index 172; `entries` copied into a
 // function-scope local 172; the default arm first 172. On the label form: case 1's bit through a trivial forced-inline
 // accessor 7 (same code; CL stays).
+// M3 lane 8 r188 (fast): the flag recipe re-measured 7 (869 B; left the index test on the local and case 1 in CL); on it,
+// with the field test: the object pointer declared at function scope (assigned NULL at the loop top) 172 (858 B), no
+// loop-top index local at all (every read through the field, the object block too) 172 (858 B), the schedule test on
+// the object pointer (NULL when there is no entry) 204 (852 B); with the local test: case 1 as a direct assignment
+// `schedule = bit;` 129 (877 B), the flag initialised from the index test (`bool schedule = index == NONE; if
+// (!schedule) switch ...`) 130 (874 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

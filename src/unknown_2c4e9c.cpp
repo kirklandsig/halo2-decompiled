@@ -1761,6 +1761,18 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 // `default: break;`; a self-assignment of `changed` after the copy. `changed` read into a bool first 11 (it takes BL).
 // The flat `event->type == 5 && (event->param == 1 || event->param == 13)` with one call and a bool result 2: retail's
 // registers, order and tail; only `cmp ecx, 1` / `cmp ecx, 13` where retail has the switch's `dec` / `sub 0xc`.
+// M3 lane 4 r216 (compile-only screen of this file, exact: body 2, one-call form 12; then fast). Diagnostic,
+// restored: one more read of the event (a probe store of its controller index to a scratch global in the case, after
+// the switch or before the call) gives retail's EAX event, EDX `this`, ECX switch value, one call and push-then-receiver
+// order (only the probe's two rows extra); a probe use of `this` instead 9, so only the event's count is short. Forms:
+// the copy source as a `dword const *` local at the case's top screen 11, fast 13 (switch value ECX as retail, but
+// `this` EAX, the event EDX); that local inside the changed block, typed `void const *` or `dword *`, with or without
+// a destination local, at the type block's or the function's top (36 forms) 8-13; the call in the changed arm and
+// after the switch screen 4, fast 23 (72 B, the calls stay apart); the parameter read once through its address at the
+// call, the type test, the switch or every use 12 each (the address folds); the type mismatch returning first 2, a
+// default arm returning 2, the call through a `c_class_1473c9 *` copy of `this` 2, `!!` on the case's call 7, the
+// not-changed arm breaking 4, the event or `this` bound by reference for the reads 12/12, the switch on
+// `type == 5 ? param : 0` 14, an else-if per button 20.
 // @retail 0x2c87fe
 bool c_screen_45d2b8::v10(s_widget_event *event)
 {
@@ -3211,6 +3223,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // local and then conditionally copied 30; `if (field == NONE) return;` then the read 30; the id cleared on the hit as
 // the loop's exit 35 (the caller 0x2c9a58 stops matching); an inline getter through an out-pointer 30; two returns in
 // an inline getter 30; the pool read into a local ahead of the id 30.
+// M3 lane 4 r216 (fast with 0x2c9a58, matched in each): the id from a new getter beside 0x19a6f2 in another file, so
+// LTCG inlines it across modules: fast 3 (the reduced image keeps the call), plain 30 (inlined at link time, the same
+// direct EBX load; retail has no out-of-line reader of the field to call); the guard written `NONE != map_id` 30; the
+// iterator at function scope with the selection after the loop on `iterator.datum` 28 (84 B); `return` in place of
+// `break` after the selection 30; `if (map_id == NONE) return;` with the walk unnested and the hit returning 30.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

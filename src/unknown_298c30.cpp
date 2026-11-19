@@ -114,7 +114,8 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // then `fld` of the threshold and `fcompi st(1)`) while this build pops it (`fstp` of the magnitude) and compares a reloaded
 // float, and the body is still 40 bytes shorter than retail's.
 // MiniMax R (11-16): no new form, no lower score (382): the first sum still lands in xmm3 where retail keeps it in xmm0, retail keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4, and the inner cursor, the wrapped angle and the candidate width still take other homes.
-// score 305 (was 382): 1732 bytes and frame 0x64 as retail. First +0x57
+// score 305 (was 305): 1732 bytes and frame 0x64 as retail (305 since the staged y, 382 before it). First +0x57
+// 1732 bytes, frame 0x64 and `ret 0x1c` as retail. First +0x57
 // loads unity into XMM1 instead of XMM2. Near cosine precision, inner cursor,
 // wrapped-angle homes and candidate width differ.
 // Earlier 382 (1692 bytes), after 393, 408, and 395 before the two fixes below.
@@ -557,6 +558,41 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Endpoint-address sine choice 332. Byte slots consumed separately or reserved together 355/370.
 // Signed consumed slots 313. Shared sine argument with separately consumed byte slots 420.
 // Unity, cosine spill and persistent candidate ordinal still differ.
+// M3 lane 1 r122 (fast with 0x29a190 and 0x298c30; base 305, aligned 171; nothing kept). Lead: retail's count is the
+// global itself. `g_504938 = 0;` with `g_504938` indexed, stored and incremented directly (no local) gives retail's
+// `xor bp, bp`, a 16-bit `inc bp` at every increment (a short local gives `inc ebp`) and the store back between the
+// exit pops: 468 (1688 bytes, aligned 234), because the facing pointer then arrives in EBX (`ret 0x18`, 0x29a190 684).
+// On the global count: the emitter taking the direction by value 355 (frame 0x74, 0x29a190 MATCH); the emitter's
+// stores in retail's order 469; both 373 (0x29a190 MATCH); the emitter's body written out at both calls with the
+// rotated point read directly 468 (same bytes, diagnostic); the direction as two reals 469 (1634 bytes); field by
+// field copies 469; the direction stored first 486; the direction copied to the facing point first and negated in
+// place 390 (1673 bytes, frame 0x64, first +0x2e, aligned 179, 0x29a190 MATCH; by value the same bytes): that one has
+// retail's registers (outer counter in EBX with its +0x28 spill and the `lea ebx, [ebx]` pad, facing pointer in EDI
+// reloaded at the inner loop's bottom, the direction's x bits in EBX, `ret 0x1c`) but copies in both arms; the
+// wrapped angle as `>= 0.0f ? x - 2pi : x + 2pi` 468; the far y row sine term first 468; the angle element passed to
+// the first emission 470; those three 470, and with retail's store order 470 (0x29a190 684 in all five). The facing
+// pointer leaves EBX only when the direction's x bits get a callee-saved register; here that needs an unconditional
+// aggregate read of the direction at the top of each emission, and retail has the register (`mov ebx, [esp+0x44]`
+// right after the x row) with the copy still in the non-negative arm only. The short count re-measured 469. An
+// aggregate copy of the rotated point into the shared facing point in the caller, once per inner iteration ahead of
+// both emissions, 468 (removed as a dead store: same bytes); the same with the angle element 470.
+// Near arm, compile-only (the screen reproduces it; 30 shapes, none with retail's order): a product is SSE only when
+// its vector component already sits in an XMM register, and x87 when its operands are memory and x87 values. The sine
+// as an if/else of two calls on the staged y: cosine in a float slot, `y * cos` still x87, x row SSE; the y row as
+// one expression after both locals, either operand order, or with the sine assigned inside it: cosine in a float
+// slot and the y row SSE, but the sine's branch first; the sine argument in a float or double variable with sin and
+// cos written in both rows: the repeated calls merge into float temps (y row SSE, x row x87 as retail), branch
+// first; the sine with its ternary written in both rows: computed twice; cos written twice with a sine local;
+// scaled by cos and then the perpendicular added, through a point or two scalars: all x87; x and y copied to locals:
+// `y * cos` SSE with the cosine spilled as retail, the rest x87 from stack copies; x and y by value to an inline
+// rotation, two parameter orders: all SSE; a by-value scale helper: same code as now; x and y scaled in place: x87.
+// M3 lane 15 r104 (fast with 0x29a190 and 0x298c30, both matched throughout, and 0x29cbb0 378; control 305, all restored):
+// the candidate count `short` (retail's 16-bit BP) 469 (1686 B, `ret 0x18`: arg_3 then arrives in a register and lives in
+// EBX, the outer counter takes EDI; 0x29a190 684); that with arg_3 read once through its address into a local used at
+// every arg_3 use 411 (1704 B, `ret 0x1c`; the magnitude then takes arg_3's dead home; 0x29a190 127); that with the outer
+// counter `long` 483 (1675 B, `ret 0x18`); one shared inline rotation of the facing direction (cos x - sin y, cos y + sin x)
+// for both near-arm emissions and the far arm 382 (1692 B); the existing normalize2d_fast for both normalizations (their
+// results are unused) 305 (same code).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1199,6 +1235,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // multiplies by the negated radius, with no shared tail; ours copies the radius and shares the tail), the sweep arms
 // (retail keeps the two arms whole, 32 instructions more), the pivot home (+0x94, ours +0xa0). Also: the offset helper's
 // products written component first 569 (same code); the reversed direction formed ahead of the pivot offset 784.
+// MiniMax A (11-18): no new form, no lower score (569): the radius is still promoted into xmm5 at the entry and kept for the
+// whole body, where retail loads it from its home in each block, and that follows from this build's link-time summary of
+// 0x2108a0 and 0x210770, whose definitions are in another lane's file; the frames agree at 0x114 and the two trace results
+// sit at the same homes (+0xd0 and +0xf4) but are taken in the opposite order, and the pivot's home is +0xa0 here against
+// retail's +0x94.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

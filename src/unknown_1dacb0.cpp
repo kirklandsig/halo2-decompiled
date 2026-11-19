@@ -1465,6 +1465,30 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Outer request mode, class, type, mode/class, mode/type, and class/type by reference: 828 each.
 // Per-graph mode or class/type by reference: 828 each. The resolved mode still reloads and the
 // result and candidate homes differ.
+// Lane 13 r112 (fast, control 828, aligned 580, registers masked 74): the search, outputs and requests in one
+// `while (true)` whose found pass ends in `return result;` 828 (same code); the outputs and requests inside the found
+// pass with their own `return` and the outputs repeated after the loop 1024 (2887 B); a named copy of the result taken
+// after the loop for the 0x1dd9d0 argument 828, for the test and the argument 828 (same code); 0x1dd9d0 and the
+// requests under two separate result tests 828 (same code); a `return result;` closing the found block 1012 (2839 B,
+// the listed early-return code). Re-measured: the siblings' flag loop 755 (2825 B, aligned 297, registers masked 55:
+// only the EBP zero, the second request's `this`/mode registers and the pads they move are left; match-only as before).
+// Diagnostics, restored: the second request keyed by the `mode` parameter 829 (aligned 588), on the siblings' form 758;
+// the inheritance loop's kinds keyed by a constant mode 707 (no EBP zero: the first request's mode staying live is not
+// what keeps EBP from the zero). Read from retail: the zero starts at the fifth kind's first test and not at the fourth
+// kind's later tests, which stay `test` although EBP is already free there, and it ends at the inheritance loop's two
+// stores; retail's inheritance loop tops (0x1db4c3, 0x1db9b3) carry no alignment pad where ours pads them (the pad
+// before the count load is the removed second resource loop's label in both builds). On the siblings' form our second
+// request makes its own zero in ECX for the count test and the two stores only.
+// More diagnostics (r112, restored): one extra dword zero store beside the inheritance counter's `i = 0` (same block
+// as the count test) gives retail's `xor ebp, ebp` at the first request's fifth kind with its four `cmp reg, ebp`
+// tests and the counter store from EBP, 801 (aligned 510; the stride store after the branch stays an immediate); two
+// extra stores the same; on the siblings' form that store gives only a scratch zero, 758. So our build forms the zero
+// when two zero stores share the count-test block, and retail forms it from the counter store before the zero-trip
+// branch and the stride store after it. Retail's zero-trip `jle` of the first inheritance loop lands behind the
+// `mov ebx, [this]` reload (0x1db757): `this` stays in EBX from the first request's root kinds into the second's, with
+// a reload only on the loop's exit; ours ends that EBX range at the loop and gives `this` EBP in the second request
+// (the +0x34 table pointer takes EBX from its second kind), also when the second request is keyed by the `mode`
+// parameter (829), so the found mode being address-taken is not what keeps it out of EBP.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1544,9 +1568,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
 // frame homes still differ from retail's.
 
+// score 828 (was 828): Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
+// Earlier: Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // NOT kept (coordinator review, MiniMax G 11-13): 828 -> 807 came from grouping the three resolved outputs into one
 // `long resolved[3]` array (an aggregate grouping locals: kept only with a byte match); the three named locals stay.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
@@ -1910,6 +1935,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // direct result and default written by fields 990;
 // default-first result branches with the success test in the named branch 995.
 // NOT kept: All scores rise. The forms at retail length change the frame, and the conditional loop still misplaces the result.
+// Round 264 (m3 lane 3, fast with 0x1db170, 0x1dc790, 0x1dc8c0 (both matched throughout), 0x2963f0, 0x1dd560, 0x1236f0;
+// control 828, aligned 580, register/offset-masked 74): 0, 2, 4 or 6 dead initialised long locals 828 each (same code: no
+// symbol-count window); the second request keyed by `iterator.graph` in place of `this` 962 (2791 bytes); the per-pass
+// candidate dropped (`if (named) result = named->animation_id;`, the result being NONE whenever the lookup runs) 1020
+// (2791 bytes); the loop as `while ((entry = iterate(...)) != NULL)` with that direct result and a found break 1015 (2839
+// bytes); the iterator set up by an aggregate initializer 826 (aligned 581, masked 76; two points, not kept). Body unchanged.
+// Mode supplied by the initialized iterator 826; late chained defaults for all or for class/type 826/826.
+// Conditional complete candidate copy 951; default then overwrite at hit 989; head-tested branch copies 840.
+// Implicit cursor zero initialization 828; zero or graph initializer before key stores 996/996;
+// candidate initialized from lookup outcome 978. NOT kept: best gain 2, candidate and mode homes remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

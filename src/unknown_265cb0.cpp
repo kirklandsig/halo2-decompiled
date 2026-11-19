@@ -369,6 +369,14 @@ real function_30bf0(vector3f *vector);
 // seat loop's result still lands four bytes above retail's and the range still loads into xmm2 for xmm0.
 // MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
 // score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// M3 lane 8 r189 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): names do not order these homes (result,
+// range or the facing maxima renamed to sort first or last, diagnostic, 84 each); the facing copies as secondary then
+// primary 84; distance_squared declared at the top of the settings block 84; the clip amount declared in the motion
+// block 84; the loop index as long 173 (repeats an earlier form); the b maximum tested before the a maximum 83; the
+// scaled range as `range * scale` 84; the posture switch as an if/else-if chain 131 (1308 B). Retail's homes, by esp
+// offset: result 0x8, facing maxima 0x14/0x18, clip amount sharing 0x1c with distance_squared, scale 0x20, range 0x30,
+// loop count 0x34, seat cursor 0x48, delta 0x4c; ours: result 0xc, clip amount sharing 0x10 with the loop count, range
+// 0x18, scale 0x1c, facing maxima 0x30/0x20, seat cursor 0x34, delta 0x48, distance_squared 0x5c.
 // Previous stack measurements are in the lane 8 round 166 entry below.
 // MiniMax H (11-12): no new form, no lower score (84): the result long still lands at [esp+0xc] where retail
 // keeps it at [esp+8], the clip's amount out-parameter sits at [esp+0x10] against retail's [esp+0x1c] and
@@ -887,6 +895,11 @@ real function_30bf0(vector3f *vector);
 // corrected up. Copy initialization, direct/staged crosses: 219 each with frame 0x34c.
 // Component setter with the same four cross pairs: 167 each at 1308 bytes. The result and
 // clip homes still differ.
+// M3 lane 5 r200 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84, frame-blind 9): the endpoint clip block
+// through a new forced-inline helper 417 (1392 B); the facing pair declared first 84 and distance_squared declared before
+// the clip block 84 (same code); the posture switch as an if/else-if chain 131 (1308 B); `use_facing && !actor->unknown007`
+// 86. Diagnostic, reverted: 1..7 dead initialised locals 84/86/138/138/82/82/82. Reading: retail shares one slot between the
+// clip amount and distance_squared ([esp+0x1c]) with the result lowest; ours gives the clip amount the lowest slot.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2157,6 +2170,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
 // registers.
 // score 168 (was 168): The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// M3 lane 8 r189 (fast with 0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 168): the first difference is the
+// inlined 0x26be00, whose head load retail addresses as [table + slot offset + 0x58] and ours as [offset + table + 0x58]
+// (the slot offset is shared with the actor lookup). Forms: the byte alias `data` dropped for `(byte *)actor` 168; the
+// alias taken from actor_get with the actor cast from it 168; the clear through `(byte *)actor + 0x324` 168; the level
+// and strongest declared after the clear 171; the iterator declared before the actor lookup 168; the actor lookup after
+// the other locals' initialisers 180 (first difference +0x7).
 // One decoded actor slot for both lookups, long/word with the iterator helper 168/695 and with the typed actor accessor 168/695.
 // Named clear destination, with the typed head read, and with typed summary fields 168/168/168. Chained selections 170.
 // Earlier 168 (was 168): retail's 2880-byte extent. The first iterator load reverses the address operands.
@@ -2726,6 +2745,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // base/index order, the players loop (retail's table pointer in EDX, the datum index in EBP, the found index in ESI, the
 // player in EDI, and no jump over the loop-top padding), and the direction's components held in XMM1..XMM3 across the
 // relative and facing dots (retail loads two of them ahead of the relative-length test).
+// M3 lane 5 r200 (fast with the eight callees, all MATCH; control 168; on lane 3 r261's 163 form unless noted): `visible` as
+// `reference == NONE || prop_ref_get(reference)->unknown27 >= 1` 423 (the frame changes); the iterator's NONE fields chained
+// 165; the player as a ternary on the found index 367; both searches in ai_player_get's shape (player NULL first, a long copy
+// of the short index for its NONE test, a long second counter) 378 (register-masked aligned 41 -> 39: both searches are then
+// retail's line for line, one line late because the iterator's table load takes ECX where retail's takes EAX); on that, the
+// NONE fields first 380, the iterator set up before the vehicle lookup 401 (2889 B), the NONE fields chained 380.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

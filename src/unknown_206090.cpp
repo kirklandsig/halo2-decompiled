@@ -139,7 +139,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1375 (was 1375): The 0x5d0 frame, component and velocity homes and contact indexing still differ from retail.
+// score 1375 (was 1375): Frame 0x5d0 versus retail 0x58c, component and velocity homes, and contact indexing still differ.
 // Earlier: earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
@@ -537,6 +537,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 
+// score 1375 (was 1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // P452: Independent magnitude/velocity-publication/query-origin/tangent/direction/velocity/friction-input/impact-normal memmove boundaries:
 // 1436/1376/1409/1397/1440/1407/1425/1376. NOT kept: 1376 leads retain nonnative record-transfer boundaries and excess frame; no byte equality. Original captures, all helpers, call tuples and full body restored; matched caller survives.
 // P454: Existing magnitude snapshot as aggregate/shared setter, five remaining native component-store
@@ -706,6 +707,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // (6211 bytes, 957 / 589); that on the copy-free forms 1650 (5948 bytes, 959 / 567); with one function-scope counter
 // for the first two loops as well 1649 (955 / 562). All three keep the stepped pointers (one `imul` in the listing
 // against retail's three). Body unchanged.
+// (An earlier second header line at 1375, was 1375, merged into this note in lane 13 r112.)
 // The extra 0x44 frame bytes, escaped velocity and component homes, and indexed contact loop remain.
 // Independent slip/tangent lengths use a default then tangent 1447, complete branch results
 // with direct or selected tangent 1455/1455, and a common predicate with selected or direct
@@ -719,6 +721,21 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Float-sum normalizer, named reciprocal alone/with named/with direct mixed reciprocal: 1424/1421/1424.
 // Direct float-sum reciprocal alone/with named/with direct mixed reciprocal: 1436/1390/1436.
 // The 0x5d0 frame and displaced velocity and component homes remain.
+// Lane 13 r112 (plain checks: a `--fast` run of this function alone or with its eleven callees, 0x24590 and 0x30bf0 builds
+// it differently, 1392 at 6211 B with frame 0x5cc, so fast counts for it need a wider list). Retail's first loop and
+// contact loop keep their counters in one home (0x1c, read with `fild` in the first loop and passed to 0x2079f0 in the
+// second) and the definition pointer in the next (0x20). One counter variable for the first loop and the contact loop
+// 1375; for the first, the 16-entry and the contact loops 1375; for the 16-entry and the contact loops 1375; the contact
+// loop as a `while` with its counter declared ahead and stepped at the end 1375 (the same code each: the contact, the
+// definition row and the query row stay stepped pointers, no `imul`); one counter for the first and the 16-entry loops
+// 1450 (6275 B).
+// Copy-free squared accumulator or named terms 1625/1625; descending component loop with
+// direct or named term 1568/1558; double accumulator 1591; shared squared-length helper 1637;
+// staged float root 1599; ascending component accumulator 1625. NOT kept: all regress and
+// shorten. Direct scalar forms recover frame 0x590, still four bytes above retail.
+// One magnitude workspace at contact phase or entry, assignment/memcpy, 1515 each. Separate root and
+// normalization workspaces at the same scopes, assignment/memcpy, 1457 each. NOT kept: the frames shrink
+// to 0x5a0/0x5a8 but the body loses 120/88 bytes and retail's component homes still differ.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
