@@ -4363,6 +4363,10 @@ extern vector3f *g_4687bc;
 // 0-8 dead locals at the top, or 1-8 just ahead of the material (diagnostics) 8 each, so neither scratch choice is a
 // symbol-count tie; the node count in a named local 8; the element through a const reference to the rigid-body array 8;
 // the element as `index + rigid_bodies.data` 8 (all the same code).
+// M3 lane 11 r126 (fast): redundant parens (no grouping change), which do move float operand orders in other functions,
+// leave both register choices: 0-3 pairs on the perpendicular's i with 0-3 of the impulse products 8 each (16 builds); 0-3
+// pairs around the definition re-lookup's and the model lookup's masked indices 8 each (15 builds); the node-count test
+// as `>= 1` 25 (1099 B); the impulse products constant-first 8; the impulse as an aggregate initializer 8 (same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
