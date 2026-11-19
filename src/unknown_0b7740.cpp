@@ -1650,6 +1650,18 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // sites in this build); a later compare of the index after the flag read re-measured 40 at 1406 B, aligned 3 (the
 // block is then retail's byte for byte). The order inside the lookup follows the pool: held in ECX, the index half is
 // computed first (retail); reloaded, the data load comes first (ours). No form here keeps the index live past its mask.
+// M3 lane 3 r267 (fast with 0xb8bd0, 0xbdc40, 0xbc820, 0xbd020, 0xbee60, 0xbfa40 and 0xbdb60, MATCH unless noted; base
+// 20, aligned 12): the no-model parent and flag left uninitialised and set in both arms of the parent test (`else {
+// parent = 0; parent_mirrored = false; }`) 18 at retail's 1394 B, aligned 8: the pool then stays in ECX and the lookup is
+// retail's; left: the two defaults sit in the else arm (`jmp`, `xor eax, eax; xor dl, dl`) and the index is in EAX, not
+// ESI with retail's copy (two points, not kept). Permuter on that form (900 s, 86 tries): best 18. Also: one
+// parent-object local for the matrix and the flag 44 (1390 B); the parent index read before the defaults 20, with the
+// defaults swapped 22; the parent default kept and the flag set in an else 290 (1404 B), the flag default kept and the
+// parent set in an else 32 (1395 B); the index, or index, parent and flag, declared once for both arms 20/20 (same code);
+// the model and render-index tests as one `&&` 316 (1397 B), plus the no-model arm calling 0xb8bd0 158 (1382 B), plus
+// `inline` on 0xb8bd0 394 (1373 B: both sites expanded, 0x18c3b0 157). Diagnostic, reverted: `__assume(parent_index !=
+// NONE)` after the flag read 392. Retail keeps the pool in ECX while the defaults (EAX, DL) are live across the lookup,
+// so its index has to take ESI; ours spends ECX on the index and reloads the pool.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

@@ -503,6 +503,10 @@
 // helper taking the camera point with a real phase and three named double factors 535 (aligned 594); the two wave values
 // as a `real wave[2]` 634 (2670 B, frame 0x60, as the point pair of round 202); the two scaled amounts named before the
 // adds 650 (2594 B). None keeps sin x, cos 7.8y and cos 7.75y on the x87 stack past the mixed wave as retail does.
+// Running double wave 577; named modulation factors 576; named phase 577;
+// both phases with staged wave 578; short wave before the cross with named modulation 576;
+// separate rounded scales 636; opposite cross between adds 600; first displacement scaled separately 718.
+// NOT kept: scores rise and the wave values still lack retail's two homes.
 // M3 lane 16 r138 (fast with 0x4a1e0; control 536, aligned 420): the cross, both wave values and both scaled adds in a
 // forceinline helper writing the position through a `point3f *` (the camera point read inside) 537 (same frame: the
 // inlined pointer is still known to be the local); the mixed wave's phase and three factors as named real locals 535
@@ -526,6 +530,10 @@
 // 0x60), ours only three cells (0x54); the vector homes are ordered v1, v2, w, v3, v4 there against v1, v2, w, v4, v3 here.
 // Retail stores the first cross's i component in w's i cell; one vector for both special crosses 533 (frame still 0x54),
 // with the staged helper for the first 533 (not kept: three points, and the vector would hold two different values).
+// M3 lane 11 r122 (fast with the file and 0x4a1e0; control 536, `ret 0x20` as retail): the scale constants first in
+// both add-scaled products 536 (same code); the two wave values as the members of one point2f 634 (2672 B, retail's
+// 0x60 frame, stored and reloaded into XMM as retail but the body grows); the mixed wave halved as `/ 2` 536; the two
+// wave values declared at function scope 536; the plain sine's sum written `x * 5.6f + (double)y` 536 (all same code).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -848,7 +856,17 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // the eight-byte homes at the top of the frame, and the first-edge Y, the half-width, the cursor and the colour
 // homes differ with them. The helper this body calls at 0x131e50 has its declaration fixed in another file, which
 // this lane may not change: BLOCKED-BY 0x131e50.
-// score 351 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
+// declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:
+// retail's case-4 head, with the position pointer formed inside each arm); with the colour stored `outer->color =
+// vertex[0].color = ...` as well 238 (plain 238, aligned 34). Not kept: a declaration move, match-only. Left on it: frame
+// 0xa8/0xac (retail's u step and V sum sit in 8-byte spill slots), the half width XMM3 (retail XMM4) with the first point
+// XMM5/6/4 (retail XMM6/5/3), case 1/2's second x load (4 bytes), case 4's edge point colouring and the tail's definition
+// reload. Also on 351: case 4's direction through vector3d_from_points3d 487 (2580 bytes); the view through it 351
+// (aligned 55); the u step and V sum as one vector2f local 355 (frame stays 0xa8); the colour order alone 352 (aligned 43);
+// on 238 the V sum formed at the outer store 240 (frame stays 0xa8); dead initialised locals at the top of 238's body
+// (diagnostic) K = 1, 2 238; K = 3..10 437-481 (2580-2588 bytes); K = 12..30 (even) 238 each: the XMM ranks never reach retail's.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes
 // at +0xa4 and +0xac, so the body stays four bytes short after case 4; a permuter run over this function (300 s,
@@ -1351,6 +1369,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // not kept: build/r115/lead-42cf0.patch in the m3-lane11 worktree); the pixel in a named local stored to the first
 // vertex and then the outer one (retail's store order) 352 [132/108/29]; both 238 (2592 bytes) [121/97/22]; case 4's
 // no-previous arm written first 358 [150/166/46]. Body unchanged.
+// M3 lane 4 r218 (fast with 0x42c50/0x42b20/0x43740, all matched; control 351, aligned 132, masked 30): lane 8 r144's
+// two-member texture-scale lead on this base 475 (2580 B, frame 0xac, first difference +0x9e: the colour blend reschedules),
+// with the outer pixel store last 475; the outer pixel store last alone 352; the pixel named, stored to vertex[0] then
+// outer 352; case 4's z row with the first edge written before the second 341 (aligned 114, masked 29; a statement order
+// picked by score, not kept: lead only); case 4's first.z written product first 351 (same code); case 4's three rows
+// first edge first 423 (frame 0xa0), its x and y rows only 424; case 1/2's y row first-first with case 4's z row 341.
+// Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

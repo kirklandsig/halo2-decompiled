@@ -1553,6 +1553,10 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // callee's own local does not count, the summary is per argument); the velocity pointer passed straight to the virtual
 // impulse call (diagnostic) 177, still no reload (an escape into unknown code is not what retail records); the index array
 // in the record too 106. On this body the loop index bound to a `long &` for the loop test 1 (same code).
+// M3 lane 16 r141 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, all MATCH; 0x1d1160's file is on this round's avoid list, so only
+// this body moved): the loop index started from the mirror (`long i = local_0`) 161 (882 B); the mirror declared and zeroed
+// ahead of the node selection (both paths) 166 (882 B); the mirror reloaded in the velocity-change arm as well 33; the reload
+// ahead of the impulse call 5; the rigid-body index declared outside the loop 1 (same code). Still BLOCKED-BY 0x1d1160.
 // M3 lane 13 r113 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, all MATCH each time): the count bound to a `long &`
 // for the loop test 1; the fill count as a `long const &` to the rigid-body size 1; a `long const` copy of the count as
 // the loop bound 1 (all the same code); the increment in the for clause with `local_0 = i + 1;` ending the body 11 (870 B);

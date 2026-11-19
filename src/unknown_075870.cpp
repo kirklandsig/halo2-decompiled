@@ -740,7 +740,8 @@ void network_samples_reset(s_network_samples *samples);
 
 static inline void observer_statistics_reset(s_network_statistics *statistics);
 
-// score 170 (was 170). Lead not kept (AC579, register steering without a match): one observer snapshot local read for the
+// score 170 (was 170): The stack-held observer loads before the stride multiply here. Retail saves EDI and loads it afterward.
+// Lead not kept (AC579, register steering without a match): one observer snapshot local read for the
 // dispatch plus a reload of the volatile parameter before the registration loop reaches 134 at retail length (plain
 // confirmed); the first save and register allocation still differ (observer in ESI where retail uses EDI).
 // At 170, the logic walk found no difference (state/close-reason dispatch, flag handling, the reset stores and
@@ -774,6 +775,17 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // *` to itself 245 (833 B, both arguments on the stack, callers lost); the same with the parameters (index, observer)
 // everywhere 245; the two owner-notify loops as one two-caller inline helper 333 (705 B), the same without the volatile
 // 359 (701 B); volatile dropped with one function-scope loop counter 177 (callers lost).
+// M3 lane 5 r206 (fast with the seven callers/callees): a compile-only /Gd pass predicts the split: the parameter
+// that pass reloads from its home stays on the stack, one held in a register throughout is passed in one. Without the
+// volatile it reloads channel_index in both owner loops (observer EBP, channel_index EDI), so observer is passed in EBX;
+// retail needs the reverse (observer evicted, as by the rep stosd's EDI, and reloaded before the second loop). Forms,
+// volatile dropped: an owner cursor in both loops 177 (loops then retail's, the two parameters' roles swapped; callers
+// lost); in the first loop only 177; an owners-array local in the state block 222 (neither parameter reloaded there, so
+// both arrive in registers, callers lost). Volatile kept: that owners local 236; an owners local at the top 238.
+// Entry invalidation ordinal or one ordinal for both passes 243/243, inactive-channel guard 170, missing connection first 296.
+// Fixed-count post-test owner loops 321, owner skip guard 170, established-state break 170.
+// Shared retry increment 213, close-reason fallthrough 170.
+// NOT kept: entry ordinals add a spill. The post-test loops and shared increment change matched callers.
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {
@@ -1380,6 +1392,9 @@ static __forceinline long observer_round(real value)
 	return real_to_long(value);
 }
 
+// Matched in a full build with stand-in SDK headers (was 7): the burst limit is the product read through a
+// reference-bound local, and the larger of it and the minimum is named before the clamp.
+// Before:
 // score 7 (was 7): the differing instructions are in the last clamp. The checker also
 // lists relocated calls and trailing padding while the function differs. Retail forms
 // lea ecx, [ebp + 1]; imul ecx, eax and loads the minimum burst afterwards;
@@ -1416,10 +1431,11 @@ void function_79850(s_network_observer *observer, long index)
 	long intervals = real_truncate(delay * rate * 0.001f) + 1;
 	long local_0 = intervals + 1;
 	long local_1 = delay * budget / (intervals * 8000);
-	long limited_burst = local_0 * local_1;
+	long const &kept = local_1;
+	long limited_burst = local_0 * kept;
 	long local_2 = *(long *)((byte *)observer->configuration + 0xe0);
-	limited_burst = local_2 > limited_burst ? local_2 : limited_burst;
-	if (burst > limited_burst) burst = limited_burst;
+	long limit = limited_burst > local_2 ? limited_burst : local_2;
+	if (burst > limit) burst = limit;
 	function_79600(observer, index, budget, burst, rate);
 	channel->loss_penalty += *(long *)((byte *)observer->configuration + 0x184);
 	if (channel->loss_penalty >= *(long *)((byte *)observer->configuration + 0x188))

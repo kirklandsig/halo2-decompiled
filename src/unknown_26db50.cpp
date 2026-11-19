@@ -1094,6 +1094,14 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // retail's rotation); the z tree into an unread reference-bound local 20 (removed before it counts); the lift loop counted
 // down 42 (rotation ours). Reading: only a live z offset tree ahead of the y tree gives retail's rotation, which computes z
 // first where retail does not, so retail's (j + i) + k comes from its rotation helper (the held private-helper match).
+// M3 lane 12 r147 (fast with 0x1ecf50, MATCH each time; control 26): K = 0..31 initialised dead longs at the function
+// top 26 at every K (diagnostic: not a symbol-count tie); the rotation through the existing exported rotation of
+// src/unknown_170d70.cpp (cross i ahead of the projection) 26 (same code, diagnostic); the trace endpoint as `point =
+// *origin;` then three `+=` statements 209 (1113 B); the direction copied with memcpy 26 (same code); the 0.1 offset as
+// `point = collision.point;` then three `+=` statements 150 (1113 B). Then: the collision record and its marker store
+// moved between the trace endpoint and the 0.5 lift 25; with the entry pointer after them, still ahead of the lift, 20
+// (every remaining difference inside the rotation's dot; the marker, entry and point stores are then retail's); that
+// with the lift as x, y, z `+=` statements 179 (1082 B). Not kept: statements moved, no match.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

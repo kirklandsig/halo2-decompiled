@@ -1742,6 +1742,13 @@ struct s_summary_player_sort_entry
 // member-index homes and the saved registers still differ; retail's conditional move for the output state (cmovne at 0x64fac) needs
 // /arch:SSE, which this file's @flags line does not set, and retail inlines 0x5a680 where this build calls it.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// M3 lane 2 r107 (fast with 0x5a680, 0x5b0d0, 0x5b180 and 0x64160, all MATCH; fast = plain 339): with registers and
+// numbers masked 294 of 323 lines differ, most of them in the prologue and setup (retail's &value18, +0x4c and member-index
+// homes, push order ebp, edi, ebx, esi against ours ebp, ebx, esi, edi); the team loop's alignment jump follows from the
+// code length before it. `long const *type = &session->value18;` tested and read through for the output type 339 (same
+// code: it folds); a member pointer for the name 339 (same code); the team counter declared before the team-mask clear
+// 339 (same code); the variant through a `summary_variant` local set by an if 375; team_mask as long 339 (same code);
+// the id/key test on the `state` local 356 (1291 B).
 // M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
 // code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a
 // `long used` (retail loads it once before the mode tests) 356 at retail's 1291 bytes; the team mask declared at the

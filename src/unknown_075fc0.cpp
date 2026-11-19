@@ -325,6 +325,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // (other code: the two NONE stores swap); local_7 declared ahead of the two NONE locals 356 (same code); local_10
 // declared and then assigned from 0x76520 356 (same code); `this` used directly in place of the arg_0 copy 356 (same
 // code); local_2 declared ahead of the channel search 399 (1372 B). Body unchanged.
+// M3 lane 14 r116 (fast with 0x75910, 0x76520, 0x765c0, 0x77940 and 0x89030, all MATCH; control 356): the elapsed count
+// taken from the 64-bit snapshot 426 (1385 B); `local_7 = false` declared ahead of the search (a constant start) 409
+// (1373 B); the send test with the has-host term first 419 (1356 B); diagnostic, the has-host flag started false and set
+// in the call's arm (match-only) 402 (1376 B); the reliable window passed straight into the ratio 356 (same code).
+// 0x75910's byte result stays BLOCKED-BY 0x75910 (its file was another lane's this round).
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,

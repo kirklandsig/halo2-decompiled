@@ -2660,149 +2660,16 @@ struct s_audio_selection
 
 static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 {
-	real dz = a->z - b->z;
-	real dx = a->x - b->x;
-	real dy = a->y - b->y;
-	real sum = dz * dz;
-	sum += dy * dy;
-	sum += dx * dx;
-	return sum;
+	vector3f v;
+	vector3d_from_points3d(a, b, &v);
+	return length_sq3f(&v);
 }
 
-// score 3 (was 3): the y value is loaded into XMM1 before the call here and
-// after it in retail, so the load of the z value sits on the other side of
-// the call as well. Tried (r169): both positions at function scope 3; the
-// differences at each use 366; no helper, locals y, z, x and an accumulated
-// z, y, x sum 45 (z, x, y 47; selector in the switch 343); locals y, z, x
-// before the helper 430.
-// Round 141 (lane 4): vector3d_from_points3d + length_sq3f with the delta's fields in the cases
-// 365 (x, y, z order, table moves); the helper's differences y, z, x with one-expression and split
-// sums 26/26; a one-expression sum in every difference order (the term order is ignored; only the
-// difference order counts) xyz/xzy 27, yxz 23, yzx 26, zxy 11, zyx 16; the outer x, y, z locals in
-// the other five orders xzy/zxy/zyx 15, yxz/yzx 3 (same code).
-// Round 57 (lane 10): retail keeps these colours (z XMM1, x XMM2, y XMM3, sum XMM0) but schedules the
-// y load and subtract first. dy declared after the first square 3; a local delta vector 3 (both same
-// code); named z and y squares 7; dy, dz, dx in the helper 26; no helper, z, y, x and a one-expression
-// sum 43; no helper, y, z, x and an accumulated sum 45. A compile-only screen (its listing of this
-// block agrees with the real one) of about 480 forms, every helper difference order, outer local order
-// and selector position, with staged, parenthesized and named sums: y first only comes with y in XMM1
-// (helper) or sum XMM1 (no helper).
-// Round 33 (lane 17): the helper as a vector delta with `j*j + (i*i + k*k)` 25; as `v = b - a`, sum k, i, j,
-// called (target, source) 25 (x scheduled first); distance_test declared after squared 3; the switch on
-// the request field in place 333; the helper's differences b - a, called (target, source) 3.
-// Round 130: selector after the helper 3; shared y helper input 26; split declarations with y-first evaluation 26;
-// source-z snapshot 418 (1944 bytes); y-first helper with reversed case declarations 22; staged source z and x 413
-// (1952 bytes); union array view 3; y product operands swapped 3; caller y before the unchanged helper 422.
-// Original 3 form restored.
-// Round 133 (plain): the existing cross-file devices.cpp/actor_object_knowledge.cpp squared-distance helpers
-// (declared here; LTCG inlines them) 27/27 (retail's y-first schedule, but the differences then take XMM1-3 in
-// x, y, z order); (fast) the outer x, y, z locals ahead of the helper in x, y, z or z, x, y order 432/432 (1940
-// bytes), the same z, x, y locals with the helper's differences in x, y, z order 432. Unused-local probes
-// (diagnostic): 3 or 8 extra symbols in the function move only case 7's fold (32) or nothing (3), others 333;
-// in the helper nothing.
-// Round 67 (m3 lane 14, fast): the helper `__forceinline` 3 (same code) or plain `static` 416 (1916
-// bytes, not inlined); its first two squares as one `dz * dz + dy * dy` 7 (dz scheduled first, the
-// square registers swapped); its differences in one declaration 3; the outer x, y, z written where the
-// cases use them 366.
-// Round 140 (lane 8, fast): cases 8 and 9 comparing the z difference written out 3; the selector read
-// before the two point lookups 3; the helper taking the points by const reference 3; the helper's
-// differences `real const` 3; the outer x, y, z `real const` 3 (all same code; the outer locals written
-// at each use, rechecked, 366). No XMM value is live across the point lookups, so nothing holds XMM1
-// back: in ours the z load is hoisted above the y load and subtract, in retail it follows them.
-// Round 95 (m3 lane 16): the existing out-of-line distance_sq3f (0x24550) in place of the helper, plain 25 (LTCG inlines it in
-// the full build: x scheduled first, XMM1-3 in x, y, z order; the fast image calls it, 443); the existing devices.cpp helper with
-// the outer z, x, y locals ahead of it, plain 432 (1940 bytes, copies before the squares); (fast) the helper defined below the
-// function 3 (same code); the sum started from the y square (`sum = dy * dy; sum = dz * dz + sum;`) 7 (z then fully first); the y
-// square added on the left 3 (same code as `+=`).
-// Round 158 (compile-only screens of the block; fast where given): the helper's differences as a local vector3f in every
-// definition and term order, one-expression and staged (108 forms: one-expression sums give retail's sequential pairs but
-// XMM1-3 in definition order, staged sums hoist the first square's load); two-term first or last statements and both
-// parenthesizations in every order (144, none); the outer locals ahead of the helper in every order (72, XMM0 joins); the
-// existing vector3d_from_points3d with the parenthesized sums of the matched 0x210970/0x210a30, outer locals before or after
-// (168, XMM1-3 always x, y, z); (fast) vector3d_from_points3d + length_sq3f 345 (the delta vector moves the layout).
-// Round 84 (m3 lane 11; fast): the helper's differences in x, y, z order (staged z, y, x sum) 27; the one-expression sum
-// through a square helper 11 (retail's colours, x scheduled first); no helper, x, y, z locals with a three-scalar
-// length helper (staged k, j, i) 45; no helper, x, y, z locals with an accumulated z, y, x sum 45; the same with a
-// one-expression sum 45; the same with the selector read after the locals 45. The 45 forms give retail's y-first
-// schedule and y in XMM3 but z XMM2, x XMM0, sum XMM1 (retail z XMM1, x XMM2, sum XMM0), and the selector load
-// follows the z subtract. A compile-only harness agrees with the real build for the helper form (definition order
-// sets both colours and schedule there; extra uses in the cases move neither) but not for the no-helper forms, so
-// screen those with --fast: about 1100 harness forms (outer-local placement, every definition/sum order and shape,
-// scalar and square helpers) gave nothing.
-// Round 120 (m3 lane 9, fast): the two point locals declared source first 3; the selector local as long 3; the helper's
-// locals renamed to sort y, z, x (diagnostic) 3; source_index used in place of the source copy 333; the outer x, y, z
-// declared ahead of the helper call and assigned after it 3.
-// Round 157 (m3 lane 8, fast): cases 6 and 7 through the existing dot3f with a local vector3f delta (cases 8/9 on its k)
-// 333 (case 7 loses its fold, the blocks move); the helper taking the points by value 557 (2044 bytes, copies); the existing
-// vector3d_from_points3d with dot3f for the square and the cases 59 (no hoist: x, y, z in definition order, colours x XMM0,
-// y XMM3, z XMM2, sum XMM1); the existing object_header_get/object_get getters for the unit test and the forward vector 333;
-// object_header_get for the unit test alone 3 (same code).
-// Round 174 (m3 lane 6, fast): the differences take XMM1-3 in the order they are created; with the staged z, y, x
-// sum the z load comes first exactly when z is created before y, and retail's y-first schedule when y is created
-// before z (helper differences x,y,z 27, y,z,x 26, y,x,z 19, z,y,x 14: retail's instruction order, other colours);
-// a one-expression sum is reordered by that creation order whatever its written terms. The sum through a
-// one-argument inline square with the differences written in the calls: staged z, y, x 14; one expression x+y+z
-// 27 (retail's schedule and square order, colours x, y, z), x+z+y 27, y+x+z 23, y+z+x 26, z+x+y 11, z+y+x 16;
-// named z, x, y differences with that square helper in the six term orders 11 each, as plain products in three
-// orders 11 each; a local vector assigned k, i, j with a one-expression sum in four term orders 11 each; named
-// squares over the z, x, y differences defined and summed in three orders (six forms) 11 each; the function's own
-// locals (z,x,y or x,y,z) ahead of an expression-only helper (eight forms) 418-432 (1940/1944 bytes); no helper,
-// the locals in the six definition orders with a staged sum declared before or after them 45 (y before z) or 47.
-// Round 108 (m3 lane 10, fast): the helper also filling a `vector3f *delta` out-parameter: filled k, i, j with outer
-// x, y, z copies 336 (retail's colours, z subtracted fully first, case 7 loses its fold); filled j, k, i with outer
-// copies 343 (y first, y XMM2, x XMM3), with the copies declared z, x, y 349; the cases reading delta's fields directly
-// 365 (y first and y XMM3, but z XMM2, x XMM0, sum XMM1; the fill order and a vector3d_from_points3d fill give the same
-// code); that with a one-expression sum 363.
-// M3 lane 10 r110 (fast with 0x20bbb0, 0x20c2f0 and 0xb9dd0, all matched; control 3): the helper returning the sum through a
-// `real *` out-parameter 3 (same code); `squared` declared at function scope with the other reals 3 (same code); the two
-// point locals declared ahead of the NONE test 3 (same code); the two positions as one two-point array (source [0], target
-// [1]) 333; the helper also filling `real *x, *y, *z` out-parameters for the cases 343 (z subtracted fully first).
-// Round 168 (m3 lane 7, fast): the outer y, z, x or y, x, z differences ahead of the helper call 430/430 (1940 bytes); the
-// helper reading `a->y` into a local before its differences 411 (1944 bytes); the helper's differences declared z, x, y
-// but assigned y, z, x 26 (retail's instruction order, registers y XMM1, z XMM2, x XMM3) or y, x, z 19: registers and
-// schedule both follow the assignment order, not the declaration order.
-// Round 252 (m3 lane 3, fast; control 3, only the z load hoisted above the y load and subtract): the helper as a
-// non-static `inline` 3 (same code); the helper returning the z, x, y difference vector by value with the staged sum and
-// the cases reading its fields 506 (2008 bytes, the vector goes through the stack); cases 8 and 9 as `1.0f < z` and
-// `-1.0f > z` 3; the selector local declared at function scope and assigned in place 3; the outer x, y, z in one
-// declaration statement 3 (all same code). No cross-file helper has retail's z, y, x sum (devices.cpp's is file-local).
-// M3 lane 12 r135 (fast; control 3): the helper's differences as a load then `-=` (`real dz = a->z; dz -= b->z;`, all
-// three) 435 (1960 B: the outer x, y, z stop CSE-ing with the helper); same code (3): the case 6/7 dot products written
-// i, j, k; the two positions in one declaration; the helper's last square added in its return; the selector local
-// declared after the outer x, y, z. The permuter (fast, annealed, 605 s, 61 tries) stays at 3. The outer y alone computed
-// ahead of the helper call 422 (y then takes XMM1 and is copied); the outer locals' order only moves the case 6/7 dot
-// products' term order (z, x, y: 15, re-measured).
-// M3 lane 7 r175 (fast; control 3): the helper's sum accumulated through a reference-bound local 54 (all three squares
-// rescheduled); the helper's y difference through a trivial inline accessor 411 (1944 B, a separate copy); the outer x, y, z
-// declared at function scope and assigned after the helper 3 (same code); a three-scalar sum helper taking the differences
-// as call arguments, parameters z, x, y 19 (arguments evaluate right to left: retail's y-first schedule, y XMM1 and z XMM3,
-// the listed y, x, z statement order), parameters y, x, z 3 (evaluation z, x, y: the body's code).
-// M3 lane 7 r177 (fast; control 3): the helper's y difference written in its sum term (no dy local) 3 (same code); the
-// helper with no locals, a staged z, y, x sum of repeated differences 14; the helper's z difference as a load and a later
-// `-=` (z only) 420 (1944 B); cases 8 and 9 placed before cases 6 and 7 (probe) 90 (layout moves, schedule unchanged);
-// the outer x, y, z bound as `real const &` 32.
-// M3 lane 10 r120 (fast with 0x20bbb0, 0x20c2f0 and 0xb9dd0, all matched; control 3): what differs is one instruction's
-// place. The block after the second lookup is [z load][y load, y subtract][selector][z subtract][x pair] here and
-// [y load, y subtract][z load][selector][z subtract][x pair] in retail, so retail's y pair sits ahead of a block that
-// starts at the z load, as if a block boundary that emits no code followed it (0x107ed0 and 0x1253d0 show the same).
-// Diagnostic (compile-only, reverted at once): the outer y assigned the same difference in both arms of an if/else ahead
-// of the helper gives retail's registers (z XMM1, x XMM2, y XMM3) with the y pair first. Trials: the outer y as a load
-// then `-=` ahead of the helper, x and z after it, 410 (1944 B); that y between x and z after the helper 411; the
-// helper's dy as a load then `-=` (y only, declared last) 411; the helper's dy loaded first and subtracted last 411; the
-// helper's dy as a load then `-=` declared first 414. Screens (compile-only, the real block's code): the helper's six
-// difference orders (the y pair leads exactly when y is created before z, and the registers follow creation order);
-// dy declared first and assigned last (same code).
-// M3 lane 5 r201 (fast with 0x20cbd0, matched; control 3): the two NONE tests as nested ifs 3 (same code); the squared
-// distance held in the function-scope distance local 406 (1940 B); the helper's last square added in its return
-// re-measured 3; the whole distance classification as one inline helper over the two positions 1016 (kept out of line,
-// 1428 B), the same forced inline 587 (1860 B; 0x20cbd0 39/32); the selector read once ahead of its nonzero test and
-// used by the switch 591 (1856 B).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
-    long source_index, long previous_index, long ai_index, short category, short first_state,
+    long source, long previous_index, long ai_index, short category, short first_state,
     short second_state, short other_category, s_audio_selection *results, short *count)
 {
-    long source = source_index;
     long chosen = NONE;
     short chosen_type = NONE;
     long tag = NONE;
@@ -2876,12 +2743,8 @@ void function_20c440(s_audio_priority_table *table, byte const *request, long ta
             point3f source_position;
             function_b9dd0(target_index, &target_position);
             function_b9dd0(source, &source_position);
-            short distance_test = *(short const *)(request + 0x2c);
-            real squared = distance_squared3d_20c440(&source_position, &target_position);
-            real x = source_position.x - target_position.x;
-            real y = source_position.y - target_position.y;
-            real z = source_position.z - target_position.z;
-            switch (distance_test)
+            real squared = distance_squared3d_20c440(&target_position, &source_position);
+            switch (*(short const *)(request + 0x2c))
             {
             case 1: eligible = squared <= 1.0f; break;
             case 2: eligible = squared <= 6.25f && squared > 1.0f; break;
@@ -2892,22 +2755,22 @@ void function_20c440(s_audio_priority_table *table, byte const *request, long ta
                 if (squared < 9.0f)
                 {
                     byte *object = *(byte **)(g_4e0300->data + (target_index & 0xffff) * 12 + 8);
-                    vector3f *forward = (vector3f *)(object + 0x70);
-                    real dot = forward->k * z + forward->j * y + forward->i * x;
-                    eligible = dot > 0.0f;
+                    vector3f direction;
+                    vector3d_from_points3d(&target_position, &source_position, &direction);
+                    eligible = dot3f((vector3f *)(object + 0x70), &direction) > 0.0f;
                 }
                 break;
             case 7:
                 if (squared < 9.0f)
                 {
                     byte *object = *(byte **)(g_4e0300->data + (target_index & 0xffff) * 12 + 8);
-                    vector3f *forward = (vector3f *)(object + 0x70);
-                    real dot = forward->k * z + forward->j * y + x * forward->i;
-                    eligible = dot < 0.0f;
+                    vector3f direction;
+                    vector3d_from_points3d(&target_position, &source_position, &direction);
+                    eligible = dot3f((vector3f *)(object + 0x70), &direction) < 0.0f;
                 }
                 break;
-            case 8: eligible = z > 1.0f; break;
-            case 9: eligible = z < -1.0f; break;
+            case 8: eligible = source_position.z - target_position.z > 1.0f; break;
+            case 9: eligible = source_position.z - target_position.z < -1.0f; break;
             }
             if (eligible)
                 scale *= 1.5f;

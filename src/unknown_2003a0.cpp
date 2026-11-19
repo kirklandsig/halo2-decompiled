@@ -3082,6 +3082,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // selection 50; absent-definition conditional 178; permission assigned in requested arm 50;
 // separate unlocked, absent and script permission branches 179; negated locked-definition gate 50;
 // conditional automatic selection 170. NOT kept: the four ties still reload the first event index.
+// M3 lane 16 r141 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, control 50): 1..8 dead initialised locals at the top 50 each;
+// the compute arm's delay test as `local_3 >= 1` 55 (580 B), the pending delay test as `< 1` 51, both together 50 at 578 B
+// with the reload gone (`mov eax, ebp`): only the two compares then differ (`cmp ..., 1` for retail's zero tests), so two
+// more uses of 1 at the else-if arm's level are enough (lead only); either delay test held in a named bool 50 (folded), both
+// 50; the first arm's lock test through the existing getter 0x203330 180 (594 B), the NONE and lock tests through it 162
+// (580 B), the else-if's NONE test as the getter's result 213 (610 B).
 // M3 lane 2 r102 (fast; control 50): both first-half 0x40 flag tests in the matched callee 0x202e90's shifted form
 // (`((dword)*(short *)(p + 2) >> 6) & 1`) 50 (same code: folded to the mask); one to four dead initialised locals at the
 // else-if arm's top 50 each (diagnostic); a 600 s permuter run reached 39 only by swapping 0x290e20's two arguments
@@ -3102,6 +3108,17 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // after the two words 50 (all the same code); the compute arm's delay test as `>= 1` 55 (580 B, `cmp cx, 1; jl`, the
 // reload stays); the pending arm's two assignments swapped 50; the lock test as `(flags & 1) != 1` 50 (same code). The
 // first follow-up still reloads the index.
+// M3 lane 11 r122 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20, 0x203bf0, 0x202a00, 0x204d30, 0x1e4570; aligned 2 at
+// 50): 0x202a00's spelling of the same query (one task variable seeded from the pending word and reassigned by the query,
+// gotos past the follow-up for a waiting delay, no task and a stored pending task), short task 160 (565 B), word task
+// 160 (565 B), with the follow-up's task test kept 160 (565 B, the test is threaded away); the current `&&` arms on that
+// one word variable, with a reset or with the gotos, 160/160 (565 B). Each of these gives `mov eax, ebp` (aligned 4:
+// retail's `xor eax, eax` before the pending load, its repeated task test before the follow-up and the loop pad), so the
+// reload goes only with a lost test, as the listed diagnostics found. `__assume(arg_1 != NONE)` at the top (both callers
+// pass a walked squad) 50; `__assume` of the arm's group index at the arm's head 50 (same code each). Looking for a
+// dominating use of the constant 1 (round 169's lead) with compares that might fold to their zero form: the delay test as
+// `< 1` 51 (`cmp ..., 1; jge`), the count test as `!(count < 1)` 55 (580 B), the trigger byte as `!= true` 116 (578 B);
+// none folds, and the reload stays in each.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
