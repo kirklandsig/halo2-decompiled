@@ -408,7 +408,7 @@ bool function_2b6db1(s_time_left *time, c_widget *screen, word *result_string)
 
 dword online_friend_get_flags(XONLINE_FRIEND const *friend_);
 void online_friend_get_title_name(XONLINE_FRIEND const *friend_, wchar_t *name, short name_length);
-dword function_217b70(word const *text);
+#include "unknown_217b70.h"
 
 // @retail 0x2b635f
 void function_2b635f(XONLINE_FRIEND const *friend_, c_widget *screen)

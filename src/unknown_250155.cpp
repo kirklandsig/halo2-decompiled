@@ -90,7 +90,7 @@ s_game_variant_setting_category *game_variant_settings_find_category(long catego
 s_game_variant_setting_option *game_variant_setting_find_option(s_game_variant_setting_definition *setting, long value);
 long function_2374f0(void *base, long index);
 void function_1a0180(long tag_index, long string_handle, word *buffer);
-dword function_217b70(word const *text);
+#include "unknown_217b70.h"
 
 struct s_setting_reference_list_view
 {
@@ -1145,6 +1145,9 @@ void function_08cc20(s_name_buffer *buffer, wchar_t const *name);
 bool function_199dc9(long a, long b, long c);
 long function_75890(long time);
 
+// Matched in a full build with stand-in SDK headers (was 20) with no change in this function: function_217b70 is an
+// inline function in a header (unknown_217b70.h). The compiler then has no summary of the registers that callee
+// preserves, and message goes to edi across the call as in retail instead of staying in edx.
 // @retail 0x251f8d
 void function_251f8d(c_matchmaking_screen *screen)
 {

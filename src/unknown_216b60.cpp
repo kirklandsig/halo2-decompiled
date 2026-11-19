@@ -136,7 +136,7 @@ bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long
 }
 
 extern long g_55c280;
-dword function_217b70(word const *text);
+#include "unknown_217b70.h"
 
 // @retail 0x216e50
 void __stdcall function_216e50(word const *display_name, long type, char *language, word *name)

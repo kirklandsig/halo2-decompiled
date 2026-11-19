@@ -46,7 +46,7 @@ struct s_friend_presence_status
     word time0e;
 };
 bool function_8d230(XONLINE_FRIEND const *friend_, s_friend_presence_status *status);
-dword function_217b70(word const *text);
+#include "unknown_217b70.h"
 word *unicode_string_append(word *destination, word const *source, long maximum_count);
 word *function_1630e0(word *buffer, word const *format, ...);
 struct s_widget_view_2b0a;

@@ -4,7 +4,7 @@
 // @flags /O2 /Gr
 
 // @retail 0x217b70
-dword function_217b70(word const *text)
+inline dword function_217b70(word const *text)
 {
 	dword length;
 	for (length = 0; length < 255; length++)
