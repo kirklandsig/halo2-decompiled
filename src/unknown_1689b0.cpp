@@ -607,10 +607,6 @@ bool function_1eff40(s_lookup *lookup, long flags, point3f const *point,
 	vector3f const *direction, s_lookup_ray_result *result);
 short *function_d8ae0(long object_index, long region_index, short *material);
 
-// Matched in a full build with stand-in SDK headers (was 12): the material type is stored through a pointer to the
-// field, and the material buffer is two words with the second passed (retail passes esp+0x1a, the second word of a
-// 4-byte cell; the first word is never written, so the exact type of the local is a guess).
-// Before:
 // score 12 (was 26): the material local sits at esp+0x18 where retail has
 // esp+0x1a, and the material store is scheduled after the hit copies; tried
 // the local declared first, between found and lookup, in the inner block and
@@ -622,7 +618,7 @@ bool __stdcall function_169510(long object_index, bool a, dword flags, dword tes
 	bool found = false;
 	s_lookup lookup;
 	s_lookup_ray_result hit;
-	short material[2];
+	short material;
 	do
 	{
 		s_collision_object_header *header = &((s_collision_object_header *)g_4e0300->data)[object_index & 0xffff];
@@ -635,8 +631,7 @@ bool __stdcall function_169510(long object_index, bool a, dword flags, dword tes
 			if (lookup_pointer->initialize(object_index) && function_1eff40(lookup_pointer, test_flags, point, vector, &hit) && result->t > hit.hit.t)
 			{
 				result->type = 4;
-				short *material_type = (short *)&result->material_type;
-				*material_type = *function_d8ae0(lookup.handle, hit.hit.surface_index, &material[1]);
+				result->material_type = *function_d8ae0(lookup.handle, hit.hit.surface_index, &material);
 				result->instance_index = NONE;
 				result->unknown3c = NONE;
 				*(short *)result->unknown44 = hit.item;
