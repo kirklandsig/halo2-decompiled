@@ -3631,6 +3631,10 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // record only 84; both record copies through destination references 132; success before camera stores
 // on the scalar-copy body 91; unattached arm first on the scalar-copy body 91. NOT kept: the 84 form
 // reaches 396 bytes and gains seven, with the seated copy and early stride still different.
+// Matched in a full build with stand-in SDK headers (was 91): both camera copies are record assignments straight from
+// the member, with no source local, and the seat label is read into a local before the marker call. With the two
+// record copies alone this scores 127: the label local is what lets the seat keep ebp and the camera be loaded in
+// each arm, as retail does.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -3643,17 +3647,13 @@ bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *
 		s_unit_seat_definition *seat =
 			&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(unit->parent_index)))[unit->parent_seat_index];
 		s_object_marker marker;
+		long label = *(long *)((byte *)seat + 8);
 
-		if (function_b8d30(unit->parent_index, *(long *)((byte *)seat + 8), &marker, 1, false))
+		if (function_b8d30(unit->parent_index, label, &marker, 1, false))
 		{
 			*matrix = marker.matrix;
 			function_b9dd0(unit->parent_index, &matrix->position);
-			s_unit_camera_data const *source = (s_unit_camera_data const *)((byte *)seat + 0x24);
-			camera->unknown00 = source->unknown00;
-			camera->unknown04 = source->unknown04;
-			camera->unknown08 = source->unknown08;
-			camera->unknown0c = source->unknown0c;
-			camera->unknown10 = source->unknown10;
+			*camera = *(s_unit_camera_data const *)((byte *)seat + 0x24);
 			result = true;
 		}
 	}
@@ -3663,12 +3663,7 @@ bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *
 		function_b9dd0(unit_index, &matrix->position);
 		matrix->forward = unit->forward;
 		matrix->up = unit->up;
-		s_unit_camera_data const *source = (s_unit_camera_data const *)&definition->unit.acceleration;
-		camera->unknown00 = source->unknown00;
-		camera->unknown04 = source->unknown04;
-		camera->unknown08 = source->unknown08;
-		camera->unknown0c = source->unknown0c;
-		camera->unknown10 = source->unknown10;
+		*camera = *(s_unit_camera_data const *)&definition->unit.acceleration;
 		result = true;
 	}
 	return result;
