@@ -997,6 +997,11 @@ static inline long team_score_195ed0(long team)
 // rank and score through indexed team 105, short team rank ordinal 205,
 // named player rank and slot 100, native in-range score with short selection 191.
 // NOT kept: the early flag load remains and the native score call still inlines.
+// M3 lane 16 r147 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the clamp over the real
+// 0x1587f0 re-measured 192 (1241 B: all three reads inlined, their nested calls kept); the score helper's team test
+// through the real 0x161e60 180 (1225 B); the team helper plain `static` 180 (1225 B, the same code: its copy folds into
+// 0x161e60); the score helper plain `static` 322 (1051 B: no read inlined, each calls the file's copy); a `0 <
+// ranking.team_count` guard around the rank loop 161 (1210 B; the count tested as a word, but twice).
 // @retail 0x195ed0
 void function_195ed0(void)
 {

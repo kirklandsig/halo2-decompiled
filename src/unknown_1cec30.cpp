@@ -1858,6 +1858,11 @@ PRIVATE __forceinline real const &component_time_step()
 // (still `[eax + 4]` twice); the first product read directly or through the accessor with the reference bound after it
 // 17/14 (the head reverts). So the head is a symbol-count tie: a natural +3 names is worth trying once `add eax, 4` has
 // a cause.
+// M3 lane 16 r147 (one-file harness, exact: main 17/14 positional/aligned = 26, stop-first 36/36): the time globals bound
+// as one const reference with `.rate` read at both products 17/14 (same code); the pin bounds named in each arm 462 B,
+// 74/40; the scaled value assigned back into `acceleration`, step-first 17/14 and stop-first 36/36 (same code each);
+// stop-first with the step started as the scale result and multiplied in place 36/36; stop-first with the stop tick
+// count and the per-tick travel named 36/36, plus the final change named 36/36 (same code each).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -3408,7 +3413,7 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
-// score 15 (was 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
+// score 15 (was 15; earlier 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
 // caller, the reduced image gives another convention: 344). 0x1d83e0 MATCHES, so the call registers
 // (component EAX, index EDX, matrix ESI, two stack words) and the frame agree. The node_b word is now
 // read inside the `pair->node_b != NONE` test (the guard compares the short, the sign extension and its
@@ -3489,6 +3494,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // forceinline helper (search, relative frame, conversion) 309 (1228 B); the converter's translation through an inline
 // helper returning the Havok vector by value (an aggregate-return scheduler boundary) 15 (same code); all four parts by
 // value 354 (1456 B, copied through a temp); the three columns by value 354; column 0 only by value 355 (1389 B).
+// M3 lane 16 r147 (one-file harness with src/unknown_1d77d0.cpp, 15 as the check): the first child counter declared in
+// its `for` 15; the equal arm's converter call in braces 15 (same code each); one source pointer for both arms, repointed
+// at the composed matrix, with one converter call after the test 313 (1023 B); the first half's rigid-body entry named
+// once for the count, first node, child search and body store 314 (1165 B); the entry reads through the array's
+// operator[] 15 (same code).
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,

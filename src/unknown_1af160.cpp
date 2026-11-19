@@ -206,6 +206,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // the bool output passed to 0x2626b0 as `local_14 != false` 172 (978 bytes). Re-measured: the three outputs declared at
 // the top 12, the node pointer const 12. 0x260670 (ours, on the bool output's chain) is still 440 at 3097 bytes against
 // 3077 (frame 0x8a8 against 0x8a0).
+// M3 lane 16 r147 (`--fast 0x1af160 0x1e1f20`, control 12): the delay rounding through a forceinline seconds-to-ticks
+// helper (the tick-rate product and fld/fistp inside) assigned to the long output 134 (981 bytes), its result stored
+// straight to the record's short 25 (the helper's result takes its own home); the 0x1e5280 completion flag declared
+// inside its test 19 (its true store moves after the call); the rounding input declared at the top of the non-equal
+// branch 12 (same code); the result flag declared after the 0x261280 call 62.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

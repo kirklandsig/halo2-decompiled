@@ -361,6 +361,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the reference form `(void)&second` 5 (all the same code: the address folds and `second` still loads early on the
 // direct form). On round 137's form the `bases` local initialised from a chained publication (`= (field = tables)`),
 // direct or through the reference, 279/279; `bases` as a `byte *const &` bound to the published field 5 (+0x19e, main's code).
+// M3 lane 16 r147 (fast, control 5 at +0x19e), on the direct entry store (5 at +0x1a7, `second` loading into ESI right
+// after the entry lea), testing whether retail holds that load behind the store because the parameter's address is
+// exposed: `long const *const second_address = &second;` read in the restore block 5, in both blocks 5; the chain
+// lookup as a forceinline helper taking its offset by `long const &` in both blocks 5, with the pass lookup the same way
+// 5 (all +0x1a7, same code); the restore block publishing the entry (from the `tables` local) before the tables field
+// 287 (976 bytes). Body unchanged.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
