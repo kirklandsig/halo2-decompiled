@@ -598,6 +598,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // stages 221/233/233. Shared scaled add at the axis/cross stages 242/233. Axis scaled
 // add plus cross add 204, axis add plus cross scaled add 233, both scaled adds 254.
 // NOT kept: all regress and move away from retail length. The 204 form keeps frame 0x11c.
+// M3 lane 10 r125 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): the rotation helper's angle as `real
+// const &` 173 (same code); the projection as a reference-bound two-step (`real &projection = local_2; projection *= 1.0f -
+// local_1;`) 230; the heading declared at function scope above the creation data 173 (same code); the outer cross moved
+// into the helper (helper takes the up vector, axis a helper local) 226; the helper `static inline` instead of forceinline
+// 173 (same code). Body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

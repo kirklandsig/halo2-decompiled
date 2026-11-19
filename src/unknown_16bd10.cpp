@@ -1274,6 +1274,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `s_camera_point_state const &` for the case-2 block 395 (1700 bytes); the field-of-view's `active = false` before
 // the default field-of-view read 126 (same code); the matrix position through a `vector3f *` local for plane.d and
 // the scaled add 395 [106]. Body unchanged.
+// M3 lane 10 r126 (fast with every callee, which reproduces the full image's 126; the reduced image without them scores 275,
+// so the permuter declines this body): the pan quaternion declared before `t` 126 (same code); the pan rotation into a
+// matrix3x3 local in place of the transform 394 (1700 B); the basis matrix at case scope without its block 219 (1708 B);
+// the pan fraction after the camera reload 126 (same code); `command->distance` stored before offset.i 127; offset.k
+// computed and stored before offset.j 125 (one point, not kept).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

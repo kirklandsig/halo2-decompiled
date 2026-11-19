@@ -537,6 +537,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 // (Second note, merged:) Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
+// Earlier header, merged into this note (1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // P452: Independent magnitude/velocity-publication/query-origin/tangent/direction/velocity/friction-input/impact-normal memmove boundaries:
 // 1436/1376/1409/1397/1440/1407/1425/1376. NOT kept: 1376 leads retain nonnative record-transfer boundaries and excess frame; no byte equality. Original captures, all helpers, call tuples and full body restored; matched caller survives.
 // P454: Existing magnitude snapshot as aggregate/shared setter, five remaining native component-store
@@ -736,6 +737,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the add helper as a three-pass component loop 1399; the cross helper staging its second vector as one vector3f copy 1439
 // (0x5e8); the add helper plain `inline` 1382 (same code); the scale loop's counter as short 1460; the cross's staged
 // reals declared k, j, i 1383. Not kept.
+// M3 lane 10 r126 (plain with 0x207ab0, 0x2078f0, 0x2079f0; fast builds this body at 6211 B, so plain only; control 1375):
+// the magnitude helper taking the vector by value 1375 (same code; a compile-only screen keeps five 12-byte copies, the
+// by-value temporaries do not share a slot either); the steering sign as `if (...) local_11 = -local_11;` 1378; the result
+// returned as one expression 1376 (6243 B); the impact loop's count test in the `for` condition 1397 (6264 B); the two
+// query arrays declared at the top 1375 (same code). This note and the one above it were one stacked pair; merged here.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

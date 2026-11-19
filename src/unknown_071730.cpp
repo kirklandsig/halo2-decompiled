@@ -65,7 +65,15 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
-// score 387 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// score 376 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// Round 127 (m3 lane 10; fast, kept form confirmed plain with 0x706f0 and 0x5b080 matched): the property value cleared by
+// memset, as the members-ready arm already clears it, 387 -> 376 (kept: retail's seven zero stores are all `mov [..], ecx`
+// from one zero register, where `= {0}` stored the first member as an immediate; 1589 bytes, retail's length; aligned 115 ->
+// 113). On it: that clear declared ahead of the player-count test, where retail's stores sit, 376 (aligned 111; a declaration
+// move, not kept); `= {0}` there 402. On 387: the elapsed-time read before the data getter 397; the two missing-input tests as
+// one `||` 412 (again); on 376 the members-ready arm through the existing kind-4 setter (0x59ab0) 437 (1565 bytes: it
+// stays a call here, where retail expands its six zero stores and kind store). Left: 0x5b080 expanded at the top where retail calls it, the second live-state test called where
+// retail expands it, and the `(deadline - elapsed) / 1000` block placed after the members-ready test.
 // Round 199 (m3 lane 5, fast): the data getter called only when the surface lookup succeeded 428 (1573 bytes; the getter stays
 // inlined, so a natural test ahead of it is not enough); the getter called before 0x192e60 429 (diagnostic); the two
 // missing-input tests as one `||` 412 (re-measured); the deadline sum with the record's field first 387 and the transition
@@ -400,7 +408,8 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 			*(long *)((byte *)arg_0 + 0xa70) = time_now();
 		}
 		long local_17 = time_now() - *(long *)((byte *)arg_0 + 0xa70);
-		s_session_property_value local_14 = {0};
+		s_session_property_value local_14;
+		memset(&local_14, 0, sizeof(local_14));
 		if (!local_8)
 		{
 			arg_0->mode = 7;

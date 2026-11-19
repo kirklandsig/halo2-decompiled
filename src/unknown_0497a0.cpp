@@ -848,7 +848,17 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // the eight-byte homes at the top of the frame, and the first-edge Y, the half-width, the cursor and the colour
 // homes differ with them. The helper this body calls at 0x131e50 has its declaration fixed in another file, which
 // this lane may not change: BLOCKED-BY 0x131e50.
-// score 351 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
+// declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:
+// retail's case-4 head, with the position pointer formed inside each arm); with the colour stored `outer->color =
+// vertex[0].color = ...` as well 238 (plain 238, aligned 34). Not kept: a declaration move, match-only. Left on it: frame
+// 0xa8/0xac (retail's u step and V sum sit in 8-byte spill slots), the half width XMM3 (retail XMM4) with the first point
+// XMM5/6/4 (retail XMM6/5/3), case 1/2's second x load (4 bytes), case 4's edge point colouring and the tail's definition
+// reload. Also on 351: case 4's direction through vector3d_from_points3d 487 (2580 bytes); the view through it 351
+// (aligned 55); the u step and V sum as one vector2f local 355 (frame stays 0xa8); the colour order alone 352 (aligned 43);
+// on 238 the V sum formed at the outer store 240 (frame stays 0xa8); dead initialised locals at the top of 238's body
+// (diagnostic) K = 1, 2 238; K = 3..10 437-481 (2580-2588 bytes); K = 12..30 (even) 238 each: the XMM ranks never reach retail's.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes
 // at +0xa4 and +0xac, so the body stays four bytes short after case 4; a permuter run over this function (300 s,

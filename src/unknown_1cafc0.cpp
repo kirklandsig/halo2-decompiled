@@ -850,6 +850,21 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // unknown_1dacb0.cpp) the inherited graph named before its group request 348 (same code; 0x1dc8c0 stays MATCH: that
 // matched user of the helper also keeps the graph in EBX and graph+0x34 in EBP, so the swap here comes from this caller);
 // the found names copied into an aggregate for the request 504 (1766 B, the frame changes).
+// M3 lane 10 r125 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1cccd0/0x1dc8c0, all MATCH unless noted, 0x1cd070 210 and
+// 0x1db170 828 unchanged; control 348, aligned 53). The three request helpers copied into this file under other names
+// (a private copy of the shared request) 348 (same code); on that copy: the urgent loop's resource table read into a local
+// before the loop 404; the inherited graph named in the inheritance loop 348 (same code); the found record read through a
+// `request` pointer at the call (shared helper) 348; the inheritance index declared `long i = 0;` with the loop's own
+// initialiser dropped 269 (aligned 11: the graph is loaded before the last found name, the sum formed in place with `add
+// ebx, 0x34` and the graph reloaded into EBP per preheader, as retail; left: our early `i = 0` store after the parameter
+// homes, retail's `xor ecx, ecx` zero for the loop entry's compare and two stores, and the final normalization); the same
+// edit in the shared helper itself 269 here but 0x1dc8c0 474 (lost); that copy with `bool success` 256 (aligned 9, the
+// return unnormalised as retail; 1777 B); the index initialised again in the loop 348 (the early store is dropped and
+// the roles go back); the index zeroed above the urgent test, or the loop as a while, 256 each; the copy's original loop
+// with `bool success` 478 (aligned 102), with the index declared above the urgent test 478. With `bool success` and the
+// shared helper, the found names read into locals in the six orders m-c-t 487, m-t-c 486, c-m-t 479, c-t-m 479, t-m-c
+// 478, t-c-m 478. Lead: something live from the request's start to the inheritance loop gives retail's graph roles;
+// retail's own index is set at the loop (zero in ECX). Body unchanged.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

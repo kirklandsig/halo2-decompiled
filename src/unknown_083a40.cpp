@@ -867,6 +867,13 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // grouping as ours, so it is no symbol-count tie; `collection` declared in the else arm before the slot search with the
 // first arm's apply given `&watcher->players`, no loop-top player pointer, the swap order (collection, player, update,
 // other), and those three together keep the grouping (screen); the three together in the real build 36.
+// M3 lane 10 r124 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): the occupied record's update as
+// `++*count; update = &updates[*count - 1];` 28 (same code); that on the swap order (collection, player, update, other) at
+// definition, declaration and call 32; `collection` defined above the session-mask `continue` 28 (same code); on the swap
+// order a `players` array pointer declared ahead of the slot search, re-measured 27 (the occupied block's head: ours
+// (inverse + cursor) + (collection + 4), retail (collection + inverse) + cursor + 4), with the occupied update as above 27;
+// the conflict scan as `j < 16 && !conflict` with no break 310 (1077 bytes). Diagnostic (a comma loop, not keepable): a
+// byte offset stepped beside `i` for the occupied key 283 (1080 bytes: the offset keeps its own induction variable).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
