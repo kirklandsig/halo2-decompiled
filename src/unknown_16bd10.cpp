@@ -728,6 +728,14 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 
 /* the camera director of scripted cameras: fills the observer's command */
 // score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// M3 lane 15 r104 (fast with 0x142d10, which stays MATCH; control 126, all restored): 0x142d10's parameters in the order
+// retail's call setup implies (ECX up, EDX forward, EAX out set up in that order: `out, forward, up`; definition,
+// declaration and the one call) 124 (fixes the pan arm's two `lea`s; a gain under 4, so not kept: the lead for a
+// round that finds more); on it: case 2's squared length before the plane distance 400 (1700 B); the point case's
+// distance dot with its arguments swapped 124 (only register names move: retail loads forward first in the k and j
+// products and the position first in the i product); the animation case's flags update after the distance and timer
+// stores (retail's store order) 125; case 2's locals declared t, squared length, plane 124 (same code); the timer's
+// ternary as an if/else 150 (1700 B).
 // MiniMax C (11-17): score 126 (was 126): no new form, no lower score. The case-2 plane length still preloads the
 // left vector's k component into XMM1 where retail preloads its j, and the length's accumulator stays in XMM0 where
 // retail keeps it in XMM1, so the zero that follows stays in XMM1 against retail's XMM0; the swapped dot arguments
