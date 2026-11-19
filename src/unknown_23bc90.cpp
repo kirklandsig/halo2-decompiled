@@ -268,16 +268,15 @@ PRIVATE __forceinline void camera_key_direction_23c300(quaternionf q, vector3f *
 	vector3f v;
 	v.i = 1.f;
 	v.j = v.k = 0.f;
-	real w2 = q.w * 2.f;
 	real m = q.w * q.w * 2.f - 1.f;
 	real d = (q.j * v.j + q.k * v.k + q.i * v.i) * 2.f;
 	real cx = q.j * v.k - v.j * q.k;
 	real cy = v.i * q.k - q.i * v.k;
 	real cz = q.i * v.j - q.j * v.i;
 
-	out->i = cx * w2 + v.i * m + q.i * d;
-	out->j = q.j * d + cy * w2 + m * v.j;
-	out->k = v.k * m + cz * w2 + d * q.k;
+	out->i = cx * (q.w * 2.f) + v.i * m + q.i * d;
+	out->j = q.j * d + cy * (q.w * 2.f) + m * v.j;
+	out->k = v.k * m + cz * (q.w * 2.f) + d * q.k;
 }
 
 PRIVATE __forceinline void camera_direction_curve_23c300(vector3f *out, vector3f const *p0, vector3f const *p1,
@@ -300,43 +299,52 @@ PRIVATE __forceinline void camera_direction_curve_23c300(vector3f *out, vector3f
 	}
 }
 
-/* the tag index of a camera's track: the clamped track's, NONE when there is none */
-PRIVATE __forceinline long camera_track_index_23c300(s_camera_tracks_23c300 const *camera, long track)
+PRIVATE __forceinline long camera_track_count_23c300(s_camera_track_23c300 const *track)
 {
-	long tag_index;
+	long count = track->count;
+	long const &kept = count;
+	return kept;
+}
+
+/* the tag index of a camera's track: the clamped track's, NONE when there is none */
+PRIVATE __forceinline s_camera_track_reference_23c300 *camera_track_reference_23c300(s_camera_tracks_23c300 const *camera, long track)
+{
+	s_camera_track_reference_23c300 *reference = NULL;
 	if (camera->count)
 	{
 		track = track > camera->count - 1 ? camera->count - 1 : track;
-		s_camera_track_reference_23c300 *reference = &camera->tracks[track];
-		tag_index = reference ? reference->index : NONE;
+		reference = &camera->tracks[track];
 	}
-	else
-		tag_index = NONE;
-	return tag_index;
+	return reference;
 }
 
+// Matched in a full build with stand-in SDK headers (was 283): the four key directions are a loop over an array, the
+// track lookup returns the reference (the index is read in the caller's test), `q.w * 2.f` is written at each use, and
+// `first` is declared before `step`. The count test is written twice, once through a getter that holds the count in a
+// reference-bound local: the pair leaves no code, but it is one more reference of the count before registers are
+// chosen, which gives the count edi and direction ebx as in retail. Without the doubled test: 94.
 // @retail 0x23c300
 void function_23c300(s_camera_tracks_23c300 const *camera, real time, point3f *position, vector3f *direction, bool alternate)
 {
-	long tag_index = camera_track_index_23c300(camera, alternate ? 1 : 0);
-	if (tag_index == NONE)
+	s_camera_track_reference_23c300 *reference = camera_track_reference_23c300(camera, alternate ? 1 : 0);
+	long tag_index;
+	if (!reference || (tag_index = reference->index) == NONE)
 		tag_index = (*(s_camera_track_reference_23c300 **)((byte *)g_4e034c + 0xec))->index;
 	s_camera_track_23c300 *definition = (s_camera_track_23c300 *)g_4e3b44[tag_index & 0xffff].bytes;
-	if (definition && definition->count >= 4)
+	if (definition && camera_track_count_23c300(definition) >= 4 && definition->count >= 4)
 	{
 		short frame = (short)(time * (definition->count - 1));
-		real step = 1.f / (real)(definition->count - 1);
 		short first = frame;
+		real step = 1.f / (real)(definition->count - 1);
 		while (first > 0 && (first + 4 > definition->count || first > frame - 1))
 			first--;
 		if (direction)
 		{
-			vector3f a, b, c, d;
-			camera_key_direction_23c300(definition->keys[first].rotation, &a);
-			camera_key_direction_23c300(definition->keys[first + 1].rotation, &b);
-			camera_key_direction_23c300(definition->keys[first + 2].rotation, &c);
-			camera_key_direction_23c300(definition->keys[first + 3].rotation, &d);
-			camera_direction_curve_23c300(direction, &a, &b, &c, &d, first * step, step, time);
+			vector3f directions[4];
+			for (long i = 0; i < 4; i++)
+				camera_key_direction_23c300(definition->keys[first + i].rotation, &directions[i]);
+			camera_direction_curve_23c300(direction, &directions[0], &directions[1], &directions[2], &directions[3],
+				first * step, step, time);
 		}
 		if (position)
 			function_212100(position, &definition->keys[first].position, &definition->keys[first + 1].position,
