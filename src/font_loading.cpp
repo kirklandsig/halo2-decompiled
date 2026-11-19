@@ -589,7 +589,8 @@ static inline long font_character_pixel(long alpha, long color)
 // cast gives 204.
 // MiniMax H (11-12): no new form, no lower score (85): a 600 s permuter run (79 differing instructions at its baseline) found nothing lower, and the first branch still leaves for a different place than retail's, which jumps into the shared exit further down.
 // MiniMax E (11-17): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the three decode sites where retail widens it to thirty-two, and the type 0 value's two bytes still merge into one register (xor eax, eax; mov ah, byte [edi+1]; mov al, byte [edi+2]) where retail merges them across two (movzx ax, byte [edi+2]; xor ecx, ecx; mov ch, byte [edi+1]; or eax, ecx). New this round: widening the cast instead of dropping it ((((long)(byte)alpha) << 1) | ((long)(byte)alpha & 1)) gives retail's parity at the sites but collapses the body (192), widening only the parity ((long)(byte)alpha & 1) narrows back to sixteen bits (59), a byte or unsigned char alpha parameter without the inner cast keeps the run out of ebx (205), the colour spelled with a sixteen bit low half ((dword)(word)source[2] | ((dword)source[1] << 8), or with the low byte in a word local) still merges the two bytes into one register (103, retail's length of 504), and the case 1 order (run = 4 before the pixel) swaps the case 1 and case 2 blocks (61). A permuter run over this body (26 tries, 307 s) found nothing below the baseline.
-// score 59 (was 85): the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
+// score 59 (was 85): The 0xc frame agrees. Alpha parity widening, literal word assembly and the EBX packed-run update still differ.
+// the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
 // retail zeroes a thirty-two bit register first (xor ecx, ecx; mov cl, al; and ecx, 1), the literal word
 // is still built from two byte loads and a multiply (movzx eax, byte [edi+1]; movzx edx, byte [edi+2];
 // shl eax, 8; add eax, edx) where retail loads the low byte into ax and the high byte into ch, the type 3
@@ -897,6 +898,9 @@ static inline long font_character_pixel(long alpha, long color)
 // 161/232. Long and dword inputs give the same scores. NOT kept: the 504-byte forms regress;
 // full-width parity after raw masking recovers the pixel sequence but moves the run to EBP
 // and merges the fills.
+// Joined packed count with advancing/indexed pair stores and byte/full parity: pair-first 207/203/211/213,
+// single-first 205/212/209/213. NOT kept: the joined count shortens the body below retail and leaves
+// the run register and literal assembly different.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

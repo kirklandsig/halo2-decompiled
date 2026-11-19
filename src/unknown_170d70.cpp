@@ -799,7 +799,8 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 129 (was 142): The save at entry and the signed volume index still exchange EBX and EBP, and cluster creation stays before the loop.
+// score 129 (was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. Cluster creation stays inline in the build.
+// The save at entry and the signed volume index still exchange EBX and EBP, and cluster creation stays before the loop.
 // Earlier score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
 // limit, the 163db0 call, the volume/entry/cluster stores and the list walk all equal retail 0x172ee0-0x17308f).
 // What still differs is layout and registers: retail keeps the new-cluster block out of line after the loop
@@ -853,6 +854,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // Reselect cluster after projection by record, direct indexing or two array receivers 165/165/164.
 // NOT kept: the first three gain one and retain the opening register exchange. Reselecting shortens
 // the body and direct indexing changes the matched caller. The opening body is restored.
+// New cluster counts/heads/both with fill 124/123/145 or fill_n 125/123/135. Complete initialization 187,
+// record clear with index/head stores 128. NOT kept: best gains six and reaches retail length but grows to
+// an eight-byte frame. The complete initializer changes the matched caller.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

@@ -125,10 +125,11 @@ static inline void quaternion_transform_vector(
 // quaternion's own bytes; the three rows' term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up
 // rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and retail's second store of the
 // doubled scalar to a slot nothing reads are still not reproduced by any source form tried. The body stands.
-// score 205 (was 205): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 205 (was 205): Frame 0x1c versus retail 0x24 and quaternion/cross spill overlap remain.
+// Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier fast scores were 205 with the shared initial dot and 200 with the dot written out.
 // MiniMax E (11-17): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the permuter (39 tries) found no variant below the baseline.
-// score 205 (was 205): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier dot3f for the initial dot 205; the written-out dot 200.
 // Earlier 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
@@ -446,6 +447,12 @@ static inline void quaternion_transform_vector(
 // or forceinline 242/205/246/209/242/205/246/209. All frames remain 0x1c. Shared-root forms reach
 // retail length at 242 or 246. The half-angle and cross spills still need independent homes in
 // frame 0x24.
+// separate quaternion axis and scalar, paired halves, in-place construction cross, per-axis quadratic 257,
+// separate quaternion axis and scalar, paired halves, in-place construction cross, pre-copy quadratic 298,
+// separate quaternion axis and scalar, paired halves, separate construction cross, per-axis quadratic 266,
+// Split axis/scalar and paired halves: in-place construction cross with per-axis/pre-copy quadratic 257/298,
+// separate construction cross 266/303. Independent halves in the same order 248/288 and 201/298.
+// NOT kept: the best gains four at 1318 bytes with frame 0x14, farther from retail's 0x24.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

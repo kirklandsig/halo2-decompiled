@@ -139,7 +139,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1375 (was 1375): The 0x5d0 frame, component and velocity homes and contact indexing still differ from retail.
+// score 1375 (was 1375): Frame 0x5d0 versus retail 0x58c, component and velocity homes, and contact indexing still differ.
 // Earlier: earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
@@ -706,7 +706,6 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // (6211 bytes, 957 / 589); that on the copy-free forms 1650 (5948 bytes, 959 / 567); with one function-scope counter
 // for the first two loops as well 1649 (955 / 562). All three keep the stepped pointers (one `imul` in the listing
 // against retail's three). Body unchanged.
-// score 1375 (was 1375):
 // The extra 0x44 frame bytes, escaped velocity and component homes, and indexed contact loop remain.
 // Independent slip/tangent lengths use a default then tangent 1447, complete branch results
 // with direct or selected tangent 1455/1455, and a common predicate with selected or direct
@@ -716,6 +715,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Descriptive workspace names 1375. Query and ray scopes 1374.
 // Velocity scope with typed query 1394, with workspace names 1394.
 // NOT kept: ray scope gains one point and all forms retain the larger frame.
+// One magnitude workspace at contact phase or entry, assignment/memcpy, 1515 each. Separate root and
+// normalization workspaces at the same scopes, assignment/memcpy, 1457 each. NOT kept: the frames shrink
+// to 0x5a0/0x5a8 but the body loses 120/88 bytes and retail's component homes still differ.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
