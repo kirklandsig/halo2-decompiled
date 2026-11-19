@@ -94,7 +94,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
-// score 162 (was 194): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // The bitmap path still allocates blend and aspect intermediates differently. The body is 1947 bytes against 1937.
 // Earlier scores 211 and 223.
 // MiniMax C (11-15): no new form, no lower score (194): the tint still sits at +0x60 where retail has +0x50 with the
@@ -706,6 +706,12 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // wrapped frame ordinals 162; frame references 162; blend published after geometry or after aspect
 // 401/409; conditional draw angle 179. NOT kept: both deferred blend forms expand the frame to 0x64,
 // and the 1939-byte count-gate form changes the entry schedule and raises the score.
+// M3 lane 11 r119 (fast, control 162, 0x2243c0 MATCH each time): retail keeps ax/ay in their homes (+0x20/+0x1c, reloaded
+// by the encode's unflipped arms) and gives the blend XMM5 for the whole bitmap arm, where ours keeps ax/ay in XMM4/XMM3
+// down to the encode, reads the blend from memory and spills remaining_blend (+0x74). Tried: `(1.0f-blend)` at each of
+// the four uses (no remaining_blend) 338 (1972 B); the second aspect test's arms without the next-value locals 162 (same
+// code); `blend` declared after `definition` 162 (same code); the first aspect products as `inv_ax*ay`/`inv_ay*ax` 162;
+// `width` after both inverse sums 173 (1951 B).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

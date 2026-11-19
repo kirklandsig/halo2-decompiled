@@ -903,6 +903,16 @@ struct s_1f8a70_actor
 // `{ route_mode = 1; break; }` inside its 0x20 test 182 (same code: case 6's store still does not share case 5's tail as
 // retail's does); `result = route_found;` once after the found/failed if/else 326; one route_found variable for the whole
 // function (first exit sets it false, no separate result) 339. Diagnostic, reverted: case 5 moved after case 7 372.
+// M3 lane 11 r118 (fast with the file's ten other functions and 0xe70b0, all MATCH throughout; control 182): one result
+// variable for the whole function (no route_found), the tail `if (result) {...} else 0x1f8750;` falling into the single
+// `return result;` 339 (1680 B); the two-variable body with the tail's assignments dropped and `return route_found;`
+// after it 439 (1672 B); the failing arm first, each arm returning route_found 435 (1636 B). Reading of the listing: the
+// route result behaves as an ordinary spilled value (every definition a store to +0x12, every use a load, the slot
+// shared with the dead 0xe70b0 temporary), and the first exit's own epilogue (no `pop edi`) with `mov al, bl` is what
+// one shared return gives once it is duplicated for the path on which EDI was never pushed. Retail's route dispatch
+// sits between case 5 and case 6 under a six-entry table; no case order or default placement tried so far gives it.
+// Also r118: modes 6 and 7 as a nested switch in the mode switch's default 326 (1616 B: two dispatches); the default
+// written between case 5 and case 6 (re-measured) 182 (same code).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

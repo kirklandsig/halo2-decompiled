@@ -1128,6 +1128,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // 295, the outer parameters declared in the opposite order 295, five later object_index arguments made constants 304: in
 // each object_index still loads first (ECX or EAX) and the parameter takes ESI, so the entry roles follow neither
 // declaration order, the parameter's later reads nor object_index's use count. Body unchanged.
+// M3 lane 11 r119 (fast with 0xbfe20/0xbfe60/0xbdb60, all MATCH; masked = aligned count with registers and stack
+// offsets masked, base 69): final_matrices declared at the top and returned by both early exits 240 (masked 72); the
+// sibling 0xbd090 reads this same bit-29/+0x34b condition through a fresh `current` object read, and that spelling here
+// (`byte *current = (byte *)header->object;` for those two tests, bit 30 cleared through 0xbfe20) gives round 78's 194
+// (814 B, masked 59; a hand reload beside `object`, match-only), with final_matrices at the top 194 (masked 62);
+// `matrices`, `orientations` and `sample` (constant initialisers) declared ahead of the mask copy 239 (masked 64), at
+// the top after result 239 (masked 70).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

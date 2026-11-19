@@ -1581,6 +1581,15 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // with disabled/direct first 614/650; three-way motion selection 628; general before direct 612;
 // enabled-input dispatch 635; gravity retained from bounded-step admission 453. NOT kept: all
 // scores rise and the original damping extraction and vector-home differences remain.
+// M3 lane 11 r120 (fast; base 234, difflib-aligned 192): K initialised dead locals at the top (diagnostic, reverted),
+// K=score: 1=484 (3053 B), 2=481, 3=364, 4=366, 5=358, 6=362, 7=560 (3040 B), 8=561, 9=477, 10=481, 11=364, 12=366, 13=358,
+// 14=362, 15=560, 16=565, 18=481, 20=500, 22=497, 23=429, 24=555, 26=501, 28=500, 30=497, 31=429: no count comes near, so the
+// operand orders and homes that differ are not a symbol-count offset (the current numbering is the best state).
+// Trials (fast with 0x1f0450 and 0x24590, both MATCH): the first arm's left through the shared cross3f 234 (same code);
+// through cross3f_staged 501 (3057 B); through this file's function_1f087b 505 (3057 B); the first arm's three output rows
+// through a `vector3f *` local for out + 0xc 589 (3027 B); the direct arm's rotation and the positive-normal arm's desired.i/j
+// (the same planar rotation of the input by the facing) through one two-caller file-local helper writing a point2f, plain
+// `inline` or forceinline, 489 each (3047 B: the helper's bound parameters shift the numbering as K = 2 does).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
