@@ -805,6 +805,11 @@ void function_1537f0(s_profile_record *record);
 // (2, 0, 3, 1) 18 (base +0x5e); the pointer and its chain ahead of the record and the 0x7f8b0 call 72 (269 bytes); the
 // entry as `g_4cf98c + index` with main's link pointer 18 (same code). Through the pointer the loop base always lands on
 // a link store (+0x5c or +0x5e), never on the builder's +0x4c.
+// M3 lane 2 r109 (fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): a 600 s permuter run with both
+// callees in its reduced image (77 tries, 28 failed builds) found nothing below 18; the entry bound by reference with every
+// field through it and the links as two chained pairs in retail's store order 49 (NONE in EBP); the four links as one chain
+// through `entry` in retail's store order (`next = next_other = unknown58 = previous_other = NONE`) 49, with `entry` a const
+// pointer 49; main's link pointer declared `short *const` 18 (same code). Without the callees the reduced image scores 84.
 // @retail 0x7f930
 void function_7f930(void)
 {

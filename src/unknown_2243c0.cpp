@@ -765,6 +765,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Word fallback lvalue with shader/pass/material lvalues singly or all 117/117/117/117;
 // all with masked fallback 152. NOT kept: The dword mask hoists the table, and the word
 // forms leave the EAX zero-extension and fused element loads.
+// M3 lane 2 r109 (fast with 0x2243c0 and 0x224d90; control 117): the +0xd8 flags read just before 0x173ba0 on main's body
+// 149 (0x224d90 36: the convention changes); the group dword named once for both compares 165; the stage and pass indices
+// written argument first (`arg_3 + local_7`, `arg_4 + local_8`) 117 (same code); the pass element bound to a named byte pointer
+// before its +4 read 117 (same code); the fallback re-reading the tag word from the object (`*(word const *)(local_2 + 0x1c)`)
+// 117 (same code: the read is forwarded to the local, still `movzx eax, dx`).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

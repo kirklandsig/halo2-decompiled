@@ -3097,6 +3097,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // half's definition pointer NULL at the top and assigned in an `if` 107 (578 B: the NULL test is threaded away, the
 // reload stays); the first arm's unlock test as a forceinline predicate with early `return true` 179 (594 B, the lock
 // byte is loaded and tested in a register); the threshold as `mode == 0 ? 1 : count` 50 (same code). The reload stays.
+// M3 lane 2 r109 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, all matched; control 50): the threshold started at 1 and
+// overwritten when the list's first word is nonzero 100 (578 B: a store ahead of the test); the compute arm's task and delay
+// tests nested 50 (same code); the squad looked up as `squad_get((word)arg_1)` 104 (578 B, `movzx esi, bp`); the squad's
+// 0x40 flag read once into a bool for both first-half tests 189 (594 B); the threshold declared bare at the top 50 (same
+// code). Diagnostic (value-wrong, reverted): the follow-up returning early when the event is NONE 54 (583 B, reload stays).
+// The first follow-up still reloads the index from its home in each.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

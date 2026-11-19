@@ -605,6 +605,11 @@ struct s_24e9c7_points
 // Quad aggregate from one shared origin before size, after across, after height or after half width:
 // 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
 // NOT kept: The across-y spill and the returned-height home remain different at retail length.
+// M3 lane 2 r109 (fast, 0x22a664 matched; control 125): forward_i and forward_j read once into named locals for the across
+// products and up 161 (767 B); the same with `0.0f - forward_j` 140 (746 B: still `0 - forward_j` after the height chain,
+// not before it); the across products written forward first (`-forward_j * size`) 125 (same code); the bounds height and
+// width named before the height 125 (same code); the width named before halving 125 (same code). The scheduler still
+// computes the across products after the height and width conversions, so across j is never spilled to retail's -8.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
