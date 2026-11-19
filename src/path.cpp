@@ -872,6 +872,20 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 343/385/343/374 with long link count, 387/372/387/315 with short link count.
 // NOT kept: pointer-tested predecessor omits the retail predecessor-index check and shortens the body.
 // The index-tested form at retail length still has the extra frame word. Original node traversal restored.
+// M3 lane 1 r122 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, all MATCH unless noted, and 0x26f3f0 at 218;
+// base 286): lane 11 r71's flag form rebuilt on this body is 2 again at 1388 bytes (the diff is saved as
+// build/r122/lead-270d90-score2.patch in m3-lane1). The pair sits in the edge block from the scan body to its latch
+// (0x2712ac, 0x2712b0): both are reloads after the body's calls, and the paths that skip the body jump past both to
+// 0x2712b7. On the 2: the state as `this` (the function as a member, called on the state) 210 (aligned 14: the pair
+// stays swapped, the type-2 arm stores a literal 2 and the surface test's loads change); the loop step written at
+// the end of each arm of the depth test, or in the overflow arm with `continue`, 383 (1425 bytes, two copies kept,
+// 0x270930 260); the two step assignments swapped 4; the type-2 stores as a separate `if (type == 2 && !special)`
+// 258 (1400 bytes); the link copied by assignment 2; the count update after the node index store 294; the scan as a
+// while with its own increment 2; the edge test inverted with `continue` 2 (same code each at 2). Diagnostics on
+// the callee 0x26f3f0 (src/path_transitions.cpp, restored at once): one or two blocks added at its top through its
+// parameters 382/236, one to three register-free blocks on two undefined globals 236 each (1391 bytes, aligned 46,
+// the callee 385-421): this function's allocation follows that unmatched callee's code well beyond the pair, so
+// the pair may not be decidable here while 0x26f3f0 differs. BLOCKED-BY 0x26f3f0 (not shown to be the cause).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

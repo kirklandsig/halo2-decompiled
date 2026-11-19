@@ -60,6 +60,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
 // score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// M3 lane 8 r189 (fast; control 489): local_8 renamed `position` 489, local_14 renamed `destination` 489, both 489
+// (same code: names do not order these 12-byte homes); local_9 filled through vector3f_assign 665 (3499 B), through a
+// brace initializer of the three fields 765 (3486 B). Compile-only reading: the squares follow local_9's field ranks;
+// the aggregate copy, vector3f_assign, the three field stores and the initializer all give k, j, i and
+// normalize_inline k, i, j, against retail's i, k, j.
 // Earlier score history (679 before m3 lane 4 r203).
 // M3 lane 10 r119 (fast; control 489): local_13/local_14 renamed to sort after local_8 489 (same code: names do not order
 // these homes); the input copy as `memcpy` 489 (same code); the input copy defined j, k, i (diagnostic) 767 (the squares then
@@ -677,6 +682,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Round 431: planar position pointer/reference before query or after translation 497 each; planar target
 // pointer/reference 497 each; radial-only translation before side selection or before radial difference
 // 764/771. The position and alternate vector homes remain exchanged. Original body restored.
+// M3 lane 5 r200 (fast; control 489, aligned 178, register-masked 79, frame-blind 45): the velocity-frame cross through the
+// existing cross3f_staged 489 (same code: its operand sides do not follow the helper's spelling); a `velocity` pointer local
+// for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the
+// steering-side block 730 (3463 B); the input copy and its normalize ahead of the position query 762 (3499 B). Diagnostic,
+// reverted: 1..7 dead initialised locals 665/665/665/665/669/500/493.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -2498,6 +2498,15 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // `test al, 1`); the definition flag through it 188 (874); the area-damage flag through it 3 (same code); that with the entry read
 // into a local after the inverse 228 (the flip); the vitality test as `function_d5d20(object_index, false)` times the fresh body
 // vitality 165 (821 bytes: called out of line, not inlined here).
+// M3 lane 8 r188 (fast): lane 16 r114's inline guard taking (info, entry) with 0xdb090's first argument read through
+// `accumulator->field_4_2` 23 (871 B; aligned, only that argument differs: retail `mov ecx, ebx`, ours `mov ecx, [edi + 4]`;
+// the entry load, the flags address and every register are then retail's; build/r188/lead-d8cb0-v4.patch); the same
+// guard with the later `info->flags` test through the field instead 228; the guard, the region kill and the 0xdb090 call
+// in one forceinline helper taking (info, entry, ...) 229, with 0xdb090 given a fresh `accumulator->unknown00` 228
+// (plain `inline` stays out of line here, 717/721 B); a range-checked region lookup returning the region or NULL, in
+// place 190 (873 B), inside an (info, accumulator) guard 190, inside an (info, entry) guard 225 (878 B); the 23 form with
+// the flags test through the field as well 178 (860 B). So with the entry read in the info test's block, the flip follows
+// `info` being 0xdb090's register argument, not the use count.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2978,6 +2987,9 @@ struct s_unit_event
 // the region argument's dead home), ours holds object_index in ESI and leaves EDI free, so our constant 1 goes to EDI
 // from the 0x20000 test on (`push edi`, `or [x + 0x30], edi`) where retail uses immediates there and ESI = 1 only from
 // the vehicle block to the state compare.
+// Round 636: region and permutation receivers remain exchanged. Pool retained through drops 460, through
+// effects 460, through vehicle 481; retained from entry 451, from region update 513; pool and 16-bit
+// slot through drops and vehicle 555 or from entry 566; pool retained for both early notifications 420.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

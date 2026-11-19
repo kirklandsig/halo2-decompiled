@@ -1377,6 +1377,11 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // m3 lane 14 r111 (fast with 0x13a532, 0x1393f3; control F S S 1; round 157's letters, Q = count read first, then a
 // `> 0` guard around a do-while with the offset inside): S S X 3, S S W 3, S S D 3 (each: loops 1 and 2 exactly
 // retail's, loop 3's offset zeroed before its guard, as S S F); S S H 118, S S Q 118 (375 B, the zero kept in EBX).
+// M3 lane 4 r216 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): loops 2 and 3 drawing through
+// file-local forceinline bool wrappers on SSS 118, on this body 1 (both the same code as without them); the first loop as
+// `while (count > 0)` with the step and `--count` at the body's end, count and offset first, 1 (same code); the first
+// loop's count and offset declared bare at the function's top 1 (same code); SSS with the success flag declared just
+// ahead of the first loop 127 (375 B).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

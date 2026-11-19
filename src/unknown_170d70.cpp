@@ -812,7 +812,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
+// score 129 (was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. Cluster creation stays inline in the build.
+// The save at entry and the signed volume index still exchange EBX and EBP, and cluster creation stays before the loop.
+// Earlier score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
 // limit, the 163db0 call, the volume/entry/cluster stores and the list walk all equal retail 0x172ee0-0x17308f).
 // What still differs is layout and registers: retail keeps the new-cluster block out of line after the loop
 // (je 0x172fad ... jmp 0x172f08) with cluster_slot in ebx and volume_index in ebp (pushed only before the loop);
@@ -844,6 +846,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // new cluster address before map/order stores 129; separate slots with chained stores 152;
 // count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
 // The opening EBX save and later BP volume index are still exchanged.
+// signed cluster list ordinal retained from loop entry 129; shared signed cluster list ordinal for creation
+// and traversal 129; pool entry array retained through traversal 128; typed portal plane in existing branch
+// 129; typed portal plane selected before publication 123; skip linked entries with traversal advance at the
+// loop test 129; skip refused projections with traversal advance at the loop test 129; skip linked entries
+// and refused projections at the loop test 129. NOT kept: the shared pool array gains one and the typed plane
+// selection gains six. Both retain the 427-byte extent and the first register mismatch. Opening executable
+// source restored.
 // Tried early camera key 123; early key and camera 123; early camera with key at call 128; input entry reference
 // 129; entry and volume references 129; entry reference with early key 123; selected cluster and allocated volume
 // names 129; allocated cluster and candidate volume names 129.
@@ -853,6 +862,19 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // count read after entry admission 129; next-volume count 129; group head from published
 // index 129; direct portal field 129; one resolved plane value 123. NOT kept: the resolved
 // plane gains six and still exchanges the entry EBX save with the volume-loop BP save.
+// The entry still saves EBP for the cluster slot and uses BX for the signed volume index.
+// Capacity-controlled for with success return and while with checked-index result 148/136. Direct
+// capacity loop with success return and capacity plus exhaustion controls 135/134. Capacity for
+// and while with result values 134/141. Capacity result in the existing do loop 127. Signed
+// successor tested before its widening 124. NOT kept: the last two gain two and five, respectively.
+// Head array live through projection, paired array references after projection, or head array at both
+// group accesses 128/128/128. Group element references or a reference to the carried cluster 129/129.
+// Reselect cluster after projection by record, direct indexing or two array receivers 165/165/164.
+// NOT kept: the first three gain one and retain the opening register exchange. Reselecting shortens
+// the body and direct indexing changes the matched caller. The opening body is restored.
+// New cluster counts/heads/both with fill 124/123/145 or fill_n 125/123/135. Complete initialization 187,
+// record clear with index/head stores 128. NOT kept: best gains six and reaches retail length but grows to
+// an eight-byte frame. The complete initializer changes the matched caller.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1120,6 +1142,22 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // with shared sine contributions 516. Rescaled original forward 349, with shared point difference 395.
 // NOT kept: cosine-complement scaling holds the axis components live where retail reads them again.
 // The retail second rotation scales j before multiplying by i. Preserving that grouping still differs.
+// The first-axis squares still spill and unity still starts in XMM3. Squares passed as a vector before
+// vertical calculation 343, before the half-angle 333, between angles 330; scalar square inputs
+// before the half-angle 392, between angles 389; double angles 348; shared double-factor
+// sine-axis scale 374; double diagonals 397.
+// NOT kept: the 330 vector form reaches 1464 bytes but uses frame 0x4c and still spills two
+// squares. The double-angle form also demotes the matched initializer.
+// Named square inputs together 381 or paired with products 379. Sine products before or after
+// complement products 354/343. Row aggregate 492; symmetric coefficients then aggregate 469.
+// Early horizontal axis 381; named double vertical tangent 368.
+// NOT kept: the 343 form gains three at 1465 bytes with frame 0x54, and unity moves to XMM6.
+// Both aggregate forms also demote the matched view initializer. The original square spills remain.
+// Original forward captured after the ratio, vertical field, both angles or first matrix
+// 345/345/345/358. Forward component capture split around the ratio after i or j 367/367.
+// Ratio computed before and stored after the capture 349. Shared forward address through both rotations 365.
+// NOT kept: the one-point gains leave unity in XMM3. Split captures and the shared forward address
+// change the matched initializer. The opening body is restored.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1194,7 +1232,7 @@ struct s_polygon_context_173910
 };
 
 short function_120850(vector3f const *v);
-bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon);
+bool function_23a220(point2f const *points, short count, point2f const *point, real epsilon);
 
 // score 3 (was 69): the side test uses EAX instead of AL, and the final call sets up the two
 // argument addresses in reverse order.
@@ -1251,7 +1289,7 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 		destination->x = vertex->n[g_440b94[axis * 2 + use_positive_side][0]];
 		destination->y = vertex->n[g_440b94[axis * 2 + use_positive_side][1]];
 	}
-	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
+	return function_23a220(points, (short)polygon->count, &point, 0.0001f) != false;
 }
 
 // score 23 (was 23): logic equals retail (inside test, state <= 0 / >= 3 returns, 1 vs 2 by the sign of the
@@ -2067,6 +2105,14 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // indexed state address 295; basis pointers bound after both copies 405; initial/final coordinate
 // clamp loops 434/456. NOT kept: the late basis pointers shorten the body and the clamp loops
 // grow it. The state base remains in EBP and collision point in EBX.
+// The collision point in EBX still displaces the state from its retail register.
+// Point/vector/both row accumulators 382/297/382. Full point/vector/both setters 295/465/463.
+// Row accumulators with a single point/vector setter 382/461. The point setter alone ties at retail length.
+// Horizontal position after both view copies, after all derivatives or between derivative y and z 440/410/440.
+// X and Z before view copies, Y after both 295. Vertical offset ahead of both horizontal sums 439.
+// X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
+// Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
+// The collision point still occupies EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

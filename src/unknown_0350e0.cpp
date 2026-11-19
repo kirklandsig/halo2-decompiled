@@ -403,6 +403,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // or staged row-dot stores 344/532, shared two-turn loop 379.
 // NOT kept: corresponding scalar stores keep the original register assignment.
 // The alternate publications change the frame or extent and raise the count.
+// Symmetric pairs seeded and corrected by pair, chained or mirrored, with direct
+// or named sine products 350/351/338/357. All pairs seeded before row corrections
+// in the same four forms 343/399/367/376. NOT kept: even the closest form
+// shrinks the frame, and the frame-preserving named-sine form grows to 1794 bytes.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2155,10 +2159,20 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // sign at dispatch exit 392, sign at inverse tangent only 206. NOT kept: 177 and 176 recover
 // the result home and length but compute the projection before retail and raise the caller
 // 492 to 572. Other gains shorten the body. The 0x14 frame still lacks the separate result.
+// Separate perpendicular receivers 193; fixed-axis receiver scopes 193; direction-relative receiver scopes 180;
+// third-case receivers 195; displacement aggregate in both cases 266 or before the third-case perpendicular 171;
+// fixed-axis aggregates 193; reversed direction aggregate alone 257.
+// NOT kept: the 180 and 171 forms reach frame 0x18 and 812 bytes but raise the caller from 492 to 572.
+// The earlier aggregate advances both X and Y ahead of the retail interleaving.
 // MiniMax A (11-18): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18, and retail keeps
 // the result in its own slot at +8, set to 0.0f in the prologue, where this build reuses the scale argument's home; the
 // case-one body still differs in its float order and in how retail loads the two components of the 0x4b9dac vector one
 // at a time and copies them through the stack, and restructuring the switch into a fall-through form measures 194.
+// Round 144 (m3 lane 12, fast with 0x2e9e0 and 0x497a0; control 193/492): round 73's case-3-offsets-first lead
+// re-measured 177 (812 B) with 0x2e9e0 572 (2232 B; same calls, the change is register allocation around the callee that
+// now clobbers XMM7, as retail's does); on it the second cross written k, j, i 160 (0x2e9e0 572); with that, case 1/3's y
+// terms i, j, k 163, k, j, i 172 (816 B); case 1 reading g_4b9dac directly with no reference copy 196 (784 B). The pair
+// stays BLOCKED-BY 0x2e9e0: it has to be reworked against the XMM7-clobbering callee first. Body unchanged.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2532,6 +2546,15 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // with field stores or a const aggregate: 567/567, 497/497, 497/497, 497/497.
 // NOT kept: all retain frame 0x90 and the shared direction/point home. The first
 // pair shortens to 2255 bytes and the other six regress at retail length.
+// Round 190 (m3 lane 8, fast; --fast agrees with the plain 492 here): the draw point declared with the outputs at function
+// scope 492; the selected colour declared at the top of the loop body 487; the sine/cosine and the draw call in their own
+// block 492; visibility declared after the tag 521; the outputs declared scalars first, then colour, direction, position
+// 492. Retail's 0x2e3f0 outputs sit at frame +0x24 (tag), +0x34 (position), +0x40 (colour), +0x7c (direction); ours at
+// +0x3c, +0x44, +0x24, +0x84.
+// Shared sampled/draw color 487, with sampled field transfers 524, with an animated-color copy
+// 549, with both transfers 567. Early animated copy or channel initialization 571/557.
+// Shared color beside angles 487, or beside animated tint with both transfers 596.
+// NOT kept: 487 gains five at retail length and the 0x90 frame remains. Other forms regress.
 // Tag and center decoded into the saved record with aggregate, field, indexed field,
 // indexed scalar, pointer or reference publication 476/486/467/488/474/486.
 // Separate decode with record construction from fields or scalars 516/557.
@@ -3237,6 +3260,18 @@ real magnitude3d(vector3f const *v);
 // Tried current/target/both vector initializers 170/170/170, axis at outer scope 170, rotated initializer 170,
 // named absolute dot 196, tangent with shared/staged cross 186/186, angle after normalizer 246,
 // shared projected scale and sum 183.
+// Round 144 (m3 lane 12, fast with 0x24590/0x30bf0, control 170): the parallel test as `(real)fabs(dot) < 0.9999f` 170
+// (same code); with the angle as `(real)acos(dot) * step` too 170 (other code); explicit `(double)dot` at fabs and acos 170
+// (the 0.9999 constant then loads as a qword); the current length clamped through the file's existing forced-inline
+// three-argument clamp (its value parameter names the raw length) 251 (1037 B, as round 221's named raw length: the raw
+// length stays on the x87 stack and is stored straight to `a`); both lengths through it 320 (977 B: the target's three
+// expansions fold into one). Body unchanged.
+// Refresh the raw length at the upper bound, current/target: reuse it 170/228,
+// use a fresh in-range magnitude 170/170, floor default 262/246, ceiling default 170/233.
+// The raw current length and promoted-dot homes remain. Original clamps restored.
+// Ordered signed dot bounds, lower/upper first 191/192; lengths first 191/191;
+// fallback-first for the same four forms 191/192/191/191. NOT kept: the two
+// comparisons replace the x87 absolute test and change the frame.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3922,6 +3957,14 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // individually and combined 399/390/397/437/388/397/388. All with a separate fallback count
 // 349. NOT kept: all regress. The state, prefix and creation ordinal still use different
 // registers on the original frame.
+// Round 144 (m3 lane 12, fast with 0x4b160, control 317): pass 1's tests nested (`if (last > i)` around the flag
+// test) 317 (same code); pass 4's created-flag test ahead of the key tests 373 (1342 B); the growth loop as a plain
+// `for` over state->entries[i] with the entry pointer 814 (1655 B), with its own index 794 (1639 B: the plain loop
+// is unrolled, so retail's guard plus countdown do-while stands); pass 2 setting `first = 1` (it is always 0 there)
+// in place of `++first` 385. `first` keeps EBP in each.
+// Swap record shared across all four passes, isolated per gate, shared across admission, shared across
+// removal, shared through creation, or shared after paired admission 317 each. Existing swap with a value capture,
+// direct or named, 367 each. The prefix and state registers and the ordinal homes remain exchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4297,6 +4340,17 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // camera readback 530, moved point initialized from previous coordinates 551, both 523,
 // camera displacement with original/scalar element capture 500/489.
 // The shared previous-position home, frame and independent velocity reloads remain.
+// Round 190 (m3 lane 8, fast): the cycle bit read straight from the field after the flags local 485 (2035 B, still one
+// dword load); that read ahead of the flags local 490 (2039 B: it gives retail's separate byte load of the cycle bit), as
+// `(bool)(field & 1)` 490; the previous position, its deltas and the dot in their own block 486 (same 0x60 frame); that
+// block through a pointer to the stored camera position with the deltas read back from it 524 (1994 B).
+// Stored bitfield cycle/size/reset, cycle+size/cycle+reset/size+reset:
+// 490/486/489, 490/491/489. All direct bitfields 491; one bitfield snapshot 486.
+// The 0x60 frame, velocity inputs and projection homes remain. Original flag word restored.
+// Cycle-local camera displacement 485; range after time reset 491; local phase wrap 492,
+// conditional publication 506, per-arm publication 492; separate phase advance/accumulator/
+// fraction 500; radius in size arm 495; optional size update 486. NOT kept: cycle-local
+// displacement gains one at retail length and still reserves 0x60 bytes.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5298,6 +5352,11 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // The same four with color4f: 225/225/225/225. NOT kept: color recovers frame
 // 0xe0 and the collision home, but the radius stays at +0xc and the six-point
 // gain grows to 1826 bytes against retail 1819.
+// Shared vector scale into a distinct offset, direct/cached scale, with scalar
+// alpha or color 507/516 and 507/516. Choosing the original or scaled offset
+// by assignment or conditional 616/622 and 628/634. NOT kept: the complete
+// vector recovers frame 0xe0 with scalar alpha but moves the radius to +0x1c
+// and grows to 1934 bytes. Color grows that frame to 0xe4.
 // Round 101 (m3 lane 2; control 231). A compile-only build of this file gives our frame and corner math (0xd0, the same
 // two shared helper homes, radius and negated radius), so 580 forms were screened there against retail's code ahead of
 // the draw call (aligned differences of 230 lines; control 139), then nine in the fast check. Compile-only: the four-
@@ -6069,6 +6128,10 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // in EAX at five bytes where retail uses ECX and EDX at six) and the first real divergence is the float temp for the radius
 // argument of function_1650a0 (ours in EDX, retail in EAX); seven source forms (the group through a pointer, the statements
 // reordered, the flags in a local, the restore through a local) move neither the length nor the register choice.
+// Combined projection rejection/admission 47/47; radius value/reference 132/47;
+// count sampled before flag reset 47; flags and count sampled together 47; clip
+// view before group setup or between save and reset 47/47. The radius value adds
+// a frame word and the four short accumulator encodings for the group flags remain.
 // @retail 0x30ed0
 void function_30ed0()
 {

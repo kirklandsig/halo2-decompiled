@@ -845,6 +845,13 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // Diagnostics (harness, reverted): stores through a laundered pointer (float- or pointer-typed) still leave the body
 // load shared (no reload), and the fixed byte read as char or byte stays in BL under a volatile reload, so in our build
 // the vector stores never kill the slot load: retail's reload after them needs a cause other than aliasing.
+// M3 lane 9 r139 (fast with the callers above): as a component member (index, velocity; the siblings' form, measured
+// through a temporary header bridge) 41 (this/index/velocity arrive in EDX/ECX/EAX, callers lose; two callers are
+// contributor code); the fixed test through a new inline fixed-flag accessor 29 (same code), with the vector at
+// function scope 48 (141 B, the listed reload code with the byte in BL); `(void)&component;` in place of the
+// own-parameter read 32 (component in EDX, callers lose), with the vector at function scope 47 (139 B: the byte still
+// goes to BL with the component in EDX, so BL does not follow the component's range). Diagnostic: a non-const
+// `hkRigidBody **` slot with the body read after the conversion 29 (same code as this body).
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -1816,6 +1823,15 @@ PRIVATE __forceinline real const &component_time_step()
 // Reading: a product takes the step from memory when the base pointer is a block-local temporary; retail has that at
 // both products plus the materialised `base + 4`. 0x1d2280 is the only game function with that load-then-add shape on a
 // float read.
+// M3 lane 15 r102 (one-file LTCG harness, exact here: this body 17/14 = 26 at 470 B; stop-first 36/36): a forceinline
+// helper returning `value * rate` for both products 462 B, 133/19 (the 0.001 constant hoists into XMM7 and the stop
+// distance reassociates to `(v / s + 1) * rate * v`); that helper for the first product only 17/14 (same code); the stop
+// distance in a helper taking (velocity, step) and reading the global itself 17/14 (same); the mass eligibility as a
+// ternary inside the step product (`(scale && mass > 0.001f ? a / mass : a) * dt`) 473 B, 115/15: the head becomes
+// retail's (scale in XMM0, mass in XMM1, `divss xmm0, xmm1`) but the step is still loaded first, after a `movaps xmm1,
+// xmm0`, and the global load hoists above the mass test; the rate's address handed back through a helper's out parameter
+// 17/14 (same); the reference accessor, or a pointer accessor, called again at each product 17/14 (same). Each with the
+// stop-first test 36/36 (462 B forms 133/41, ternary 115/35). Every spelling folds `base + 4` at both reads.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2522,6 +2538,31 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
+// with match-only forms, detail first, older rounds below. The velocity's fields are ranked by how the code first
+// reaches them (0x1d3fc0's note): a field named in this body is "old" (scaled as `inverse * [x]`, reloaded on the short
+// path), one reached only through inline helpers is "young" (loaded beside its x87 square, scaled in place). Retail has
+// i old and j, k young, and `speed` younger than i but older than j, k; the loop sum and the final `set` here name all
+// three. Forms (fast): the loop sum through vector3f_add(&velocity, &local_c7c2ff, &velocity) alone 139 (dot order i, j,
+// k); that with the result as vector3f_scale(&velocity, speed, &velocity) and havok_from_vector3d(result, &velocity) 128
+// at 1454 B (the velocity block is retail's but for speed*i); the speed expression passed straight to vector3f_scale (no
+// speed local) 252 at 1403 B (velocity block byte-exact; result goes to EBX and the two flag arms share one setter
+// body), with the setter building its word first 243; that with `hkVector4 *result` declared after the scale 385 at
+// 1438 B (the first contact loop's normal sums flip their operand sides), with the word-first setter 385. On the last:
+// one unused local (any name, 1 to 7 of them; diagnostic) 38 at 1454 B and with the word-first setter 13; a named weight
+// (`real weight = flag ? 1.0f : 2.5f;`) or the scale into a separate `scaled` vector in place of the unused local 13
+// each (both match-only); the flag as a bool local used by the scale and the tail test 106 (first difference +0x457,
+// the tail then tests the cached flag where retail reads the field again); a material local 116; an entity local 171
+// (1401 B); on the weight form the tail's flag test without the bool cast 103, as `!= 0` 103, both tests without the
+// cast 117. The permuter on the weight form (one run, stopped after its first ten minutes) found the sample's speed
+// summed as `speed_sum = speed_sum + component_surface_length(...)` for `+=`: 5, the unrolled-copy difference below
+// gone. Left at 13: in the second contact loop's second unrolled copy retail loads the contact's i and multiplies by
+// normal.i (ours copies normal.i and multiplies from memory; the compile-only build gives retail's form, the LTCG build
+// ours; only the cached-flag tail changed it), and retail computes and stores speed*i before the j and k products where
+// ours does it after the zero for w (the 5 left on the permuter's form). Not moved by: local renames, dead-local
+// counts, product order in the scale, any helper shape writing the result, normalize_inline, the normal block's
+// length+scale form, the result's position, the tail's arm order, the speed expression's spelling, the loops' counter
+// spellings, other_contacts' increment, the scheduler target flag (compile-only diagnostic).
 // MiniMax B (11-18): no new form, no lower score (91): the whole remaining difference is the surface length's
 // normalisation, where retail reloads the normal's j and k into xmm2/xmm3 around the x87 length chain and scales
 // them in registers, where this build folds the loads into the scaling multiplies and uses xmm1 for i*scale; the
@@ -2578,7 +2619,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // retail keeps it in xmm4, and the material loop's call to 0x181db0 takes its arguments in ecx and edx where retail
 // passes them in eax and ebx: BLOCKED-BY include/normalize3d.h and src/unknown_181e90.cpp, which this lane may not
 // edit.
-// score 91 (was 91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
+// Earlier (91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
 // aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
@@ -3396,6 +3437,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // const source pointer 15 (same code); the equal arm's output through an `hkTransform &` 15 (same code); the first-node
 // test against the node_a local 265; the child search comparing against the node_a local 309. Retail's column 0 loads
 // k, i, j and stores i, j, k, w; ours loads k, j, i (as the frame_b arm does in both) and stores k, w first.
+// M3 lane 9 r139 (fast with 0x1d83e0 and 0x1d77d0): 1-7 dead initialised locals at the top 15 each (no symbol-count
+// tie); the equal arm's columns written out with set() against frame_a and the translation through a temp after
+// them 15, with that temp declared first in the arm 15, with it at function scope 15; the equal arm through a
+// `transform4x3f const &` to pair->frame_a 15 (all the same code: after inlining the arm's block is identical); the
+// equal arm converted into a local hkTransform and copied with hkTransform::set 351 (1325 B).
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3534,9 +3580,10 @@ struct s_1cf531
  word field_2 : 4;
 };
 
-// score 11 (was 27): the friction magnitude takes another dead slot (retail shares the friction pointer's
-// spill slot), the rigid-body element is formed offset-first in retail (data + offset, ours offset + data),
-// retail loads the vector's y early and stores it after z, and the scratch registers rotate from there.
+// score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
+// folds its reload into the final `mulps`, ours stores it to 0x40. (Earlier first lines: the friction magnitude in
+// another dead slot, the element formed offset-first in retail, retail's y loaded early and stored after z; the
+// round 139 forms below fixed the first and the last.)
 // Tried: the element through the array's operator[] 27; the vector through _mm_setr_ps or _mm_set_ps 104;
 // the magnitude in a second local for the finiteness result 27; the bits read as long 27; the magnitude
 // renamed either side of the other locals 27/27; the finiteness test through a by-value bit helper 25 (the
@@ -3584,6 +3631,16 @@ struct s_1cf531
 // src/unknown_0a0190.cpp and src/unknown_14b560.cpp) 22; the by-value test alone re-measured 9; local_7 written
 // through m_quad.m128_f32[0..3] in place of set() 11 (same code), with the by-value test 9. Retail's fold of the
 // final operand marks it as a spill reload of a temp packed into local_13's slot, not a read of local_13.
+// M3 lane 9 r139 (fast): 1-7 dead initialised locals 11 each, with the by-value test 9 each (no symbol-count tie).
+// Kept: the surface vector through a `vector3f` and the file's two converters (vector3d_from_havok, then
+// havok_from_vector3d) with the finiteness test through the shared by-value helper: 11 -> 2 (y now loaded early
+// into xmm1 and stored after z, the magnitude in the friction pointer's 0x18 slot); without the helper 28 (the zero
+// and 1.0 constants swap xmm1/xmm2); through the top's x/z/y converter into a real[3] or vector3f 2/2. On that
+// base: corrected in place in local_13 23 (908 B, its reload after the scale call is a separate movaps, never
+// folded); through new hkVector4 subMul4/mul4 members 23, through file-local forceinline helpers taking
+// `hkVector4 &` 23, the final scale alone through mul4 23 (all the in-place code); corrected as a named hkVector4 2
+// (same code); local_13 by `local_13 = local_7;` 2, copy-initialised from local_7 124/124 (932 B); a 1500 s
+// permuter run (608 tries) none below 2.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
@@ -3598,7 +3655,7 @@ void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, l
  real local_3 = 1.0f > body->m_motion->getMass()
   ? 1.0f : body->m_motion->getMass();
  real local_4 = *(real *)local_1 >= 0.0f ? *(real *)local_1 : 0.0f - *(real *)local_1;
- if ((*(dword *)&local_4 & 0x7f800000) == 0x7f800000) local_4 = 0.0f;
+ if (!function_x41b793(local_4)) local_4 = 0.0f;
  arg_1->field_38 = local_4 / local_3;
  if (arg_3)
   vector3f_scale(&arg_1->field_28, -1.0f, &arg_1->field_28);
@@ -3615,7 +3672,9 @@ void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, l
   {
    s_havok_component_rigid_body *local_6 = &local_2->rigid_bodies.data[arg_1->field_45];
    hkVector4 local_7;
-   local_7.set(local_6->unknown30(0), local_6->unknown30(1), local_6->unknown30(2));
+   vector3f surface;
+ vector3d_from_havok(&surface, &local_6->unknown30);
+ havok_from_vector3d(&local_7, &surface);
    hkRigidBody *local_9 = local_6->rigid_body;
    __m128 scale = _mm_set_ss(0.6f);
    local_7.m_quad = _mm_mul_ps(_mm_shuffle_ps(scale, scale, 0), local_7.m_quad);

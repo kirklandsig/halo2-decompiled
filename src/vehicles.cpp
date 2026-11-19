@@ -806,6 +806,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Selective vector2f velocity, input and perpendiculars, alone, paired and together 116 each;
 // indexed velocity 116; existing in-place initial normalizer 131. NOT kept: velocity-copy
 // registers and the late unity load persist.
+// Round 636: velocity receivers and early unity still differ. Entry dot 281; successive entry squares 120;
+// named planar and third-axis terms 222; entry throttle, steering or both shared with rotation 277/276/286;
+// component-array squares 218; successive squares at both observations 325.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1018,6 +1021,8 @@ __forceinline long vehicle_round(real value)
 
 /* flips a vehicle back over: a spin about its forward (or its side) for up
    to two seconds while it's upside down */
+// score 4 (was 4): the side cross's i-by-k and j-by-i products still load forward.i and up.i where retail loads
+// up.k and forward.j; every other form below moves at least one other product.
 // MiniMax I (11-17): the flip rate reads the up vector's k member directly, so the up pointer serves the first
 // cross alone: 2 (was 4), with retail's length. The side cross's staged products then load retail's operands and
 // only its a->k * b->j term still takes the up component in the register where retail takes the forward's; the
@@ -1036,7 +1041,7 @@ __forceinline long vehicle_round(real value)
 // and handing it the up vector's pointer instead of its address scores 94 (735 bytes against retail's 751), so the
 // direct address stays. This file's build flags were also tried without LTCG (the @flags line with /GL-), which
 // leaves this function at 191 and the other two of this file at 596 and 843, so the file stays /GL.
-// score 4 (was 8): retail's frame, length and exit agree. In the staged side cross, retail loads up.k
+// Earlier at 4 (was 8): retail's frame, length and exit agree. In the staged side cross, retail loads up.k
 // for forward.i * up.k and forward.j for forward.j * up.i; ours loads the other operands. Earlier
 // versions also differed at the first cross's k term, the side cross's i term and the dot's i term.
 // Kept: one `bool result` exit, the
@@ -1162,6 +1167,19 @@ __forceinline long vehicle_round(real value)
 // Coordinator review 11-17 (MiniMax I): NOT kept, 4 -> 2: the rate read through vehicle->up.k where the body
 // already holds up = &vehicle->up is a re-read of a value held in a local, a steering form kept only with a byte
 // match.
+// M3 lane 8 r188 (fast; a compile-only screen of this file reproduces the products exactly): the tick length through
+// a file-scope forceinline getter returning `real const &` (the shape of unknown_1cec30.cpp's step getter) 4 with the
+// rate on `up->k` (same code); 2 with the rate on `vehicle->up.k` and the pointer at the first cross only (MiniMax I's
+// form, the same flip left: the side cross's forward.k * up.j loads up.j); 6 without the up pointer; the getter
+// returning by value 17 (the condition's exit jumps move, +0x41); the clamp through an inline pin function nested in
+// the rate's definition with a named dot 92; round 192's shape without its helpers (plain crosses, no pointer, the
+// getter, a named dot) 10. Compile-only screens on the getter: the up pointer at each subset of first cross, rate and
+// side cross with plain or staged crosses (32 forms) at best one flip (the side cross's forward.k * up.j); with the
+// side as scale-and-add, `rate *= strength`, swapped dot operands, a mode local, a named tick count, named clamp bounds
+// or the PIN macro for the clamp (128 forms) the same one flip at best; macro crosses, dot and scale (96) at best 3;
+// dead locals and dead inline locals at the top, before the first cross, inside the side block and before the
+// projection (288 diagnostic points) never 0. That product is retail's only with the rate read through the pointer,
+// which flips the side cross's i-by-k and j-by-i terms instead.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2220,6 +2238,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // or k, j, i, 15 each (the sum then (j + k) + i and the cross flips; the source order is ignored); the vehicle index
 // parameter `long const` 9; every callback call as `(*callback)(...)` 9 (both the same code); the velocity call's
 // index read once through the parameter's address 13 (only the cross flips).
+// M3 lane 8 r188 (fast), at 9: the forward speed with the forward vector bound by `const &` 15 (the sum then (j + k) + i,
+// the cross flips); with the velocity bound by `const &` too 15; arms 4 and 5 through a shared inline period-fraction
+// helper 9 (same code); a trivial `valid()` accessor on the animation-id type for the seven overlay tests 9 (same code);
+// the six overlay stores through one pointer to the overlay array 17. The compile-only screen of this file does not
+// reproduce this function (its callees' conventions come from other files), so the forms were measured one at a time.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -3432,6 +3455,11 @@ real g_47ff30 = 2.5f;
 // Independent directional/force/torque mass snapshots, const early/late/all, scoped final
 // snapshots and the separate/both scale helpers 710 each. NOT kept: frame 0xfc and retail
 // length recover, but the acceleration spill remains at +0x20 and the total score rises.
+// Existing target-limited rate helper alone, retained rates, named climb limit,
+// direct target argument, per-use mass, shared scales, three-phase mass, and
+// shared scales with retained rates 778/778/778/806/804/812/777/770.
+// Direct target and named climb limit with the inline approach 737/672.
+// NOT kept: the target-limited helper stays out of line and the body shortens.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4638,6 +4666,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // the projection forms. First cross and trig homes remain.
 // Facing forward/up and rotated up field references, seven subsets 184/170/182/166/200/139/133,
 // then all with rotated forward 196. NOT kept: the first preload, cross and trig homes remain.
+// Lateral subtotal, compound subtotal, separate lateral/axial contributions and all three terms named.
+// Existing scale call 193/220/213/202; aggregate projection 193/220/213/202. NOT kept: the first pair fixes
+// the i product but loses the forward j/k preloads. Cross and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6515,6 +6546,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 979/1112; rowwise copy at original/acquired-at-product positions 1114/1114; independent
 // relative with late whole/direct/rowwise state inputs 1044/1047/1083. NOT kept: separate
 // relative recovers frame 0xdc but alters extent and raises the score.
+// Linear velocity through bank, acceleration through force, target through strafe,
+// the three paired scope forms, all three scopes, and all three with a scoped
+// angular query output each score 978. The 0xfc frame and swapped index and
+// displacement remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

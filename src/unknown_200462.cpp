@@ -229,6 +229,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // advance product off XMM4 (not a symbol-count tie); the pulse as `real const`, both half extents as `real const`, the
 // corners as a flat array of eight reals, all the same code; the bitmap entry pointer computed after the pulse query
 // 14 -> worse (the entry load moves past the call); the four corner edges as const locals named after the x step worse.
+// M3 lane 4 r216 (fast with 0x2008fc 0x200891, control 14): the stepped x named where it is computed (`real center_x =
+// x + half width * pulse;`, stored back and used by the corners) 89 (852 bytes), with the y in a `center_y` too 89; the
+// corners through a `point2f const &` bound to the running position after the step 14 (same code); the second x step
+// moved ahead of the draw call 97 (843 bytes); the corners in [2], [3], [0], [1] order 90 (852 bytes).
 // @retail 0x200462
 void function_200462(long arg_0)
 {
