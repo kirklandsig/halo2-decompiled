@@ -605,6 +605,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // NOT kept: the reduced 910 and 913 forms retain the larger frame and shorten the body away from retail.
 // The type reference closes four frame bytes and regresses in score and length. Reduced control 926.
 // Opening body restored.
+// Actor and unit registers and frame 0x2cac still differ. Typed actor datum for
+// unit alone or unit and state, pointer published before/after lookup:
+// existing pointer 945/923 and 919/923, ordinary pointer 980/980 and 987/987.
+// After lookup with ordinary incoming unit index, same pairs 879/880 and
+// 986/986. Reduced control 926. NOT kept: the delayed typed read recovers
+// the scaled unit-field access, but the 879 form retains frame 0x2cb4
+// and shortens the body to 3708 bytes against retail 3731.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

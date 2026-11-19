@@ -247,6 +247,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // indexed/cached terminator 79/92. With the indexed clear, form the destination before conversion 67
 // or publish the result before the clear 80. NOT kept: the closest 208-byte forms still use frame 0x24
 // and keep the list base in a register instead of reloading it after concatenation.
+// The base still needs EBP-8 and the successful ordinal needs to survive the appends.
+// Entry base named early/late, ordinal early/late, display result early, formatted
+// destination late, and adjacent base/count ranked early/late all score 67.
+// NOT kept: lexical order leaves the frame at 0x24 and the derived buffer live.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

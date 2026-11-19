@@ -714,6 +714,12 @@ struct s_text_line_measurement
 // placed ahead of the kerning call, the offset and the advance 85; between the kerning and the offset 111; between the
 // offset and the advance 111; the metrics in offset, kerning, advance order ahead of the break block 82; offset, advance,
 // kerning 133 (393 B). Retail's early width load does not come from the width's first use moving up.
+// The advance copy and early width load still differ. Separate saved-break
+// selection, index before/after the width branch 68/76, width before/after
+// the index branch 117/124, both fields index/width first 124/117, shared
+// predicate index/width first 117/117. One-branch effective break index,
+// previous-index default and joined index publication 77/72/77.
+// NOT kept: 68 emits a second break test. The single-test 72 gains five.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

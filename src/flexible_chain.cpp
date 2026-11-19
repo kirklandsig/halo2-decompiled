@@ -800,6 +800,11 @@ void __stdcall function_1160c0(real dt)
 // conditional segment addresses against the interior bound 304, preceding-ordinal loop bound 294,
 // shared prediction add 204, predicted z after the node update 157.
 // NOT kept: the retail-length forms still raise the score and leave the segment and rotation homes different.
+// The segment still needs EDX and the +0x14 spill. Separate array and signed ordinal,
+// used directly for stiffness, length and rest offset. Ordinal first, terminal count,
+// terminal ordinal, interior first and terminal decrement 272/269/272/269.
+// Array first, same selectors 275/273/275/273. NOT kept: direct indexing
+// moves the stiffness read ahead of the address addition and raises the score.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

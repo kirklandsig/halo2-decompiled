@@ -2276,6 +2276,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // called after the colour reads 190. The type query through a two-caller inline helper with a named definition local
 // (the form that takes 0x177040 to 54) leaves this body at 128 (same code); that helper was not kept at review (see
 // 0x177040's note).
+// The first colour still needs its own spill and the system still needs ESI.
+// Carry the initial spawn location across the type lookup, tint, multiply and
+// colour update, assembling the spawn record after each boundary in turn.
+// Colours at the update 188/186/188/188, early colours 210/210/208/208.
+// NOT kept: the tint boundary supplies a 0x44 frame at 572 bytes, but it
+// spills the traversal cursor and retains the system in EDI.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
