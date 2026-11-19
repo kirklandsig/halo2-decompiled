@@ -800,131 +800,9 @@ byte g_55e708;
 
 #define PIN(x, low, high) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
-// score 38 (was 38): the loop, frame and clamp are retail's; left are scratch register picks only (object argument and
-// count in the fallback arm, the loop's amount/index loads, the single-marker arm, the opacity reload). 0x2dba0's order is
-// now applied: earlier BLOCKED-BY 0x2dba0 (parameter order): with its parameters declared (tag, alternate, kind,
-// index, marker_index, position, direction, color, alpha, amount, scale) at its definition and every call (0x2dba0 and
-// its other callers unchanged) the marker loop anchors on the position pointer as retail (the cursor anchors on the
-// address evaluated last) and this is 45 at retail's 607 bytes, 38 with the opacity through the PIN macro; the
-// direction after the colour 38, last 153 (0x2dba0 56), tag after alternate/position/direction 141 each.
-// Earlier (was 109): 0x2dba0 now takes the tag in ECX and the direction in EDI as in retail; the marker loop
-// walks the forward pointer in EDI (position = edi + 0x24, index in EBX) where retail walks the position pointer
-// in EBX, derives the forward with `lea edi, [ebx - 0x24]` and keeps the index and count in memory (frame 0xf0
-// against 0xec); the opacity clamp stores the product first. Earlier: BLOCKED-BY 0x2dba0: it took the position in
-// ecx and the tag on the stack where retail
-// passes the tag in ecx and the position on the stack, so the marker loop keeps its index in ebx and
-// spills the position where retail walks the position pointer in ebx with index and count in memory.
-// Round 70: indexed loop with a marker pointer per pass 109; single-marker case first 146; object
-// index local at every use 157; the field read at every use 109; the file's clamp_light helper for
-// the opacity 109 (retail's clamp shape, the rest unchanged).
-// Round 56: indexed loop without the marker pointer 109; opacity clamp as if/else-if 109; short count
-// and short index 125 (607 bytes, aligned diff 86 -> 55: the single-marker arm moves after the loop as
-// in retail, but the loop counts down in registers); short index only 114; short count only 128.
-// Round 141: bool warning flag 109; `count = 1` before the flag test 126; `count == 0` fallback test
-// 109; colour pointer local 109.
-// Round 39: count before markers 109; count/index before markers 109; cursor before the count clamp 109;
-// const cursor 109; pointer for loop 109; marker_count/marker_index names 109/109;
-// cursor after the array declaration 109. Fast preview 131 with caveats; plain all 109; original restored.
-// Round 175 (plain): the absolute index written at each use 109; the effect tag read into a named local
-// for the test and both calls 163 (retail's 607 bytes, but a 0xf4 frame and every register moved).
-// Round 45 (lane 10, plain): an indexed for loop over `&markers[i].matrix` 128; a position pointer local in the
-// indexed loop 128, in the pointer loop 128; the product and the clamped opacity as two locals 128 (aligned
-// 99 -> 96); short count and index 145 (582 bytes). Compile-only (it reproduces the forward-pointer IV): a matrix
-// pointer, both address locals and a marker pointer in the for loop all keep it; a walked position pointer
-// gives two pointer IVs, not retail's one.
-// Lane 12 r72 (plain; --fast builds this function differently, 189): the opacity as the file's PIN macro
-// on the product (the macro moved above this function) 128 (retail's clamp stores, no count change);
-// `g_55e708 = true` same code. Compile-only (reproduces the forward-pointer IV): a forward pointer
-// local, an indexed loop with it, a position pointer local: same code. BLOCKED-BY 0x2dba0 (parameter
-// order): compile-only, with 0x2dba0 declared with the direction after the position (the call passing it
-// last) the loop's pointer IV becomes the position and the forward is derived (`lea reg, [iv - 0x24]`) as
-// in retail, as matched 0xc6fb0 does for 0xc9040 (position before forward); not built: 0x2dba0's
-// definition sits in src/unknown_0350e0.cpp (left alone), and whether LTCG keeps the direction in EDI
-// after that reorder is unverified.
-// Round 47 (lane 10; fast with 0x31520 and 0x3e9c0 listed agrees with the plain check): the opacity through the
-// PIN macro 128 (plain; aligned 99 -> 96); the clamp as if/else-if 128; an indexed for loop 128; object_index for
-// every object read in the marker arm 152; the first-person count as a ternary initialiser 128. Compile-only: a
-// forward/position/matrix pointer local, both locals in either order, the 0x3e9c0 result as a local, a do-while,
-// a for over both cursors keep the forward anchor; mixing `markers[i]` with the walked pointer gives two cursors.
-// Round 50 (lane 10, fast with 0x31520 and 0x3e9c0 listed): the marker array and count declared before the object
-// and marker-name reads 128; the object_index local also as the loop's 0x3e9c0 argument 148 (587 bytes); the
-// fallback count as a ternary 128; the first-person test as nested ifs 128; the cursor advanced before the
-// index 128. Still BLOCKED-BY 0x2dba0's parameter order.
-// Round 52 (lane 10, fast with 0x31520 and 0x3e9c0 listed): the 0x3e9c0 result as a named bool in the loop
-// 111 (607 bytes: frame 0xf0 as retail, but the bool is stored to the frame and the loop still walks the
-// forward pointer; a one-use call result, not kept); a do-while under `count > 0` 128; the flags tested as the
-// word field 128; the definition looked up inside the outer test 150; the clamp before the flag test 139 (592
-// bytes); the first-person test as a named bool 128.
-// Round 133 (lane 6, fast with 0x2dba0/0x31520/0x3e9c0/0xb8c40/0xb8d30/0x1662a1/0x42850 listed, which agrees with
-// the full build; the file alone does not): the direction read into a pointer local before the call, indexed loop
-// 128, pointer loop 128 (copy-propagated: identical code); a transform4x3f pointer local per pass in the real build
-// 128 (identical); a pointer loop to `markers + count` with `marker - markers` as the index 161 (642 bytes); a
-// guarded do-while 116 (607 bytes only by padding: the count clamp stores immediates and EBX is reloaded after
-// 0xb8d30 as retail, but the forward anchor stays; a hand-inverted loop, not kept).
-// Round 136 (m3 lane 5, fast with 0x2dba0/0x31520/0x3e9c0/0xb8c40/0xb8d30/0x1662a1/0x42850 listed, plain confirmed):
-// 0x2dba0's order applied (retail pushes scale, amount, alpha, color, position, marker index, index, kind, then the
-// 0x3e9c0 result, tag in ECX, direction derived from the position cursor) 45, the opacity through PIN 38. On 38: indexed
-// while 38; for with marker pointer 40; indexed for 38; count/array declared first 38; object_index for all object reads
-// 132, for the 0xb8c40 argument 135; no object_index local 38 (kept); count ternary 38; count if/else 38; `count == 0` 38;
-// marker pointer declared with count 38; i before marker 38; marker stepped first 40; count = 1 before the flag test 107;
-// PIN as call argument 38; named product 38; assignment inside the test 38; nested first-person test 38; short-cast count
-// argument 38; amount local in the single arm 97; alpha local in the loop 114, both arms 115; colour pointer local 143;
-// typed light/definition/object fields, singly and all together 38 each; direction after the colour/alpha/amount 38/38/38;
-// the count arms in an inline helper 178 (stays a call), forced inline 146; a named fallback count 38. The picks do not
-// move with symbols here (unlike 0x17d9a0): retail's fallback arm takes EAX for the object and EDX for the count, then
-// `mov eax, edx`; ours takes EDX then EAX, coalesced.
-// Round 29 (lane 18, fast with the same list): the fallback count accumulated (`count += ...`) 38 (same code);
-// the fallback test `count <= 0` 38; the marker index as a for-loop counter 40; the marker index declared
-// before the count 50; the absolute index computed inside the outer test (the light lookup masking the
-// parameter itself) 38. In the loop retail loads the absolute index early (EDX) and the marker index after
-// three pushes (ECX), the amount in EAX; ours loads the marker index early (EDX), the absolute index late (EAX).
-// Round 92: early shared query/output cursor 38; separate long draw count 113; short raw count with long draw count
-// 115; short count 131; short index 51; both short 77 (610 bytes); per-pass amount local 118 (613); const
-// light/definition 38. Original body restored; fallback/count scratch, loop load schedule, single-marker arm and
-// opacity reload remain.
-// Round 64 (m3 lane 1, fast with the same list): dword absolute index 38 (same code); count zeroed in an else of the
-// first-person test 38; unsigned loop index 39; unsigned count 39; count = 1 before the flag test 107. Permuter
-// (600 s, annealing): reduced image scores this body 141 (frame 0xec), nothing better in 47 tries.
-// Round 131 (m3 lane 8, fast with the same list): the flag test as an early return inside the 0x31520 test 38; the
-// count clamped before the warning flag 107 (retail stores it after); the fallback test `count < 1` 42; the absolute
-// index computed after the light and definition 38 (same code); the clamp test `count >= 2` 38. The rotations left
-// (fallback object EAX/count EDX, loop amount EAX/absolute EDX/index ECX, single-arm amount ECX/colour EDX/position EAX,
-// opacity ECX) do not move with any of these.
-// Round 160 (m3 lane 5, fast with the same list), each on the current form: no absolute-index local (the mask at the lookup and both
-// calls) 38; the opacity clamp as if/else-if in place of PIN 45; the first-person count as a ternary initialiser 38; the fallback as
-// `count = count ? count : ...` 38; the single-marker arm first 107.
-// m3 lane 2 r71 (fast with the same list): the loop index declared at the top of the function, before or after the
-// absolute index, 38/38; the marker array declared at the top of the function 38 (all three the same code: the loop's
-// load order does not follow declaration order here).
-// Round 112 (m3 lane 16, fast with the same list): the first-person count assigned inside the fallback test
-// (`if (type != 2 || ... || !(count = ...)) count = ...`) 38; the clamp as two tests on `count > 1` 38; the outer
-// test as an early return 38; the outer test as nested ifs 38 (same code each); the second tag read into a named local
-// for its test and call 40.
-// M3 lane 9 r126 (fast with the same list, control 38): retail computes the fallback count into EDX and copies it to EAX
-// for the join (ours computes it straight into EAX), and every later scratch pick follows that rotation. The first-person
-// count in its own variable with `count = first_person_count ? first_person_count : <fallback>` 106; one object-index local
-// for the two marker queries only 128 (618 B); the fallback result in a `short` local copied to count 38 (same code); the
-// fallback query written in both arms of the first-person test (count zero-initialised or not) 156/156 (639 B, not merged).
-// b13H (11-17) walk against retail, fast build on r846: logic and statement order agree with retail (the
-// 0x4e030c/0x4e3b44/ 0x4e0300 lookups, the 0x31520 and flag tests, the 0x94 and 0xa0 tag tests, the object-marker query
-// at 0xc33d7, the first-person test and its count at 0xc33f9, the clamp to 1 with the 0x55e708 flag at 0xc342d-0xc3445,
-// the loop's pushed values and the 0x2dba0 and 0x42850 argument order); no behaviour difference found. Left are scratch
-// picks only: the fallback arm loads the object into EAX and the count through `movsx edx, ax; mov [esp+0x14], edx; mov
-// eax, edx` (0xc3409-0xc3426: the result is a separate register copied into the join) where ours takes EDX then EAX
-// with no copy; the loop loads the absolute index early into EDX (0xc3476) and the marker index late into ECX
-// (0xc3484), ours the reverse; the single-marker arm takes the colour in EDX and the position in EAX (0xc34ed,
-// 0xc34f4); the opacity reloads into ECX (0xc3568). Tried on the current form, none moves it: if/else with the
-// first-person count assigned inside its test 38; `+ 0` on the fallback result 38; a named long fallback copy also
-// tested in the clamp 146 (623 bytes).
-// M3 lane 15 r97 (fast with the same list; aligned = LCS count in brackets, base 38 [18]): read by alignment, the count
-// lives only in its home (+0x14) in retail: each arm stores it there, the fallback's sign-extended result lands in EDX
-// (EAX had carried the pushed object index) and is copied to EAX for the clamp test, and from there the loop's and the
-// single-marker arm's scratch picks follow. A long raw count copied into a separate count 113 [6] (every line from the
-// clamp on is then retail's; left are the first-person arm's missing home store, the fallback's EDX and copy, and a
-// second home at +0x18), the same with a short raw count 115 [8], both counts short with a conditional 115; the two
-// counts joined by a conditional expression or an if/else assignment 106 [24] each; the first-person count assigned
-// inside its test with the fallback in the else 38 (same code); the clamp through a pointer to the count 38 (same
-// code), through an inline helper taking that pointer 123 (591 B, stays a call).
+/* for a light whose flag is set: the definition's first tag at each of its object's markers (at most one)
+   or at the light itself, then its second tag with the clamped opacity; the object marker query reads the
+   object index again into its own local */
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -945,7 +823,10 @@ void __stdcall function_c3340(long light_index, long unused)
                     count = first_person_weapon_get_markers(*(long *)(light + 0x4c), marker_name,
                         (s_first_person_marker *)markers, 1);
                 if (!count)
-                    count = function_b8d30(*(long *)(light + 0x4c), marker_name, markers, 2, false);
+                {
+                    long object_index = *(long *)(light + 0x4c);
+                    count = function_b8d30(object_index, marker_name, markers, 2, false);
+                }
                 if (count > 1)
                 {
                     if (!g_55e708)
@@ -1360,6 +1241,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // y locals in the projection 479 (2814 B), storing y first 469 (2819 B); a named depth for the divide 537 (2809 B), y
 // first 533 (2812 B); the three rows as scalar locals 539 (2801 B), y first 567 (2775 B); scalar rows with x and y locals
 // 552 (2794 B), y first 578 (2769 B); the result built in a local point and copied 701 (2977 B).
+// M3 lane 12 r146 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): in the sphere arm the
+// up vector negated into a local copy used by both crosses and stored to the matrix 646 (2783 B); the left vector crossed
+// and normalized in a local copy, then stored 611 (2811 B); both 639 (2865 B); the reference as a const reference to the
+// selected global vector 698 (2751 B); in the cone arm the origin offset read once into a local for has_plane and the
+// plane offset 484 (2809 B). Re-measured: the plane distance as dot(normal, plane point) 315.
 // M3 lane 1 r123 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0x31c80; base 290): the loop-top clear as
 // value-initialisation 648 (2840 B, a temporary and a new prologue), also in the cone arm 649 (2846 B); the bounds copied
 // with memcpy 290 (same code); the sphere arm's two flag clears swapped 292; the sphere depth after the flag clears 352.
@@ -1377,6 +1263,13 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // with 1 to 7 unused locals at the top 544/548/548/547/543/543/543 (diagnostic: not a symbol-count phase); declared at the
 // loop top instead of in their arm: the plane point 290, the centre 290, the sphere radius 290, the cone scale 290 (same
 // code each).
+// M3 lane 12 r148 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): in the projection
+// helper the rows computed forward, up, left 491 (2809 B) and left, forward, up 295 (2832 B); the sphere arm as a forced-inline
+// helper taking (shape, entry, i, bounds) 479 (2814 B); the cone arm as a forced-inline helper taking (frame, shape, entry,
+// bounds) 485 (2812 B); the two arms swapped with the kind test negated 630 (2810 B). Reading: the cone arm's projection rows
+// already sum in retail's order (forward (k, j), i; left (k, j), i; up (k, j), i); only the sphere arm's differ, and the
+// left normalize there is 0x30bf0's code inlined by the linker, which its noinline declaration in src/unknown_030290.cpp
+// (another lane's file this round) prevents: BLOCKED-BY 0x30bf0's noinline. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

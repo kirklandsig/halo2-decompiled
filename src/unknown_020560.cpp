@@ -1147,6 +1147,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Round 630: direct opposite winner with indexed records, nearest pointer/ordinal 742/712;
 // with a count-bounded cursor 830/781. Convert the winning pointer once after the walk,
 // pointer-bounded 711/735, count-bounded 766/762. The frame and query register differences remain.
+// M3 lane 12 r146 (fast with 0x24550, 0x22c30, 0x22750, 0x146020 and the caller 0x23690, which stays 330): on this
+// pointer body the entries field read at each use (no samples local) 592 (2150 B); only in scan 2 and for the second
+// sample 615 (2145 B); the samples local read again after scan 1 547 (same code); the first sample's position in a named
+// pointer for the delta 547 (same code); the position's components read into locals before scan 1 605 (2081 B). A `/Gd`
+// first-pass compile (the pass LTCG takes register arguments from) keeps the position pointer in a callee-saved register
+// in each of these, where retail's EDX needs a scratch register there.
 // M3 lane 1 r123 (fast with 0x23690, 0x24550, 0x22750, 0x22c30, 0x146020): retail's two calls push source, red, green,
 // blue, order and direction and pass the position last in EDX; the position parameter first, second or sixth (the
 // definition, the declaration in src/unknown_023540.cpp and both calls together) 547 each (same code, still EAX), so the

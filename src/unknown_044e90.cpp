@@ -493,6 +493,13 @@ struct s_visibility_bound_record
 // EDI to the entry, ESI to the state pointer and EBX to the views and then to a zero that serves the count test, the
 // active test and the four count stores, where retail tests with `test` and has a zero (EDI) only for the count stores
 // and the view counter. The geometry sitting in EDX is what pushes the state pointer into ESI.
+// M3 lane 12 r146 (fast with 0x142570, MATCH): the view counter declared ahead of the list setup (`long view = 0;`, the
+// loop without an initializer) 430 (its store joins the EBX zero); the query count named once for the outer test and
+// the parts test 430 (same code); the outer test inverted with the node-transform arm first 463 (1758 bytes); the outer
+// test as `>= 1` 453 (1760 bytes: the active test then also takes a register zero); the state pointer named for the
+// views read and the active test 434. A compile-only screen shows the early zero (`xor; cmp eax, reg; cmp [state +
+// 0x2a78], reg`) for per-list setup in three orders, separate count stores, `active == 0`, the parts flag set by an if,
+// the flags tested first, and even with the active test removed: the `> 0` count test alone joins the store zero.
 // MiniMax A (11-18): no new form, no lower score (430): retail forms the entry address with a lea into ebx from the scaled
 // index after the first register save and reads the tag through that pointer, while this build reads the tag through a
 // displacement from the scaled index and only then materializes the entry pointer; retail loads the tag table into esi

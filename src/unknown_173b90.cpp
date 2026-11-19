@@ -472,6 +472,9 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// walks the location's emitters by index into the definition's emitter array; each emitter frame call takes the
+// location flag as a named bool and the emitter cast to its frame, and the motion vector is rotated in place through
+// a pointer to it passed as both the input and the output of 0x2477b1
 // score 42 (was 42): row i of both rotations, the offset's zero store before the list test, the 1.0 defaults' order
 // and three reload pairs differ. M3 lane 14 r112 (fast with 0x173c10/0x2477b0, both MATCH; control 42): scale first 40
 // (two points, not kept); indexed definitions without scale first 115; the translation through the existing
@@ -652,11 +655,6 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // indexed with scale first and `+=` translation 113 (1136 bytes); indexed with the one declaration 113. A
 // compile-only screen of the helper's copy as memcpy gives the same code as the struct copy; copying from
 // `*out` (the same vector) loses the copy's alias and turns every row.
-// Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
-// the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
-// read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
-// lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
-// fixed); after the particle mask or the particle lookup 42 (no change).
 // Round 20 (lane 17, fast): permuter 600 s, 58 tries, none below 42. Row i's input copy is stored in the
 // order the row consumes it (ours y, z, x; retail y, x, z), so the copy follows the sum order. Both
 // rotations fed from a separate input copy (`position = translated_position`, rotated into it; the same
@@ -667,18 +665,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
 // before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
 // All overrides and memory observations stayed fixed; original defaults and complete body restored.
-// Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
-// the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
-// read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
-// lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
-// fixed); after the particle mask or the particle lookup 42 (no change).
 // Round 299: Word carried particle mask with indexed definitions, scale-first defaults and early pure mask
 // derivation, masks 0..7: 199/201/197/199/259/260/260/261. Original dword mask, offset/default lifetimes and
 // body restored. Shared rotation/frame providers stay matched; offset/default/reload and row-i input/product
 // residence remain.
-// Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
-// before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
-// All overrides and memory observations stayed fixed; original defaults and complete body restored.
 // Round 453: Unscaled property residence with callback/pre-rotation scale product, indexed
 // definitions and scale-first defaults, masks 0..7: 304/308/305/309/315/316/315/316.
 // Original executable body restored.
@@ -956,17 +946,17 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 		cache->mask &= 0xfffecf7f;
 	}
 	long emitter_index = *(long *)((byte *)location + 4);
-	long emitter_definition_offset = 0;
+	long emitter_definition_index = 0;
 	while (emitter_index != NONE)
 	{
 		s_particle_emitter_175610 *emitter = DATUM(g_51ec88, s_particle_emitter_175610, emitter_index);
 		long particle_index = emitter->first_particle_index;
 		s_emitter_definition_175610 *emitter_definition =
-			(s_emitter_definition_175610 *)(*(byte **)((byte *)definition + 0x34) + emitter_definition_offset);
+			&(*(s_emitter_definition_175610 **)((byte *)definition + 0x34))[emitter_definition_index];
 		if (particle_index != NONE)
 		{
-			real multiplier = 1.0f;
 			real scale = 1.0f;
+			real multiplier = 1.0f;
 			if (TEST_FIELD_BIT(system->flag10))
 				multiplier = function_3eb70();
 			matrix3x3 rotation;
@@ -974,9 +964,11 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 			matrix3x3 const *rotation_result;
 			point3f const *origin_result;
 			color4f color;
+			s_particle_frame const *frame = (s_particle_frame const *)emitter;
 			dword emitter_mask = emitter_definition->mask;
+			bool first_person = *((byte *)location + 2) != 0;
 			if (definition->unknown0c)
-				function_248450(&rotation, (s_particle_frame const *)emitter, &origin, &rotation_result, &origin_result, *((byte *)location + 2) != 0);
+				function_248450(&rotation, frame, &origin, &rotation_result, &origin_result, first_person);
 			cache->function_173c10(emitter_mask & 0x107f0);
 			if (emitter_definition->flags & 1)
 				color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
@@ -1009,13 +1001,14 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 					translated_position.x = origin_result->x + translated_position.x;
 					translated_position.y = origin_result->y + translated_position.y;
 					translated_position.z = origin_result->z + translated_position.z;
-					function_2477b1(rotation_result, &motion, &motion);
+					vector3f *motion_vector = &motion;
+					function_2477b1(rotation_result, motion_vector, motion_vector);
 				}
 				callback(particle, cache, &translated_position, &motion, scale, &color, context);
 			}
 		}
 		emitter_index = emitter->next_index;
-		emitter_definition_offset += sizeof(s_emitter_definition_175610);
+		emitter_definition_index++;
 	}
 }
 
