@@ -565,6 +565,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// MiniMax A (11-19): no new form, no lower score (34): the sum written with the extra count first compiles to the same
+// bytes, and the two counts still take the other registers - the player count arrives in edx where retail puts it in
+// eax - so the copy loop, the rep stosd fill, the call setup and the final clamp all follow from that one exchange;
+// retail's caller loads the player count into eax after the pushes and copies the running count to edx last, ours
+// loads the player count into edx between the pushes and copies the count to eax last, and that caller's body lives
+// in src/unknown_07a9a0.cpp, which this lane may not edit. BLOCKED-BY 0x7e210.
 // score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
 // MiniMax I (11-17): no lower score (34): a local copy of the player count, so that the parameter is read only once
 // in the copy loop, compiles to the same code, and the count's register home stays the caller's to pick.

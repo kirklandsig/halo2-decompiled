@@ -318,6 +318,10 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax A (11-19): no new form, no lower score (122): the frame is still 0xc against retail's 0x14 and the pool is
+// still forwarded into EDI for both the scan and the element; the only form measured this round that reaches retail's
+// frame and its two stack homes for the pool writes the iterator's step out by hand and keeps the pool in a local of
+// its own, and the rules bar both, so the shared iterator's own declaration stands.
 // MiniMax B (11-18): no new form, no lower score (122, was 122): the frame is still 0xc against retail's 0x14
 // and the pool is still forwarded into EDI for both the scan and the element; retail reads the high-water mark
 // once per search into ESI and keeps the pool in two stack homes, while the shared scan reads the count
