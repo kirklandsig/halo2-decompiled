@@ -4342,6 +4342,10 @@ extern vector3f *g_4687bc;
 // CX there, but the pool's data then takes EAX and the component EAX/ESI order changes; both sites still differ).
 // Diagnostics: a probe copy between two globals at the function's top, before the definition re-lookup or before the
 // effect tag read leaves both sites as they are; after the tag read it reloads the component index (the store aliases).
+// M3 lane 2 r106 (a one-file LTCG harness with the callee files linked in gives 1098 B and both sites as the check):
+// 0-8 dead locals at the top, or 1-8 just ahead of the material (diagnostics) 8 each, so neither scratch choice is a
+// symbol-count tie; the node count in a named local 8; the element through a const reference to the rigid-body array 8;
+// the element as `index + rigid_bodies.data` 8 (all the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
