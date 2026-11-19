@@ -375,7 +375,8 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// score 182 (was 182): earlier scores 182 and 188. Frame 0x80, prologue, first exit and the unit-mode slot agree.
+// score 182 (was 182): Frame 0x80 and entry agree. The route join follows mode seven and the cleanup path folds the result reload.
+// Earlier score 182 (was 182): earlier scores 182 and 188. Frame 0x80, prologue, first exit and the unit-mode slot agree.
 // The route test layout, case 7 stores and result home still differ.
 // MiniMax C (11-15): no new form, no lower score (182): the route dispatch still lands after the mode cases where
 // retail puts it between case 5 and case 6, and the result still comes back through BL where retail loads the
@@ -932,6 +933,13 @@ struct s_1f8a70_actor
 // the dispatch still follows case 7); the mode cases in source order 6, 7, 2, 3, 4, 5 382 (1616 B) and 2, 3, 4, 5, 7, 6
 // 334 (1608 B), so the layout follows source order; `return route_found;` after the two arms with `result` kept for the
 // first exit 439 (1672 B); case 6's test spelled `!route_mode` 182 (same code).
+// target-mode switch 316; case-local path bindings 182; target-mode switch with case-local path bindings 316;
+// root override snapshot 182; target-mode switch with root override snapshot 316; case-local path bindings with
+// root override snapshot 182; target-mode switch with case-local path bindings with root override snapshot 316;
+// target-mode switch with case-local path bindings with root override snapshot with an explicit position-object
+// default 316.
+// NOT kept: Case-local path and root lifetimes tie. The real target-mode switch scores 316 and shortens the
+// body to 1620 bytes. The route join and failed-result reload remain open.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

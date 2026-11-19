@@ -1043,9 +1043,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871): Frame 0xd0 versus 0xb4. The opening lookup expands and the upper-capacity selector remains a call.
+// Earlier score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call (two stacked first lines merged in r108).
-// score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// Earlier score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
@@ -1626,6 +1627,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 876/885/885. With the shared availability test 875/905/903, direct pointer publication with the
 // shared test 885, complete nullable expression 871. NOT kept: the expression ties, and the other
 // forms regress. The opening lookup still expands and no trial reaches the retail frame.
+// common countdown 871; common group size cursor 871; common countdown and cursor 871; dword cells with common
+// countdown 911; dword cells with common cursor 911; dword cells with common countdown and cursor 911; dword
+// cells with common traversal and two memset clears 936; scoped dword cells with common traversal and two
+// memset clears 987.
+// NOT kept: The shared word-cell traversal ties. Dword cells reserve 0xb0 and shorten the body. The scoped
+// dword form reaches 0xb4, but changes the session ingress to the stack and shortens to 2652 bytes. All nine
+// checked peers retain their opening measurements.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
