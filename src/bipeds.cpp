@@ -1799,6 +1799,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: the 154 form restores the definition slot and preloads the walking settings as retail does,
 // but it uses one-use settings and rate locals without a byte match. Separate assignments to speed_scale
 // regress. The original body was restored.
+// Chained entry defaults 649, separate immutable entry defaults 650, shared boost unit multiplier 175,
+// boost default after ground velocity 622, immutable tag pointer 175, case-one rate quotient 175,
+// complete recovery rate 175 or named recovery duration 175.
+// NOT kept: the early boost forms change the prologue without recovering the native tag and point homes.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

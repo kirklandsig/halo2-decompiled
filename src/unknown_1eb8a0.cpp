@@ -679,6 +679,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // carry the upper-bound value in activation step and activation distance and active output 693;
 // all upper-bound carriers with the lower bound initialized first 691.
 // NOT kept: All scores rise. The first-activation forms also disturb the matched caller's convention.
+// Whole scaled displacement 744, indexed displacement scaling 673, whole impulse 734,
+// indexed impulse with displacement update 741, settling length before the copy 603,
+// shared activation and normalization motion 676, shared scaled-reference displacement 673,
+// staged target point 717. NOT kept: these forms leave or worsen the sample register and coefficient schedule.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

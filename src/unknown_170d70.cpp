@@ -292,6 +292,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // interpolation arm first 64, inner interpolation scope 64, writable cursor with basis dot 125, with shared cross
 // products 131 or with inline normalization 123. NOT kept: the explicit cursor recovers the channel loop, but the
 // orientation tail grows the body to 1413 bytes.
+// Deadline range with ordinal 375 or separate end 398, deadline advanced at read 290 or before
+// the last stride 142, staged orthogonality sum 62, whole corrected up vector 234,
+// staged left products 126, aggregate left cross product 64.
+// NOT kept: the cursor forms grow the body. The staged sum gains two with the time and ordinal homes still swapped.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1376,6 +1380,10 @@ struct s_point_pool_173520
 // shared ordered inside cap or per-vertex minimum 96 each; clipped-count for loop 96;
 // clipped-count while loop 932. NOT kept: the while loop unrolls, and the other forms
 // leave the pool commit, stride spill and x87 cap sequence unresolved.
+// Visited-word reference 245, array base 96, explicit bit read/update 96, visited coordinates
+// before entry lookup 147, arena reference 115, real cap result 117, named expanded edges 96,
+// edge values shared with corners 103. NOT kept: the word reference shrinks the frame and the
+// other forms leave or worsen the reservation, cap reload and edge-store gaps.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1814,6 +1822,9 @@ struct s_camera_reference_171830
 // The separate sign and axis loops recover frame 0xb8 but pass the point in EDI and grow to 1222 bytes.
 // Kept winning displacement and sign declared at the center trace return. The displacement lives in
 // a stack slot as in retail, four bytes above its retail home.
+// Rear displacements in scalars 270, signed vector 307 or product vector 278. Staged center coordinates 270.
+// Center fraction at the trace 269 or at depth setup 270. Toggled axis 295 or cyclic axis 300.
+// NOT kept: the center and sample forms do not recover the point's stack ingress at retail length.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
