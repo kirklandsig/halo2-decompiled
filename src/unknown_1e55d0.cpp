@@ -67,6 +67,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax A (11-19): no new form, no lower score (319): 0x1ec690 is still a stub in src/stubs/bipeds.cpp, so the output and the input still go to the other two of the registers retail uses, and the body is unchanged. BLOCKED-BY 0x1ec690 and 0xb7430.
 // score 319 (was 319): the aligned 0x94 frame agrees. Left: retail keeps the output in EBX and the input in EDI (0x1ec690,
 // still a stub, takes its input in EDI in retail) and never gives the state a register; it lays the non-compound and
 // capsule arms after the epilogue, calls 0x1c4a80 where ours expands it, loads the rate once and tests the 0x20 flag by
@@ -318,6 +319,21 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // the existing vector3f_scale into a temporary then the base added 335 (1188 bytes); scaled and added through
 // vector3f_add 335; scaled into the position then the base added in place 335 (the compiler loads the base and adds
 // the product to it). Still BLOCKED-BY 0x1ec690 for the EBX/EDI trade (its draft sits in another lane's file).
+// M3 lane 6 r201 (fast with 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0, 0x1c4a80, all MATCH unless noted; control 319;
+// positional / bytes / aligned-equal of retail's 335 / register-masked equal, base 319 / 1176 / 133 / 216; all restored).
+// Diagnostic: with the disabled 0x1ec690 draft switched on in place of its stub, the call is retail's (two pushes, the
+// input moved into EDI) but the output takes EBX, the state ESI and the input only EAX: 349, and in that image
+// 0x2901e0, 0xb77d0, 0x1c4b00 and 0x1ed340 all lose, so the draft is no shortcut. The existing 0xb77d0 called in place
+// of its written-out body 374 / 1076: the call is not expanded (its file is /Ob1) and this function's own return
+// becomes `ret 4` (the input then arrives in a register; retail and main return with `ret 8`), so every form with that
+// call is off retail's convention (with the forms below 292 / 1128, 312 / 1128, 307 / 1132, 338 / 1100). On main's
+// calls: the shape match assigned in the two arms of the compound test, compound arm first (lane 9 r138's form,
+// re-measured) 388 / 1212 / 156 / 283; that with the shape read from the input at each use after the match (retail
+// re-reads [input + 0x14c] before each call of the chain) 345 / 1224 / 213 / 294; with no shape local at all (the
+// field read at every use) 362 / 1224 / 201 / 290. The state read once through the parameter's own address 319 (same
+// code as main), on the 345 form 346: the state keeps ESI either way. Retail never gives the state a saved register
+// (it reloads [ebp + 8] before the switch, for 0x1e5b50 and for each object index read) and adds 0x10 to that copy
+// in place in each case.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

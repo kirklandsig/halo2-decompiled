@@ -242,12 +242,25 @@ void function_254200(void)
 // file's bitmap view 4; the draw-ready flag global typed bool 4; the readiness test as an early return 4; the point copy
 // through memcpy 4 (all the same code); the vertex register spelled 0 as in unknown_01cf50.cpp's quads 8 (not the same
 // register: the opcode word changes).
+// M3 lane 5 r203 (fast with 0x254200 matched; control 4): the colour helper's products written scale first 4; the
+// texture lookup's result through a named texture local before the store 4; the colour helper's scale as a `real const &`
+// 4; the two dimension locals `long const` 4; the chosen bitmap declared ahead of the readiness test and assigned inside
+// it 4 (all the same code). Reading: the swapped pair is loaded twice per record, at the top of the block after the
+// texture-coordinate reservation and again after the vertex reservation, in the same order both times, so the order is
+// set where the three values' registers are first loaded after a call, not at their uses.
 // M3 lane 12 r143 (single-address fast, control 4): 8, 9, 10, 11, 12, 13, 14, 16, 20 and 24 unused initialised locals at the
 // top 4 each (round 115 measured 0-7: the pair does not follow the referenced-local count); the four edges named where
 // first used (left and top before vertex 1, right before vertex 2, bottom before vertex 3) 174 (1133 B: the sums move
 // ahead of the reservations), top ahead of left 174, only the two y edges named 126 (1119 B), only the two x edges 153
 // (1119 B). Diagnostic: 0x2548f0's body moved above this function in the file 4 (0x2548f0 2), so the order in which the
 // constant's pool entry is first used in the file does not set the pair either.
+// M3 lane 4 r220 (single-address fast, control 4; the reload triple after the second and third reservations is retail
+// x, constant, y + size, ours x, y + size, constant): vertices 2 and 3 through the member 4f form 4; y + size named as a
+// const local ahead of the state calls 206; the four edges as const locals after the colour call 173; integer zero
+// literals for the bitmap calls' real arguments 4 (same code); both cached render-state stores embedded in the call
+// arguments 4, with the triple then constant, x, y + size (one alone leaves ours); the cache read back as the argument
+// the same 4. Diagnostic: 6 or 7 float probe stores ahead of the size give retail's triple, 0-5 and 8 ours, and with the
+// embedded stores 1, 2, 3, 5 and 7 all give ours: a hash-like tie that no natural form has reached.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

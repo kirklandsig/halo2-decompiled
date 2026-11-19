@@ -1292,7 +1292,6 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
-// MiniMax B (11-18): no new form, no lower score (93 on the full image): every difference still sits before the 0x4c190 call - the 0x4bcc0 argument load (retail EAX ahead of the force push), the entries in ecx, retail's dead entry lea, the header global's load order, the byte previous level, the two-step record adds and the 0x4c190 argument order; the reduced image of this file is not faithful, so only the plain build measures it.
 // score 93 (was 93): m3 lane 9 r134 (all plain; the earlier 175-base forms re-measured on the 93 base that round 224
 // reached, and the MiniMax C line that sat below the marker moved up into this note): the object-header table read
 // into a local before the count store 349; the type stored through one ternary 93 (same code); the 0x4ed284 entry
@@ -1300,6 +1299,17 @@ struct s_133f70;
 // bytes); the first cache lookup on *source_object with no drawn-object local 98. Left: the 0x4bcc0 argument load
 // (retail EAX before the force push), retail's dead entry lea, the header global loaded first, the byte previous level
 // with record + 0xbc in its own branch, and the scratch rotation those leave.
+// M3 lane 2 r107 (all plain; 0x4bcc0, 0x4c190, 0x133f70 MATCH throughout): retail's previous-level block is exactly 0x4c450's
+// cached-level helper shape (a signed-char result, the slot at the record + 0xbc indexed by the view), but retail adds the
+// record base and the offset in two steps here (`add eax, ecx; lea ebx, [eax + 0xbc]`, the cache too) where 0x4c450's retail
+// folds them into one lea. That helper moved into a shared header and called here (`signed char previous =
+// cached_level_4c450(*source_object);`, 0x4c450 still MATCH) 328 (1309 B: one instruction fewer, everything after shifts).
+// The view entry as a pointer local in a nested test 93 (same code: no dead lea); the same test through a forceinline
+// pointer helper 93 (same code); `bool success = true;` declared first in the loop body 91 (retail's success store before
+// the source-object spill), with the pointer helper 91, with `fallback` declared at the loop top 91, with the sections
+// pointer beside the slot pointers 367 (1311 B); the record's level as a named `short *level` used for all eight reads
+// and writes 234, with `success` first 234.
+// MiniMax B (11-18): no new form, no lower score (93 on the full image): every difference still sits before the 0x4c190 call - the 0x4bcc0 argument load (retail EAX ahead of the force push), the entries in ecx, retail's dead entry lea, the header global's load order, the byte previous level, the two-step record adds and the 0x4c190 argument order; the reduced image of this file is not faithful, so only the plain build measures it.
 // MiniMax E (11-16): no new form tried this round, no lower score (93 on the full image, 355 on the reduced one): the plain
 // build's first difference is still at the 0x4bcc0 call, where retail loads the distance into EAX and this build loads it into
 // ECX, and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns are unchanged; the reduced

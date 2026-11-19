@@ -1292,6 +1292,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // apart (an extra enclosing test keeps it a call, as round 146 found), the calibration gap recorded for 0x25d740 in round
 // 141; with retail's loop shape the entry and loop come out as retail's, so the loop is blocked by the build's inline
 // calibration, not by a source form.
+// Shared present/missing squad test after settings 245/245, before settings 267/267.
+// Shared signed/unsigned low-half selector before/after settings 237 each.
+// NOT kept: the tests add a materialized flag and the selector forms tie with NONE in EDI.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

@@ -913,7 +913,7 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 100 (was 191): the teams flag is read before the configuration copy and address-index
+// score 100 (was 100; earlier 191): the teams flag is read before the configuration copy and address-index
 // store, and the third team-score read expands where retail calls 0x1587f0.
 // Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
 // entry 314, combined team guard 333, team read before flag 309, record reference 191,
@@ -965,6 +965,14 @@ static inline long team_score_195ed0(long team)
 // `*((byte *)&g_511000 - 0x225)` 373 (the flag after the copy, the address not folded). Third score read: the two
 // clamp tests through the file's inline copy and the value through the existing 0x1587f0 191 (1237 B: the link
 // inlines 0x1587f0 there and calls 0x161e60 and 0x162030 from it). build/r120/storage-lead holds the head-only header.
+// M3 lane 5 r203 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, matched throughout; control 100): the first loop's
+// team test through the file's inline copy 442 (1301 B: it expands there, so the inline budget is not spent before the
+// rank loop); the inline team test as one `return a && b && c && d` 151 (1210 B; the second clamp read then drops its team
+// test); the score helper with an early `return NONE` 170 (1225 B); the score helper `__forceinline` 100; the clamp as an
+// if / else if / else chain into a long 100 (the 100s the same code). Reading: the one extra byte is the rank loop's entry
+// test, where retail compares the team count's word in memory with BP (`cmp word ptr [esp + 0x82], bp`) and ours
+// sign-extends it first; retail's second clamp read repeats the range and mask test (only the mask load is shared), ours
+// reuses the first read's bool in BL.
 // One sampled score 225; lower sample reused 190; upper sample reused 175; local bound tests
 // with native final score and separate stores 192, or admitted-arm selection 191; paired team/player
 // rank cursors 186/165 with indices or 186/174 with remaining counts. The final query still expands
@@ -977,6 +985,18 @@ static inline long team_score_195ed0(long team)
 // installed-team and active-team references 100/100, count-first rank comparison 100,
 // admitted clamp with a shared result 177, unsigned terminal player inequality 732.
 // The flag still leads the configuration copy and the final score call still expands.
+// M3 lane 4 r219 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH each time; control 100): the score
+// helper reading its result through a private inline copy of the statistics getter, as 0x1587f0's own source does, 100;
+// the score helper `__forceinline` 100 (the third read still calls 0x161e60 from inside it); the team test with an early
+// `return false` 100; the score helper as three nested ifs 100; the teams flag declared `bool` 100 (all the same code);
+// re-measured the early-return score helper 170. Reading: retail's second expansion repeats the range and mask tests
+// (`shl eax, cl; test edx, eax; setne al`) where ours reuses the first expansion's setne result in BL, and the inline
+// budget runs out one level deeper in ours (the team test) than in retail (the whole third read).
+// Indexed configuration records 181, indexed configuration and player ranks 156,
+// combined copied-team admission 301, rank division before team entry 100,
+// rank and score through indexed team 105, short team rank ordinal 205,
+// named player rank and slot 100, native in-range score with short selection 191.
+// NOT kept: the early flag load remains and the native score call still inlines.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

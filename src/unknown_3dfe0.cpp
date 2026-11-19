@@ -177,6 +177,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // `force || update-time NONE || update elapsed > 1` declared at its test 220 (829 bytes); sample started from the
 // sample-time NONE test with the thresholds under `if (!sample)` on the kept order 222 (831 bytes); the cache bound as a
 // reference 21 (same code); update started from force with the hidden test on update 228.
+// M3 lane 4 r220 (fast with 0x3d2c0 and 0xd1850, control 21): the object bound by reference to its lookup copy 21; the
+// hidden-object test through a forced-inline accessor 21; the cache pointer const 21; the hidden test on a fresh lookup
+// of the object 21 (same code each: folds into the first lookup); the sample decision moved right after the elapsed
+// clamp, ahead of the force arm, 217; update-first re-measured 218 (retail's object EBX load and homes; the timestamps in
+// EDI/ESI, the false store after the object's home store, no force-arm reload).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -75,12 +75,21 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 76 (was 76): BLOCKED-BY 0x196960/0x1968b0 (retail inlines both here; their file is /Ob1 and was on
+// this round's avoid list) and the enable reload's aggregate; earlier notes below.
+// MiniMax B (11-19): no new form, no lower score (76): reading the enable byte at both use points instead of through
+// the bool local gives 103 (the same form MiniMax G measured on 11-18) and a byte local gives 103, so the body is
+// back as it was. What still differs is retail's reload of the enable byte after the counter store (the reload needs
+// the enable byte and the counters to be reachable from one address: BLOCKED-BY include/globals.h and
+// src/unknown_1967d0.cpp), retail's old maximum in ECX against this build's EAX, retail's `xor eax, eax; mov ax,
+// [mem]` read of the fifteen-bit counter against this build's zero-extending word read, and retail's increment of
+// `word ptr [eax + edx + 0x16]` before it forms the row pointer.
 // MiniMax B (11-18): no new form, no lower score (76): this build still holds the enable byte in a bool local across the counter store where retail reloads it into CL, keeps the old maximum in EAX where retail keeps it in ECX, zero-extends the fifteen-bit counter where retail reads it with `xor eax, eax; mov ax, [mem]`, and forms the row pointer before the increment where retail increments `word ptr [eax + edx + 0x16]` first (85 when the increment comes first, where the prologue's kind and player homes swap); this round's forms: the comparison's operands swapped (76, the same code), the old maximum as a short (76, the read becomes sign-extending), the old maximum read as a nested if (101) and the permuter (started, stopped before it printed a result); the enable reload needs one object for the enable byte and the counters (include/globals.h and src/unknown_1967d0.cpp) and the clamp's store through the counter's address is a one-use pointer kept only with a match: BLOCKED-BY both.
 // MiniMax G (11-18, second pass): no new form, no lower score (76): reading the enable byte at both use points gives
 // 103 and at the later one only 103, a short old maximum gives 76 and the comparison's operands swapped gives 76, so
 // this build still keeps the old maximum in EAX where retail keeps it in ECX and the counter in CX where retail keeps
 // it in AX.
-// MiniMax G (11-18): score 76 (was 106): the enable byte is read once into a bool local before the counter store (the
+// MiniMax G (11-18): earlier 76 (was 106): the enable byte is read once into a bool local before the counter store (the
 // maximum's test and the clamp's test then share one value) and the clamp's limits are taken as the table's own
 // `word` type; what still differs is that retail reloads the enable byte after the counter store (into CL, and again
 // into DL in the team block) where this build holds the local's value across that store (the reload needs the enable
@@ -114,13 +123,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // where this build holds it in dl across that store; the reload needs one object for the enable byte and the counters
 // (include/globals.h and src/unknown_1967d0.cpp) and the maxima's homes follow the held helpers 0x196960 and 0x1968b0
 // in src/unknown_1967d0.cpp: BLOCKED.
-// MiniMax H (11-18): score 106 (was 106): no new form, no lower score; retail keeps the old maximum in ECX with
+// MiniMax H (11-18): earlier 106 (was 106): no new form, no lower score; retail keeps the old maximum in ECX with
 // the enable byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load),
 // this build keeps the maximum in EAX and the enable byte in DL; the enable reload needs the enable byte and
 // the input counters in one object: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp. The permuter's best
 // (80 against its 99) swaps the arguments of 0x196e60 and 0x1968b0 and adds a volatile pointer and constant-only
 // locals, so it changes what the calls do and is dropped.
-// score 106 (was 106): no frame; enable observations and maximum/register homes differ.
+// Earlier 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
 // clamp's store through `s_input_counter *counter = &g_511bf4.groups[index][12];` formed before the clamp (the setter
@@ -269,6 +278,12 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // block 111, and the row addressed through a typed player pointer with the counter reached by its address 110 (the
 // prologue's register allocation shifts and EDI and EBP swap). The flat all[] indexing that gives retail's read
 // form stays a match-only form the coordinator rejected.
+// M3 lane 1 r127 (fast with 0x1968b0/0x196960/0x196e60/0x196ef0/0x1e9ce0, all MATCH; control 76): the maxima and the
+// player clamp as calls to the existing 0x196960/0x1968b0 with a `__forceinline` redeclaration of 0x196960 in this file
+// 215 (350 B: LTCG keeps both as calls, so a redeclaration cannot inline a function of an /Ob1 file); the counter
+// incremented and then read in a separate statement 76 (same code); the old maximum as `index == NONE ? NONE : ...` 79;
+// `old_maximum` declared ahead of `enabled` 76 (other code); the clamp limits read ahead of a nested `index != NONE`
+// test (0x1968b0's own shape) 76 (other code: the index jump moves below the two limit loads, as retail). Body unchanged.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -733,6 +748,12 @@ struct s_object_damage_view
 // through the primary award 353.
 // NOT kept: the 324 form splits one credited-player value into two locals. It recovers the
 // damage-code slot but still exchanges the credited-player and victim-team slots.
+// M3 lane 3 r267 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880 and 0xd9640; base 353, aligned 179, 60 with registers and
+// stack offsets masked): the consideration flag as `reported_player == NONE || !function_1df560(...)` 353, the assist
+// admission as `!(player_index == reported_player || amount > assist_threshold)` 353, the selection loop's `else if
+// (!consider_team) continue; else {...}` 353 (same code each); `if (killer != NONE) { if (killer == reported_player)
+// damage_code = code; } else if (reported valid) {...}` (retail's arm order) 363 (1532 B); the team byte read again for
+// the 0x1df560 argument, killer_team kept for the end 358 (1552 B).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

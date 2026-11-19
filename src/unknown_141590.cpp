@@ -118,9 +118,18 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
-// score 201 (was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Earlier: Frame 0x1c versus 0x24 and
 // quaternion/cross spill overlap remain.
+// M3 lane 2 r107 (fast = plain 201): retail's 2.0 for the forward dot and w2 is a fresh load after the dot (its first 2.0,
+// kept from the sine product, dies at s above the copy); ours keeps one 2.0 register for all of them. Helper statement
+// orders m,d,cx,cy,cz,w2 245 (1312 B); m,d,cy,cz,cx,w2 245 (1312 B); d,cy,cz,cx,m,w2 267; m,d,w2,cy,cz,cx 248 (1305 B);
+// d,m,w2,cy,cz,cx 250 (1317 B). m or w2 written out in some or all rows (no local): m in the j/k rows 353, m in all rows
+// 358, w2 in all rows 326, w2 in the j/k rows 311, both in the j/k rows 366 (each 1245-1259 B: the uses are not CSE'd
+// back). Diagnostics only (dead initialised locals, not keepable): k = 1..7 on this body 199/201/263/240/240/258/252
+// (frame 0x20 throughout); on helper orders m,w2,d and m,d,w2, k = 0..7 247/247/247/273/217/223/265/260 and
+// 248/248/247/270/211/212/264/259. The repair path's cross3f_staged products also differ in operand sides
+// (retail up.i*fwd.j where ours fwd.j*up.i), which follows the symbol count.
 // MiniMax I (11-17): no new form, no lower score (205): re-measured the baseline; the first difference is still the
 // frame (ours 0x1c, retail's 0x24) and the rest follows from the stack offsets that move with it: retail keeps the
 // quaternion's sixteen bytes in the same absolute place as this build but spills the transform's terms into the
@@ -131,7 +140,7 @@ static inline void quaternion_transform_vector(
 // Earlier fast scores were 205 with the shared initial dot and 200 with the dot written out.
 // MiniMax E (11-17): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the permuter (39 tries) found no variant below the baseline.
 // Earlier status line (205, was 205; merged): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
-// score 205 (was 205): Frame 0x1c versus retail 0x24 and quaternion/cross spill overlap remain.
+// Earlier status line (205, was 205): Frame 0x1c versus retail 0x24 and quaternion/cross spill overlap remain.
 // Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier dot3f for the initial dot 205; the written-out dot 200.
 // Earlier 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
@@ -1016,7 +1025,16 @@ void function_143250(
 	}
 }
 
-// score 939 (was 1333): Frame 0x2fc versus retail 0x300. The scalar homes and coefficient 25/28 schedules still differ.
+// score 939 (was 939): Frame 0x2fc versus retail 0x300. The scalar homes and coefficient 25/28 schedules still differ.
+// M3 lane 2 r107 (fast = plain 939): the build already has retail's convention (rotation in EAX, ret 4). With registers and
+// numbers masked 352 lines still differ, most in third-band entries 21-28 (retail evaluates entry 23's first product
+// first and keeps 0.071428575 in a register for entries 23 and 25; ours evaluates the subtracted product first and
+// multiplies from memory); retail's extra 4-byte cell sits among the scalar spill homes (both use their top cell for
+// the same value). Entry 23's first product in parentheses 939 (same code); the order tests as nested `if (order > 2)`
+// / `if (order > 3)` blocks with one return 939 (same code); the second-band block unscoped 939, the third-band
+// block unscoped 939 (same code); the nine rotation reads `real const` 939 (same code). Diagnostic only: one to seven
+// dead initialised locals 1231/1231/1095/1226/1226/1415/1226 (frame stays 0x2fc, ret 4 kept).
+// Earlier status line (939, was 1333): Frame 0x2fc versus retail 0x300. The scalar homes and coefficient 25/28 schedules still differ.
 // Previous 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
 // frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
 // matrix entries have retail's value tree; band three's entries 8, 25 and 28 and the stack homes (140 of 216 stores) differ.
@@ -1449,6 +1467,16 @@ void function_143250(
 // 1517/1477/1357/939/1314/1554; both cubes 1589; all independent factors 1629.
 // NOT kept: the mixed product and the two individual cube forms recover frame 0x300 with displaced
 // spill homes and higher scores.
+// M3 lane 14 r115 (fast with 0x143250 matched, 0x22850 226 and 0x23690 330 unchanged; control 939 at 10777 bytes, `ret 4`
+// with rotation in EAX on both sides; aligned 650, 122 with the stack offsets masked, so the count is almost all home
+// placement): entry 25 as a running sum like entry 8's 1095 (aligned 638), entry 28 the same 1496 (10804 bytes), both
+// 1494; the nine rotation reads declared in retail's load order (4, 1, 5, 6, 8, 0, 2, 3, 7) 1749 (10827 bytes), in reverse
+// order 1716 (10791 bytes).
+// Diagnostic: a one-object LTCG link of this file (scratch copy, an entry calling the function, no other objects) gives
+// this build's 1768 instructions exactly and names every home. The homes are 4-byte slots shared by locals with disjoint
+// lifetimes, stacked from the bottom roughly by memory-reference count. Retail's slots follow ours one cell lower up to
+// the r6_r6 slot; retail then has the s21/s21_r2 slot (ours ranks it far higher, at -656), which is the extra frame word;
+// above r2_r2 the offsets agree again until the band-three terms, which retail interleaves in a different order.
 // M3 lane 16 r144 (fast, control 939): the nine rotation reads declared in retail's load order (r4, r1, r5, r6, r8, r0,
 // r2, r3, r7) 1749 (10827 B); `matrix` declared after the reads 939 and band two's roots s5 first 939 (both the same
 // code); one exit with bands two and three nested under `order > 2` / `order > 3` 1902 (10607 B); unused initialised

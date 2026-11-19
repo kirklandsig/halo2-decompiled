@@ -803,6 +803,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // work points declared at first store, separate producer scopes and reversing
 // scope all score 116. Tag lookup after the first velocity copy scores 141.
 // NOT kept: none recovers the first velocity-copy receivers or early unity.
+// Selective vector2f velocity, input and perpendiculars, alone, paired and together 116 each;
+// indexed velocity 116; existing in-place initial normalizer 131. NOT kept: velocity-copy
+// registers and the late unity load persist.
 // Round 636: velocity receivers and early unity still differ. Entry dot 281; successive entry squares 120;
 // named planar and third-axis terms 222; entry throttle, steering or both shared with rotation 277/276/286;
 // component-array squares 218; successive squares at both observations 325.
@@ -1190,6 +1193,10 @@ __forceinline long vehicle_round(real value)
 // dead locals and dead inline locals at the top, before the first cross, inside the side block and before the
 // projection (288 diagnostic points) never 0. That product is retail's only with the rate read through the pointer,
 // which flips the side cross's i-by-k and j-by-i terms instead.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, exact against the fast build): `side` declared with the other
+// vectors at the top of the arm 4 (same code); the up pointer dropped with the rate on vehicle->up.k 6; MiniMax I's rate on
+// vehicle->up.k re-measured 2 (not kept, see above); 1-8 dead locals inside the side block 6/8/6/4/6/10/4/4 and on the 2 form
+// 4/10/8/10/12/12/6/2 (diagnostic, never 0: no count fixes the side cross's last product with the others).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1730,6 +1737,11 @@ long function_10f5f0(long object_index);
 // velocity outputs, alone and combined, and the fully shared workspace declared
 // before the physics state: eight at 561. NOT kept: sharing puts the bounds
 // and velocity at +0x24 and separates the request names. Frame still 0x1990.
+// Explicit bounds/velocity, bounds/request, or velocity/request storage union
+// 561/561/561. All three 557, with native axis bounds 557, before physics state
+// 557, or after reading control flags 557. Shared outputs and request zero-fill
+// 568. NOT kept: the three-way union recovers frame 0x1984 and first +0x54,
+// but the grouping requires byte equality.
 // Boundary response through a separate corrected vector 598, carried vertical speed 565,
 // or one height sample 556. Initialized altitude pair 561, with the corrected vector 598,
 // vertical scalar 565, or height sample 556. Complete radial velocity 599.
@@ -2253,6 +2265,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // helper 9 (same code); a trivial `valid()` accessor on the animation-id type for the seven overlay tests 9 (same code);
 // the six overlay stores through one pointer to the overlay array 17. The compile-only screen of this file does not
 // reproduce this function (its callees' conventions come from other files), so the forms were measured one at a time.
+// M3 lane 9 r143 (a reduced-link LTCG screen of this file, exact against the fast build): the eight callbacks given a local
+// copy of the vehicle index 12; the first lookup through a named `vehicle_index & 0xffff` local 12 (0x100130's lever for
+// the reverse order) and every callback passing 0 or the velocity call passing 0 (diagnostics) all keep the header lookup
+// offset-first; deleting the update block, either loop or any one overlay arm (diagnostics) never flips it either.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -3462,6 +3478,9 @@ real g_47ff30 = 2.5f;
 // shared setter for the final world-space force 679. NOT kept: the shared setter and both in-place weight
 // applications recover frame 0xfc and first difference +0x66, but shorten the body to 3216 or 3220 bytes and
 // raise the score. Acceleration and velocity homes still differ.
+// Independent directional/force/torque mass snapshots, const early/late/all, scoped final
+// snapshots and the separate/both scale helpers 710 each. NOT kept: frame 0xfc and retail
+// length recover, but the acceleration spill remains at +0x20 and the total score rises.
 // Existing target-limited rate helper alone, retained rates, named climb limit,
 // direct target argument, per-use mass, shared scales, three-phase mass, and
 // shared scales with retained rates 778/778/778/806/804/812/777/770.
@@ -4682,6 +4701,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // the projection forms. First cross and trig homes remain.
 // Facing forward/up and rotated up field references, seven subsets 184/170/182/166/200/139/133,
 // then all with rotated forward 196. NOT kept: the first preload, cross and trig homes remain.
+// Branch-local pitch angle 118; stage pitch or roll trig values before shared result 124/118;
+// pitch angle with pitch or roll staging 124/118; both trig pairs staged 124;
+// all three 119, also with const branch values 119. NOT kept: the staged roll forms
+// repair the projection prefix but gain no points and leave the sine/cosine homes.
 // Lateral subtotal, compound subtotal, separate lateral/axial contributions and all three terms named.
 // Existing scale call 193/220/213/202; aggregate projection 193/220/213/202. NOT kept: the first pair fixes
 // the i product but loses the forward j/k preloads. Cross and trig homes remain.
@@ -5796,6 +5819,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // shared spin limit 762. NOT kept: the grouped turn cases reach 734 at retail length, but add a selector re-
 // test and merge conversions that retail performs separately. The engine pair gains three, below the keep
 // threshold. The entry definition and SSE homes still differ.
+// Final saturation with double lower / upper / both 945/694/959, blend with double bounds 756.
+// forward and reverse speed floors with double comparisons 756. Gated channel and activity with
+// double zero 776, final double bounds and activity 980, branched double upper bound 694.
+// NOT kept: the 694 forms use a 0x1c frame, grow to 3003 bytes and still hoist unity.
 // Case-local speed magnitude 763; limit then magnitude 749; complete case ratio 749.
 // Local rejection square, engine ratio, all five magnitude boundaries and separate clamp output 749 each.
 // Activity from the dispatched value before its clamp 748. NOT kept: a one-point gain with a different
@@ -6558,6 +6585,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // relative orientation and state rotation to their actual output phases 1051. NOT kept: the scoped relative
 // product reaches frame 0xdc but shortens the body by 44 bytes and raises the score. Moving the declarations
 // alone leaves code generation unchanged. The index is still in EDI rather than retail ESI.
+// State copy at first tensor product 978; direct state input with late whole/rowwise copy
+// 979/1112; rowwise copy at original/acquired-at-product positions 1114/1114; independent
+// relative with late whole/direct/rowwise state inputs 1044/1047/1083. NOT kept: separate
+// relative recovers frame 0xdc but alters extent and raises the score.
 // Linear velocity through bank, acceleration through force, target through strafe,
 // the three paired scope forms, all three scopes, and all three with a scoped
 // angular query output each score 978. The 0xfc frame and swapped index and

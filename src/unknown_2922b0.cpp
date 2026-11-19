@@ -665,6 +665,15 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Mode-specific returns from the direction copy/projected output/both arms 558/554/558;
 // with inactive exit last 669/657/669; one range read with both returns and with
 // inactive exit last 661/651. NOT kept: projecting first gains four; the success slot stays at +0x13.
+// M3 lane 11 r122 (fast with 0x1e5450, 0x30bf0, 0x1697c0; control 558, aligned/masked [491/208]): the active test
+// positive with `else return true;` 669 (2865 B, [486/200], re-measure); with the range read into its local ahead of the
+// test 651 ([485/201]: the range is then loaded once as retail, but the zero stays in XMM1 and the range's home moves),
+// and with `return local_0;` closing the active block 651 (same code); the range read first on the original layout 661
+// (re-measures of the listed 651/661); the four offset points through the existing vector3f_add_scaled 558 (same code).
+// Query-local origin and hit cursors 561/559, paired 558. Paired cursors formed
+// at origin allocation, hit initialization, both, or the distance and collision
+// declarations 558 each; fixed pre-test count with both cursors 558.
+// NOT kept: paired forms reach 2876 bytes but the success slot stays at +0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

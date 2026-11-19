@@ -502,7 +502,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 270 (was 270; earlier 299): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
+// score 270 (was 270): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
 // Earlier at 299: 1433 bytes, first +0x19. Frame map before the ray scale change (F = esp
@@ -965,6 +965,10 @@ struct s_collision_result_buffer_1697c0
 // Magnitude supplied to the scaling stage directly, named for the axis, named for both outputs,
 // all named, or immutable 333/333/335/335/333. NOT kept: the split magnitude enlarges the frame
 // and leaves the initial zero register and later random/trigonometric transfer different.
+// Fraction initialized from axis zero 271; axis zero initialized from fraction 271; fraction initialized
+// between normalization and fallback 381; default direction setter 365; pitch fallback setter 331;
+// both initial vector setters 345; best-hit direction setter 350; both best-direction setters 356.
+// NOT kept: the setter forms at the best-direction producers also change the matched sampler caller.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1505,6 +1509,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // B); the two flags initialised at their declarations 75. In retail's weapon block the actor index rides in EDI for 0x1e1f20
 // and 0x1fc710 only, then EDI takes the direction and the actor index is reloaded from its home between the pushes for
 // 0x1ffbd0 (EBX unused there); ours keeps the actor index in EDI and gives the direction EBX.
+// Direct failure and success returns 394; common switch exit 73; shared weapon normalization 107;
+// positive normalize branch 91; named normalized length 73; shared weapon normalization with separate
+// flag defaults 109; nested point-publication guards 77; common switch exit and combined normalize guards 73.
+// Reduced control 73; the swapped Boolean homes and aiming registers persist.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -2140,6 +2148,11 @@ struct s_actor_looking_structure_view
 // helper taking the vector and the axis by reference 23 (same code); the axis by value 210 (0x297660 fast 4); the helper
 // returning the vector pointer 23 (same code); each cross term scaled by the sine where it is computed 153 (925 B), which
 // lowers 0x296e60 to 199 fast (a lead for that function; not kept, it raises this one).
+// M3 lane 5 r203 (fast with 0x296e60/0x2980d0/0x297660; control 23, 0x296e60 270): the shared helper's dot grouped
+// `(j + i) + k` with the score `(i + k) + j` re-measured 13, but 0x296e60 270 -> 339 (1442 B): not kept; forward built by
+// the aggregate initializer `{ forward.i, forward.j, 0 }` 199 (927 B); the direction array declared at the function top
+// 23; the counter declared ahead of its loop 23; the angle as `0.785398185f * i` 23; forward declared, then assigned 23
+// (the 23s the same code).
 // M3 lane 12 r143 (fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x2967b0; control 23): round 91's lead re-measured
 // on today's 0x296e60 (helper dot `((j + i) + k)`, score `(i + k) + j`) 13 with 0x296e60 270 -> 339; the score alone
 // parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's
