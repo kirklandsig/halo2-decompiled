@@ -1064,6 +1064,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Diagnostics (reverted at once): 1-7 dead initialised locals on the recipe 291/279/284/284/284/284/284 (only the origin
 // dot's term order moves; at 2 the body is 1280 B, aligned 39); a no-code read of first.j ahead of the projection puts
 // 1.0 in retail's XMM6, one of first.k puts first.j in retail's XMM3 (286/289), one of the parent point's y does nothing.
+// Early root and actor allocation still differ. Second-edge start/end/both addresses after the
+// first normalization 311/335/229, or inside the positive-length arm 334/336/361.
+// Both addresses with the second vector scoped there 229/361. All forms regress.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -2035,6 +2035,9 @@ long function_1fa7f0(void);
 // Native point pointer/reference 400/400; native source record with point pointer/reference 400/400.
 // Shared source/emitted/both coordinate indices 400/488/488; stored type at emission 403;
 // shared terminal input ordinal 469. The 0x10c frame and selected edge register still differ.
+// Aligned frame 0x114 and the count in BX remain. Short/long exclusive reverse bound 457/436.
+// With a candidate step address 457/436. Reused short/long forward ordinal 470/481,
+// with a candidate step address 470/481. The selected edge still spills.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

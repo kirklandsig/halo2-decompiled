@@ -612,6 +612,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Shared 2-D normalization of the XY prefix with depth scaling and common length, early zero,
 // separate length arms, or length before depth: 423/441/441/423. With the first magnitude returned:
 // 420/429/430/420. NOT kept: root and yaw homes still differ and the shared normalizer raises 0x29b990 to 31.
+// Unity remains in XMM5 and the root still shares the pitch slot. Separate desired/bounded/difference
+// angle pairs 269/269/244. Desired plus bounded, desired plus difference, bounded plus difference,
+// or all three 269/265/265/265. One lower bound for both angular clamps 284.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

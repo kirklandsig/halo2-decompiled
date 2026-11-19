@@ -1169,6 +1169,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // results after accepted seeks separately, as case locals, or as a shared value 34 each. Verified request size for
 // offset advance 128, and for signature input and advance 139. Verified header count for signature input 34. NOT
 // kept: the entry total and case extent stay in EAX and ESI.
+// The total still uses EAX and the body extent still uses ESI. Header/body/signature transfer-count
+// locals 171/171/36. Counts limited to the admitted reads 171/171/36, with header and signature
+// 169 or body and signature 171. The signature-only forms retain the 687-byte extent.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

@@ -2021,6 +2021,9 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Sweep/projection snapshot 406. Shared sweep address 325. View-axis memcpy 325.
 // Sign-extended cluster after the change check 295 (kept). Separate count-load guard 295.
 // The state still uses EBP and the collision point still uses EBX.
+// The collision point in EBX still displaces the state from its retail register.
+// Point/vector/both row accumulators 382/297/382. Full point/vector/both setters 295/465/463.
+// Row accumulators with a single point/vector setter 382/461. The point setter alone ties at retail length.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
