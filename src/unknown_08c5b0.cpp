@@ -238,6 +238,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // is the definition's received callback (0x81050 calls it for a finished receive; the +0xe word is that message's
 // result, 1 for success), and the matched received callbacks 0x8c790/0x194260 test only `== 1`, so nothing here names
 // a second result value for the other arms that round 104's matching chain needs.
+// M3 lane 15 r100 (fast with 0x8c5b0/0x8c660), all with plain reads (no volatile): a `word` kind 32; the selector an
+// ordinary non-inline function 32 (inlined at link time, folded); the selector taking `short const &` 32; the selector
+// `__forceinline` 32; an inline accessor writing the kind through an out pointer 32 (that indirection folds once inlined,
+// unlike a reference-bound local).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

@@ -276,6 +276,10 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // being one of the three in the first pair; ours has three, two, three, and the build without the flag store two, three,
 // three. So the store is counted as a filler for the first pair in both builds, and ours then issues the second faddp a
 // slot early: the store's slot is charged to the row stream only.
+// M3 lane 15 r100 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): the root's argument without
+// the `(double)` cast 266 (1045 B, the float overload is called); the direction copy through memcpy with the row loop 4
+// (same code); the row loop counted down with the flag store still ahead of it 21; each row written velocity-term first
+// 4 (same code); no facing pointer (the final dot reads the field at each use) 21.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

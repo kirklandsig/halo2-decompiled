@@ -502,6 +502,12 @@ static inline real interpolate_linear(real a, real b, real t)
 // skip); restart typed byte 1 (char, byte and long all keep the skip in the screen); the loop test as `next_time
 // <= time` 5; the three restart expressions through a forceinline predicate taking the type and the flags 1 (same
 // code). Screen only, skip kept: `else if` for the flag-8 store after the restart break.
+// M3 lane 1 r121 (compile-only screen of the file for the skip, then fast with 0x22e957/0x22eeee/0x148119, all MATCH):
+// both boundary restarts computed after their switch 249 (618 bytes; screen: skip kept); the restart assignment in an
+// `else` of the dispose break 1 (same code); the boundary compare as `animation.value8 == frame` 2; restart declared
+// after dispose with its initialiser 1; the loop frame declared ahead of the loop 1. Screen diagnostics (not kept): the
+// thread stays with the flag-8 store dropped, with the timing updates dropped, with the store unconditional and with
+// no per-pass disposal reset, so nothing in the latch's own statements decides it.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

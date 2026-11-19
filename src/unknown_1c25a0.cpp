@@ -1547,6 +1547,12 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // has none and the cause is in 0x1d1160 alone); 0x1d1160's velocity parameter read once through its own address 80 (862 B;
 // the parameter moves to the stack, 0x1d1160 and 0xe5300 lose their matches), its point parameter read that way 19 (868 B,
 // the point is then pushed; 0x1d1160 and 0xe5300 lost).
+// M3 lane 7 r180 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, 0x1c4b00, 0x1d0dd0; R = the record {a, b, index} with a
+// plain `for` and no mirror, re-measured 106 at 864 B, aligned one line: the reload after the 0x1d1160 call): on R, 0x1d1160's
+// mass scale stored through a reference bound to its own impulse local 106 (callees MATCH; a store through a reference to the
+// callee's own local does not count, the summary is per argument); the velocity pointer passed straight to the virtual
+// impulse call (diagnostic) 177, still no reload (an escape into unknown code is not what retail records); the index array
+// in the record too 106. On this body the loop index bound to a `long &` for the loop test 1 (same code).
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

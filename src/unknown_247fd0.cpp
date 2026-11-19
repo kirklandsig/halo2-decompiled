@@ -842,6 +842,15 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // inline refresh with retained count 371, delayed update 338, both in for/while
 // 341/341. NOT kept: delayed inline refresh recovers the gate's +0x1b slot, while the
 // address remains folded, the handle/settings homes move and the body grows.
+// M3 lane 7 r180 (fast with 0x247fd0 and 0x248cc0; control 334, aligned 246, register-masked 172): 0x247fd0's cache test and
+// store order 346 (aligned 242: that block is then retail's, but the count rises), with the record pointer in 0x247fd0's form
+// as well 346 (same code), with the scale through vector3f_scale 360 (1665 B); the age step ahead of the scale 351 (the
+// scale products then store one by one); 0x247fd0's `(_random(seed, 0, 0) * 5) >> 16` draw 334 (same code). Retail copies
+// the system's age with movss where this build (and matched 0x247fd0) moves it through an integer register.
+// Effect addressing still folds and the gate and settings homes remain displaced.
+// Word index for particle 406, child 333, gate with particle 419, gate with child 363,
+// particle with child 422, velocity with particle 428, velocity with particle and child 428,
+// and all four slots 428. NOT kept: child alone gains one at retail length and leaves the gate unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
