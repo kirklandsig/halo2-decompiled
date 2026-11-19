@@ -1357,6 +1357,11 @@ bool c_projectile_type::v8(long a, long b)
 // group power through a pointer declared after the flags or inside the 0x800 block; a `real const *` to the group's power
 // in place of the entry pointer; `b` throughout or the flags local. Every form without the state-power and group-power
 // pointers 12 (same code); the group-power pointer 15; the state-power pointer 16; both 19. The object/flags pair never moved.
+// M3 lane 11 r121 (fast; word read 5, mask 12), all with the full-width mask: 0 to 8 initialised dead locals after the object
+// 12 each (diagnostic: no referenced-local count shift); one or two dead locals initialised with 0x800, 0xffff, 0x400 or
+// `b + i` 12 each (dead constants do not join the pair); flags dword/long x result long/dword x index reference long/dword,
+// all eight 12; the group entry through a `(index & 0xffff) * 12` offset local 12, with the object through 0xa1f70's offset
+// local as well 12, the object offset local alone 12.
 // M3 lane 13 r113 (fast with 0xa5e70, matched each time; mask control 12: the group data then reuses ESI after the flags,
 // retail after the object), all with the full-width mask: a `long` group offset local `(index & 0xffff) * 12` added to
 // the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the

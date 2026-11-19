@@ -476,6 +476,15 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 
 // score 218 (was 218): r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
+// M3 lane 11 r123 (fast with 0x270d90/0x270400/0x30bf0): actor_index declared first alone 218 (same code); with corners
+// a, b, c, d 281 (1284 B, aligned 70 -> 59, register-masked 23 -> 15: entry exact). The 4 extra bytes are the margin:
+// retail multiplies the reciprocal in place by the radius in memory (`mulss xmm2, [eax]`), ours loads the radius
+// (`movss; mulss`), so everything after case 1 is shifted. Compile-only screens (signature: projection load order, margin
+// side; retail 4,8,0 and in place, ours 8,4,0 and load): 0-15 extra referenced locals, no change; the margin as
+// radius * inverse, staged `margin = inverse; margin *= radius`, reference-bound, radius / first_length, through a radius
+// local (that keeps the radius in a register, not retail's memory operand): never in place; the size test as 2 * radius,
+// swapped, or radius + radius, with either margin order: no change; no-code reads of the radius or the reciprocal: no
+// change. Diagnostic: the margin goes in place only when the reciprocal has no other use (the fraction left unscaled).
 // M3 lane 11 r113 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 76): actor_index declared first (the stack
 // order and register arguments unchanged; definition, declaration in src/path.cpp and the call together) with corners a, b,
 // c, d gives retail's entry byte for byte (pathfinding arrives in EAX and is copied to EBX, the actor loaded into EAX, out

@@ -888,6 +888,12 @@ extern "C" void _ReadWriteBarrier(void);
 // barrier with the state declared at the head of the NONE block 44 (208 bytes); no barrier, actor first, the point bound
 // to a `const &` at the top and copied from it 44 (208 bytes). Diagnostic (not counted): 1-4 dead initialised locals at
 // the top, with the barrier 6 each, without it 44 each, so the slot load is no symbol-count tie. Restored.
+// M3 lane 11 r122 (fast, each without the barrier): the actor index cast to a word for the lookup 10 (a movzx load);
+// the busy test first with its own 0x450 store and each arm ending in its own store 46 (212 bytes); `(void)list;`
+// after the lookup 44; the point copied through a by-value local in the arm 50 (212 bytes); the point flag read into
+// a bool ahead of the actor lookup 44. Compile-only (same code as the no-barrier body): a const reference to the
+// point at the top, the state NULL test joined to the busy test, the busy field in a long, the flags bool at the
+// top, a point pointer at the top; flags /G6, /Ob2, /Oi-, /Ot leave the slot load after the branch.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
