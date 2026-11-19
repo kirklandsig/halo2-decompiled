@@ -792,6 +792,12 @@ void function_1537f0(s_profile_record *record);
 // words merged in EBX); a pointer-stepped entry loop 80 (275 bytes); the four links by one 8-byte 0xff memset 38 (250
 // bytes: base +0x4c, no hoist, two dword -1 fills); the four `entry->` links from one `short const &` bound to NONE 49
 // (hoisted). So the hoist follows the link stores' shape, not the pointer local itself.
+// Round 187 (m3 lane 8, fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): the link pointer's chain
+// reversed (`links[3] = ... = links[0]`) 18 (base still +0x5c); one pointer per list (the list and the other list, each
+// as a chained pair) 18 (base +0x5e); the four link stores through the pointer as statements in retail's store order
+// (2, 0, 3, 1) 18 (base +0x5e); the pointer and its chain ahead of the record and the 0x7f8b0 call 72 (269 bytes); the
+// entry as `g_4cf98c + index` with main's link pointer 18 (same code). Through the pointer the loop base always lands on
+// a link store (+0x5c or +0x5e), never on the builder's +0x4c.
 // @retail 0x7f930
 void function_7f930(void)
 {

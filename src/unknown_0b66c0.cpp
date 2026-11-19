@@ -514,6 +514,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // condition and the result set in if/else arms 52 (90 bytes, [36]). Every plain-string form ends the result's AL life
 // early (two exits), which frees a register for the string; retail keeps the result in AL across the scan and the
 // string on the stack.
+// Round 187 (m3 lane 8, fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the natural body with the
+// sum named where it is computed (`long end = start + count;`) 28 [6]; the clamped size in a `size` local with the early
+// source 28 [39]; the sign tests as nested ifs 21 [match] (same code); the source named before the length 37 [84]; the
+// scan on a `text` copy of the string with the source at the call 28 [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
