@@ -166,6 +166,11 @@ bool function_1946f0(s_bitstream *stream)
 // block-local pointer to the masked byte (from the field, or from a block-local data local) forms it as
 // `mov edi, [esi]; add edi, edx` (no LEA); a block-local data local or a named start pointer in the clear block keeps
 // the clear LEA data-first.
+// M3 lane 2 r112: a compile-only screen (the file's flags without /GL; both LEAs reproduced) of 22 spellings flips neither
+// LEA. Probes: the operand created later is the base in every form (a mask-block index computed separately, as
+// `saved / 4 / 2`, is index-first there but is then recomputed). Fast: both addresses as `data - -index` 2; an
+// `unsigned long` index 2; the bound test as `saved < size_in_bytes * 8` 54 (143 B); the clear's start from the buffer's
+// end (`&data[size_in_bytes] - count`) 45 (142 B); the masked byte as `((byte *)byte_index)[(long)stream->data]` 2.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

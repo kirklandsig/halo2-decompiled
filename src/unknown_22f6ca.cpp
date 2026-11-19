@@ -239,6 +239,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // class's inline function_22e957 wrapper 23, both loops through it 23 (all the same code). Diagnostics: the text helper
 // given a constant 0 for its index 47 (420 bytes: the text loop's counter moves to memory and the offset to ESI, the
 // model loop unchanged, still `and` and the EAX copy); without the model's value0a store 54 (re-measured).
+// M3 lane 2 r112 (fast with the file's 10 matched functions; control 23): `register long i` 23; the model's value0a
+// through a `short index` named in its `if (model)` block 23; the model tests as `!= NULL` and `!= false` 23; the model
+// loop as `i = 0; if (i < count) do ... while (++i < count);` 23 (all four the same code); the model loop walking a
+// definition pointer stepped at the body's end 32 (412 B). Diagnostics: the text loop deleted (369 B) or without its
+// animation start (395 B) moves the model to ESI and reloads the screen from its home, so the model loop's copy depends
+// on the text loop. A compile-only build (no /GL) gives `and` resets in both loops and does not reproduce this function.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

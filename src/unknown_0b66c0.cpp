@@ -523,6 +523,14 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // sum named where it is computed (`long end = start + count;`) 28 [6]; the clamped size in a `size` local with the early
 // source 28 [39]; the sign tests as nested ifs 21 [match] (same code); the source named before the length 37 [84]; the
 // scan on a `text` copy of the string with the source at the call 28 [6].
+// M3 lane 2 r109 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched unless noted): the shared length helper as a
+// do-while ending `while (++length < 0x1ff)` 21 [match] (same code); the scanned character named in a char local 32 [match]
+// (0xb61d0 15: the byte takes DL and the counter EDI); the compare as `length >= start + count` 21 [match] (same code);
+// no early source, the string advanced by start after the clamp (`string += start`), plain string 41 (104 bytes) [35],
+// with the volatile string 43 (108 bytes) [6]. A /Gd compile-only first pass (all parameters on the stack) of the natural
+// body with a plain string holds the string in EBP for the whole function (so LTCG passes it in a register) with retail's
+// scan registers (counter ECX, walk EDX) and retail's `lea edx, [edi + esi]` compare; nothing else wants EBP there, since
+// the destination is first loaded after the scan. A plain form needs the string reloaded in that first pass.
 // M3 lane 14 r115 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the function as a member of the
 // 512-byte text type with the destination as the object (volatile string parameter kept, natural body) 28 [9] (start EDX
 // for life, walk EDI, as the natural body), without the volatile 48 (93 bytes) [88]; the same with the count tested first

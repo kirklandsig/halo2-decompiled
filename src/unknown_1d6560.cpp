@@ -545,6 +545,20 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // for ESI). On it, the same code each: the type local const 24 [0], the object-index local const 24 [0], case 11 as one
 // nested ternary 24 [0], the rigid body as a reference 24 [0]; the kind-7 route as `if (type != 1) return 1; return
 // 0xc;` 94 [0]; the object index as a const reference to the component's field 96 [208]. Body unchanged.
+// M3 lane 2 r111 (fast with the file and the caller 0x1d5bf0, caller in brackets; control 96 [0]): five entry orders of the
+// one-read form (oarht, hrt with the mask inline, horat, ohrat, hroat; byte type) x ten parameter orders of this function
+// (definition, the caller's declaration and call together, owner before level on the stack): oarht 28 [0], hrt and hroat
+// 94 [13] (95 [14] with owner and level declared first), horat and ohrat 25 [13] in every order, so the parameter order
+// never moves the incoming registers. Only a rigid-body local and a twice-used type local, both lookups through the global
+// and the component: rigid body first with a byte, long or dword type 136/141/141 (216 B, `ret 4`) [213], type first byte
+// 117 [213], long 105 [9] (the lookups then share the element address); object index, rigid body, type through the global
+// 94 [13]; rigid body, object index, type 96 [13]. The rigid body through a file-local block-element accessor (block,
+// index, element size by value) on all five orders, byte and long type: the same code as without it each time. Diagnostics
+// (a probe store in the entry block, removed): on oarht with a long type one more entry use of the header array moves it
+// to EDX and the object index to ESI, one more entry use of the object index moves it to ECX and the incoming index to EDX
+// [9], uses inside a case or one rigid-body use fewer change nothing. Retail's entry reads as a backward walk: the
+// component keeps EAX until the object-index read, the index ECX until its copy to ESI, and the owner finds no scratch
+// register free because EDX holds the header array from the first instruction.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

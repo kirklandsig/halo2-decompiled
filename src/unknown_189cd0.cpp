@@ -258,6 +258,11 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // parameters unnamed 11 (same code); `long audible = positioned ? 2 : 1;` named at the arm's top 136 (530 bytes); the
 // marker declared at the arm's top 11 (same code). Diagnostic: on the plain-reads body (no reference), 1 to 7 dead
 // initialised locals at the top 116 each, so the EBP contest between the object and the tag is not a symbol-count state.
+// M3 lane 2 r109 (plain; every object read plain, no reference; control 116 at 531 bytes): a named `attached` test for the
+// request test only 116 (same code); `attached` for the marker test only 134 (536 bytes); `positioned` written out at the
+// request test and at the audible argument (no local) 131 (528 bytes); the duration reset after the blocks tested on a
+// `started` bool set from the sound result 122 (536 bytes); the spatialization member bound to a reference before its flag
+// test 128 (526 bytes, frame 0xa4). The object keeps EBP and the tag EDI in each.
 // M3 lane 14 r115 (plain; every form without the reference, object reads plain, control 116, 531 bytes): the tag lookup,
 // sound_class row and spatialization through a tag-taking forceinline helper (if-form NULL start) 116; a named `attached` for the
 // request test alone 116; the description bit through a SET_FLAG-style conditional macro 116; the slot lookup outside the

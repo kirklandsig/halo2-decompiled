@@ -3309,7 +3309,7 @@ void function_102f10(long weapon_index, short trigger_index)
 void function_b7360(long object_index);
 void function_b58c0(long index, dword mask);
 long function_1896c0(real scale, long sound_index);
-void function_a88a0(long player_index, long definition_index, long other_definition_index, long count);
+void function_a88a0(long player_index, long first_definition, long second_definition, long count);
 
 struct s_ammo_conversion_entry
 {
@@ -3538,6 +3538,31 @@ struct s_ammo_conversion_entry
 // what is left: retail keeps the weapon in EBP and pushes EDI only after the loop guard (the early exit returns the
 // cleared flag in AL), the scan count is spilled with the index in EBP, and the found entry is reached through the
 // pointer formed in the scan. Not kept: no count below 190. Original body restored.
+// M3 lane 2 r110 (fast; control 190; aligned = LCS line count, 135 for this body). Behaviour fix kept: the call to 0xa88a0 passed
+// its two definition indices the other way round. Retail loads EDI from the weapon's index and ESI from the other weapon's
+// (0xffed6-0xffee0) and the matched callee tests the type byte of the one in ESI, its first definition parameter. Count stays 190.
+// Lead, match-only (build/r110/lead-0xffc60-52.patch in m3-lane2): 52 at 731 bytes, first difference +0xa1, every remaining line
+// the ECX/EDX choice from the loop head on. It is: one exit (`if (mode == 4) acquired = false; else { ... }` for the early
+// `return false;`, which puts the result in AL through the first block: `xor al, al`, the store from AL, EDI pushed after the
+// loop guard, the count loaded for the guard); the two flags declared ahead of `*rounds = 0;` (retail stores other_has_rounds as
+// an immediate and the result from AL); a transfer count started at 0; the same-definition clamp as a long ternary (`movsx esi,
+// si` in place); the conversion scan reading its count and table from the magazine definition at each use with the entry pointer
+// taken in the loop (the scan is then retail's instruction for instruction, count spilled); the loaded clamp in long; `retained`
+// as a ternary; the type byte read at each use; the magazine pointer declared ahead of the definition's; the unloaded count read
+// through `other` beside the source pointer. The last two make it match-only: with the definition's pointer first the loop index
+// takes ECX for retail's EAX (207 at 713 bytes, aligned 33), with both sum operands through the source pointer `other` loses EBX
+// to the weapon (204). Without those and the flags-first order the retail-shaped body measures 204-210.
+// Steps (fast): retail-shaped transfer body 218; with ternary `retained` 205; count and table at use 229; that with no magazine
+// local 159 (161 with the call fix); 36 declaration combinations with the fix 161-231; explicit returns after the loop
+// 233/233/235; single exit with the magazine pointer first and unloaded through `other` 58, through the source 157, magazine
+// pointer last 210; flags-first order and long ternary 52. Clean steps alone on this body: call fix + single exit 203, with the
+// positive flag 203, flags first 204, long ternary 203, long loaded clamp 202, type byte at use + ternary `retained` 209.
+// Same code or worse (compile-only screen, about 1500 forms): loop condition reversed, post-increment, index declared at
+// function scope, a while loop, compare operands reversed, a named other-definition index, transfer and source declaration
+// places, MIN or if forms of the three clamps, the existing game-mode helper, inline accessors for the two magazine pointers or
+// the count, a short pointer or reference to the unloaded count, `acquired = true` ahead of the conversion clamp (the cmov
+// becomes a branch), the leftover-rounds flag as an `||` chain (gives retail's loop-head registers but reads the flag).
+// Permuter on the 52 form (600 s, 43 tries): best 52.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3612,7 +3637,7 @@ bool __stdcall function_ffc60(long weapon_index, long other_index, long player_i
                 *(long *)((byte *)WEAPON_DEFINITION(other) + 0x138);
             if (sound != NONE) function_1896c0(1.0f, sound);
         }
-        function_a88a0(player_index, weapon->definition_index, other->definition_index, *rounds);
+        function_a88a0(player_index, other->definition_index, weapon->definition_index, *rounds);
         function_a7cd0(weapon_index);
         if ((1 << other_type) & 4)
         {

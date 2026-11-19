@@ -61,22 +61,21 @@ PRIVATE __forceinline real function_2922b4(real arg_0, real arg_1, real arg_2, r
 	*arg_3 = local_0;
 	return function_2922b3(arg_2 * local_0, 0.0f, arg_2);
 }
+/* arg_0 turned about the unit axis arg_1 by the angle arg_2 into arg_3, which may be arg_0 itself: the j and k
+   cross terms are taken before the first row overwrites the vector's i */
 PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const *arg_1, real arg_2, vector3f *arg_3)
 {
 	real local_0 = (real)sin(arg_2);
 	real local_1 = (real)cos(arg_2);
 	real local_2 = (arg_0->i * arg_1->i + arg_0->k * arg_1->k + arg_1->j * arg_0->j) * (1.0f - local_1);
-	vector3f local_3;
-	function_2922b1(arg_0, arg_1, &local_3);
-	real local_4 = local_1 * arg_0->i + arg_1->i * local_2 - local_3.i * local_0;
-	real local_5 = local_1 * arg_0->j + arg_1->j * local_2 - local_3.j * local_0;
-	real local_6 = local_1 * arg_0->k + arg_1->k * local_2 - local_3.k * local_0;
-	arg_3->i = local_4;
-	arg_3->j = local_5;
-	arg_3->k = local_6;
+	real cross_j = arg_0->k * arg_1->i - arg_1->k * arg_0->i;
+	real cross_k = arg_1->j * arg_0->i - arg_0->j * arg_1->i;
+	arg_3->i = local_1 * arg_0->i + arg_1->i * local_2 - (arg_0->j * arg_1->k - arg_0->k * arg_1->j) * local_0;
+	arg_3->j = local_1 * arg_0->j + arg_1->j * local_2 - cross_j * local_0;
+	arg_3->k = local_1 * arg_0->k + arg_1->k * local_2 - cross_k * local_0;
 }
 
-// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// score 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // M3 lane 10 r119 (fast; control 558): `*arg_5 = 0.0f;` ahead of the minimum's initializer 559; the hit flags as `{ 0 }`
 // 689 (2819 B, block store); the success flag declared after the hit flags 552 (first difference +0x2e; the success store
@@ -674,6 +673,26 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // at origin allocation, hit initialization, both, or the distance and collision
 // declarations 558 each; fixed pre-test count with both cursors 558.
 // NOT kept: paired forms reach 2876 bytes but the success slot stays at +0x13.
+// M3 lane 2 r111 (fast with 0x1e5450, 0x30bf0 and 0x1697c0, all matched; plain confirmed with the callers 0x29ab90 and
+// 0x29bab0 unchanged at 286 and 489): kept, the rotation helper in retail's in-place shape (sine, cosine, projection, the
+// j and k cross terms taken before the vector's i is overwritten, cross i inside row i, rows stored straight into the
+// result) 558 -> 529 (2853 B, aligned 348 -> 269, register/offset-masked 105 -> 84: both rotations are then retail's
+// instruction sequence with the vector's three components in rotated registers); kept, the tail's three projections as the
+// arguments of the existing vector3f_assign (retail computes all three and stores i, j, k last) 529 -> 521 (2865 B).
+// On the 529 form: the same rows staged into locals first 617 (2819 B); the cosine taken after the dot 529 (same code,
+// either store form); the six orders of the dot's three terms and the swapped product operands 529 each (same code: the
+// sum is canonicalised; the vector's components land in XMM3/XMM1/XMM2 for retail's XMM1/XMM2/XMM3), `i + (k + j)` 570,
+// dot3f in either argument order 532; cross k ahead of cross j 551; cosine ahead of sine 554; the sine taken just ahead of
+// the cross terms 559; `(1 - cosine) * dot` 529 and cross i named 529 (same code); the helper as a three-parameter in-place
+// function 529 (same code); 1-8 unused locals at the top of the function (diagnostic) 529/599/608/599/534/534/565/533 and
+// 1-4 in the helper 529/532/532/533. On the 521 form's base: the three projections staged in named locals 518 (one-use
+// staged locals, not kept); the setter with dot3f arguments 583. On the old body: the two angles declared at the active
+// block's scope ahead of the ray loop 652 (2890 B); the root output declared there, the ray loop with its counters and
+// collision record in its own block, the range local declared ahead of the output clear, the basis locals declared
+// pointers first: 558 each (same code). Left: the success byte at +0x13 for +0x17 and the entry's zero in XMM1; retail's
+// two angle initialisers in the other order; `(1/range) * minimum` computed twice; the root helper's product as limit x
+// root for rays 1 and 2; the rotated component registers; the tail's first transform (retail multiplies the forward's
+// k, j, i by the first amount before any add).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
@@ -795,9 +814,10 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 			vector3f local_18;
 			vector3f const *local_19 = (vector3f const *)((byte *)local_1 + 0x7c);
 			function_2922b1(local_19, &local_1->forward, &local_18);
-			arg_3->i = local_1->forward.k * local_17.k + local_1->forward.j * local_17.j + local_1->forward.i * local_17.i;
-			arg_3->j = local_18.k * local_17.k + local_18.j * local_17.j + local_18.i * local_17.i;
-			arg_3->k = local_19->k * local_17.k + local_19->j * local_17.j + local_19->i * local_17.i;
+			vector3f_assign(arg_3,
+				local_1->forward.k * local_17.k + local_1->forward.j * local_17.j + local_1->forward.i * local_17.i,
+				local_18.k * local_17.k + local_18.j * local_17.j + local_18.i * local_17.i,
+				local_19->k * local_17.k + local_19->j * local_17.j + local_19->i * local_17.i);
 		}
 	}
 	return local_0;

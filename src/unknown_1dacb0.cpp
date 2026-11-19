@@ -1513,6 +1513,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // LTCG then drops the output parameters). Reading: in the second request ours gives EBX/EBP to the shared mode-table temp and
 // `this` (reloaded per kind) and reads the found mode from memory; retail gives them to `this` (once) and the found mode, and
 // leaves the table temp spilled in found_mode's dead home.
+// M3 lane 2 r111 (fast with the twin, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1dd560, 0x2963f0 and 0x1236f0, all but the twin
+// matched; control 828, aligned 321, masked 47): the iterator stored in the siblings' order re-measured 828 (aligned 319).
+// Diagnostics, removed: the found-mode output's address stored to a global 979 at 2825 B (masked 53: the candidate takes
+// found_weapon_class's dead home and EBP holds found_weapon_class); the mode argument's address stored to a global 1008
+// (2839 B), both 1011, the mode's with the siblings' store order 1008. Reading of retail's loop (0x1db1d3-0x1db22a): the
+// whole 4-byte result stays in ECX from the found exit across the three output stores to the push for 0x1dd9d0, with a
+// one-instruction block at 0x1db226 loading it on the exhausted exit, and only the index test reads the word from memory;
+// ours reloads the result after the output stores. In the first request retail frees EBP after the fourth kind request,
+// zeroes it for the fifth and reloads the mode from its argument home for the inheritance loop, so each inlined call
+// keeps its own copy of the mode where ours keeps the argument in EBP throughout.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

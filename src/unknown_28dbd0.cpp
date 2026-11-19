@@ -612,6 +612,20 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // publication or with saved up pointer 173/173/173. Complete forward/up
 // displacement before publication 227/239. NOT kept: the 0x11c frame
 // persists for the pointer forms and both displacement forms regress.
+// M3 lane 2 r111 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173, aligned 130, register/offset-masked 40): the
+// helper taking (vector, axis, sine, cosine) with the dot written out, `(1 - cosine) * dot` and rows `cosine * v +
+// projection * axis - sine * cross` (cross j/k named, cross i in row i): both trig values as arguments 236 (1190 B,
+// frame 0x114), both named first with the sine first 241 (1193 B), with dot3f(axis, vector) or dot3f(vector, axis) 240/240,
+// the sine named and the cosine as the argument 229 (1192 B, masked 35: the zero k is then re-read as a literal twice, but
+// the heading moves to +0x10), the vector's k captured in a local 240; the angle-taking helper in retail's order
+// re-measured 228 (1194 B, 0x114), with the cosine first in one statement or the rows' vector term first 228 (same code).
+// A 44-form grid of {this helper, the retail-order helper, the three four-argument call forms} x {0.1 updates as `+=`,
+// through vector3f_add_scaled, that plus the velocity through vector3f_scale} x {jitter as two `+=`, a zero-k offset vector
+// through vector3f_add, through vector3f_add_scaled with scale 1}: lowest 180 (this helper with both 0.1 updates through
+// vector3f_add_scaled, 1209 B, masked 44), every other form 220-239, lowest masked 27 (retail-order or four-argument helper
+// with the add-scaled updates and the offset vector, 1217-1230 B), frame 0x114 in all of those. Retail keeps the heading's i
+// and j in XMM6/XMM4 from the caller's cross to their last uses and drops the zero k (a literal at 0x28ddf4, zeroed again
+// in XMM7 at 0x28de1e); every form here evicts the heading's j and keeps the zero, so one cross term fewer is spilled.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -1391,6 +1391,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // add esi, ebx`, the field load now a shared temp). The draw call's element re-formed from the field 92 (367 B, reloaded
 // after the calls). So retail's loop 1 holds one more reference (definition pointer or offset) than SSS, not through a
 // second field load.
+// M3 lane 2 r112 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): loop 1 as count-first with its
+// guard read through a `long const &` to the count 42 (365 B, the plain count-first code); SSS with loop 1's tests through
+// a `*const &` to the definition pointer 118 (folds); SSS with the draw call's element re-formed from the field 92 (367 B);
+// SSS with the colour call's element re-formed (`field_24 + offset + 4`) 14 (365 B: every loop takes retail's allocation
+// and only loop 1's element is formed as `mov eax, [edi+0x24]; lea esi, [eax+ebx]`, as round 266's mask-argument form);
+// SSS with one mask zeroed as `= false` 118, with three zeroed as `(word)0u` 118.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

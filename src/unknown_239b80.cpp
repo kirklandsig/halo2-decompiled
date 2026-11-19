@@ -813,6 +813,20 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // retail calls the CRT's memmove at 0x320890, as matched 0x18e470 does); `if (classifier != 2) return 0;` with the hull
 // count declared after it 237; `if (done) return hull_count;` ahead of the compaction in place of `if (!done)` 169 (763 B);
 // the heading declared and zeroed at function scope before the classifier call 121. Body unchanged.
+// M3 lane 2 r111 (fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 84, masked 36): the
+// completion-flag body (match-only; bool departure and done flags and the heading ahead of the lowest scan, one long
+// counter in `while (!done && (short)hull_count < count)`, positive closure, compaction under `if (!done)`) rebuilt 210
+// (784 B, frame 0x14, masked 19: left are the count in EBX, the hull count cached in ECX and the pass test repeated at the
+// foot). A grid of {short, long with casts} counter x {`indices[hull_count++] = current`, store then increment} x {flag
+// exits, three returns}: the append spelling never changes the code; long + flags 210, short + flags 236 (762 B, the count
+// arrives in EAX, 0x239d50 80), long + returns 269 (747 B), short + returns 265 (749 B). Diagnostics, all removed: the
+// `standard` marker on main's body and on the four flag/return bodies 221/231/292/265/295 with 0x239d50 at 34 each; the
+// count's address stored to a global gives retail's memory compare in the candidate scan and a reload after it, but the
+// count is still cached in EBX through the pass loop (flag body 171 at 794 B, masked 22; short counter 222 at 784 B; main's
+// body 234); the hull count's address stored to a global gives retail's top-tested pass loop behind a jump (240 at 784 B)
+// with other registers. Retail loads the count into EBX only as the classifier's argument, copies it to EDX for the lowest
+// scan, reads its home again for `current = count` after the call and compares it from memory either side of the index
+// store; EBX then caches the hull count.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
