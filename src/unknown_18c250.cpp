@@ -462,6 +462,10 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // M3 lane 3 r260 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): the sound, data, entry and count locals declared bare
 // and then assigned 2; no sound-tag local (its promotion index read inline) 2; the curve set as an aggregate initializer on
 // the copied samples address 4; the guard written `0 < count ... != 0` 2; the entry index in a named local 2.
+// Round 181 (m3 lane 7, fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): the copy read through a cast of its own address
+// (`*(byte const *const *)&samples_address + offset`) 2 and as `(byte const *)*(dword const *)&samples_address` 2 (folded); a
+// `long` copy 2; the offset cast `(dword)` in the pointer sum 2; an integer sum of the copy and the `(dword)` offset, then the
+// cast, 2. In every form the operand loaded second becomes the add's destination (EDX).
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

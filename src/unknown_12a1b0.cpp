@@ -1400,6 +1400,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // the NULL test is not threaded into the index test, registers unchanged); the duration or the curve read once through its
 // own address 24/24; the guard reading the first index through its own address 60 (211 B); the next step's links bound as
 // `s_looping_track_links &` 24.
+// Round 181 (m3 lane 7, fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched; `ret 8` in both builds): 1-16
+// unused initialised locals at the top and 1-8 in the loop (diagnostic) 24 each, so the ESI/EDI tie is not a symbol count;
+// a pool local read once at the top for the state test 42 (the state load folds ahead of the add); a for loop whose init
+// and step are the next call 64 (219 bytes); a named const element for the state test 24; the call's index through a
+// block-scoped copy 24; an explicit `else continue;` 24.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

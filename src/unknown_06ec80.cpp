@@ -170,6 +170,10 @@ union s_6ec80
 // returning 0 early on a null pointer 225 / 226. So the scoped form's shift does not come from the two zeros sharing
 // a block. Retail has this 0xe4-stride loop only here (it is not an expanded out-of-line function), and it unrolls
 // the sibling 16-trip `for` loops (0x696f0) four times, so this loop was not a counted `for`.
+// Round 181 (m3 lane 7, fast with 0x6ec10/0x5b120; base 5): the mask declared and zeroed between the two pointer tests
+// (nested ifs, no flag) 226 (NONE moves to EDI as soon as the mask's zero no longer precedes the first pointer test); the
+// scoped mask re-measured 225; with the mask zeroed before the guard as now: the guard as two nested ifs 5, the do loop
+// ending `while (++local_15 < 16)` 5, the active test cast `(bool)` 5, explicit `!= NULL` pointer tests 5 (all the same code).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
