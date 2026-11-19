@@ -757,6 +757,23 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // Native state or connection-index local 170; conditional connection pointer 293; two separately named snapshots 134.
 // Unqualified argument with owner cursors 176 (caller losses); entry connection initialization 137;
 // one observer snapshot with a registration reload and indexed owners 134 (retail length, plain confirmed).
+// m3 lane 5 r202 (fast with 0x75da0, 0x76a40, 0x785d0, 0x78880, 0x78900, 0x784a0, 0x77330; control 170, aligned 55):
+// the plain parameter read once through its address into an observer local 245 (833 B, ret 8: both parameters on the
+// stack, observer EBX, channel index EDI; callers lost), with the parameters swapped 245, with the address read only at
+// the channel lookup 245, with a second read through the address before the registration loop 245 (propagated);
+// `(void)&observer;` without the volatile 177 (aligned 36: observer passed in EBX, channel index on the stack); the
+// plain parameters swapped 177 (same code). Lead re-measured, not kept (a copy plus parameter reads): the volatile
+// parameter copied once for the dispatch and the invalidation loop and read again in the registration loop 124 at
+// 821 B with every caller matching (masked 13): left the copy in ESI and the zero/loop counter in EDI (retail EDI/ESI),
+// the load ahead of `push edi` and the 64-bit subtraction's high dword in ESI. On it: the copy assigned again before the
+// registration loop 134, the connection local declared at the top 126, one owner index for both loops 124; one or two
+// set-state calls given the parameter (fewer copy uses) 176/221 without flipping ESI/EDI.
+// Round 140 (m3 lane 9, fast with 0x78880, 0x76a40, 0x75da0, 0x785d0): with the volatile dropped (177) ours homes the
+// index in EDI and observer in EBX, retail homes observer in EDI (split by the owner cursor and the memset, then re-read
+// from its stack home) and the index in EBX. Volatile dropped and observer read once through `s_network_observer *const
+// *` to itself 245 (833 B, both arguments on the stack, callers lost); the same with the parameters (index, observer)
+// everywhere 245; the two owner-notify loops as one two-caller inline helper 333 (705 B), the same without the volatile
+// 359 (701 B); volatile dropped with one function-scope loop counter 177 (callers lost).
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {
@@ -877,6 +894,25 @@ static inline void observer_statistics_initialize(s_network_statistics *statisti
 	observer_statistics_reset(statistics);
 }
 
+/* the text form of a title address: its internet address in dotted form and,
+   on request, its hardware address after it. Retail has this sequence inline
+   in 0x76aa0 and 0x78900 (the copy, the swap and the unread store of the
+   swapped address at both; the hardware address only in the first). The
+   swap's operand order in 0x78900 follows the count of locals ahead of `ip`:
+   with the hardware bytes read through a pointer here and the address named
+   in 0x78900 it is retail's (both match). */
+static __forceinline char *format_title_address(const XNADDR *address, char *string, long length, bool include_hardware)
+{
+	XNADDR remote = *address;
+	byte const *hardware = remote.abEnet;
+	dword ip = remote.ina.s_addr;
+	ip = (((ip & 0xff0000) | (ip >> 16)) >> 8) | (((ip << 16) | (ip & 0xff00)) << 8);
+	function_11c9c0(string, length, "%hd.%hd.%hd.%hd", ip >> 24, (ip >> 16) & 255, (ip >> 8) & 255, ip & 255);
+	if (include_hardware)
+		function_11c9e0(string, length, "!MAC=%02X:%02X:%02X:%02X:%02X:%02X", hardware[0], hardware[1], hardware[2], hardware[3], hardware[4], hardware[5]);
+	return string;
+}
+
 // @retail 0x76aa0
 long network_observer_attach_channel(s_network_observer *observer, long owner_index, const XNADDR *address)
 {
@@ -932,12 +968,8 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 		{
 			s_network_observer *local_1 = observer;
 			s_network_observer_channel *channel = &local_1->channels[index];
-			XNADDR remote = *address;
-			dword ip = remote.ina.s_addr;
-			ip = (((ip & 0xff0000) | (ip >> 16)) >> 8) | (((ip << 16) | (ip & 0xff00)) << 8);
 			char name[256];
-			function_11c9c0(name, sizeof(name), "%hd.%hd.%hd.%hd", ip >> 24, (ip >> 16) & 255, (ip >> 8) & 255, ip & 255);
-			function_11c9e0(name, sizeof(name), "!MAC=%02X:%02X:%02X:%02X:%02X:%02X", remote.abEnet[0], remote.abEnet[1], remote.abEnet[2], remote.abEnet[3], remote.abEnet[4], remote.abEnet[5]);
+			format_title_address(address, name, sizeof(name), true);
 			long connection_index = link_connection_allocate((long)name, 0x38);
 			if (connection_index != NONE)
 			{
@@ -2322,7 +2354,7 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
     return observer_round(local_0);
 }
 
-// score 2 (was 89; the text up to the round 135 paragraph describes the older 205 layout): no behaviour difference found. Still differs: (1) the stack
+// score 2 (was 2; the text up to the round 135 paragraph describes the older 205 layout): no behaviour difference found. Still differs: (1) the stack
 // slots of rate/j and count/float temp are swapped (retail rate+j at esp+0xc,
 // count at esp+0x10; moving rate's or count's declaration did not change it);
 // (2) retail rereads the refresh word g_485ac0 (movsx) in each of the three
@@ -2349,6 +2381,15 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
 // Branch additions 211; chosen base before adjustment 212; increment and base locals 146; inverted selector 142;
 // default prior budget 285; clear-flag base with adjustment 212; shared configuration view 211.
 // NOT kept: the reduced variants do not recover the full-image frame slots and flag register.
+// Round 140 (m3 lane 9, plain with 0x78090, 0x78190, 0x75da0): retail's 0x140 load between `test al, al` and `je` reads
+// as a head merge, both arms of a two-arm sum starting with `mov eax, [ecx+0x140]` (the 4e28 arm then loads EDX and
+// falls into the shared add). The two-arm forms give the flag AL, but the 4e28 arm always loads 4e28 into EAX and 0x140
+// into EDX, so nothing merges: `flag ? 4e28 + c140 : rate + c140` 245, c140 written first in both arms 245, if/else
+// arms each `budget = c140; budget += x;` 245, a `long const *` to the 0x140 field used in both arms 246; the ternary
+// alone then `budget += c140` 251. Compile-only (the stream matches the real build here): the arm's operand order
+// follows the base, not the spelling (observer fields and globals load before configuration fields; two configuration
+// fields, a diagnostic, give retail's exact merged shape); a pointer or reference to 4e28, a `this` member body, a
+// configuration local and an earlier mention of c140 all leave it.
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {
@@ -2487,6 +2528,9 @@ void __stdcall function_78880(void *p)
 void link_connection_connect(s_type_99af70 const *address, s_link_connection *connection, bool initiator);
 long function_75890(long time);
 
+// Matched in a full build with stand-in SDK headers (was 8): the attempts count is read through a reference bound
+// before the two time stores, and the channel's address is passed through a reference-bound local.
+// Before:
 // score 8 (was 160; was 180 before that; the text up to the b15A paragraph describes the old 160 layout, which the
 // `due` form below removed): no behaviour difference found. The prologue and the
 // state-2/5/9 setup now match (retail reads observer->configuration separately in
@@ -2582,12 +2626,13 @@ void s_network_observer::function_776a0(long channel_index)
 				return;
 			}
 		}
+		short const &attempts = channel->attempts;
 		channel->time98 = 0;
 		channel->time9c = 0;
 		bool due;
-		if (channel->attempts >= 0 && channel->attempts < count)
+		if (attempts >= 0 && attempts < count)
 		{
-			long delay = delays[channel->attempts];
+			long delay = delays[attempts];
 			due = function_75890(channel->time) >= delay;
 		}
 		else
@@ -2607,7 +2652,9 @@ void s_network_observer::function_776a0(long channel_index)
 			}
 			else
 			{
-				link_connection_connect(&channel->address, connection, true);
+				s_type_99af70 *address = &channel->address;
+				s_type_99af70 *const &kept = address;
+				link_connection_connect(kept, connection, true);
 				if (channel->state == 5)
 					network_observer_set_channel_state(observer, 6, channel_index);
 				else
@@ -2762,15 +2809,6 @@ void network_observer_update(s_network_observer *observer)
 	function_7a4a0(observer);
 }
 
-// score 2 (was 2): the byte swap of the address is the same IR, but retail
-// masks the original register (and ecx, 0xff00) and shifts the copy
-// (shl edx, 0x10); ours does the opposite. Operand order of the | and +,
-// the usual htonl macro spellings, splitting into lo/hi locals in either order
-// and a separate mid = ip & 0xff00 all compile to the same 2.
-// Permuter (25 min on r660): nothing below 2.
-// Separate input and host address 2; store back to copied address 10; staged octet pairs 2;
-// two 16-bit halves 79; shifts distributed by octet 2; typed octet fields 89;
-// shared middle mask 70; swap word lanes then bytes 63.
 // @retail 0x78900
 void network_observer_recreate_connections(s_network_observer *observer)
 {
@@ -2779,11 +2817,9 @@ void network_observer_recreate_connections(s_network_observer *observer)
 		s_network_observer_channel *channel = &observer->channels[i];
 		if (channel->state)
 		{
-			XNADDR remote = *(XNADDR *)channel->remote_id;
-			dword ip = remote.ina.s_addr;
-			ip = (((ip & 0xff0000) | (ip >> 16)) >> 8) | (((ip << 16) | (ip & 0xff00)) << 8);
+			XNADDR const *channel_xnaddr = (XNADDR const *)channel->remote_id;
 			char name[256];
-			function_11c9c0(name, sizeof(name), "%hd.%hd.%hd.%hd", ip >> 24, (ip >> 16) & 255, (ip >> 8) & 255, ip & 255);
+			format_title_address(channel_xnaddr, name, sizeof(name), false);
 			long connection = link_connection_allocate((long)name, 0x38);
 			channel->connection_index = connection;
 			if (connection != NONE) link_connection_get(connection)->owner = (c_connection_owner *)observer;

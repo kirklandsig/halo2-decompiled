@@ -299,6 +299,20 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // (`i = -d.j; j = d.i`), the two mode-1 points declared negative first, the centre bound to `point3f const &` for the row,
 // the scaled x offset named and then added, the minus row as `+ -(product)`: the x row still loads the centre first; the
 // side x component copied into a local for the row changes the block (the z centre loads first), still no fold.
+// M3 lane 9 r141 (fast with 0x1e55d0; control 20): redundant parens, 1-3 deep, around the whole right side of each mode-1
+// row (x, y, z plus, x minus), of each side vector row, or around the x row's product: 20 each (21 forms, identical code;
+// unlike 0x153d10's products, this row does not follow the expression count); both x rows reading `arg_1[0].x` 20; the
+// mode-1 rows through a `point3f const &` bound to the centre 20 (same code); both mode-1 points through the existing
+// vector3f_add_scaled, the minus point with `-spacing`, 239 (1186 bytes).
+// M3 lane 12 r142 (fast with 0x1e55d0 and the five callers, which all match; control 20, 3 aligned: `movss xmm1, [ebp];
+// mulss xmm0, xmm3; addss xmm1, xmm0` for retail's `mulss xmm0, xmm3; movaps xmm1, xmm0; addss xmm1, [ebp]`). Same-role
+// locals merged (after one shared loop index matched 0x12eb00): one direction vector for the category and tail
+// distances 20 (same code); one direction vector for all three uses (the first probe's too) 71. Compile-only (it
+// reproduces the row): 1-24, 28, 32, 36 and 40 dead initialised locals at the top, before the collision record, the
+// clear flag, the side vector, `hit`, the two points or the spacing: the x row loads the centre first at every count
+// and place (the row follows the parameters' order only, never the count of locals); both quarter points declared once
+// beside `hit` for both modes, the first probe's direction and the side vector as one variable, both spacings named at
+// the block top: the row still loads first.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

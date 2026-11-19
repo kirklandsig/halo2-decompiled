@@ -1553,6 +1553,11 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // callee's own local does not count, the summary is per argument); the velocity pointer passed straight to the virtual
 // impulse call (diagnostic) 177, still no reload (an escape into unknown code is not what retail records); the index array
 // in the record too 106. On this body the loop index bound to a `long &` for the loop test 1 (same code).
+// M3 lane 13 r113 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, all MATCH each time): the count bound to a `long &`
+// for the loop test 1; the fill count as a `long const &` to the rigid-body size 1; a `long const` copy of the count as
+// the loop bound 1 (all the same code); the increment in the for clause with `local_0 = i + 1;` ending the body 11 (870 B);
+// a `0 < count` guard enclosing the mirror and the loop 37. Retail's +0x30 store is a spill made after allocation, so no
+// IR constant store shares the entry block; any source store of the zero there feeds the compare's `cmp eax, ebx`.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

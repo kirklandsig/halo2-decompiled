@@ -67,6 +67,13 @@ struct s_shape_ray_result
 	real fraction;
 };
 
+/* the hit flag ray_test returns by value (retail hands back the caller's pointer in EAX) */
+struct s_ray_test_hit
+{
+	bool value;
+	s_ray_test_hit(bool hit) { value = hit; }
+};
+
 struct c_vertex_shape : radius_shape_2de750
 {
 	long surface_index;
@@ -86,7 +93,7 @@ struct c_vertex_shape : radius_shape_2de750
 	virtual void get_first_vertex(__m128 *out);
 	virtual void v3();
 	virtual void get_bounds(const void *matrix, real expansion, void *output);
-	virtual void ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result);
+	virtual s_ray_test_hit ray_test(const s_shape_ray *ray, s_shape_ray_result *result);
 };
 
 /* one of the shape's vertices as the physics library's four-real vector: its components are read and
@@ -159,9 +166,11 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 }
 
 short function_120850(const vector3f *vector);
-bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
+bool function_23a220(const point2f *points, short count, const point2f *point, real epsilon);
 
-// score 192 (was 192): frame 0x84 against retail's 0x90, the ray loads and the origin and edge homes; BLOCKED-BY 0x23a220
+// Matched in m3 lane 14 r113 (was 192): 0x23a220 takes the points before the point (all three retail callers, 0x173910,
+// 0x184440 and this one, set the point in EBX before the points in EDX), with round 59's chain below; the older notes
+// follow. Earlier: frame 0x84 against retail's 0x90, the ray loads and the origin and edge homes; BLOCKED-BY 0x23a220
 // (its definition and its count parameter's width are in another lane's file). One note, the rounds' entries below.
 // MiniMax H (11-18): no new form, no lower score (192): walking retail's body against this build again, the frame
 // stays 0x84 against retail's 0x90 - retail loads the ray's six components and the shape's vertices up front and forms
@@ -468,40 +477,54 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // local therefore sits at another offset; retail stores plane.d (the zero) and keeps the offset, the origin and the two
 // edge vectors in registers, as this build does, so the extra twelve bytes are the allocator's own, not a missing local.
 // The chain stays BLOCKED-BY 0x23a220, whose definition is in another lane's file.
+static __forceinline real plane_ray_fraction(vector3f const *normal, vector3f const *along, vector3f const *offset)
+{
+	real dot = dot3f(normal, along);
+	real fraction;
+	if (dot != 0.0f)
+		fraction = dot3f(normal, offset) * (-1.0f / dot);
+	else
+		fraction = 0.0f;
+	return fraction;
+}
+
 // @retail 0x1edf50
-void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
+s_ray_test_hit c_vertex_shape::ray_test(const s_shape_ray *ray, s_shape_ray_result *result)
 {
 	point3f origin;
 	real_point3d_set(&origin, vertices_raw[0], vertices_raw[1], vertices_raw[2]);
-	vector3f direction;
-	vector3d_from_points3d(&ray->start, &ray->end, &direction);
+	point3f ray_end;
+	real_point3d_set(&ray_end, ray->end.x, ray->end.y, ray->end.z);
 	point3f ray_start;
 	real_point3d_set(&ray_start, ray->start.x, ray->start.y, ray->start.z);
+	vector3f direction;
+	vector3d_from_points3d(&ray_start, &ray_end, &direction);
 	vector3f first, second;
-	vector3d_from_points3d(&origin, (point3f *)&vertices_raw[8], &second);
-	vector3d_from_points3d(&origin, (point3f *)&vertices_raw[4], &first);
+	point3f p1, p2;
+	real_point3d_set(&p1, vertices_raw[4], vertices_raw[5], vertices_raw[6]);
+	real_point3d_set(&p2, vertices_raw[8], vertices_raw[9], vertices_raw[10]);
+	vector3d_from_points3d(&origin, &p1, &first);
+	vector3d_from_points3d(&origin, &p2, &second);
 	plane3f plane;
 	cross3f(&first, &second, &plane.n);
-	bool found = false;
+	s_ray_test_hit found(false);
 	normalize3d(&plane.n);
 	plane.d = 0.0f;
 	vector3f offset;
-	vector3d_from_points3d(&origin, &ray_start, &offset);
-	real dot = dot3f(&plane.n, &direction);
-	real fraction = 0.0f;
-	if (dot != 0.0f)
-		fraction = dot3f(&plane.n, &offset) * (-1.0f / dot);
+	offset.i = ray_start.x - origin.x;
+	offset.j = ray_start.y - origin.y;
+	offset.k = ray_start.z - origin.z;
+	real fraction = plane_ray_fraction(&plane.n, &direction, &offset);
 	if (fraction < result->fraction)
 	{
 		real bounded = fraction < 0.0f ? 0.0f : fraction > 1.0f ? 1.0f : fraction;
 		if (bounded == fraction)
 		{
-			short axis = function_120850(&plane.n);
+			long const &dominant_axis = function_120850(&plane.n);
+			short axis = (short)dominant_axis;
 			bool positive = plane.n.n[axis] > 0.0f;
 			point3f point;
-			point.x = fraction * direction.i + ray_start.x;
-			point.y = fraction * direction.j + ray_start.y;
-			point.z = fraction * direction.k + ray_start.z;
+			vector3f_add_scaled((vector3f const *)&ray_start, &direction, fraction, (vector3f *)&point);
 			point2f projected;
 			projected.x = point.n[g_440b94[axis * 2 + positive][0]];
 			projected.y = point.n[g_440b94[axis * 2 + positive][1]];
@@ -513,18 +536,21 @@ void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_res
 				vertex2d->x = vertex->n[g_440b94[axis * 2 + positive][0]];
 				vertex2d->y = vertex->n[g_440b94[axis * 2 + positive][1]];
 			}
-			if (function_23a220(&projected, (short)vertex_count, polygon, 0.0f))
+			long count = vertex_count;
+			if (function_23a220(polygon, (short)count, &projected, 0.0f))
 			{
-				found = true;
+				found.value = true;
 				result->fraction = fraction;
-				result->normal.i = plane.n.i;
-				result->normal.j = plane.n.j;
-				result->normal.k = plane.n.k;
-				result->field_c = plane.d;
+				vector3f const *normal = &plane.n;
+				vector3f *const &out = &result->normal;
+				out->i = normal->i;
+				out->j = normal->j;
+				out->k = normal->k;
+				result->field_c = 0.0f;
 			}
 		}
 	}
-	*hit = found;
+	return found;
 }
 
 // @retail 0x1eded0

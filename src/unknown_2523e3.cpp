@@ -87,6 +87,21 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // forms before the connected test, one load); the two flags set by plain `if` statements 252 (two loads, but the address
 // is formed twice and the flags materialise with `and al, 1`); the pointer formed inside a connected branch with nested
 // tests 262 (one load). Retail: one address, formed after the connected test, and two loads.
+// M3 lane 10 r121 (fast; control 49): the inlined iterator is a build-level cause, BLOCKED-BY 0x20670. The compiler's
+// array-constructor iterator is one shared copy, taken from the first object in link order that needs it: here
+// src/main_menu.cpp, built for size, and a size-built copy is inlined into this size-built function. Retail's copy sits at
+// 0x20670 among speed-built code and every size-built screen calls it. Diagnostics (not kept): this file's flags with
+// /Ob1 49; an array of a constructed type declared in a speed-built file that links ahead of src/main_menu.cpp makes that
+// object supply the copy, and the plain `s_widget_item items[4]` then gives retail's call, 233 at 791 bytes (a
+// speed-built supplier without SSE does the same; an SSE size-built supplier still inlines). Under that condition:
+// `items` declared ahead of `controller` 226 (the controller's zero store then follows the call as in retail); both bits
+// read through the shared slot type 226; the live bit as a signed bitfield 227; the signed-in flag address-taken 226;
+// the slot through an inline accessor returning its address 226 (one load in all four). The slot's flags dword returned
+// by value, as a 4-byte bitfield aggregate, from an inline accessor called at each read MATCHES (fast, and in a full
+// check under the condition, which lost nothing): the two aggregate copies are not merged, so the address forms once and
+// the dword is loaded twice. In the plain tree that source scores 247 (790 bytes: the iterator is still inlined and the
+// second load shifts every later line), so the body stays as it was; the source is build/r121/held-252554.patch. Needed:
+// the build takes the iterator's copy from a speed-built object (the user's decision, like a flags change).
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {

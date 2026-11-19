@@ -282,12 +282,25 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // The time cursor and group ordinal still spill in the opposite order. Their latch and the cross products also differ.
 // Tried time-group index name 64, ordinal before channel setup 83, time cursor before current 141, time cursor before constant 129,
 // indexed time address 88, shared copy width 329, self-dot length tests 64, accepted-orientation return 64.
+// Deadline cursor at linear coefficients 131, indexed deadline base 103, deadline cursor beside target 139,
+// scratch storage after coefficients 67, target-copy count snapshot 352, both strides before the advances 192,
+// scalar side components 108, separate orthogonality deviation after length checks 124.
+// The short group ordinal and deadline cursor still trade stack homes.
 // The time cursor and group ordinal still trade spill homes. Writable time cursor 125, read-only cursor after
 // ordinal 129, read-only channel cursors 125, cached coefficient width 475, separate coefficient-width cursor 329,
 // target advanced first 78, shared signed stride with target first 157, sized time-array reference 103,
 // interpolation arm first 64, inner interpolation scope 64, writable cursor with basis dot 125, with shared cross
 // products 131 or with inline normalization 123. NOT kept: the explicit cursor recovers the channel loop, but the
 // orientation tail grows the body to 1413 bytes.
+// Deadline range with ordinal 375 or separate end 398, deadline advanced at read 290 or before
+// the last stride 142, staged orthogonality sum 62, whole corrected up vector 234,
+// staged left products 126, aggregate left cross product 64.
+// NOT kept: the cursor forms grow the body. The staged sum gains two with the time and ordinal homes still swapped.
+// Traversal scope 64, scoped deadline pointer 125, deadline beside interpolation values 141,
+// elapsed time by subtraction assignment 134, linear cursor before the value or coefficient
+// advances 88/74, paired corrected-up stores 70, rejecting orientation disjunction 64.
+// NOT kept: the explicit cursor grows the orientation tail, and the in-place subtraction grows
+// the body. The time and group stack slots still trade places in the opening form.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -799,7 +812,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
+// score 129 (was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. Cluster creation stays inline in the build.
+// The save at entry and the signed volume index still exchange EBX and EBP, and cluster creation stays before the loop.
+// Earlier score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
 // limit, the 163db0 call, the volume/entry/cluster stores and the list walk all equal retail 0x172ee0-0x17308f).
 // What still differs is layout and registers: retail keeps the new-cluster block out of line after the loop
 // (je 0x172fad ... jmp 0x172f08) with cluster_slot in ebx and volume_index in ebp (pushed only before the loop);
@@ -831,6 +846,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // new cluster address before map/order stores 129; separate slots with chained stores 152;
 // count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
 // The opening EBX save and later BP volume index are still exchanged.
+// signed cluster list ordinal retained from loop entry 129; shared signed cluster list ordinal for creation
+// and traversal 129; pool entry array retained through traversal 128; typed portal plane in existing branch
+// 129; typed portal plane selected before publication 123; skip linked entries with traversal advance at the
+// loop test 129; skip refused projections with traversal advance at the loop test 129; skip linked entries
+// and refused projections at the loop test 129. NOT kept: the shared pool array gains one and the typed plane
+// selection gains six. Both retain the 427-byte extent and the first register mismatch. Opening executable
+// source restored.
 // Tried early camera key 123; early key and camera 123; early camera with key at call 128; input entry reference
 // 129; entry and volume references 129; entry reference with early key 123; selected cluster and allocated volume
 // names 129; allocated cluster and candidate volume names 129.
@@ -840,6 +862,19 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // count read after entry admission 129; next-volume count 129; group head from published
 // index 129; direct portal field 129; one resolved plane value 123. NOT kept: the resolved
 // plane gains six and still exchanges the entry EBX save with the volume-loop BP save.
+// The entry still saves EBP for the cluster slot and uses BX for the signed volume index.
+// Capacity-controlled for with success return and while with checked-index result 148/136. Direct
+// capacity loop with success return and capacity plus exhaustion controls 135/134. Capacity for
+// and while with result values 134/141. Capacity result in the existing do loop 127. Signed
+// successor tested before its widening 124. NOT kept: the last two gain two and five, respectively.
+// Head array live through projection, paired array references after projection, or head array at both
+// group accesses 128/128/128. Group element references or a reference to the carried cluster 129/129.
+// Reselect cluster after projection by record, direct indexing or two array receivers 165/165/164.
+// NOT kept: the first three gain one and retain the opening register exchange. Reselecting shortens
+// the body and direct indexing changes the matched caller. The opening body is restored.
+// New cluster counts/heads/both with fill 124/123/145 or fill_n 125/123/135. Complete initialization 187,
+// record clear with index/head stores 128. NOT kept: best gains six and reaches retail length but grows to
+// an eight-byte frame. The complete initializer changes the matched caller.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1107,6 +1142,22 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // with shared sine contributions 516. Rescaled original forward 349, with shared point difference 395.
 // NOT kept: cosine-complement scaling holds the axis components live where retail reads them again.
 // The retail second rotation scales j before multiplying by i. Preserving that grouping still differs.
+// The first-axis squares still spill and unity still starts in XMM3. Squares passed as a vector before
+// vertical calculation 343, before the half-angle 333, between angles 330; scalar square inputs
+// before the half-angle 392, between angles 389; double angles 348; shared double-factor
+// sine-axis scale 374; double diagonals 397.
+// NOT kept: the 330 vector form reaches 1464 bytes but uses frame 0x4c and still spills two
+// squares. The double-angle form also demotes the matched initializer.
+// Named square inputs together 381 or paired with products 379. Sine products before or after
+// complement products 354/343. Row aggregate 492; symmetric coefficients then aggregate 469.
+// Early horizontal axis 381; named double vertical tangent 368.
+// NOT kept: the 343 form gains three at 1465 bytes with frame 0x54, and unity moves to XMM6.
+// Both aggregate forms also demote the matched view initializer. The original square spills remain.
+// Original forward captured after the ratio, vertical field, both angles or first matrix
+// 345/345/345/358. Forward component capture split around the ratio after i or j 367/367.
+// Ratio computed before and stored after the capture 349. Shared forward address through both rotations 365.
+// NOT kept: the one-point gains leave unity in XMM3. Split captures and the shared forward address
+// change the matched initializer. The opening body is restored.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1181,7 +1232,7 @@ struct s_polygon_context_173910
 };
 
 short function_120850(vector3f const *v);
-bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon);
+bool function_23a220(point2f const *points, short count, point2f const *point, real epsilon);
 
 // score 3 (was 69): the side test uses EAX instead of AL, and the final call sets up the two
 // argument addresses in reverse order.
@@ -1238,7 +1289,7 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 		destination->x = vertex->n[g_440b94[axis * 2 + use_positive_side][0]];
 		destination->y = vertex->n[g_440b94[axis * 2 + use_positive_side][1]];
 	}
-	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
+	return function_23a220(points, (short)polygon->count, &point, 0.0001f) != false;
 }
 
 // score 23 (was 23): logic equals retail (inside test, state <= 0 / >= 3 returns, 1 vs 2 by the sign of the
@@ -1364,10 +1415,18 @@ struct s_point_pool_173520
 // Tried negated ordered clamp 96, named clamp test 96, float clamp snapshot 83, clipped pointer range 197,
 // start from direction 119, clip-local buffer 96, population-local buffers 96, count-first recount 96,
 // traversal scoped to the positive count 111. NOT kept: the float snapshot grows to 882 bytes and spills.
+// Cache entry by index 296, cache entry reference 96, point arena bound at population entry 96,
+// reservation from the advanced count 115, pool commit before the state predicate 101, countdown
+// scoped to positive counts 96, named first slot in the recount 96, bounds pointer 96.
+// The advanced-count form reaches retail length but changes the reservation arithmetic and raises the score.
 // State field reference 99; typed source cluster pair, flags, or both 96 each;
 // shared ordered inside cap or per-vertex minimum 96 each; clipped-count for loop 96;
 // clipped-count while loop 932. NOT kept: the while loop unrolls, and the other forms
 // leave the pool commit, stride spill and x87 cap sequence unresolved.
+// Visited-word reference 245, array base 96, explicit bit read/update 96, visited coordinates
+// before entry lookup 147, arena reference 115, real cap result 117, named expanded edges 96,
+// edge values shared with corners 103. NOT kept: the word reference shrinks the frame and the
+// other forms leave or worsen the reservation, cap reload and edge-store gaps.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1550,6 +1609,16 @@ struct s_pool_view_172840
 // Clipped end pointer 124. Shared clipped count 115. Shared clipped points 54. Parent bitset base 203.
 // Signed allocated entry index 55. NOT kept: shared count removes a retail reload, while the shared point
 // base and the 55 forms grow the body. The sentinel producer and publication schedule still differ.
+// Completion or all capacity names 134/134. Count committed from the checked index 55,
+// scoped storage receiver 55, native pool fields 254, rollback from allocation 249,
+// shared point index 60, explicit cluster selection arms 55.
+// NOT kept: the 55 forms recover the four flag homes but add two bytes and still
+// schedule the cluster store and sentinel differently. The body stays at retail length.
+// With independent failure stores, widen selected cluster after key or after link 55/55;
+// narrow explicit arms 133; box-typed template copy 55; native predecessor or published index 55/55;
+// reservation subscript postincrement 228; unsigned selection with signed publication 55.
+// NOT kept: the 55 forms recover the flag homes at 870 bytes but still place the sign extension
+// ahead of the retail link and key schedule and load the sentinel with a five-byte mov.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1754,7 +1823,9 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 284 (was 266): Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// score 270 (was 284): the winning displacement spills before the side offsets are stored
+// and reloads for refinement. The frame and point convention still differ.
+// Earlier logic walk against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
 // the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
 // calling convention: retail takes up in eax and forward in ecx with point, distance and offset on the stack
@@ -1793,6 +1864,20 @@ struct s_camera_reference_171830
 // all regress. The Boolean axis recovers frame 0xb8, but the point stays in EBX.
 // Indexed refinement passes the point in EDI and lowers the caller to 298, with the larger 0xc0 frame in this
 // function.
+// Separate sign and axis loops 278, fixed four-sample latch test 281, shared segment query for samples 283,
+// refinement 285 or both 270, input-point copy into center 289, best fraction at sample entry 286.
+// NOT kept: the shared segment queries shorten to 1214 bytes with the same larger frame.
+// The separate sign and axis loops recover frame 0xb8 but pass the point in EDI and grow to 1222 bytes.
+// Kept winning displacement and sign declared at the center trace return. The displacement lives in
+// a stack slot as in retail, four bytes above its retail home.
+// Rear displacements in scalars 270, signed vector 307 or product vector 278. Staged center coordinates 270.
+// Center fraction at the trace 269 or at depth setup 270. Toggled axis 295 or cyclic axis 300.
+// NOT kept: the center and sample forms do not recover the point's stack ingress at retail length.
+// Const point parameter reference 270, const basis parameter references 270, plane entry reference 270,
+// sign before trace material 276, sign by sample-pair boundary 295, Boolean sign bit 304,
+// conditional ray masks 302, distinct names for center and winning fractions 270.
+// NOT kept: the pair boundary restores the frame at 1211 bytes. Conditional masks shorten
+// the resolver to 1200 bytes and leave the point ingress unresolved.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -1830,6 +1915,8 @@ void function_171830(point3f const *point, vector3f const *forward,
 	center.y = point->y + (0.0f - depth * forward->j);
 	center.z = point->z + (0.0f - depth * forward->k);
 	function_171d00(point, &center, &center_fraction, narrow);
+	vector3f const *best_offset = NULL;
+	real best_sign;
 	vector3f side;
 	side.i = up->j * forward->k - forward->j * up->k;
 	side.j = forward->i * up->k - up->i * forward->k;
@@ -1844,8 +1931,6 @@ void function_171830(point3f const *point, vector3f const *forward,
 	offsets[1].i = side.i * radius;
 	offsets[1].j = side.j * radius;
 	offsets[1].k = side.k * radius;
-	vector3f const *best_offset = NULL;
-	real best_sign;
 	for (short sample = 0; sample < 4; ++sample)
 	{
 		s_segment_collision collision;
@@ -2016,6 +2101,13 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Sweep/projection snapshot 406. Shared sweep address 325. View-axis memcpy 325.
 // Sign-extended cluster after the change check 295 (kept). Separate count-load guard 295.
 // The state still uses EBP and the collision point still uses EBX.
+// View up/forward/both by reference 295/295/295; horizontal direction scoped to displacement 295;
+// indexed state address 295; basis pointers bound after both copies 405; initial/final coordinate
+// clamp loops 434/456. NOT kept: the late basis pointers shorten the body and the clamp loops
+// grow it. The state base remains in EBP and collision point in EBX.
+// The collision point in EBX still displaces the state from its retail register.
+// Point/vector/both row accumulators 382/297/382. Full point/vector/both setters 295/465/463.
+// Row accumulators with a single point/vector setter 382/461. The point setter alone ties at retail length.
 // Horizontal position after both view copies, after all derivatives or between derivative y and z 440/410/440.
 // X and Z before view copies, Y after both 295. Vertical offset ahead of both horizontal sums 439.
 // X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.

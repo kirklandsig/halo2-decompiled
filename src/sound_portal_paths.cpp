@@ -377,6 +377,13 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Shared bitmap setters at the seed, destination or both 354/354/354. Shared tests for distance,
 // sort fill or output 333/354/354, all three 333, complete bitmap API 333.
 // NOT kept: the distance test shortens the function to 1347 bytes and leaves both BSP table spills.
+// The two table spills still enlarge the frame by eight bytes. Common index store 390; index and
+// gain 372; cluster 376; portal and cluster 375; all optional stores 369; index and cluster 371;
+// all stores with a branch-selected gain 374; index, portal and cluster 370.
+// Low-byte portal flags 354; destination before low-byte flags 368. Portal array header 354,
+// cluster array header 354, both 354. Packed link record 354; index and endpoint bitfields 371;
+// path count and link pointer through the array header 354.
+// The bitfield and earlier destination forms shorten to 1347 bytes. The 0x428 frame and table reloads remain open.
 // Required index cursor at the stores 362 or row latch 315 (kept, plain); required-index
 // position/end 390/388; separate sorted cursor/sorted end 369/383; scoped sort scratch or
 // validity memset with the index cursor 359/359. The latch restores gain-based row addressing.
