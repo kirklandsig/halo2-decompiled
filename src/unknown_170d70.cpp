@@ -793,7 +793,8 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
+// score 129 (was 142): The save at entry and the signed volume index still exchange EBX and EBP, and cluster creation stays before the loop.
+// Earlier score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
 // limit, the 163db0 call, the volume/entry/cluster stores and the list walk all equal retail 0x172ee0-0x17308f).
 // What still differs is layout and registers: retail keeps the new-cluster block out of line after the loop
 // (je 0x172fad ... jmp 0x172f08) with cluster_slot in ebx and volume_index in ebp (pushed only before the loop);
@@ -825,6 +826,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // new cluster address before map/order stores 129; separate slots with chained stores 152;
 // count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
 // The opening EBX save and later BP volume index are still exchanged.
+// signed cluster list ordinal retained from loop entry 129; shared signed cluster list ordinal for creation
+// and traversal 129; pool entry array retained through traversal 128; typed portal plane in existing branch
+// 129; typed portal plane selected before publication 123; skip linked entries with traversal advance at the
+// loop test 129; skip refused projections with traversal advance at the loop test 129; skip linked entries
+// and refused projections at the loop test 129. NOT kept: the shared pool array gains one and the typed plane
+// selection gains six. Both retain the 427-byte extent and the first register mismatch. Opening executable
+// source restored.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

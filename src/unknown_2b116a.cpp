@@ -5763,7 +5763,8 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
-// score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
+// score 89 (was 97): The friend-query output and later action predicates still use different byte slots.
+// Earlier score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
 // boolean predicates use different byte slots.
 // origin predicate scoped through join eligibility 97; request result scoped through
 // add-member eligibility 97; regular-player predicate scoped through membership
@@ -5800,6 +5801,12 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // guards 392 or selections 396, roster actions under other-user gate 349 or by
 // player status 402, paired modification actions under rank gate 360 or
 // regular-player gate 365. NOT kept: title output byte remains displaced.
+// exclusive title and other join actions 210; exclusive add and remove member actions 160; exclusive mute and
+// unmute actions 146; exclusive change and pending member actions 117; contact and roster predicates declared
+// together 89; session predicates declared together 89; menu predicates declared in action order 89; menu
+// declarations with explicit query and local session names 89. The four declaration forms tie. Each exclusive
+// action branch adds two bytes and moves the first difference ahead of the friend query. Opening executable
+// source restored.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
