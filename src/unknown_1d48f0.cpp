@@ -47,6 +47,10 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax B (11-19): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is
+// expanded into this body but called out of line in retail; that expansion boundary belongs to src/unknown_11bed0.cpp,
+// which this lane may not edit, so the optional-state homes stay four bytes off (ours [esp+0x2c]/[esp+0x3c] against
+// retail's [esp+0x30]/[esp+0x40]) and the direction block's two divisions stay.
 // score 298 (was 298): earlier rounds' entries follow in order, m3 lane 9 r142's last.
 // MiniMax G (11-18): no new form, no lower score (298): the first difference is still at +0x21 and 0x11bed0 is
 // still expanded here where retail calls it out of line; that expansion boundary is settled in

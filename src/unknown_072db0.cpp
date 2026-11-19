@@ -1656,6 +1656,11 @@ static __forceinline void query_restore_pending()
         }
 }
 
+// MiniMax B (11-19): no new form, no lower score (703): retail's users loop takes the user record itself as its cursor
+// (the valid flag at +0, the identity at +1, the slot count at +0x10 and the 0x90 property bytes at +0x14) and keeps it
+// at +0x18, while ours takes the property bytes as the cursor and keeps it at +0x14, so the flag, the identity and the
+// count are all read 0x14, 0x13 and 4 bytes before the cursor. Retail's logon test is a dec against 1 where ours is a
+// cmp, and retail sets the two bases and jumps to the loop head while ours runs the loop in place.
 // score 703 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the

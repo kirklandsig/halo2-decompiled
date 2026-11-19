@@ -690,6 +690,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 }
 
 // MiniMax B (11-18): no new form, no lower score (114): the first difference is still inside the shared inlined rotation helper, whose source is in another lane's file, so the block copies, the side crosses and the small-turn exit remain.
+// MiniMax B (11-19): no new form, no lower score (114): the first difference is still inside the shared rotation
+// helper, whose source is in src/unknown_1eb8a0.cpp, so the block copies, the side crosses and the small-turn exit are
+// not this file's to change; the reduced image omits that file, so the fast score also carries that caveat.
 // score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // M3 lane 11 r123 (compile-only screen with the rotation helper pasted in, which reproduces this body's rotation; the
 // axis products' sides as a signature, retail j/k-with-j/k copy-first, ours load-first): no-code reads of the rotated

@@ -1156,6 +1156,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax B (11-19): no new form, no lower score (33): the frame and extent agree, the query-size and write-count
+// homes stay four bytes off, and the only lower form found so far is the goto that lane 11-16 used here, which is not
+// to be repeated; the body stands.
 // score 33 (was 33): Frame 0x1144 and extent agree. Query size and write count exchange stack
 // slots at +0x24/+0x28. The write argument setup, checksum register and header joins still differ.
 // MiniMax G (11-14): no new form, no lower score (33): the query-size and write-count homes stay four bytes off (ours

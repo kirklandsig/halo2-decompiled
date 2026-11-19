@@ -1089,6 +1089,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax B (11-19): no new form, no lower score (234): the permuter over this body tried three rewrites in 363 s and left
+// the baseline at 234. The shared out.k store does reproduce retail's tail - with the disabled arm's last row left in a
+// register and the three arms ending in one shared store of out.k, the disabled arm jumps to retail's store and the
+// direct arm keeps its own copy - but the direct and general arms' rows then take the other operand side and other
+// register homes (the direct arm's speed product, the general arm's current add), so the body loses 24 bytes and the
+// score rises to 596, and to 590 with the two arms left as they are and their k read back. Left: the damping bit's first
+// extraction in ECX, the two cross products that keep up.k on the other side, and the general arm's k row ending in XMM2
+// where retail's ends in XMM0.
 // score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
