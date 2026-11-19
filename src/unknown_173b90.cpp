@@ -2118,6 +2118,20 @@ bool function_17afd0(long effect_index, long value);
 // lookup's two arms, then cleared by the same test 145 (516 B); the view compare written `owner != g_4b9ed8` 12 and the
 // query as `!function_155760(g_4b9ed8)` (0x3e9c0's spelling) 12 (same code each); the clearing test as
 // `same_view = same_view && owner != NONE && g_4b9ed8 == owner && available;` 138 (510 B, the plain conjunction's code).
+// M3 lane 10 r129 (fast with 0x174420 and 0x1751d0; base 12): the true default moved down to just after the second definition
+// call 22 (the store moves exactly where it is written, the rest is retail: retail's store sits in the owner-ok path, after
+// the availability); the plain conjunction re-measured 138, with the attached flag defaulted false and set by its test 146
+// (518 B); that attached form on this body 133 (510 B); the availability as a direct conjunction on this body 96, with the
+// plain conjunction 113; the true default after the availability re-measured 141 (513 B: NONE EBX, availability spilled).
+// The plain conjunction is retail's control flow (both stores on their paths, the true store hoisted above the `jne`);
+// what it lacks is retail's allocation (availability BL, same_view on the stack, NONE and the owner sharing EBP). On the plain
+// conjunction: the draw compare spelled `view_pass == same_view` 138, the view compare spelled `owner == g_4b9ed8` 138.
+// Then a one-object LTCG screen (exact with the callees' and both callers' files linked; aligned differences against main's
+// listing with the true store moved after the `test bl, bl`): 355 combinations of the same_view form (main's, the plain
+// conjunction, if/else, false default then `same_view = available` in the owner test) with 11 natural toggles (direct
+// availability, owner ternary or NONE default, attached flag defaulted, draw compare order, a second definition local,
+// effect index and cluster read at each use, the latch step inline, nested camera and else blocks): best 2, main's own
+// state; every conjunction-shaped row 51 or worse (NONE stays in EBX for the whole walk and the owner is not shared with it).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
