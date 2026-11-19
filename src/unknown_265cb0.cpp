@@ -2792,6 +2792,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 377 (2882 B, 99/75: retail's block order for the far-and-slow test). Left: the players table's register at the iterator
 // setup (the matched siblings' identical three statements load it into EAX) and the direction components, which retail
 // keeps in XMM1-3 from the relative dot to the facing dot.
+// Post-increment loss/age/both 168/168/168; separate increment publication
+// loss/age/both 224/206/223; post-increment loss or age with shared actor displacement
+// and other-object field reads 162/162 at 2880 bytes. NOT kept: the six-point gain
+// leaves a score above 30. Player iterator and scoring registers still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

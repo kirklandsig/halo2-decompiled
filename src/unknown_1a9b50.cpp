@@ -837,6 +837,10 @@ extern point2f *g_468778;
 // actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
 // partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
 // partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
+// Unit handle in facing arm or at slot/facing boundary 389/385; live unit field
+// at the same boundaries 374/375. With actor lookup first 408/418/409/413.
+// NOT kept: the one-point gain leaves entry scheduling unresolved, and the
+// actor-first forms enlarge the 0x40 frame.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

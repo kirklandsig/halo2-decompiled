@@ -846,6 +846,10 @@ void __stdcall function_1160c0(real dt)
 // explicit sine or cosine 144/172, completed constrained point 336.
 // NOT kept: the node array forms reach retail length with a 0xa8 frame. The best forms tie
 // and leave the selected segment in EDI/ECX and at +0x20.
+// Vector storage for prior, prior/target, prior/predicted, predicted, target/predicted, and
+// all three 332/332/332/144/144/332. All three with aggregate prior copy 144 and
+// prediction setter 332. NOT kept: the vector forms tie or move the frame and extent
+// farther from retail, with the segment spill still different.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -625,6 +625,9 @@ struct c_aggregate : c_child
 // with published child boundary or terminal table bound 150/150; output pointer through
 // cleanup 186 or through dispatch and cleanup 190. NOT kept: the isolated callback count
 // home still differs, and these forms enlarge the 373-byte body.
+// Per-child dispatch range with first/count 161/124, first/end 163/141,
+// end/count 163/148, and first/saved count 161/139, with independent/field output.
+// NOT kept: the range table leaves the frame oversized and increases the score.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

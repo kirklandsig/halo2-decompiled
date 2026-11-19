@@ -815,6 +815,10 @@ static inline bool teams_enabled_19e1c0()
 // (diagnostic, not keepable) 691 (same code: the assumption adds no weight); `token` declared `word const *const` 691 (same
 // code); the fallback's clamp as `remaining <= token_length ? remaining : token_length` 693 plain (1168 B), 395 on the
 // volatile result (1432 B). Body unchanged.
+// Zero-result terminators for player names, team names, scores, or all 467/413/433/487.
+// Ordinary result for player, team, score, or cause names 691/691/691/691.
+// NOT kept: the team-name form reaches retail length but keeps the 0x208 frame.
+// Ordinary results recover the 0x204 frame and merge the name-copy tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
