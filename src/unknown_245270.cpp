@@ -867,6 +867,11 @@ void function_245400(s_source_245400 const *source, long index,
 // Rotation reads a copied edge scaled in place 231. NOT kept: The pointer-selected rotation inputs recover frame
 // 0x2c but grow the body to 820 or 822 bytes and raise the matched caller 0x245aa0 to 6 in the reduced image. All
 // other forms keep frame 0x24 and lengthen the body. The original caller and transform shape are restored.
+// The 0x24 frame still lacks the separate code and side homes. The matrix already loads at its test.
+// Edge/cross names in both orders 164/164; edge/point names in both orders 164/164;
+// endpoint and plane receiver names in both orders 164/164; all geometry names 164;
+// all geometry names with the plane table after the edge 166. NOT kept: the late
+// table still reserves 0x24 and raises caller 0x245aa0 to 3.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

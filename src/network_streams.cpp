@@ -1199,6 +1199,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 88, Byte pending bit with separate sent and pending admissions 86. NOT kept: The bitfield update emits the byte
 // OR, including at 225 bytes, but changes the opening register allocation and raises the score. The original
 // message layout and body are restored.
+// In-place resend update, two scan-local naming orders, each with original or renamed output
+// parameters: clear after lookup 89 in each form; initialize before lookup 59 in each form.
+// NOT kept: early initialization restores the ECX message and AX flags but places the
+// zeroing and output loads differently. The other initialization changes the entry frame.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

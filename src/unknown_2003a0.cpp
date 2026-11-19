@@ -3119,6 +3119,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // dominating use of the constant 1 (round 169's lead) with compares that might fold to their zero form: the delay test as
 // `< 1` 51 (`cmp ..., 1; jge`), the count test as `!(count < 1)` 55 (580 B), the trigger byte as `!= true` 116 (578 B);
 // none folds, and the reload stays in each.
+// Capture the encoded trigger event at its original read. Map it after iterator setup
+// as short/long/dword/assigned short 60/39/39/60, or after the walk 64/55/55/64.
+// NOT kept: the 39-point forms grow to 581 bytes, test EDI instead of DI and still
+// reload the first squad index. Retail maps the event before setting up the iterator.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

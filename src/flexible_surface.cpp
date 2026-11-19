@@ -892,6 +892,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // accumulator weighted after first cross difference 130, Projection accumulator weighted after all cross
 // differences 154. NOT kept: The 880-byte forms keep the 0x1c frame and score 151 or higher. Later weighting
 // changes matched users 0x1ff360 and 0x2551f0. The opening shared helper and wind body are restored.
+// Early random-state binding with the unit-vector sampler for initial direction/axis/both
+// 126/126/154; with sine before axis 154/126/154. Early binding with table indexing,
+// axis between sine and cosine or before both 152/152. NOT kept: the sampler's four-point
+// gain is below the bar, and all forms retain the 0x1c frame and later seed load.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
