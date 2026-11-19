@@ -920,6 +920,11 @@ struct s_1f8a70_actor
 // half held in a bool ahead of the ternary 302 (1644 B: the whole bool is materialised, `xor al, al` / `mov al, 1` /
 // `movzx`); the bool preset false, set from the radius/node half when the route is zero and true for routes 1-2, 182 (same
 // code); the ternary's arms swapped (`route != 0 ? range : radius/node`) 182; `long route = route_mode;` 182 (same code).
+// M3 lane 3 r267 (fast with 0x1f86a0, 0x1f8780 and 0x1f8750; base 182, aligned 49): the route test as `route != 0 ?
+// (route > 0 && route <= 2) : (radius != 0 || node != NONE)` 182 (aligned 61: the zero arm moves behind the range test,
+// the dispatch still follows case 7); the mode cases in source order 6, 7, 2, 3, 4, 5 382 (1616 B) and 2, 3, 4, 5, 7, 6
+// 334 (1608 B), so the layout follows source order; `return route_found;` after the two arms with `result` kept for the
+// first exit 439 (1672 B); case 6's test spelled `!route_mode` 182 (same code).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

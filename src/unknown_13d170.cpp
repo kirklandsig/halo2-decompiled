@@ -823,6 +823,22 @@ struct s_physical_block_iterator
 // where retail loads it into EAX); on it the clock read once into a `dword now` used by both ages 209, the comparison
 // written `candidate->pages * best_age < best.pages * age` 209, the products as `age * best.pages > best_age *
 // candidate->pages` 209; both ages as unclamped `dword` locals with MAX() inside the products 373 (first difference +0x11).
+// M3 lane 3 r267 (fast with 0x13d320, MATCH throughout; base 201, aligned 118): case 0's flag written false and set by an
+// `if` 201 (same code, still jump-threaded); `bool better = !have_best;` with `if (better)` 222 (1228 B); the arms in the
+// order default, 1, 0 204, in the order 1, 0, default 201; case 0 as `better = candidate->time < best.time; if (equal
+// times) better = candidate->pages < best.pages;` 235 (1178 B) but aligned 93: case 0 is then not threaded and the three
+// arms sit in retail's place, so the layout follows from case 0's threading. Match-only chain (a one-caller helper, not
+// kept): case 0 through a file-local inline helper in 0x13d320's result style 237 (1178 B, aligned 90; case 0's `xor al,
+// al ... mov al, 1` and the arm layout are retail's), as one `return` expression 204, forceinline 204; plus the second
+// age as `MAX(physical->time - best.time, 0)` 115 (the default arm then byte for byte); plus the ring successor written
+// at both uses 113; plus the insertion with the successor in a local and the before block re-read through the pool 101
+// (1213 B); with the earlier 93 recipe's two-stage insertion 93. On the 115 form: the overlap sum as `pages +
+// best.offset` 115, the second overlap test reversed 115 (same code each). On 93: an inline overlap helper (block and
+// range, or four values) 93/93, the walk through plain locals 107, through the
+// file's 0x13d8b1 iterator 93 / 107 with plain locals, `dword result` 93, `best` declared first in the function or before
+// `candidates` 93, 1-8 dead locals 93; permuter on the 93 form (900 s, 94 tries) best 93. Left on 93: one EBX/EDI swap
+// over the whole tail (the walk's high-water mark and bit, the overlap test's data and sum registers, and the
+// insertion's result EDI / NONE EBX in retail, here the other way round with NONE also taking the `result != NONE` test).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
