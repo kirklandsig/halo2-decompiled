@@ -3017,6 +3017,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // stride (224 but the record's stride is wrong), as a named offset local (325) and with the level's limit as a named
 // local (253); the limit still comes down with a decrement where retail takes it with a lea, so the level's table
 // entry and the second 0x235a0 copy still differ.
+// NOT kept (coordinator screen, MiniMax H 11-19): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3047,24 +3048,13 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, long order, lo
         long total = function_023540(count, buckets, &g_4b89b0[g_5093e8], stride);
         long bytes = total * stride * sizeof(real);
         if (!bytes) goto done;
-        long remainder = bytes % 4;
-        if (remainder)
-        {
-            bytes -= remainder;
-            bytes += 4;
-        }
         long next = g_487b18.size + bytes;
         if (next <= 0x27000)
         {
             long handle = g_487b18.size & 0x0fffffff;
             g_487b18.size = next;
-            if (handle == -1)
-            {
-                result = false;
-                goto done;
-            }
             g_4b89b0[g_5093e8].data_handle = handle;
-            real *output = handle < 0 ? 0 : (real *)(g_487b18.data + (handle & 0x0fffffff));
+            real *output = (real *)(g_487b18.data + handle);
             for (long bucket = 0; bucket < count; ++bucket)
             {
                 byte const *pair = (byte const *)vertices + 4 + bucket * 4;
