@@ -534,6 +534,10 @@
 // both add-scaled products 536 (same code); the two wave values as the members of one point2f 634 (2672 B, retail's
 // 0x60 frame, stored and reloaded into XMM as retail but the body grows); the mixed wave halved as `/ 2` 536; the two
 // wave values declared at function scope 536; the plain sine's sum written `x * 5.6f + (double)y` 536 (all same code).
+// Secondary shape selected before projection, after projection, after the side basis or after the special path:
+// short discriminator 703/707/703/690; primary shape test 700/698/688/607.
+// NOT kept: the earlier placements reach frame 0x58 and the late placements keep 0x54.
+// The primary shape slot, rounded wave storage and x87 factor lifetimes still differ.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

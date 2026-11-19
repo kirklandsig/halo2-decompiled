@@ -418,6 +418,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // the kept rows with sine products first (i, k, j) and each cross term written at its uses in retail's order 336 (1785 B);
 // that with the complement inline and field order 333 (1786 B). In-place rows give retail's row schedule (aligned 418
 // against 622), but no builder shape screened keeps the squares in registers. Body unchanged.
+// Separate symmetric matrix, with final aggregate, in-place correction, field transfers or row setters:
+// direct sine products 429/374/358/348; sine-axis vector 379/377/353/353.
+// NOT kept: all change the 0x90 frame and raise the score. The axis-square spills remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2575,6 +2578,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // M3 lane 5 r205 (fast, control 492): one-field locals dropped for reads at each use: the entry flags pointer 492, the
 // displacement 492 (same code each), the colour curve pointer 531; the loop index declared at function scope beside the
 // outputs (retail homes it between alpha and tag) 492; the near angle read at each use 492. The frame stays 0x90.
+// Clamp results through pointer/reference with a joined store 492/492;
+// complete bound-arm stores 512/512; input-first stores 537/537; in-place clamps 535/535.
+// NOT kept: each retains frame 0x90 and the direction/draw-point overlap.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

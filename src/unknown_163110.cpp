@@ -1111,6 +1111,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // with the delta left unscaled 119 (first +0xb6); that with plane3f planes and `total` declared first 121; both planes
 // built through the plane-through-point helper of src/unknown_17d9a0.cpp 310 (and 0x17d9a0 itself stops matching in
 // the fast image, 256). The point memcpy after the segment clear re-measured 193 (a listed form).
+// Separate source and oriented planes: near/far/both aggregate stores 491/361/508,
+// orient in place then copy 530, near/far/both field stores 394/135/395,
+// immutable source and oriented aggregates 571. NOT kept: the far field stores keep
+// the late coefficient load, and the other forms move the frame away from retail.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

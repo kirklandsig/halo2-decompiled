@@ -4962,6 +4962,10 @@ struct s_128ca0
 // unclamped bits held through the pin 81, post-pin channel indices 81, nullable controller 130,
 // update-before-start dispatch 144, pinned decibel round-trip 81. NOT kept: the tied pin
 // forms retain the register exchange and the controller and dispatch forms regress.
+// Clamp selects bits through conditionals 114; separate lower/upper or upper/lower selections 160/162;
+// existing real clamp 169; two bound assignments 150; decibel result with typed bounds 192;
+// in-place bit or decibel clamp 177/163. NOT kept: all raise the count, and all but the
+// conditional selection also raise the matched fade user. Both pin register exchanges remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
