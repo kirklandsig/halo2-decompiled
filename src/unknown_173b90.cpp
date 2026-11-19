@@ -966,9 +966,9 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 			color4f color;
 			s_particle_frame const *frame = (s_particle_frame const *)emitter;
 			dword emitter_mask = emitter_definition->mask;
-			bool first_person = *((byte *)location + 2) != 0;
+			bool location_flag = *((byte *)location + 2) != 0;
 			if (definition->unknown0c)
-				function_248450(&rotation, frame, &origin, &rotation_result, &origin_result, first_person);
+				function_248450(&rotation, frame, &origin, &rotation_result, &origin_result, location_flag);
 			cache->function_173c10(emitter_mask & 0x107f0);
 			if (emitter_definition->flags & 1)
 				color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
