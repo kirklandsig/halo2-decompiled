@@ -242,6 +242,12 @@ void function_254200(void)
 // file's bitmap view 4; the draw-ready flag global typed bool 4; the readiness test as an early return 4; the point copy
 // through memcpy 4 (all the same code); the vertex register spelled 0 as in unknown_01cf50.cpp's quads 8 (not the same
 // register: the opcode word changes).
+// M3 lane 5 r203 (fast with 0x254200 matched; control 4): the colour helper's products written scale first 4; the
+// texture lookup's result through a named texture local before the store 4; the colour helper's scale as a `real const &`
+// 4; the two dimension locals `long const` 4; the chosen bitmap declared ahead of the readiness test and assigned inside
+// it 4 (all the same code). Reading: the swapped pair is loaded twice per record, at the top of the block after the
+// texture-coordinate reservation and again after the vertex reservation, in the same order both times, so the order is
+// set where the three values' registers are first loaded after a call, not at their uses.
 // M3 lane 12 r143 (single-address fast, control 4): 8, 9, 10, 11, 12, 13, 14, 16, 20 and 24 unused initialised locals at the
 // top 4 each (round 115 measured 0-7: the pair does not follow the referenced-local count); the four edges named where
 // first used (left and top before vertex 1, right before vertex 2, bottom before vertex 3) 174 (1133 B: the sums move

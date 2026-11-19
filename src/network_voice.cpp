@@ -1947,6 +1947,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Single membership/index transfer to the final return 60/60; accepted membership/index first 74/60;
 // direct membership/index failure return 172/173. NOT kept: direct returns change the matched caller,
 // while the other forms leave the capacity exit and player-bit allocation unresolved.
+// M3 lane 5 r204 (fast with 0x56380, 0x564c0, 0x53b00 and 0x56000; control 60): retail's call in 0x56380 sets EAX
+// (player) before EDX (cursor), which fits the declared queue, cursor, player order. With the bool flag and
+// `include_mask ? 13 : 11`: the order kept, written, capacity, size 137 (445 B; the player goes on the stack, `ret
+// 0x10`, the cursor in EAX, 0x56380 13); the same with `11 + 2 * include_mask` 153 (434 B); kept, capacity, written,
+// size 137; written, kept, capacity, size 137; capacity, kept, written, size 154 (432 B). Every kept-first order
+// moves the player to the stack.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4181,6 +4187,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // packet-cursor form (re-measured 164): the arms swapped with the test negated 157 (488 B, EBP then `packet + 3`); the
 // cursor advanced in the for header 166; the counter declared before the loop 164; `members` declared before the loop
 // 164; the advances ordered cursor, size, consumed 167. The compile-only harness keeps the cursor in ESI here (no help).
+// M3 lane 5 r204 (fast with 0x564c0, matched each time; control 139): the stride as `11 + 2 * relay` (0x55c40's
+// spelling) 178 (469 B); on the packet-cursor form (`data + 2` beside the count): the member's NONE test split ahead of
+// the kind test 164, the member test as a nonzero `word` 168 (471 B), the stride as `11 + 2 * relay` 165, the tail
+// advances ordered consumed, size, cursor 164. The member still takes EBP in every cursor form.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

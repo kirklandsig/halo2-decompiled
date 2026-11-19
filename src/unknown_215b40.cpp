@@ -338,6 +338,11 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // output destination across both scans 231. NOT kept: using the built-in entry kind for filtering and packing
 // scores 108 at 568 bytes, six below baseline. The entry cache and zero registers still differ. The per-
 // device cache receiver and all output cursors grow the body. Opening executable source restored.
+// M3 lane 5 r204 (fast with 0x2157e0, 0x215880, 0x2163d0 and 0x1249f0, all MATCH; control 114): kept, the unit scan
+// through the header's location iterator and its inline getter in place of the hand-written table copy 114 (same code).
+// On it: the scan as 0x2157e0's `while` over the getter with the capacity test after a match 114; the cached scan's
+// index declared ahead of the cached count 114; the location declared beside the iterator 114 (all same code); an
+// early `return` with `*capacity = 0` when the cache is missing 212 (600 B). Still BLOCKED-BY the build flag above.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {
@@ -352,18 +357,14 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 			if (function_1249f0(unit, &drive_letter))
 			{
 				/* walks the memory unit's list of files */
-				struct
-				{
-					s_saved_game_location_table *table;
-					long index;
-				} iterator;
+				s_saved_game_location_iterator iterator;
 				iterator.table = &saved_game_storage_get_cache()->locations + unit;
 				iterator.index = 0;
 				do
 				{
-					if (iterator.index >= iterator.table->count)
+					s_saved_game_file_location location;
+					if (!saved_game_location_iterator_get(&iterator, &location))
 						break;
-					s_saved_game_file_location location = iterator.table->entries[iterator.index];
 					iterator.index++;
 					if (location.type == type)
 					{

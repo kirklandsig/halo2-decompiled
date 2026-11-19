@@ -2129,6 +2129,11 @@ struct s_actor_looking_structure_view
 // helper taking the vector and the axis by reference 23 (same code); the axis by value 210 (0x297660 fast 4); the helper
 // returning the vector pointer 23 (same code); each cross term scaled by the sine where it is computed 153 (925 B), which
 // lowers 0x296e60 to 199 fast (a lead for that function; not kept, it raises this one).
+// M3 lane 5 r203 (fast with 0x296e60/0x2980d0/0x297660; control 23, 0x296e60 270): the shared helper's dot grouped
+// `(j + i) + k` with the score `(i + k) + j` re-measured 13, but 0x296e60 270 -> 339 (1442 B): not kept; forward built by
+// the aggregate initializer `{ forward.i, forward.j, 0 }` 199 (927 B); the direction array declared at the function top
+// 23; the counter declared ahead of its loop 23; the angle as `0.785398185f * i` 23; forward declared, then assigned 23
+// (the 23s the same code).
 // M3 lane 12 r143 (fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x2967b0; control 23): round 91's lead re-measured
 // on today's 0x296e60 (helper dot `((j + i) + k)`, score `(i + k) + j`) 13 with 0x296e60 270 -> 339; the score alone
 // parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's

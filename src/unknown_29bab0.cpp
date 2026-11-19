@@ -684,6 +684,14 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the
 // steering-side block 730 (3463 B); the input copy and its normalize ahead of the position query 762 (3499 B). Diagnostic,
 // reverted: 1..7 dead initialised locals 665/665/665/665/669/500/493.
+// M3 lane 5 r204 (fast with 0x1f9e70 and 0x110ab0; control 489; all restored): the input normalised through a
+// file-local inline with the sum written j, k, i and the scale sides inverse * i, j * inverse, k * inverse 763 (3501 B:
+// the squares still run k, j, i, so the written order is not what sets them); LEAD: the closing dot written with the
+// copy's fields mentioned j, k, i (`local_9.j * local_7.j + local_9.k * local_7.k + local_9.i * local_7.i`) gives
+// retail's normaliser squares exactly (copy stores and squares i, k, j) but 756 overall (3486 B, homes move from +0x60,
+// the j/k scale sides flip); with local_7's fields first in each product 756; mentioned k, j, i 762; the j, k, i
+// mentions with normalize_inline 758 (3508 B). Retail's squares need local_9's fields ranked j, k, i by a direct
+// mention, not by the sum's spelling.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
