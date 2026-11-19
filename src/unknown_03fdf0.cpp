@@ -597,6 +597,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // (diagnostic: first takes its own slot shared with material as in retail, but the cursor also leaves mode's home: frame
 // 0x4c, plain `ret`); the parameters as (mode, cache_index) at the definition and the call 2; a leading unused parameter
 // (mode then a front-end stack parameter) 2 (both the same code). So the front-end convention does not decide first's slot.
+// M3 lane 12 r147 (fast with 0x404b0; control 2): the loop index declared and stepped in the `for` beside n 4 (its start
+// moves above the guard, first still in mode's home); diagnostic, the weight read ahead of the entry test 81 (first still
+// in mode's home, so the order of the induction variables' first uses does not decide it); the entry loop in a
+// forceinline helper taking (cache_index, first, selection) 2; the part context declared at the function top 2; the
+// selection in 0x40e90's spelling (`long`, NONE, then the ternary) 2 (all the 2s the same code).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

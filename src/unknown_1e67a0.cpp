@@ -1226,6 +1226,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // (up, old) * (new, up) 112 (1393 B), on the single-store exit 112, with the preset flag too 109 (1391 B); (new, up) *
 // (old, up) with the staged old cross, single-store exit and preset flag 109, on this body 112; the staged old cross alone
 // 112 (1389 B); staged old cross, (up, old) * (new, up) and the preset flag 109. Body unchanged.
+// Named side projections before moved-away 170, with one direction store 171, or after
+// moved-away with one direction store 133. Shared axis rotate with projections after each cross 216,
+// before moved-away 170, after moved-away 150, with one direction store 111, or with named projections
+// and one direction store 133. NOT kept: the 111 form gains three and grows to 1393 bytes.
+// The axis-memory products and side/exit schedules still differ.
 // Round 187 (m3 lane 8, fast with 0x1ecf50, MATCH each time; control 114): a dead-local count scan extended past round
 // 178's 0-7 (diagnostic): 8-30 dead locals give 112 (8), 116, 139, 139, 150, 163, 139 (1393 B), 145 (1397 B), 112 (16), 194,
 // 150, 139, 150, 166, 140, 145, 114 (24), 139 (26), 150 (28), 140 (30): period 8, never below 112, and the first difference
@@ -1247,6 +1252,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 147 112 113 150 139 150 163 139 145. No symbol count gives retail's copy-the-vector, axis-from-memory products, so they are
 // not a numbering state here. The axis passed as the `up` parameter instead of the state's copy: rotate_direction 277
 // (1396 B), the header helper 292 (1398 B). Body unchanged.
+// M3 lane 16 r142 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114): the velocity rows through the
+// existing vector3f_scale (normalize3d.h) 166 at retail's 1382 B (the velocity block stays retail's; the rotation's
+// products change order: the inlined parameters move the product canonicalisation), with the `scale` local kept 166;
+// diagnostic, K = 1..16 dead initialised locals on that form: 150 145 122 149 139 150 139 163 166 144 112 116 139 150 150
+// 163 (first difference +0x1f3 for every K, never retail's copy-first products); that form with include/axis_rotation.h's
+// helper for the rotation 163; that form with round 112's preset-false moved-away flag 162 (1375 B).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
@@ -1325,8 +1336,9 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
 }
 
 struct s_shape_state;
+struct s_shape_carrier_contact;
 struct s_direction_rotation_input;
-void function_1f1460(s_shape_state const *ground, vector3f *up, vector3f *forward, byte const *state);
+void function_1f1460(s_shape_state const *ground, vector3f *up, vector3f *forward, s_shape_carrier_contact const *state);
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks);
 void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input *input);
 
@@ -1338,7 +1350,7 @@ void function_1e5af0(void *physics, vector3f const *forward, vector3f const *up,
 {
  switch (*(byte *)physics)
  {
- case 1: function_1f1460((s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward, (byte *)output); break;
+ case 1: function_1f1460((s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward, (s_shape_carrier_contact *)output); break;
  case 2: function_1faa20((vector3f *)up, (byte *)output, (vector3f *)forward, (long *)((byte *)physics + 0x10)); break;
  case 3: function_1ecf50((vector3f *)forward, (vector3f *)up, (s_direction_rotation_input *)output); break;
  case 4: break;

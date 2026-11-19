@@ -474,7 +474,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 218 (was 218): r123 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// score 218 (was 218): r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // M3 lane 11 r123 (fast with 0x270d90/0x270400/0x30bf0): actor_index declared first alone 218 (same code); with corners
 // a, b, c, d 281 (1284 B, aligned 70 -> 59, register-masked 23 -> 15: entry exact). The 4 extra bytes are the margin:
@@ -1091,6 +1091,17 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Early root and actor allocation still differ. Second-edge start/end/both addresses after the
 // first normalization 311/335/229, or inside the positive-length arm 334/336/361.
 // Both addresses with the second vector scoped there 229/361. All forms regress.
+// M3 lane 10 r125 (fast with 0x270d90 at 286, 0x270400/0x30bf0 MATCH; control 218): lane 11 r113's actor-first recipe rebuilt
+// (actor_index first in the definition, path.cpp's declaration and call; corners a, b, c, d; case 5's position first) 283
+// (1284 B, +0x27, aligned 42). On it: the radius read through a `source` pointer to the state's source record for the test
+// and the margin 283 (same code); one `vertices` base for the four corners 291; the two distances computed second first
+// 283 (aligned 46); both projections in one fraction expression 283 (same code); the upper bound named once as `upper`
+// 283 (aligned 41). Diagnostic: two dead initialised locals 279 (1280 B, but the margin still loads the radius into a fresh
+// XMM6; the length only matches because the origin dot's a.z load moves). Body unchanged.
+// Case-five indices before the vertex table, word position/direction first 358/358,
+// long 262/262. Word index at each address, position/direction first 266/219.
+// Direction vertex reference 265, both vertex references 271.
+// NOT kept: all scores rise and the early root copy and actor load remain unresolved.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
