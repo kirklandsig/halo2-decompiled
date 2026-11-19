@@ -3355,6 +3355,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours. Tried, all 54 (same code): outputs by reference, `/ 2.0f`, u and v as two helpers; with each of a set's 8
 // statements written separately: retail's first-set order 219, single swaps in one set 54-225 (none under 54), 6 random
 // orders 96-247. Nothing kept: the body is as on r843.
+// MiniMax I (11-19): no new form, no lower score (54): the corner block holds the same 111 instructions in the same registers as retail's and only the schedule differs (first at +0x527, where we store the x87 coordinate 3 before `subss xmm1, [esp+0x90]` and retail does the sub first); our first set's stores still come out 0,3,4,6,7,1,2,5 against retail's 0,3,4,7,1,6,2,5, and the helper's spellings, both sets' 24 call orders and the eight separate statements were tried earlier without a lower score.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
