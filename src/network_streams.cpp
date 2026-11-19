@@ -1183,6 +1183,14 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Setter with separate unsent/pending rejection 89/89 or paired mask comparison 106.
 // Setter on saved word and assignment 35. NOT kept: the byte OR changes the entry and loop
 // allocation, and the saved word ties with the same full-word store.
+// M3 lane 4 r220 (fast with 0x96510/0x94df0; control 35): the saved-word update ahead of the three output stores 39 (the
+// word store stays: VC does not fuse a register value back into a memory OR even with no store in between); the in-place
+// update ahead of the stores 90, with the tests on the member as well 90; the in-place update with `type = 4;` first in the
+// found path 104 (209 bytes); the test inverted with `continue` and the found code after it 35 (same code), with the
+// in-place update 89. Diagnostics, reverted: on the in-place form with the message zeroed at its declaration (59), a probe
+// store of the flags word after the update keeps it live in AX and the found path then takes retail's EDX/ESI temporaries
+// exactly (46, the probe's store aside): retail's flags word is live through its found path while the update is the memory
+// OR. The source that keeps it live without code is still unknown.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
