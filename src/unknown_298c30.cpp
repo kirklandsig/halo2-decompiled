@@ -586,6 +586,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // scaled by cos and then the perpendicular added, through a point or two scalars: all x87; x and y copied to locals:
 // `y * cos` SSE with the cosine spilled as retail, the rest x87 from stack copies; x and y by value to an inline
 // rotation, two parameter orders: all SSE; a by-value scale helper: same code as now; x and y scaled in place: x87.
+// MiniMax E (11-19): score 305 (was 305): this round's function was 0x299460, so nothing was changed here; the body stands
+// as the earlier rounds left it (the count is still a byte local where retail uses the global itself, and the facing pointer
+// still leaves EBX in one arm only), and 0x298c30 and 0x29a190 still match.
 // M3 lane 15 r104 (fast with 0x29a190 and 0x298c30, both matched throughout, and 0x29cbb0 378; control 305, all restored):
 // the candidate count `short` (retail's 16-bit BP) 469 (1686 B, `ret 0x18`: arg_3 then arrives in a register and lives in
 // EBX, the outer counter takes EDI; 0x29a190 684); that with arg_3 read once through its address into a local used at
@@ -1239,6 +1242,17 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // multiplies by the negated radius, with no shared tail; ours copies the radius and shares the tail), the sweep arms
 // (retail keeps the two arms whole, 32 instructions more), the pivot home (+0x94, ours +0xa0). Also: the offset helper's
 // products written component first 569 (same code); the reversed direction formed ahead of the pivot offset 784.
+// MiniMax E (11-19): no new form, no lower score (569): the frame is mapped instruction by instruction.  Retail's pivot (the
+// first 0x210770 output) is at F+0x84 and its first sweep point at F+0x90; here the two are the other way round (pivot
+// F+0x90, first sweep point F+0x84) while the second sweep point (F+0x9c), the third (F+0x48), the two trace results (F+0xa8
+// and F+0xcc) and the result byte (F+0x03) agree; this build puts the forward trace result at F+0xcc and the reverse at
+// F+0xa8, retail the other way round.  Tried and restored: the trace results' names swapped 569 (same code); the rotation
+// helper's products with their operands swapped 569 (same code: MSVC canonicalises the commutative product); the y row
+// before the x row 569 (same code); the pivot typed as a vector3f 569 (same code); the rotation's four products through
+// four one-use temporaries 716 (worse).  Lead: retail reloads the radius from its argument home at each of its nine uses
+// and reloads the obstacle loop's arguments as well, and that is where its 39 extra bytes are; ours keeps the radius in
+// xmm5 from the entry because this build's link-time summary of 0x2108a0 and 0x210770 says they preserve the XMM
+// registers, so no source form here reproduces it.
 // MiniMax A (11-18): no new form, no lower score (569): the radius is still promoted into xmm5 at the entry and kept for the
 // whole body, where retail loads it from its home in each block, and that follows from this build's link-time summary of
 // 0x2108a0 and 0x210770, whose definitions are in another lane's file; the frames agree at 0x114 and the two trace results
