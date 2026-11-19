@@ -652,6 +652,14 @@ s_1a8a10 g_4453c0[] =
 // takes XMM3); that with the copy's j assigned before its i 31; with unary minus for the three negations 31; with the
 // negations read back from the stored [0] and [2] 17 (identical code to main's: the left-first schedule returns); that
 // with the stores in [2], [0], [3], [1] order 31.
+// M3 lane 10 r122 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH each time): the facing copied by the planar
+// aggregate cast (`vector2f local_17 = *(vector2f const *)&local_1->unknown290;`, the sibling functions' idiom) 118 (548
+// bytes: the copy goes through two integer registers and the stack, though the negated j is then its own load); the facing
+// copy made after the 0x1f5390 call, ahead of the first switch, 54 (its loads stay ahead of the jump table); the copy read
+// through a `vector3f const *` to the facing 17, the negated j read through that pointer 17 (both same code); no copy, all
+// four facing reads in place 91. Re-measured: the copy's j after the left sum with retail's term orders and the identifier,
+// index, score order 15 (the j reload appears, but the copy's j load then waits for the left sum and the left product
+// multiplies a copy of i: retail multiplies i in place and copies it for the forward product).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
