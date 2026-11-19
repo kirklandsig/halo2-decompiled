@@ -1730,17 +1730,18 @@ PRIVATE __forceinline real const &component_time_step()
 	return g_510c54->rate;
 }
 
+// score 26 (was 26): the scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
 // MiniMax A (11-18): no new form, no lower score (43): the tail still keeps the scaled value in XMM1 where retail
 // holds it in XMM0 (retail divides XMM0 by XMM1 and multiplies the step in place with `mulss xmm0, [eax + 4]` and
 // `add eax, 4`, ours loads the step into XMM0 and multiplies it by the same memory operand), retail's second product
 // multiplies by the base field while ours keeps the field at +4, and the zero register is XMM3 in retail and XMM2
 // here; the step's own value still sits in a register instead of the memory multiply retail uses.
-// score 26 (was 43): the scaled acceleration still lands in XMM1 where retail has XMM0, and the time step is
+// Earlier (score 26, was 43): the scaled acceleration still lands in XMM1 where retail has XMM0, and the time step is
 // loaded into a register where retail multiplies it from memory.
 // MiniMax B (11-18): score 43 -> 26: the stop test compares the target with the step before the stop distance
 // (the step-predicate-first form earlier rounds measured at 26); the acceleration register and the memory time
 // step still differ.
-// score 43 (was 26): retail's stop-first test order, see b13C below; earlier 43; Acceleration XMM0/memory
+// Earlier (score 43, was 26): retail's stop-first test order, see b13C below; earlier 43; Acceleration XMM0/memory
 // timestep prefix and stop-test schedule still differ;
 // negative-target guard 50; stopping branch first 106; step predicate first 26 (kept, plain 26);
 // negative guard with step predicate 32; independent/eager stop decisions 129/124;
@@ -1803,6 +1804,25 @@ PRIVATE __forceinline real const &component_time_step()
 // candidate 124; both reverse bounds before the branch 142; ratio stored in
 // each arm 143; named power, named power base, nested mass threshold 43 each.
 // The acceleration result and timestep memory operand still differ.
+// M3 lane 13 r111 (one-file LTCG harness, exact here; counts positional/aligned, this body 17/14 = the check's 26, the
+// stop-first order 36/36): about 90 forms. Same code as one of those two: a pointer local to the step (declared late, or
+// at the top and assigned late); the step multiplied in place; target or step stored through a reference or pointer
+// bound to the local; products through a helper taking the step by pointer or reference; the step as element 0 of a real
+// view; a globals pointer local; direct reads at both products in either operand order; the address by integer or byte
+// arithmetic; type-punned views of the field (byte array, long field, the short field + 1); an aggregate-returning
+// accessor holding the pointer; accessor methods on a base or member object at +4 (14 forms). A value local declared at
+// the top and assigned at the product 94/39 (461 B: scale in XMM0 and retail's divide, the step value kept in XMM1).
+// Diagnostics: a store through the out pointer between the reads 476 B (still `[eax+4]` twice); a store through the step
+// pointer 483 B; `*++p` on a real view folds too. A null-checked pointer (`g ? &g->rate : NULL`) for both products 479 B
+// keeps `add eax, 4` and `[eax]` reads but also the test; after a direct first read the test is dropped and all folds.
+// Closest, match-only and not kept: `__assume(g != NULL)`, then that null-checked pointer, the first product reading the
+// field directly, the second through the pointer: 466 B, aligned 8, the whole head retail's (scale in XMM0, `divss xmm0,
+// xmm1`, `mulss xmm0, [eax+4]`, zero in XMM3); missing `add eax, 4` and the second product from `[eax]`. The checked
+// pointer defined inside the stop-distance block gives the second product from memory (469 B, aligned 12) and loses the
+// head; both together fold back to 17/14; 16 variants of it 8 at best.
+// Reading: a product takes the step from memory when the base pointer is a block-local temporary; retail has that at
+// both products plus the materialised `base + 4`. 0x1d2280 is the only game function with that load-then-add shape on a
+// float read.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

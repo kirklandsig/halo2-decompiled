@@ -587,6 +587,18 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // The excess frame word pair and the actor/unit and priority/query homes remain.
 // Actor publication after unit lookup, confidence tests, self-unit test, and settings, each with opening then ordinary unit index: 902/877, 922/932, 902/935, 924/924 reduced.
 // NOT kept: 902 and 877 shorten the body to 3702 or 3708 against retail 3731, and the matched caller scores 1 in those previews.
+// Settings after actor evaluation by index or selected actor 920/919, per-action optional
+// settings tests 920, complete priority or range defaults within the gate 931/916,
+// nullable settings after actor evaluation 927, immutable limits with ordinary/scoped query 960/960.
+// NOT kept: the four-point preview improvement leaves the eight-byte frame difference.
+// N421 previews: slot-object accessor with the existing field view 926; slot-object type field observed
+// through a signed byte reference 944; actor team observed once for the type-one comparison and call 910;
+// actor team observed once for the vehicle comparison and call 932; signed actor team observed once in each
+// comparison and call 913; word team pair observed once in each comparison and call 913; typed facing flags
+// and vectors on both actor paths 926; typed object fields with stable team pairs 913.
+// NOT kept: the reduced 910 and 913 forms retain the larger frame and shorten the body away from retail.
+// The type reference closes four frame bytes and regresses in score and length. Reduced control 926.
+// Opening body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -2010,6 +2022,19 @@ long function_1fa7f0(void);
 // pointer range 520, next as forward cursor 502, next sentinel across both
 // phases 461. NOT kept: 419 reaches retail length with the larger frame and
 // the selected edge still in a slot.
+// Named sector-trace output for the first, second or both traces 400 each;
+// second trace scoped to the unblocked arm 400. Typed source/target/both
+// trace endpoints 441/441/469. Shared candidate step for direction and sector 400.
+// The aligned frame still reserves 0x114, and the count and edge retain their old homes.
+// Orientation flipped in place between tangents 440; edge initialized at the
+// reverse scan 476; both 418; intersection into trace target 458; target
+// constructed per attempt 445; positioned-point fallback, preceding or both
+// arms 400/400; fixed limit by equality 400.
+// NOT kept: the combined form restores 0x10c and the opening radius home
+// but scores 418 at 1737/1746 bytes.
+// Native point pointer/reference 400/400; native source record with point pointer/reference 400/400.
+// Shared source/emitted/both coordinate indices 400/488/488; stored type at emission 403;
+// shared terminal input ordinal 469. The 0x10c frame and selected edge register still differ.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
