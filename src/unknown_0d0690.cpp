@@ -1884,6 +1884,12 @@ real function_30bf0(vector3f *vector);
 // reflected color through RGB pin 449, reflected destination pinned in place 499, reflected pin with const bounds 449, in-place reflection pin and rotation 522.
 // primary color from secondary 489, type test before magnitude 405, tag table snapshot 395, branch-owned lookup 505.
 // NOT kept: the reflected clamps recover the frame at higher scores. Primary color reuse, early type classification and the table snapshot lose 0x3db00.
+// M3 lane 1 r125 (fast with 0xd37f0, 0x3db00, 0x3dfe0; control 378; ours already ends `ret 4` as retail): the final
+// pins' bounds as function-scope `static color3f const` tables 446 (1870 B and frame 0x40 as retail: the bound aggregates
+// leave the frame, but the pins still store before the next compare and the blocks move); the same with the two colours
+// unpacked lightmap first 446; with the mobile flag as a test-set (match-only) 430 (1870 B, first difference +0x57); the
+// bounds as `color3f const` locals 378 (same code); the mobile test written into the `k` ternary (no `mobile` local) 487
+// (0x3db00 drops to 12, 0x3dfe0 to 45).
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2570,6 +2576,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // at +0x20 and the length and result after it. Retail's three scalings differ in form: the base normal load-multiply-store
 // three times, the dynamic normal in registers, the output load, copy, load (0xd26c8); see the 0xd4080 note for what
 // selects those forms.
+// M3 lane 1 r125 (fast with 0xd4080 and 0x3db00, unchanged/MATCH; control 542; ours calls 0x30bf0 as retail does, the
+// call-boundary difference left is the second arm's 0x13da30 lookup, expanded here): the three per-component scale loops
+// written as explicit i/j/k statements 657 (3057 B), the two normalize loops only 606 (3108 B), the final length loop only
+// 542 (same code); surface_pin_color as plain `inline` 955 (2794 B), surface_sample_unpack as plain `inline` 1039 (2689 B).
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

@@ -794,6 +794,13 @@ static inline bool teams_enabled_19e1c0()
 // names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
 // with an ordinary result. NOT kept: the minimum stays out of line and needs
 // a larger frame. The 415 form restores the opening extent, with the preload still missing.
+// M3 lane 1 r125 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
+// `remaining` copied into a named `long capacity` used for every clamp, format and the fallback, on the plain result 691,
+// on the volatile result 390 (both the same code: the copy propagates); on the plain result the token parameter declared
+// `word const *const` 691, `long const remaining` 691, `__forceinline` on teams_enabled_19e1c0 691 (all the same code).
+// Reading (plain result): ours ranks result ESI, token EDI, token_length EBX, event EBP and leaves `remaining` in its home;
+// retail ranks result ESI, token_length EDI, event EBX, `remaining` EBP and reloads the token for each compare, whose
+// rotating reload temps are what keep its name/team tails from cross-jumping.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
