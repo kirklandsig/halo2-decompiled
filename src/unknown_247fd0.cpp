@@ -886,6 +886,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // first like the x row 334; local_3 declared at the function top and assigned in place 334. Retail also copies the
 // system's age (+4 into field_10) through xmm0 where ours uses an integer register, and stores the three scale products
 // after the age step through a pointer to field_1c (ESI) with y and z at [ebp+0x20]/[ebp+0x24].
+// Native effect bitfield direct or through a record reference gives 344 in all four forms.
+// Native flags masked with either velocity selection gives 334/334. Word flags with a
+// bit-position test gives 417/417. NOT kept: the masks reproduce the folded address,
+// and the field and word forms regress. Effect address and gate/settings homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -1555,10 +1555,10 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 551 (was 551; earlier 580): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
-// score 551 (was 580): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
-// Count, clearance and prism-index homes differ. The square precedes the nonempty branch.
-// The axis reload and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
+// score 551 (was 551): frame 0xb964, plane.j cursor and ESI query zero agree. The initial sums,
+// projected point and first point use retail slots. Count, clearance and prism-index homes differ.
+// The square precedes the nonempty branch. The axis reload and early remainder also differ.
+// Earlier scores 580, 606, 610, 637, 640 and 552.
 // MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
 // Retail saves ESI and walks the prisms from &prism->plane.j (the plane's i at [esi-4], the point count at [esi+0x14])
 // where ours saves EBX and walks from &prism->point_count (the plane's i at [esi-0x18]); the first accumulator has
@@ -2084,6 +2084,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // named projection products 565, early nearest reset and common projection scale 564,
 // prism ordinal before the query 553. NOT kept: grouping moves the sum slots, and cached
 // plane components eliminate retail coefficient reloads and move the prism cursor.
+// Signed query count with indexed or cursor traversal gives 570/568 or 574/572
+// for square before/in the loop. End-pointer forms give 647/647 with a bounded
+// extent and 623/623 with positive-count advancement. NOT kept: all regress.
+// The in-loop square reaches retail +0xd4 after the count branch, with a widened
+// initial count test and different ordinal home. Count and clearance homes remain.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

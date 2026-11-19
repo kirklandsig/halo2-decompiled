@@ -150,10 +150,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
-// score 32 (was 32; earlier 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
 // score 32 (was 32): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
 // flags as a byte (`test byte [esp+0x21], 1`) and bit 11 by a dword load and shift, ours merges both into `test ch, 9`.
 // Every spelling that gives retail's test moves the request from EBX to EBP and onto the stack (45 at 476 B, callers lost).
+// Earlier score 89.
 // MiniMax H (11-18), then at 106 (from 150): the priority is read from the request's audible byte, then the location is
 // copied, then the flag word is built, which is retail's order, and the source size's zero default is stored before the
 // marker's own assignment instead of in an else arm; what still differs: retail keeps the sound pointer in a frame
@@ -513,6 +513,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // prior secondary maximum and selected maximum 45/46, variant flag after both stores 43,
 // marker copy using the published size 150. NOT kept: split-test forms move the request
 // onto the stack and lose callers, or change the matching prefix. The merged mask remains.
+// With split tail tests, request location, playback location, both, played location,
+// and request plus played location reference forms all give 50 reduced. State-owned source
+// with direct or shared request location gives 129/129. Request location value copy gives 175.
+// NOT kept: the reference and state-source forms move the request to the stack and
+// change two matched callers. The copy grows the body. The merged flag test remains.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
