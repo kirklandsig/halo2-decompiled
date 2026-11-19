@@ -376,6 +376,14 @@ long g_55e6c0;
 // from the stored field 106 (495 bytes: a real load). On the in-place clamp with the header pointer: the height term first
 // 28; `count >= 0 ? (count > 4 ? 4 : count) : 0` 31; the clamp as three field stores 139 (495). The header word through
 // a cast of the header array to the platform's resource type 38/41 (same code as the leads).
+// M3 lane 8 r193 (fast with 0x1dc40/0x1db10/0x1d6f0/0x1d770/0x1db90/0x1de20, all MATCH each time; base: the round-51 lead
+// with the header pointer for the header word and the register call and the clamp in a `long levels` local stored after
+// the packing, header word ahead of the select, re-measured 29 at 484 bytes with only the top block's height/count swap
+// left; with the select ahead of the header word it is 38). On that base: a trivial forceinline identity on the kind,
+// the width, the height or the data store 29 each (same code: the scratch choice is no temporary-creation rotation);
+// `__assume(height > 0)` ahead of the packing (diagnostic) 29 (same code); the clamp as `levels = count;` then if / else-if
+// on `levels` 166 (497 bytes), on `count` 166 (497 bytes); `levels = count < 0 ? 0 : count;` then `if (levels > 4) levels = 4;`
+// 141 (485 bytes).
 // M3 lane 10 r124 (fast with 0x1dc40/0x1db10/0x1d6f0/0x1d770/0x1db90/0x1de20; all on r122's lead: the signed pitch/packed
 // packing, the clamp in a `long levels` local stored after the packing, `long *header` for the header word and the register
 // call, re-measured 29 at 484 bytes, only the top block's height/count swap left): the packing through a forceinline helper

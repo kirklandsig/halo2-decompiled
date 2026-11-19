@@ -673,6 +673,11 @@ struct s_visibility_object_header
 // (forwarded); the outer test's arms in the other order 203 (601 B, homes still ours); a reference-bound copy of
 // in_front made after the plane call and passed to the packer, assigned through the reference or initialised then
 // bound, 4/4 (forwarded, homes ours).
+// M3 lane 12 r147 (fast with 0x132fd0/0x132b10, both MATCH each time; control 4): `__assume(in_front || behind)` after the
+// plane call 4 (same code; diagnostic, not keepable); 0x132b10's definition moved below this function (declared above)
+// 4 (same code); the centre and radius chosen by two ternaries 36; the object pointer declared ahead of the three flags
+// 8 (only the init stores move); the plane call and the packer in a forceinline helper owning the two outputs 291 (671
+// bytes). Retail's frame from the top: object +0x10, first +0xc, radius +8, second +4, behind +3, contained +2.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

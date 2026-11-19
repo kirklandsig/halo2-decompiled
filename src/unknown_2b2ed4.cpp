@@ -78,6 +78,13 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // still the null-datum test's jump target (retail's `je` goes to the shared epilogue at the function's end, ours to
 // a near block); wrapping the whole body in `if (datum)` compiles to the same code, so the null test stays as it is,
 // and the five string buffers' homes and the child and layout homes still differ.
+// MiniMax G (11-19): no new form, no lower score (316): retail's status block sends every text arm straight to one
+// shared function_253b1a call with no NONE test and takes the message's set_text inside the message block, so the
+// arms' `mov eax, id` and the join match ours; what stays is our join's `cmp eax,-1` test, the `xor ebx, ebx` before
+// it, the >> 10 arm that retail parks out of line at 0x2b3088, and the five string buffers' homes (ours title
+// -0x8cc, display_name -0x6cc, suffix -0x4cc, layout -0x2cc against retail's display_name -0x8cc, title -0x6cc,
+// layout -0x4cc, suffix -0x458); writing the text arms as direct calls measures 425, moving the set_text into the
+// message block 502 and calling function_253b1a in each arm 540, so the one-call body with the text variable stands.
 // score 316 (was 316): Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
 // Round 127 (m3 lane 10, fast): `inline` on 0x230134's definition (to change what callers assume it keeps) expands it
 // into its callers: 1211 here (2789 bytes) and nine matched callers lost, restored at once; the invitation count declared
@@ -324,6 +331,13 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // display_name -0x6cc, suffix -0x4cc, layout -0x2cc, message -0x258) while the frame agrees at 0xfd4; the homes follow
 // neither the order of the loads nor the order of the declarations, so they only move with the declarations, which review
 // rejects. The shift arm stays next to the join where retail parks it after the loop.
+// M3 lane 9 r144 (fast with 0x230134/0x22eeee/0x2b0a14/0x253b1a, control 316): the invitation bit test nested under
+// the identity test 316 (same code); the bit masked in each arm of the friends ternary 520 (2345 bytes) and as
+// per-arm bool casts 522; every text arm calling 0x253b1a itself, with set_text at the end of each message arm, 425
+// (2308 bytes). That form tail-merges as `push id; jmp` (as matched 0x2b3a9d does), where retail loads each id into
+// EAX and jumps to one `push eax` call, so retail keeps a text variable whose message paths bypass that call with no
+// NONE test. Diagnostic (reverted): the message arms calling set_text and jumping past an unconditional 0x253b1a
+// call 393 (2320 bytes).
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

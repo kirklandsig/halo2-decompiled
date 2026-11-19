@@ -592,6 +592,14 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ. M3 lane 3 r268
+// (fast with 0xf0fd0, 0x1fb360 and the eleven matched callers/neighbours, all MATCH): the prop walk through 0x26be00/
+// 0x26be30 with the view index read through a prop_node_get pointer after the callback 285 (948 bytes); the
+// actor-iterator test as `actor != other` against the cached actor 308 (942 bytes); the participant slot read at each of
+// the two stores 282 (974 bytes); the slot loop through a handler pointer (`handler->stop` tested and called) 236 (same
+// code); the prop walk and the cached compare together 299. Without the expanded 0x26ed40 (its file keeps it a call)
+// and the bool parameter (one declaration sits in src/unknown_1e3920.cpp, avoided this round) every form here rises:
+// BLOCKED-BY 0x26ed40.
 // MiniMax G (11-18): no new form, no lower score (236): the head still loads the actor pool into EAX where retail
 // loads it into ECX and keeps the scaled index in EAX where this build keeps it in EBX, and the body is still 22
 // bytes short of retail's 980 because retail expands 0x26ed40 into it; that expansion is settled in
@@ -631,7 +639,7 @@ void swarm_leader_detach(long actor_index);
 // still spills the actor pointer to a stack slot retail holds in EBP; the body is also still 22 bytes short of
 // retail's 980 because retail expands 0x26ed40 into it, and that helper's body lives in src/unknown_26e370.cpp,
 // which this lane may not edit: BLOCKED-BY 0x26ed40.
-// score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ.
+// Earlier 236 (was 236): actor pool register, displacement spill and invitation countdown still differ.
 // Earlier: no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
 // is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
@@ -922,6 +930,24 @@ void swarm_leader_detach(long actor_index);
 // with a false-then-set result 216 (966 B; the byte lands in the dead index slot as retail, the same code as the flag
 // form reverted on 11-15, a match-only form), through a helper returning the direct expression 236 (same code). Still
 // BLOCKED-BY 0x26ed40: retail expands it here and its file's inline setting keeps it a call in this build.
+// M3 lane 13 r115 (plain unless marked fast; each step on the one before; lead saved as build/r115/lead-1e1a00.patch
+// in the m3-lane13 worktree; all restored): memory walk as `for (short i...) if (actor->memory[i].type != NONE)` calling
+// a file-local forceinline copy of joint_decline 301 (1006 B, fast); prop walk through 0x26be00/0x26be30 as matched
+// 0x1e23c0 writes it, the view index re-read through prop_node_get after the 0x1e2150 callback 303; the iterator
+// compared against the cached actor 223 (974 B); written `actor != other` (retail's cmp order) 223; the post-callback
+// prop node as a named pointer for the test and the release 196 (prop walk exact); the definition bit as a bool flag
+// (false, set when the definition exists) 218 (980 B, tail exact); `value` as bool at the definition and all eight
+// declarations, passed to 0x203ed0 unconverted, 4 plain and fast: only the slot loop's `lea` of the slot address
+// sits before the handler-table loads where retail has it after the `test`. Slot-loop spellings on that 4: a slot
+// pointer local 4 / passed as the argument 6; the type named first 4; a handler pointer with a stop local 4; the table
+// expression at the test and the call 4; type and handler and stop locals 4; a handler pointer with `handler->stop`
+// tested and called, also const, also with a stop local tested: MATCH on the fast image but 297 plain (996 B, frame
+// 0x24: actor_index leaves EDI in the head and the byte offset takes EBX); the type named with the table read at the
+// test and the call 297. The fast image flips to 297 too once it holds both 0xf0fd0's closure and the file of
+// 0x1fb360/0x1fb510 (each alone keeps the match; their path into 0xcbf60 changes where LTCG enters the cycle
+// 0x1e1a00 -> 0xcbf60 -> 0xcc810 -> 0x1bbdf0 -> 0x1e1a00; with 0x1fb510 emptied, diagnostic, still 297, so 0x1fb360's
+// path decides it); 0x1e1a00's definition moved to the end of its file 297.
+// Permuter on the 4 (600 s): no better variant. Alone on the original body, `value` as bool 288.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

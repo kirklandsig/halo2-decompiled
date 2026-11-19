@@ -982,6 +982,12 @@ bool function_e4050(long object_index);
 // the field ahead of the unit local 171 (same code), the dword unit with 0xe4050 passed the field 171 (same code);
 // the unsigned continue test on the kept parent-first walk 43 (same code). Any signed/unsigned mismatch between the
 // continue test and the walk keeps the entry test and gives that one 405-byte allocation. Body unchanged.
+// M3 lane 9 r142 (fast; 0xbaf80's file is off limits this round): in the 405-byte family the unit keeps EAX because
+// no call falls in its range and the walk's step object takes ECX; retail's step object takes EAX, which pushes the
+// unit to EBX. New: object_get_unchecked returning through a named result local, on the kept body 44 (same code),
+// on the `dword current` walk 171, on the long NONE-root walk 109; the `dword current` walk in its own `{}` block
+// 171; re-measured the `dword current` walk 171 (405 B). Diagnostic: 1 to 7 dead initialised locals on the kept
+// body 44 each (the EBX/EDI swap of the player datum and the unit is not a symbol-count tie).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1652,6 +1658,11 @@ static inline s_players_globals *players_globals_14f2e0()
 // the test as `4 != g_4e6948->mode` 43; the result and mode tests merged into one `!result && mode != 4` condition 43.
 // Compile-only (same code each): `tag_index = third_person = NONE;` 43-form; `mode != (char)4` 43-form. Retail's
 // 0xb8540 returns nothing (its EAX is clobbered), so no value of its own can hold EAX across the test.
+// M3 lane 16 r143 (fast with 0xa9440, 0x14d3a0 and 0x14f040; control 5): the mode test held in a bool read ahead of the
+// output declarations 5 (same code: the stores are still scheduled ahead of the compare); the test as `== 4` with an
+// empty arm and the body in the else 5 (same code); the mode read into a char local in the result block with the
+// outputs in the mode block 43 (1031 B); the outputs in one declaration in the mode block 43; the outputs declared with
+// their NONE initialisers at the function top beside the unit index 275 (the -1 is set up at entry).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2539,6 +2550,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax A (11-19): no new form, no lower score (701): retail still calls 0x151b80 where this build inlines it, the frame is still 0x4c against retail's 0x74, and the loop's index scratch is still in EBX where retail keeps it in ESI; the body is unchanged. BLOCKED-BY 0x151b80's inlining decision in src/unknown_1502e0.cpp.
 // MiniMax R run 92 (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
 // this build still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees
 // live in files this lane may not edit.
@@ -3126,6 +3138,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax A (11-19): no new form, no lower score (103): the players globals are still kept in one web across both loops in EDI, where retail reloads g_4e8c20 into ESI, ECX and EAX; the body is unchanged. BLOCKED-BY the 0xb8540/0xb7b40 drafts in other files.
 // MiniMax R run 92 (11-17): no new form, no lower score (103): the players-globals pointer still stays in edi where
 // retail keeps it in esi, and the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may
 // not edit.

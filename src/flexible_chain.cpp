@@ -824,6 +824,11 @@ void __stdcall function_1160c0(real dt)
 // Separate physics point with fields, point setter or shared point difference 314/361/311.
 // Updating the physics point before publication, same forms 391/391/406. Early tag index
 // with separate or updated point 314/391. NOT kept: every split widens the frame and leaves the segment spill different.
+// M3 lane 4 r221 (fast with the file's ten matched functions): the axis renamed to sort after the segment and scale
+// (`turn_axis`) 144; the scale renamed `ratio` 144, `along` 144; the segment renamed `used_segment` 144; the axis declared
+// ahead of the vertical 144 (all five the same code: the segment/scale/sine cell stays at +0x20 above the axis, so the
+// cell's place follows neither names nor declaration order). A compile-only build lays this frame out differently from
+// the link-time build, so it cannot screen the homes.
 // M3 lane 10 r126 (fast with the file's ten other functions, all MATCH; control 144, aligned 159): round 115's lead
 // re-measured on this base, the rest offset rotated by a file-local forceinline helper taking the angle (sine and cosine
 // inside; projection, cross_k, cross_j, cross_i written in row i) 113 (1369 B, aligned 138; a one-caller helper, match
@@ -836,6 +841,11 @@ void __stdcall function_1160c0(real dt)
 // the same late tag lookup and early EAX set-up at its 0x211060 call. Also on the lead: the rest offset copied before
 // the vertical 162; after the angle call 204 (1373 B); `!normalize3d(&axis)` 113; the arms of `i == 0` swapped 217
 // (1371 B). The delta through the existing vector3d_from_points3d 259 on main's body and on the lead (1368 B).
+// Round 639 forms: traversal node array base or fixed extent 301/301, shared node velocity 241,
+// double constraint distance 260, spring segment or reach ratio name 144/144,
+// explicit sine or cosine 144/172, completed constrained point 336.
+// NOT kept: the node array forms reach retail length with a 0xa8 frame. The best forms tie
+// and leave the selected segment in EDI/ECX and at +0x20.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

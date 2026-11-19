@@ -215,6 +215,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
 // score 920 (was 920): r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// r118 (lane 14) unchanged; r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
 // MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
 // from both listings.  Retail's function-scope homes are the raised point at F+0x24, the range_min short at F+0x30,
@@ -610,6 +611,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // NOT kept: the reduced 910 and 913 forms retain the larger frame and shorten the body away from retail.
 // The type reference closes four frame bytes and regresses in score and length. Reduced control 926.
 // Opening body restored.
+// Chained limits together or in pairs, chained direction defaults, both combinations and
+// default assignments after declarations 920 each; settings-action mask with paired/original
+// defaults 918/918. NOT kept: two points below the retention threshold and frame 0x2cb4 persists.
 // M3 lane 10 r123 (fast with 0x2c2060 at 400 and 0x2c3030 MATCH; fast control 926, aligned 655): retail forms the actor
 // address once and reads its unit field from that address before storing the pointer to the actor home; ours stores
 // into the volatile home and reads it back. The actor fetched into a plain local that the head reads (unit field and the
@@ -631,6 +635,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // B); straight left uninitialised and set true at the top of the actor arm and in the else arm fast 926; the NONE arm
 // written first (`if (actor_index == NONE) straight = true; else {...}`) fast 916 but plain 926 (3722 B; the store block
 // is then laid out at the head). The fast preview misleads here by up to 13. Body unchanged.
+// M3 lane 14 r118 (fast with 0x29a190, 0x2c0d00 and 0x2c3550, all matched; fast control 920 = plain; difflib-aligned in
+// brackets, control [687]): the type arms as `switch (type)` on the type local 926 [700] (3740 B); `long object_count` 925
+// [636] (3722 B); the combined flags as `moving | (sphere_flags | obstacle_flags)` 920 (same code, first plain-equivalent
+// measurement); the object fetched after the unit/ignore skip test, defaults kept ahead of it, 919 [673]; the defaults and
+// the fetch both after that test 926 [673]. Retail's layout puts the join (distance test, definition bit, classification
+// start up to its first `jmp`) right after the type-0 other-actor branch, with the type-0 `else if` branch and the type
+// 1/7/11 arms after it jumping back; every form here keeps source order.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1488,6 +1499,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
+// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // MiniMax E (11-17): no new form, no lower score (400): the permutation search over the body (38 tries, 300 s, annealed,
 // one job) reached nothing below the baseline of 395 differing instructions on both the full and the reduced image, so the
 // body is unchanged. What still differs is the frame and its slots: ours reserves 0x114 against retail's 0x10c, so every
@@ -1499,6 +1513,10 @@ long function_1fa7f0(void);
 // score 400 (was 400): r123, r125 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
+// M3 lane 11 r123 (fast with 0x2c3030/0x26ccb0, both MATCH): retail never holds the count parameter in a register (every
+// use reads [ebp+0xc]); a no-code address-take of it, diagnostic, 400 (same code). The emitted type from the `type`
+// local instead of the step 403 (1755 B; retail re-reads the step); `found` declared ahead of the edge 400 and the edge
+// as a dword 400 (same code each); the step pointer declared after the loop's NONE defaults 400 (same code).
 // m3 lane 3 r250 (fast with 0x2c3030/0x26ccb0, control 400): the step's fields read through points[index] with no
 // step pointer 473 (1758 B); `bool other_side = !side;` at the top of the attempt loop 435 (retail's 1746 B,
 // register-masked aligned 79 against 80); the center as `side ? corners[0] : corners[1]` 473 (1710 B); index, used
@@ -2085,6 +2103,11 @@ long function_1fa7f0(void);
 // and the step pointer formed at the emit 473; the step pointer declared `const *const` 400 (same code); the attempt
 // counter as long 399 (1751 B); the copied last point as points[end - 1] 545 (1811 B). Retail keeps index in EDI and the
 // step pointer in a slot at the loop top where ours keeps the step pointer in EDI and count in EBX. Body unchanged.
+// Reuse scan success for the left corner with named/direct right 400/400,
+// then combine with Boolean AND 477. Reuse it for right 400, join after both calls 400,
+// or clear the saved left result on right failure 400. Right AND left 477,
+// or clear the saved right result on left failure 401. NOT kept: ties or regressions.
+// The aligned 0x114 frame and edge/count homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

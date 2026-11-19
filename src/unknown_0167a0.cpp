@@ -342,6 +342,13 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the reference form 5 (same code); both bases from the `tables` local, direct store 210 (974 bytes), reference form 279.
 // Diagnostic, not keepable (an invented layout aggregate): the tables and entry fields through a two-field view of the
 // state 176 (first +0x148; `second` still loads right after the entry lea).
+// M3 lane 8 r193 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e): the
+// direct entry store with the word read back from the field re-measured 5 (+0x1a7: only `second` loads into ESI right after
+// the entry lea, before the entry store, where retail loads it after the chain and pass bases; `third` is loaded before the
+// lea in both, so only `second`'s load is held behind the store in retail). On the direct store: the pass base named after
+// the store and ahead of the chain lookup 5, the chain and pass bases both named there 5, both index sums written with the
+// parameter first 5 (all three the direct form's code); on the reference form the chain and pass bases named after the entry
+// store 5 (+0x19e, main's code).
 // M3 lane 10 r124 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
 // the entry reference bound as `((byte **)(state + 0x10))[1]` 5, as `((byte **)state)[5]` 5 (both +0x19e, same code); the
 // tables published through a `byte *&` with the entry reference bound as the next slot of it 290 (978 bytes); round 137's

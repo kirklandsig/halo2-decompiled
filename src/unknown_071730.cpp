@@ -363,6 +363,15 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // between variant key and lookup 429, before both 426, after first elapsed read 397,
 // variant gate with merged missing-input arm 428, variant gate after first elapsed read 457.
 // NOT kept: the variant gate restores the getter call at a different position and raises the score.
+// M3 lane 9 r144 (fast with 0x5b080/0x72140/0x71ff0/0x71e00, control 387, aligned 191): one-object /GL screens give the
+// smallest inline threshold that expands the data getter 0x5b080 at each site: 0x6d380 9, 0x7e210 18, 0x6e720 23, here 50.
+// Retail expands the first three and calls it here, so any link threshold from 23 to 49 reproduces all four; ours expands
+// it here too (the link's threshold comes from the ballast object: /d2inlT40 or 20 on 0x5b080's file, or 40 on this file,
+// changes nothing, diagnostic). BLOCKED-BY the build's inline calibration, as for 0x25d740. Trials: the three opening
+// exits as `return local_3;` 449 (1578 bytes, the result byte folds); the getter through the owner's session pointer 400
+// (1589 bytes, aligned 215); the two missing-input tests as one `||` 412; the second and third exits as an else-if chain
+// around the body 387 (same code); the +0x3c pointer read before the clock 377 (1589 bytes but aligned 214, and retail
+// reads it after the clock: a positional gain only).
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

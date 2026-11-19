@@ -513,6 +513,13 @@ static inline real interpolate_linear(real a, real b, real t)
 // the same way 228 (670 bytes); a redundant `if (time >= next_time)` guard around the loop 1 (same code); the join test
 // through a `bool const &` bound to restart 1 (same code); the flags local as a `word const &` bound to the field 1 (same
 // code). Screen: all five keep the skip, as do the frame declared after the per-pass reset and the guard as `next_time <= time`.
+// M3 lane 8 r193 (compile-only screen of the file for the skip, then fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH):
+// `while (time >= next_time && !restart)` with the tail under `if (!restart)` re-measured 220 (666 bytes); a guarded
+// `do ... while (!restart && time >= next_time)` with that tail 1 (screen: same code); the flag-8 store guarded by `!restart &&`
+// with the break after it 1 (same code); the restart break inside each boundary block instead of at the join 1 (same code: the
+// two tests merge and the in-range path still skips them); the two loop restarts through a file-local `static inline`
+// predicate in the result style (`bool result = false; if (...) result = true; return result;`, inlined) 101 (659 bytes:
+// the result is materialised through DL and the in-range path still skips the test).
 // M3 lane 10 r124 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
 // the high boundary as a separate `if` (not `else if`) 66 (658 bytes: the in-range miss then lands on the restart test, but
 // the low block falls into a second frame-count compare where retail jumps to the join); that with the flags read from the
