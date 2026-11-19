@@ -413,11 +413,12 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
+// Earlier: Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax B (11-18): no new form, no lower score (375): the direct final return (true in the tail, false after the
 // entry test) drops 32 bytes and measures 440, and the actor-first body with that return measures 393 (listed), so the
 // actor's table entry stays in ebx and the settings pointer in esi where retail holds the actor in ebp and the slot in esi.
 // MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
-// score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // Earlier at 375 (was 375).
 // M3 lane 6 r188 (fast with the file's functions, 0x265d30 and the five callees, control 375; masked diff shows no block-order
 // difference, only homes, the planar test pair (retail: an aggregate copy, integer moves) and the result byte): actor first with
@@ -796,6 +797,9 @@ extern point2f *g_468778;
 // retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
 // pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the
 // query in EDX, and this lane may not change the parameter order.
+// Typed actor row after/before settings 375/413; early row base with/without early slot 408/408;
+// early absolute actor slot 375. Settings declared in the admission test, then actor first and
+// typed actor first 409/413/413. NOT kept: ties or regressions, actor/settings/prop homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

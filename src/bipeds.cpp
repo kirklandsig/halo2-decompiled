@@ -5553,8 +5553,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// score 79 (was 79): Frame 0x24 agrees. The first rotation spills its cosine complement too early and the final cross reloads forward j.
 // MiniMax A (11-18): no new form, no lower score (79): the frame is 0x20 against retail's 0x24 and this build pushes ebx before it masks the character index where retail masks it first; the first rotation spill and the final cross reload still differ.
-// score 79 (was 79): The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
+// Earlier: The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
 // before the axis copy; the final cross has the same memory-operand difference for forward y.
 // MiniMax I (11-16): no new form, no lower score (79): the first difference is at +0x107, inside the inlined rotation helper,
 // whose file this lane may not edit; retail keeps the first product alive in xmm1 across the block where
@@ -5566,7 +5567,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax S (11-15): no new form, no lower score (79): the first difference is still inside the shared rotation helper, whose body lives in src/unknown_1eb8a0.cpp and is not this lane's file, and the operand orders the earlier rounds measured still sit at or above the body, so the body stands.
 // MiniMax E (11-16): no new form, no lower score (79): the first rotation and the staged cross product load their operands in another order (retail copies the axis first).
 // MiniMax C (11-17): no new form, no lower score (79, was 79): the frame agrees (0x24) and the first difference is still at +0x107, inside the shared rotation helper (rotate_direction), whose own file this lane may not edit; retail keeps the first product in xmm1 alive across the block where this build spills it to [esp+0x10] and reloads it later, and the body is seven bytes longer than retail's.
-// score 79 (was 79): The first expanded rotation spills its cosine complement early, and the final cross reloads forward j.
+// Earlier: The first expanded rotation spills its cosine complement early, and the final cross reloads forward j.
 // Earlier: first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
 // MiniMax G (11-13): no new form, no lower score (79): the diff re-read this round finds the same first difference, inside the shared rotation helper whose own file this lane may not edit, and the operand orders listed above still measure at or above the body, so the body stands.
@@ -5873,6 +5874,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // NOT kept: every form regresses and no rotation operand is recovered.
 // Round 418: Default forward/up/both through memcpy 79/79/79, through the shared vector setter 87/83/94, both
 // full copies with a nonzero-length return 79/94. The first rotation and final cross stay unchanged.
+// Final cross and normalization in up storage, staged/ordinary 264/297; staged in
+// consumed side 267; new up storage staged/ordinary 264/297. Up workspace with
+// success-arm, shared or early publication 264/264/264. NOT kept: all grow
+// and regress, the original field normalizer and rotation schedule stay.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
