@@ -509,6 +509,11 @@
 // (aligned 419; they are stored with `fst`, not kept on the x87 stack), with the phase a double 582; the two scaled
 // amounts named before the adds 650 (2594 B, round 136's form re-measured); s1 ahead of the first cross 536 (same code);
 // s1's argument as `x * 5.6 + y` with a double constant 536 (same code).
+// M3 lane 16 r140 (fast with 0x4a1e0; control 536): the second cross through cross3f_staged 536 (same code); both crosses
+// staged 537; the second cross right after the first 665 (listed form re-measured); the first cross written into `w` and
+// then overwritten by the second (retail keeps the first cross's i in w's slot) 533 (2622 B; three under the bar, and
+// `w` would hold a value its name does not fit); the wave terms read through a `point3f const *` to the camera point 537.
+// Retail's late x87 pops and stored wave cells still point at the removed third wave term (a dead store).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

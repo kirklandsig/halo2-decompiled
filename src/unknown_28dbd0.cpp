@@ -588,6 +588,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // written-out rotation (sine and cosine first, axis k captured, `t`, cross j, k, i, rows `v * c + axis * t - cross * s`) in
 // place on the heading 233 (1209 B, frame 0x114), without the axis k capture 234 (1209 B), with the dot named and the
 // cosine after it 240 (1193 B). Body unchanged.
+// M3 lane 16 r140 (fast with 0x28dab0/0x1ecf50, both MATCH; control 173): the rotation through the cross-file
+// rotate_direction with the sine and cosine named first, sine first as retail, 241 (1193 B); with `(real)sin(...),
+// (real)cos(...)` as its arguments 236 (1190 B, round 164's form re-measured). The jitter arm (retail stores z onto
+// itself through XMM0 between the second draw and the x/y adds): through the existing real_point3d_set with z passed
+// back 173 (same code: the z store is dropped); `z += 0.0f` 173 (diagnostic: folded away entirely); a point local built
+// from the three values and copied back 257 (1246 B). Body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
