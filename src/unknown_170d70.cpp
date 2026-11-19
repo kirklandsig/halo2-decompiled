@@ -1641,6 +1641,12 @@ struct s_pool_view_172840
 // Selected exclusion mask 217, traversability conditional 207, one state read with independent limit results 249.
 // Chained narrow publication then signed index 134, signed index first 86, with independent limits 243/241.
 // NOT kept: the 86 form shrinks to 860 B and retains the displaced flag homes. Independent limits recover 868 B at 241.
+// Separate queue result store 146; separate pool result store 150; return the failure complement
+// 241. With independent failure stores and signed list index: signed current cluster 145;
+// select the cluster field before its signed read 128; published entry reference 145;
+// separate head capture and increment 145; read-only projection 145. NOT kept: the field
+// selection gains six, grows by one byte and loads through the selected address where retail
+// selects the short value before extending it.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1921,6 +1927,11 @@ struct s_camera_reference_171830
 // long displacement ordinal gains one at retail length. The long and byte sample counts, quotient and
 // remainder, and pair comparison recover the 0xb8 frame while preserving the EBX point ingress and moving
 // away from retail length.
+// Word axis index at selection 270; wrapping displacement cursor 288; integral sample sign 268;
+// separate refinement outcomes 291; named fraction difference 270; winning fraction at center trace
+// return 270; post-tested refinement count 273; clear the narrow-ray mask bit 270.
+// NOT kept: integral sign gains two at retail length. The point still occupies EBX and the
+// 0xbc frame still has the sample spill.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2172,6 +2183,11 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // 388. Addressed view for the cluster lookup only 357. NOT kept: The view reference restores the opening EBX
 // state base and delays the first difference to +0x2c, but shortens the body by 96 bytes and raises the
 // score. The indexed state reference ties. The other receiver scopes regress.
+// Up copy between derivative stores 295; aspect after both scales 295; typed player read 295;
+// user-cluster table read once 295; scoped location publication 295; derivative vector setter 295;
+// view receiver for calibration and derivative transform 313; shared clamp destination 370.
+// The collision point stays in EBX. Keeping the view receiver shortens the body and sharing
+// the clamp destination lengthens it.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

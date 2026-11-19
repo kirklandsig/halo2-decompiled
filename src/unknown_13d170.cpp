@@ -856,6 +856,12 @@ struct s_physical_block_iterator
 // `candidates` 93, 1-8 dead locals 93; permuter on the 93 form (900 s, 94 tries) best 93. Left on 93: one EBX/EDI swap
 // over the whole tail (the walk's high-water mark and bit, the overlap test's data and sum registers, and the
 // insertion's result EDI / NONE EBX in retail, here the other way round with NONE also taking the `result != NONE` test).
+// Best-present set at eligible join 201; carry acceptance into best-present 281;
+// replacement pointer selected in the cases 182, assigned in explicit arms 253 or created
+// at the copy 201; replacement ring index 256; loop increment from saved successor 201;
+// insufficient candidate continues to that increment 201. NOT kept: the 182 form brings the
+// cases inside the loop, but uses pointer masks instead of retail's shared AL test,
+// moves the first difference earlier and shortens to 1193 bytes.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
