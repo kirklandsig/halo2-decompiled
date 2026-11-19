@@ -858,6 +858,12 @@ struct s_item_collision_bsp
 // Spin k finished in each branch, carried to the join, published with angular velocity, or finished with a
 // shared factor. Real factors 233/233/233/197; double factors 238/250/250/238. NOT kept: the shared real
 // factor recovers spin, axis and speed homes and the x87 scale at 197, but raises the score overall.
+// Axis-wide field passes 194, Up scale helper with axis-wide field additions 194, Left and forward multiply-add
+// helpers 194, Shared scale and multiply-add helpers for all axes 194, Indexed normal with a complete component
+// expression 196, Indexed normal with a field accumulator 192, Separate scaled left vector before the first sum
+// 248, Separate scaled forward vector before the final sum 194. NOT kept: The forward-vector form reaches 1365
+// bytes at 194. The indexed field accumulator scores 192 at 1366 bytes. The transformed-plane and spin homes
+// still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1594,6 +1600,12 @@ struct s_item_flags_view_10b850
 // 829/944/949/944; component ray and direct cross with real absolute value 923. NOT kept: the real absolute
 // value recovers the 0x12c frame at 923 and 4029 bytes. The entry flags and later code still differ, and
 // all forms raise the score.
+// Lateral absolute value with ordered conditional 853, Lateral absolute value with unary negation 859, Named
+// lateral distance from conditional 853, Lateral distance adjusted after initialization 854, Lateral distance
+// selected by full branch 853, Float result of the absolute-value call 824, Float absolute-value function 849,
+// Signed lateral interval 856. NOT kept: The ordered absolute value preserves 4096 bytes and cuts the frame to
+// 0x150 at score 853. A float result from the original call ties 824 without changing the frame. The opening body
+// is restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

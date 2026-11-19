@@ -605,6 +605,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // first view's coefficients load into registers and up.i is carried into the second view, so the statement-level
 // scale branch is what keeps our coefficient loads from crossing into the second view; retail crosses it with one
 // test per view. The camera read from a separate plain global outside its storage aggregate (diagnostic) gives the same code.
+// Shared right-axis coefficient after offsets 266, Shared right-axis coefficient after offsets with one scale
+// read 292, Shared right-axis coefficient before offsets 266, Shared right-axis coefficient before offsets with
+// one scale read 292, Horizontal camera row after offsets 258, Horizontal camera row after offsets with one scale
+// read 276, Horizontal camera row before offsets 258, Horizontal camera row before offsets with one scale read
+// 276. NOT kept: Capturing the horizontal coefficient row reaches 1136 bytes in two forms at 258 but raises the
+// score. Sharing the scale shortens both forms and the original offset and transform layout is restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
