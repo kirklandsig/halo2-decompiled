@@ -3,8 +3,11 @@
 
 // @flags /O2 /Gr
 
+// Defined inline though every caller calls it out of line: an inline callee carries no register-preservation
+// summary, so 0x251f8d keeps the message in EDI across the call as retail does (0x251f8d 20 -> MATCH; the
+// lever is andrewnakas's, #1417).
 // @retail 0x217b70
-dword function_217b70(word const *text)
+inline dword function_217b70(word const *text)
 {
 	dword length;
 	for (length = 0; length < 255; length++)
