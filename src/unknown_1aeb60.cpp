@@ -666,6 +666,14 @@ struct s_1af5c6
 // on the ray workspace 16. Set the mask bit from a cleared default 8, with the ray setter 19, with the
 // measured-vector setter 8, with both 19. The ray setters load the ignore index at retail's offset but
 // stage the vector components in another order. The hit product still loads the fraction first.
+// N421 previews: existing two-point collision call 207; typed collision result receiver retained from ray
+// setup 5; distance gate and hit product set a shared classification 97; successful collision owns the
+// distance and classification block 42; successful collision assigns a return value and both paths share
+// the return 81; explicit ordered hit-distance classification with a shared default 5; ray vector allocated
+// independently of the input point copy 45; existing two-point collision call with the shared
+// classification result 189.
+// NOT kept: the existing two-point collision call remains out of line, the dedicated ray grows the frame,
+// and the classification variants tie or regress. Opening body restored.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

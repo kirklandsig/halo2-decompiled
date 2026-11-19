@@ -839,6 +839,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // angle or after the oscillation 154/154; initial-direction and axis setters 152/149;
 // shared draw value or separate const samples 130/130. NOT kept: sample and rotation
 // homes remain different and none lowers the score.
+// Wider receivers of the rounded time, fraction, oscillation, time/fraction,
+// time/oscillation, fraction/oscillation and all three 207/130/130/207/207/130/207.
+// Named initial direction length 154 at 880 bytes. The 0x1c frame and
+// random sample slot still differ.
 // Double argument for sine/cosine/both 159/132/162. Shared promoted argument
 // before/after axis 165/165, with named sine/cosine 165/161. Round at the
 // angle producer and hold the promoted argument 161. NOT kept: the last form
@@ -847,6 +851,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 130/130/152/130. With the shared vector sampler for both table draws, 126 each.
 // NOT kept: the sampler's four-point gain misses the eight-point bar and leaves the 0x1c frame.
 // The named short factor reaches 880 bytes but raises the score.
+// Initial-direction flag read before time, before the first draw, after the draw,
+// or before angle weighting 130/130/130/130. With all draws using one seed
+// pointer 174/174/174/174. NOT kept: shared seed reaches retail length with
+// the frame difference and a higher score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1107,6 +1115,14 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // vertex-input results, separately and together, 322 each. Typed index pointer through the existing
 // virtual method and the direct-material arm 322. The record spill, four search-result homes,
 // material-call convention and two draw-state expansions remain.
+// N421 previews: same tag-table pointer for the material kind and its direct reference 322; carry the tag
+// table into the groups lookup and refresh after the virtual call 381; variant table indexed by its actual
+// word elements 322; packed group and variant words masked at the next lookup 322; material reference
+// carried as a pointer to its tag index 322; explicit pass entry displacement 322; one tag-table
+// observation for the shader and attribute lookups 322; tag table shared by all lookups after the material
+// reference 322.
+// NOT kept: the standalone material-table refresh increases the score at the original frame size. The
+// complete chain and other lookup forms tie the reduced control at 322. Opening body restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

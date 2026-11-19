@@ -499,6 +499,14 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // the working vector's copy without storing to it there; no natural form found. Site 1's planar normalize is still the
 // inlined 0x2b400 (`x = x * inv; y = inv * y`, the zero written into the magnitude's own home, scaling path first), and
 // 0x2b400 is pinned out of line in machine 1's src/unknown_02b400.cpp: BLOCKED-BY 0x2b400.
+// M3 lane 9 r138 (fast; base 286, aligned 234, register-masked 73): 1-7 dead initialised locals (diagnostic) 286
+// each, masked 71/71/73/75/73/73/75 (no frame home moves); the forward correction written into the output vector
+// instead of its own local 286 (aligned 235, homes unmoved), into the working vector 329 (1875 bytes), into the
+// output vector with the sum formed there too 286, into the secondary vector 286. Slot map (pending pushes taken
+// off): retail settings +0x10, magnitude +0x14, object +0x18, second planar vector +0x1c/+0x20, first +0x24/+0x28;
+// ours magnitude +0x10, settings +0x14, a planar pair +0x18/+0x1c, object +0x20, a planar pair +0x24/+0x28: the three
+// scalar homes and the two planar pairs trade places together, and retail's first planar vector is normalised in
+// place in its home (the 0x2b400 shape). Still BLOCKED-BY 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

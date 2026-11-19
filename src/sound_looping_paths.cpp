@@ -673,6 +673,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // its ternary as an if/else 846 (both the same code). Lead: retail treats 0x14b240 as a call that may write memory
 // (0x18d730's note; retail reloads the sounds base after it here); with that callee form this body is 911, so a
 // rework of this function belongs with build/r110/held-0x18dc90.patch.
+// Full-width choice count before target storage, before the cluster gate, at cluster-arm entry,
+// or after the query output clear: 979/979/964/963. With the full query result: 979/979/965/965.
+// NOT kept: ESI becomes the entry zero, but target count and primary remain displaced and the extent drops to 3264 bytes.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
