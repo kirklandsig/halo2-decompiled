@@ -1910,6 +1910,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // write's wait gives retail's code except the probe itself (close copy and checksum EAX both right), so that form lacks
 // exactly one scratch-rotation step between the write's header temp and the close's copy; a probe before the write on the
 // 5 form hoists the handle load to the top (ECX) as retail does but shifts the rest. Body unchanged.
+// M3 lane 14 r117 (fast; control 33; lane 9 r132's 5 form rebuilt at 5: only the write call's flags zero in EAX ahead
+// of the handle load is left). On the 5 form: one s_file_handle local copied at the top of the size-mismatch block for
+// the resize, write and close calls 153 (914 B), with the close test through it too 152; that local declared just ahead
+// of the write block for the write and close calls 127 (915 B), with the close test through it 147; the write as a
+// file-local forceinline helper taking the handle by value (header, write, wait) 114 (917 B, the write-local code: the
+// write exact, the close's `mov ecx, eax` copy lost; as a plain inline it stays out of line, 347 at 850 B); that helper
+// with the close as a pointer-taking forceinline (test, close, wait, invalidate) 114; the close helper alone 5 (same
+// code); the close call through a by-value forceinline (close and wait; test and invalidate in the body) 119 on the 5
+// form, 114 on the write-local and write-helper forms. Body unchanged at 33.
 // @retail 0x213970
 void function_213970(void)
 {

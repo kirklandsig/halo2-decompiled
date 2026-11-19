@@ -1419,6 +1419,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // index parameter 24; the iterator's count as a short 41 (214 B; 0x21b870 8, 0x21bd00 18, restored); the loop index
 // declared at function scope with the iterator in the guard 24; the loop test as `NONE != (index = ...)` 24. Diagnostic
 // (0x126df0's fade-in half written out on a named element, not keepable without a match) re-measured 35 at 211 B.
+// M3 lane 14 r116 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870; `ret 8` and 210 B in both builds, so the
+// remaining 24 are still only the ESI/EDI tie): an early-return guard with the index declared ahead of the iterator, a
+// named element and `continue` on state != 2 24; the next step's ternary written `== first ? NONE : next` 24; the
+// iterator's count as a char 35 (211 B; 0x21b870 18, 0x21bd00 21); the element through a track-view local with the
+// state read through a playback cast 24; this function moved ahead of its two siblings in the file 24.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

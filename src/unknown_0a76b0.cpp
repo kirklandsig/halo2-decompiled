@@ -2552,6 +2552,11 @@ __forceinline char unit_action_round(real value)
 // index*12 > pool > first-person name and ours actions > pool > first-person name > index*12; retail's `or ebx, -1` is one
 // hoisted NONE serving the name's initial value, the hand getter's 16-bit compare and the weapon default store, which no
 // form here produces; `channel` lives in the dead `mode` parameter's home; `current` takes the dying actions register.
+// M3 lane 14 r118 (fast with 0xe9ed0, 0xea090, 0xe9780, 0xe99a0, all matched throughout; aligned 141): first_person_name
+// declared between name and type 234 (same code); no result variable, `return false;` at each failure and `return true;`
+// at the end 234 (same code: the result is folded either way, where retail keeps it in its stack byte and has one exit);
+// that with first_person_name = NONE declared first 312 (1191 B, aligned 115); that with the 0xe9780 fallback as a switch
+// 237 (1192 B, aligned 126); is_biped without the byte cast 234 (same code).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

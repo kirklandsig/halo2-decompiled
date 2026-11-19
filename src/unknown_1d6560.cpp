@@ -540,6 +540,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // index). Retail's call sets up EAX (component) last, after the pushes, as the declared order implies. On the 24 form,
 // case 0 through the existing havok_object_get(component->object_index) 24 [0] (same code), through
 // havok_object_get(object_index) 101 [0]. Body unchanged.
+// M3 lane 14 r117 (fast with the caller 0x1d5bf0, caller in brackets): round 60's 24 form rebuilt 24 at 256 B [0]; its
+// three entry values are a rotation of retail's (object index EDX for ECX, headers ESI for EDX, rigid body ECX in place
+// for ESI). On it, the same code each: the type local const 24 [0], the object-index local const 24 [0], case 11 as one
+// nested ternary 24 [0], the rigid body as a reference 24 [0]; the kind-7 route as `if (type != 1) return 1; return
+// 0xc;` 94 [0]; the object index as a const reference to the component's field 96 [208]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

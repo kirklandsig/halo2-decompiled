@@ -3219,6 +3219,12 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // M3 lane 2 r102 (fast): baseline 23 at 1328 bytes, first difference +0x24f (0x17e670's EDX/ECX register arguments,
 // BLOCKED-BY 0x17e670). The attached sound node index passed straight in the call 23 (same code); the detached record
 // filled compression, position, velocity, location 43. Body unchanged.
+// M3 lane 14 r116 (fast with 0x17a380, 0x189060, 0x1895f0, 0xc0350 and 0x177d10, all matched each time): baseline 23 at
+// 1328 bytes, first difference +0x24f (0x17e670's register arguments, BLOCKED-BY 0x17e670, contributor; 0x189060's file was
+// another lane's this round, so the held order could not be applied). Retail's record order (position, compression,
+// velocity, location) re-measured 40 (the arm is a byte shorter, so ten branch targets move); the record renamed `sound` 23;
+// the node index passed straight in the call 23 (r102's form again); the compressed field bound as a `dword &` with retail's
+// order 40; the velocity field bound as a `vector3f &` with retail's order 40.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
