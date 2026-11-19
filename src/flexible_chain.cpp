@@ -824,6 +824,18 @@ void __stdcall function_1160c0(real dt)
 // Separate physics point with fields, point setter or shared point difference 314/361/311.
 // Updating the physics point before publication, same forms 391/391/406. Early tag index
 // with separate or updated point 314/391. NOT kept: every split widens the frame and leaves the segment spill different.
+// M3 lane 10 r126 (fast with the file's ten other functions, all MATCH; control 144, aligned 159): round 115's lead
+// re-measured on this base, the rest offset rotated by a file-local forceinline helper taking the angle (sine and cosine
+// inside; projection, cross_k, cross_j, cross_i written in row i) 113 (1369 B, aligned 138; a one-caller helper, match
+// only). On that lead: the 0x211060 call through a file-local wrapper doing the tag lookup inside, or taking the looked-up
+// settings, 113 each (same code); the segment selected before the node pointer 286 (aligned 126: the segment and its base
+// then take retail's EDX and the first node's copies ECX, but i and the count swap EAX/ECX and the loop top reorders);
+// `i < count ? i : count - 1` 114; ticks before the stiffness 117; inverse_dt above the loop 123; ticks before the segment
+// 293; the index as a local set by an if 113; `!i` 113; a segments-base local 114; a ternary of two addresses 303; node
+// before inverse_dt 113; `nodes + i` 113; `i != count ? i : count - 1` 113. Retail's 0x17c540 (another owner, 34) shows
+// the same late tag lookup and early EAX set-up at its 0x211060 call. Also on the lead: the rest offset copied before
+// the vertical 162; after the angle call 204 (1373 B); `!normalize3d(&axis)` 113; the arms of `i == 0` swapped 217
+// (1371 B). The delta through the existing vector3d_from_points3d 259 on main's body and on the lead (1368 B).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
