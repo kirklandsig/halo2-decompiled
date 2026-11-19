@@ -308,6 +308,10 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// MiniMax B (11-18, round 2): no new form, no lower score (390): the frame is still 0x208 against retail's 0x204 and
+// the token preload still differs; the permuter over the body (one job, --fast, 300 s) tried 24 forms and its best is
+// 384 differing instructions against the 385 baseline - one instruction, which the eight-point gate leaves out - and
+// with an ordinary result the four name and team copy tails still merge (691 at 1170 bytes), so the body stands.
 // score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
@@ -763,6 +767,13 @@ static inline bool teams_enabled_19e1c0()
 // existing result and returns through cause-team name 390; existing result and early name returns 390;
 // existing result and returns through cause-team score 390.
 // NOT kept: the ordinary result reaches frame 0x204 but moves farther from retail's length and merges the name tails.
+// M3 lane 16 r137 (fast with 0x19e0f0; control 390): the switch-side failure as `result = remaining;` (single exit)
+// 431 (1398 B), with a plain result 732 (1129 B); the engine's token text in its own `written` local with the fallback
+// copy in the else 391 (1450 B), with a plain result 678 (1183 B), plus the single switch-side exit 719 (1142 B).
+// Token comparisons supply the selected arm's zero count for player names,
+// team names, local scores and timers, or all tokens. Existing count storage scores
+// 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
+// ordinary count gives frame 0x204 but still merges the name producers.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

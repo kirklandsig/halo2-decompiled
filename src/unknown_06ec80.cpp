@@ -164,6 +164,12 @@ union s_6ec80
 // initialised NULL at their declarations (the later NULL stores dropped) 269 (975 B); the loop through a typed
 // player-record pointer declared in the guard 225; the two pointer declarations moved down to their NULL stores 225;
 // the mode guard testing the ready flag first 234 (976 B); the mask test ahead of the machine word 225.
+// M3 lane 9 r138 (fast with 0x6ec10/0x5b120, MATCH each; base 5): with the mask zeroed in the guard, a repeated `if
+// (players)` around the loop 225; the loop behind a forced-inline helper with its own null test (`mask = 0; if
+// (players) { loop }`) called in the guard 225, with the guard testing only the machines pointer 226; the helper
+// returning 0 early on a null pointer 225 / 226. So the scoped form's shift does not come from the two zeros sharing
+// a block. Retail has this 0xe4-stride loop only here (it is not an expanded out-of-line function), and it unrolls
+// the sibling 16-trip `for` loops (0x696f0) four times, so this loop was not a counted `for`.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

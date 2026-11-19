@@ -942,153 +942,16 @@ void function_220fd0(
 	g_47005c.dirty = true;
 }
 
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
-// score 21 (was 21): the truncated float is kept in ecx where retail keeps it in edx, and
-// the flag byte follows it. All four places are one scratch rotation that starts at the
-// decibels push (ours ecx, retail eax). Tried: the room clamp as if/else if 90 (it
-// branches); attenuation initialised at its declaration 21; the first barrier after the
-// three float stores 27; lDirectHF after the barrier and first zero 143; the buffer in a
-// local for both calls 42.
-// Round 12 (fast): the scratch registers are VC's EAX -> ECX -> EDX round-robin for temporaries
-// (diagnostic: one extra integer temporary before the call moves decibels to EDX, 131), so retail
-// has one temporary fewer (or two more) than ours between the memset's zero and the decibels load.
-// The first barrier removed 27 (the lDirectHF store sinks, decibels still ECX); `= { 0 }` in
-// place of the memset 175 (the first zero store goes, 672 bytes); the 0x12aff0 call inside the
-// room expression 65 (667 bytes); the voice fields through globals->voices[voice_index] 191; room
-// declared at the top 21 (same code).
-// local for both calls 42. The existing decibel-volume helper 65 (667 bytes); direct global reads 21;
-// direct indexed voice accesses 191 (686); an independent RoomHF PIN 112 (691); a real loss local 57;
-// chained filter zeros 23; the filter at first use 21; a room-base local 99. Body restored.
-// Round 116: the scratch registers follow one round-robin pointer over EAX/ECX/EDX for temporaries without a
-// preferred register, and the memset's zero is the one allocation ahead of the decibels load; retail's
-// pointer is one step behind ours from there on (diagnostic: the memset removed gives every retail register,
-// 173 at 638 bytes). The nine fields zeroed one by one 82 (the zero goes to EDI); the room as a sum then `-=`
-// 99; `lRoom = lRoomHF = PIN(...)` 23; both barriers removed 28; memset of sizeof(DSI3DL2BUFFER) 21.
-// Compile-only (same registers as the full build): `= { }`, memset first, the voice pointer after the memset,
-// a forceinline memset wrapper and the zero-memory macro all keep the zero's allocation.
-// Round 32 (lane 18, fast): the shared volume helper's clamp as `volume = PIN(volume, -6400, 0)` 184 (699 bytes;
-// 0x220fd0 216); the rolloff and obstruction LF zeros chained 23; the room difference stored into lRoom and
-// pinned in place 21 (same code); the 0x12aff0 call ahead of the three float stores 49 (672 bytes); the second
-// barrier removed 22.
-// Round 61: `__assume` on the voice after its pointer, the memset, either of the first two volume stores or before the
-// 0x12aff0 call 21 each, on the globals 21, on the decibels 21, on the buffer 21; the memset's value in a named local 21;
-// a voice-array local 21; the voice pointer as a sum 21; the voice pointer assigned after the memset 25.
-// Compile-only (decibels stay in ecx, the truncated value in edx): a decibels local, with a pointer `__assume` before the
-// call's block; locals for either or both of the first two volumes; the barrier ahead of the second store; `__assume` after
-// each of the first two stores; the attenuation through a local.
-// Round 105: the memset result as a multi-use environment pointer 182 (667); clearing from lDirect 21;
-// both voice HF conversions before attenuation 127 (679), obstruction only / occlusion only 96/96 (672);
-// nine explicit aggregate zeros 96 (662); const attenuation / const room 21/21. Original body restored.
-// Round 75 (lane 1, fast): diagnostic: two dead loads anywhere between the memset and the 0x12aff0 call with both
-// barriers removed differ from retail only by those two loads, so retail has no barriers and two more scratch steps (or
-// a decibels load that takes no step); one dead load gives decibels EDX but every later register right. Forms that
-// supply no step: the decibels forwarding helper 21 (without the first barrier 27, the second 22, both 28); forced-inline
-// direct-volume or room helpers with parameters 21/27/22/28 each; a defaults helper 21; decibels declared first,
-// definition and caller, 21/27/22/28. Without barriers: named gains 171 (681 bytes), gain fields named 172 (682);
-// named, const or struct-held bounds, an array of bounds, decibels through a local or a struct, a four-parameter
-// forwarder, decibels by const reference, a pointer local for the first stores, const references or an array pointer for
-// the two volumes, the macro at the two volumes, dead zero or floor stores to the room, HF or direct fields, memset
-// forwarders and a zero helper, a volume-store helper for two or four stores: 28 each. `= { 0 }` plus a barrier 192
-// (667 bytes), `= { }` or memset plus a barrier 35 (without the first barrier 41); the gain helper by const reference 183.
-// Round 94 (lane 16, fast): without both barriers (control 28): the globals read at each use 28; the voice pointer assigned
-// after the memset 29; one volume local for the first two volumes and the pinned room 28. The volume helper with early
-// returns 184 (699 bytes; 0x220fd0 204); the voice as a reference 21.
-// Round 79 (fast; compile-only reproduces our registers): with no memset, or a memset of one dword (an immediate store,
-// no zero register), every scratch register is retail's; a load-and-store temporary added anywhere, unused locals, and
-// the zero register's placement change nothing, so the memset's zero is the one free register choice ahead of the
-// decibels load. Without barriers: the room clamp as an if/else-if stored to both fields 96 (672 bytes); a named loss
-// 131 (669); named obstruction/occlusion gains 91 (677); the voice from the global, `globals` after it 28; one `volume`
-// local for both direct values 28; `parameters = DSI3DL2BUFFER();` 195 (684); memset ahead of globals/voice 29.
-// Compile-only: deleting any other block keeps decibels ECX; a zero in a callee-saved register (an explicit nine-value
-// initializer, a nine-dword loop) gives retail's later registers; memset wrappers, RtlZeroMemory/RtlFillMemory keep ours.
-// Real build: the explicit nine-value initializer 211 (638 bytes: LTCG drops every zero store).
-// Round 175 (fast): the volume helper with `volume = -6400` first and the conversion under `gain != 0.0f` 137 (689
-// bytes, 0x220fd0 builds 199 in the reduced image), the same without both barriers 134; a named float product in the
-// helper (`real decibels = log10(gain) * 2000.0f; volume = (long)decibels;`) 21 (same code), without both barriers 28;
-// `real const decibels` as the parameter 21 (same code); a 600 s permuter run (66 tries) none below 21.
-// Round 78 (m3 lane 14, fast; compile-only /O2 /arch:SSE /Gr reproduces every register here, two probe loads at the
-// top, at the memset or after either volume give all of retail's, after the 0x12aff0 call only the later ones; with
-// a 4-byte memset (immediate stores, no zero register) all are retail's, and removing or constant-folding either
-// volume changes nothing, so the zero is the only rotation step ahead of the decibels load): the two buffer calls
-// as the C++ methods 21 (same code); the volume clamp as an inline helper taking the truncated long, without barriers
-// 175 (677 bytes); the voice through an inline getter taking globals and the index 21; decibels as an s_decibels
-// parameter and field (plain; 0x220e00 and 0x220fd0 still match) 21; re-measure between round 75's one- and
-// four-parameter forwarders: the 0x12aff0 call through an inline (decibels, flag) forwarder 21;
-// the filter declared ahead of the buffer parameters, without barriers 28 (same as that control). Compile-only, same
-// registers: forwarders with one, two (with the index) or four parameters, const globals or voice, the buffer
-// parameters declared first, a dword index, the voice from the global or ahead of `globals`, a zero local for the
-// memset, the memset after the first volume.
-// Round 157 (m3 lane 8, fast): the existing gain-to-volume helper `__forceinline` 21 (same code; 0x220fd0 194, 571 bytes).
-// Round 78 (m3 lane 15, fast; a compile-only build of this file reproduces every scratch register): without both
-// barriers (control 28, re-measured): `__assume(voice->buffer != NULL)` after the voice pointer 28; `__assume(voice_index
-// >= 0 && voice_index < globals->voice_count)` there 28; a count local with `__assume(voice_index < count)` 28; an empty
-// `if (voice->buffer != NULL && voice->submix != NULL)` there 28; the first two gains bound to const references ahead of
-// their conversions 28 (all the control's code). Reading (the no-barrier listing): from the truncation on retail is a plain
-// next-fit EAX/ECX/EDX rotation (truncation ECX, mask EDX, buffer set-up EAX/ECX, coefficient EDX, EAX/ECX again) and so is
-// ours one step ahead, which then skips the busy EAX at the mask; the one step is the memset's zero. Compile-only, no
-// form with retail's registers and no added code: 28 dead or code-free statements after the voice pointer or the memset
-// (unused loads, empty tests, inline getters, eight assume shapes); a call ahead of the decibels load (the rotation is not
-// reset by calls); forwarding, reference, out-parameter and forced-inline wrappers of the first two conversions; named
-// volume locals; the helper returning `int`, `dword` or `LONG`, with an `int` local, or converting through `__int64`,
-// `dword`, `double` or log10f. Forms that change the code: the helper returning from both arms 205 lines for 199, a
-// pinned-volume or outer-ternary helper 205/208, early returns or a PIN statement 210 (decibels EAX, the rest ours), the
-// helper returning `short` (a `movsx` per use, 204 lines) gives all three of retail's registers: a widening per conversion
-// is the kind of step retail has two more of.
-// Round 163 (m3 lane 8, fast; 0x220fd0 builds differently in the reduced image, so helper changes need the plain
-// check): a dead `= 0` initialiser on the helper's volume 21 (same code); the helper's clamp as two separate ifs 32; the
-// three aggregates declared ahead of the globals and voice pointers 21 (same code); the 0x12aff0 call made before the
-// memset 104 (672 bytes; decibels then takes EAX, as the rotation predicts); the first barrier moved to right after the
-// memset 41.
-// Also round 163: the filter declared ahead of the I3DL2 parameters (barriers kept) 21; the helper's product as
-// `2000.0f * log10(gain)` 21 (plain; 0x220fd0 and 0x220e00 stay matched).
-// Round 94 (m3 lane 13, fast with 0x220e00, which stays matched): the three float stores right after the memset, ahead
-// of both volumes, 93 (672 bytes); between the two volumes 67 (672 bytes); right after the memset with both barriers
-// removed 91 (672 bytes); the two direct volumes pinned again at the call site, `PIN(volume(gain), -6400, 0)`, 255 (758
-// bytes); the I3DL2 settings filled by a static inline helper taking (globals, voice, decibels, parameters), no
-// barriers, 724 (kept out of line, 133 bytes).
-// Round 98 (m3 lane 14, fast with 0x220e00, which stays matched): the first barrier between the two direct volumes 30,
-// that without the second barrier 31; the second barrier after the room pair, ahead of the two HF levels 27; the
-// attenuation call right after the memset, ahead of both volumes 105 (671 bytes); the room pair chained HF first
-// (`lRoomHF = lRoom = PIN(...)`) 21 (same code).
-// Round 130 (m3 lane 12, fast): a platform type name for the parameters (real build; compile-only before) 21; the helper's zero
-// test as `!gain` 21 (same code; 0x220fd0 builds 194 in the reduced image as before); the voice as a const pointer 21,
-// globals and voice both const 21. Diagnostic: with both barriers removed, the stretch between them (three float
-// stores to the HF levels) as a forceinline helper taking the parameters, globals, voice and decibels 28, the same as
-// no barriers (the lDirectHF store still sinks to the call and decibels still takes ECX), so an inlined body's edge
-// is no fence here; re-measured, no barriers 28.
-// Round 111 (m3 lane 1, fast with 0x220e00, which stays matched; barriers kept): `attenuation` declared first 21; the
-// memset and every I3DL2 field store through one multi-use buffer pointer 21; a platform type name in place of the memset (real
-// build) 21 (all the same code); the 0x12aff0 call between the two direct volumes 71 (672 bytes); between the rolloff
-// and obstruction zero stores 120. Reading: g_47005c from +4 has this aggregate's nine-field layout and 0x220fd0 fills
-// the same five fields there from the same three gains, so the shared stretch is one idiom in both.
-// Round 102 (m3 lane 13, fast with 0x220e00, which stays matched): the two direct volumes through a forced-inline setter
-// taking the field's address and the gain (barriers kept) 21 (same code); both barriers removed with the memset, every
-// parameter store and the call through one multi-use pointer to the parameters 28 (the no-barrier control); the memset
-// ahead of the globals and voice pointers, barriers kept, 25; the voice pointer by byte arithmetic from the voice array
-// 21 (same code); the room HF level from the clamp expression in place of the room level read back 112 (691 bytes).
-// Round 96 (m3 lane 2, fast with 0x220e00, which stays matched): the room level through a bound `long &room` to its field
-// (assigned, pinned, copied to the HF field) 21; the buffer bound once by const reference for both buffer calls 21;
-// decibels bound to a `real const &` for the attenuation call 21; the voice through a reference to its array element 21;
-// the attenuation bound by `real const &` to the call's result 21 (all the same code). Compile-only: the call's -64 and 0
-// built from their bits through the decibels type adds two register pushes (decibels EDX, every later register retail's);
-// a probe load before the memset or before the call gives every later register retail's and decibels EDX, one after the
-// call only the later ones, so the rotation follows code order and retail's memset zero takes no rotation step.
-// M3 lane 10 r117 (fast; the no-barrier control re-measured 28): the first two volumes through a forceinline setter
-// taking the field's address, no barriers, 28; the first two volumes into locals ahead of the memset and stored after it,
-// no barriers, 185 (680 bytes); decibels bound to `real const &` for the attenuation call, no barriers, 28; the three gains
-// read through a const pointer to the driver's volumes block (0x220fd0's parameter type) 21, without barriers 28.
-// Between the memset and the decibels load every other value is pinned to EAX (the ftol result, lahf), so the zero is the
-// only rotating allocation there.
-// M3 lane 6 r192 (compile-only; it reproduces decibels ECX, truncation EDX, setg CL, each with and without both barriers):
-// the voice through an inline getter taking only the index, `*&decibels` for the attenuation call, the parameters declared
-// ahead of the globals and voice pointers, the first two gains through a `real const *` to the volume block, the filter and
-// the parameters in one local aggregate, the pinned room stored to both fields from the local, the loss in its own local
-// with `room -= loss`: all keep ours (21).
+/* where a level lies between -64 decibels (0) and 0 decibels (1) */
+PRIVATE inline real sound_decibels_to_fraction(s_decibels decibels)
+{
+	return function_12aff0(-64.0f, 0.0f, decibels.value, true);
+}
+
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,
-	real decibels)
+	s_decibels decibels)
 {
 	s_sound_driver_globals *globals = SOUND_DRIVER_GLOBALS;
 	s_sound_driver_voice *voice = &globals->voices[voice_index];
@@ -1100,17 +963,15 @@ void sound_driver_voice_environment_set(
 
 	parameters.lDirect = sound_gain_to_volume(globals->volume_a);
 	parameters.lDirectHF = sound_gain_to_volume(globals->volume_b);
-	_ReadWriteBarrier();
 	parameters.flRoomRolloffFactor = 0.0f;
 	parameters.Obstruction.flLFRatio = 0.0f;
 	parameters.Occlusion.flLFRatio = 0.25f;
-	attenuation = function_12aff0(-64.0f, 0.0f, decibels, true);
+	attenuation = sound_decibels_to_fraction(decibels);
 	long room = sound_gain_to_volume(globals->volume_c) - (long)(6400.0f - attenuation * 6400.0f);
 	parameters.lRoom = PIN(room, -10000, 0);
 	parameters.lRoomHF = parameters.lRoom;
 	parameters.Obstruction.lHFLevel = sound_gain_to_volume(1.0f - voice->unknown30);
 	parameters.Occlusion.lHFLevel = sound_gain_to_volume(1.0f - voice->unknown2c);
-	_ReadWriteBarrier();
 	IDirectSoundBuffer_SetI3DL2Source(voice->buffer, &parameters, DS3D_DEFERRED);
 	filter.dwMode = DSFILTER_MODE_DLS2;
 	filter.dwQCoefficient = 0;
@@ -1120,7 +981,6 @@ void sound_driver_voice_environment_set(
 	filter.adwCoefficients[3] = 0;
 	IDirectSoundBuffer_SetFilter(voice->buffer, &filter);
 }
-#pragma function(_ReadWriteBarrier)
 
 /* what the game asks of a voice each update */
 struct s_sound_driver_voice_parameters
@@ -1130,7 +990,7 @@ struct s_sound_driver_voice_parameters
 	point3f position;
 	real obstruction;
 	real occlusion;
-	real decibels;
+	s_decibels decibels;
 	real occlusion_rate;
 	real obstruction_rate;
 };

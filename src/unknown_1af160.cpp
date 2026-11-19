@@ -185,6 +185,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // back (calls sit between): the saved reference copy 295 (990 bytes), the first test's +0x3c flag 297 (994 bytes), its
 // unknown227 306 (1002 bytes), the first two together 306; the node looked up again after the first 0x25d690 call, its first
 // lookup inline in that call's argument, 311 (1003 bytes). Body unchanged.
+// M3 lane 7 r180 (`--fast 0x1af160 0x1e1f20`, control 12): 0x2605d0's and 0x260670's two integer outputs typed as pointers
+// (`void *`, `long *`) at both definitions, every declaration and all twelve call lines, the casts dropped, 42 (the pairs stay
+// swapped and the low slots 0x12-0x1c move, so retail's frame is the escaped-integer one; the other eleven callers stay
+// MATCH; restored); the actor pointer const 12, the actor, node and 0x25d690 result const 12 (same code); the 0x262b40
+// result's +0x14 field named for its two tests 14; the three 0x261280 outputs declared ahead of the scratch fetch 12.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
