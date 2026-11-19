@@ -1352,6 +1352,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax I (11-19): no new form, no lower score (87): the fade block still keeps 1.0f/fade_in_time in xmm2 and joins (ambience_fade - elapsed) with the (elapsed - hold) * inverse * fade_out term in other registers than retail, and the body stays 684 bytes against retail's 678.
 // score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
 // Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
@@ -2842,6 +2843,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
 // MiniMax H (11-19): no new form, no lower score (17): the sound set index is still sign-extended (`movsx ebp, ax`) where retail copies the dword, and 0x219070 is still called with two arguments where retail passes one; both are that callee's declaration in another file.
+// MiniMax I (11-19): no new form, no lower score (17): retail copies the whole eax of 0x218f50 and calls 0x219070 with the definition in EDI and one stack argument, while this build keeps the short result and both arguments on the stack; both callees are declared in other files (src/unknown_218ac0.cpp and src/unknown_219070.cpp), which this lane may not edit. BLOCKED-BY 0x218f50 and 0x219070.
 // score 17 (was 17): MiniMax I (11-16, round 2): no new form, no lower score: the first difference is still
 // 0x219070's call shape, whose declaration lives in another file, and the delayed start still stores the flag byte
 // before the start time; MSVC does not hoist stores, so both follow from that callee's declaration. Body unchanged.
@@ -3265,6 +3267,7 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax I (11-19): no new form, no lower score (96): the saved byte result still takes four extra frame bytes and the entry load order and the failure join still differ; the body stays 437 bytes against retail's 430.
 // score 96 (was 96): The saved byte result takes four extra frame bytes. The entry load order and failure join still differ.
 // The result byte takes four extra frame bytes. The entry loads and failure tail still differ.
 // MiniMax B (11-18): no new form, no lower score (96): retail keeps the outcome in AL (set at the entry, cleared on the
@@ -4690,6 +4693,7 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// MiniMax I (11-19): no new form, no lower score (81): both gain pins still trade scratch registers, the controller compares still use an immediate and the second flag3 test still shares a word load with the flag6 store; the one-use low-byte view that reaches 50 was reverted, so the body is unchanged.
 // score 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
 // The second pending test through a one-use low-byte view scores 50. That alias was reverted.
@@ -5187,6 +5191,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 }
 
 // MiniMax H (11-19): no new form, no lower score (535): the frame stays 0x134 against retail's 0xe8 because the fallback reverb is copied to the stack here while retail reads the existing const, and 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line.
+// MiniMax I (11-19): no new form, no lower score (535): our frame is still 0x134 against retail's 0xe8 and our null test of the global still comes before the register saves where retail's comes after, so the rest of the rows follow from that frame; 0x16f3a0, 0x1420f0 and 0x11c120 still have to stay out of line and live in other files. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
 // score 535 (was 535): MiniMax I (11-16, round 2): no new form, no lower score: our frame is 0x134 against retail's
 // 0xe8, so 0x4c bytes of locals are ours alone, and our null test of the global comes before the register saves where
 // retail's comes after; the rest of the rows follow from that frame. Body unchanged.
