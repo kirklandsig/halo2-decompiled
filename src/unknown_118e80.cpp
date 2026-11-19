@@ -187,7 +187,7 @@ real function_30bf0(vector3f *vector);
 void function_118e80(long object_index, vector3f *forward);
 bool function_1faf80(long object_index, void const *settings_pointer, vector3f const *control,
 	real threshold, vector3f *facing, real *turn);
-void function_11f0d0(vector3f *position, vector3f *forward, vector3f const *target, real rate, real max_angle, real scale);
+void function_11f0d0(vector3f *forward, vector3f const *target, real rate, vector3f *position, real max_angle, real scale);
 void function_11d180(vector3f const *in, vector3f const *up, vector3f *forward, vector3f *left, vector3f *out);
 real function_11ce20(vector3f const *a, vector3f const *b);
 void object_dispatch_moved(long object_index, long a, long b, long c);
@@ -454,7 +454,7 @@ void function_1197b0(long object_index)
 	{
 		function_118e80(object_index, &forward);
 		turn_velocity = object->turn_velocity;
-		function_11f0d0(&turn_velocity, &forward, &object->requested_forward, g_510c54->rate, max_angle, acceleration);
+		function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
 	}
 	vector3f up;
 	world_up_1197b0(object_index, &up);
@@ -464,7 +464,7 @@ void function_1197b0(long object_index)
 	function_11d180(&forward, &up, &forward2, &left, &up);
 	if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
 	{
-		function_11f0d0(&temporary_velocity, &up, &target_up, g_510c54->rate, max_angle, acceleration * 2.0f);
+		function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
 		function_11d180(&forward, &up, &forward2, &left, &up);
 	}
 	else

@@ -2947,7 +2947,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // two pointers spilled, and retail's switch is a comparison tree whose root branches jle to the less-or-equal
 // side where this build's branches jg and tests the two activity names before the switch; the single
 // 27-case switch with retail's pivots measures 412.
-// score 389 (was 398): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
+// score 389 (was 389): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
 // tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
 // all 27 selectors, every field offset (0x180/0x184/0x18c/0x175/0x16c/0x16e/0x17e/0x248, barrels 0x1a4+0x34*i,
 // magazines 0x224+0x10*i, definition 0x150/0x164/0x2c0/0x2c4/0x2c8/0x2cc/0x2d0), the progress tests (retail
@@ -3074,6 +3074,9 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // Round 605. The frame remains eight bytes versus retail's four. Timed barrel read before stale test 409, or
 // fresh-shot case exit 409. Cached heat threshold 406. Named overheat difference 389. Named signed tens
 // quotient 389. Raw and classified progress defaults 401 each. Shared flag-property cases 414.
+// m3 lane 2 r105 (fast): one switch, the 0x1d0007ba case testing the flag and falling into 0x0c000569's case 412
+// (root 0x10000573 as retail, but ours branches jg to the high side); both names on one case with the original test
+// 412; `default:` first 412, first with the activity cases last 412, last with the activity cases above it 412.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3482,6 +3485,9 @@ struct s_ammo_conversion_entry
 // Retained kind expression 207.
 // Initial transfer flags 196.
 // Both definition indices 190.
+// m3 lane 2 r105 (fast): the other weapon's definition index in a named local at function scope 199, also passed
+// to 0xa88a0 218, declared in the `available > 0` block 190 (same code), at loop scope 210; the source pointer
+// declared inside the `available > 0` block 210 (715 bytes); the magazine read through the weapon at each use 207.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4570,7 +4576,7 @@ struct s_weapon_projectile_creation
 	byte unknown4c[0xc4 - 0x4c];
 };
 
-// score 1121 (was 1143): the projectile code is kept as a dword and narrowed to a short where it is stored (retail
+// score 1121 (was 1121): the projectile code is kept as a dword and narrowed to a short where it is stored (retail
 // writes the code as a dword at 0x104450 and reads a word back from the slot at 0x105233), which gives the function
 // retail's length (5212 bytes). What still differs is the frame (0x1ea4 against retail's 0x1e98, twelve bytes bigger)
 // and the parameter offsets that follow from it, the game mode read (a byte load plus a sign extension where retail
@@ -4621,6 +4627,10 @@ struct s_weapon_projectile_creation
 // Damage mode gate 1121.
 // Shot player slot 1121.
 // Unit flag field 1121 (kept after plain check).
+// m3 lane 2 r105 (fast): `owner_index` renamed to sort first or last, `special_marker` renamed to sort first 1121
+// each (the same homes: these are spill slots); `motion` declared just before the 0xc8290 call 1135 (5197 bytes), at
+// the top of the unit block 1121; `repeated_direction` at loop scope 1121; `center` and `clipped` declared apart 1121.
+// The frame stays 0x1ea4 in all of them.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

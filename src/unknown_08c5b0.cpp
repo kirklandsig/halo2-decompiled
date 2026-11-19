@@ -242,6 +242,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // ordinary non-inline function 32 (inlined at link time, folded); the selector taking `short const &` 32; the selector
 // `__forceinline` 32; an inline accessor writing the kind through an out pointer 32 (that indirection folds once inlined,
 // unlike a reference-bound local).
+// Round 103 (m3 lane 2, fast with 0x8c5b0/0x8c660, both matched each time; base 4), all with the existing kind read: the
+// controller looked up ahead of the selector 15; the controller and its old setting read ahead of the selector 24; the
+// change test as `old_setting != setting` 5; a top-level const request parameter 4 (same code); the selector with early
+// returns (`if (kind != 1) return 1;`, then the availability test) 4 (same code).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

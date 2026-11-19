@@ -1746,6 +1746,15 @@ long function_2197f0(real gain);
 // Hold then transition 121, plain then composite 87, hold return 182, common interpolation 204,
 // shared release duration 92, shared attack duration 95, previous index snapshot 160,
 // named release window 87. The reciprocal, separate gain read and release-to-attack join still differ.
+// M3 lane 2 r104 (fast with 0x1251e0/0x221810, both matched; aligned exact/stack-masked/register-masked 54/56/20 at
+// 87): retail keeps arm 1's fade-out test load in XMM1 for the product (`mulss xmm0, xmm1`), which pushes the
+// reciprocal to XMM2 and elapsed to XMM3; ours reloads it from memory. A fade-out local for the test, the sum and the
+// product with the product written `(elapsed - hold) * inverse * fade_out` 92 (74/76/15: retail's product order, the
+// ambience difference after the product, but fade_out in XMM4 and the sum's destination the product); the same with
+// the time sum product-first 92 (same code); on main the product as `(elapsed - hold) * inverse * fade_out_time` 87
+// (52/54/17, the fade-out still from memory); elapsed declared const 87 (same code); the fade-out local with arm 1
+// written interpolation first (retail's `other` there is the gain copied into XMM1) 161 (688 B, the copy goes to a
+// new stack slot). No change kept.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4583,7 +4592,9 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
+// score 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
+// and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
+// Earlier at 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store. The countdown now uses byte operations.
 // Earlier at 122: the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
 // and sets the bit in memory, both pin sums trade EAX/EDX with the field_c store one slot late, and the synchronisation byte is
@@ -4855,6 +4866,20 @@ struct s_128ca0
 // Countdown variants using the packed byte: long 122, char 189, byte 147, sentinel-first long 122,
 // char default 189, bitfield read with a packed write 129, masked byte update 147, per-arm store 187.
 // Default before the effect gate: char 189, packed byte 81, existing bitfields with byte count 81.
+// M3 lane 2 r104 (fast with 0x1293f0 and the callees, all matched; plain confirmed; aligned exact/stack-masked/
+// register-masked 68/68/23 at 81). Lead, NOT kept (a width cast is kept only with a match; the body is main's):
+// 81 -> 64 (58/58/21): flag6 set through the flags' low byte, `*(byte
+// *)&local_1->flags |= 0x40`, the form the matched caller 0x1293f0 uses for the fading bit of the same field (retail
+// 0x12908f is `or byte ptr [esi + 4], 0x40`): 65, the second flag3 test then loads a byte as retail's and no longer
+// shares the word; and the stream bit through the existing 0x12a420 in place of its body written out here 64 (that
+// call alone on main 83: two points up, so not kept either). Tried:
+// the count as `long count = NONE` before the effect gate 122 (retail's `or edx, -1` shared by both NONE compares, but
+// the count load is widened: `xor edx, edx; mov dl, cl; and edx, 0x7f`), on the kept form 122; `char count = NONE` on
+// the kept form 203 (1054 B: the upstream registers rotate); `byte count = (byte)NONE` 64 (same code); both on main's
+// flag6 store: long 122, long with the byte store 121; on the kept form, flag6 as `local_1->flags |= 0x40` 83 (1060 B,
+// the word load is shared again), `long count = NONE` with a byte-cast load 122. Left: the pins' EAX/EDX, the field_c store's slot, the
+// controller compares' immediates (retail EDX = NONE), the inner chunk push order, the chunk-set call's argument
+// loads, and the flag6 / stream stores' forms swapped (ours load/or/store then memory or, retail the reverse).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

@@ -3199,6 +3199,9 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // register arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order (0xbf600's
 // call line). Checked this round: retail never takes 0x17e670's address (no immediate or table entry holds it), and
 // its two retail callers pass its first two parameters in ECX and EDX, so its convention comes from its own body.
+// M3 lane 2 r102 (fast): baseline 23 at 1328 bytes, first difference +0x24f (0x17e670's EDX/ECX register arguments,
+// BLOCKED-BY 0x17e670). The attached sound node index passed straight in the call 23 (same code); the detached record
+// filled compression, position, velocity, location 43. Body unchanged.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {

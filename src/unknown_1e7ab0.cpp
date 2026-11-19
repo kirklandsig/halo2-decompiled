@@ -531,6 +531,14 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // Typed metadata block, typed entry base, guarded block pointer and guarded reference: 117/117/117/117.
 // Ternary, rejecting bounds and split rejecting bounds: 613/613/613. Caller-provided table: 164.
 // NOT kept: the caller-provided table repairs the entry registers but adds four bytes, and the child test still differs.
+// M3 lane 2 r104 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0/0x1e6bd0/0x14de70/0x1e8eb0/0x1e7a10/0x1e7a60/0xcbd50,
+// control 117; aligned exact/stack-masked/register-masked 57/57/4: with registers masked only four rows differ, the
+// rest is jump displacements between the getter (one byte short) and case 4's child test (one byte long)). The entry
+// through the existing 0x1e8d50 (entry_420_get is its body without the second table read) re-measured 165 (2312 B,
+// 72/72/18: the head is retail's through the switch; case 4's parent then sits in ECX where retail's is ESI, and the
+// child test's `test cl, 1` is the byte that moves the jump table); on that: the child's unit compared before its seat
+// 168; the child seat's flags through `(seats + index)->flags` 165, through TEST_FIELD_BIT 165; the parent seat as a
+// reference in place of the seat pointer 165 (same code each). BLOCKED-BY 0xd0590's parameter order (contributor).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

@@ -3082,6 +3082,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // selection 50; absent-definition conditional 178; permission assigned in requested arm 50;
 // separate unlocked, absent and script permission branches 179; negated locked-definition gate 50;
 // conditional automatic selection 170. NOT kept: the four ties still reload the first event index.
+// M3 lane 2 r102 (fast; control 50): both first-half 0x40 flag tests in the matched callee 0x202e90's shifted form
+// (`((dword)*(short *)(p + 2) >> 6) & 1`) 50 (same code: folded to the mask); one to four dead initialised locals at the
+// else-if arm's top 50 each (diagnostic); a 600 s permuter run reached 39 only by swapping 0x290e20's two arguments
+// with a constant-only local holding 1 for the lock test, threshold and trigger sense (not usable). Body unchanged.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
