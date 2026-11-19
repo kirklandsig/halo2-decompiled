@@ -930,6 +930,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // instruction]; on retail's shape alone 72 (index rebuilt as retail, data load still shared). Reading: retail's reload of
 // the data pointer needs a store between the header test and the object read, and its rebuilt index needs the header
 // lookup built from a different index expression than the object read's; retail's only store is before the NONE test.
+// The saved result register and shared lookup still differ. Bind the shared virtual-call size, state,
+// size then state, or state then size. Creation-validity result 49/49/49/49. Attachment-success
+// result 77/77/77/77 at 160 bytes, with the last argument still cached in EBP.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

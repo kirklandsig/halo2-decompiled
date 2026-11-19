@@ -1178,6 +1178,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Axis reference, matrix output reference, immutable original forward, symmetric matrix
 // with signed corrections, and the builder returning its output pointer: 370/364/346/346/346/346/395/346.
 // NOT kept: Two first-axis squares still spill across the half-angle tangent and unity starts in XMM3.
+// Unity still starts in XMM3. Forward-field pointer through deviation or only the rotations 355/357.
+// Up-field pointer at first rotation or entry 362/361. Both pointers early or up bound later 360/360.
+// Both field references or both pointers at first rotation 361/359. NOT kept: all regress, and six
+// forms also demote the matched initializer.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

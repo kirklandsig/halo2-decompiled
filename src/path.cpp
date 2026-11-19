@@ -400,7 +400,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // MiniMax G (11-12): no new form, no lower score (286): frame 0xe8 against retail's 0xe4; the acquisition, the flags
 // and the scalar homes remain, and the geometry now uses shared differences.
 
-// score 286 (was 286): frame 0xe8 against retail's 0xe4, and from there the link test, the flag homes and the
+// Earlier at 286 (was 286): frame 0xe8 against retail's 0xe4, and from there the link test, the flag homes and the
 // scan differ; the two-flag form of round 71 below (match-only) gives 2 at 1388 bytes, left: two reloads at the scan
 // loop's latch in the other order (`mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]`). Rounds follow, newest last.
 // MiniMax A (11-14): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4 (the extra dword
@@ -896,6 +896,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `if (node_index != NONE) do { } while (node_index != NONE);` 2 (same code); the whole scan in a new forceinline
 // inner function taking steps by value 189 (1395 bytes); the scan loop's body in one called per step 118 (1389
 // bytes); the scan through its own copy of the steps pointer 2 (same code, as listed). Body unchanged (286).
+// The extra link-cursor word and flag homes remain. Short count and two flags with nested
+// conversion fallbacks 398. Start, end or both conversion results taken from the conjunction
+// 400/400/398, guarded success 400/400/398, guarded fallback 414/414. Later surface test
+// 396, also with the widened edge bit 396, then with one transition type read 332.
+// NOT kept: the 0xe4 forms lose the matched caller. The single type read recovers that
+// caller and restores the extra frame word. None matches or improves the opening score.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -722,6 +722,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // Combined first/ordinary/crossed scan state, separate/joined acceptance: enum 364/364,
 // byte 369/369, word 350/350, long 364/364. NOT kept: the byte form leaves success
 // at +0xf, and the wider forms send it to +0x74. The shared cutoff tail remains unresolved.
+// The return byte still uses +0xf rather than +0xe. Initial return byte as the blocked default, transition
+// default or both 244/244/244. Chained return/block clear in either order 382/383, chained transition clear 389.
+// Initialize the return from either published default 389/389. The direct uses leave the byte homes exchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
