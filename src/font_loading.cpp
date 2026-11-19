@@ -924,6 +924,10 @@ static inline long font_character_pixel(long alpha, long color)
 // and color before upper opacity 203, Compose upper opacity and parity as a word 222. NOT kept: The byte parity
 // split ties. The full-width variants shorten the decoder to 444 bytes and move the run out of EBX. The word
 // opacity variant scores 222 at 456 bytes. The original helper and body are restored.
+// Packed input class 59/203, packed upper and lower opacity fields with the fresh header observation
+// retained 157/201, both views 157/201, both views and the ordinary six-bit count 157/201, using the
+// existing byte parity and then dword parity. NOT kept: the parity width still differs on the tied form,
+// and dword parity moves the run out of EBX and shortens the two fills.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

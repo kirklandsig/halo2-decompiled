@@ -306,6 +306,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // named copy decision 142, existing placement cross for left 68 or with explicit deadline cursor 125.
 // NOT kept: the explicit cursor restores the traversal at 1413 bytes, and the other forms leave the
 // deadline and group homes exchanged.
+// Typed current-channel basis with vector pointers 64, direct fields 141, one basis reference 434,
+// or the staged in-place up cross product 119. With an independent deadline cursor 125/123/435/124.
+// NOT kept: the cursor can recover both loop homes, but grows the correction tail. The shared
+// basis reference changes the frame and the matched caller.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -885,6 +889,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // both count field bindings 129, reserved volume name 129, named projection result 129.
 // NOT kept: the cluster array changes extent, and the projected slot changes the prologue.
 // The other forms leave the opening register exchange.
+// Native rectangle field 129, shared rectangle type 129, early rectangle address 129,
+// and early camera key with direct, early, or post-reservation rectangle address 123/123/123,
+// an early camera pointer 123, or the shared rectangle type 123. NOT kept: the six-point
+// gains leave the register exchange and extent unchanged.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

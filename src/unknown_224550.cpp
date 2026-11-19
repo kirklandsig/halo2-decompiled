@@ -738,6 +738,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // compound reciprocal weights 162, both compound weight pairs 162.
 // NOT kept: staging both pivot contributions grows the frame. The best forms leave the blend spill
 // and fixed-arm displacement different.
+// In-place geometry encode after/before the UV encodes with named corners 512/499, direct corner
+// stores 512/499, complete bounds assignment 519/571, or a projected center point 512/499.
+// NOT kept: the geometry-encoder forms change the frame or incoming register schedule and do not
+// recover the bitmap blend register.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

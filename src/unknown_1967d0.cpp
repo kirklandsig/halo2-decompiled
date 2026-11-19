@@ -1001,6 +1001,10 @@ static inline long team_score_195ed0(long team)
 // rank and score through indexed team 105, short team rank ordinal 205,
 // named player rank and slot 100, native in-range score with short selection 191.
 // NOT kept: the early flag load remains and the native score call still inlines.
+// Machine-player configuration byte span 100, typed source member 100, typed assignment or memcpy
+// into the results record 100/100, returned typed copy destination 204, and shared device-view
+// copies from the byte or typed member or through assignment 100/100/100. NOT kept: the
+// copy and address-index write still follow the teams-flag read in the tied forms.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
