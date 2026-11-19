@@ -1292,6 +1292,7 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
+// MiniMax I (11-19): no new form, no lower score (93): the 0x4bcc0 argument load still takes ecx where retail takes eax before the force push, retail's dead entry lea is still missing, the header global is still loaded second, the previous level is still a dword where retail keeps a byte, and the scratch rotation those leave stands.
 // score 93 (was 93): m3 lane 9 r134 (all plain; the earlier 175-base forms re-measured on the 93 base that round 224
 // reached, and the MiniMax C line that sat below the marker moved up into this note): the object-header table read
 // into a local before the count store 349; the type stored through one ternary 93 (same code); the 0x4ed284 entry
