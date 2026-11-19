@@ -1544,6 +1544,10 @@ void function_150820(dword *bits, bool local_only)
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
+// Full-width unsigned remainder at the object-header ordinal, extraction/parameter domain,
+// typed subscript/byte stride and direct/named ordinal: 43 each. The player and hand
+// still occupy EDI and ESI instead of ESI and EDI.
+// NOT kept: the shared ordinal forms also take the matched pickup caller to 277 in preview.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

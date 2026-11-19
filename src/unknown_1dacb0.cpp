@@ -1462,6 +1462,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // compile alike) nor the callee's write order (graph_weapon_type_iterate, in src/unknown_2963f0.cpp, writes mode, class
 // and type in that order); the first difference is still the NONE compare, where retail keeps the compared argument in
 // EDX and the computed -1 in ECX and ours the reverse.
+// Outer request mode, class, type, mode/class, mode/type, and class/type by reference: 828 each.
+// Per-graph mode or class/type by reference: 828 each. The resolved mode still reloads and the
+// result and candidate homes differ.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -883,6 +883,10 @@ real function_30bf0(vector3f *vector);
 // sides elsewhere move); the range read after the delta 87; both 145 (1308 B); the clipped point through the shared
 // vector3f_add_scaled 90; the facing results copied at the end of the facing block in place of the second `if (facing)`
 // 101. The range still loads into XMM2 (retail XMM0) and every 4-byte home but the delta's is where round 81 found it.
+// Use the eventual up vector for the world-up input to the side cross, then overwrite it with
+// corrected up. Copy initialization, direct/staged crosses: 219 each with frame 0x34c.
+// Component setter with the same four cross pairs: 167 each at 1308 bytes. The result and
+// clip homes still differ.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

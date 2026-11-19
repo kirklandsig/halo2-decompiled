@@ -895,6 +895,9 @@ static inline long font_character_pixel(long alpha, long color)
 // commands, before dispatch, or after the nonzero lower command 173/180/182. Shared consumed
 // length from the raw header before dispatch or in the lower class 212/204.
 // NOT kept: the 504-byte form changes the cursor allocation and all eight scores rise.
+// Literal color constructed from twelve bits, high/low-first, pixel from both octets or from
+// color plus opacity: 201/190/201/190. With full-width pixel parity: 212/232/212/232.
+// The packed run and parity layout still differ.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
