@@ -280,7 +280,9 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// score 164 (was 206): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
+// and independently decoded side homes differ.
+// Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail's 0x2c; the source now arrives in ECX as in retail (earlier note: 206, was 206).
 // Earlier 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix;
 // m3 lane 16 r130 and r132 at the end.
@@ -858,6 +860,13 @@ void function_245400(s_source_245400 const *source, long index,
 // 214; cross dot running sum 227; cross dot named products 213.
 // NOT kept: reversing the material comparison ties. The scoped plane forms regress and disturb the caller in the
 // reduced image. The alternatives keep the frame short of 0x2c.
+// Separate scaled rotation input with an explicit unscaled arm 247, Separate rotation input with the unit-scale
+// arm first 251, Conditional rotation input from the scale helper result 240, Rotation input changes only on the
+// scaled branch 239, Explicit scaled input with one matrix scale observation 247, Conditional helper result with
+// one matrix scale observation 240, Branch-selected rotation input with one matrix scale observation 239,
+// Rotation reads a copied edge scaled in place 231. NOT kept: The pointer-selected rotation inputs recover frame
+// 0x2c but grow the body to 820 or 822 bytes and raise the matched caller 0x245aa0 to 6 in the reduced image. All
+// other forms keep frame 0x24 and lengthen the body. The original caller and transform shape are restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

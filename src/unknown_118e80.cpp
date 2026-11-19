@@ -220,6 +220,8 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// score 51 (was 223): Frame 0x6c restored. The early call setup, the two discarded basis-output offsets and final
+// vector-store scheduling differ.
 // MiniMax A (11-18): no new form, no lower score (218): the 0x1faf80 exit written as an if/else around the rest of the body measures 216 on the reduced image (a gain of two, under the keep bar) and the frame stays 0x78 against retail's 0x6c: BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp).
 // MiniMax S (11-16): no new form, no lower score (241): the frame is still 0x78 against retail's 0x6c and the call to 0x1faf80 still takes the 0x148 and 0x13c addresses by adding to ebp where retail leas them, so the tail's registers differ; reading the speed scale at each use instead of once measures 250 in this build, and the block-scope form that gives retail's 0x6c frame needs 0x11f0d0's double local and its double parameter, whose body is in src/unknown_11eed0.cpp, which this lane may not edit: BLOCKED-BY 0x11f0d0.
 // MiniMax E (11-16): no new form, no lower score (218): BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp) - that callee's named double local and double parameter give this function its 8-byte stack parity under LTCG, so the frame stays 0x78 against retail's 0x6c and ESI is still saved in the prologue where retail pushes it after the 0x1faf80 exit.
@@ -248,7 +250,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // addresses by adding to ebp where retail leas them, so the tail's registers differ, and the frame stays 0x78 against
 // retail's 0x6c; that frame needs 0x11f0d0's named double local and double parameter, whose body is in
 // src/unknown_11eed0.cpp, which this lane may not edit: BLOCKED-BY 0x11f0d0.
-// score 218 (was 218; earlier 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0 and 0x1faf80. Our frame is 0x78 with ESI saved in the prologue; retail's
+// Earlier score 218 (was 218; earlier 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0 and 0x1faf80. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
 // callee's double local makes this function keep 8-byte stack parity, so it pads its frame and cannot
@@ -438,6 +440,16 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // (argument evaluation in declared order), so that one needs 0x1faf80's parameter order, which lane 3 found unmatches
 // 0x1faf80 (BLOCKED-BY 0x1faf80). A dead-local scan on 0x11f0d0 with the helper form (K = 0..20, diagnostic) left its
 // cross-product tie at 2 at every K but one (K = 4: 37), so that tie is not the symbol count.
+// Named angular-velocity and position storage overlay 217, Basis and angular phase closed before scoped dispatch
+// point 221, Complete scalar and basis phase with target up scoped inside 221, Complete scalar and basis phase
+// with target up declared outside 221, Basis phase with first left sharing later forward 162, Complete steering
+// phase with first left sharing later forward 162, Complete shared steering phase with default velocity before
+// world up 81, Complete shared steering phase with position using completed angular storage 176, Shared scratch
+// named for both basis outputs 81, Speed scale read for each multiplication in the native frame 51, Shared
+// scratch role name with native speed-scale observations 51, Named up agreement with the forward test still
+// short-circuited 49, Left output declared before the shared basis output 51. NOT kept: The explicit union and
+// named one-use agreement require an exact match. The other scopes tie or trail the retained phased body. The
+// selected role name describes both discarded outputs.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -448,41 +460,45 @@ void function_1197b0(long object_index)
 		function_1faf80(object_index, definition->settings, &object->control, 0.9f, &object->requested_forward, &object->turn);
 		return;
 	}
-	real max_angle = definition->max_angle;
-	real acceleration = definition->acceleration;
-	if (object->speed_mode == 1)
+	vector3f turn_velocity;
+	vector3f up, new_forward;
 	{
-		real speed_scale = definition->speed_scale;
-		max_angle *= speed_scale;
-		acceleration *= speed_scale;
+		vector3f target_up, left, shared_axis;
+		real max_angle = definition->max_angle;
+		real acceleration = definition->acceleration;
+		if (object->speed_mode == 1)
+		{
+			max_angle *= definition->speed_scale;
+			acceleration *= definition->speed_scale;
+		}
+		vector3f forward;
+		if (max_angle == 0.0f && acceleration == 0.0f)
+		{
+			forward = object->requested_forward;
+			turn_velocity = *g_4687a4;
+		}
+		else
+		{
+			function_118e80(object_index, &forward);
+			turn_velocity = object->turn_velocity;
+			function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
+		}
+		vector3f temporary_velocity = *g_4687a4;
+		world_up_1197b0(object_index, &up);
+		function_11d180(&forward, &object->requested_up, &new_forward, &shared_axis, &target_up);
+		function_11d180(&forward, &up, &shared_axis, &left, &up);
+		if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
+		{
+			function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
+			function_11d180(&forward, &up, &shared_axis, &left, &up);
+		}
+		else
+			up = target_up;
 	}
-	vector3f forward, turn_velocity;
-	if (max_angle == 0.0f && acceleration == 0.0f)
 	{
-		forward = object->requested_forward;
-		turn_velocity = *g_4687a4;
+		point3f position = object->position;
+		object_dispatch_moved(object_index, (long)&position, (long)&new_forward, (long)&up);
 	}
-	else
-	{
-		function_118e80(object_index, &forward);
-		turn_velocity = object->turn_velocity;
-		function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
-	}
-	vector3f up;
-	world_up_1197b0(object_index, &up);
-	vector3f temporary_velocity = *g_4687a4;
-	vector3f new_forward, target_up, left, forward2;
-	function_11d180(&forward, &object->requested_up, &new_forward, &left, &target_up);
-	function_11d180(&forward, &up, &forward2, &left, &up);
-	if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
-	{
-		function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
-		function_11d180(&forward, &up, &forward2, &left, &up);
-	}
-	else
-		up = target_up;
-	point3f position = object->position;
-	object_dispatch_moved(object_index, (long)&position, (long)&new_forward, (long)&up);
 	if (dot3f(&object->up, &up) < 0.9999f || dot3f(&object->forward, &new_forward) < 0.9999f)
 	{
 		object->up = up;

@@ -1830,6 +1830,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Shared motion word 546, named predicates from the saved word 554, word before turning 551, saved-word masks 550.
 // Masks on the field 548, named predicates from direct tests 554, promoted motion word 475, initializer-scoped word 546.
 // NOT kept: the argument staging variants displace frame homes and retain the early unity load or change the frame size.
+// Shared object flags word 546. Byte animation flags receiver 175. Shared object word and byte animation
+// flags 546. Saved animation flags offset 645. Saved initial state offset 663. Saved state offset with byte
+// animation flags 663. Saved state and animation offsets 637. Linear velocity through the Havok vector
+// reference 640. NOT kept: The saved animation offset reproduces the unity-load schedule and moves the first
+// difference to +0x4e at retail length, but scores 645. The byte animation receiver ties. The other flag and
+// velocity receivers regress.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

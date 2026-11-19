@@ -908,7 +908,10 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 
-// score 171 (was 91): the flag mask and success share BL, and the input spills early.
+// score 130 (was 171): the 0x24 frame, immediate flag test and advancing EBX output agree.
+// The input takes EDI and spills before the count guard.
+// Earlier score 171 (was 91): retail saves EBX after the flag test and spills the input after the count test.
+// the flag mask and success share BL, and the input spills early.
 // The earlier allocation was different.
 // retail keeps the destination pointer in EBX and the source pointer only in its stack
 // retail saves EBX after the flag test and spills the input after the count test.
@@ -1111,6 +1114,15 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // destination-only walk with relative source 184, explicit byte bank distance 156, indexed from the
 // object block offset 242, guarded block with output latch 191, named pair count and early copy 141.
 // NOT kept: the input spill and EBX output still differ.
+// Counted walk of separate bank cursors 130, Counted walk of separate bank cursors and input advanced at copy
+// 156, Separate cursors bounded by the input end 135, Separate cursors bounded by the input end and input
+// advanced at copy 178, Separate cursors bounded by the output end 177, Separate cursors bounded by the output
+// end and input advanced at copy 175, Separate bank cursors with remaining count 130, Separate bank cursors with
+// remaining count and input advanced at copy 156. The separate counted bank cursors recover the immediate flag
+// test and delay the EBX save until after it. Both cursors advance at the loop end as retail does. Plain check
+// confirms 130 at 582 bytes with frame 0x24. NOT kept: Pointer-end tests change the signed count guard, the input
+// advance at copy in the counted form shortens the body past retail, and the remaining-count form ties the
+// counted walk.
 // Typed object bank size and displacement 171, definition reference 171, tint block reference 167,
 // empty-bank return 179, named flag admission 171, unsigned paired-colour quotient 130,
 // input cursor in the loop initializer 173, object header reference 171. NOT kept: the block
@@ -1131,10 +1143,10 @@ bool __stdcall function_be8e0(long object_index)
     {
         color3f *base = (color3f *)(object + *(short *)(object + 0x126));
         long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
+        color3f *current = base + count;
         for (long i = 0; i < count; i++)
         {
             s_colour_choices_ab *entry = &((s_colour_choices_ab *)definition->tint_sets.address)[i];
-            color3f *current = base + count;
             *current = *base;
             for (long j = 0; j < entry->function_count; ++j)
             {
@@ -1160,6 +1172,7 @@ bool __stdcall function_be8e0(long object_index)
             current->blue = current->blue < 0.0f ? 0.0f : current->blue > 1.0f ? 1.0f : current->blue;
             result = true;
             base++;
+            current++;
         }
     }
     return result;

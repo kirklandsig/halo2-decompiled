@@ -4170,6 +4170,12 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // as bool 1413 plain at 5684 bytes, frame 0x34 against 0x38 (a gain of seven, and a retype); plus a bool result
 // 1494; plus blocked cleared at entry and set in its test 1433; the owner-unit call nested in the scale call 1413.
 // Not kept: none reaches the gate. Original body restored.
+// Shared input word 1420. Shared input word with releases first 1420. Shared input word with shifted bits and
+// releases first 1414. Shared cooling flags word 1432. Shared cooling flags with field-value rate selection
+// 1420. Shared cooling flags with explicit rate branches 1420. One state-timer read for test and decrement
+// 1420. Shared cooling and input words 1432. NOT kept: The shifted input word improves by six at 5684 bytes.
+// The threshold is eight. The shared cooling flags enlarge the body to 5696 bytes, and neither rate
+// selection improves the opening score.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4699,6 +4705,13 @@ struct s_weapon_projectile_creation
 // 0x1ea0); the file's helper with three scalar results written back 1239 (5115 B, frame 0x1e94); the axis read as
 // `markers[marker_index].matrix.up` (retail reads it by index, not through the marker pointer) 1121 (same code), with the
 // shared helper 1185 (5155 B, 0x1ea0); `point3f clipped, center;` 1121 (same code).
+// Muzzle trace with origin as input and output 1181. Muzzle trace with center as input and output 1136.
+// Marker input with the origin as trace output 1185. Clipped position transferred by point setter 1140.
+// Clipping position read directly by marker index 1121. Clipped output declared after filling the center
+// 1121. Creation position and forward through component setters 1122. Motion vector scoped to the admitted
+// unit phase 1121. NOT kept: The three shared clipping outputs recover the 0x1e98 frame and move the first
+// difference to +0x75, but they shorten the body and regress. Retail passes a separate clipped point. The
+// copy and motion-scope forms tie or regress.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

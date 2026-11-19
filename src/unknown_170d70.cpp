@@ -1845,7 +1845,9 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 270 (was 284): the winning displacement spills before the side offsets are stored
+// score 270 (was 284): The 0xbc frame and point in EBX differ from the 0xb8 frame and stack-passed point in
+// retail. The center trace stays matched.
+// Earlier score 270 (was 284): the winning displacement spills before the side offsets are stored
 // and reloads for refinement. The frame and point convention still differ.
 // Earlier logic walk against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
@@ -1906,6 +1908,19 @@ struct s_camera_reference_171830
 // separate plane result and clear-side assignment 298; indexed basis scales 363. NOT kept: fraction
 // bounds recover the 0xb8 frame at 1215 bytes, with the point still in EBX. The original 1219-byte
 // body is restored.
+// One collision result for sampling and refinement 270, Shared collision result declared at center trace return
+// 270, Shared collision result declared in the entry phase 270, One direction workspace for both collision loops
+// 275, Shared result and direction across the two loops 275, Unsigned ray masks in both phases 270, Shared
+// collision result with unsigned ray masks 270, Both shared workspaces with unsigned ray masks 275. NOT kept: A
+// shared direction workspace recovers frame 0xb8 but leaves the point in EBX, shortens the body to 1215 bytes and
+// raises the score to 275. Shared collision storage with separate directions and unsigned masks tie at 270. Both
+// checked controls retain their opening scores.
+// Long sample ordinal 296. Unsigned word sample ordinal 270. Byte sample ordinal 287. Independent long
+// displacement ordinal 269. Independent word displacement ordinal 270. Sample sign and axis from quotient and
+// remainder 298. Unsigned sample with second-pair comparison 295. Short refinement budget 270. NOT kept: The
+// long displacement ordinal gains one at retail length. The long and byte sample counts, quotient and
+// remainder, and pair comparison recover the 0xb8 frame while preserving the EBX point ingress and moving
+// away from retail length.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2151,6 +2166,12 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Two horizontal offset channels by view with both shared products 364.
 // NOT kept: the horizontal offset vector forms increase scores and lengths. The four read-only
 // views keep the 0x20 frame at 2146 bytes, but the collision point in EBX still displaces the state.
+// Addressed view for camera publication 415. Addressed view in the follow branch 330. Addressed view for
+// projection and clamps 314. Addressed view for projection and cluster lookup 379. View reference across
+// calibration and output 529. Indexed state by reference 295. Projection through the retained forward axis
+// 388. Addressed view for the cluster lookup only 357. NOT kept: The view reference restores the opening EBX
+// state base and delays the first difference to +0x2c, but shortens the body by 96 bytes and raises the
+// score. The indexed state reference ties. The other receiver scopes regress.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
