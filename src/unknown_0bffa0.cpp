@@ -1354,6 +1354,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // access in the sphere arm 588 (2788 B); light_projection_point_ab's pre-scale through the existing vector3f_scale on a copied
 // vector 715 (2962 B); the sphere bounds call given the constant 4 600 (2777 B); the cone depth as `origin_offset +
 // far_distance` 290 (same code); a const up-vector pointer for both cross products 530 (2815 B). Body unchanged.
+// M3 lane 13 r111 (fast, base 290; the one-file harness gives 2815 B here, not faithful): the negate helper returning
+// its result pointer 290, the projection helper returning its result pointer 290, both 290 (same code: an unused pointer
+// return adds no symbol); the projection storing y first re-measured 299 (2840 B), with those returns 299; named x and
+// y locals in the projection 479 (2814 B), storing y first 469 (2819 B); a named depth for the divide 537 (2809 B), y
+// first 533 (2812 B); the three rows as scalar locals 539 (2801 B), y first 567 (2775 B); scalar rows with x and y locals
+// 552 (2794 B), y first 578 (2769 B); the result built in a local point and copied 701 (2977 B).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1746,7 +1752,7 @@ void function_c09c0(long mode)
 
 bool __stdcall function_bab40(long object_index, long name, real *value);
 bool function_bad50(long object_index, long index, point3f *out);
-color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
+color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 color3f *function_131d60(color4f const *a, color4f const *b, dword flags, color3f *result,
     color3f const *tint, real t);
 long function_baf80(long object_index);
@@ -1822,10 +1828,8 @@ void __stdcall function_c0c80(long light_index)
         real duration = (real)g_510c54->field_2_3 * *(real *)(definition + 0xb0);
         real fraction = function_17ca10(elapsed / duration, *(short *)(definition + 0xb6));
         light->fraction = (1.0f - fraction) * light->scale;
-        function_131c20((color3f *)(definition + 0x58), (color3f *)(definition + 0x64),
-            *(dword *)(definition + 0x34), light->fraction, &light->colour);
-        function_131c20((color3f *)(definition + 0x40), (color3f *)(definition + 0x4c),
-            *(dword *)(definition + 0x34), light->fraction, &light->pair_colour);
+        function_131c20(&light->colour, (color3f *)(definition + 0x58), (color3f *)(definition + 0x64), *(dword *)(definition + 0x34), light->fraction);
+        function_131c20(&light->pair_colour, (color3f *)(definition + 0x40), (color3f *)(definition + 0x4c), *(dword *)(definition + 0x34), light->fraction);
         real blend = light->fraction;
         light->intensity = (1.0f - blend) *
             *(real *)(definition + 0x70) + *(real *)(definition + 0x74) * blend;

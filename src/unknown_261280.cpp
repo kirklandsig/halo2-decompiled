@@ -999,12 +999,16 @@ long function_1e4a10(long index);
 long function_1e4990(long index);
 void *function_1e5280(long actor_index, long key);
 void *function_1e5240(long actor_index);
+#include "unknown_26b230.h"
 struct s_unit_action_state
 {
 	short value;
 	s_unit_action_state(short state) : value(state) {}
 };
 s_unit_action_state function_e70b0(long unit_index);
+struct s_node_view;
+void function_26be00(long actor_index, s_iterator *iterator);
+s_node_view *function_26be30(s_iterator *iterator);
 long function_1e1f20(long actor_index);
 bool function_1e1e50(long actor_index, vector3f *direction);
 bool function_267840(long actor_index, long prop_index, vector3f *direction);
@@ -1060,16 +1064,17 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
 {
  byte *actor = (byte *)actor_get(actor_index);
  byte *parameters = (byte *)request;
- short type = request->type;
- *(real *)(parameters + 0x18) = *(short *)(actor + 0x270) > 0 ? 80.0f : actor[0x229] ? 30.0f : 15.0f;
+ if (*(short *)(actor + 0x270) > 0) *(real *)(parameters + 0x18) = 80.0f;
+ else if (actor[0x229]) *(real *)(parameters + 0x18) = 30.0f;
+ else *(real *)(parameters + 0x18) = 15.0f;
  if (*(real *)(parameters + 0x1c) == 0.0f) *(real *)(parameters + 0x1c) = *(real *)(parameters + 0x18);
+ point3f *origin = (point3f *)(parameters + 0x60c);
  long unit_index = *(long *)(actor + 0x26c);
  if (unit_index == NONE) unit_index = *(long *)(actor + 0x18);
- function_1caa40(unit_index, (point3f *)(parameters + 0x60c));
- type = request->type;
- parameters[0x53] = type == 5 || type == 8 || type == 3;
+ function_1caa40(unit_index, origin);
+ *(bool *)(parameters + 0x53) = request->type == 5 || request->type == 8 || request->type == 3;
  parameters[0x618] = 0;
- if (type == 4) parameters[0x618] = 0;
+ if (request->type == 4) parameters[0x618] = 0;
  else if (parameters[0x20])
  {
   *(point3f *)(parameters + 0x620) = *(point3f *)(parameters + 0x24);
@@ -1089,13 +1094,15 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
  else
  {
   long prop_index;
-  if (type == 1) prop_index = *(long *)(actor + 0x344);
+  if (request->type == 1) prop_index = *(long *)(actor + 0x344);
   else prop_index = *(long *)(actor + 0x338);
   if (prop_index != NONE)
   {
    s_prop_node *node = (s_prop_node *)prop_node_get(prop_index);
    s_type_5cfb45 *state = function_25d690(node);
+#pragma inline_depth(0)
    s_type_f95cd3 *tracking = function_25d740(node);
+#pragma inline_depth()
    byte *object = (byte *)object_get(node->object_index);
    function_26c2d0(prop_index);
    parameters[0x618] = 1;
@@ -1107,10 +1114,10 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
    *(long *)(parameters + 0x664) = prop_index;
    *(point3f *)(parameters + 0x62c) = *(point3f *)((byte *)state + 0x30);
    *(long *)(parameters + 0x648) = NONE;
-   long root = node->object_index;
-   if (!object[0xaa] && *(long *)(object + 0x14) != NONE) root = *(long *)(object + 0x14);
+   long root;
+   if (object[0xaa] || (root = *(long *)(object + 0x14)) == NONE) root = node->object_index;
    *(long *)(parameters + 0x648) = function_baf80(root);
-   if (type == 2 && ((1 << object[0xaa]) & 3) && node->unknown27 < 1 && tracking && tracking->unknown10 >= 0)
+   if (request->type == 2 && ((1 << object[0xaa]) & 3) && node->unknown27 < 1 && tracking && tracking->unknown10 >= 0)
    {
     point3f point;
     function_210850((s_type_c3b527 *)((byte *)tracking + 0x18), &point);
@@ -1127,10 +1134,10 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
     parameters[0x668] = 1;
     *(vector3f *)(parameters + 0x66c) = tracking->unknown94;
    }
-   parameters[0x644] = type == 4 || type == 6;
+   *(bool *)(parameters + 0x644) = request->type == 4 || request->type == 6;
   }
  }
- if (parameters[0x618] && (type == 0 || type == 3 || type == 2 || type == 6)) parameters[0x55] = 1;
+ if (parameters[0x618] && (request->type == 0 || request->type == 3 || request->type == 2 || request->type == 6)) parameters[0x55] = 1;
  byte *local_67e06b_2 = (byte *)function_1e5240(actor_index);
  if (local_67e06b_2)
  {
@@ -1173,24 +1180,23 @@ weapon_done:
  *(short *)(parameters + 0x276) = 0;
  *(short *)(parameters + 0x278) = 0;
  bool group = false;
- long group_index = *(long *)(actor + 0x7c);
- if (*(short *)(actor + 0x86) >= 5 && group_index != NONE)
-  group = element_502420_get(group_index)->member_count > 1;
+ if (*(short *)(actor + 0x86) >= 5 && *(long *)(actor + 0x7c) != NONE &&
+  element_502420_get(*(long *)(actor + 0x7c))->member_count > 1)
+  group = true;
  switch (request->type)
  {
  case 0: case 2: case 3: case 6:
   if (group)
   {
-   long index = *(long *)(actor + 0x58);
-   while (index != NONE && *(short *)(parameters + 0x274) < 32)
+   s_iterator iterator;
+   s_prop_node *node;
+   function_26be00(actor_index, &iterator);
+   while (*(short *)(parameters + 0x274) < 32 && (node = (s_prop_node *)function_26be30(&iterator)) != NULL)
    {
-    s_prop_node *node = (s_prop_node *)(g_502418->data + (index & 0xffff) * 0x3c);
-    long current = index;
-    index = node->next_index;
     s_type_5cfb45 *state = function_25d690(node);
     s_type_76cf92 *prop = prop_get(node->prop_index);
     vector3f direction;
-    if (node->state >= 1 && !state->unknown5e && !prop->unknown23 && prop->unknown25 && function_267840(actor_index, current, &direction))
+    if (node->state >= 1 && !state->unknown5e && !prop->unknown23 && prop->unknown25 && function_267840(actor_index, iterator.index, &direction))
     {
      *(short *)(parameters + 0x27c + *(short *)(parameters + 0x274) * 0x1c) = 1;
      *(point3f *)(parameters + 0x280 + *(short *)(parameters + 0x274) * 0x1c) = state->position;
@@ -1199,7 +1205,7 @@ weapon_done:
      ++*(short *)(parameters + 0x276);
     }
    }
-   group_index = *(long *)(actor + 0x7c);
+   long group_index = *(long *)(actor + 0x7c);
    if (group_index != NONE)
    {
     s_element_502420_member_iterator members;
@@ -1208,11 +1214,12 @@ weapon_done:
     members.index = NONE;
     while (*(short *)(parameters + 0x274) < 32 && (member = element_502420_member_next(&members)) != NULL)
     {
+     byte *other = (byte *)member;
      vector3f direction;
-     if ((byte *)member != actor && function_1e1e50(members.index, &direction))
+     if (other != actor && function_1e1e50(members.index, &direction))
      {
       *(short *)(parameters + 0x27c + *(short *)(parameters + 0x274) * 0x1c) = 0;
-      *(point3f *)(parameters + 0x280 + *(short *)(parameters + 0x274) * 0x1c) = member->position;
+      *(point3f *)(parameters + 0x280 + *(short *)(parameters + 0x274) * 0x1c) = *(point3f *)(other + 0x238);
       *(vector3f *)(parameters + 0x28c + *(short *)(parameters + 0x274) * 0x1c) = direction;
       ++*(short *)(parameters + 0x274);
       ++*(short *)(parameters + 0x276);

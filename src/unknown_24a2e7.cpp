@@ -212,6 +212,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // skip mismatches with indexed terminator 84; formatted arm breaks 84; fixed-array
 // destination 84; selected name then result 84. NOT kept: the 56 forms recover length
 // but retain 46 differing instructions, no base spill and no final ordinal multiply.
+// Postincrement comparison cursor with indexed strings/visited destination/visited
+// inputs/visited strings: 84/84/69/75. Selected const entry with independent search
+// cursor, then wide destination/field-end clear/array destination: 89/89/89/89.
+// The visited-input form recovers frame 0x28 at 204 bytes but spills the cursor
+// and keeps the derived output entry instead of reloading the array base.
 // M3 lane 10 r119 (fast; plain where noted). Reading: retail's entry base sits in memory at [ebp-8] next to the count
 // at [ebp-4] and is reloaded only after the library concatenations, so it behaves as an address-taken local.
 // The indexed terminator alone 84; entries and count as one two-member local aggregate (count's address passed),
@@ -226,6 +231,16 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // aggregate 84. What is left on 39: ours keeps i * 0x248 in EBX across the calls (i itself in ECX in the loop), retail
 // keeps i in EBX and multiplies again for the terminator and the plain arm. The aggregate is a grouping form
 // (match-only); build/r119/lead-0x24a691-39.cpp.
+// Remaining count with a separate ordinal 80, with indexed clear 78, with
+// a selected entry 95, and with both 69. Wide result with direct/indexed
+// clear 67/84. Shared entry lookup 131. Clamped signed range 74.
+// The countdown and clamped range can reserve 0x28 but the added slot
+// still does not carry the entry base across the string calls.
+// Indexed/cached library terminator 68/74, whole conversion buffer clear with indexed/cached store 94/95,
+// wide destination and indexed/cached library terminator 68/74, library clear for both areas with
+// indexed/cached terminator 79/92. With the indexed clear, form the destination before conversion 67
+// or publish the result before the clear 80. NOT kept: the closest 208-byte forms still use frame 0x24
+// and keep the list base in a register instead of reloading it after concatenation.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

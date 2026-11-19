@@ -382,6 +382,14 @@ void function_2232a0(void)
 // count argument written out too 120, as `local_0 + 1` 182; the unused count and layout arguments as the loop's 47 (same
 // code). Left: the fold-then-form of the record base, and the 0x2b5d0 stub's count register (BLOCKED-BY 0x2b5d0, whose
 // activation still waits on 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600, all unmatched today).
+// M3 lane 9 r138 (fast with 0x223240/0x2232a0, MATCH each; base 47, aligned 20): the terminal record through a
+// reference bound to the element 47, a record pointer declared at the top and assigned after the loop 47, a typed
+// element pointer 47, `(byte *)g_47f0f8 + view_count * sizeof` 47 (all the same code); indexed by the loop counter
+// `local_0 + 1` 182 (584 bytes), as `&g_47f0f8[1] + local_2` 183 (583 bytes). Retail's own 0x2232a0 (constant record)
+// also emits the type store last, just ahead of the 0x2f800 work, so here the six index-form stores come first and
+// the record pointer is formed (`lea`) only for the type store and the two copy pointers; the integer and x87 streams
+// interleave the same way in both builds, so the difference is in address selection, not scheduling. Still BLOCKED-BY
+// 0x2b5d0 (its blockers 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 are all unmatched today).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

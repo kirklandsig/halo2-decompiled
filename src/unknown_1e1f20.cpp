@@ -626,6 +626,11 @@ void swarm_leader_detach(long actor_index);
 // compiles to the same bytes as the && form, and the permuter's best variant (300 s, two tries, 205 differing
 // instructions on the reduced image against a baseline of 219) only reaches it through a constant local and a bool
 // flag set by one test, both banned, so the body stands.
+// MiniMax A (11-18): no new form tried this round, no lower score (236): the head still loads the actor pool into
+// EAX where retail loads it into ECX and keeps the scaled index in EBX where retail keeps it in EAX, and this build
+// still spills the actor pointer to a stack slot retail holds in EBP; the body is also still 22 bytes short of
+// retail's 980 because retail expands 0x26ed40 into it, and that helper's body lives in src/unknown_26e370.cpp,
+// which this lane may not edit: BLOCKED-BY 0x26ed40.
 // score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ.
 // Earlier: no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
@@ -1159,7 +1164,6 @@ bool function_1df5d0(short first, short second);
 bool function_1e11b0(long actor_index, bool active);
 bool function_114b60(short entry_index, short fallback_index, long unit_index, long priority, void const *extra);
 
-extern bool g_4f55e5;
 bool g_4f55e0;
 real function_259a0(dword *seed);
 long function_1469f0(real seconds);

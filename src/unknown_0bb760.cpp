@@ -534,7 +534,8 @@ void function_3dd10(long object_index, bool force);
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 123 (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
+// score 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
+// Earlier opening state (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
 // and the variant byte is read before the second remainder. The first scan's `!=` exits
 // differ from retail's signed `<` loop (unrolled by 4 in every
 // The 0x54 frame and 1034-byte extent agree. The first difference is an outer exit
@@ -719,6 +720,15 @@ void function_3dd10(long object_index, bool force);
 // registers and CL comparison, but puts the blend store after the entire lookup and shortens to 1019 bytes.
 // The conditional key ties 123 at 1035 bytes and puts the blend in a different slot. The signed scan exits
 // remain different. The opening executable source is restored.
+// The object and tint-table saves still trade ESI and EDI, and the blend spill precedes the byte test.
+// Tried unsigned variant byte before the remainder and signed index at lookup 147, unsigned variant byte
+// after the remainder and signed index at lookup 97, shared vertical position input for both seeds 254,
+// shared vertical seed input with the variant read after the remainder 230, shared vertical seed input
+// with the unsigned late variant byte 230, ordinal conversion at each seed expression 123, ordinal
+// conversion in both seeds with the late variant read 134, ordinal conversion in both seeds with the
+// unsigned late variant byte 97.
+// Kept the late unsigned byte with signed decoding at the index calculation. The byte compare gates the
+// lookup and the index sign-extends at use as in retail. The 0x54 frame and 1034-byte length agree.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
@@ -746,13 +756,13 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                 real seed = (real)fabs((*(real *)(object + 0x6c) * 744.1241455078125f + *(real *)(object + 0x64) * 315.89312744140625f + index * 431.1289367675781f) + *(real *)(object + 0x68) * 587.1294555664062f);
                 real selection = (real)fmod((double)seed, 1.0);
                 seed = (real)fabs(index * 0.7121099829673767f + *(real *)(object + 0x68));
-                char variant_index = *(char *)(object + 0xb1);
                 real blend = (real)fmod((double)seed, 1.0);
+                byte variant_index = *(byte *)(object + 0xb1);
 
-                if (variant_index != NONE && definition->model_tag_index != NONE)
+                if (variant_index != 0xff && definition->model_tag_index != NONE)
                 {
                     byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
-                    variant = *(long *)(*(byte **)(model + 0x54) + variant_index * 0x38);
+                    variant = *(long *)(*(byte **)(model + 0x54) + (signed char)variant_index * 0x38);
                 }
 
                 long j = 0;
@@ -846,10 +856,10 @@ struct s_colour_function_ab
     long scale_name;
     long blend_name;
 };
-color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
+color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 
-// score 89 (was 91): retail keeps the destination pointer in EBX and
-// retail keeps the destination pointer in EBX and the source pointer only in its stack
+// score 171 (was 91): retail saves EBX after the flag test and spills the input after the count test.
+// Earlier at 89: retail keeps the destination pointer in EBX and the source pointer only in its stack
 // slot; ours keeps the destination in EDI (the 0x131c20 result register). Round 147's plain-loop forms are
 // at the end of this note.
 // Round 31 (lane D): unchanged; retail keeps the destination pointer in EBX and
@@ -1028,6 +1038,15 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // The source spill and destination register across the blend call still differ. The direct scale-name reads restore the guard span and length but raise the total.
 // Tried explicit blend latch 89, explicit scale latch 89, both explicit latches 89, unsigned ordinal 89,
 // read-only input and indexed output 100, blend value before colour operands 89, direct indexed scale name 110, admission result and remaining count 176.
+// Both now carry the destination in EBX through the blend call. Retail delays saving EBX, tests the flag
+// with an immediate, and keeps the input only in a stack slot. Returned blend destination 211,
+// result from input cursor inequality/advance 166/166, result from final ordinal inequality/positivity 163/163,
+// indexed blend/all phase fields 153/152, indexed blend with returned destination 174.
+// NOT kept: the 163 forms shorten past retail length, and the retail-length forms shrink the frame to 0x20.
+// Input latch with body ordinal or lookup ordinal 89/168, early input advance before metadata 165,
+// destination-only walk with relative source 184, explicit byte bank distance 156, indexed from the
+// object block offset 242, guarded block with output latch 191, named pair count and early copy 141.
+// NOT kept: the input spill and EBX output still differ.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
@@ -1049,7 +1068,7 @@ bool __stdcall function_be8e0(long object_index)
                 s_colour_function_ab *function = &entry->functions[j];
                 if (function->blend_name)
                 {
-                    function_131c20(&function->lower, &function->upper, function->flags, function_be8b0(object_index, function->blend_name), current);
+                    function_131c20(current, &function->lower, &function->upper, function->flags, function_be8b0(object_index, function->blend_name));
                 }
             }
             for (long j = 0; j < entry->function_count; ++j)

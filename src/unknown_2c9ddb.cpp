@@ -55,10 +55,12 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// score 61 (was 61): retail has one 0x212bc0 call and one copy in each second-half arm and calls the name copy out of line; this body has one call and a spilled byte; rounds below.
 // MiniMax G (11-18): no new form, no lower score (61): the choice between the default load and the existing one
 // is still spilled to a byte slot where retail branches on the selected index itself and keeps two load call
 // sites, and the name copy is still expanded in place where retail calls 0x13fac0 out of line (a file this
 // lane may not edit); the arms swapped under `!create_default` give 60 (one point, not kept).
+// MiniMax B (11-18): no new form, no lower score (61): the default/existing choice is still spilled to a byte slot where retail branches on the selected index itself (writing the two arms out with their own load call each flips the frame to `mov ebp, esp` and measures 174), and the link still expands the name copy in place where retail calls 0x13fac0 out of line with the count in ESI (src/unicode_strings.cpp): BLOCKED-BY 0x13fac0.
 // MiniMax E (11-17): no new form, no lower score (61): the arms swapped under `!create_default` give 60 (one point,
 // not kept), the same one point as the earlier round's measurement of it; retail's two 0x212bc0 call sites and its
 // out-of-line 0x13fac0 name copy still need another lane's file (src/unicode_strings.cpp).
@@ -100,7 +102,7 @@ extern long g_55c154;
 // MiniMax A (11-18): no new form, no lower score (61): branching on the selected index itself, with one 0x212bc0 call
 // in each arm, measures 77; the name copy is still expanded in place where retail calls 0x13fac0 out of line, and that
 // helper lives in a file this lane may not edit.
-// score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
+// Earlier (score 61, was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
 // `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
 // g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a
 // byte temporary. Two arms with one call each 174 (VC moves `saved` to EBX, spills `this` to [ebp-4] and flips the
@@ -342,6 +344,14 @@ extern long g_55c154;
 // g_54e4a0 address; retail has `this` in EBX, so nothing is left to hoist the address into. The controller mask named
 // once at the top of the first half (one use of the constant 1 in place of three), on two arms, 176 (581 bytes, aligned
 // 85): `this` still leaves EBX. Body unchanged.
+// M3 lane 13 r111 (fast with 0x13fac0/0x212bc0/0x238c69, matched each time): two arms with a call each 174 (595 B,
+// aligned 77); with a fresh local for the re-read index 174 (same code); testing and passing the entry's field directly
+// 174 (same code); the arms the other way round 174 (aligned 111); two arms with the name length named once in the
+// default arm 179 (580 B, aligned 75, 0x13fac0 called as retail). Reading: registers go ESI, EDI, EBX by priority (EBP is
+// the frame pointer); in every two-arm build a hoisted constant takes EBX first (1, or 0 in the named length form),
+// `saved` and the storage address follow it there and `this` is left in ESI or EDI with a spill round each copy, which
+// also costs the biased frame; retail hoists neither constant because `this` holds EBX from the first instruction, as
+// this one-call body does.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

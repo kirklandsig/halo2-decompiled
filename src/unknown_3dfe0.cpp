@@ -138,6 +138,23 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // kept order with the object looked up in each arm 248 (813 bytes); update first with update elapsed computed at the
 // update test 263 (802 bytes); update first with the update-time test moved ahead of the sample decision 228; update
 // first with the object bound through a `byte *const &` to its lookup copy 218 (the update-first code).
+// Round 137 (m3 lane 9, fast with 0x3d2c0 and 0xd1850, control 21, aligned 12, masked 8; aligned = rows that differ once the two
+// listings are aligned): `bool update = false;` right after the zero-elapsed return re-measured 216 (aligned 26, masked 13): the entry
+// block is then retail's instruction for instruction (false store ahead of the object's home store, EBX def, both homes); left are the
+// timestamps in EDI/ESI, the object index loaded straight into EDI and no reload in the force arm. Update assigned in both arms
+// re-measured 222 (aligned 7: the false store's place and the reload). Diagnostic (reverted at once, not keepable): update declared
+// volatile on the after-return form 208, aligned 5: everything is retail's except the force arm's `mov ebx, [esp + 0x14]`, so retail's
+// update is not an allocation candidate (ours, a candidate live from the entry, is what moves the sample timestamp to EDI and the
+// object index off ESI); with the object looked up again in the force arm as well 6 (aligned 6, masked 2: a home store there for
+// retail's reload, homes swapped). Tried to get that naturally, all on update after the return: the parameters declared (cache_index,
+// priority, object_index) or (priority, cache_index, object_index), definition, declarations and call together, 21 / 21 on the kept
+// body and 216 / 216 (same code, 0x3db00 stays matched); update bound to a `bool &` for every later access 216; a pointer to update for
+// every later access 216; a one-member aggregate 216 (all three fold back to the after-return code); the force block as an inline
+// helper taking `bool *update` or `bool &update` 138 / 138; the update-time test as an inline helper taking `bool &update` 216; update
+// initialised from an inline helper returning false 216; force from an inline helper with literal returns 228; update, force and
+// sample declared bare at the top in either order 216 / 216; update as long (diagnostic) 200; the update-time test moved right after
+// or right before the force block 228 / 228; update initialised from the update-time test at its declaration 262 (802 bytes), after
+// force 227; the force block after the update-time test 221; the clamp after the force block 232 (816 bytes).
 // M3 lane 2 r99 (fast with 0x3d2c0, 0xd1850 and 0xd4080, control 21; aligned, the kept form differs only in the entry block:
 // the object loaded into EAX and stored, then loaded into EBX ahead of the force branch, where retail keeps it in EBX from the
 // lookup, stores the false update ahead of the object's home store and reloads EBX in the force arm only): the sample interval
@@ -145,6 +162,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // pointer 21 (same code), on update-first 218; update-first with `sample` started as the sample-time NONE test and the
 // thresholds under `if (!sample)` 168 (sete/test; the timestamps stay EDI/ESI); the hidden-object test through a bool
 // scoped to the else arm 21 (same code).
+// M3 lane 7 r180 (fast with 0x3d2c0, 0xd1850, 0xd4080, 0x3e4e0; control 21, aligned 12): force as `initialized ? !valid :
+// true` 225, with update declared ahead of force 228; update right after the zero-elapsed return re-measured 216 (aligned
+// 26: ESI/EDI swapped for both timestamps and the late object index, which retail loads into ESI on both paths into the
+// join and copies to EDI for 0xd1850; no force-arm reload), on it one game-time read shared by both elapsed values 216, the
+// three late object-index uses through one named copy 216 (same code each). Eight dead locals at the top (diagnostic) 21:
+// removed before allocation.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

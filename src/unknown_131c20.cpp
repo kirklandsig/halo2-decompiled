@@ -15,7 +15,7 @@ enum
 };
 
 // @retail 0x131c20
-color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result)
+color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t)
 {
 	real one_minus_t = 1.0f - t;
 
@@ -62,7 +62,7 @@ __declspec(noinline) color3f *function_131d60(color4f const *a, color4f const *b
 // @retail 0x131d60
 color3f *function_131d60(color4f const *a, color4f const *b, dword flags, color3f *result, color3f const *tint, real t)
 {
-	function_131c20((color3f const *)&a->red, (color3f const *)&b->red, flags, t, result);
+	function_131c20(result, (color3f const *)&a->red, (color3f const *)&b->red, flags, t);
 	if (tint)
 	{
 		if (a->alpha > 0.0001f || b->alpha > 0.0001f)

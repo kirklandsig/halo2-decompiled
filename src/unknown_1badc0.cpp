@@ -13,6 +13,12 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax B (11-18): no new form, no lower score (171, was 171): retail forms the point differences as
+// d3.x, local_6.x, d1.x, d1.y, d3.y and local_6.y before the products while ours still forms d1.y
+// first and the two d3 components last; round 66's three order changes (the copy source to local_1, the
+// result set before the output store and the clearance moved into its use block) measure 175, 238 and 242
+// on this tree and 232 together, all worse than the body below, and the 130 form needs the statement moves
+// picked by score, so the body stands.
 // MiniMax I (11-16): no new form, no lower score (171): retail forms the point differences as
 // d3.x, local_6.x, d1.x, d1.y, d3.y and local_6.y before the products while ours still forms d1.y
 // first and the two d3 components last, and the two dot products still multiply the i term before
@@ -44,7 +50,7 @@ real normalize2d(point2f *arg_0);
 // vector block (retail sums the two squares into XMM2 and divides by XMM2 where this build sums into XMM3 and divides
 // by XMM3) and the opening (retail takes arg_2's y through the local at esp+0x2c after the centre copy where this
 // build subtracts the actor's y first), which is the allocation and scheduling the earlier rounds already tried.
-// score 171 (was 171): MiniMax R (11-15): no new form, no lower score; a 300 s permuter run over the reduced image
+// MiniMax R (11-15): no new form, no lower score (171); a 300 s permuter run over the reduced image
 // searched 41 variants and left the baseline where it was, and the only known better form (130) rests on three
 // statement moves picked by score and on `inline` for 0x30c60, whose body is in src/unknown_030290.cpp:
 // BLOCKED-BY 0x30c60.
@@ -488,6 +494,12 @@ real normalize2d(point2f *arg_0);
 // in 0x186ab0 and calls it at the second) 208 again, both sites inlined, and the same with case 2 ahead of case 0 in the
 // source; case 2 as a call without `inline` 222 (755 bytes, two calls). So what keeps retail's call in 0x3d7f0 is not a
 // first-site rule, and 0x24d8d3/0x24da7d keep their calls either way. BLOCKED-BY 0x30c60 / 0x3d7f0 stands.
+// Typed object fields once, at each use, and through the header accessor
+// 171/171/171. Planar in-place update, planar actor-to-centre difference,
+// or both 171/171/171. Centre difference inside nonzero projection 170;
+// in-place update inside clearance 254.
+// NOT kept: the projection-scope form gains one point and keeps the early
+// Y subtraction. The in-place clearance form shortens to 1007/1025 bytes.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

@@ -867,12 +867,22 @@ real function_30bf0(vector3f *vector);
 // DH398: Positive signed seat admission with a word or dword countdown, pointer stepped
 // before the call, after it or at body end. Word or dword admitted count with indexed walk 184/163/150/139/176/180, 188/184.
 // NOT kept: Four countdown forms reach retail length at 1308 bytes, but all eight score higher and keep the result four bytes above the retail home. The original indexed seat walk is restored.
+// MiniMax G (11-18): no new form, no lower score (84): the frame agrees at 0x350; the result, the range and the three
+// delta components sit in homes four bytes away from retail's (the range at +0x18 against retail's +0x30, the deltas at
+// +0x48..+0x50 against retail's +0x4c..+0x54), and the range is loaded into xmm2 where retail loads it into xmm0; the
+// home offsets follow the declaration order, so moving them is frame shaping. The clip and count homes the earlier
+// rounds record stay unresolved.
 // M3 lane 3 r259 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): the clip amount declared at function
 // scope ahead of the result 84 (same code); the seat basis (both crosses and the normalise) through a new forced-inline
 // helper with a local copy of the world-up pointer 88 at 1308 B (the first cross's i product flips the wrong way), with no
 // local 86 (1310 B), with a forward-pointer local 146 (1315 B), world-up and forward locals 92 (1308 B), a side-vector
 // local for the second cross 92 (1308 B), world-up and side locals 88 (1308 B); as plain `inline` it stays out of line
 // (408, diagnostic). None moves the result/clip/range homes.
+// M3 lane 3 r261 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84): the first delta through the
+// file's vector3d_from_points3d (as the clip arm already does) 142 at retail's 1308 B (the homes stay; the operand
+// sides elsewhere move); the range read after the delta 87; both 145 (1308 B); the clipped point through the shared
+// vector3f_add_scaled 90; the facing results copied at the end of the facing block in place of the second `if (facing)`
+// 101. The range still loads into XMM2 (retail XMM0) and every 4-byte home but the delta's is where round 81 found it.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2138,6 +2148,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// MiniMax H (11-18): no new form, no lower score (168): the 0x80 frame agrees, but the first iterator load still
+// encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
+// retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
+// registers.
 // score 168 (was 168): The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // One decoded actor slot for both lookups, long/word with the iterator helper 168/695 and with the typed actor accessor 168/695.
 // Named clear destination, with the typed head read, and with typed summary fields 168/168/168. Chained selections 170.
@@ -2698,6 +2712,16 @@ real function_2683f0(long actor_index, long node_index, short type)
 // player table and datum index 168; first scan selects player pointer 378; player selected from first
 // scan bound 375; slot selected from second scan bound 370; both searches select from scan bound 189;
 // player pointer selected after first scan 374. NOT kept: the retention threshold was not met.
+// M3 lane 3 r261 (fast with 0x25d810, 0x26be00, 0x25d740, 0x26be30, 0x2662f0, 0x266540, 0x267700 and 0x2672e0, all
+// MATCH; control 168): the other actor's lookup as `s_slot_object_view *object = object_get(...); other =
+// object->actor_index == NONE ? NULL : actor_get(object->actor_index);` 163 (the type-2 arm is then retail's line for
+// line: the object pointer reuses EAX and the actor table takes ECX, as round 620's retained other object found; a
+// five-point gain, under the bar); that lookup as an if/else on `other_index` 168; as `other_index != NONE ?
+// actor_get(other_index) : NULL` 173; on the 163 form: the slot search's counter long 164, with the player as a ternary
+// on the found index 179, the direction built by vector3d_from_points3d 169. Left on 163: the first iterator load's
+// base/index order, the players loop (retail's table pointer in EDX, the datum index in EBP, the found index in ESI, the
+// player in EDI, and no jump over the loop-top padding), and the direction's components held in XMM1..XMM3 across the
+// relative and facing dots (retail loads two of them ahead of the relative-length test).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

@@ -1368,6 +1368,15 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // item_count -8 and index_count -0xc, retail index_count -8 and item_count -0xc), and swapping them needs an
 // initialiser that costs the mode its register (121) or a frame that grows to 0x58; all of this round's forms
 // were restored.
+// MiniMax H (11-18): no new form, no lower score (83): the declaration order of the two counts does not move their
+// homes (item_count before index_count, or the array first, give the same 83 bytes); item_count initialised at its
+// declaration does swap the homes (index_count -8, item_count -0xc, retail's) but the frame grows to 0x58, the mode
+// spills and the extra prologue store costs 137; the three qsort calls written out reproduce retail's three address
+// pushes and its one tail-merged call (119), the counted tail fill reproduces retail's guarded rep stosd but moves the
+// count into EBX and the mode to its slot (172), and the mode-three block nested in the else arm moves the mode into
+// EDI (131); branch two's scan with the index increment split off the store gives the same code (83); a new form, the
+// comparator selection written as the two qsort calls with the conditional comparator and no null test, gives 121
+// (the three comparator pushes but index_count from its home), so the null-check form stays.
 // MiniMax E (11-17): no new form, no lower score (83): the two count homes stay swapped (ours item_count -8 and
 // index_count -0xc, retail index_count -8 and item_count -0xc) whatever the declaration order, the initialiser or a
 // plain assignment instead of the initialiser; branch two's counted tail fill does give retail's guarded rep stosd
@@ -2721,6 +2730,15 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // returned in one aggregate 275, the helper's default arm reordered 92 and 95, the team test split in two 87, the
 // flags constant hoisted into a local 87; the permuter's only lower form (56) reorders the arguments of the five
 // set_child_value6e calls, which changes what those calls do, so it is not kept.
+// MiniMax B (11-18): no new form, no lower score (87, was 87): a 900 s permuter run over this body (seed 0, one
+// job, --fast, 69 tries) reaches 56 differing instruction pairs against a baseline of 84, which is 60 on
+// --fast, but every mutation it keeps is barred: a constant local (dword tmp0 = 0x84), a bool flag set by one
+// test and read by the next, a volatile store, the first widget call's arguments swapped (retail pushes the
+// index then the type then the false flag) and a local's declaration moved to shape the frame; its first
+// difference is still the shown count's home (-8 against retail's -0xc), retail keeps two distinct
+// `&players[i]` temps (-8 in the first loop, -0x18 in the second) where this build shares one at -0x18, the
+// voice query's reload of players[i] is BLOCKED-BY src/network_voice.cpp and the last loop's inline switch
+// needs the widget helper's body written out by hand, so the body stands.
 // MiniMax E (11-17): no new form, no lower score (87): retail's last loop computes the four widget indices with the
 // mode switch inline, so they live in EAX, EDI and EBX with only bitmap_b in +0x1c; writing the helper's body out
 // there (its two case arms and its default) reproduces that register choice, but the four values then take two spill
@@ -2946,6 +2964,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // counted in place of shown_count 288 (917 bytes); with it the four widget indices declared once at function
 // scope 84 (gain three, not kept; the slots stay one six-cycle off), plus the chained default arm 91.
 // Re-measured: the chained default arm alone 92.
+// MiniMax G (11-18): no new form, no lower score (87): the frame agrees at 0x788; the first difference is the retained
+// count's home (-8 against retail's -0xc) and the first loop's player and element-address homes are permuted, so every
+// later row pairs with the wrong row, and the reload of the player after the voice query still needs a store through a
+// pointer somewhere in the 0x53b40 chain, whose source lives in another file. Moving the homes by reordering the
+// declarations is a frame-shaping form the rules bar.
 // b10B (11-17) walk against retail, fast build on r841: the logic is retail's statement by statement, no behaviour
 // difference: 0x250451-0x250458 list init, 0x25048d value7e into EDI for 0x2b01a2, 0x2504a2 the 16-byte copy to +0x48,
 // 0x2504c4-0x2504f5 team test (jl/jge senses, NONE arm), 0x25050a-0x250518 four-slot search, 0x25054e switch dispatch

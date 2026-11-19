@@ -495,6 +495,19 @@ static inline real interpolate_linear(real a, real b, real t)
 // inactive arm on the field 87; the no-reset `dispose || restart` 87, with the reset at the pass end 87. Lead: retail's
 // source breaks the thread and still keeps the zero (the per-pass disposal clear) in EBX, so something else lowers the
 // flags word's and next time's weights there.
+// Round 185 (m3 lane 8, fast; compile-only screen of the file for the skip): no per-pass disposal reset with
+// `dispose || restart` at the join and the flags read from the field in the loop 207 (frame 0xc, next time in EBX,
+// no zero register: the per-pass reset is what gives EBX its zero); restart in the loop test (`!restart && time >=
+// next_time`) with the frame store and timing updates under `if (!restart)` 122 (652 bytes; the screen keeps the
+// skip); restart typed byte 1 (char, byte and long all keep the skip in the screen); the loop test as `next_time
+// <= time` 5; the three restart expressions through a forceinline predicate taking the type and the flags 1 (same
+// code). Screen only, skip kept: `else if` for the flag-8 store after the restart break.
+// M3 lane 1 r121 (compile-only screen of the file for the skip, then fast with 0x22e957/0x22eeee/0x148119, all MATCH):
+// both boundary restarts computed after their switch 249 (618 bytes; screen: skip kept); the restart assignment in an
+// `else` of the dispose break 1 (same code); the boundary compare as `animation.value8 == frame` 2; restart declared
+// after dispose with its initialiser 1; the loop frame declared ahead of the loop 1. Screen diagnostics (not kept): the
+// thread stays with the flag-8 store dropped, with the timing updates dropped, with the store unconditional and with
+// no per-pass disposal reset, so nothing in the latch's own statements decides it.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

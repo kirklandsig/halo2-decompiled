@@ -1843,6 +1843,10 @@ done:
 // offset read through the table in place with the definition local declared after it for size and placement offset 27;
 // the size as a dword 27; the definition typed as the object type definition (the 0xa offset through its field, the
 // header included) 27; the placement index widened once into a long local for the product and the push 32.
+// M3 lane 3 r260 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x29fd80/0x2a12f0/0x2a1340): the 27 form re-measured 27 (236 B);
+// on it the three definition reads in one declaration 27, the datum in one expression with the placement offset read inline
+// 27, the placements read folded into the datum with a placement-offset local 27 (all the 27 form's code); the slot lookup
+// as `NONE` then an `if` (for the ternary) 59 (243 B), that on the 27 form 59 (240 B).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -2009,6 +2013,18 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// score 285 (was 285): the first difference is still the ancestry loop's exit at +0x76 (retail's shared epilogue);
+// behind it retail re-reads the pool data after the walk and takes the parent, the header and the node-matrix base
+// from it. Round 199 (m3 lane 5, fast; aligned / register-masked counts, the body 215 / 152): `index` and `node` not
+// volatile with the object, walk and header through OBJECT_GET/OBJECT_HEADER_GET 315 (1202 bytes, 112 / 84); plus the
+// bit 7/8/6 tests by shift and the type test as `!((1 << type) & 0x80)` 308 (1217 bytes, 76 masked); the bit tests through
+// the file's flag7/flag8/physics_active bitfields instead 304 (1222 bytes, 73 masked); plus one node-matrix pointer taken
+// before the link stores 303 (1252 bytes); plus a node-matrices base before the stores indexed at the 0x141590 call 303
+// (1249 bytes, 110 / 56: retail's link-store block and registers after the walk; a one-use base ahead of stores);
+// that with `was_active` volatile 300 (1253 bytes, 61 masked); with the clear and inner bit-8 test as dword mask/shift
+// 303 (same code); the clear in a pointer-taking inline helper 303 (same code: retail's reload of the flag word before
+// the clear is not a CSE boundary); round 189's 245 chain re-measured 308 (1244 bytes). Diagnostics: the first vector
+// rotated with direct field reads 376 (1153 bytes), through a temporary 330 (frame 0x70).
 // MiniMax D (11-17): no new form, no lower score (285): the body is still four bytes longer than retail's 1236 and
 // the head is retail's to +0x76, where the ancestry loop's match jump reaches this build's own epilogue and retail
 // jumps to its shared one; the marker pointer retail inlines belongs to 0xb8bd0 and the header's field read to
@@ -2058,7 +2074,7 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // 0xb8bd0 and of 0xb9b90, turns one of 0xb7430's true arguments into false, and adds a volatile pointer and a
 // constant local, so it is wrong as well as under the gate and was restored. Retail still inlines the marker
 // pointer of 0xb8bd0, whose file is /Ob1 and outside this lane.
-// score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// Earlier 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
 // (307; 308 with retail's shift-form flag tests), a flag with one `if` gives 323, and the byte

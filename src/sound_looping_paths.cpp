@@ -651,6 +651,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Attenuation sampled before the indexed walk with short/long count 847/919.
 // NOT kept: portal cursors recover ESI zero at +0xf but grow the body and retain displaced
 // count and array homes. Other cursor variants also move the frame away from 0x4e0.
+// First source retained from acceptance, record completion, collection end or inside selection:
+// 943/937/920/952. The same forms with full query count: 945/954/879/945. NOT kept: even the
+// 3327-byte form raises the score, and the entry zero and stack homes still differ.
 // Round 628: dword choice count through construction/repair, then short for later use 947/952.
 // Short construction and long count at repair/conversion 912/893. Full query bound in construction
 // with a short completed count 961, or in repair with a short conversion count 890.
@@ -663,6 +666,16 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // counts 965. NOT kept: the shared sound lookups tie at the original width. With a full-width choice count,
 // the entry zero and three query-array homes agree with retail, but the target-count and primary homes still
 // differ and the extent falls to 3264 bytes. The opening executable source is restored.
+// M3 lane 13 r110 (fast with 0x18bb80, which matched in each; control 846, aligned 1004): the literal -64.0f in place
+// of the global in both decibel helpers 846 (same code); with the linear helper pinning the long bit pattern through
+// an if/else result (0x2195f0's shape) 867 (3309 B, aligned 665); every helper in the shape of 0x2195f0/0x2197f0 873
+// (3309 B); only the logarithmic helper in 0x2197f0's shape 848; the fraction's test as `fabs(0.0f - range)` 846 and
+// its ternary as an if/else 846 (both the same code). Lead: retail treats 0x14b240 as a call that may write memory
+// (0x18d730's note; retail reloads the sounds base after it here); with that callee form this body is 911, so a
+// rework of this function belongs with build/r110/held-0x18dc90.patch.
+// Full-width choice count before target storage, before the cluster gate, at cluster-arm entry,
+// or after the query output clear: 979/979/964/963. With the full query result: 979/979/965/965.
+// NOT kept: ESI becomes the entry zero, but target count and primary remain displaced and the extent drops to 3264 bytes.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

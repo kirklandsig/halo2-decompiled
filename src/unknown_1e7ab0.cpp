@@ -166,6 +166,14 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
 // MiniMax G (11-18): no new form, no lower score (117): the entry lookup still loads the table global into EAX
+// where retail loads it into ECX (six more getter spellings - the table read before the null result, the pointer
+// add, the count in a local, nested ifs, the count cast and a long return - all measure the same 117), and case 4's
+// parent still sits in ECX where retail holds it in ESI; the definition pointer (ours EDX, retail EAX) and the
+// seat-flag temporaries (ours EDX for both shifts, retail EDX then ECX) follow from that one rotation. The
+// parent's register is not settled by the callee's argument order: retail's 0xd0590 reads the iterator from ECX
+// and the object index from EDX, and retail's call site here sets ECX to the iterator and EDX to the parent, which
+// is what this source already does. An annealed permutation search over this body (300 s, seed 98) lowered
+// nothing: best 117 against a baseline of 117.
 // where retail loads it into ECX (the getter rewritten with an early return, and with the table read before the
 // null result, both measure the same 117), and case 4's parent still sits in ECX where retail holds it in ESI:
 // BLOCKED-BY 0xd0590's parameter order (src/unit_object_type.cpp). An annealed permutation search over this
@@ -520,6 +528,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // On that: no definition local 156, a named definition index 156, the definition through a one-line tag accessor 156
 // (same code each); the parent's seat flags through the indexed array without the seat pointer 424 (2308 bytes, aligned
 // 45, but the flags load folds the `add` retail keeps).
+// Typed metadata block, typed entry base, guarded block pointer and guarded reference: 117/117/117/117.
+// Ternary, rejecting bounds and split rejecting bounds: 613/613/613. Caller-provided table: 164.
+// NOT kept: the caller-provided table repairs the entry registers but adds four bytes, and the child test still differs.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

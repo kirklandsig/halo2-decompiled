@@ -641,6 +641,17 @@ s_1a8a10 g_4453c0[] =
 // that with the stores [3], [1], [2], [0] 17, with index-order stores 16, with the left sum's i read from the actor 25;
 // the forward sum first in retail's term orders with that initialisation order 32; the same with the left sum's i and j
 // read from the actor 116 (548 bytes). All restored.
+// Round 185 (m3 lane 8, fast with 0x1a8c30 0x1f5390 0x1f57a0 0x1f57f0; control 17): the forward sum first in retail's
+// term orders (`j * y + i * x`, then `i * y + (0 - j) * x`) with the stores [3], [1], [2], [0] 31 (the j re-read and
+// the copy of i in the forward product appear, but the forward sum is scheduled first); the same with the left sum's i
+// read from the actor 115 (548 bytes); with the identifier, index, score initialisation order 32; with the facing copied
+// into two scalar locals 36; the forward sum first with the left sum in its current term order and stores 31.
+// M3 lane 1 r121 (fast with the file's functions and 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH): the forward sum
+// first in retail's term orders (`j * y + i * x` from the copy, then `i * y + (0 - actor j) * x`), stores in index
+// order 31 (first difference +0x75: the j reload and the copy of i appear, but the forward sum is scheduled first and x
+// takes XMM3); that with the copy's j assigned before its i 31; with unary minus for the three negations 31; with the
+// negations read back from the stored [0] and [2] 17 (identical code to main's: the left-first schedule returns); that
+// with the stores in [2], [0], [3], [1] order 31.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

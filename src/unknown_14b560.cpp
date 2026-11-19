@@ -786,6 +786,11 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-18): no new form, no lower score (43): the player datum is still computed in EBX where retail has
+// EDI and the unit index in EDI where retail has EBX; writing retail's walk (the root NONE, the entry test before
+// the loop, the step object recomputed in the loop) makes the compiler peel the first iteration (109), and the same
+// walk with the step object taken from the root index instead also gives 109, so the walk stays as it is; the datum
+// iterator's register use comes from include/data_iterator.h, which this lane may not edit.
 // score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
 // walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
 // place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
@@ -1202,110 +1207,15 @@ bool function_14ed80(void)
 }
 
 
-// score 8 (was 8): the global is kept in EDX here and in ESI in retail, which
-// also moves the push of ESI in front of the add. Also tried: one declaration
-// for both outputs 8, the outputs declared between the player and the
-// globals 8 or after the index 8, the globals declared first and assigned
-// after the player 8, the outputs assigned after their declarations 8 (third
-// first 9), the representation pointer declared at the top 8, const views 8,
-// dword outputs 8. The globals pointer always takes the register the player
-// lookup frees. Round 41: the clamp through the file's PIN macro 19 (166 bytes); maximum at
-// function scope 8; globals declared after the index 8; player declared first 8; the bound
-// read from the globals at each use without the maximum local 21.
-// Round 43: all 23 other orders of the first/third/player/globals declarations: globals before the
-// player 49-50, the rest 8-9; no globals local (the global read at each use) 53 (first then takes
-// EDX, the globals EDI); index declared first 8, after the outputs 8; the third-person field assigned
-// first 9; renaming the globals or first local 8 (names do not steer it).
-// Round 135: no globals local with the player declared first 10 (first takes EDX as retail, the
-// globals EDI, their load after the NONE stores); third first 52; 30 orders x reads through a local
-// or direct: player first 10, first before player 52. Pointer + NULL test 20; pointer from a ternary
-// 25 (167 bytes); bound test nested 8; clamp's >= arm first 16; clamp as one ternary 40 (169 bytes);
-// index zeroed first 45; >= arm + pointer 28; zero + pointer 37.
-// Round 126: the existing shared remap helper 8, with inline or force-inline declarations 8;
-// primary/third output-parameter locals 8/8; const output parameters 8; const globals/player
-// pointers 8/8; one count snapshot 58 (169 bytes, caller convention changes); appearance <= NONE 10;
-// lower bound > NONE 13 (166 bytes). Original body restored; globals/first ESI/EDX remain.
-// Round 53: no globals local, player first 10 (the load sinks to the block end); globals first 50; `long first =
-// third = NONE` 9; `long third = first = NONE` 8; chained outputs declared after the globals 9; pointer to the two
-// representation fields 17 (170 bytes); third output assigned first in the block 9. Retail's colour order reads
-// first, globals, third; a named local ranks above both outputs and a read at each use below both.
-// Round 94 (fast): the representation index read once into a `char` local 48; the clamp's count read from the global
-// 53; NONE defaults in an else arm of the bound test 61 (152 bytes); the upper clamp as a ternary 19 (166 bytes); an
-// appearance pointer for both reads 13 (167 bytes); index initialised from the byte before the sign test 52.
-// Round 85 (fast): NONE assigned in an else arm instead of at the declarations 61 (152 bytes), the same without
-// the representation local 60 (153 bytes); the fields read through the globals without the representation local
-// 10 (the dead `add` stays); the representation index read into a char local 51, with the player getter folded
-// into it 48. Retail's 0x14f0f0/0x14f2e0 calls set up EBX then EAX after the push: the declared order already.
-// Round 173 (m3 lane 4, fast): the bound test's count read through the global, the local serving the clamp and the array
-// 53 (first takes EDX as retail, but third ESI and the globals EDI, and the player base folds into the add); the array read
-// through the global 53; one globals local scoped in the clamp arm and a second before the bound test 54; the outputs
-// declared and set to NONE after the remap 63 (151 bytes, 0x14f0f0 lost); the bound-test form with `globals` declared
-// between first and third and assigned after the player 53 (declaration order does not break the first/third tie).
-// Retail's two callers (0x14f0f0, 0x14f2e0) never read EAX after the call, so the void return stands.
-// Round 142 (m3 lane 8, fast; direct global reads mixed with the local): clamp direct, local declared before the bound
-// test 54; element through the global, clamp and bound test through the local 53; local before the bound test used there
-// only 53; local in the clamp arm only 53; bound test direct with the outputs declared after the local 10 (first EDX as
-// retail, third ESI, globals EDI).
-// Round 75 (m3 lane 14, fast): 1-8 unused initialised locals at the top (diagnostic) 8 each, so the tie is not symbol
-// numbering; re-measured round 142's element through the global 53 and round 135's index zeroed first 45; the remap as one
-// nested ternary 8; a named array pointer for the element 8; the element as `representations + index` 8; the remap as two
-// separate ifs 8; the remap as a two-case switch 34 (166 bytes).
-// Round 152 (m3 lane 7, fast; a one-file harness of this file is exact at 8): a 600 s permuter run (51 tries) best 8; the
-// representation as a reference 8; the outputs tested `!= NULL` 8; the game state named before its test 8; an appearance
-// pointer for the sign test and the read 13 (167 bytes). Harness: the representation as `representations + index` with third
-// read first 9; the outputs written third first 10; the clamp as `>= count` 44; the index declared first 8. Diagnostics: a dead
-// load at any of seven points never moves globals out of EDX (not a rotation step); an extra use of first leaves it in ESI.
-// M3 lane 12 r118 (fast; a one-file harness exact at 8): the globals bound as a reference 8; the globals local and its readers in an
-// inner block 8; the sign test and clamp as a force-inline helper taking the globals and the player 8; the whole body as a
-// force-inline helper taking the player and the globals 10 (first EDX as retail, globals EDI); the bound test and element through a
-// pointer to the count/elements pair 53. Harness: no player local 51; `register` on the outputs or the globals 8; an inline globals
-// getter 8; the clamp helper plain inline 8; the element read as a helper with output pointers 8. Harness diagnostics: the named
-// globals local keeps EDX against 1-3 extra uses of first, volatile-sourced outputs or an extra use of itself; as a CSE temp or an
-// inlined parameter it ranks last (EDI); without the clamp it ranks last; retail ranks it between first and third.
-// M3 lane 10 r100 (fast, with 0x14f0f0, 0x14f2e0, 0x14f190, 0x14f270 and 0x14f820): a return value the callers ignore
-// stays in the code (LTCG does not drop it): returning first 54 (0x14f0f0 1), `first != NONE` as bool 23 (173 bytes),
-// third 54, index 45. Declared player, first, globals, third 8 (same code); `long first;` then player, globals and
-// `long third = first = NONE;` 8 (same code), the chain ahead of the player 8 (same code); the NONE defaults repeated
-// in an else arm of the range test 61 (152 bytes; 0x14f2e0 272, 0x14f0f0 48), the same with globals declared between
-// the outputs 61. Diagnostic: without the clamp the function changes length and convention (140-142 bytes, 0x14f0f0
-// 40), so it does not isolate the ranking.
-// Round 197 (m3 lane 4, fast): the globals local assigned a second time before the bound test 54 (first EDX as retail,
-// third ESI, globals EDI, the player base folded into the add); the remap as `if (index == 0 || index == 1) index += 2;`
-// 42 (154 bytes); `short index` 52 (176 bytes); the outputs declared bare and set to NONE between the clamp and the remap 59
-// (155 bytes, 0x14f0f0 40); the sign test, clamp and remap as a force-inline helper taking only the player and reading the
-// global itself, a second globals local in the body for the bound test 54 (globals last, as the second assignment).
-// Round 106 (m3 lane 1, fast): the index read first and the clamp as an if/else-if against the count read at each use 53;
-// no player local (the getter at both reads) 51 in the full build (as the harness). Diagnostics: without the remap 73,
-// without the bound test 81, the outputs stored without their NULL tests 24: the named globals local takes EDX in each.
-// Round 185 (m3 lane 6, fast): the globals local declared before the outputs and the player 50 (still EDX, loaded at the
-// top); the two representation fields as a two-field aggregate copied whole 22 (retail's dead `add` goes); with the globals
-// read at each use, `third` declared just before the bound test 68 (149 bytes: first EDX and the global ESI as retail,
-// third in ECX and the third-person output moved to a register; 0x14f0f0 40), after the player 52 (third ESI, global EDI),
-// before the remap 64 (153 bytes).
-// M3 lane 8 r173 (fast with 0x14f0f0 and 0x14f2e0): `long third = first;` 8 (same code); the clamp's maximum computed before the
-// index read in its arm 8 (same code); the representation as `representations + index` with third read first 9 (re-measured
-// on the full build; listed from the harness); the bound test as `count > index` 9; the clamp as `maximum < index` 10.
-// M3 lane 12 r131 (fast with 0x14f0f0 and 0x14f2e0): the player looked up directly as `&((s_player *)g_4e8c24->data)[player_index &
-// 0xffff]` (0x14f190's form) 8 (same code); `s_player const *player` 8 (same code); the representation as a const pointer to
-// `representations + index` 8 (same code); index initialised from the field with the sign test on the local 52; no representation
-// pointer (both fields read through `globals->representations[index]`) 10.
-// Round 171 (m3 lane 7, fast with 0x14f0f0, 0x14f2e0 and 0x14f190): the multiplayer 0/1 -> 2/3 remap (also in 0x14f190 and
-// 0x14cad0) as an inline helper taking and returning the index 8, taking the index by pointer 8, that force-inline
-// 8; the bound test and both reads in an inline helper taking the globals as a parameter and writing first/third through
-// pointers 8; both outputs through an inline `if (output) *output = value;` setter 8 (all the same code: globals EDX, first ESI).
-// M3 lane 12 r137 (fast): the globals local declared at the top, between first and third, after third or after the player, with
-// one of its three uses (clamp, bound test or element) read from the global directly: 52 at each placement and use, 53 after
-// the player with the bound test direct (the direct read merges with the local, which then ranks last, EDI; first takes EDX
-// as retail, third ESI); the outputs as one `long tags[2]` initialised to NONE 8; first or third bound to a `long &` over a
-// plain local 8/8 (all the same code as main).
+/* two tags of the player's representation (its +0xb4 one and its third-person one), from the clamped,
+   multiplayer-remapped representation index; NONE when the index is out of range */
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
+	long index;
+	s_player *player = player_get(player_index);
 	long first = NONE;
 	long third = NONE;
-	s_player *player = player_get(player_index);
-	s_globals_representations_view *globals = (s_globals_representations_view *)g_4e034c;
-	long index;
 
 	if (player->appearance.representation_index < 0)
 	{
@@ -1314,10 +1224,9 @@ void player_get_representation(long player_index, long *field_b4, long *third_pe
 	else
 	{
 		index = player->appearance.representation_index;
-		long maximum = globals->representation_count - 1;
-		if (index > maximum)
+		if (index > ((s_globals_representations_view *)g_4e034c)->representation_count - 1)
 		{
-			index = maximum;
+			index = ((s_globals_representations_view *)g_4e034c)->representation_count - 1;
 		}
 	}
 
@@ -1333,9 +1242,9 @@ void player_get_representation(long player_index, long *field_b4, long *third_pe
 		}
 	}
 
-	if (index >= 0 && index < globals->representation_count)
+	if (index >= 0 && index < ((s_globals_representations_view *)g_4e034c)->representation_count)
 	{
-		s_player_representation *representation = &globals->representations[index];
+		s_player_representation *representation = &((s_globals_representations_view *)g_4e034c)->representations[index];
 
 		first = representation->field_b4;
 		third = representation->third_person;
@@ -1726,6 +1635,22 @@ static inline s_players_globals *players_globals_14f2e0()
 // block as a forceinline helper returning success 248 (1034 B), with the outputs in the mode block 250 (1036 B); the
 // second and third user-index tests merged into one 41 (1020 B); the reuse arm reading the unit through the `globals` local
 // throughout 225 (1019 B); the profile clamp as `profile_index >= starting_profile_count` 24 (1030 B).
+// M3 lane 3 r261 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00 and 0x14cad0, all MATCH; control 5): the five lines
+// left are retail's own instructions in another order: ours has `or eax, -1` and the two output stores ahead of the
+// `cmp byte [edx+0xc], 4; je`, retail after it. With the outputs in the mode block (43, 1031 B, `mov eax, 0xffffffff`):
+// the mode test through two nested inline predicates (one returning the negation of the other) 43; an inline helper
+// holding the mode test, the NONE stores and the 0x14f040 call and returning whether it ran 43; the outputs set through
+// an inline pointer setter 43; the 4 passed as a parameter of an inline compare 43; an inline predicate with two
+// returns 43; `switch (mode) { case 4: break; default: ... }` 43; the outputs set through reference-bound locals 43.
+// Compile-only screens of the same test (it reproduces both forms): one output declared ahead of the test and one in
+// the block keeps -1 in EAX across the test, the mode byte then goes through CL unfolded (`mov cl, [edx+0xc]; or eax,
+// -1; cmp cl, 4`) with one store ahead of the `je`; the pointer stays EDX and the byte AL whatever scratch work is
+// added ahead of the test (one or two read-modify-write statements before it or at the end of the kept-unit arm), so
+// the byte's register is not a rotation step; removing the 0xb8540 call, the 0xb9d20 test, the kept-unit `result =
+// true`, the result test, the kept index's clear or the tail's `result = true` each keeps `mov`; 500 combinations of
+// where the two outputs, the unit index and the reuse flag are declared and first set (function top, result block,
+// mode block; with or without a NONE initialiser) give `or` only with a store ahead of the test; the outputs declared
+// between the kept-unit block and the result test stop the result test's threading (287 lines for 282).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2640,6 +2565,9 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax G (11-18): no new form, no lower score (701): the length agrees (2740 bytes) but the frame is still 0x4c against retail's 0x74, our
 // link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out of line, and retail's two request homes are still one
 // here; the definitions of those callees sit in files this lane may not edit.
+// MiniMax H (11-18): no new form, no lower score (701): the length agrees (2740 bytes), but the frame is still 0x4c
+// against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out
+// of line, and retail's two separate request homes are still one here; those callees sit in other files.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -3206,6 +3134,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // MiniMax G (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail loads it into ESI and
 // reloads it after the busy check and again before the final store, and the two loops still swap the datum and unit registers with it; the
 // stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue, and the reduced image overstates this body.
+// MiniMax H (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail
+// loads it into ESI and reloads it late, and retail inlines the status test that this build calls out of line; that
+// callee is in src/unknown_13bf00.cpp, which this lane may not edit, and the reduced image overstates this body.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
 // function where retail loads it into ESI and reloads it after the busy check and again before the
 // final store, and the two loops swap the datum and unit registers with it; the reduced image

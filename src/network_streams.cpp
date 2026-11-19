@@ -1116,6 +1116,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the message getter: reconstructed newest 88/91/88/91; wide distance from
 // oldest 172/165/172/165. NOT kept: native loads and single cursor remain
 // different, and all eight extents move away from 225 bytes.
+// Scan selects the entry before publishing the outputs. Index with live cursor 83/67,
+// message with saved sequence 91/35, saved index and sequence 83/67, loop test on
+// pending message with one-past cursor 96/84. Each pair sets the bit in place or
+// writes the saved flag word. NOT kept: the in-place forms still lose the retail
+// message/flag registers. The message and saved sequence tie only with a word store.
 // In-place resend update with size/time/both captured before sequence publication 90/90/90.
 // Both captured with saved flags 88. Single exit from the found path with saved/in-place flags 35/89.
 // Initial send to single exit 89. Complete eligibility with in-place update 89.
@@ -1127,6 +1132,29 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // sent from word and resend from field 88; sent from field and resend from word 88; both fields 84;
 // packed test with byte field update 88; word fields with Boolean tests 88. NOT kept: the word field
 // recovers the memory OR, but the prologue, oldest load and message register differ.
+// Pending-bit exclusion first 36; sent gate with pending continue 89;
+// combined mask with array base 48; separate resend type 129;
+// selected resend return 124; byte memory OR 86; combined mask with byte OR 88;
+// low-byte assignment from saved flags 34. NOT kept: gains one point and
+// still assigns from the flag snapshot instead of ORing the bit into memory.
+// Absent-index branch 90/43, absent-index conditional 90/43, table base in the valid
+// branch 89/35, table base before validation 90/45 (in-place update / saved word).
+// NOT kept: the saved-word absent-index forms recover ECX/AX but change the lookup
+// branches and still write the full word. The in-place update loses the opening allocation.
+// In-place resend bit with conditional selection, invalid-first selection, a scan-scope message,
+// or a scan-scope array base 90/90/89/67. With the three output lvalues bound 90/90/89/67.
+// NOT kept: the array base preserves the query setup and restores the byte memory OR, but
+// moves the cursor and oldest to different registers. The other forms also change the query setup.
+// M3 lane 16 r137 (fast with 0x96510/0x94df0; control 35): on the member update (`message->flags |= 2;`, 89: `time` is
+// loaded into EBP at entry and its home reused for `type`, `next` takes ECX): `*time` written through a pointer to the
+// parameter's home 89 (the indirection folds); `next` declared at function scope 89; the update ahead of the three
+// stores 90; no flags local (tests on the member) 89. On the kept form: flags as `dword` with a `(word)` store 35
+// (same code).
+// Resend type selected by the sent bit, pending bit, both bits, or separate tests
+// 52/52/89/54. Nullable eligible message via conditional or rejection branches 89/89.
+// Qualifying cursor used for post-scan publication with an in-place or saved-word
+// update 98/82. NOT kept: single-bit type selection gives the retail cursor and
+// message pointer with a byte OR, but changes the flag read and return-value code.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

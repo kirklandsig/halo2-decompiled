@@ -459,6 +459,9 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // `add esi, edi`), as an integer sum 9, with the offset local declared ahead of the samples local 9 (same code: the
 // commutative add keeps the offset as its destination whatever the declaration order); the sum named before the set's
 // declaration 2; the scale copied into a local at the call 2 (both the same code).
+// M3 lane 3 r260 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): the sound, data, entry and count locals declared bare
+// and then assigned 2; no sound-tag local (its promotion index read inline) 2; the curve set as an aggregate initializer on
+// the copied samples address 4; the guard written `0 < count ... != 0` 2; the entry index in a named local 2.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
@@ -668,7 +671,18 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
-// score 49 (was 184): `inline` on 0x188790's definition (round 191, plain): this body then keeps the object in EBX, re-zeroes
+// score 49 (was 49): left as round 191 lists below. Round 199 (m3 lane 5, fast; on round 191's 20-count chain of match-only
+// forms, re-measured 20, aligned / register-masked 15 / 9): the definition lookup after the +2 store 30; that with the pointer
+// select 122 (1032 bytes); the marker word in a named short for its test and call 20 (same code), with the pointer select 98;
+// the forward compress before the position copy 22; the marker declared before its name 20, the position through a named
+// point local 20, through a by-value inline setter 20, the marker as a one-element array 20, the position and forward read
+// through a named matrix pointer 20 (all the same code). Diagnostics (volatile probe loads, reverted): one probe before the
+// position copy 85 (the copy one register further), two probes there 89 with retail's copy exactly (masked 9: only the head,
+// the select and the probes left), two probes before the marker name or before 0xb8d30 103/96 (copy fixed, the 0xb8d30
+// owner push moves to EAX). So retail has two more (or one fewer) scratch temps than this body between the 0xb8d30 owner
+// load and the copy; no source form found yet that gives them. The pointer select with those two probes 163 (register-masked
+// 13): the head/select and the copy are two separate rotation offsets.
+// Earlier 49 (was 184): `inline` on 0x188790's definition (round 191, plain): this body then keeps the object in EBX, re-zeroes
 // xmm0 after each 0x188790 call and has retail's 0x80 frame. Left: the top select (retail forms the address in each arm and
 // loads once, `mov eax, [eax]`), the clear path's `or byte ptr [edi], 2` (ours folds it into a word store), case 0's flag
 // store ahead of the last location store, the audibility byte stored after its arguments, and the marker position copy's

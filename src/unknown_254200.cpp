@@ -238,6 +238,10 @@ void function_254200(void)
 // 136 (1113 B); the four edges computed into a four-real array ahead of the calls 173; the depth pair from a two-real local
 // array 4 (same code); the first vertex's corner in a point copy updated in place (x -= size, y += size) and reused 206
 // (1114 B); two corner points (low, high) computed ahead of the calls 173. The constant and y + size still reload in our order.
+// M3 lane 15 r100 (single-address fast, control 4): the two dimension shorts through named width/height fields of the
+// file's bitmap view 4; the draw-ready flag global typed bool 4; the readiness test as an early return 4; the point copy
+// through memcpy 4 (all the same code); the vertex register spelled 0 as in unknown_01cf50.cpp's quads 8 (not the same
+// register: the opcode word changes).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -579,6 +583,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // calls to the C form 446/369/375); the first block's eleven texture-stage calls through the existing wrapper 0x224f0
 // 465 (2236 bytes); the colour bound by a `color3f const &` 2 (same code). Diagnostics: the first quad's inline-depth
 // start moved one call later 2; an unreferenced float function added to the file leaves 2 and 0x254490's 4.
+// Round 185 (m3 lane 8, fast with 0x254490 and 0x254200; control 2): the bitmap and stage calls' 0.f arguments as
+// integer 0 2; every depth constant as a double literal 2; the first quad's four texture calls through a forceinline
+// two-coordinate wrapper 263 (first difference +0x83: the texture-stage block inlines differently); every depth
+// constant through a forceinline accessor returning it 340 (2197 bytes, same cause); the two lookup helpers plain
+// `inline` in place of forceinline 2. The two reloads after the second texture reservation stay swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

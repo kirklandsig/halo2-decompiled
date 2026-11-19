@@ -777,6 +777,25 @@ extern point2f *g_468778;
 // EBX); on it the slot parameter typed as the view 393 (same code); the final result set by `if (...) result = true;`
 // 380; the actor declared first and assigned after the settings call 375 (same code); the prop lookup first in its block
 // (ahead of the clock and the threshold) 380.
+// Round 193 (m3 lane 6, fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control
+// 375, aligned 263, register-masked 102). Reading: retail gives up arg_0's EDI inside the facing block (EDI holds the
+// view, then the facing pointer, then 0xe6900's argument) and reloads it from the parameter's home at 0x1aa666 on those
+// paths only; the prop takes EBX between the calls that take arg_0 there, and the settings never hold a register. Ours
+// colours the long-lived values in the order they are first set (arg_0, settings, actor, slot on the 375 body; arg_0,
+// actor, settings, slot with the actor first), so the prop, set last, is the one left in memory. Re-measured: actor first
+// with `if (!settings || f13 || f14 || f2d) return false;` and the final expression returned 393 (aligned 266, masked
+// 104). New, on the 375 body / on that 393 form: arg_0 read once through its own address at the tail for the three
+// tail calls 375/393 (same code: the read is forwarded); read through its address at each of the three 375/393; a
+// volatile read of it at each of the three 417 (1562 bytes)/392 (aligned 330, masked 117: arg_0 keeps EBX at entry).
+// Diagnostics, restored: the settings pointer volatile 419 (1561 bytes), on the 393 form 402 (arg_0 EBX, actor EDI
+// and spilled, slot EBP, prop ESI with a copy in arg_1's home); on the 393 form a volatile read of arg_0 at the three
+// calls that take it in EBX (0x1e4f90, 0x1a9d80, 0x1a9e00) 392 (all four pushes at entry and the prop in EBX as retail,
+// but the actor EDI and spilled, settings ESI, slot EBP; masked 114); both of those together 404 (1562 bytes: arg_0
+// ESI). Neither the settings' register nor arg_0's EBX preference alone is what separates the two colourings.
+// MiniMax G (11-18): no new form, no lower score (375): computing the actor block before the settings call, as
+// retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
+// pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the
+// query in EDX, and this lane may not change the parameter order.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -946,6 +965,10 @@ static __forceinline long real_to_long(real value);
 // the result byte away (508); the body keeps its float chain, where retail evaluates the dot product in a
 // different order. The permuter's best variant only moves 0.5f into a local (381, a gain of one under the keep
 // bar, and a local holding only a constant), so the body stands.
+// MiniMax H (11-18): no new form, no lower score (382): the velocity block's orders are retail's (the rate first and
+// then the prediction, the dot in the k, j, i order with the length after the sum, and the half applied last), so
+// what still differs is the false exit's place, the facing pointer that retail forms late through the view pointer
+// in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
 // prop view through the existing prop_node_view wrapper 382 (same code); the computed entry result with that
 // wrapper 508 (1921 bytes, frame 0x54: 0x25d740 still expands under the computed result); the result preset

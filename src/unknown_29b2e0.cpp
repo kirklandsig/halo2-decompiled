@@ -51,6 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
 // stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
 // return value 267 and the length local initialised before the call 171, all dropped; the helper's locals renamed
@@ -60,7 +61,6 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // to -0x10 where retail spills it to -0xc (the vector homes differ too), the unity constant still loads into XMM5
 // against retail's XMM4; the length from the helper's return (263), the shared length slot (422) and the length local
 // declared first (176) were measured and dropped.
-// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-12): no new form, no lower score (176); the permuter's 129 tries find nothing better than the
 // baseline (172 on its reduced image), and retail keeps the unity vector in XMM4 where ours keeps it in XMM5
 // and the root at +0xc where ours keeps the yaw there.
@@ -594,6 +594,24 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // publication restores XMM4 and shifts the first difference to +0x84. Its best score is 171, five points
 // below baseline, with the root still at +0x10. Reusing the first direction moves the extent to 1708 bytes
 // but scores 187. The opening body and normalizer are restored.
+// M3 lane 15 r99 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH unless noted; [n] = aligned differing lines,
+// control 176 [229]). The rotation helper's result through the by-value vector3f_assign with the three rows as arguments
+// 190 at retail's 1706 B [214] (the rows are then evaluated k, j, i: the same code as the rows written k, j, i). The
+// normalizer's scaling through the existing vector3f_scale (normalize3d.h) in place of its written-out body 255 (1719 B,
+// first difference +0x84) [243]; with the rotation setter 226 (1710 B) [259]. The normalizer's scaling through
+// vector3f_assign 395 (1715 B), with the rotation setter 368 (1709 B) [197]; 0x29b990 5 in both. The single-exit normalizer
+// (`else local_0 = 0.0f;` then one length store and one return) with vector3f_scale 245 (1719 B) [233]: unity XMM4, the
+// first root XMM3, the first i product XMM6 and the second root XMM5 are then retail's (the written-out single exit, 171
+// re-measured, has XMM6/XMM5/XMM3 there), the first 155 instructions differ only in the root slot (+0x10 against +0xc),
+// but the yaw scale then multiplies into a copy (`movaps xmm1, xmm2; mulss xmm1, xmm0`) and the code is 13 bytes long; that
+// with the rotation setter 216 (1710 B), with the XY vector before the second copy 243, with both 214; with the planar
+// length through dot3f 245 (same code). Re-measured: single-exit 171, with the XY vector first 169. Reading: retail packs
+// the three roots and the inlined angle helper's arc-cosine result into the slot its clamp input and the yaw share (+0xc);
+// ours gives the clamp input and the yaw +0xc but packs the roots and the arc-cosine result with the first pitch angle at
+// +0x10, so the yaw's first value is a copy of the helper's result where retail's is the result itself.
+// Shared 2-D normalization of the XY prefix with depth scaling and common length, early zero,
+// separate length arms, or length before depth: 423/441/441/423. With the first magnitude returned:
+// 420/429/430/420. NOT kept: root and yaw homes still differ and the shared normalizer raises 0x29b990 to 31.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -1203,6 +1203,12 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // code). Diagnostic (value-wrong, reverted): the result made unknown on the notice path (a `result = true` under an
 // impossible unit test) with the notice ending in `return result;` 261 (974 B): that return still merges with the exit,
 // which still follows the notice, so a separate unfolded return alone does not give retail's layout.
+// M3 lane 2 r100 (fast): with every declaration hoisted (no inner block), the immediate throw and the notice both moved
+// after `return result;` behind labels and ending in `goto done;` 19 (same code); the same with the notice before the
+// immediate throw 19; with `done:` after both moved blocks 19; with the notice's animate test as its own `goto done`
+// 19; the grenade test as two separate `goto notice` tests 176 (the notice then stays in place after the count test,
+// as for one test). Matched 0xed710 in this file has retail's shape (an `||`-entered block laid out after the shared
+// exit) because its `if` is the last statement before the return; here the exit is not chained after the success path.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -2409,6 +2415,7 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below.
 // MiniMax I (11-17, run 103): no new form, no lower score (234): retail still keeps the pool global in EBP with the unit
 // index in EDI and compares the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this
 // build keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
@@ -2416,6 +2423,13 @@ __forceinline char unit_action_round(real value)
 // MiniMax G (11-18): no new form, no lower score (234): the pool global still sits in this build's registers against
 // retail's EBP, the 0x212 field is still compared as a byte against retail's sign-extended short, and the 0x1e and 0x1d
 // tag constants still land in EBX and EBP the other way round.
+// Earlier (score 234, was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
+// MiniMax H (11-18): no new form, no lower score (234): retail still loads the pool global into EBP with the unit index
+// in EDI and compares the sign-extended hand index in sixteen bits against the -1 it keeps in EBX, where this build
+// keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
+// reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
+// compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
+// stands.
 // score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
@@ -2651,6 +2665,16 @@ __forceinline char unit_action_round(real value)
 // and the weapon default store where ours compares and stores immediates), type EBX for EBP, the two bytes' homes,
 // `current` in EAX for ESI, the 0x1c8 read ahead of retail's `jb`, the lunge divide from a register for retail's
 // memory operand, and EAX/ECX swapped in the last lookup. Body unchanged.
+// M3 lane 13 r111 (fast with 0xe9ed0/0xea090, matched each time; the one-file harness is not faithful here, 1200 B): on
+// the single-exit goto form (lane 11 r83's u2, re-measured 105 at 1188 B, aligned 66, masked 10): `long name = NONE;`
+// 105 (same code); name and type both NONE 105; the weapon default taken from the first-person name 105 (same code); the
+// hand getter writing through an out pointer 105, an out reference 105 (same code); the lunge speed read at both uses
+// 357 (1142 B), with the NONE name 357. Diagnostics (not usable): a volatile weapon index 349 (1155 B: the hand compare
+// still uses an immediate), with a volatile result too 317 (1194 B).
+// Reading: callee-saved registers go ESI, EDI, EBP, EBX by priority (measured on 0x18dc90), so retail ranks actions >
+// index*12 > pool > first-person name and ours actions > pool > first-person name > index*12; retail's `or ebx, -1` is one
+// hoisted NONE serving the name's initial value, the hand getter's 16-bit compare and the weapon default store, which no
+// form here produces; `channel` lives in the dead `mode` parameter's home; `current` takes the dying actions register.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4435,6 +4459,11 @@ extern vector3f *g_4687bc;
 // sinks to the store, in AX, as the material built after the lookup, re-measured 10). Ours stores the material at once
 // because it holds it in DX, which the pool's data load needs; retail holds it in CX until `mov ecx, esi`, so the late
 // store follows from the register alone.
+// M3 lane 2 r100 (fast with 0xb67a0, 0x188180 and 0x1eb020): the node-count test read as
+// `component->rigid_bodies.data[index].node_count` before the element pointer is formed (0x1cf520's fix) 12, the same
+// through the array's operator[] 12 (both form the element address first, `lea eax, [ecx + edx]`); the havok-flag and
+// component-index tests as nested ifs 8 (same code); the rigid-body index as `short` (0xb67a0's return type) 25 (1099
+// B, word compare); the material copy-initialised from `c_type_47f957(g_54e898)` 8 (same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

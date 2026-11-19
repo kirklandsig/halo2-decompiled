@@ -2126,6 +2126,17 @@ void function_b7360(long object_index);
 // M421: Low-word actor/command/both pool ordinals 471/471/482; point-set accessor in movement/recording/both 272/272/270;
 // named point sets 270; word set and point ordinals 465. NOT kept: the word ordinals change entry scheduling without
 // restoring actor/output register roles. The packed reference still stays live across validation.
+// Tried const actor view 270, const actor reference 270, native state flag and slot fields 270,
+// countdown reference 272, selected payload reference before object call 275, payload reference at publication 272,
+// validation result in the point, movement and equipment cases 270/270/270.
+// DH406: Positive validation scopes for movement/initial point, recording and follow, each alone, all
+// three pairs and all together 270 each. With separate actor and point guards in recording, 270. NOT
+// kept: ties. The actor and output registers stay reversed and the post-validation reference reload is
+// still missing.
+// Perception index after both lookups 272, before the command lookup as a value/reference/predicate 487/487/487,
+// command getter or named type in the guard before payload lookup 506/506, early perception with explicit type
+// comparisons 477, early perception and type 487. NOT kept: the actor-first forms load the actor data too early,
+// and the actor/output roles and packed-reference reloads still differ.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2541,7 +2552,25 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // dot product, which this build computes with another file's helper where retail inlines it, and the facing
 // and colour copies, which choose the other registers. The turn-facing sum written with its terms in the other
 // order measures 431, a gain of two, which is below the keep bar.
-// score 479 (was 479): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree.
+// score 433 (was 479): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree.
+// m3 lane 14 r111 (fast with 0x110ab0; control 433 = full; aligned counts with the jump table cut off, control 126).
+// What differs: the `if (local_3)` test sits after case 20 where retail places it after case 0, falling into case
+// 13's return-1 epilogue (retail joins the two return-1 blocks there); case 20's else arm stores and reloads the flag
+// where retail loads it into AL and jumps past the reload; case 5's `field_0 == 0` is one join where retail repeats it
+// (with the EBX/EDI reloads) in each arm and shares case 0's `sete`; case 4 copies the facing; case 2 copies the turn
+// facing as floats; case 6 folds its two flag sets into `or 0x69`; case 7/8's flag is normalised. Forms: case 4 reading
+// the state's facing directly 611 (2400 B: actor EDI, state EBX); case 2's copy as an aggregate assignment 611; both
+// 623 (2384 B); case 18's targets in nested two-use locals 583 (flipped too), with case 4 direct 609; those three
+// together 616, with every form below 630 (2368 B; with EBX/EDI swapped back the rest is aligned 136); case 13 as the
+// shared `local_30 = 1; goto` exit 481 (2404 B: the joined epilogue moves to the end with the test), as `break` 481,
+// removed 481; case 0 moved after case 20 525, with case 13's goto 447; case 7/8's flag as `arg_1 == unknown018 ?
+// unknown264 : true` 493 (case 7/8 then exactly retail's; match-only, as listed); case 5 as `!function_e70e0(arg_1) ? 0 :
+// rate` 404 (retail's arm order, AX reused; NOT kept: arms swapped with the condition negated, match-only), as an
+// if/else 592; the two together 494, with case 13's goto 474; the turn-facing products' operands commuted 433 (same
+// code), the two terms swapped 431 (NOT kept: two lower); the 0x465 flag through a long cast 433 (2420 B); case 20's
+// else as `&& !d1` / nested `if (!d1) local_3 = false;` 537/537 (2440 B); the flag as bool 433 (same code); case 21's
+// target in a two-use local 433 (same code); case 20's iterator as data, index, datum_index 433; plain `return 1;` /
+// `return 0;` exits 485 (2400 B), with the case 7/8 and case 5 forms 485.
 // m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
 // frame 0x1c and entry agree. Dispatch span, planar copy and request flag stores differ.
 // Earlier m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
@@ -2952,12 +2981,21 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Request bit setter for 0x29/0x48/both 453/445/452. NOT kept: copy forms tie or regress versus the
 // reduced control 474. Setters increase length to 2416-2432/2396 bytes and give different store sequences.
 // MiniMax R (11-17): no new form, no lower score (479): the switch's jump table still lays the case blocks out in the source's order rather than retail's (1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20), so the actor takes edi where retail keeps the state in ebx, and the rounds above record that no case order or arm spelling moves them.
+// guarded pending tail 657; three facing branches 474; delayed facing first 578; negative delay admission
+// 474; fallback point selection 478; carried turn admission 474; separate active timer paths 481; selected
+// animation ticks 627. NOT kept: The delayed-facing branch forms tie the reduced control at 474. Selecting
+// the fallback point by address reaches 2396 bytes at 478 in that image, but changes the load boundary and
+// scores above the reduced control. The other variants regress.
 // The dispatch span, state-bit completion layout and animation copy registers still
 // differ. Shared subtype flags 479; subtype completion from the flag 618; incomplete
 // subtype guard 479; signed tick-reset value 477; shared countdown/facing flags 479;
 // retained selected object 479; facing scalars 627; playback admission guard 479;
 // committed turn flags 475. NOT kept: the tick and turn forms shorten to 2400 bytes,
 // but gain only two and four points and leave the dispatch span different.
+// DH406: Direct completed returns for case 1 distance, case 4 facing, or the clear timer flag in cases
+// 7/8 at 574/452/482. The three pairs 559/574/451; all three 559; all three with the default and case
+// 13 sharing a return 619. NOT kept: every form regresses at 2416 bytes. The native full-width
+// completion tail and dispatch span still differ.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

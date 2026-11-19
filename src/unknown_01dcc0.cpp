@@ -335,6 +335,31 @@ long g_55e6c0;
 // as `count < 0 ? 0 : count` stored, then `if (field > 4) field = 4;` 156 (495 bytes); as an unsigned range test
 // `(dword)count > 4 ? (count < 0 ? 0 : 4) : count` 140; the height bound by `long const &` for its store and the packing
 // 29 (same code). All restored.
+// Round 185 (m3 lane 8, fast with 0x1dc40/0x1db10, all on the round-51 signed pitch/packed lead, 29 at 484 bytes):
+// the clamp through a forceinline helper that clamps its own parameter by the ternary and returns it 166 (497 bytes,
+// the count takes EBP); the clamp's store ahead of the +0x8c clear 33; the clamp assigned through a reference-bound
+// local then stored 29 (same code); a copy of the count made ahead of the kind store and clamped at the store 29
+// (propagated); that copy clamped in place by the ternary, then stored, 166 (503 bytes; 0x1dc40 and 0x1db10 go to 5).
+// Reading: retail's top block fits the clamp value interfering with the kind value (count loaded before the kind
+// store, so it cannot share EAX) while the height starts after it; ours starts the clamp after the kind store.
+// M3 lane 1 r121 (fast with the file's functions and 0x1d6f0): the clamp's store after the 0x1d6f0 call 179 (453 bytes;
+// 0x1db10/0x1dc40 10, 0x1d770 213), after the register call 141 (479 bytes); element_count typed dword 31 (four of
+// the file's matched functions differ); the round-51 lead with the clamp's store after the call 178. LEAD, on the
+// round-51 signed pitch/packed lead (re-measured 29 at 484 bytes): the select store (`sub_header[4] = linear ? packed :
+// 0`) written ahead of the header-word store (`sub_header[0] = 0x40001`) 38 at 483 bytes, first difference +0x85: the
+// whole top block is then retail's (count loaded into EDX and compared above the kind store, height into EAX after it).
+// The three stores are emitted in retail's order whatever their source order; any order with the select ahead of the
+// header word gives this (flag/select/header, select/flag/header, select/header/flag 38 each; header/flag/select and
+// header/select/flag 31). Left on it: the clamp's store is scheduled ahead of the packing (retail after it), so the
+// height term is built in a copy (`mov edx, eax`) and the height stays in EAX for the call's push (retail reloads it
+// from the stack), the select then takes EBX, the header word is stored straight through ESI (retail through EBX, the
+// header address formed first), and the loop's ECX/EDX rotate. On that base: the call's height (or width and height)
+// read from the stored fields 38 (same code); the height term first in the OR 38, as its own first statement 38 (same
+// code); a clamped `levels` local published after the packing 41, after the flag 60, after the select 142, after the
+// header word 142; the clamp's store after the packing 141; the two header zero stores after the header word 133, ahead
+// of it 133; six random orders of the seven statements from the +0x7c clear to the select 49-143; a named header
+// pointer used for every header access (main's order or the lead's) 162 (471 bytes); the call's height read once
+// through the parameter's address, on the select-first lead 38, on the plain lead 29 (both the same code: the address folds).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

@@ -1417,9 +1417,9 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
  contact_vector_set(out, (*value)(0), (*value)(1), (*value)(2));
 }
 
-// MiniMax B (11-18): no new form, no lower score (1): the entry guard still compares the count with the zeroed index register where retail tests the count against zero; dropping the volatile mirror folds the guard into retail's test but also loses the index reload after the 0x1d1160 call (126, 858 bytes), and a positive guard, a while, a do-while and the increment in the for clause all merge back into the register compare, so the last byte needs the write through the velocity pointer in 0x1d1160's impulse branch, in another file.
-// score 1 (was 3): retail tests the loop count against zero at entry; ours compares
+// score 1 (was 1): earlier 1 (was 3); retail tests the loop count against zero at entry; ours compares
 // it with the zeroed index register. The member call now matches retail's register setup.
+// MiniMax B (11-18): no new form, no lower score (1): the entry guard still compares the count with the zeroed index register where retail tests the count against zero; dropping the volatile mirror folds the guard into retail's test but also loses the index reload after the 0x1d1160 call (126, 858 bytes), and a positive guard, a while, a do-while and the increment in the for clause all merge back into the register compare, so the last byte needs the write through the velocity pointer in 0x1d1160's impulse branch, in another file.
 // Further trials: shared scale helper for both vectors 3; shared scale and output
 // assignment helpers 65; shared scale plus named progress and body count 3; native int
 // selected count 3; named saved iteration index 3; named selected and available counts 3;
@@ -1536,6 +1536,23 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // endpoint advanced during selection 165; saved ordinal as sole induction variable 125;
 // count of populated indices 2; fill cursor distance as count 157; nonnegative unsigned extent 156;
 // inclusive next position test 23. The populated count changes the count store and retains the entry compare.
+// M3 lane 15 r99 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, 0x1c4b00, 0x1d0dd0; MATCH unless noted). On the record
+// form {a, b, index} with a plain `for` and no mirror (re-measured 106 at 864 B, aligned one line: the reload after the
+// 0x1d1160 call), what 0x1d1160 does with its velocity argument: its components read through the vector's component array
+// 106; a by-value copy of the vector converted instead 106; the components read through a reference-returning accessor on
+// a non-const view 106 (none gives the reload). Diagnostics: a self-copy through 0x1d1160's point argument 106 and a
+// self-store of a component field 106, so the summary is per argument and only a store through the velocity pointer counts
+// (the self-copy through it re-measured: MATCH here with every callee matched, a dead store, not kept); a store through
+// 0x1d1010's change argument 150 (862 B: the index is then killed by the direct 0x1d1010 call as well, so retail's 0x1d1010
+// has none and the cause is in 0x1d1160 alone); 0x1d1160's velocity parameter read once through its own address 80 (862 B;
+// the parameter moves to the stack, 0x1d1160 and 0xe5300 lose their matches), its point parameter read that way 19 (868 B,
+// the point is then pushed; 0x1d1160 and 0xe5300 lost).
+// M3 lane 7 r180 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, 0x1c4b00, 0x1d0dd0; R = the record {a, b, index} with a
+// plain `for` and no mirror, re-measured 106 at 864 B, aligned one line: the reload after the 0x1d1160 call): on R, 0x1d1160's
+// mass scale stored through a reference bound to its own impulse local 106 (callees MATCH; a store through a reference to the
+// callee's own local does not count, the summary is per argument); the velocity pointer passed straight to the virtual
+// impulse call (diagnostic) 177, still no reload (an escape into unknown code is not what retail records); the index array
+// in the record too 106. On this body the loop index bound to a `long &` for the loop test 1 (same code).
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
