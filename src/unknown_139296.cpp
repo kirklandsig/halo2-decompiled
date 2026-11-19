@@ -1391,10 +1391,14 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // add esi, ebx`, the field load now a shared temp). The draw call's element re-formed from the field 92 (367 B, reloaded
 // after the calls). So retail's loop 1 holds one more reference (definition pointer or offset) than SSS, not through a
 // second field load.
+// Matched in a full build with stand-in SDK headers (was 1): the success flag's initial store goes through a reference
+// to its address, and the first loop is a guarded do-while counting down (the form of the second loop).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
-	bool success = true;
+	bool success;
+	bool *const &kept = &success;
+	*kept = true;
 	s_13a532 const *local_2 = (s_13a532 const *)g_4e3b44[arg_1 & 0xffff].bytes;
     word local_3 = 0;
     word local_4 = 0;
@@ -1402,19 +1406,23 @@ bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
     word local_6 = 0;
     s_13ad48_item const *local_7;
     function_13a050(arg_3, arg_2, arg_4, &local_7, &local_3, &local_4, &local_5, &local_6);
-    long offset = 0;
-    long count = local_2->field_20;
-    for (; count > 0; --count)
+    if (local_2->field_20 > 0)
     {
-        byte const *local_9 = local_2->field_24 + offset;
-        if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
-            local_6, (s_condition_subject const *)local_7, local_5))
+        long local_8 = 0;
+        long local_11 = local_2->field_20;
+        do
         {
-            real local_10[4];
-            function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
-            if (!function_22b7dd(local_9, arg_2)) success = false;
+            byte const *local_9 = local_2->field_24 + local_8;
+            if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
+                local_6, (s_condition_subject const *)local_7, local_5))
+            {
+                real local_10[4];
+                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
+                if (!function_22b7dd(local_9, arg_2)) success = false;
+            }
+            local_8 += 0x50;
         }
-        offset += 0x50;
+        while (--local_11);
     }
     if (local_2->field_8 > 0)
     {
