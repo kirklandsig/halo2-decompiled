@@ -2523,6 +2523,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // with field stores or a const aggregate: 567/567, 497/497, 497/497, 497/497.
 // NOT kept: all retain frame 0x90 and the shared direction/point home. The first
 // pair shortens to 2255 bytes and the other six regress at retail length.
+// Shared sampled/draw color 487, with sampled field transfers 524, with an animated-color copy
+// 549, with both transfers 567. Early animated copy or channel initialization 571/557.
+// Shared color beside angles 487, or beside animated tint with both transfers 596.
+// NOT kept: 487 gains five at retail length and the 0x90 frame remains. Other forms regress.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3223,6 +3227,9 @@ real magnitude3d(vector3f const *v);
 // Tried current/target/both vector initializers 170/170/170, axis at outer scope 170, rotated initializer 170,
 // named absolute dot 196, tangent with shared/staged cross 186/186, angle after normalizer 246,
 // shared projected scale and sum 183.
+// Refresh the raw length at the upper bound, current/target: reuse it 170/228,
+// use a fresh in-range magnitude 170/170, floor default 262/246, ceiling default 170/233.
+// The raw current length and promoted-dot homes remain. Original clamps restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4283,6 +4290,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // camera readback 530, moved point initialized from previous coordinates 551, both 523,
 // camera displacement with original/scalar element capture 500/489.
 // The shared previous-position home, frame and independent velocity reloads remain.
+// Stored bitfield cycle/size/reset, cycle+size/cycle+reset/size+reset:
+// 490/486/489, 490/491/489. All direct bitfields 491; one bitfield snapshot 486.
+// The 0x60 frame, velocity inputs and projection homes remain. Original flag word restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

@@ -673,6 +673,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // its ternary as an if/else 846 (both the same code). Lead: retail treats 0x14b240 as a call that may write memory
 // (0x18d730's note; retail reloads the sounds base after it here); with that callee form this body is 911, so a
 // rework of this function belongs with build/r110/held-0x18dc90.patch.
+// Definition bitfield gates: custom levels/scale/both 888/919/914,
+// original-source repair/neighbor level/both 913/846/913. All definition bits
+// 938; one initial flag snapshot with live repair bits 910. Entry zero,
+// query/count homes and the accepted-choice register remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
