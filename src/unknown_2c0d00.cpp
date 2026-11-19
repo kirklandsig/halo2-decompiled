@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 920 (was 920): r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// score 920 (was 920): r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
 // MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
 // from both listings.  Retail's function-scope homes are the raised point at F+0x24, the range_min short at F+0x30,
@@ -624,6 +624,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 986/986. Reduced control 926. NOT kept: the delayed typed read recovers
 // the scaled unit-field access, but the 879 form retains frame 0x2cb4
 // and shortens the body to 3708 bytes against retail 3731.
+// M3 lane 10 r125 (fast with 0x2c2060 at 400 and 0x2c3030 MATCH; fast control 926, plain 920): retail stores straight = 1
+// a second time on the actor_index == NONE path, in a block just ahead of the join (0x2c0e9a), besides the head's store.
+// `else straight = true;` after the actor block gives that block and store: fast 919, plain 929 (3722 B); with the actor
+// fetched into a plain local first (r123's 923 form) fast 924; `else { straight = true; aligned = true; }` fast 936 (3708
+// B); straight left uninitialised and set true at the top of the actor arm and in the else arm fast 926; the NONE arm
+// written first (`if (actor_index == NONE) straight = true; else {...}`) fast 916 but plain 926 (3722 B; the store block
+// is then laid out at the head). The fast preview misleads here by up to 13. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1489,7 +1496,7 @@ long function_1fa7f0(void);
 // MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
 // MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
 // and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
-// score 400 (was 400): r123 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// score 400 (was 400): r123, r125 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // m3 lane 3 r250 (fast with 0x2c3030/0x26ccb0, control 400): the step's fields read through points[index] with no
@@ -2072,6 +2079,12 @@ long function_1fa7f0(void);
 // Aligned frame 0x114 and the count in BX remain. Short/long exclusive reverse bound 457/436.
 // With a candidate step address 457/436. Reused short/long forward ordinal 470/481,
 // with a candidate step address 470/481. The selected edge still spills.
+// M3 lane 10 r125 (fast with 0x2c3030/0x26ccb0, both MATCH; control 400, aligned 350): the second `edge = 0xffff` at the
+// scan hit re-measured 433 (1765 B: count still in BX through the scan, edge in its slot); the emit's z, unknown02 and type
+// read through points[index] (step pointer only in the typed branch) 473 (1758 B); the typed branch through points[index]
+// and the step pointer formed at the emit 473; the step pointer declared `const *const` 400 (same code); the attempt
+// counter as long 399 (1751 B); the copied last point as points[end - 1] 545 (1811 B). Retail keeps index in EDI and the
+// step pointer in a slot at the loop top where ours keeps the step pointer in EDI and count in EBX. Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
