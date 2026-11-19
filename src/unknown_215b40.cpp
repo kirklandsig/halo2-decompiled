@@ -347,6 +347,16 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // On it: the scan as 0x2157e0's `while` over the getter with the capacity test after a match 114; the cached scan's
 // index declared ahead of the cached count 114; the location declared beside the iterator 114 (all same code); an
 // early `return` with `*capacity = 0` when the cache is missing 212 (600 B). Still BLOCKED-BY the build flag above.
+// Round 438: Cache/zero registers and the disk iterator index still differ. Test the controller traversal with the original scans.
+// Put the two single-device cases first in the switch: 114.
+// List the numbered controller cases in descending order: 172.
+// Use NONE as the shared single-device selector for the limit and switch: 185.
+// Use 0xff as the shared single-device selector for the limit and switch: 209.
+// Choose the first controller card by switch and derive the current unit from its ordinal: 229.
+// Choose the first controller card by switch and advance through its paired slots: 229.
+// Select the current controller card by switch only on the two non-disk passes: 259.
+// Compute the current unit directly from the controller port and card ordinal: 276.
+// NOT kept: The sentinel-first switch ties at retail length. Changing the controller cursor or hoisting selector normalization raises the score and changes the extent. The cache still reloads after the built-in guard.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

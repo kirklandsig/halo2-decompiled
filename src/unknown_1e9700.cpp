@@ -284,6 +284,16 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // incremented and then read in a separate statement 76 (same code); the old maximum as `index == NONE ? NONE : ...` 79;
 // `old_maximum` declared ahead of `enabled` 76 (other code); the clamp limits read ahead of a nested `index != NONE`
 // test (0x1968b0's own shape) 76 (other code: the index jump moves below the two limit loads, as retail). Body unchanged.
+// Round 438: Enable reload and maximum transport remain separate from the statistics row shape. Test the existing short-row layout.
+// Use the existing short row layout for both counters and the timestamp 86.
+// Bind the actual fourteen-short player row as an array reference 86.
+// Index the existing statistics table at every row use 85.
+// Use the native row and bind the time field for the threshold test and store 86.
+// Use the native row and bind the recent count through its update branches 86.
+// Bind both updated fields of the native row in the final streak update 86.
+// Compute the new recent count from the threshold and store it once 102.
+// Index the statistics table directly and bind the time field locally only for its two uses 85.
+// NOT kept: Direct table indexing reaches the retail extent at 85. All eight forms raise the score and move the first mismatch into the prologue. The original enable and maximum lifetimes remain.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -754,6 +764,16 @@ struct s_object_damage_view
 // (!consider_team) continue; else {...}` 353 (same code each); `if (killer != NONE) { if (killer == reported_player)
 // damage_code = code; } else if (reported valid) {...}` (retail's arm order) 363 (1532 B); the team byte read again for
 // the 0x1df560 argument, killer_team kept for the end 358 (1552 B).
+// Round 438: Victim-team, credited-player and damage-code homes remain rotated. Test the existing record layouts.
+// Read the victim team through the existing player record type 353.
+// Read the candidate team through the checked player record type 353.
+// Use the player record type for the credited team and unit in both credit branches 353.
+// Read the validated assisters through the player record type 353.
+// Use the real player record for the related-unit award team lookup 353.
+// Use the existing object header fields for all three object-header observations 353.
+// Test the table validity through the existing statistics record 353.
+// Use the existing player, object and statistics record layouts together 353.
+// NOT kept: The existing record types preserve the frame and all measured call-site controls. They leave the three rotated scalar homes and the amount-biased history cursor.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

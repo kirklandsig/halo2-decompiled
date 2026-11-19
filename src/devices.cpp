@@ -2610,6 +2610,16 @@ bool function_0b6760(s_index_pair const *pair);
 // ebx, so the body follows one register rotation off and stays sixteen bytes short of retail's 1495; the only form
 // below 250 needs a one-use rate local, which the coordinator ruled out without a byte match, and dropping the volatile
 // on the definition alone measures 386.
+// Round 438: The definition/result stores and channel-1 register lifetimes still differ. Position-group lvalues and the typed definition receiver were tried.
+// Bind the position-group field reads and updates to position 61.
+// Bind the position-group field reads and updates to position velocity 314.
+// Bind the position-group field reads and updates to group target 64.
+// Bind the position-group field reads and updates to position and position velocity 314.
+// Bind the position-group field reads and updates to position and group target 64.
+// Bind the position-group field reads and updates to position velocity and group target 316.
+// Bind the position-group field reads and updates to position and position velocity and group target 316.
+// Use the existing device definition as the saved receiver in both motion paths 61.
+// NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

@@ -372,6 +372,16 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (1589 bytes, aligned 215); the two missing-input tests as one `||` 412; the second and third exits as an else-if chain
 // around the body 387 (same code); the +0x3c pointer read before the clock 377 (1589 bytes but aligned 214, and retail
 // reads it after the clock: a positional gain only).
+// Round 438: The secondary state still takes ESI and the data getter still expands. Existing record layouts and the roster and progress views were tried.
+// Read candidate count and identities through the actual roster record 376.
+// Use the matchmaking state storage members for the count and timer 376.
+// Read the timeout base through the existing hopper record 376.
+// Use the existing session owner view for both sessions and the progress pointer 376.
+// Use the actual progress record for the stage and attempt count 376.
+// Read both components of the final deadline through their declared records 376.
+// Use the actual owner and progress record layouts together 376.
+// Use the roster, owner, progress, hopper and state record forms together 376.
+// NOT kept: All eight record forms tie at 376 and 1,589 bytes. The reduced preview agrees with the full score and extent and reports six unresolved global references. The secondary state stays in ESI and the data getter still expands.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
