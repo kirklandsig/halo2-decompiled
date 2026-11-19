@@ -615,6 +615,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Unity remains in XMM5 and the root still shares the pitch slot. Separate desired/bounded/difference
 // angle pairs 269/269/244. Desired plus bounded, desired plus difference, bounded plus difference,
 // or all three 269/265/265/265. One lower bound for both angular clamps 284.
+// Single yaw-gain read, in-place/conditional update 212/212. Separate projected yaw
+// with repeated/one gain read 293/288, and separate result arms gain/fallback first
+// 288/301. Narrow yaw phase 314, gain read in the scaling arm 303.
+// NOT kept: all scores rise. Unity and the shared root/yaw slot still differ.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

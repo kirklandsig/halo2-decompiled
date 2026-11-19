@@ -674,6 +674,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // normalization only, position between input and normalization, or position after
 // normalization 750/998/874/890/998/998. NOT kept: the position home remains
 // unresolved. Moving both producers under admission also raises the caller score.
+// Split saved planar components 766, all components 766, point-shaped planar save 762,
+// and split capture with member stores 766. Reuse query lateral/both tail components
+// 746/729, or translated-target lateral/both 734/734.
+// The translated-target forms put the position at +0x80 with frame 0x88, then differ at +0x4e.
+// NOT kept: every form regresses and shortens the body.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

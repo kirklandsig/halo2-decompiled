@@ -1456,6 +1456,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
+// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // MiniMax E (11-17): no new form, no lower score (400): the permutation search over the body (38 tries, 300 s, annealed,
 // one job) reached nothing below the baseline of 395 differing instructions on both the full and the reduced image, so the
 // body is unchanged. What still differs is the frame and its slots: ours reserves 0x114 against retail's 0x10c, so every
@@ -1464,9 +1467,6 @@ long function_1fa7f0(void);
 // MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
 // MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
 // and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
-// score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
-// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
-// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // m3 lane 3 r250 (fast with 0x2c3030/0x26ccb0, control 400): the step's fields read through points[index] with no
 // step pointer 473 (1758 B); `bool other_side = !side;` at the top of the attempt loop 435 (retail's 1746 B,
 // register-masked aligned 79 against 80); the center as `side ? corners[0] : corners[1]` 473 (1710 B); index, used
@@ -2038,6 +2038,11 @@ long function_1fa7f0(void);
 // Aligned frame 0x114 and the count in BX remain. Short/long exclusive reverse bound 457/436.
 // With a candidate step address 457/436. Reused short/long forward ordinal 470/481,
 // with a candidate step address 470/481. The selected edge still spills.
+// Reuse scan success for the left corner with named/direct right 400/400,
+// then combine with Boolean AND 477. Reuse it for right 400, join after both calls 400,
+// or clear the saved left result on right failure 400. Right AND left 477,
+// or clear the saved right result on left failure 401. NOT kept: ties or regressions.
+// The aligned 0x114 frame and edge/count homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

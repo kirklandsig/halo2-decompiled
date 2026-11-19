@@ -1067,6 +1067,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Early root and actor allocation still differ. Second-edge start/end/both addresses after the
 // first normalization 311/335/229, or inside the positive-length arm 334/336/361.
 // Both addresses with the second vector scoped there 229/361. All forms regress.
+// Case-five indices before the vertex table, word position/direction first 358/358,
+// long 262/262. Word index at each address, position/direction first 266/219.
+// Direction vertex reference 265, both vertex references 271.
+// NOT kept: all scores rise and the early root copy and actor load remain unresolved.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
