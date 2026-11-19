@@ -118,6 +118,10 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax B (11-19): no new form, no lower score (201): the permuter over this body tried three rewrites in 359 s and
+// left the baseline at 195. Retail still keeps five 4-byte cells below the quaternion where ours keeps four, and computes
+// s = 2w*w - 1 above the identity copy while w2 comes after it; writing s as a helper parameter regresses to 302 with
+// frame 0x18, so the body stands.
 // score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Earlier: Frame 0x1c versus 0x24 and
 // quaternion/cross spill overlap remain.
