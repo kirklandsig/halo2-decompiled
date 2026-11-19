@@ -2061,6 +2061,7 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax A (11-19): no new form, no lower score (285): the pool's data pointer is still in EDI here and in EBX in retail, and the unit's flag byte is still read through a 32-bit copy instead of AL, so every later instruction inherits that difference; the body is unchanged. BLOCKED-BY 0xb8bd0 and 0x142570.
 // score 285 (was 285): the first difference is still the ancestry loop's exit at +0x76 (retail's shared epilogue);
 // behind it retail re-reads the pool data after the walk and takes the parent, the header and the node-matrix base
 // from it. Round 199 (m3 lane 5, fast; aligned / register-masked counts, the body 215 / 152): `index` and `node` not
