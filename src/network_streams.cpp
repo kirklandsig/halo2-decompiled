@@ -146,6 +146,9 @@ static __forceinline void function_94bf7(s_sequence_window *arg_0)
 	arg_0->valid = true;
 }
 
+// Matched in a full build with stand-in SDK headers (was 2): the first loop's info lives in its own block and
+// the second loop has a plain counter; the two share [esp + 0xc] because the block ends the info's lifetime, and
+// the counter's reload now comes after the data store as in retail. Before, 2:
 // score 2 (was 2): retail reloads the address-taken loop counter before it
 // stores fragment->data = 0, ours stores the zero first.
 // b14C (11-17) walk against retail, fast build on r847: every other statement agrees (both window loops, the
@@ -159,7 +162,6 @@ static __forceinline void function_94bf7(s_sequence_window *arg_0)
 void function_094bf0(s_network_stream_header *header)
 {
 	c_network_unreliable_stream *stream = (c_network_unreliable_stream *)header;
-	long work;
 	if (stream->m_active)
 	{
 		if (sequence_window_count(&stream->m_message_window))
@@ -173,15 +175,18 @@ void function_094bf0(s_network_stream_header *header)
 					message = &stream->m_messages[index];
 				stream->m_message_bytes -= message->size;
 				void *local_2 = message->data;
-				if (!g_4d87f8->allocator->get_info(local_2, &work))
-					work = NONE;
+				{
+					long info;
+					if (!g_4d87f8->allocator->get_info(local_2, &info))
+						info = NONE;
+				}
 				function_94bf3(g_4d87f8, local_2);
 				message->data = 0;
 			}
 		}
 		if (sequence_window_count(&stream->m_fragment_window))
 		{
-			for (work = stream->m_fragment_window.oldest + 1; work <= stream->m_fragment_window.newest; work++)
+			for (long work = stream->m_fragment_window.oldest + 1; work <= stream->m_fragment_window.newest; work++)
 			{
 				s_stream_fragment *fragment;
 				long index = sequence_window_index(&stream->m_fragment_window, work);
