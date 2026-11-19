@@ -334,6 +334,18 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // code as main), on the 345 form 346: the state keeps ESI either way. Retail never gives the state a saved register
 // (it reloads [ebp + 8] before the switch, for 0x1e5b50 and for each object index read) and adds 0x10 to that copy
 // in place in each case.
+// Round 149 (m3 lane 16, fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319): the capsule
+// helper with two exits (`|= 2; return;`) 350 (1200 bytes; the destructor stays expanded, now twice, where retail calls
+// 0xdc370 in each arm as the matched 0xa9f70 does); the capsule in its own block with a hit result tested after it
+// (0xa9f70's shape) 323; the position products as `rate * v.i`, `v.j * rate`, `v.k * rate` 319 (same code); the body's
+// current-shape field read at each use with main's `||`/`&&` 319 (same code); the same as `compound ? (field == shape ||
+// field->0x30 == shape) : field == shape` 388 (1212 bytes) but aligned exact 214 -> 206 and register-masked 131 -> 79:
+// the compound test with its out-of-line non-compound arm, the velocity block and the position block become retail's,
+// while the input loses its register (reloaded from [ebp+0xc]); with the shape also read from the input at each use of
+// the type chain and for the capsule (retail re-reads [input+0x14c] before each virtual call) 346 (1224 bytes, aligned
+// exact 136, register-masked 55). Left on that: the input register (BLOCKED-BY 0x1ec690), and 0x1c4a80 and the 0xdc370
+// destructor expanded here where retail calls both (open: retail also expands 0xb77d0 here, which its /Ob1 file keeps
+// a call in this build, or the link's inline threshold sits one level deeper than retail's, as at 0x25d740).
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

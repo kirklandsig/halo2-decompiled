@@ -3111,6 +3111,15 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // M3 lane 6 r196 (fast): the clamp as two plain ifs, the upper bound first, 404; `*active` stored before `*value` 432
 // (1614 B); 0x120006e4 folded into the three progress cases (the inner chain's final else) 422 (1625 B); the unknown-name
 // exit braced 389 and the units digit as `/ 10.0f` 389 (both the same code).
+// Round 149 (m3 lane 16, fast): this build spends xmm3 on the trigger scale local, so 0.0f/1.0f sit in xmm4/xmm5 where
+// retail keeps them in xmm3/xmm4. The scale field read at each use in the activity helper 420 (1626 bytes; retail's
+// constant registers and its trigger loop, the pointer walking +0x28 with value_1c at [esi-0xc]); with the barrel
+// maximum reading the field at each use too (`result = result > F ? result : F`) 433 (1611 bytes, register-masked aligned
+// 139 -> 128; the unrolled barrel loop is then retail's instruction for instruction). On that: one switch with
+// `case 0x1d0007ba: if (flag) break;` falling into `case 0x0c000569:` 426 (1620 bytes, register-masked 122; root
+// 0x10000573 as retail but `jg`), the two cases last 426 (same code); the two names as separate cases each calling the
+// helper 733 (1904 bytes, two expansions, not cross-jumped), with the helper taking the definition from the weapon 733;
+// the separate cases on main's helper 760, with the definition from the weapon 797.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3651,7 +3660,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
-// score 603 (was 607): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
+// score 603 (was 603): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
 // where the volatile home is read at each use here; weapon/barrel and definition/holder homes remain.
 // MiniMax B (11-18): no new form, no lower score (643 in the fast check, 607 in the plain one): retail keeps the weapon index in ebx, the barrel offset in edi and the definition spilled to [esp+0x14], where this build keeps the barrel offset in ebx, the definition in edi and the weapon index in a stack slot, so the prologue and every later home differ; dropping the volatile on the unit index measures 657.
 // MiniMax I (11-17, run 103): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in
@@ -3817,6 +3826,16 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // the full build still uses a 0x1c64 frame against retail's 0x1c60; a local copy of the weapon index, a computed
 // barrel offset, the definition declared after the barrel pointers and a non-volatile unit index all score the same
 // or more, and the fast check warns that this function builds differently in the reduced image.
+// Round 149 (m3 lane 16, plain): main's volatile on the unit index dropped 648 (2506 bytes), but aligned exact 287 -> 232
+// and register-masked 110 -> 76: retail's NONE-first store to [esp+0x24], the 0x1c60 frame and the EDI unit index of the
+// fired block all appear, so the plain local is retail's form. On it: the magazine definition declared before the magazine
+// pointer (the order 0x1023d0 uses) 571 (2538 bytes; a declaration order, kept only with a match); `scale_a = 0.0f` in the
+// not-fired arm 644; the 0x1058b0 side argument as `barrel_index ? 2 : 1` 646; the barrel pointer before the definition 651;
+// both side arguments as ternaries 646. On 571: the not-fired `scale_a` store 611; the side ternary 606; rounds declared
+// before burst 571 (same code). The magazine definition first with the volatile kept 616. Left on 571: EDI holds the
+// definition and EBX the barrel offset in the prologue and the effect loop (retail: EBX the weapon index up to the 0xa7cd0
+// call, EDI the barrel offset, the definition never in a register), and the magazine pointer is not materialized (retail
+// spills it to [esp+0x34]).
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4041,7 +4060,7 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
         if (weapon->parent_index != NONE) weapon_index = weapon->parent_index;
     return weapon_index;
 }
-// score 1412 (was 1420): Frame 0x34 versus 0x38. Retail keeps the pool and header offset in EDI and ESI, and computes the scale complement in the two barrel arms.
+// score 1412 (was 1412): Frame 0x34 versus 0x38. Retail keeps the pool and header offset in EDI and ESI, and computes the scale complement in the two barrel arms.
 // Round 145 (m3 lane 16): blocked/down/up as bool (retail's byte homes at [esp+0x14..0x16]; no 16-bit stack homes in retail)
 // with the definition flag 27/10 tests read from the definition's named bits and the object flag 8 test through the file's
 // WEAPON_BIT_AT (all unsigned: retail's shr; the named bits and WEAPON_BIT_AT give the same code) 1412 plain at 5684
@@ -4215,6 +4234,12 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // 1420. Shared cooling and input words 1432. NOT kept: The shifted input word improves by six at 5684 bytes.
 // The threshold is eight. The shared cooling flags enlarge the body to 5696 bytes, and neither rate
 // selection improves the opening score.
+// Round 149 (m3 lane 16, fast): retail has 13 dead barrel-base leas (`lea [..+0x1a4]` after `or byte [..+0x1a8], 1`)
+// where this build has one; the inline request helper storing through a barrel element pointer gives 10 of them at 1412
+// (same length; a one-use element pointer, kept only with a match). press/hold/release declared without initializers
+// (0x1027b0 clears all three; retail stores nothing before that call) 1419 (5668 bytes); both 1419; the pointer with
+// blocked started false at entry (retail's `mov byte [esp+0x16], 0`) and set in its test 1433; that with the
+// uninitialized outputs 1440.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
