@@ -510,6 +510,12 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
+// because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
+// tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
+// the rebound coefficient named once for the three final rows 102 (same code); keep computed after the tangent 197
+// (1536 B, frame moves); the +0x34 scale ahead of the three rows 103; the normal pointer declared before the coefficient
+// loop 102 (same code).
 // MiniMax B (11-18): no new form, no lower score (102): this build still reassociates the dot product's three products to (n.k*v.k + n.j*v.j) + v.i*v.i where retail sums them as (v.i*n.i + n.k*v.k) + n.j*v.j (writing the sum with += restores retail's order but measures 103), and retail's sweep still sits at [esp+0x44] with the collision record at [esp+0xb0] where this build has [esp+0x38] and [esp+0xa4].
 // MiniMax R (11-17): no new form, no lower score (102): the dot product's three products are still summed in the other order and the perpendicular vector's slot still sits below the sweep's where retail keeps it above the collision result; MSVC canonicalises the sum and allocates the slots by liveness, so neither the operand order nor the declaration order moves them (three forms tried and reverted).
 // MiniMax E (11-16): no new form, no lower score (102): the sweep and collision homes still sit twelve bytes below retail's and the body is still twelve bytes longer; retail's dot product adds its terms in another order, a spelling the coordinator has already reverted.
@@ -522,12 +528,6 @@ real g_55e618;
 // in the other order; the position set through the existing real_point3d_set was measured again at 245, so the
 // plain stores stay. Nine spellings of the dot's three terms compile to the same instructions (102), the typed
 // particle record is the same code (102), and the velocity read through a pointer measures 194.
-// score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
-// because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
-// tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
-// the rebound coefficient named once for the three final rows 102 (same code); keep computed after the tangent 197
-// (1536 B, frame moves); the +0x34 scale ahead of the three rows 103; the normal pointer declared before the coefficient
-// loop 102 (same code).
 // MiniMax G (11-10): no new form, no lower score (102): the sweep vector and the collision record both sit twelve bytes lower here than in retail (sweep +0x38 against +0x44, record +0xa4 against +0xb0), so retail's frame holds twelve bytes more before the sweep; the aggregates this body declares do not account for that gap.
 // MiniMax S (11-09): no new form, no lower score (102); retail's sweep and collision homes
 // sit twelve bytes higher in the frame than ours (F+0x44 against F+0x38), the local handed to
@@ -848,6 +848,12 @@ real g_55e618;
 // (the same code: names do not order the product's operands). Every once-computed form multiplies a copy of the normal by the
 // dot (frame 0x118, first difference +0x2); only the compiler's own temporary for the repeated expression is copied and scaled
 // in place as retail does. Body unchanged.
+// M3 lane 7 r184 (fast; control 102, aligned 60, masked 22): the projection as an inline split helper (dot written
+// v.j*n.j + n.k*v.k + v.i*n.i, the along part as the normal times the dot, the across part as the velocity minus it)
+// called on the particle's velocity 109 (1539 B, frame 0x118, aligned 79), with the across part behind an
+// `if (across)` 109 (same code); called on the velocity copy 101 (1548 B, frame 0x124, aligned 60); on that the across
+// part through vector3d_from_points3d 102, the along part through vector3f_scale 102, both 101; 1..7 dead locals
+// (diagnostic) on this body 102-103 and on the copy-helper form 101-102: the homes do not move.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
