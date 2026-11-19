@@ -528,6 +528,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // On that: no definition local 156, a named definition index 156, the definition through a one-line tag accessor 156
 // (same code each); the parent's seat flags through the indexed array without the seat pointer 424 (2308 bytes, aligned
 // 45, but the flags load folds the `add` retail keeps).
+// Typed metadata block, typed entry base, guarded block pointer and guarded reference: 117/117/117/117.
+// Ternary, rejecting bounds and split rejecting bounds: 613/613/613. Caller-provided table: 164.
+// NOT kept: the caller-provided table repairs the entry registers but adds four bytes, and the child test still differs.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

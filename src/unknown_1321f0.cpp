@@ -642,6 +642,22 @@ struct s_visibility_object_header
 // to behind on a tie and to in_front only when in_front alone has an earlier direct store; declaration order, scope,
 // names and both callees' parameter orders do not decide it. Open: what gives in_front that precedence with no
 // instruction.
+// Round 101 (m3 lane 2, fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4). The rule, measured in a
+// compile-only build of this file (which gives retail's homes: in_front in flag_b's slot) and confirmed here: of two
+// equal candidates the dead parameter slot goes to the one whose first read or store comes first, address-taking not
+// counted; the packer's arguments are evaluated right to left, so behind (its last parameter) is read first and wins.
+// Compile-only, the packer's parameters reordered: in_front first / behind last gives in_front the slot (its register
+// argument is evaluated ahead of the pushes), behind first / in_front last gives behind, both as neighbouring stack
+// arguments gives whichever is further right. Here: the packer's first argument as `!!in_front`, `in_front != false`
+// or `in_front ? true : false` 126 each (retail's homes, but a test/setne pair is emitted for AL), `in_front == true`
+// 44, `(bool)in_front` 4 (same code); the packer's first parameter as `byte` or `char`, its last as `byte`, the first
+// and sixth as `byte`, all seven as `byte` 4 each (same code, 0x132b10 MATCH); after the plane call an empty
+// `if (in_front) { }`, `(void)in_front;`, an unused `bool both = in_front && behind;`, a named copy for the packer
+// call, `(in_front, in_front)` as the argument 4 each (same code); the packer reached through a force-inline wrapper
+// declared (behind, in_front, second, first, contained, flag_a, flag_b) 4 (same code: the arguments are forwarded in
+// the packer's own order); 0x134390's hand-written flag expression as a second call of the packer 4 (0x132b10 and
+// 0x133390 MATCH). Diagnostics: `!!` on both arguments 144 (607 bytes; behind is read first, into CL), on behind
+// alone 130. Open: a read or store of in_front ahead of the packer's arguments that leaves no instruction.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {
