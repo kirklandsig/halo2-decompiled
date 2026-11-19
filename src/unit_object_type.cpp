@@ -3823,6 +3823,8 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // keyframed call, `m_motion + 0x70` through real_point3d_set) 12; the walk and the header through one pool local 87; the
 // header's own tests and the root's tests as two nested ifs with the result declared first 89 (284 bytes); the walk
 // reading the parent into a local before recording the root 12; re-measured: the parent read through the root 12.
+// Matched in a full build with stand-in SDK headers (was 12): result is set to false again at the top of the rigid
+// body arm, before the two component tests.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -3844,6 +3846,7 @@ bool __stdcall function_cc460(long object_index)
 
 		if (rigid_body_index != NONE)
 		{
+			result = false;
 			if (!((byte *)havok_component_rigid_body_get(rigid_body_index, component))[0x40] &&
 				!havok_component_rigid_body_keyframed(rigid_body_index, component))
 			{
