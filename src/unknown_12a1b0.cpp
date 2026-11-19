@@ -3541,6 +3541,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // (... != NONE || ... || (flags & 0x14))` expression 614 (2519 B); the seed pointer chosen after track_alternate 629 (2508 B);
 // track_alternate computed after the created block 641; track_definition declared after the track and seed pointers 596
 // (a declaration move under the keep bar).
+// Transition walk with prior phase read first 597, candidate tag read once 678,
+// impulse phase handled first 597, and signed short transition phase 657.
+// With alternate read after the definition guard, the same forms score 615/701/615/632.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

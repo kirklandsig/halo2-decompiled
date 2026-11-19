@@ -914,6 +914,8 @@ real function_30bf0(vector3f *vector);
 // kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
 // retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
 // the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
+// Empty seat list when the actor has no vehicle. Conditional then default count, each with indexed
+// then pointer traversal, scores 186/204/102/204 with short counts and 202/206/199/206 with long counts.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2792,6 +2794,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 377 (2882 B, 99/75: retail's block order for the far-and-slow test). Left: the players table's register at the iterator
 // setup (the matched siblings' identical three statements load it into EAX) and the direction components, which retail
 // keeps in XMM1-3 from the relative dot to the facing dot.
+// Contact step results declared in the while condition or advanced in the for loop score 168/168
+// and 753/753 as a node view and prop datum, respectively. Keeping the other object across both
+// actor-index reads scores 163/163 and 753/753. NOT kept: five-point gain at 163.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

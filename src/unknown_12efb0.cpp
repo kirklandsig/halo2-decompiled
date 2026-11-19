@@ -780,6 +780,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // declared once at function scope and reset per cluster 607 (same code); the weight clamp as two independent ifs 607 (same
 // code); the three per-cluster source resets ahead of the 0x130f60 call 713 (3836 B); the scenario lookup with the global
 // tested in its own `if` around the bounds test 607 (same code). All restored.
+// Compound tag admission before the shared palette/default arm with a guarded lookup, conditional
+// record or explicit missing slot scores 714 with a word and 703 with a signed byte.
+// Testing provider validity first scores 832 with a word or 729 with a signed byte.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
