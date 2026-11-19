@@ -774,6 +774,14 @@ static inline bool teams_enabled_19e1c0()
 // team names, local scores and timers, or all tokens. Existing count storage scores
 // 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
 // ordinary count gives frame 0x204 but still merges the name producers.
+// M3 lane 11 r120 (a one-file LTCG harness of this file with its callees' objects; positional counts; control 396 at
+// 1437 B, plain result 416 at 1170 B with token EDI, token_length EBX, event EBP, result ESI, `remaining` on the stack):
+// plain result with the switch-side failure as `result = remaining;` 416 (1129 B, token EDI); plain result with the four
+// name clamps spelled `>`, `<`, `>=`, `<=` 407 (1353 B, token EDI); `token` as a one-pointer aggregate parameter (with
+// 0x19e0f0's pointer type to match) 416 (scalarised, same code as the plain result). Diagnostics (reverted): one to eight
+// extra uses of `remaining` inside the name cases leave token in EDI; dropping the fallback's two token uses leaves it in
+// EDI; only an entry test of `remaining` gives it EBP. So uses inside the cases weigh far less than the thirteen
+// compares on the dispatch path, and retail's token in memory needs fewer or lighter token uses on that path.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

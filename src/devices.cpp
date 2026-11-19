@@ -1066,6 +1066,14 @@ struct s_device_machine_view
 // with the value through a reference too); bit 0 through the word and bit 1 through a bit-field view (either way
 // round) the pushed ESI; the two bits tested in a counted loop aligned 57; that one helper with the lookup as its
 // argument aligned 13.
+// M3 lane 11 r120 (fast; the compile-only screen is exact, control 2): on the group-pointer form (122, pushed ESI) the
+// pointer declared NULL and assigned on the next line 122; the second bit as `(group->flags >> 1) & 1` 122; screens of the
+// same form: the type and index tests nested, a `long group_index` local, a machine pointer local, a `short` copy of the
+// flags after the machine test, all the pushed ESI. Lead: the power read into a local at the top of the group block
+// (`real power = device->power;`, used in the power test) gives retail's `lea eax` group pointer and `mov ax, [eax + 2]`
+// after the machine test, but its load rises above the group lookup: 16 (654 B); the same local declared bare and assigned
+// before the power test, or declared just before it, keeps the pushed ESI; declared ahead of the group pointer 32 (screen).
+// So a float live across the group tests moves the pointer to EAX, while retail's power load stays below them.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1893,6 +1901,13 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // sample's seconds as `DEVICE_PIN(0.0f, 0.0f, time)` 365 (1654 bytes, not folded); the two sample calls in a bare scope
 // 2 (same code). Compile-only: the processor-tuning and debug-information options leave the block's schedule alone, and
 // the time assigned inside any of the first call's arguments compiles to the same block.
+// M3 lane 11 r120 (a one-file LTCG harness that reproduces the swap; control 131 positional, first difference the fstp):
+// the first block's animation, time and two samples in a file-local forceinline helper taking the state, the channel and
+// the render model and returning the time (the render model a helper parameter) 319 (prologue reordered), the fstp still
+// after `push 0`; everything inside the 0xbf5a0 test as a forceinline body taking (index, name, seconds, device, render
+// model) 328, fstp unmoved; the three tag lookups through the shared TAG_GET macro 131 (same code). Diagnostic only (the
+// harness links the callee's old object, so its convention moved): the render model as a one-member aggregate argument.
+// Compile-only (no /GL) hoists the render model's load into EDI above the flag branch, so there the block starts at the fld.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

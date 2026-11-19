@@ -1266,6 +1266,11 @@ void function_2118c0(void)
 // /Os on this body and on the `b * 8` body) never gives the stepped row with unreduced knot rows. What the screen
 // shows: the knot rows stay unreduced only when the optimizer cannot see the row as an affine function of the band
 // counter (a named shift as now, a mask, a 16-bit home); every affine spelling reduces all five rows.
+// M3 lane 11 r120 (compile-only screen of this file, exact here: base 27 aligned with only retail's four row instructions differing;
+// counts are the screen's): the wraps written in place in the knot subscripts with the `b << 3` row (no index locals) 115
+// (180 instructions); the knot indices as `long` at the k level 142; a `vector3f (*)[8]` local for the table used by the
+// knot rows 27 (same code); named per-knot sums `long index3 = row + w3;` 27 (same code); per-knot base pointers taken at
+// the k level (`noise[w3]`) plus `row << 3` elements in the band loop 171.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

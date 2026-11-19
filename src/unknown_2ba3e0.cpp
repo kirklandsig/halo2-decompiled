@@ -848,6 +848,12 @@ real g_55e618;
 // (the same code: names do not order the product's operands). Every once-computed form multiplies a copy of the normal by the
 // dot (frame 0x118, first difference +0x2); only the compiler's own temporary for the repeated expression is copied and scaled
 // in place as retail does. Body unchanged.
+// M3 lane 11 r120 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): on the velocity pointer with the position
+// setter, the dot written at each product re-measured 75 (1536 B, aligned 24; with plain position stores 121 at 1549 B); dot
+// once: a named real 188 (1536 B, frame 0x118), from dot3f either operand order 188, with the perpendicular through the
+// existing vector3f_scale 188, as vector3f_scale's argument (dot3f or the written-out sum, no named dot) 188 each; with
+// plain position stores 194 (1541 B). Diagnostic (reverted): K initialised dead locals at the top of the named-dot form, K
+// = 1..6, 8, 10, 12, 16, 20, 24, 28, 186 to 189 each: the copied-and-scaled normal is not a symbol-count effect.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
