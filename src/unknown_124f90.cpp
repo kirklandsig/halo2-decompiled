@@ -2657,7 +2657,7 @@ long __stdcall function_127d00(s_type_99c531 const *source, real maximum_distanc
 short sound_definition_rate_limit_pitch_range(long stage_index, s_sound_definition const *definition);
 struct s_looping_playback_definition;
 short function_218f50(s_looping_playback_definition *definition, short previous, real pitch);
-short function_219070(long set_index, s_sound_definition const *definition);
+short function_219070(short set_index, s_sound_definition const *definition);
 struct s_sound_effect_request;
 void function_2226b0(long tag_index, s_sound_effect_request *request);
 long record_pool_allocate(s_record_pool *data);
@@ -2935,6 +2935,8 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // the dword, and this build still pushes two arguments where retail calls 0x219070 with one; both are fixed by that
 // callee's declaration in another file, and the delayed start still stores the flag byte before the start time.
 // MiniMax A (11-17): no new form kept, no lower score (17): the range value as a short local scores 53 in the reduced image and 52 in the full image (the sign extension moves to the 0x219070 call as movsx eax, bp where retail copies the dword), and the long local is the only form that reaches retail's mov ebp, eax; the delayed start still stores the start time at offset 0x8c before the flag byte at +4 where this build sets the flag byte first. BLOCKED-BY 0x218f50 and 0x219070.
+// Matched in a full build with stand-in SDK headers (was 17): see the pull request; the change includes the
+// declaration of function_219070 used here and by its other caller.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -3002,7 +3004,7 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 			}
 			else
 			{
-				long arg_58ecd0;
+				short arg_58ecd0;
 
 				if (rate_limit_stage != NONE)
 				{
@@ -3015,15 +3017,17 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 
 					arg_58ecd0 = function_218f50((s_looping_playback_definition *)definition, NONE, ((real)pitch_bounds[1] - lower) * state->location.scale + sound->pitch + lower);
 				}
-				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, function_219070(arg_58ecd0, definition), (short)chunk_index);
+				short permutation = function_219070(arg_58ecd0, definition);
+				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, permutation, (short)chunk_index);
 			}
 			sound->value_a0 = (char)rate_limit_stage;
 			sound->fade_end_time = chunk_index;
 			sound->fade_start_time = chunk_index;
 			if (delay > 100 && !SOUND_FLAG(sound->location.flags, 8) && !SOUND_FLAG(sound->location.flags, 11))
 			{
+				s_sound_playback_flags *flags = (s_sound_playback_flags *)&sound->flags;
 				sound->start_time = SOUND_SYSTEM->time + delay;
-				sound->flag0 = true;
+				flags->flag0 = true;
 			}
 			else
 			{
