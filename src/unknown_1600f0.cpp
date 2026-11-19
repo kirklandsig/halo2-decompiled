@@ -1211,6 +1211,8 @@ PRIVATE inline long score_string_list_1608e0()
 	return result;
 }
 // score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// score 679 (P622: a one-use caption-phase local at the division gives 671, match-only, reverted): Frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
+// score 679 (was 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
@@ -1227,6 +1229,7 @@ PRIVATE inline long score_string_list_1608e0()
 // the body is off.
 // MiniMax E (11-01): no new form, no lower score; left: the entry register roles (retail loads the
 // player index first), the colour/bounds local homes and the missing bytes.
+// Earlier at 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // Earlier 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // limit conversion in retail) and coordinate/color homes remain.
 // Earlier (score 689, was 689): baseline frame 0x78c versus retail 0x79c; early player/panel roles and coordinate/color homes remain.
@@ -1511,6 +1514,11 @@ PRIVATE inline long score_string_list_1608e0()
 // Round 431: staged horizontal/vertical coordinates, title far edge from row cursor (bottom/right),
 // common caption vertical extent/horizontal origin and separate title/caption fade locals all 679.
 // The separate origin and viewer homes still differ. Original body restored.
+// first division uses the converted count that initializes the retained divisor 687; first division
+// uses the immutable converted count that initializes the retained divisor 687; title division uses
+// the row total at its expression 687; separate title phase at the division 686; separate caption
+// phase at the division 671; separate title and caption phases at both divisions 679; separate title
+// delay at its scaled division 686; separate title and caption delays at both scaled divisions 686.
 // M3 lane 12 r143 (fast with 0x1600f0, 0x1603f0, 0x161420; control 679), aimed at the scroll clamp (retail reads the user
 // index in each arm, EDX then EAX, and converts the limit once after `0 > scroll`; ours hoists one index load above the
 // branch and converts the limit twice): a `short user` read in each arm 694 (2888 B: the hoist is gone, two conversions

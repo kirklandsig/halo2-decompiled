@@ -4310,6 +4310,18 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // previous turn 643/623; keys before tag 621; whole-state reference 602. Reduced
 // control 602, full 537. The key-record forms recover the reduced frame and flight
 // threshold slot but lengthen the body and leave the return byte at +0x12.
+// Saved animation key through the stationary decision 636.
+// One animation key for the walking and stationary tests 636.
+// Walking predicate as a byte permitting the stationary turn 645.
+// Byte permitting stationary turns until the saved animation excludes them 660.
+// Shared return with the grab result assigned at admission 602.
+// Shared return combines a captured grab admission with the earlier result 729.
+// Shared return combines the earlier result with a captured grab rejection 729.
+// Shared true return with the unchanged result tested only outside grab admission 606.
+// NOT kept: the admission-time assignment ties, and the other result and animation-state forms regress.
+// The reduced image still differs in the 0x11dbb0 context. The full 0x78 frame, changed byte at +0x12
+// and flight threshold at +0x14 remain in the restored body.
+// Reduced control 602, full control 537.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

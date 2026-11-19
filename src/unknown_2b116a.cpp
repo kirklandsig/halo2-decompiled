@@ -5804,7 +5804,9 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
-// score 89 (was 97): The friend-query output and later action predicates still use different byte slots.
+// score 89 (was 97): The 0x844 frame agrees. The title-state address and later eligibility byte reuse still differ.
+// Earlier observation: The retail frame agrees, but the friend-query outputs and later
+// The friend-query output and later action predicates still use different byte slots.
 // Earlier score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
 // boolean predicates use different byte slots.
 // origin predicate scoped through join eligibility 97; request result scoped through
@@ -5871,6 +5873,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // 313/314/450; membership mask or separate bits 391/409; both masks 410;
 // both pairs of request bits 462. All grow and shift the first difference ahead
 // of the friend query. Original predicates and byte homes restored.
+// promotion decision at emission 307; add-friend decision at emission 427; player-removal decision at
+// emission 345; other-title join decision at emission 406; unmute decision at emission 328; both mute
+// decisions at their emissions 321; join, removal and promotion decisions at emission 420; all six
+// captured-input decisions at emission 454.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

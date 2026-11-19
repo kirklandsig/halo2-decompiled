@@ -895,6 +895,10 @@ real function_30bf0(vector3f *vector);
 // 215 (1308 B: read at each use); the occupant test as `if (occupant == NONE) continue;` 84 (same code); unused locals inside the
 // facing arm, n = 1, 2, 3, 5: 84, 86, 138, 82 (diagnostic, the same phase round 81 found at the top); the endpoint test written
 // `!actor->unknown007 && endpoint` 88; the seat index declared ahead of the count 84 (same code).
+// Use the eventual up vector for the world-up input to the side cross, then overwrite it with
+// corrected up. Copy initialization, direct/staged crosses: 219 each with frame 0x34c.
+// Component setter with the same four cross pairs: 167 each at 1308 bytes. The result and
+// clip homes still differ.
 // M3 lane 5 r200 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84, frame-blind 9): the endpoint clip block
 // through a new forced-inline helper 417 (1392 B); the facing pair declared first 84 and distance_squared declared before
 // the clip block 84 (same code); the posture switch as an if/else-if chain 131 (1308 B); `use_facing && !actor->unknown007`

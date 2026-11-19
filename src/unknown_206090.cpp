@@ -721,6 +721,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // definition-table field references 1375/1375; count and table references together
 // in either phase 1394/1394; shared motion-origin field reference 1449, with all
 // count and table references 1449. The frame and original contact induction remain.
+// Shared in-place scale in the mixed-precision normalizer, named reciprocal/argument: 1449/1375.
+// Float-sum normalizer, named reciprocal alone/with named/with direct mixed reciprocal: 1424/1421/1424.
+// Direct float-sum reciprocal alone/with named/with direct mixed reciprocal: 1436/1390/1436.
+// The 0x5d0 frame and displaced velocity and component homes remain.
 // Lane 13 r112 (plain checks: a `--fast` run of this function alone or with its eleven callees, 0x24590 and 0x30bf0 builds
 // it differently, 1392 at 6211 B with frame 0x5cc, so fast counts for it need a wider list). Retail's first loop and
 // contact loop keep their counters in one home (0x1c, read with `fild` in the first loop and passed to 0x2079f0 in the

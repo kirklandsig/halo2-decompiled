@@ -862,6 +862,17 @@ struct s_item_collision_bsp
 // shared scale and point setter 199; indexed projection 190; two coordinate passes 492;
 // complete point initializer 190; named displacement components 194; scaled vector plus
 // indexed marker sum 199. Transformed plane and contact point homes still differ.
+// Marker X and Z kept for both calculations, Z declared first 190.
+// Marker X and Z kept for both calculations, X declared first 190.
+// Marker X Y and Z captured with the distance terms' Z Y X order 190.
+// Marker X Y and Z captured in coordinate order 190.
+// Marker X and Z kept as mutable scalar values 190.
+// Complete marker point value supplies both calculations 261.
+// Complete marker coordinates initialized at the join 190.
+// Marker Z at the first distance sum and marker X at its contribution 192.
+// NOT kept: six marker coordinate forms tie at 190. The complete point copy grows the body
+// and the split distance expression loses two points. The transformed normal and contact
+// position still use different XMM homes, and the spin scale still spills.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

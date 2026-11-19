@@ -2997,6 +2997,17 @@ struct s_unit_event
 // Round 640: region lvalue, permutation lvalue, both, or both read-only 420/420/420/420.
 // Region word mask/lvalue/shared setter 533/420/420. Typed seat label cursor and
 // index 419/420. NOT kept: the cursor gains one and the register assignments still differ.
+// Attachment index read once for each notification with a shared local 420.
+// Attachment observations using separate values 420.
+// Attachment observations using separate immutable values 420.
+// Attachment observations using references to each attachment field 494.
+// Attachment observations using separate read-only object pointers 416.
+// Attachment observations using separate read-only object references 416.
+// Loop over the two notification bits with a separate read for each guard and call 792.
+// Loop over the two notification bits with one attachment index per iteration 792.
+// NOT kept: the separate object pointers and references gain four points at 1868 bytes, below
+// the eight-point threshold. Both put the second notification's pool and pointer loads in retail's
+// order, but the region index and permutation receiver still use exchanged registers.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

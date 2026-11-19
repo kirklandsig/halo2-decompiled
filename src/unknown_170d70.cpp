@@ -2135,6 +2135,16 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
 // Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
 // The collision point still occupies EBX.
+// Two horizontal offset channels by value with component expressions 385.
+// Two horizontal offset channels by value with shared dot product 385.
+// Two horizontal offset channels by value with shared cross product 385.
+// Two horizontal offset channels by value with both shared products 385.
+// Two horizontal offset channels by view with component expressions 364.
+// Two horizontal offset channels by view with shared dot product 364.
+// Two horizontal offset channels by view with shared cross product 364.
+// Two horizontal offset channels by view with both shared products 364.
+// NOT kept: the horizontal offset vector forms increase scores and lengths. The four read-only
+// views keep the 0x20 frame at 2146 bytes, but the collision point in EBX still displaces the state.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

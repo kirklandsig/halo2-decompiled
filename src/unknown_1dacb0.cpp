@@ -1468,6 +1468,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // `found_mode ? *found_mode : iterator_mode` 819 at 2825 B (diagnostic, not kept: a re-read that only steers; the copy is then
 // a separate value, but it takes EBX with its own spill slot and the frame grows to 0x30); the second request's graph from
 // `iterator.graph` 962 (2791 B); the search as `while ((entry = iterate(...)) != NULL)` with a break on a found id 998 (2839 B).
+// Outer request mode, class, type, mode/class, mode/type, and class/type by reference: 828 each.
+// Per-graph mode or class/type by reference: 828 each. The resolved mode still reloads and the
+// result and candidate homes differ.
 // Lane 13 r112 (fast, control 828, aligned 580, registers masked 74): the search, outputs and requests in one
 // `while (true)` whose found pass ends in `return result;` 828 (same code); the outputs and requests inside the found
 // pass with their own `return` and the outputs repeated after the loop 1024 (2887 B); a named copy of the result taken

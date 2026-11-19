@@ -910,6 +910,9 @@ static inline long font_character_pixel(long alpha, long color)
 // commands, before dispatch, or after the nonzero lower command 173/180/182. Shared consumed
 // length from the raw header before dispatch or in the lower class 212/204.
 // NOT kept: the 504-byte form changes the cursor allocation and all eight scores rise.
+// Literal color constructed from twelve bits, high/low-first, pixel from both octets or from
+// color plus opacity: 201/190/201/190. With full-width pixel parity: 212/232/212/232.
+// The packed run and parity layout still differ.
 // Joined packed count with advancing/indexed pair stores and byte/full parity: pair-first 207/203/211/213,
 // single-first 205/212/209/213. NOT kept: the joined count shortens the body below retail and leaves
 // the run register and literal assembly different.

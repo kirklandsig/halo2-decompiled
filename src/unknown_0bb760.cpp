@@ -448,7 +448,10 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 97 (was 97): the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
+// score 97 (was 123): The object and tint entry exchange EDI and ESI.
+// The choice count, mask and blend use other homes. The first scan exits on inequality.
+// Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
+// the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
 // spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
 // The late variant byte restores the output/delta registers and keeps retail length.
 // The object and tint-table saves still trade ESI and EDI. The blend store, weight-scan exits and fallback unity reload also differ.
@@ -747,6 +750,11 @@ void function_3dd10(long object_index, bool force);
 // The 0x54 frame and 1034-byte extent agree. The object and tint entry exchange EDI and ESI.
 // Lexical ranks for the object and tint entry before definition or after output score 97 each,
 // alone and in all four pairs. Neither saved register moved. The blend spill and signed scan still differ.
+// choice count named for the number of available choices 97; choice count named for the number of
+// tint permutations 97; eligible flags named for the choice mask 97; count after the mask in lexical
+// order 97; shared read-only choice array at the positive-count entry 262; shared read-only choice
+// array at the first scan 117; shared array with an advancing weight-scan cursor and indexed
+// selection 196; shared array with indexed weights and an advancing selection cursor 116.
 // shared object datum lookup 97; shared object header lookup 97; shared slot object lookup 97; shared object
 // datum with native tag index 106; native tint block size and displacement 97; native tint block and position
 // fields 97; native tint block, position and variant fields 97; complete native tint object with shared datum
