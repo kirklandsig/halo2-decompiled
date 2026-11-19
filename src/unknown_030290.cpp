@@ -657,6 +657,11 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // An `inline` or `__forceinline` declaration of 0x142570 in this file only leaves it a call: 724 (469 B). 0x142570 is unchanged.
 // On the 175 parameter-address form: the displaced sums written d-first for x and z, a-first for y (retail's load
 // sides) 175 (same code: ours loads the other side in all three); the origin transform ahead of the displaced point 236 (944 B).
+// Y643: project origin in place 197; project displaced point in place 196; project both in place 197; direct inverses
+// and origin in place 207; direct inverses and displaced point in place 207; direct inverses and both in place 207;
+// both in place with point2f difference 197; direct inverses and both in place with point2f difference 207.
+// NOT kept: The in-place point forms retain the extra frame word. Resolving inverse depth independently shortens the
+// function to 974 bytes but raises the score to 207.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

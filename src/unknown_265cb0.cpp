@@ -914,6 +914,12 @@ real function_30bf0(vector3f *vector);
 // kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
 // retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
 // the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
+// Y643: sampled point with direct delta 320; sampled point with shared delta 332; selected point pointer with direct
+// delta 337; selected point pointer with shared delta 345; sampled point with direct delta and late range 326;
+// sampled point with shared delta and late range 339; selected point pointer with direct delta and late range 332;
+// selected point pointer with shared delta and late range 344.
+// NOT kept: Calculating delta after clip selection shortens the function below retail length and raises the score on
+// all eight forms. The earlier range reads also change the matched caller 0x25c9d0 in the reduced image.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
