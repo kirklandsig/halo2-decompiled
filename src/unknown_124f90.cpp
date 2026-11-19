@@ -1758,6 +1758,11 @@ long function_2197f0(real gain);
 // (52/54/17, the fade-out still from memory); elapsed declared const 87 (same code); the fade-out local with arm 1
 // written interpolation first (retail's `other` there is the gain copied into XMM1) 161 (688 B, the copy goes to a
 // new stack slot). No change kept.
+// Overlap-duration accumulation, named release fraction plus duration, or adjusted attack-time
+// accumulator 87/87/87. Eager quotient with conditional or branch cap 143/143, with named
+// release fraction 143, with tested release duration 148, or with a common attack bound 143.
+// NOT kept: the eager forms shorten the body but shift the quotient and gain-add registers.
+// The separate gain read at the release-to-attack join remains.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3655,6 +3660,11 @@ static inline short sound_voice_find_available_channel(char type)
 // the search 129/132; provisional byte 151; assigned outcome in each admission arm 135;
 // existing-channel outcome first 135.
 // NOT kept: the Boolean paths recover the eight-byte frame but change entry and failure joins.
+// Reuse result from combined or staged channel/buffer admission, as byte or bool.
+// With cleanup on failed result, combined 176/135 and staged 172/197. With a common
+// exit after commit, combined 176/135 and staged 161/182.
+// NOT kept: all retain the twelve-byte frame. Combined admission reads the index first
+// but takes it in EAX and still spills the result.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4914,6 +4924,10 @@ struct s_128ca0
 // the word load is shared again), `long count = NONE` with a byte-cast load 122. Left: the pins' EAX/EDX, the field_c store's slot, the
 // controller compares' immediates (retail EDX = NONE), the inner chunk push order, the chunk-set call's argument
 // loads, and the flag6 / stream stores' forms swapped (ours load/or/store then memory or, retail the reverse).
+// Current permutation through test and gain 81, with update arm first 144. Shared packet properties,
+// effects, both, or properties from spatialization onward 81/81/81/81. Common pin after selecting
+// permutation or signed adjustment 244/241. NOT kept: address lifetimes leave both pin register
+// pairs unchanged. Sharing the pin removes retail's two separate calculations and shortens the body.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

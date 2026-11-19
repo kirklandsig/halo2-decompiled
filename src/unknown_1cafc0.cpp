@@ -850,6 +850,11 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // unknown_1dacb0.cpp) the inherited graph named before its group request 348 (same code; 0x1dc8c0 stays MATCH: that
 // matched user of the helper also keeps the graph in EBX and graph+0x34 in EBP, so the swap here comes from this caller);
 // the found names copied into an aggregate for the request 504 (1766 B, the frame changes).
+// Separate fallback with an identifier or byte gate 608/615. Byte formed after alternate
+// lookup with byte or identifier gate 662/589. Byte set in each lookup outcome with byte
+// or identifier gate 566/547. Separate failure return 612, Boolean phase result 664.
+// NOT kept: the split phases lose the matching lookup prefix. The Boolean form offsets EBX
+// in place with a different frame and different graph reloads.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

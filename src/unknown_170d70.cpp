@@ -1158,6 +1158,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Ratio computed before and stored after the capture 349. Shared forward address through both rotations 365.
 // NOT kept: the one-point gains leave unity in XMM3. Split captures and the shared forward address
 // change the matched initializer. The opening body is restored.
+// Common real unity for the two matrix expansions and inverse 363, also for the vertical
+// arctangent 333, or separate matrix-local unity 345. Shared unity with staged cosine
+// complement 339, grouped diagonal complements 402, symmetric field initialization 370,
+// diagonal field accumulation 370, or separate cosine conversion 361.
+// NOT kept: 333 still spills two axis squares and uses XMM7 for unity. The extra unity local
+// and helper argument change allocation only. The separate cosine conversion loses the initializer.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
