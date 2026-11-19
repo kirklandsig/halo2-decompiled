@@ -232,6 +232,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
    the lowest */
 // score 144 (was 144): earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
 // hull count still live in their own homes where retail keeps them in the dead argument homes. One note, the rounds' entries below.
+// M3 lane 14 r112 (fast with 0x239d50; control 144, aligned 137, masked 65): retail's pass loop is the hull count itself,
+// short, in its own cell at +0x10 (reloaded into EBX at the loop top, `cmp bx, word [count]`, top-tested, back edges from
+// the two departure tests), the flag a byte in the dead indices home, the heading zeroed before the lowest scan, and the
+// compaction calls memcpy. A body written that way (hull count as the while counter, early returns) 269 at 757 B
+// (frame 0x14 and the byte flag in an argument home as in retail, 0x239d50 still matches, but the loop is rotated and
+// points/indices swap ESI/EBP); on main's body: bool flag 264 (0x239d50 80), plus short hull count 252 (793 B), plus the
+// heading first 251, plus memcpy 241 (785 B, 0x239d50 still 80); bool flag with memcpy alone 256 with 0x239d50 MATCHING
+// (memmove is what breaks the caller with a byte flag).
 // MiniMax E (11-17): no new form, no lower score (144): retail keeps the hull count in a frame slot of its own at +0x10
 // with EBX holding the copy, re-reads the count from its argument home as a word for both the hull and the candidate
 // bound, keeps the departure flag as a byte in the dead indices argument home and starts the previous heading at zero

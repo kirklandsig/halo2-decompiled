@@ -895,6 +895,14 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 real normalize2d(point2f *v);
 
 // score 135 (was 135):
+// M3 lane 14 r112 (fast; control 135): retail's speed-fail edge goes straight to `test dl, dl` with the first result
+// still in DL, the retry-fail edge reloads DL from the dead target slot, and the retry-success edge stores 1, reloads DL
+// and jumps past the test; both short exits return the live register (`mov al, dl`, `mov al, bl`), where this build folds
+// them to one `xor al, al` exit (the 12 bytes). Tried: the last `return false` as `return valid` 135 (still folded to
+// `xor al, al`); one exit through `bool success = valid; ... success = result; return success;` 135 (folded too); the first
+// result as `result = false; if (call) result = true;` 182 (935 B, retail's length, but the frame drops to 0x44 and the
+// result takes a cell of its own); the call compared `!= 0` (diagnostic, redundant) 119; one to eight dead initialised
+// locals (diagnostic) 135 each, listings unchanged.
 // MiniMax I (11-09): no new form, no lower score (135); the first difference is the trajectory result's
 // register home: retail copies the call's return into DL (`mov dl, al`), loads the force flag into AL and
 // stores DL to the reused target-parameter slot only afterwards, while ours stores AL to that slot at once
@@ -1474,6 +1482,19 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// score 120 (was 137): Frame 0x1c agrees. Retail scales the actor index before the pool load and
+// holds the actor in EDI and the object in ESI. This build exchanges those homes.
+// M3 lane 14 r112 (fast; control 120): the closing term as `dot_product2d((vector2f const *)&object->velocity,
+// path_direction) - dot_product2d(path_direction, (vector2f const *)&other->velocity)` 114 (that block then has retail's
+// loads and operand sides exactly, only the ESI/EDI names differ; six points, under the bar, not kept); on it the velocity
+// dot and the facing dot through dot_product2d 114/114 (same code); the actor through the existing actor_datum_get 120
+// (same code); one to seven dead initialised locals (diagnostic) 120 each with identical listings (no symbol-count effect
+// here); the normalize written with `i = inv * i; j = j * inv` 122, in the normalize3d shape (`if (!(fabs(m) < eps))`
+// scale helper, else m = 0) 114; a named velocity j or i after the normalize 115/115; the turn clamp spelled `1.0 <
+// cosine` or as an if/else on a named double 115/115 (the `fld 1.0; fld st(1)` stays where retail has `fld st(0); fld
+// 1.0; fxch`). Diagnostic: with nearly every actor read removed (approach blocks and the following test) the actor still
+// takes ESI, so the exchange is not a use-count tie: the actor's web takes the scaled index's register (`add esi, edi`)
+// where retail forms it with `lea edi, [edx + esi]` from a scratch index.
 // MiniMax R run 92 (11-17): no new form, no lower score (120): retail still holds the actor in edi and the object in
 // esi and scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the
 // pool first and keeps the actor in esi; the two 1.0f entry stores still come out in the opposite order and the
@@ -1490,8 +1511,6 @@ real function_50650(real cosine);
 // and keeps the actor in esi and the object in edi; the two 1.0f entry stores still come out in the opposite order, the
 // velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, and the callee declaration
 // order (object index first) is fixed by four other files.
-// score 120 (was 137): Frame 0x1c agrees. Retail scales the actor index before the pool load and
-// holds the actor in EDI and the object in ESI. This build exchanges those homes.
 // Earlier score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
 // named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
 // callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before
@@ -1893,6 +1912,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 
 // score 239 (was 238): The zero and radius have different XMM homes, and unsupported types use a separate return path.
 // The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
+// M3 lane 14 r112 (fast; control 239, aligned 198, register-masked 85): retail keeps the result in XMM0 from its zero
+// (`movaps xmm0, xmm1`, then the spill to +0x10) up to the type exit, which jumps past the final reload with XMM0 still
+// live; this build folds that exit's value to the zero register in an exit of its own. Tried: `else goto done;` for the
+// unsupported type 260 at 1173 B (aligned 191, masked 72: the zero becomes XMM1 as in retail, but the result is stored
+// straight from it and every later row is one off); the result declared first 262, both 284 (the zero then comes before
+// the call); one to eight dead initialised locals (diagnostic) 239/239/239/239/274/274/237/239 (five and six give
+// 1173 B but masked 152; the zero stays XMM2 in all).
 // MiniMax D (11-16): no new form, no lower score (238): this round compared the two bodies side by side and the delta
 // is still the frame's slot map and the colouring of the vector block: this build keeps the two squared components at
 // +0x28/+0x2c, the normalizer's length at +0x14 and the flag byte at +0x54, where retail keeps the components at
