@@ -447,6 +447,11 @@ static inline s_prop_datum *prop_ref_iterator_next_256810(s_prop_ref_iterator_25
 // left as bool. Tried with short front: index used straight from the iterator, other declaration orders,
 // iterator fields swapped or index copied first, one index variable shared by both loops (166-169); for or
 // while loops over next_index rotate the loop (202, 205).
+// Native marker position 107; scalar native marker with short facing 166;
+// const actor with short facing 166; const actor and prop-reference views 107;
+// candidate declared in the while condition 107; nested marker eligibility 107;
+// short facing with a branch at the store 166; saved rear predicate as a word 164.
+// The actor spill and current-index register remain different.
 // @retail 0x256810
 short __stdcall function_256810(long actor_index, s_slot *slot)
 {

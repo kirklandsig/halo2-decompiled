@@ -6603,6 +6603,12 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // with or without the state rotation as well: frame 0xdc, flipped at +0xb4 as retail, 1016 (5080 bytes; a 4-byte
 // hole is left at +0, the desired orientation at +0x34, the shared matrix at +0x58, the inertia on the flipped
 // output); that with `bool boosting` 1108 (frame still 0xdc).
+// Lateral vector after query or with the matrix confined to its query 1199/1199;
+// scoped lateral coordinates 1049; vector or coordinates captured at drift/strafe
+// 1109/1050. Scoped relative output with the lateral vector or coordinates
+// 1156/1082, frames 0xe4/0xdc. Scoped lateral vector setter 971 at 5094 bytes.
+// NOT kept: the seven-point gain is below the gate, and the 0xfc frame and
+// exchanged vehicle index and header displacement remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

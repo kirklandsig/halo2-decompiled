@@ -1164,6 +1164,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
 // The square's products come out i, k, j whatever their source order; retail's j, i, k come only
 // from a separate statement for the dot product, which then folds facing loads into mulss: 173-175.
+// Staged fallback side/up/both 130/130/130; fallback first with both staged 163.
+// Named rotation cross numerators 130; named two-term rotation sums 130; named
+// forward-projection products 130; sqrtf 130. The extra vector-sized frame region
+// and the first alignment-product order remain.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

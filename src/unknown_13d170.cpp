@@ -862,6 +862,10 @@ struct s_physical_block_iterator
 // insufficient candidate continues to that increment 201. NOT kept: the 182 form brings the
 // cases inside the loop, but uses pointer masks instead of retail's shared AL test,
 // moves the first difference earlier and shortens to 1193 bytes.
+// Eager older-or-tied, eager rejection complement, eager non-later gate and
+// short-circuit age with eager tie 231/232/227/233; with both age masks
+// 222/217/223/244. The rejection complement with both masks reaches 1213 bytes,
+// but changes the earlier stack layout and still misses the common AL join.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

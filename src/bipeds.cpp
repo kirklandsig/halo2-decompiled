@@ -5979,6 +5979,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Immutable normalized axis by copy/component initialization 258/225; typed header reference 153;
 // common header accessor 79; absolute-index word 123. NOT kept: the accessor ties, and the index word
 // reaches 887 bytes with a different frame and a sibling regression. The complement spill and final cross remain.
+// Common object getter 79; copy up before forward normalization 176; both
+// rotations before forward normalization 270; up rotation first 273. Reversed
+// side and final crosses with ordinary/staged final output 98/91. Both rotations
+// before normalization with staged side 270; initialize the up copy before
+// normalization 176. The first complement spill and final forward load remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
