@@ -31,6 +31,7 @@
 #include "unknown_033a0b.h"
 #include "bit_vector.h"
 #include "object_tag_definitions.h"
+bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *active);
 
 
 
@@ -4655,6 +4656,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// Matched in a full build with stand-in SDK headers (was 51): the fade is read with function_c6b90 (0xc6b90,
+// inlined) whose two output pointers are passed through reference-bound locals, which keeps the getter's two zero
+// stores as in retail; this function is not blocked by 0xff5f0.
+// Before:
 // MiniMax S (11-17): no new form, no lower score (51): the frame is still 0x18 against retail's 0x1c, because
 // retail's final fade inlines the getter 0xc6b90 and keeps its two dead output stores, which take a float slot at
 // +0xc; that getter lives in another file, and the initial alpha and kind homes still differ.
@@ -4957,8 +4962,14 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
     header = &((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff];
     if ((1 << ((byte *)header)[3]) & 3)
     {
-        object = header->object;
-        alpha *= 1.0f - PIN(*(real *)(object + 0x2b0), 0.0f, 1.0f);
+        bool active = false;
+        real fade = 0.0f;
+        real *fade_target = &fade;
+        real *const &kept_fade = fade_target;
+        bool *active_out = &active;
+        bool *const &kept_active = active_out;
+        function_c6b90(object_index, 0x11000088, kept_fade, kept_active);
+        alpha *= 1.0f - fade;
         if (alpha <= 0.0f)
             result = false;
     }
