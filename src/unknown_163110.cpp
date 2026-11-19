@@ -621,7 +621,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Earlier: coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
-// score 115 (was 115): Frame 0x1ec agrees. The near-plane x coefficient loads late and exchanges the coefficient and zero registers.
+// Earlier at 115 (was 115; a second stacked first line, merged in r108): Frame 0x1ec agrees. The near-plane x coefficient loads late and exchanges the coefficient and zero registers.
 // MiniMax S (11-17): no new form, no lower score (115): the first plane's dot still loads view->vector_e4.i after the
 // forward copy where retail loads it before; naming the three coefficients ahead of the copy gives 294 (1867 bytes),
 // naming only the i term 141, the i term's two operands swapped 115 and the terms in j, k, i order 133 leave the
@@ -1090,6 +1090,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Normal first at near/far/intersection 265/252/224; near and intersection 221; far and
 // intersection 222; all three 286. Point first for classification 263. NOT kept: all regress.
 // Near-plane x load and XMM coefficient/zero roles remain.
+// M3 lane 2 r108 (fast with 0x1648d0/0x320b0, both MATCH; control 115, 73 aligned lines): the view's +0x54 field typed
+// as a vector3f (no cast at the forward pointer) 115 (same code); the first plane's normal copied by memcpy 115 (same
+// code); the camera vector through a const pointer for plane 0's d 251 (1867 B); plane 0's d grouped `i + (k + j)` 145,
+// `i + (j + k)` 176 (first +0xaf): VC keeps source grouping, so only the flat sum gives retail's (j + k) + i adds.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
