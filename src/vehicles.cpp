@@ -3160,6 +3160,7 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// MiniMax I (11-19): no new form, no lower score (672): the frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the transform position is still cleared as one twelve-byte region where retail uses three four-byte zero stores; the two leads that reach retail's frame (the mass field read at each use and the final force and torque scaling) each score worse, so the body stands.
 // score 672 (was 672): earlier 682; current transform position cleared as one twelve-byte region; native
 // has three consecutive four-byte zero stores. Frame 0x100 versus 0xfc and scalar/vector homes remain.
 // MiniMax S (11-17): no new form, no lower score (672, was 672); our frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the two leads that reach retail's frame (the mass field read at each use, 676, and the final force and torque scaling through vector3f_scale, 710) each score worse, so the body stays as it is.
@@ -3736,6 +3737,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
+// MiniMax I (11-19): no new form, no lower score (1000): the frame is still 0x78 against retail's 0x74 and the velocity and force homes between them are not one uniform shift, and retail inlines 0x142640 and 0x1427f0 where this file calls them - both live in files this lane may not edit, so the inlining and the frame cannot be reached from here.
 // MiniMax C (11-15): no new form, no lower score (1000): the frame is still 0x78 against retail's 0x74 and the velocity
 // and force homes between them are still not one uniform shift; retail inlines 0x142640 and 0x1427f0 where this file
 // calls them, and both helpers live in files this lane may not edit, so the inlining and the frame cannot be reached
@@ -4950,7 +4952,13 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
-// score 46 (was 48): from the marker count sum on, retail's scratch registers run one step
+// score 22 (was 46): the marker total is truncated to 16 bits at the sum, so the loop's bound compares as in
+// retail, but the second fill's set-up still scales the marker offset into EBX where retail keeps the array base
+// there and scales into EDX, and the markers array sits four bytes above retail's.
+// MiniMax I (11-19): the marker sum written as a short cast (the form the 11-17 review left as next) reaches 22
+// (was 46) - the 16-bit total is the loop's bound as in retail, while an int-typed count (169) and a short-typed
+// count (128) both change the loop; the remaining capacity still rides in EAX here and ECX in retail, and the
+// markers array sits four bytes above retail's.
 // MiniMax C (11-17): score 24 (was 48): the two marker counts are summed into a 16-bit local and the
 // loop bound is that local widened to 32 bits - the capacities the two calls are given (15 and
 // 16 - primary_count) bound the sum, so the value is unchanged - and the sum's sign extension then
@@ -5064,8 +5072,8 @@ void __stdcall function_f6060(long vehicle_index)
 	{
 		s_object_marker markers[16];
 		short primary_count = function_b8d30(vehicle_index, 0xf0000bb, markers, 15, false);
-		long count = primary_count + function_b8d30(vehicle_index, 0xd0000bc, &markers[primary_count],
-			16 - primary_count, false);
+		long count = (short)(primary_count + function_b8d30(vehicle_index, 0xd0000bc, &markers[primary_count],
+			16 - primary_count, false));
 		short i;
 
 		for (i = 0; i < count; i++)

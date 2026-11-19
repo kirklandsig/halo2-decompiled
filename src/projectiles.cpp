@@ -1829,6 +1829,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
+// MiniMax I (11-19): no new form, no lower score (296): retail still expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call (this body is 66 bytes short of retail's 1261) and holds index * 12 in ebp where this build keeps it in eax, so the pool, tag and seat-bit homes behind that expansion differ.
 // MiniMax R (11-16): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, so this body is 66 bytes short of retail's 1261 and the pool, tag and seat-bit homes behind that expansion differ.
 // MiniMax A (11-14): no new form, no lower score (296): retail expands 0xfbfd0 into this body while this build calls
 // it, so the body is 66 bytes short of retail's 1261 (BLOCKED-BY 0xfbfd0), and retail takes the model table's entry
@@ -2084,6 +2085,7 @@ real function_17c900(short function_type, real input);
 // MiniMax A (11-12): no new form, no lower score (348): the frame of 0x30 agrees but retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile in esi where we keep the index in esi and the projectile in ebx on the stack, so the aim point stack home sits four bytes higher; the declaration and the call contract may not change, so the body stands.
 /* where a guided projectile aims: its target's point, led by the target's
    velocity, then wobbled around the line to it or wandering */
+// MiniMax I (11-19): no new form, no lower score (348): the body is still four bytes longer than retail's and the salt local stays where retail re-reads the index; the entry allocation still differs (retail takes the index off the stack and forms the entry address itself), and the aim point's stores and the drift and wander arms' outputs still differ.
 // MiniMax R (11-16): no new form, no lower score (348): the body is still four bytes longer than retail's and the salt local stays where retail re-reads the index; the aim point's stores and the drift and wander arms' outputs still differ, and dropping the salt for the re-reads only reaches 328 while the caller 0xf8eb0 rises from 947 to 982.
 // MiniMax A (11-14): no new form, no lower score (348): the frame agrees (0x30) but the entry register allocation
 // differs - retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile
