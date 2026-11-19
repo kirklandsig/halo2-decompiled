@@ -2252,6 +2252,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // use 255 (1218 B, frame 0x10); that with block 2's queries written like block 1's (0xcbd50, slot from a fresh lookup) 269
 // (1217 B), without the `long` index 279 (listed); the `long` index with `short rounds[2] = { 0, 0 };` 277 (1190 B);
 // re-measured: the `long` index alone 278 (1191 B).
+// The actor, options and pool still miss ESI, EBP and EDI. First-phase pool 251; second-phase
+// pool 251; separate phase pools 251; pool after grenade metadata 302; first-phase header
+// array 251; header array after grenade metadata 301; shared header accessor 251; primary
+// weapon result inside the flag/delay gate 251. The late pool and header forms still give the
+// actor and options different registers.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -711,6 +711,13 @@ struct s_object_damage_view
 // in the selection loop, three declaration orders, a history pointer for both loops): best 340 (1544 B: both flags,
 // `self` in the call and the history pointer), then 342 twice and 350; nothing at or under 350 without a flag set by a
 // test, and the unchanged body has the lowest aligned count of all (132, next 137). Body unchanged.
+// The fallback still keeps the credited player in EBP and the history cursor stays biased by four.
+// Historical candidate from entry or selection, credited player before fallback 378/396;
+// candidate through fallback from entry or selection 324/366; shared candidate for validation
+// and assignment 396; reported provider result 353; selected provider result 446; credited player
+// through the primary award 353.
+// NOT kept: the 324 form splits one credited-player value into two locals. It recovers the
+// damage-code slot but still exchanges the credited-player and victim-team slots.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
