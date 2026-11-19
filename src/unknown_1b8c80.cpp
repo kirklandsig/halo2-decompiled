@@ -225,6 +225,8 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 	return result;
 }
 
+/* whether one of the object's seats is free for the actor: false as soon as a listed vehicle is flagged
+   at +0x3b4 or a hostile occupant is found */
 // score 3 (was 3): at the 0xc8200 call (now in retail's (unit, object, seat) order, which loads
 // the unit last as retail) ours reloads the seat pointer into ECX and reads the object at once;
 // retail reloads it into EAX and loads the seat index in between. Before the reorder ours loaded
@@ -399,9 +401,9 @@ bool function_1b8f30(long actor_index, long object_index)
 
 			if (occupant != NONE)
 			{
-				short team = object_get(occupant)->team;
+				s_slot_object_view *occupant_object = object_get(occupant);
 
-				if (team != actor->unknown024 && function_1df560(team, actor->unknown024))
+				if (occupant_object->team != actor->unknown024 && function_1df560(occupant_object->team, actor->unknown024))
 				{
 					result = false;
 					break;
@@ -877,6 +879,10 @@ extern "C" void _ReadWriteBarrier(void);
 // test stored as a bool, or a two-use memory load there keep the load in the entry block but move the base to ESI or
 // pull the 0x26c load into EDX. Reading: retail's entry needs a use of the slot pointer's own value in the entry block (a
 // dereference sinks to its use); no code-free form of such a use is known.
+// Round 144 (m3 lane 12, fast; control 6): the busy field in a named `long target_index`, with/without the barrier 6/44
+// (208 bytes); the state formed as a const pointer from the parameter inside the NONE block, with/without the barrier
+// 6/44; the point copied through a `point3f const &`, with/without the barrier 6/44; `s_slot_4c const *const state` 6
+// (all the 6s are the base's code); the 0x86 test written `> 6` 8.
 // M3 lane 15 r101 (fast): the final 0x450 store written first, ahead of the busy test 52 (189 bytes, no tail copies); a
 // `point3f const *` to the point formed in the flags arm 6 (same code); the 0x86 arm storing 0x420 before 0x41c 8; no
 // barrier with the state declared at the head of the NONE block 44 (208 bytes); no barrier, actor first, the point bound

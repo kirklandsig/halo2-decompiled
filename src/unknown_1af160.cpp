@@ -190,6 +190,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // swapped and the low slots 0x12-0x1c move, so retail's frame is the escaped-integer one; the other eleven callers stay
 // MATCH; restored); the actor pointer const 12, the actor, node and 0x25d690 result const 12 (same code); the 0x262b40
 // result's +0x14 field named for its two tests 14; the three 0x261280 outputs declared ahead of the scratch fetch 12.
+// M3 lane 13 r113 (`--fast 0x1af160 0x1e1f20`, control 12): the bool output alone in a block spanning its uses (the
+// reference result declared outside) 12; the actor offset `(arg_0 & 0xffff) * size` as a named local at both actor lookups
+// 12, renamed to sort last 12 (the CSE temporary's slot does not follow a user name); the three outputs in a block with
+// the reference result outside 44; the node looked up through a fresh actor lookup ahead of the actor local 79; the
+// equal arm's actor lookup through a named local 12 (same code).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

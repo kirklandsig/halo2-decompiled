@@ -296,6 +296,24 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // as destination ahead of the j and k products), but not at the second (after 0x294050), and the rest shifts; both dots
 // vector-first 462 fast (the first dot's code does not change). Lead: retail's second dot at both sites multiplies the
 // vector's i register in place before the other products; ours loads the stored i and multiplies after the first add.
+// m3 lane 10 r121 (a one-object LTCG screen linked with the callees' real objects, build/r121/lt294.sh: it reproduces this build's
+// frame and prints each home by name, 1.2 s a variant; plain where marked): the frame is ordered by references per cell (72 over
+// 12 bytes down to 9 over 48), and all three swapped pairs are exact ties in both builds: object + centroid distance, count,
+// nearest, sum and record + `3 - total` have 4 references per cell each (retail's order object, count, nearest, sum, record; ours
+// nearest, count, object, record, sum), and the walk's position and offset 10 each (the post-walk vector shares with one of them).
+// The tie order did not move for: sum/nearest/count declared at the top in all six orders; their first assignments in five
+// orders; either walk vector or both at function scope, or the post-walk vector declared first; the count raised before the sums
+// or with `+= 1`; the nearest test first with the arms swapped; the nearest point copied first; the object through its accessor in
+// the early part; the record re-derived at the 0x294050 call; `3 - total` or the reciprocal unnamed; no neighbour alias; the
+// waypoint record read without a pointer; a named squared distance; the alignment weight written out; the centroid scaled in
+// place; the two later distances as one variable; a separate cohesion strength; the speed vector stored first; both 0x2949aa
+// dots swapped (576 combinations of these: same homes in every one). It moves only when the set of variables that have homes
+// changes: the wander, path and waypoint strengths as three named locals (they share the old slot) give retail's object, count,
+// nearest order (plain 280, as r102 found); on that, one variable for the walk's position and the post-walk vector puts the
+// position/offset homes right too (7 of 8 homes in the screen) but drops four instructions: plain 623 (3693 B, aligned 100
+// against this body's 90). No form found for the record/sum pair (diagnostic: one extra read of the sum puts the record at 0x84
+// and adds code). Compile-only synthetic functions: equal-count spill homes are laid out in order of first load, address-taken
+// locals in order of last use, and neither declaration nor first-assignment order moves them.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

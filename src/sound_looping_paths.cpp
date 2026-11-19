@@ -673,9 +673,31 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // its ternary as an if/else 846 (both the same code). Lead: retail treats 0x14b240 as a call that may write memory
 // (0x18d730's note; retail reloads the sounds base after it here); with that callee form this body is 911, so a
 // rework of this function belongs with build/r110/held-0x18dc90.patch.
+// Definition bitfield gates: custom levels/scale/both 888/919/914,
+// original-source repair/neighbor level/both 913/846/913. All definition bits
+// 938; one initial flag snapshot with live repair bits 910. Entry zero,
+// query/count homes and the accepted-choice register remain.
 // Full-width choice count before target storage, before the cluster gate, at cluster-arm entry,
 // or after the query output clear: 979/979/964/963. With the full query result: 979/979/965/965.
 // NOT kept: ESI becomes the entry zero, but target count and primary remain displaced and the extent drops to 3264 bytes.
+// M3 lane 5 r200 (fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, frame-blind aligned 282 of 941/928
+// lines with registers and stack offsets masked): long query and choice counts, `&choices[choice_count++]` in retail's store
+// order with the 1.0f defaults as statements, and the first pool scan in the fade scan's while form with the salted index
+// named before its test 1020 (3231 B, fb 277); with loop_path_start allocating through looping_sound_new_attached(tag, NONE,
+// NONE, 0) and 0x18a5a0's second half 1000 (3238 B, fb 251: the four query arrays take retail's order, frame 0x4dc); plus
+// the choice/target/existing lists as {count, items} records 971 (3250 B, fb 238: the choice cursor is no longer
+// strength-reduced, but the zero is EDI and frame 0x4e8); without the existing record 984 (0x4e4), without the target
+// record 978; the indexed choice stores on that base 1013. Lead: the override's `+=` through the shared decibel value type
+// (include/unknown_21e230.h) gives retail's `movss xmm0, [eax]; mov [slot], edx; addss xmm0, [slot]` (984, fb 236, cast
+// diagnostic): retail's integer decibel constants and slot-copied right operands are that type's signature, so the
+// decibel fields here may be that type.
+// M3 lane 12 r145 (fast with 0x18bb80 and 0x18ab70, both MATCH): retail's override loop re-reads the target count from its
+// home each pass and the choice count is stored to its home after each increment with `&choices[count]` recomputed from it.
+// The override add through the shared decibel value type 846 (same code), with the gain as such a local built from its bits
+// 846 (same code); long query/choice counts with the query count read directly and each choice through
+// `&choices[choice_count++]` 972 (3287 B: the pointer becomes an induction variable), that with the stores in retail's order
+// (tag, source, decibels, cluster) and the three 1.0f defaults as statements 972; on main's body the four stores in retail's
+// order 846 (code changes, score ties).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

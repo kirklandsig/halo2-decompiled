@@ -1238,6 +1238,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // basis dots for all three projection products 412; component assignment and basis dot for length 439;
 // basis dots for constant and signed distance 412.
 // NOT kept: the basis length changes the preload to i and retains the length and zero registers. The other component and basis forms regress.
+// Direction j seeds the length before the basis, before its left store, before
+// the normal copy, or before the plane constant, with successive or paired
+// sums 431/431, 415/415, 392/392, 392/392. NOT kept: the early j loads
+// lengthen the body, and the later forms still preload k. XMM1 remains zero.
 // Direction k still loads before the normal copy where retail loads j. Plane after basis stores 126, shared typed
 // offset 395, accumulated zero-first scale 454, plane scoped to the factor 126, plane and const length after basis
 // stores 126, complete translated-vector local 427, in-place offset copy 470, separate scale and add 409.
@@ -1256,6 +1260,20 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // NOT kept: The shared basis reset removes retail copy instructions. Point-difference forms alter
 // arithmetic grouping. The independent projections keep separate dots but still miss the preload and grow
 // the body.
+// M3 lane 1 r122 (fast with 0x16c6f0 and 0x13cb40, both MATCH; control 126, aligned 92; diagnostic, body unchanged):
+// a phase scan of 1 to 33 chained dead locals at function scope, and 1 to 8 in the plane block, has period 8 and
+// only two outcomes: 126 (aligned 92, the control's code) at 7, 15, 16, 23, 24, 31, 32 (plane block: 7) and
+// 394-395 (aligned 98-101) everywhere else; no phase preloads left.j, and the 394 forms also rotate the normal to
+// XMM5/4/3. So the plane length's first-loaded operand does not follow the symbol count on this body. Read again in
+// the listing: both plane dots add the k product into the j product; retail loads the length's j operand ahead of
+// the normal's copy (off the camera pointer) and its k operand at the product (off the copied address), ours the
+// reverse, and that alone mirrors XMM0/XMM1 for the length, t, the timer and every later zero; retail's distance
+// dot adds j into k and loads forward for k and j but position for i, where ours loads position for all three.
+// Forms on the body (fast, control 126): the inner switch with case 1 written before case 2 126 (same code); the plane
+// distance taken against the camera vector before the normal is copied 172 [aligned 96]; the point state through a
+// `s_camera_point_state const &` for the case-2 block 395 (1700 bytes); the field-of-view's `active = false` before
+// the default field-of-view read 126 (same code); the matrix position through a `vector3f *` local for plane.d and
+// the scaled add 395 [106]. Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
