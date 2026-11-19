@@ -914,6 +914,11 @@ real function_30bf0(vector3f *vector);
 // kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
 // retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
 // the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
+// Empty-or-half-open seat range 207 or with step at lookup 202, signed admission with
+// equality latch 152, nonnegative indexed bound 188, indexed advance after lookup 161,
+// seat array extent 84, separate clipped fraction 245, scalar names 84, inclusive last
+// seat 204. NOT kept: the extent and names tie. The indexed advance and separate clip
+// fraction reach 1308 bytes but keep the result and clip homes displaced.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
