@@ -147,9 +147,6 @@ long online_task_find(long type, long controller_index)
 
 /* counts the matching tasks, but stops at the first (callers compare the
    count with 2) */
-// Matched in a full build with stand-in SDK headers (was 9): the loop leaves by `break` with the result set to 1,
-// and the task type is read through a reference-bound local.
-// Before:
 // score 9: this counting form has retail's registers (edi = pool, esi =
 // bitmap) but keeps the count test as the loop tail (`inc eax; test eax, eax;
 // je`) where retail stores `mov eax, 1` and falls into the epilogue. Every
@@ -168,20 +165,15 @@ long online_task_exists(long type, long controller_index)
 {
 	s_record_pool_iterator iterator;
 	s_type_9df9da *task;
-	long result = 0;
+	long count = 0;
 
 	online_task_iterator_new(&iterator);
-	while ((task = (s_type_9df9da *)function_6b891(&iterator)) != 0)
+	while (count == 0 && (task = (s_type_9df9da *)function_6b891(&iterator)) != 0)
 	{
-		long task_type = task->type;
-		long const &kept = task_type;
-		if (kept == type && (task->controller_index == controller_index || controller_index == NONE || controller_index == 0xff))
-		{
-			result = 1;
-			break;
-		}
+		if (task->type == type && (task->controller_index == controller_index || controller_index == NONE || controller_index == 0xff))
+			count++;
 	}
-	return result;
+	return count;
 }
 
 /* disposes every task, the logon (0), change-logon (1), friends (2), mute
