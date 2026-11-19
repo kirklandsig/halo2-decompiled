@@ -2498,6 +2498,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 408 (1939 B); with a count in each pitch-range for-init too 351; with the pitch sum split (lower bound added after) 349.
 // paired table reads per element 305; retained pitch-pass table 305; paired named pitch-table view 305; retained table with named bounds view 305; retained table with first pass count 427; retained table with independent pass counts 368; retained table with complete request 305; retained table and pass counts with complete request 368.
 // NOT kept: The paired table forms tie. The full request reaches 0x12c and the full request with both counts reaches 0x138. The frame and playback homes still differ. All seven checked callees retain their opening status.
+// Y643: creation-edge guard 305; missing replacement continue 305; vacancy-first range branch 411; shared range bit
+// 415; missing range sound continue 305; gain accumulated in the table entry 433; full play state and creation-edge
+// guard 305; full state and gain accumulated in the table 433.
+// NOT kept: The full-state variants reserve 0x12c and the gain-table store lengthens the body. The remaining forms
+// tie or raise the difference score.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3560,6 +3565,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // (... != NONE || ... || (flags & 0x14))` expression 614 (2519 B); the seed pointer chosen after track_alternate 629 (2508 B);
 // track_alternate computed after the created block 641; track_definition declared after the track and seed pointers 596
 // (a declaration move under the keep bar).
+// Y643: successive request shifts 605; two masked stores 661; playback byte carried through all three stores 597; one
+// store for the last two bits 661; one store for all three bits 680; guarded alternate and successive shifts 642;
+// guarded alternate and carried playback byte 644; guarded alternate and two masked stores 689.
+// NOT kept: Carrying the stored byte ties 597 while shortening the body by eight bytes. The guard-scoped forms
+// recover the saved-register prefix through +0x1c but raise the score. The other publication forms shorten the body
+// and raise the score.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

@@ -796,6 +796,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // frame 0x14 as retail, but the loop is inverted); the same with a long counter 264; the declarations after the lowest scan
 // 266; the three exits as returns 265 (749 B); short counter with a long flag 242 (759 B). The loop's end written as
 // `if (!left_start || points2d_differ(...)) continue; goto finished;` on that body (screen only) loses 25 rows.
+// Still-at-start state as bool/byte/short/long with short-circuit update 264/264/265/265;
+// explicit update 262/262/260/263. NOT kept: the 0x14 frame returns, but each form shortens
+// the body by at least 21 bytes and changes the matched caller's convention.
 // M3 lane 4 r219 (fast with 0x239d50 and 0x239b80, both MATCH each time; control 144): the count read once through
 // `short const *const count_home = &count;` for the classifier, a bool flag and the compaction through memcpy (retail
 // calls the CRT memcpy) 256 (767 B); count_home with memcpy 145; count_home alone 144 (same code). One hull counter

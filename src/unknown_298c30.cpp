@@ -593,6 +593,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // counter `long` 483 (1675 B, `ret 0x18`); one shared inline rotation of the facing direction (cos x - sin y, cos y + sin x)
 // for both near-arm emissions and the far arm 382 (1692 B); the existing normalize2d_fast for both normalizations (their
 // results are unused) 305 (same code).
+// Cosine from published angles 305, with shared direction components 387. Shared direction
+// components before both turns / after each angle 387/426. Y stored before x 346.
+// Named wide distance components 316. Planar normalizer at entry / tangent 391/305.
+// NOT kept: entry normalization recovers unity in XMM2 through +0x9e, then schedules
+// the y projection ahead of x and shortens the body to 1722 bytes.
 // Staged near-turn y rows previously lowered the score from 382 to 305.
 // Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
 // Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.

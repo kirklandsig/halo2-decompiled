@@ -845,6 +845,11 @@ void function_245400(s_source_245400 const *source, long index,
 // XMM4-6 against XMM3-5); that with the edge as three member differences 211 at 783 B [97/53]; the side bits through
 // a forceinline helper taking the long code by const reference 232 (752 B, folds as the shifted sides); select,
 // member differences and `(local_2 >> 15) & 1` sides together 237 (746 B). Body unchanged.
+// Secondary index before material table 163; secondary record retained for extension 211;
+// both codes reread by index 210; table after widened codes 204, with bound vertex records 204;
+// late table with shifted orientation bits 199; per-plane decoding 200, with equal-code guard 200.
+// NOT kept: the one-point gain leaves frame 0x24 and the side homes displaced. The late
+// table with signed sides changes the caller. Retail still keeps the source in ESI.
 // M3 lane 1 r126 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH each time; control 164, aligned 134): on the single
 // condition, sides as `(code & 0x8000) != 0` 232 (752 B) and as `((dword)code >> 15) & 1` 232 (752 B: the two tests merge
 // into one jump). The edge rotation through an inline vector form of this file's point transform (copy the components,

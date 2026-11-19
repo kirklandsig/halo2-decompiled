@@ -784,6 +784,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // declared once at function scope and reset per cluster 607 (same code); the weight clamp as two independent ifs 607 (same
 // code); the three per-cluster source resets ahead of the 0x130f60 call 713 (3836 B); the scenario lookup with the global
 // tested in its own `if` around the bounds test 607 (same code). All restored.
+// Y643: provider slot long at return 684; dword at return 684; word at return 696; long in tag arm 607; dword in tag
+// arm 607; word in tag arm 696; word at return with signed palette byte 668; word in tag arm with signed palette byte
+// 668.
+// NOT kept: Late long and dword slots tie 607. The early decodes and the low-word forms increase the score. The
+// signed-byte low-word forms narrow the length gap without recovering the provider and sentinel registers.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

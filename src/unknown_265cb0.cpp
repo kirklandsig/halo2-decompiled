@@ -923,6 +923,12 @@ real function_30bf0(vector3f *vector);
 // seat-loop crosses through a trial copy of the textbook cross spelling (`a->j * b->k - a->k * b->j`, as several files keep
 // it locally) 84, the first cross only 84, the second only 84 (all the same code: the product operand order does not
 // follow the spelling); the seat array declared at function scope 84, beside the facing outputs 84 (same code).
+// Y643: sampled point with direct delta 320; sampled point with shared delta 332; selected point pointer with direct
+// delta 337; selected point pointer with shared delta 345; sampled point with direct delta and late range 326;
+// sampled point with shared delta and late range 339; selected point pointer with direct delta and late range 332;
+// selected point pointer with shared delta and late range 344.
+// NOT kept: Calculating delta after clip selection shortens the function below retail length and raises the score on
+// all eight forms. The earlier range reads also change the matched caller 0x25c9d0 in the reduced image.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

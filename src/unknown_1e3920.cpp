@@ -1633,6 +1633,11 @@ void function_1e3b60(long actor_index);
 // 423; the list head read through the held pointer 442 (1616 B); the sampled flag declared after the first call
 // 413; the prop loop as `for (long index = head; index != NONE; index = next)` 453 (1600 B, retail's frame 0xa0,
 // first difference +0x6). The actor index stays a stack argument in each. Still BLOCKED-BY 0x262ba0.
+// Round 642 forms: layout-derived clear extent 25, typed reset span and sentinels 25,
+// byte-distance reset extent 25, typed dword sentinel 25, unsigned child test 25,
+// typed prefix with child count > 0 at 26, const typed update view 25, scoped
+// layout-derived reset 25, callee __cdecl declaration and definition 71.
+// NOT kept: the call still pushes the actor index. The __cdecl form also adds caller cleanup.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

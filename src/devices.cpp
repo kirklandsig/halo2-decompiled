@@ -2623,6 +2623,12 @@ bool function_0b6760(s_index_pair const *pair);
 // ebx, so the body follows one register rotation off and stays sixteen bytes short of retail's 1495; the only form
 // below 250 needs a one-use rate local, which the coordinator ruled out without a byte match, and dropping the volatile
 // on the definition alone measures 386.
+// Round 642 forms: absent state first with definition-first result 399, direct offset
+// test with state helper 235, shared signed state offset 246, actual position-channel
+// reference 61, nested state and validity tests 61, shared channel and index-pair
+// references 61, position activity before refresh 384, named device tag fields 61.
+// NOT kept: the two-point definition-first gain is below threshold. The remaining
+// manual state register and channel-1 call lifetimes stay different on the tied forms.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

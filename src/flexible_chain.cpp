@@ -853,6 +853,10 @@ void __stdcall function_1160c0(real dt)
 // `inverse_dt` 167; on the body the node pointer ahead of `inverse_dt` 144 and the first-node test as `!i` 144 (both
 // the same code). Retail's scratch choice is one step off ours at both ends of the loop (segments base and segment EDX
 // for our EDI/ECX at the top, the definition reload EDX for our ECX at the bottom).
+// Round 642 forms: branch-owned segment offsets 289, typed rest-vector copy 273, physics
+// index before the node snapshot 145, tag entry reference 144, named constraint length 144,
+// widened offset scope 144, loop-owned axis 144, terminal selection by node count 181.
+// NOT kept: the near-length rest copy changes the saves and the ties retain the EDI/ECX carrier.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
