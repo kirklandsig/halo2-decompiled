@@ -519,6 +519,13 @@
 // both arms 699/708/709, named origin coordinates 745, setter on both outputs 707,
 // selected-coordinate and output setters 690. NOT kept: all regress. The last reaches
 // frame 0x5c at 2587 bytes. The regular-arm setter raises the reduced caller to 344.
+// M3 lane 1 r126 (fast; control 536 at 2622 B, aligned 425; both builds end `ret 0x20` here): the staged cross helper
+// for the special path's first cross 536 and for its second 536 (same code: the shared products are CSE'd either way);
+// the first cross's result declared at function scope 536; s1 and s0 declared ahead of the first cross 536; s0 computed
+// ahead of s1 536 (all the same code). Retail keeps three of the shared products, s1 and c.j/c.k in stack cells (frame
+// 0x60), ours only three cells (0x54); the vector homes are ordered v1, v2, w, v3, v4 there against v1, v2, w, v4, v3 here.
+// Retail stores the first cross's i component in w's i cell; one vector for both special crosses 533 (frame still 0x54),
+// with the staged helper for the first 533 (not kept: three points, and the vector would hold two different values).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

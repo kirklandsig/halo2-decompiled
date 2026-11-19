@@ -1128,6 +1128,14 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // 295, the outer parameters declared in the opposite order 295, five later object_index arguments made constants 304: in
 // each object_index still loads first (ECX or EAX) and the parameter takes ESI, so the entry roles follow neither
 // declaration order, the parameter's later reads nor object_index's use count. Body unchanged.
+// M3 lane 1 r124 (fast with 0x137800/0xbfe20/0xbfe60/0xbdb60, all matched throughout; control 240, aligned 177, masked 67):
+// an unread fourth parameter (the call in 0x137800 passing its count) 240, the same unread parameter first 240 (same code
+// each: the link drops it and the body's symbols do not move the roles); `result` initialised through a const reference
+// bound to the parameter 240 (folds); `result` declared ahead of the header with the early tests through one named object
+// local 240 (aligned 183); the sample scan as a forceinline helper returning the flag 246 (aligned 168, masked 65). Reading:
+// retail stores `definition` to a frame home at once and reloads it for the object-type test (ours keeps it in EAX across
+// the mask copy), consistent with the extra live value retail carries there (the parameter in EDX beside result in EDI).
+// Body unchanged.
 // M3 lane 11 r119 (fast with 0xbfe20/0xbfe60/0xbdb60, all MATCH; masked = aligned count with registers and stack
 // offsets masked, base 69): final_matrices declared at the top and returned by both early exits 240 (masked 72); the
 // sibling 0xbd090 reads this same bit-29/+0x34b condition through a fresh `current` object read, and that spelling here
@@ -1135,6 +1143,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // (814 B, masked 59; a hand reload beside `object`, match-only), with final_matrices at the top 194 (masked 62);
 // `matrices`, `orientations` and `sample` (constant initialisers) declared ahead of the mask copy 239 (masked 64), at
 // the top after result 239 (masked 70).
+// M3 lane 1 r127 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): `result` read through
+// the parameter's own address (`*input_reference`) 240; `result` written through a reference bound to it 240; the sample
+// arm's final_matrices assigned from `matrices` 240; the body after the early tests in its own block scope 240; the sample
+// arm's and the overlay copy's parameter reads written as final_matrices (diagnostic) 240 (each the same code: the compiler
+// propagates every one of these copies back to the parameter, so result and the parameter stay one value in ESI). Re-measured
+// the 0xbfe20 clear 262 (813 B: ours keeps `definition` in EAX across the mask copy, retail stores it and reloads it from
+// the slot it later gives the render-node count). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

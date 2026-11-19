@@ -1885,6 +1885,25 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // the write-success bool declared before the resize 7; the checksum compare with the read header's word first 7 (each the
 // same code); the header check and checksum as one `valid = function_213800(...) && stored == read;` 78; that on main 98.
 // Body unchanged.
+// M3 lane 1 r125 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33). The empty-header write as a
+// forceinline helper taking the handle by value, writing its own block-scoped count and returning `bytes_written == 0x800`,
+// called as `if ((!resized || !write(*handle, &done)) && open)` 119 (914 B): the write is retail's exactly (handle loaded
+// first, zero in ECX), the count/size homes and the not-resized jump to the close test are retail's; plain `inline` 355 (834 B,
+// kept out of line). With the header read as `else if (cache_file_header_read(index))` + `valid = true` 114 (917 B, the
+// write-local plateau: only the close's `mov ecx, eax` copy and the checksum register left). On that: the close as a
+// forceinline helper taking `s_file_handle *` 114; its test through a by-value predicate 114; its handle through a named
+// copy 114 (checksum then EAX as retail); the helper returning the count compared by the caller 114; its result through
+// `bool written = ...; return written;` 114, through `if (...) written = true;` 114; `bool written = resized && write(...)`
+// 114; the write as an empty-header helper over a generic buffer-write helper (by value through both) 114; a by-value close
+// helper for the call 114 (also with the pointer write 119); a by-value handle accessor at the write 5 (handle loaded
+// after the zero), at the close 114; own `done` flags in the write and close helpers 135 (pointer write: 26, separate
+// slots); the resize and write in one helper with an early return 134. The write helper taking `s_file_handle const *`
+// (unnamed `*file` argument) with the else-if read 7 (the 7 plateau without a set-in-test write flag), plus the listed
+// reference-bound checksum 5 (left: only the write's handle load after the flags zero). Diagnostics (probe = one global
+// load and store, removed): on the by-value write + close helper + reference-bound checksum form, a probe after the
+// write's wait gives retail's code except the probe itself (close copy and checksum EAX both right), so that form lacks
+// exactly one scratch-rotation step between the write's header temp and the close's copy; a probe before the write on the
+// 5 form hoists the handle load to the top (ECX) as retail does but shifts the rest. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -820,6 +820,13 @@ extern point2f *g_468778;
 // Typed actor row after/before settings 375/413; early row base with/without early slot 408/408;
 // early absolute actor slot 375. Settings declared in the admission test, then actor first and
 // typed actor first 409/413/413. NOT kept: ties or regressions, actor/settings/prop homes remain.
+// M3 lane 1 r126 (fast with 0x1aab50, 0x265d30, 0x1a9d80, 0x1a9e00, 0x25d740, 0x25d690; control 375, aligned 197): the facing
+// pointer as a two-definition local (NULL, then the view's address) in its block 375 (same code), declared NULL beside the
+// prop 374 [200] (the NULL is dropped: the pointer is still formed straight after the view call, not retail's late `add edi,
+// 0x2c`); re-measured actor first 413 (1555 B) and actor first with the early `return false` and the returned final
+// expression 393 [208] (arg_0 EBX, actor EDI spilled, settings ESI, slot EBP, prop in arg_1's home against retail's EDI,
+// EBP, memory, ESI, EBX); on that the two-definition facing pointer 393 (same code); the prop pointer left uninitialised and
+// set to NULL in the no-prop arm 399 (1558 B).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

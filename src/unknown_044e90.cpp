@@ -500,6 +500,12 @@ struct s_visibility_bound_record
 // against retail's [esp+0x30]. The geometry lookup goes through the header's visible_entry_geometry, whose own
 // &g_4ba138[index] is what the based-pointer folding applies to; the source permuter's best variant was one differing
 // instruction better and carried a declaration split and a pointer-to-a-local.
+// M3 lane 1 r127 (fast with 0x142570/0x1428b0/0x165010/0x2dd930/0x45a80/0x458d0, all MATCH; control 430): the entry local
+// renamed 430 (same code: the names do not move its [esp+0x48] home); the entry as a reference-bound local (`entry.` at
+// each use) 430 (same code); a redundant `if (0 < node_count)` around the node loop 430 (one `lea` operand order only); the
+// entry declared after the geometry and views 430 (same code); diagnostic: the geometry through a copy of the pointer-taking
+// (entry, flags) helper that src/unknown_044720.cpp keeps private 449 (1760 B: the entry is then formed before its reads,
+// `add edi, table`, but stays in EDI and the tag table moves to EDX). Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

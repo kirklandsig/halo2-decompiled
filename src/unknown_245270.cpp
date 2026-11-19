@@ -843,6 +843,15 @@ void function_245400(s_source_245400 const *source, long index,
 // XMM4-6 against XMM3-5); that with the edge as three member differences 211 at 783 B [97/53]; the side bits through
 // a forceinline helper taking the long code by const reference 232 (752 B, folds as the shifted sides); select,
 // member differences and `(local_2 >> 15) & 1` sides together 237 (746 B). Body unchanged.
+// M3 lane 1 r126 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH each time; control 164, aligned 134): on the single
+// condition, sides as `(code & 0x8000) != 0` 232 (752 B) and as `((dword)code >> 15) & 1` 232 (752 B: the two tests merge
+// into one jump). The edge rotation through an inline vector form of this file's point transform (copy the components,
+// `x = matrix->scale * x` under the scale test, rows `up * z + left * y + forward * x`, the edge passed in and out) 163 at
+// 783 B [124]: retail's select shape (`movaps` copies, `jnp`, the scaled copies) but the rows' sums reorder; its rows as
+// forward, left, up 163 [124]; i/k forward-first with j as up, forward, left 163 [124]; j as two statements 164 (785 B).
+// Diagnostic, restored: on that helper form, the second vertex pointer stored to a scratch global inside the plane test
+// 207 (786 B, [114]): the first vertex pointer is then formed before its loads and the edge lands at retail's offsets.
+// Not kept: a new one-caller helper for one point.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

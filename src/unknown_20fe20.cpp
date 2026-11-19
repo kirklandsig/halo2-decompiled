@@ -1271,6 +1271,13 @@ void function_2118c0(void)
 // (180 instructions); the knot indices as `long` at the k level 142; a `vector3f (*)[8]` local for the table used by the
 // knot rows 27 (same code); named per-knot sums `long index3 = row + w3;` 27 (same code); per-knot base pointers taken at
 // the k level (`noise[w3]`) plus `row << 3` elements in the band loop 171.
+// M3 lane 1 r125 (fast with 0x211fd0 and 0x212100, both MATCH; a compile-only screen of this file reproduces the 10): the knot
+// rows read in place in the component loop from `(b << 3) + w` (no row local, no knot pointers) 150; the knot indices as
+// function-scope statics assigned per knot 178 (809 B); `long row = b * 8` with the knot subscripts truncated to `word`
+// 161 (787 B: retail's `add esi, 8` row and unreduced knot rows, plus a movzx per knot); every row in the matched 0x211fd0's
+// band-of-64 idiom (`&noise[row][w * 8]`, p1 `[row][k * 8]`, out `[row][k * 8 + m]`) 175 (745 B); a `long row` started at
+// zero above the band loop and stepped by 8 at its foot with the knot rows read in place 150. Screen only: the band-of-64
+// idiom from `b * 8` or `b << 3` and `(k + 7) & 7` for the first index (same code as now) reduce every row or change nothing.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

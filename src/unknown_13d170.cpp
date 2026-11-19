@@ -800,6 +800,23 @@ struct s_physical_block_iterator
 // M421: Sufficient-pages take/refinement 262; exhaustive take/retention 253/262; nested eligibility 253;
 // first-candidate take with direct/shared eligibility 261/300; refined take with earlier-or-tied/equality result 270/270.
 // NOT kept: the complete admission results shift the prefix and do not recover the retail policy join.
+// M3 lane 1 r124 (fast with the file's six functions and 0x13d320, all MATCH each run). Lane 9 r109's 93 lead rebuilt (93,
+// 1213 B, aligned 43). LEAD 40 (1213 B, first difference +0x356, aligned 18, masked 13; the permuter's full-image baseline
+// also 40; patch build/r124/lead-0x13d370-40.patch; kept only with a match): on the 93 lead, the two insertion stages
+// tested through one `bool at_head = best.previous == NONE;` used by both. The deletion walk's scan then takes retail's
+// count EDI / bit EBX, and the insertion takes retail's result EDI / NONE EBX with the allocation test on an immediate
+// (a direct second `best.previous == NONE` test adds a NONE use that pulls the NONE register ahead of that test; the
+// single-stage insertion lets the head arm reuse ESI as the NONE value, 101). Left on 40: the walk's found path (retail
+// keeps best.offset in EDI for both overlap compares with a `mov edx, edi` copy and builds the datum in ECX, copied to
+// EBX at the call; ours re-reads best.offset and builds the datum in EBX) and a `sete dl; test dl, dl` from the bool where
+// retail branches on `cmp esi, ebx`. On 93 (each 93, the same code): the walk's block offset named, `best.offset + pages`
+// named, the allocation in its own local; one `entry->previous = NONE` ahead of the first test 102. On 40: the overlap
+// test best-first 108; `pages + best.offset` 40; `best.offset < end` second 40; through a by-value four-value helper 40,
+// a (block, start, end) helper 40; the datum index in a local 40; `long start = best.offset` 40; the block end named 40
+// (each the same code); the bool declared ahead of `blocks` 46, ahead of the allocation 39 (first difference +0xcc,
+// aligned 23); the bool used only by the second stage (first stage a direct test) 96 (1220 B), only by the first 93; a
+// flag cleared and set in the first stage's head arm 93 (the lead's code); the single-stage insertion with the
+// per-arm NONE stores 96; the permuter (30 tries) none below 40. On main: only the two-stage bool tail 212.
 // M3 lane 4 r217 (fast with the file and 0x13d320, all MATCH; control 201, aligned 87, masked 56). On main: both ages
 // `MAX(x, 0)` 209 (1228 B; retail clamps both on the unsigned clock, main's `MAX(0, x)` folds away), with case 0 as
 // `if (...) better = true;` 209 and as an if / else-if pair setting it 209 (same code: only a helper boundary gives retail's
