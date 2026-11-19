@@ -1611,20 +1611,27 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // shared validity at both widget tests 78, title tested first 94; shared or block-local output cursor 69 each.
 // NOT kept: title buffer clear before list admission 6, before the title test 4, before the list
 // load 8; retail clears it only after both guards. All three keep the native extent.
+// Matched in a full build with stand-in SDK headers (was 15): the setting index is read into a local before the
+// lookup, and the string list index is read once into a local that the NONE test and the title call share (the
+// definition test and the list test are two nested ifs).
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
 	word buffer[0x100];
 	c_class_1a2c81 *title = find_child(6, 0, false);
 	c_class_1a2c81 *description = find_child(6, 2, false);
-	s_variant_setting_definition *definition = (s_variant_setting_definition *)game_variant_settings_find_setting(list.setting_index);
+	long setting_index = list.setting_index;
+	s_variant_setting_definition *definition = (s_variant_setting_definition *)game_variant_settings_find_setting(setting_index);
 
-	if (definition && definition->string_list_index != NONE)
+	if (definition)
+	{
+	long string_list = definition->string_list_index;
+	if (string_list != NONE)
 	{
 		if (title)
 		{
 			buffer[0] = 0;
-			function_1a0180(definition->string_list_index, definition->title_string_id, buffer);
+			function_1a0180(string_list, definition->title_string_id, buffer);
 			title->function_22f52e()->set_text(buffer);
 		}
 		if (description)
@@ -1633,6 +1640,7 @@ void c_variant_parameter_setting_screen::v19()
 			function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
 			description->function_22f52e()->set_text(buffer);
 		}
+	}
 	}
 	list.select_current_value();
 	c_class_1473c9::v19();
