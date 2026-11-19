@@ -643,6 +643,25 @@ extern "C" void _ReadWriteBarrier(void);
 // 463: four-field iterator with shared current-datum setter and either index scan. A local or
 // field index with the iterator pool scores 152, and with an entry pool scores 149. NOT kept:
 // the entry pool gives frame 0x14 at retail length, but one pool store and the register split differ.
+// M3 lane 13 r115 (fast, plain agrees on the 20; 0x1fb360, 0x1fb4c0, 0x1fb6f0, 0x1fb760 MATCH throughout; restored):
+// lane 11 r115's 20 form rebuilt (20 plain too); on it: the element pointer declared in the loop 20; the finished flag
+// at function scope 20; the lookup result at function scope 20; the pool local declared first and feeding the
+// iterator's data 159 (464 B); the arms swapped (`!unit || (flags & 1)` first, tick arm in the else) 20; the file's
+// unit getter with a named datum-index local for the release 20; the permuter on the 20 (600 s, 21 tries on a
+// 500-source image) nothing better. The 20 form's step with main's single `if (unit)` and `continue` 120 (477 B).
+// The rotation reads as a weight tie: retail ranks the datum index above the lookup's header (EDI, then EBP shared
+// by the pool data and the header), this build the header above the datum index.
+// M3 lane 15 r107 (fast with 0x1fb6f0, 0x1fb760 and 0x1fb4c0, all MATCH; control 122, lane 11 r115's 20 form re-measured
+// at 20, plain 20). On the 20 form: `unit` declared at the top 20, the animation pointer declared at its assignment 20, the
+// iterator, animation and index declarations reordered 20, `iterator.datum_index = NONE;` (and `iterator.datum = 0;`)
+// before the loop 20/20 (all the same code); the pool local feeding the iterator too 159 (464 B); the animation read
+// through iterator.datum at each use 28; the release through `pool` 25 (the same rotation plus retail's global read).
+// The permuter (anneal, 600 s, 21 tries) found nothing below 20. Diagnostics: two or six release calls (more datum-index
+// references) and the b8540 stub given a call leave the datum index in EBP and the header in EDI, so the rotation is
+// not a reference-count tie; 0-7 unused locals 20 each. Without the repeated `if (unit)` (the main body's arms, no
+// barrier, the 20 form's step): the release through `pool` 118 (475 B), with the file's getter 118, through the global
+// 120; the old step with a pool local for the step and the release 140; the 118 form mixes the global and the pool
+// local (match-only), so it is not kept either.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

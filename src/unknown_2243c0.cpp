@@ -765,6 +765,16 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Word fallback lvalue with shader/pass/material lvalues singly or all 117/117/117/117;
 // all with masked fallback 152. NOT kept: The dword mask hoists the table, and the word
 // forms leave the EAX zero-extension and fused element loads.
+// M3 lane 4 r219 (fast with 0x2243c0 and 0x224d90, both MATCH each time; control 117). On lane 13 r59's score-8 chain
+// rebuilt here (8, the same eight lines): the material definition named through the tag-data accessor 8, the pass
+// definition named 8, the pass record (the +0x20 element) named 8, the material tag named before its lookup 8 (all the
+// same code: the named pointers fold and no scratch register moves). Main's body with the head of matched 0x173cb0
+// (`dword group = TAG_GROUP(tag)` and the fallback `tag & 0xffff`) 135: the fallback is then retail's in-place
+// `and edx, 0xffff` with the table still in EDI, but the group read fuses (`mov eax, [eax+edi]` where retail forms the
+// address, `add eax, edi; mov eax, [eax]`) and `shl` moves after `push edi`; the instance pointer with a group dword and
+// `& 0xffff` 135; TAG_GROUP at each compare with `& 0xffff` 135; main's instance pointer read twice with `& 0xffff` 152
+// (re-measure). Reading: the unfused group read needs the instance pointer read twice, the table stays in EDI only when
+// the group is read once; no form gives both.
 // M3 lane 12 r148 (fast with 0x2243c0/0x224d90/0x173ba0, all MATCH each time; main 117): lane 1 r59's reference chain
 // rebuilt on this main (the type-14 search through vertex_input_index) 8 at +0x9e, the same eight lines (pass definition
 // EDX where retail reuses EAX, material tag ECX for EDX, material definition EDX for EDI, the zero's `xor` after the

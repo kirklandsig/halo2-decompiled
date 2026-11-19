@@ -431,6 +431,11 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax B (11-19): no new form, no lower score (412): the maximum as a long instead of a word gives 416 and the prior
+// state as a short instead of a word gives 413, so both were reverted and the body stands. What still differs is the
+// frame, 0xa4 against retail's 0xa0, and the actor index, which retail takes in EAX because it inlines 0x2641c0 at its
+// caller, so this body's own signature cannot change: BLOCKED-BY 0x2641c0 (its noinline declaration is in
+// src/unknown_265cb0.cpp, another lane's file).
 // MiniMax H (11-18): no new form, no lower score (412): the frame stays 0xa4 against retail's 0xa0 and the early
 // homes keep their order (ours the actor base at 0x18, the flag byte at 0x17 and the constant 1 at 0x1c, where retail
 // has the index at 0x28, the actor base at 0x20, the constant 1 at 0x1c and the flag byte at 0x13, since retail saves
@@ -762,6 +767,17 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // `(double)range` is a cast in a test), so it is not the stack-parity effect that pads 0x1197b0, and the walk model
 // (m3-lane5 build/r195 search.py, run on this build's image) gives 0x262ba0 the custom convention, so it is not the walk
 // either. What keeps the argument on the stack is still open; BLOCKED-BY 0x2641c0's inline stands.
+// M3 lane 13 r117 (fast with 0x1e34e0, 0x263210, 0x265680, 0x264330, 0x264b50, 0x2641c0, 0x264210; control 412): the whole
+// body as a new forceinline inner function behind the entry point 412 (same code: the inner parameter is merged with
+// the argument, which stays on the stack); the actor pointer fetched at each use instead of the `actor` local 460
+// (1644 bytes, frame 0xa0, argument still on the stack); the final view test through `node` instead of a second
+// prop fetch 434 at 1616 bytes (retail's length, not kept: the count rises); re-measured: the for loop over the index
+// 453 (1600 bytes), 0x2641c0's
+// noinline declaration dropped (diagnostic, restored) 497 at 1688 bytes with 0x264210 lost, and that with the inner
+// function 497 (same code). Reading: in every form ours keeps the argument in its stack home and reloads it (twelve
+// reloads in the 412 body) because the prop index holds EBX; retail holds the actor index in EBX for the whole body
+// (the three callees that take it in EBX get it without a load) and the prop index in EDI with a stack home. The
+// argument register follows from that allocation, not from an inner function. Body unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

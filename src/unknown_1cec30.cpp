@@ -855,6 +855,12 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // own-parameter read 32 (component in EDX, callers lose), with the vector at function scope 47 (139 B: the byte still
 // goes to BL with the component in EDX, so BL does not follow the component's range). Diagnostic: a non-const
 // `hkRigidBody **` slot with the body read after the conversion 29 (same code as this body).
+// M3 lane 2 r106 (fast, and a one-file LTCG harness that gives 28 for this body): the slot as an element pointer
+// (`slot->rigid_body` at the test and after the conversion) 31 (a dead `add eax, edx`, the load still shared). Harness:
+// early returns for flag1 and m_fixed with the slot pointer and the body read after the conversion 46 (141 B: retail's
+// reload with no volatile, the byte in BL), with 0-9 dead initialised locals 46 each (no symbol-count tie); the fixed
+// test read directly or through the getter with the slot pointer formed after it 46/46; nested blocks with the test
+// read directly 34 (135 B); the body for the test in its own const local, or the byte in a named bool, 46/46.
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -956,6 +962,7 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// MiniMax A (11-19): no new form, no lower score (65): the component still arrives on the stack, so the frame is still 0x84 against retail's 0x88 and the copy of the transform is still a block copy against retail's four aligned moves; the argument registers are still chosen by LTCG over the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files.
 // MiniMax B (11-18): no new form, no lower score (65): the transform copy is still a block copy here where retail
 // stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX;
 // the memberwise set form measures 90 (worse), and the component's home is decided across the
@@ -1241,6 +1248,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// MiniMax A (11-19): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX; that is 0x1d0cf0's convention and is decided with the bodies of its call cycle, which are in other files. BLOCKED-BY 0x1d0cf0.
 // MiniMax B (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
 // component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided
 // across a call cycle whose other bodies are in other files: BLOCKED-BY 0x1d0cf0.
@@ -1865,6 +1873,18 @@ PRIVATE __forceinline real const &component_time_step()
 // xmm0`, and the global load hoists above the mass test; the rate's address handed back through a helper's out parameter
 // 17/14 (same); the reference accessor, or a pointer accessor, called again at each product 17/14 (same). Each with the
 // stop-first test 36/36 (462 B forms 133/41, ternary 115/35). Every spelling folds `base + 4` at both reads.
+// M3 lane 2 r106 (the same harness, positional/aligned): the scale helper with the acceleration as its default and the
+// power arm assigning over it 131/16 (468 B); the helper as two ternaries 107/11 (473 B, head retail's but the step
+// loaded first after `movaps xmm1, xmm0`); its result through a one-member aggregate return 116/16 (492 B); `result =
+// result / mass`, and the step through a pointer to the accessor's reference 17/14 (same code); the mass ternary alone
+// 107/11, with the field read directly 107/11, with the time-step reference bound first 131/38. Diagnostic (not kept):
+// with 3, 11 or 19 extra dead locals (symbol count 3 mod 8; main's helper or the mass ternary) the head and the first
+// product are retail's (`mulss xmm0, [eax + 4]` in place) at 465 B, 104/6; only `add eax, 4` with the second product
+// from `[eax]` is missing, and the stop-first test then swaps the zero and stop registers (105/29; other counts 36/36).
+// On that dead-3 base: the step through a pointer local at both products 104/6, the pointer then the reference 104/6
+// (still `[eax + 4]` twice); the first product read directly or through the accessor with the reference bound after it
+// 17/14 (the head reverts). So the head is a symbol-count tie: a natural +3 names is worth trying once `add eax, 4` has
+// a cause.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2557,11 +2577,11 @@ PRIVATE __forceinline real component_surface_length(vector3f const *v)
     return (real)sqrt(v->i * v->i + v->j * v->j + v->k * v->k);
 }
 
-PRIVATE __forceinline void component_surface_property_set(hkEntity *entity, long value)
+PRIVATE __forceinline void component_surface_property_set(hkEntity *entity, s_havok_property_word property)
 {
     if (havok_entity_property_exists(entity, HAVOK_PROPERTY_2003))
         entity->entity_property_erase(HAVOK_PROPERTY_2003);
-    entity->entity_property_put(HAVOK_PROPERTY_2003, s_havok_property_word(value));
+    entity->entity_property_put(HAVOK_PROPERTY_2003, property);
 }
 
 /* clears a vector; function_1d87b0 stores through this inline function:
@@ -2571,7 +2591,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
-// score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
+// score 8 (was 91): The frame and extent agree. The first scaled velocity store is late,
+// and the zero property value uses EBX where retail uses EDI.
+// Earlier score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
 // with match-only forms, detail first, older rounds below. The velocity's fields are ranked by how the code first
 // reaches them (0x1d3fc0's note): a field named in this body is "old" (scaled as `inverse * [x]`, reloaded on the short
 // path), one reached only through inline helpers is "young" (loaded beside its x87 square, scaled in place). Retail has
@@ -2652,6 +2674,8 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // retail keeps it in xmm4, and the material loop's call to 0x181db0 takes its arguments in ecx and edx where retail
 // passes them in eax and ebx: BLOCKED-BY include/normalize3d.h and src/unknown_181e90.cpp, which this lane may not
 // edit.
+// Earlier at 91: The aligned frame and contact/normal prefix agreed. The velocity j/k
+// loads were late and the zero property value did not stay live through erase.
 // Earlier (91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
 // aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
@@ -2891,6 +2915,22 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // its i product, as round 189 found); a three-component loop storing `speed * velocity.n[axis]` into the result, with
 // or without the weight, 122/122 (all three products in place, i no longer copied); a loop copying the scaled vector
 // into the result 13; a loop scaling the velocity in place then havok_from_vector3d 175.
+// Scale result passed straight to the Havok conversion 8, scalar stores 160, returned-vector
+// scalar stores 8, direct scale into output 76 or with named speed 130, separate scaled vector 8,
+// indexed setter 161, and vector constructor plus zero lane 206.
+// Scale before destination 5 with the conversion or scalar stores. Inline weighted speed 243,
+// or before destination and scalar stores 5. Direct indexed products 109 with or without weight,
+// scalar SSE products 185, and named speed then conversion 122. Indexed and named setter and
+// Havok conversion after completed scale 5 each, scalar SSE transfers 248, opening speed sum 5.
+// Typed private property argument with the shared scale and named-component setter 8, plain 8.
+// NOT kept: the 5 forms move the one-use property temporary before the erase call.
+// Shared component setter plus fourth-lane clear 8; direct named speed products 371; immutable output
+// bindings 8; property word by const reference 8; const property value 8; nonzero contact arm first 161;
+// zero contact arm returns directly 8; scaled velocity and destination role names 8.
+// The i product and store and both zero-property registers still differ.
+// Round 431: indexed velocity/sample/both material inputs 91/377/377; indexed output
+// alone or with material inputs 91/91; lateral axes through array 377; bound output array 99;
+// shared material addition with indexed output 139. Early j/k loads and property zero still differ.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -2949,27 +2989,27 @@ void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_ind
         vector3f local_c7c2ff;
         if (!function_181db0(materials[i], &local_c7c2ff))
             local_c7c2ff = *g_4687a4;
-        velocity.i = velocity.i + local_c7c2ff.i;
-        velocity.j = velocity.j + local_c7c2ff.j;
-        velocity.k = velocity.k + local_c7c2ff.k;
+        vector3f_add(&velocity, &local_c7c2ff, &velocity);
         speed_sum += component_surface_length(&local_c7c2ff);
     }
     normalize3d(&velocity);
-    real speed = ((bool)((component->unknown04 >> 18) & 1) ? 1.0f : 2.5f) * speed_sum / material_count;
+    vector3f const *scaled = vector3f_scale(&velocity,
+        ((bool)((component->unknown04 >> 18) & 1) ? 1.0f : 2.5f) * speed_sum / material_count,
+        &velocity);
     hkVector4 *result = &body->unknown30;
-    result->set(speed * velocity.i, velocity.j * speed, velocity.k * speed);
+    result->set(scaled->i, scaled->j, scaled->k);
     if (other_contacts == 0)
     {
         body->unknown44 = 1;
         if ((bool)((component->unknown04 >> 18) & 1))
-            component_surface_property_set((hkEntity *)body->rigid_body, 0);
+            component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word(0));
         else
-            component_surface_property_set((hkEntity *)body->rigid_body, (long)result);
+            component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word((long)result));
     }
     else
     {
         body->unknown44 = 2;
-        component_surface_property_set((hkEntity *)body->rigid_body, 0);
+        component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word(0));
     }
 }
 
@@ -3487,6 +3527,10 @@ byte *__fastcall function_30c170(hkWorld *world);
 // them 15, with that temp declared first in the arm 15, with it at function scope 15; the equal arm through a
 // `transform4x3f const &` to pair->frame_a 15 (all the same code: after inlining the arm's block is identical); the
 // equal arm converted into a local hkTransform and copied with hkTransform::set 351 (1325 B).
+// M3 lane 2 r106 (one-file LTCG harness with src/unknown_1d77d0.cpp, 15 as the check): both halves through one
+// forceinline helper (search, relative frame, conversion) 309 (1228 B); the converter's translation through an inline
+// helper returning the Havok vector by value (an aggregate-return scheduler boundary) 15 (same code); all four parts by
+// value 354 (1456 B, copied through a temp); the three columns by value 354; column 0 only by value 355 (1389 B).
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3625,7 +3669,9 @@ struct s_1cf531
  word field_2 : 4;
 };
 
-// score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
+// score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
+// uses the saved impulse slot at 0x30.
+// Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
 // folds its reload into the final `mulps`, ours stores it to 0x40. (Earlier first lines: the friction magnitude in
 // another dead slot, the element formed offset-first in retail, retail's y loaded early and stored after z; the
 // round 139 forms below fixed the first and the last.)
@@ -3686,6 +3732,17 @@ struct s_1cf531
 // `hkVector4 &` 23, the final scale alone through mul4 23 (all the in-place code); corrected as a named hkVector4 2
 // (same code); local_13 by `local_13 = local_7;` 2, copy-initialised from local_7 124/124 (932 B); a 1500 s
 // permuter run (608 tries) none below 2.
+// Impulse snapshot aggregate 2; separate final aggregate 94; read-only snapshot and final aggregates 94;
+// immutable correction 2; immutable square, projection and correction 2; correction declared before
+// the length test 2; impulse and velocity declarations with the surface 7; named scaled SIMD product 2.
+// Projected velocity vector named before subtraction 2, Intrinsic broadcast of the final scale 7, Intrinsic
+// broadcasts of projection and final scale 16, Intrinsic broadcasts of all three scalar scales 87, Initialize
+// corrected register from the saved impulse before subtracting 2, Velocity and normalization workspace ends at
+// correction 2, Newton product named separately from the reciprocal-length correction 2, Final scale splatted in
+// its own statement 2, Corrected vector and final scale in one intrinsic expression 7, Corrected vector formed at
+// the final product with the original scale splat 50. NOT kept: The projection names, velocity scope and split
+// splat leave both spill operands unchanged. The intrinsic broadcasts preserve the extent at higher scores.
+// Forming the correction at the final product extends the body to 915 bytes.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

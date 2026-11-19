@@ -765,8 +765,9 @@ bool function_022710(void)
 	return result;
 }
 
+/* inline: both retail callers (0x22850, 0x22cf0) keep the fraction in memory and reload XMM0 before every call */
 // @retail 0x22750
-void function_022750(const real *a, long size, const real *b, real *out, real t)
+inline void function_022750(const real *a, long size, const real *b, real *out, real t)
 {
 	long count = size * size;
 
@@ -823,6 +824,7 @@ real g_4b8940[9], g_4b8964[9], g_4b8988[9];
 bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, dword order, real red, real green, real blue,
     real *red_result, real *green_result, real *blue_result);
 
+real distance_sq3f(point3f const *a, point3f const *b);
 PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte order, real *red, real *green, real *blue, vector3f *direction)
 {
     long bytes = order * order * sizeof(real);
@@ -832,7 +834,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 547 (was 547):
+// score 439 (was 439):
+// Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
+// offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
 // Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // MiniMax A (11-18): no new form, no lower score (547): retail opens a 0x2c frame with homes for the opposite sample,
 // the nearest index, a pass counter, the sample list, the offset vector and the delta vector, where this build opens
@@ -1177,6 +1181,33 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // and the offset still has no home); the nearest index renamed so that it sorts after `opposite` 576 (same code: names do
 // not move these slots); the fraction as a ternary on `second` 576 (same code); opposite and its distance declared ahead
 // of `first` 576 (same code).
+// M3 lane 14 r116 (fast with 0x22750, 0x22c30, 0x24550, 0x23690 and 0x22850; kept body confirmed plain): retail's index
+// shape with scan 1 through distance_sq3f (0x24550), `nearest` from 0, delta through vector3d_from_points3d, scan 2 on
+// `i != nearest` with offset through vector3d_from_points3d and dot3f, `second` as a ternary and the fraction under
+// `if (second)`: with the distance as length_sq3f(&offset) 550 (2005 B; the dot then sums (k + i) + j, retail (k + j) + i);
+// with the distance as distance_sq3f(sample, position) 459 (2070 B, not kept: it sums (k + i) + j where retail's scan 2 sums
+// (k + j) + i, a rounding difference); the distance staged k, j, i on offset 550; the distance as length_sq3f of a second
+// difference vector 455 (2070 B: the dot and the distance both sum (k + j) + i as retail, position in EDX as retail's
+// caller passes it); then `inline` on 0x22750's definition 435 (2088 B; kept: both retail callers spill the fraction and
+// reload XMM0 before every 0x22750 call, and 0x22850 also falls, 226 -> 209 at retail's 987 B). On that body: dot3f
+// operands swapped 435 (same code); both difference vectors formed before the dot test 451; the dot written out i, j, k
+// 439 (diagnostic); scan 2, first and second through `source->entries` 571 (retail's two-pointer scan 2 and pass counter
+// at +0x18, but one shared zero register at the top and `nearest` in memory); scan 2 alone through `source->entries` 549
+// (same, frame 0x20); that with `opposite` defined before scan 1 533; offset declared before scan 2 435 (same code);
+// delta assigned k, i, j 457 (diagnostic); a named sample pointer in scan 2 456. The caller 0x23690 moves 330 -> 354
+// because both its calls now set EDX as retail's do (the only change in its code).
+// Self-review: the same body with the distance as length_sq3f(&offset) (no second vector) 531 (2023 B), but its projection
+// then sums (k + i) + j where retail and the previous pointer body sum (k + j) + i, so the second vector stays.
+// Coordinator review (11-19): the second difference vector (435) recomputes offset by hand, so scan 2's distance goes
+// through distance_sq3f(&samples[i].position, position) like scan 1 instead: 439 in the fast and the full check (2088 B),
+// 0x22850 209, nothing lost. Retail's scan 2 still sums (k + j) + i, as a vector's length_sq3f would.
+// M3 lane 14 r118 (fast with 0x22750, 0x22c30, 0x24550; difflib-aligned counts in brackets, this body 439 [285]):
+// scan 2's distance as dot3f(&offset, &offset) 531 [317] (2023 B, the same code as length_sq3f(&offset)); as
+// length_sq3f(&offset) 531 (its distance sums (k + j) + i as retail's, its dot (k + i) + j); that with
+// dot3f(&offset, &delta) 531 (same code); scan 2 through `source->entries` 554 [220] (2112 B: retail's two pointers,
+// pass counter at +0x18 and loop latch, but `nearest` lives in memory in both scans and delta.j is spilled); that with
+// length_sq3f(&offset) 635 [296]; that with `if (i == nearest) continue;` 554 (same code). Dead-local scan K = 1..12 on
+// the length_sq3f form: 531 at every K, so its dot order is not a symbol-count tie.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -1186,68 +1217,61 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
     {
         if (!g_5093f4)
         {
-            s_light_sample const *samples = source->entries;
             if (count == 1)
             {
-                copy_light_sample(samples, order, red, green, blue, direction);
+                copy_light_sample(source->entries, order, red, green, blue, direction);
                 return;
             }
-            s_light_sample const *first = samples;
+            long nearest = 0;
             real closest_distance = 1048576.0f;
-            s_light_sample const *nearest_sample = samples;
             for (long i = 0; i < count; ++i)
             {
-                real x = position->x - nearest_sample->position.x;
-                real y = position->y - nearest_sample->position.y;
-                real z = position->z - nearest_sample->position.z;
-                real distance = z * z + x * x + y * y;
+                real distance = distance_sq3f(&source->entries[i].position, position);
                 if (distance < closest_distance)
                 {
                     closest_distance = distance;
-                    first = nearest_sample;
+                    nearest = i;
                 }
-                ++nearest_sample;
             }
+            s_light_sample const *samples = source->entries;
+            s_light_sample const *first = &samples[nearest];
             vector3f delta;
             vector3d_from_points3d(&first->position, position, &delta);
             long opposite = NONE;
             real other_distance = 1048576.0f;
-            for (s_light_sample const *opposite_sample = samples;
-                 opposite_sample < samples + count; ++opposite_sample)
+            for (long i = 0; i < count; ++i)
             {
-                if (opposite_sample != first)
+                if (i != nearest)
                 {
                     vector3f offset;
-                    vector3d_from_points3d(&opposite_sample->position, position, &offset);
+                    vector3d_from_points3d(&samples[i].position, position, &offset);
                     if (dot3f(&delta, &offset) <= 0.0f)
                     {
-                        real distance = length_sq3f(&offset);
+                        real distance = distance_sq3f(&samples[i].position, position);
                         if (distance < other_distance)
                         {
                             other_distance = distance;
-                            opposite = opposite_sample - samples;
+                            opposite = i;
                         }
                     }
                 }
             }
-            real fraction = opposite != NONE
-                ? function_022c30(&first->position, position, &samples[opposite].position) : 0.0f;
+            s_light_sample const *second = opposite != NONE ? &samples[opposite] : NULL;
+            real fraction = 0.0f;
+            if (second)
+                fraction = function_022c30(&first->position, position, &second->position);
             if (fraction <= 0.0f)
                 copy_light_sample(first, order, red, green, blue, direction);
+            else if (fraction >= 1.0f)
+                copy_light_sample(second, order, red, green, blue, direction);
             else
             {
-                s_light_sample const *second = samples + opposite;
-                if (fraction >= 1.0f)
-                    copy_light_sample(second, order, red, green, blue, direction);
-                else
-                {
-                    function_022750(second->red, order, first->red, red, fraction);
-                    function_022750(second->green, order, first->green, green, fraction);
-                    function_022750(second->blue, order, first->blue, blue, fraction);
-                    direction->i = (second->direction.i - first->direction.i) * fraction + first->direction.i;
-                    direction->j = (second->direction.j - first->direction.j) * fraction + first->direction.j;
-                    direction->k = (second->direction.k - first->direction.k) * fraction + first->direction.k;
-                }
+                function_022750(second->red, order, first->red, red, fraction);
+                function_022750(second->green, order, first->green, green, fraction);
+                function_022750(second->blue, order, first->blue, blue, fraction);
+                direction->i = (second->direction.i - first->direction.i) * fraction + first->direction.i;
+                direction->j = (second->direction.j - first->direction.j) * fraction + first->direction.j;
+                direction->k = (second->direction.k - first->direction.k) * fraction + first->direction.k;
             }
         }
         else

@@ -897,6 +897,13 @@ struct s_1f8a70_actor
 // 012 with an explicit unsupported fallback 448; route 2 then nonzero then zero 323. NOT kept: every
 // form regresses. The dispatch still needs to follow mode five, and the failure result still lacks the
 // native stack reload.
+// M3 lane 1 r124 (fast with 0x1f86a0/0x1f8750/0x1f8780/0x1f8940/0x1f90f0/0x1f8510/0xe70b0, all matched throughout; control
+// 182, difflib-aligned 49): case 6's inner test inverted so `route_mode = 1` is the else arm 326 (1616 B, aligned 47: it
+// then cross-jumps into case 5's tail as retail's does, but the dispatch still follows case 7); that with cases 6 and 7
+// written ahead of case 2 382 (aligned 174: the cases are laid out in source order, so retail's dispatch head between
+// case 5 and case 6 is not a case-order effect); with case 7's node stored before its radius 366 (aligned 54: case 4's
+// node store then cross-jumps into case 7's tail); with the dispatch ternary's zero arm second 326 (aligned 59); with
+// every mode case ending `goto` a label at the dispatch 359 (aligned 63).
 // M3 lane 4 r217 (fast with the file and 0xe70b0, all MATCH; control 182, aligned 31, masked 26: the rest is layout). The
 // route test as `route != 0 ? (range) : (zero check)` 182 (aligned 39: retail's `je` to an out-of-line zero check with the
 // range test inline, but the failure block follows inline and the dispatch still follows case 7); case 6 as
@@ -925,6 +932,11 @@ struct s_1f8a70_actor
 // half through a file inline returning `radius != 0 || node != NONE` 299 (1648 B: the whole bool is materialised with
 // `xor eax, eax` / `mov eax, 1`, where retail materialises only the node half with `setne al`); the same inline as a
 // false-initialised result set by an if 305 (1644 B).
+// M3 lane 3 r267 (fast with 0x1f86a0, 0x1f8780 and 0x1f8750; base 182, aligned 49): the route test as `route != 0 ?
+// (route > 0 && route <= 2) : (radius != 0 || node != NONE)` 182 (aligned 61: the zero arm moves behind the range test,
+// the dispatch still follows case 7); the mode cases in source order 6, 7, 2, 3, 4, 5 382 (1616 B) and 2, 3, 4, 5, 7, 6
+// 334 (1608 B), so the layout follows source order; `return route_found;` after the two arms with `result` kept for the
+// first exit 439 (1672 B); case 6's test spelled `!route_mode` 182 (same code).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

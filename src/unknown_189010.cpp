@@ -150,7 +150,8 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
-// score 32 (was 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
+// score 32 (was 32; earlier 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
+// score 32 (was 32): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
 // flags as a byte (`test byte [esp+0x21], 1`) and bit 11 by a dword load and shift, ours merges both into `test ch, 9`.
 // Every spelling that gives retail's test moves the request from EBX to EBP and onto the stack (45 at 476 B, callers lost).
 // MiniMax H (11-18), then at 106 (from 150): the priority is read from the request's audible byte, then the location is
@@ -471,6 +472,16 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // pointer), unused locals 0..7, extra temporaries before the test or the 0x21d110 call, extra end-test blocks, a
 // `globals` local for g_4ed288, a named ticks local, a bool for the test, nested class-flag tests, flag-setting helpers or
 // the marker size as a ternary moves the request back to EBX with retail's end test.
+// M3 lane 9 r142 (plain; the fast build differs from the full one here; compile-only of this file reproduces the
+// homes): the flip is set by any bit test that narrows to `test byte ptr [mem], 1` (flag0 or flag8 of the location
+// word), wherever it sits in the end test or after it; flag7, flag9 or flag11 tests (dword load and shift) and a
+// byte compare of unknown02 first keep the request in EBX. Retail's end test with: the object index in a local 45;
+// the marker pointer in a local 45; `audible == 0` 45; the platform playback in a local 137 (478 B); the priority as
+// `1` then `if (audible) 3` 141 (478 B). Compile-only, all EBP with retail's end test: the second 0x221810 lookup through
+// a const pointer, no source local, the variant read through the request at each use, priority or source declared
+// ahead of the state or the sound pointer, `real seconds` and the max stores as ifs, singly and in pairs (56 forms);
+// 1 to 12 dead initialised locals at the top or after the 0x21d110 call. Diagnostic: the end test without bit 8
+// 29 at 463 B (request in EBX).
 // M3 lane 6 r196 (fast with the ten matched callers, 0x221810 and 0x21d110; base 32 with all twelve matched): re-measured,
 // `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` 45 (476 B, the request goes to EBP and onto the stack, ten
 // of the twelve lost). On that form: the variant pointer read from the request at each use 45; the variant bytes stored
@@ -491,6 +502,17 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
 // NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
 // keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
+// M3 lane 4 r219 (fast with 0x1895f0 and 0x189650; fast reads main as 41, plain 32). Screen base: the end test as
+// `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` 50 fast (476 B), whose last 30 lines are retail's line for
+// line, with only the request/variant chain (EBX in retail) and the object-index/sound chain (EBP in retail) swapped and
+// the request passed on the stack (0x1895f0 and 0x189650 13 each), so any flip of that pair would match. On it: the
+// object index read once into a named local for the flag step and the state copy 50; the variant tests through
+// `request->variant` with no local 50; the sound pointer const 50; the second lookup's result const 50; the three
+// set-or-clear steps as if/else statements 50; none flips the pair. Main's body with if/else steps 41 fast (same code).
+// Bit-8 and bit-11 conditional admission 45/75, accumulated and default admission 45/77,
+// prior secondary maximum and selected maximum 45/46, variant flag after both stores 43,
+// marker copy using the published size 150. NOT kept: split-test forms move the request
+// onto the stack and lose callers, or change the matching prefix. The merged mask remains.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

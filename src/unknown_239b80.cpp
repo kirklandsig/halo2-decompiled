@@ -796,6 +796,16 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // frame 0x14 as retail, but the loop is inverted); the same with a long counter 264; the declarations after the lowest scan
 // 266; the three exits as returns 265 (749 B); short counter with a long flag 242 (759 B). The loop's end written as
 // `if (!left_start || points2d_differ(...)) continue; goto finished;` on that body (screen only) loses 25 rows.
+// M3 lane 4 r219 (fast with 0x239d50 and 0x239b80, both MATCH each time; control 144): the count read once through
+// `short const *const count_home = &count;` for the classifier, a bool flag and the compaction through memcpy (retail
+// calls the CRT memcpy) 256 (767 B); count_home with memcpy 145; count_home alone 144 (same code). One hull counter
+// `while ((short)hull_count < count)` with `indices[(short)hull_count] = current; hull_count++;`, the bool flag and the
+// heading set before the lowest scan, memcpy and main's gotos 260 (757 B): frame 0x14, the hull count at +0x10, the flag
+// byte in the indices home and the early heading are retail's; left: the pass loop is rotated (retail tests at its head,
+// reached by a jmp, with the closure's back edges going there), and the candidate scan loses its `0 < count` guard, so our
+// compiler knows count > 0 inside the pass loop while retail re-reads the count from its home every time. On that 260
+// form: the pass bound or the classifier argument through a forceinline `short const &` accessor 260/260 (folds, the
+// count stays in EBX); `for (;;)` with the bound test first 260 (rotated the same way).
 // M3 lane 12 r148 (fast with 0x239d50 and 0x239b80, both MATCH each time; main 144). On lane 1 r103's completion-flag body
 // (match-only; re-measured 116, frame 0x14, flag byte and hull-count home as retail): the hull append through a forced-inline
 // helper taking the hull count by pointer 116 (same code: the pointer is scalar-replaced); the compaction through memcpy
