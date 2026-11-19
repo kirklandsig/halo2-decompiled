@@ -1656,7 +1656,8 @@ static __forceinline void query_restore_pending()
         }
 }
 
-// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
+// score 703 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
 // variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
@@ -2101,6 +2102,28 @@ bool function_1900a5(long index);
 // `dec eax`) 823 (2926 B: the users loop loses its alignment pad); `valid = true` after the team test 703 (same
 // code); the identity's guest test through the SDK's guest macro 703 (same code); the identity copied after the
 // properties 705.
+// M3 lane 16 r138 (fast; control 703, aligned 330 by difflib with addresses masked). Round 136's 696 form re-built (the
+// incomplete arm setting `failed = true`, the request builder's free space named) 696 (2878 B, aligned 318), still one
+// short of the bar. On it: the users loop reading the slot index and properties through 0x647d0 with `inline` on its
+// definition 737 (2842 B, aligned 312; 0x647d0/0x647a0/0x18fd94 stay matched); the request test as retail's flag (`request
+// = false`, set by the state-1 test and by the state-4 elapsed test, then tested; retail's `xor dl, dl ... mov dl, al`) 707
+// (2894 B, aligned 310); the request identity copied into a local (team key by memcpy, owner by assignment) with an
+// indexed duplicate search 839 (2974 B, first difference +0x8); a user record pointer for the users loop 758 (2894 B).
+// LEAD (flag form, match-only): the completion identity picked as a member address (`variant->type == 5 ?
+// completed_values->unknown10 : (const byte *)&completed_values->owner`) on the 696 form gives 688 at retail's 2862 B
+// (aligned 310), with the incomplete arm's `failed = true` or a separate `if (received != 6) failed = true;` (688, same
+// code); the direct accumulator forms lose it: `failed |= received != 6` 705 (2878 B), main's `failed || received != 6`
+// 714 (2894 B), so it is the flag rule's case and not kept. Alone or in other pairs: the completion select 720, with the
+// named space 714, with `failed = true` 706; the request loop's identity select the same way 733, with the completion one
+// 735, with the space 723, all four pieces 704 (2862 B).
+// Body unchanged; the slot test's cmovne still needs the SSE flag.
+// The user-base home and slot conditional move still differ with the 0xc0 frame.
+// SDK guest predicate for identity/both masks 703/703. Typed slot base through the
+// selector 828, via the record reference 821, direct base reference 806.
+// With the SDK identity predicate these score 828/821/806. NOT kept: the typed forms
+// add sixteen bytes and retain the opening frame and exit-span mismatch.
+// Offline-first arm/return using direct status 703/703, shared availability 810/810, one task index 703/703,
+// conditional task status 812/812. The shared and conditional forms change the opening schedule and raise the score.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -942,6 +942,11 @@ struct s_collision_result_buffer_1697c0
 // the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
 // The startup zero register and random/trig transfer word still differ.
 // Attempt- or function-scope candidate with the two draws and turns in one block, inner pitch block, pitch-only block, and pitch-only block with immutable draws all score 270 (eight forms).
+// Best fraction at the pitch-axis declaration or after fallback 267/292; result at those
+// two points 327/319; attempt initialized at the axis 302. Implicit trailing axis zero 384;
+// zero-initialized axis with component stores 404, also with later best fraction 404.
+// NOT kept: the 267 form gains three at the opening length and the 1423-byte result form
+// changes the matched caller. Zero register and later transfer still differ.
 // Ray before the draws or across attempts 270/270; query record at attempt entry or across
 // attempts 270/270; query default before scale 270; scale return passed to query 270; ray copied
 // and scaled in place 354; default direction before fraction 267.
@@ -955,6 +960,11 @@ struct s_collision_result_buffer_1697c0
 // assigned in the loop 270 (same code). Reading: register-masked, what is left is the rotations' operand ranks
 // (retail's dot adds the i term last, ours the j term), the clear-path magnitude order (retail k, j, i; ours k, i, j)
 // and the two transfer slots holding {magnitude, draws, first sine, second cosine} in retail, the cosine set in ours.
+// The pitch-axis j product still takes a reciprocal copy instead of preloading j.
+// Paired horizontal components 270, with the axis setter 296; copied-then-negated lateral component 361.
+// Magnitude supplied to the scaling stage directly, named for the axis, named for both outputs,
+// all named, or immutable 333/333/335/335/333. NOT kept: the split magnitude enlarges the frame
+// and leaves the initial zero register and later random/trigonometric transfer different.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1479,6 +1489,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // read once through its address; a local copy of the actor index for 0x1e1f20/0x1fc710; those two calls through a
 // forceinline helper returning the weapon index. The permuter cannot search this function (its reduced image reads
 // 310 on the 36 form).
+// Separate remembered input in cases 2/1/both: 309/308/343. Case-local in-place
+// remembered point in cases 2/1/both: 338/337/399. Case-local player point in
+// cases 2/1: 313/203 (preview control 258). NOT kept: the 203 form adds a one-use
+// point copy, enlarges the frame, and grows to 1464 bytes against retail's 1444.
+// The adjacent Boolean homes and shared direction tail still differ.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -2114,6 +2129,11 @@ struct s_actor_looking_structure_view
 // helper taking the vector and the axis by reference 23 (same code); the axis by value 210 (0x297660 fast 4); the helper
 // returning the vector pointer 23 (same code); each cross term scaled by the sine where it is computed 153 (925 B), which
 // lowers 0x296e60 to 199 fast (a lead for that function; not kept, it raises this one).
+// M3 lane 12 r143 (fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x2967b0; control 23): round 91's lead re-measured
+// on today's 0x296e60 (helper dot `((j + i) + k)`, score `(i + k) + j`) 13 with 0x296e60 270 -> 339; the score alone
+// parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's
+// projection staged (`projection = dot; projection *= 1 - cos;`) 141 (927 B; 0x296e60 282); the helper's product written
+// `(1 - cos) * dot` 23 (same code); the fraction as a ternary after the trace 144 (re-measure of round 27's form).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

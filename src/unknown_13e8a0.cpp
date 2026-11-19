@@ -502,6 +502,10 @@ struct s_text_line_measurement
 	long index;
 };
 
+/* measures one line: walks the iterator until the next character would pass the bounds' right edge
+   (wrapping at the last break point when the draw flags ask for it) and returns the line's width
+   and the index it stops at. Retail computes the advance product once and copies it into a
+   second register (movaps) for the width update: the edge test and the update each name it */
 // score 77 (was 77): frame 0x1c and 415-byte length agree, but the width load is late and the scaled advance lacks retail’s independent update register.
 // frame 0x1c and 415-byte extent agree; first +0x3a spans branches; native independent advance copy and early width load still differ.
 // Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
@@ -721,6 +725,15 @@ struct s_text_line_measurement
 // place and copied back 77; the accumulated right edge started from the origin read between the offset and the advance
 // 30 (first difference +0xa8; the origin's early load takes the XMM4 slot where retail loads the width, and the advance
 // still has no copy; a one-use field read moved early, not retail's late origin read, not kept).
+// The advance copy and early width load still differ. Separate saved-break
+// selection, index before/after the width branch 68/76, width before/after
+// the index branch 117/124, both fields index/width first 124/117, shared
+// predicate index/width first 117/117. One-branch effective break index,
+// previous-index default and joined index publication 77/72/77.
+// NOT kept: 68 emits a second break test. The single-test 72 gains five.
+// Running width read after the raw kerning, offset, advance or all three pixel loads. Direct update
+// 77/77/77/77; fitting-path accumulator 77/77/77/77. NOT kept: every form ties at 415 bytes and retains the
+// late width load and single advance register.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
@@ -743,12 +756,13 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 				real kerning = function_122570(iterator->field_4_3, iterator->previous_character, iterator->character) * scale;
 				real offset = *(short *)header->unknown08 * scale;
 				real advance = (short)header->unknown00 * scale;
+				real edge_advance = (short)header->unknown00 * scale;
 				if (iterator->can_break)
 				{
 					break_index = index;
 					break_width = width;
 				}
-				if (!(bounds->x1 > position->x + advance + offset + kerning + width) && count)
+				if (!(bounds->x1 > position->x + edge_advance + offset + kerning + width) && count)
 				{
 					if (g_4e73a0.flags & 1)
 					{
@@ -763,8 +777,8 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 				}
 				else
 				{
-					count++;
 					width = advance + offset + kerning + width;
+					count++;
 				}
 			}
 		}

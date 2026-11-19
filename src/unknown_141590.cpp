@@ -131,6 +131,8 @@ static inline void quaternion_transform_vector(
 // Earlier fast scores were 205 with the shared initial dot and 200 with the dot written out.
 // MiniMax E (11-17): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the permuter (39 tries) found no variant below the baseline.
 // Earlier status line (205, was 205; merged): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 205 (was 205): Frame 0x1c versus retail 0x24 and quaternion/cross spill overlap remain.
+// Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier dot3f for the initial dot 205; the written-out dot 200.
 // Earlier 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
@@ -461,6 +463,12 @@ static inline void quaternion_transform_vector(
 // halves declared at their computation 201 (same code, kept). Not kept: the helper taking the vector by value 417
 // (1443 B), the quaternion by value 428, both 554; the construction's cross product into a separate vector scaled into
 // the rotation 242 (1317 B, frame 0x1c); the aggregate's members swapped 205.
+// separate quaternion axis and scalar, paired halves, in-place construction cross, per-axis quadratic 257,
+// separate quaternion axis and scalar, paired halves, in-place construction cross, pre-copy quadratic 298,
+// separate quaternion axis and scalar, paired halves, separate construction cross, per-axis quadratic 266,
+// Split axis/scalar and paired halves: in-place construction cross with per-axis/pre-copy quadratic 257/298,
+// separate construction cross 266/303. Independent halves in the same order 248/288 and 201/298.
+// NOT kept: the best gains four at 1318 bytes with frame 0x14, farther from retail's 0x24.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1002,7 +1010,8 @@ void function_143250(
 	}
 }
 
-// score 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
+// score 939 (was 1333): Frame 0x2fc versus retail 0x300. The scalar homes and coefficient 25/28 schedules still differ.
+// Previous 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
 // frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
 // matrix entries have retail's value tree; band three's entries 8, 25 and 28 and the stack homes (140 of 216 stores) differ.
 // g1A walk (symbolic): retail 0x143600-0x146012 executed as an expression DAG (SSE/x87, f32/f64 and (real) points, association and
@@ -1430,6 +1439,10 @@ void function_143250(
 // M3 lane 3 r263 (fast; base 939; with stack offsets masked 219 of 1768 lines differ): running sums like entry 8's for entry 12's
 // six products 939, entry 36's six triples 939, entry 40's eight terms 939, entry 22's seven terms 939 (all the same code: sums
 // with constant factors already run left to right); entry 29's seven terms 1253 (10821 B).
+// Third-band shared weighted mixed/first cube/axial component/axial pair/axial square/second cube products
+// 1517/1477/1357/939/1314/1554; both cubes 1589; all independent factors 1629.
+// NOT kept: the mixed product and the two individual cube forms recover frame 0x300 with displaced
+// spill homes and higher scores.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

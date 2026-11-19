@@ -370,6 +370,20 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // helper, squares as scalars 457 (1748 B, frame 0x60), squares and sine products as vector locals 457 (same code); on
 // this helper the ij term as `(1.0f-cosine)*axis->i*axis->j` 219, a shared `tk` for ik and jk 220, the i sine product as
 // `axis->i*sine` 219. Retail's code before the jump tables ends 1-4 bytes later (a `lea ecx, [ecx]` pad before the tables).
+// M3 lane 5 r201 (fast, control 219): a second forced-inline rotation helper in 0x1544e0's statement order (squares,
+// sine products, forward.i, (t*i)*j, t*k reused for both k products) for the second axis's cases only 459 (1752 B), for
+// the first axis's only 447 (1756 B); the same with the squares kept as a vector3f 459/447 (same code: both scalarize
+// and shrink the body); the rotation helper's output matrix passed by reference 219 (same code).
+// M3 lane 7 r183 (fast, control 219): the rotation helper's parameters as (axis, cosine, sine, out), definition and both
+// calls, 219 (same code); the helper written as the other files write the same rotation: 0x350e0's text (named squares,
+// complement and three cross terms, rows in matrix order) 392 (frame 0x60), 0x22850's (complement, squares, k*complement,
+// rows in matrix order) 394 (1824 B), 0x17fd20's (complement, squares, named cross terms, square plus scaled complement)
+// 393 (frame 0x60); diagnostic, reverted: the second-axis arm through a one-caller copy of the helper with its two vectors
+// declared sine first 219 (retail's second copy has them the other way round in the frame; the declaration does not move
+// them). Body unchanged.
+// Paired axis reads shared by squares and sine products, with separate mixed-product reads:
+// k/i/j 412/358/341; ki/kj/ij 409/412/477; all 385; all with earlier j square 476.
+// NOT kept: The paired reads change both expansions without recovering the early squared-k spill.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
