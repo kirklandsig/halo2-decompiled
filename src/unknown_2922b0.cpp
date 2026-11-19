@@ -641,6 +641,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 665/654; formed first and published between stores 665; conditional update between the stores 556.
 // NOT kept: selecting the minimum first recovers the success slot but regresses. The conditional
 // update gains only two points and leaves ESP+0x13.
+// M3 lane 16 r141 (fast, control 558): the active block as the `field_48 > 0` then-branch with one `return local_0;` 667
+// (2866 B: retail's forward `jbe` to an end copy, but the success flag moves into BL); the hit flags `= { false }` 689 (2819 B);
+// the inactive test as `<= 0.0f` 663; the range bound as `real const &` to field_48 648 (2865 B); 1..8 dead initialised locals
+// after the object lookup (diagnostic) 559/580/589/617/598/574/574/574 (the symbol count moves code here; none beats 558).
 // m3 lane 10 r121 (fast; control 558, aligned / stack-masked 491 / 415 by this round's counter). Retail's inactive exit is a
 // separate `pop edi; mov al, 1; pop ebp; ret` after the main return, reached by `jbe` from the range test, and the range is
 // loaded once (XMM1), compared, and stored to its home only inside the active arm after EBX and ESI are pushed. The body inside

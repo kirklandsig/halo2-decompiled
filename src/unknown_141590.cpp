@@ -478,6 +478,12 @@ static inline void quaternion_transform_vector(
 // Split axis/scalar and paired halves: in-place construction cross with per-axis/pre-copy quadratic 257/298,
 // separate construction cross 266/303. Independent halves in the same order 248/288 and 201/298.
 // NOT kept: the best gains four at 1318 bytes with frame 0x14, farther from retail's 0x24.
+// M3 lane 16 r144 (fast, control 201): unused initialised locals at the top (diagnostic only) 1-7: 199/201/263 (1300 B)/
+// (lost)/240 (1319 B)/258 (1300 B)/252 (1306 B). The transform helper's scalars m, w2, d 247 (1317 B; aligned 149 -> 141),
+// m, d, w2 248 (1305 B); each with 1-7 top locals: m, w2, d 247/247/273/217/223/265/260, m, d, w2 248/247/270/211/212
+// (1317 B)/264/259, the low ones at frame 0x1c with more aligned differences (179-181). The sine branch's cross
+// through cross3f 208; the axis scale passed straight to vector3f_scale 201 (same code); the clamp as one conditional
+// expression 301 (1318 B). Body unchanged.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1471,6 +1477,11 @@ void function_143250(
 // lifetimes, stacked from the bottom roughly by memory-reference count. Retail's slots follow ours one cell lower up to
 // the r6_r6 slot; retail then has the s21/s21_r2 slot (ours ranks it far higher, at -656), which is the extra frame word;
 // above r2_r2 the offsets agree again until the band-three terms, which retail interleaves in a different order.
+// M3 lane 16 r144 (fast, control 939): the nine rotation reads declared in retail's load order (r4, r1, r5, r6, r8, r0,
+// r2, r3, r7) 1749 (10827 B); `matrix` declared after the reads 939 and band two's roots s5 first 939 (both the same
+// code); one exit with bands two and three nested under `order > 2` / `order > 3` 1902 (10607 B); unused initialised
+// locals after `matrix` (diagnostic only) 1-7: 1231 (10744 B)/1231/1095 (10777 B)/1226/1226/1415 (10756 B)/1226.
+// Band two's braces dropped (its names at function scope, band three's block shadowing them) 939 (same code).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

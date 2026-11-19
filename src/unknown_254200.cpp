@@ -617,6 +617,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // 0x254200) 2; the draw-ready flag defined as bool 2; the two lookup helpers defined after the colour helper 2; all
 // four together 2 (all the same code). No matched caller of the reservation helper has a true two-value reload pair,
 // so no matched function shows this build emitting retail's first-defined-first order.
+// M3 lane 16 r142 (fast with 0x254490 4 and 0x254200 matched; control 2): the scale parameter declared `real const` 2;
+// the inline-depth reset after the first quad's end call and the depth-0 start before the second block's blend-state setter pair
+// dropped (function_14390 is a call either way) 2 (same code; kept, one pragma pair fewer); the closing `inline_depth(255)`
+// dropped 2, as `inline_depth()` 2 (same code); the colour pointer declared `const` 2. In retail every call after the first
+// quad's second vertex stays out of line except the border-colour stage call, the shape of an inline budget spent there.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
@@ -673,9 +678,7 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			D3DDevice_SetVertexData2f(1, arg_1 * 0.5f + 0.5f, arg_1 * 0.5f + 0.5f);
 			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, 0.f, 64.f, 16777215.f, 16777215.f);
 			D3DDevice_End();
-			#pragma inline_depth()
 			function_14390(0, (s_type_7ba8e9 *)local_1, 0.f);
-#pragma inline_depth(0)
 			function_0222d0(D3DRS_SRCBLEND, 0);
 			function_0222d0(D3DRS_DESTBLEND, 0x302);
 #pragma inline_depth()

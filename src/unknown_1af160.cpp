@@ -190,6 +190,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // swapped and the low slots 0x12-0x1c move, so retail's frame is the escaped-integer one; the other eleven callers stay
 // MATCH; restored); the actor pointer const 12, the actor, node and 0x25d690 result const 12 (same code); the 0x262b40
 // result's +0x14 field named for its two tests 14; the three 0x261280 outputs declared ahead of the scratch fetch 12.
+// M3 lane 16 r141 (`--fast 0x1af160 0x1e1f20`, control 12): 1..8 dead initialised locals at the top 12 each; diagnostics in
+// 0x260670 (reverted): its read of the flag output dropped 12, the flag pointer stored to a global 9 (the bool output then takes
+// the lowest home; retail's 0x260670 reads and writes the flag as ours does, so the lever is elsewhere on that chain); the bool
+// output passed as `local_14 != false` 172 (978 B); the definition range test with its operands swapped 12 (same code).
 // M3 lane 13 r113 (`--fast 0x1af160 0x1e1f20`, control 12): the bool output alone in a block spanning its uses (the
 // reference result declared outside) 12; the actor offset `(arg_0 & 0xffff) * size` as a named local at both actor lookups
 // 12, renamed to sort last 12 (the CSE temporary's slot does not follow a user name); the three outputs in a block with
