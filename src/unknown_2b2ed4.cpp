@@ -79,6 +79,24 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // a near block); wrapping the whole body in `if (datum)` compiles to the same code, so the null test stays as it is,
 // and the five string buffers' homes and the child and layout homes still differ.
 // score 316 (was 316): Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// m3 lane 8 r195 (fast = plain here): 43 at retail's 2345 bytes (plain check, 0x2b37fd and 0x2b3fca still match) with four
+// changes together: the received text as `if (in this title) text = 0x15000269; else text = 0x1a000268;`, each can_join
+// arm of both switch defaults written as its own load, append and terminator, the online block first with
+// `else text = 0x700024e;` as the chain's last arm, and the title and suffix clears as two statements, title first. Not
+// kept: the online-first order is an arm swap, so it stays only with a byte match. Without it 665; it alone 720; with the
+// received if/else only 396. Why: the five buffer homes follow reference density after dead-store removal and before
+// cross-jumping (one layout reference fewer, `|= 3` or no value4 store, or two suffix references more give retail's homes
+// exactly; extra dead suffix clears change nothing), and retail's three extra bytes are the two defaults not if-converted.
+// Steps: the full-sequence defaults alone 550/551 (one) and 598 (both, 2252 bytes: `known` leaves BL, tails over-merge),
+// a terminator once after each switch 549-605; with the received if/else 665 (2354 bytes: the invite pointer takes ESI);
+// that with the dispatch tested `text == NONE` first 396 (registers right, the call block laid out early); the clears
+// alone 316. Left at 43: the item loop's `>> 10` arm stays inline where retail parks it after the session player's jmp
+// (matched 0x18f62b and 0x24c461 park such a block when a repeated test is jump-threaded). On the 43 form, all 43 or worse:
+// `!friends ? >> 10 : >> 12` 44, nested ifs 43, the xuid test as an early `continue` 43, `== 0` and no-cast tests 43/43,
+// the original `!can_join` order 43, a file-local forced-inline test 43, `>> (friends ? 12 : 10)` 137, bool casts per arm
+// 609, the flag10/flag12 bitfields 610, the arms as nested ifs 55, a named bit set by an if/else 609/610, the word shifted
+// by 10 then overridden 612, `((friends ? flags >> 2 : flags) >> 10) & 1` 609. The permuter cannot search it (its reduced
+// image scores 109). Earlier this round on the 316 body: the clears split 316, the flag sets through bitfields 316/316.
 // Round 199 (m3 lane 5, fast; aligned 49): the string-buffer record given a constructor clearing its first word in place of
 // the explicit display_name/message/suffix clears 316 (same code); with the title as the same record 316 (same code); without
 // the layout's explicit flags clear 316 (same code); the final player/layout/values in their own block 316 (same code);
