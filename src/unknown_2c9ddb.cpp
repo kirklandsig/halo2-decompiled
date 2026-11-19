@@ -352,6 +352,22 @@ extern long g_55c154;
 // `saved` and the storage address follow it there and `this` is left in ESI or EDI with a spill round each copy, which
 // also costs the biased frame; retail hoists neither constant because `this` holds EBX from the first instruction, as
 // this one-call body does.
+// M3 lane 10 r128 (fast with 0x13fac0, 0x212bc0, 0x238c69, 0x2ba9f4, 0x1489b5, 0x149f88 and 0x216a50, all MATCH each time;
+// one-load body 61, aligned 40, register-masked aligned 44 of 173). Two load arms 174 (595 bytes) [78, 68] as listed; with a
+// read of `this` in the block after the NONE test (diagnostic: a volatile local set from user_flags) 189 (602 bytes)
+// [57, 56], `this` in EBX, the entry in ESI and `saved` in EDI as retail has them; the same read written as a self
+// assignment of flag_c 174 (it is removed: same code as the plain two arms). The second half moved into a same-file
+// inline helper taking the list pointer (so the two halves hold separate copies of it; diagnostic) 440 at 312 bytes (it
+// stays a call); force-inlined 174 (595) [78, 68] (same code: the copy merges back into `this`). On two arms with
+// 0x238c69's parameters as (controller, mode, type, name, maximum_count) (0x238c69 and 0x2ba9f4 still MATCH): 167 (590)
+// [70, 62]; with the top read as well 182 (597) [43, 50]; that with 0x1489b5's parameters swapped to (variant, type)
+// (0x1489b5 and 0x149f88 still MATCH) 182, the same code, so the builder's order is not what puts retail's game-type
+// load ahead of its address push; with a named count for the copy and the request as well 168 at 584 bytes [34, 37]:
+// then the whole second half is retail's two arms (0x13fac0 called with ECX, EDI and ESI, the count reused from ESI, the
+// shared request tail with the controller loaded last) and three things are left: the top read itself, the frame (ours
+// `mov ebp, esp`, retail biased by 0x70, so every frame offset differs) and the variant's address, which ours loads once
+// per arm into EAX for the copy and the calls where retail writes the immediate each time. What gives `this` its weight
+// in retail without that read is still not found. Body unchanged.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

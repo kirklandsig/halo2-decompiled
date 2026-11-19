@@ -1292,7 +1292,6 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
-// MiniMax B (11-18): no new form, no lower score (93 on the full image): every difference still sits before the 0x4c190 call - the 0x4bcc0 argument load (retail EAX ahead of the force push), the entries in ecx, retail's dead entry lea, the header global's load order, the byte previous level, the two-step record adds and the 0x4c190 argument order; the reduced image of this file is not faithful, so only the plain build measures it.
 // score 93 (was 93): m3 lane 9 r134 (all plain; the earlier 175-base forms re-measured on the 93 base that round 224
 // reached, and the MiniMax C line that sat below the marker moved up into this note): the object-header table read
 // into a local before the count store 349; the type stored through one ternary 93 (same code); the 0x4ed284 entry
@@ -1300,6 +1299,7 @@ struct s_133f70;
 // bytes); the first cache lookup on *source_object with no drawn-object local 98. Left: the 0x4bcc0 argument load
 // (retail EAX before the force push), retail's dead entry lea, the header global loaded first, the byte previous level
 // with record + 0xbc in its own branch, and the scratch rotation those leave.
+// MiniMax B (11-18): no new form, no lower score (93 on the full image): every difference still sits before the 0x4c190 call - the 0x4bcc0 argument load (retail EAX ahead of the force push), the entries in ecx, retail's dead entry lea, the header global's load order, the byte previous level, the two-step record adds and the 0x4c190 argument order; the reduced image of this file is not faithful, so only the plain build measures it.
 // MiniMax E (11-16): no new form tried this round, no lower score (93 on the full image, 355 on the reduced one): the plain
 // build's first difference is still at the 0x4bcc0 call, where retail loads the distance into EAX and this build loads it into
 // ECX, and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns are unchanged; the reduced
@@ -1574,6 +1574,22 @@ struct s_133f70;
 // a named short widened into the entry count 93 (same code); `success` declared at the loop's top re-measured 91 (two
 // points, a declaration move, not kept). Reading: ours picks ECX for the distance because the force is already pushed when
 // the load's register is chosen; retail's choice of EAX means ECX and EDX were both still taken there. Body unchanged.
+// M3 lane 10 r128 (control 93, aligned 58, register-masked aligned 29 of 382 instructions). A faithful fast image exists
+// after all: with the callers 0x133790, 0x133ab0 and 0x133f70 and the callees 0x23690, 0x3d480, 0x3d4f0, 0x3db00, 0x3dd10,
+// 0x3ddd0, 0x4bcc0, 0x4c190, 0x137650, 0x137800, 0x3d430 and 0x4c450 listed next to 0x4b5d0 the reduced build gives 93
+// with the same listing as the plain build (about 21 s; the first four trials below were also run plain and agree).
+// Forms, [aligned, masked]: a signed-char previous level through a signed-char levels pointer, with the record address
+// from a small inline getter that has its own NONE test (the record set under one test, the member offset added under
+// the caller's, which is what keeps retail's two-step `add eax, ecx; lea ebx, [eax + 0xbc]` and `[eax + 0x44]`), at both
+// pool sites 321 [57, 21] (383 instructions; both sites then agree with retail line for line); that with the previous
+// level written through an out-parameter getter 320 [56, 21]; as an unsigned byte compared with 0xff 321 [57, 21]; with
+// the drawn-object local read again ahead of the 0x3d430 call 321 (same code); with `reuse` set inside the test 298 at
+// 1287 bytes [75, 40]; with `success` declared first in the loop 319 [55, 19] (retail's store order ahead of the 0x3d4f0
+// call). The one instruction every byte-level form is long by is the previous-level test: retail keeps `cmp byte ptr
+// [esp + 0x20], 0xff` behind the two slot stores, ours loads the byte ahead of the stores and compares the register, so
+// the listing runs one instruction out of step from there. On the first difference (plain body): `initial_level`
+// declared ahead of `failed` 95 [60, 31]; a named flag pointer for the call, a named level pointer for the call, and
+// the record cast written in place of `output` in the call 93 each (same code). Body unchanged.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
