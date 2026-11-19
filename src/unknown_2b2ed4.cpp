@@ -74,6 +74,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax S (11-19): no new form, no lower score (316): retail sends every text arm straight to one function_253b1a call with no NONE test and takes the message set_text inside the message block, so ours keeps the cmp eax,-1 test at the join, the !online arm inline where retail parks it at 0x2b3674 and the >> 10 arm next to the join where retail outlines it at 0x2b3088; the buffer homes stay a rotation off retail, so the body stands.
 // MiniMax H (11-18): no new form, no lower score (316): the frame 0xfd4 still agrees and the first difference is
 // still the null-datum test's jump target (retail's `je` goes to the shared epilogue at the function's end, ours to
 // a near block); wrapping the whole body in `if (datum)` compiles to the same code, so the null test stays as it is,
