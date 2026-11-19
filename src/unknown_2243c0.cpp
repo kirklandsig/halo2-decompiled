@@ -782,6 +782,16 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the pass and material definitions 23; all four zeros ahead of the pass definition 60; all four between the two
 // definitions 13; the material definition named in a plain local before its +8 read 8 (same code); that definition bound
 // as `void const *const &` from the tag-data accessor 92 (552 B). Body unchanged.
+// M3 lane 14 r121 (fast with 0x2243c0/0x224d90/0x173ba0, all MATCH each time; main 117): lane 1 r59's reference chain
+// rebuilt on this main 8 at +0x9e (the same lines). Reading by the scratch next-fit order (EAX, ECX, EDX): ours takes
+// EDX for the pass definition because the dead pass-element `lea` moved the pointer past EAX, retail takes EAX there,
+// then EDX for the material tag, puts the zero in EAX between that tag's `and` and `shl`, and gives the material
+// definition EDI, the dying table base, so in retail every scratch register is busy at that load. On the chain: the
+// material lookup through an accessor that takes the instance table as a parameter 8, the pass lookup through it 8,
+// both 8, the material lookup as the tag-data accessor of the record-tag accessor 8 (all the same code); the material
+// tag bound as `long const &` just ahead of its lookup 36; the material tag read into a long ahead of the four zeros
+// with the lookup after them 41, masked at that read 41, with that long also passed to 0x1c590 81, the reference form
+// of that 81; the four zeros between the two definitions re-measured 13. Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

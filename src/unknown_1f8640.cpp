@@ -932,6 +932,17 @@ struct s_1f8a70_actor
 // the dispatch still follows case 7); the mode cases in source order 6, 7, 2, 3, 4, 5 382 (1616 B) and 2, 3, 4, 5, 7, 6
 // 334 (1608 B), so the layout follows source order; `return route_found;` after the two arms with `result` kept for the
 // first exit 439 (1672 B); case 6's test spelled `!route_mode` 182 (same code).
+// M3 lane 14 r121 (fast with the file's ten other functions and 0xe70b0, all MATCH each run; control 182, LCS-aligned
+// unmatched lines 49, so the positional count overstates what differs; the aligned count is in brackets): `return
+// route_found;` after the two arms with `result` only for the first exit 439 [59] (the first exit then folds to `xor
+// al, al`); one `result = route_found;` after the arms 326 [55]; case 7's node stored before its radius 360 [56];
+// those two returns with it 424 [62]; `result = route_found;` ahead of the final test, tested as result or as
+// route_found 317 [65] each (1676 B); the success test nested in the route block returning route_found, the failures
+// falling to one 0x1f8750 call and `return route_found;` 447 [53] (1624 B), with `result = route_found;` ahead of that
+// call instead 310 [53] (1628 B), with case 7's order 411 [56]. Every one is further from retail by alignment than this
+// body. Reading: retail's success exit returns the AL it tested (loaded from the +0x12 home), its failure exit reloads
+// that home after 0x1f8750, and 0x506's store sits between the load and the branch; what differs here is where the
+// route dispatch is laid out (after case 5 in retail, after case 7 here) and the failure value kept in BL.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

@@ -657,6 +657,17 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // An `inline` or `__forceinline` declaration of 0x142570 in this file only leaves it a call: 724 (469 B). 0x142570 is unchanged.
 // On the 175 parameter-address form: the displaced sums written d-first for x and z, a-first for y (retail's load
 // sides) 175 (same code: ours loads the other side in all three); the origin transform ahead of the displaced point 236 (944 B).
+// M3 lane 14 r121 (fast with 0x30bf0, 0x30710, 0x142570 and the callers 0x4f7e0/0x4ff50, which stay 325/43; control
+// 195). HELD lead, build/r121/held-0x30830.patch (needs the owners' OK: the call lines in 0x4f7e0 and 0x4ff50 change):
+// the parameter-address helper with the inverses used directly (re-measured 175, 955 B, first difference +0x40), plus
+// the parameters as (d, a, camera, scale, ...), the order retail's calls set them up in, with every declaration and
+// call, 173 (+0x4a: the three displaced sums then load retail's sides), plus the helper's coordinates declared y, x, z
+// 150 at 955 bytes (+0xa0: x, y, z then sit in XMM4, XMM0, XMM1 and the displaced x, y in XMM7, XMM6 as retail).
+// On 173: the displaced sums in statement order yxz/zxy/zyx 173, xzy/yzx 175. On 150: coordinates yzx 241, zyx 239,
+// zxy 240, xzy 182 (985 to 988 B but for xzy); the sums yxz 156, zxy 152; the helper's row terms written in any of
+// the six orders 150 (same code); a compile-only screen of all 216 coordinate, scale-statement and row-statement
+// orders ranks this form first. Left on 150: each row's term order (retail right*x, then z*forward, then y*up; ours
+// forward*z and up*y, then right*x) and which side of each product is loaded. Body unchanged (195).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
