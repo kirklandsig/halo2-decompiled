@@ -897,6 +897,13 @@ struct s_1f8a70_actor
 // 012 with an explicit unsupported fallback 448; route 2 then nonzero then zero 323. NOT kept: every
 // form regresses. The dispatch still needs to follow mode five, and the failure result still lacks the
 // native stack reload.
+// M3 lane 1 r124 (fast with 0x1f86a0/0x1f8750/0x1f8780/0x1f8940/0x1f90f0/0x1f8510/0xe70b0, all matched throughout; control
+// 182, difflib-aligned 49): case 6's inner test inverted so `route_mode = 1` is the else arm 326 (1616 B, aligned 47: it
+// then cross-jumps into case 5's tail as retail's does, but the dispatch still follows case 7); that with cases 6 and 7
+// written ahead of case 2 382 (aligned 174: the cases are laid out in source order, so retail's dispatch head between
+// case 5 and case 6 is not a case-order effect); with case 7's node stored before its radius 366 (aligned 54: case 4's
+// node store then cross-jumps into case 7's tail); with the dispatch ternary's zero arm second 326 (aligned 59); with
+// every mode case ending `goto` a label at the dispatch 359 (aligned 63).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

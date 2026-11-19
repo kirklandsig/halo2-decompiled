@@ -931,6 +931,17 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // pending 535 (same code); the two counts in one declaration, face count first 535 (same code); `first_face` renamed
 // `seed_face`, and `group_count` renamed `grouped_count` (the name-order lever for same-size cells) 535 each (homes
 // unchanged); the first loop as a `while` over a function-scope `next` index 535 (same code). Body unchanged.
+// M3 lane 1 r124 (plain each, with the file's nine functions; control 535, difflib-aligned 672, register/offset-masked
+// 496): the three cross terms grouped as retail multiplies them, `(one_minus_cosine * axis.j) * axis.i`, `(... * axis.k)
+// * axis.i`, `(... * axis.k) * axis.j` 536 (3663 B; aligned 574, masked 419); the nine rotation stores in retail's
+// pairwise order (forward.i; forward.j, left.i; left.j; forward.k, up.i; up.k; left.k, up.j) 545 alone (aligned 684);
+// both together 491 at 3647 B (aligned 667, masked 388; LEAD, kept only with a match: the order is picked against
+// retail; patch build/r124/lead-0x17fd20-491.patch); the grouping with the sine products named in row order 673. On 491:
+// the squares declared k, i, j 496 (masked 386);
+// `one_minus_cosine` declared after the squares 491 (same code); the sine products named once each and used twice,
+// declared before the stores 664, right after sine/cosine (k, j, i) 590 (both move the frame: first difference +0x7).
+// Left in the block: retail forms axis.k * sine and axis.j * sine straight after the sine, keeps 1.0f in XMM0 for
+// all four `1 - x` terms and, with all eight XMM registers then live, forms axis.i * sine on x87.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

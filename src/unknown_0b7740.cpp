@@ -1128,6 +1128,14 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // 295, the outer parameters declared in the opposite order 295, five later object_index arguments made constants 304: in
 // each object_index still loads first (ECX or EAX) and the parameter takes ESI, so the entry roles follow neither
 // declaration order, the parameter's later reads nor object_index's use count. Body unchanged.
+// M3 lane 1 r124 (fast with 0x137800/0xbfe20/0xbfe60/0xbdb60, all matched throughout; control 240, aligned 177, masked 67):
+// an unread fourth parameter (the call in 0x137800 passing its count) 240, the same unread parameter first 240 (same code
+// each: the link drops it and the body's symbols do not move the roles); `result` initialised through a const reference
+// bound to the parameter 240 (folds); `result` declared ahead of the header with the early tests through one named object
+// local 240 (aligned 183); the sample scan as a forceinline helper returning the flag 246 (aligned 168, masked 65). Reading:
+// retail stores `definition` to a frame home at once and reloads it for the object-type test (ours keeps it in EAX across
+// the mask copy), consistent with the extra live value retail carries there (the parameter in EDX beside result in EDI).
+// Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

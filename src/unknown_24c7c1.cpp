@@ -819,6 +819,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // The full build reads 115 once src/unknown_1ee340.cpp's constructor stores its vertices through the component accessor
 // (this round's 0x1edd00 match) and 114 with that file as before (plain checks of both trees): the reload pair before the
 // flag setup (`mov edi, [ebp - 0x64]` against retail's `mov ecx, [ebp - 0x40]`) follows the whole-image link, as in round 97.
+// M3 lane 1 r124 (fast with the file's other 21 functions, all MATCH each run; control 115, difflib-aligned 113): nearly
+// every difference is a frame home. 0x24ce9d (same file, matched, no longer held) taking `left` and `top` as `short`
+// 182 (1883 B; 0x24ce9d stays matched); `left` as a `short const` initialised where it is computed 115 (same code); the
+// timer flag as a bool 191 (1888 B: timer -0xe, tutorial -0xd, scripted still packed at -2 beside the split-screen byte,
+// where retail has -0xf/-0xe/-0xd below `origin`), with `origin` declared ahead of the split-screen flag 191 (same
+// code); `origin` scoped to its own block around the top/left computation 115, with the bool timer 191 (same code each).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

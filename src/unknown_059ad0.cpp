@@ -4476,6 +4476,16 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // +0xb) and are stored and read back from memory at every exit with no constant propagated, which no plain local,
 // aggregate member or array element gives here; their addresses must escape (out-parameters of a helper that retail
 // expands inline), and this body cannot expand a helper inside its inline_depth(0) region.
+// M3 lane 1 r124 (fast with 0x5e3f0/0x5f6a0/0x58d90/0x58d20/0x769a0/0x62c20/0x5f760/0x63ca0, all MATCH each run; control
+// 305, difflib-aligned 470, masked 462): the aligned count is almost all one block placed elsewhere: ours lays the
+// acknowledgement block straight after the host path's reason-5 exit (behind its unconditional `goto acknowledge`),
+// retail keeps it at its source place after the reason-9 exit; everything else is in retail's order. Forms: the host
+// path as `if (sender != NONE) goto acknowledge;` ahead of the reason-5 code (the state-8 test's own form) 317 (the
+// block is then laid inline after the test), with reason 5 ending `return result;` 317; the base with reason 5 ending
+// `return result;` 308 (1264 B); `result` declared first 310; `same` declared ahead of `better` 305 (same code); the
+// owner passed through a named `long owner = session->value10;` as 0x5e3f0 does 363 (the caller's dead owner store,
+// `mov edx, [ebx + 0x10]` / `mov [esp + 0x1c], edx`, still does not appear: 0x769a0 already declares the unread owner
+// parameter and this body passes it, so the earlier BLOCKED-BY note now reads: the link drops the unread argument).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
