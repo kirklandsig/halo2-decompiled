@@ -1576,6 +1576,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 0xd4080's call to match and the guard `0 < count` 570 (0xd4080 380) [359/179]; that with the lightmap pin first
 // 559 [354/152], with the square moved too 565 [336/142], plus `if (!parameters) return false; ... return true;` 581
 // (2171 B) [329/138]. Every retail-order form lowers the masked count and raises the positional one. Body unchanged.
+// Conditional last-row selection 529, with an entry receiver 530, combined mask 571, or general bit first 531.
+// Return true in the selected branch 566, with the entry receiver 563; explicit empty-block
+// failure with the receiver 560 or combined mask 571. The selection spill and register homes still differ.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

@@ -701,6 +701,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Independent initialized/branch-set scales 355/244; final vector scales 363/342.
 // With secondary reciprocals after primary aspect 392/310/415/327.
 // NOT kept: each form regresses and widens the extent; blend remains unmatched.
+// Secondary aspect accumulation 162; staged inverse sum 322; named current inverse terms 322;
+// context scale in horizontal aspect 173, before both inverse sums 170, read before final product 173;
+// secondary reciprocals after complement 310 or between flip and primary aspect 290.
+// The join still spills blend and the fixed-arm jump remains longer.
 // Both UV encodes before, between, or after the aspect phases 431/438/419;
 // flip between span pairs 356; in-place reciprocal division for primary,
 // secondary or both pairs 162/162/162; blend initialized in each arm 497.

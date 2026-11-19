@@ -1592,6 +1592,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // in 0x193440/0x193400's default-first form too 916 (2724 B, masked 348). Not kept (the body shrinks, so the score
 // rises), but it is retail's code: keep it once the inline choices (top lookup a call, capacity switch and 0x631f0
 // inline) give back the length.
+// Machine ID dwords split around group clears, after identity, or between the clears
+// 867/929/867/867. Whole-ID block copy before group statistics 978. Separate ID loop before
+// group statistics or before histogram 914/914. Split store with dword histogram 933.
+// NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
+// The opening variant lookup still expands and the frame still differs.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

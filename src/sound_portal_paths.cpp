@@ -116,7 +116,8 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
-// score 296 (was 296): The 0x428 frame agrees. The starting-cluster register, table loads, validity words
+// score 287 (was 296): Advancing the required index output restores gain-based output addressing.
+// The 0x428 frame agrees. The starting-cluster register, table loads, validity words
 // and sort scratch offset differ.
 // Before the sort scope, the frame was 0x42c.
 // Tried: const portal 371; const views 371; endpoint mask before shift 371; const portal and mask 371; shared
@@ -172,6 +173,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // assignments 377 (aligned 89, a shared zero register appears); one helper with the first pin in the normal arm 243;
 // macro pins in one helper 254; the exponent as one expression 262 (1352 B). With main's 0x14b240: the test helper
 // alone 317; the long-bits decibel helper alone 323; the path entry types alone 357; all three 359 (none kept).
+// Capped bound in loop declaration 297; sorted source cursor 313; index cursor 287 (kept);
+// gain cursor 290; index and gain cursors 296; common index store 316; common index/gain 303;
+// common output stores 324. NOT kept: gain cursor reaches 1364 bytes but gains six.
+// The starting-cluster register and both table reloads still differ.
 // M3 lane 13 r111 (body unchanged; see 0x18dc90's note): the twin has the same two leftovers. On
 // build/r111/held-0x18dc90.patch (the r110 patch with the aggregate-returning pin helper) the fmul schedule is retail's
 // at both sites: harness 244 positional / 17 aligned at 1364 B, fast 250 (the r110 patch 249, aligned 23). Left: the
@@ -186,6 +191,9 @@ __forceinline long portal_path_gain(real distance, real range)
 // packed link base or address 296; path ordinal advanced at the link read 367;
 // starting-cluster and decoded portal names 296. NOT kept: the starting cluster and both
 // live BSP table bases retain their opening allocations.
+// Direct list/portal/both indexed records/direct list and portal 358/374/392/329.
+// Live-length link cursor/positive end cursor/consumed count/empty-range cursor 374/359/373/364.
+// The direct list form recovers the initial EBP save; both table reloads remain unresolved.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -259,7 +267,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 		long index = order[i];
 		if (valid[index >> 5] & (1 << (index & 31)))
 		{
-			indices[i] = index;
+			*indices++ = index;
 			if (gains)
 				gains[i] = index != NONE ? portal_path_gain(distances[index], bsp->sounds[index].range) : 0xc2800000;
 			if (portals)
@@ -273,7 +281,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 		{
 			if (count)
 				break;
-			indices[i] = NONE;
+			*indices++ = NONE;
 			if (gains)
 				gains[i] = 0xc2800000;
 			if (portals)
@@ -284,11 +292,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 354 (was 354): The entry frame is 0x430 versus retail's 0x428. Retail keeps the starting cluster in
-// EBP, reloads both BSP table bases per path entry and resolves the destination before testing flags. The
-// extra table-base spills persist in the build.
-// Earlier score 354 (was 354): Frame 0x430 versus 0x428. Retail keeps the starting cluster in EBP and reloads
-// both BSP table bases inside the portal loop. Tried: const portal 354; const views 354; endpoint mask
+// score 315 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Retail's 0x428 frame keeps the starting cluster in EBP, reloads both BSP table bases per path entry
+// and resolves the destination before testing flags. Both extra table-base spills persist.
+// Before the cursor change the frame was 0x430. Tried: const portal 354; const views 354; endpoint mask
 // before shift 354; const portal and mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
 // path increment 371; index test before closest distance 354.
 // F417: Invalid output first 353; count-stop return 354; explicit gain arms 365;
@@ -373,6 +380,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // cluster array header 354, both 354. Packed link record 354; index and endpoint bitfields 371;
 // path count and link pointer through the array header 354.
 // The bitfield and earlier destination forms shorten to 1347 bytes. The 0x428 frame and table reloads remain open.
+// Required index cursor at the stores 362 or row latch 315 (kept, plain); required-index
+// position/end 390/388; separate sorted cursor/sorted end 369/383; scoped sort scratch or
+// validity memset with the index cursor 359/359. The latch restores gain-based row addressing.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -442,7 +452,7 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 		long index = order[i];
 		if (valid[index >> 5] & (1 << (index & 31)))
 		{
-			indices[i] = index;
+			*indices = index;
 			if (gains)
 				gains[i] = index != NONE ? portal_path_gain(distances[index], bsp->environments[index].range) : 0xc2800000;
 			if (portals)
@@ -456,7 +466,7 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 		{
 			if (count)
 				break;
-			indices[i] = NONE;
+			*indices = NONE;
 			if (gains)
 				gains[i] = 0xc2800000;
 			if (portals)
@@ -464,5 +474,6 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 			if (clusters)
 				clusters[i] = NONE;
 		}
+		++indices;
 	}
 }

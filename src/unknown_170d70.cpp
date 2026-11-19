@@ -2086,6 +2086,11 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // The collision point in EBX still displaces the state from its retail register.
 // Point/vector/both row accumulators 382/297/382. Full point/vector/both setters 295/465/463.
 // Row accumulators with a single point/vector setter 382/461. The point setter alone ties at retail length.
+// Horizontal position after both view copies, after all derivatives or between derivative y and z 440/410/440.
+// X and Z before view copies, Y after both 295. Vertical offset ahead of both horizontal sums 439.
+// X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
+// Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
+// The collision point still occupies EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

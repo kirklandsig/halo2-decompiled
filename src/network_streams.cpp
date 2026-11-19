@@ -1179,6 +1179,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Boolean and named bits with the saved update 64/64, separate sent rejection 35;
 // setter after pending rejection 89. NOT kept: the setter gives the byte OR,
 // but moves the entry/output allocation. Separate sent rejection retains the full-word store.
+// Word flag setter on the message with saved/member/shifted/named bit tests 89/89/89/89.
+// Setter with separate unsent/pending rejection 89/89 or paired mask comparison 106.
+// Setter on saved word and assignment 35. NOT kept: the byte OR changes the entry and loop
+// allocation, and the saved word ties with the same full-word store.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

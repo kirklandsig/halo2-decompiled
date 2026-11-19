@@ -2159,6 +2159,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // sign at dispatch exit 392, sign at inverse tangent only 206. NOT kept: 177 and 176 recover
 // the result home and length but compute the projection before retail and raise the caller
 // 492 to 572. Other gains shorten the body. The 0x14 frame still lacks the separate result.
+// Separate perpendicular receivers 193; fixed-axis receiver scopes 193; direction-relative receiver scopes 180;
+// third-case receivers 195; displacement aggregate in both cases 266 or before the third-case perpendicular 171;
+// fixed-axis aggregates 193; reversed direction aggregate alone 257.
+// NOT kept: the 180 and 171 forms reach frame 0x18 and 812 bytes but raise the caller from 492 to 572.
+// The earlier aggregate advances both X and Y ahead of the retail interleaving.
 // MiniMax A (11-18): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18, and retail keeps
 // the result in its own slot at +8, set to 0.0f in the prologue, where this build reuses the scale argument's home; the
 // case-one body still differs in its float order and in how retail loads the two components of the 0x4b9dac vector one
@@ -3957,6 +3962,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `for` over state->entries[i] with the entry pointer 814 (1655 B), with its own index 794 (1639 B: the plain loop
 // is unrolled, so retail's guard plus countdown do-while stands); pass 2 setting `first = 1` (it is always 0 there)
 // in place of `++first` 385. `first` keeps EBP in each.
+// Swap record shared across all four passes, isolated per gate, shared across admission, shared across
+// removal, shared through creation, or shared after paired admission 317 each. Existing swap with a value capture,
+// direct or named, 367 each. The prefix and state registers and the ordinal homes remain exchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

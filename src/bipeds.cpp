@@ -1823,6 +1823,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // boost default after ground velocity 622, immutable tag pointer 175, case-one rate quotient 175,
 // complete recovery rate 175 or named recovery duration 175.
 // NOT kept: the early boost forms change the prologue without recovering the native tag and point homes.
+// Speed and material defaults after biped/tag lookup or before biped lookup 177/177/181.
+// Split across tag lookup in either order 177/177. Both after component lookup 176.
+// Split between component lookup and airborne test in either order 176/176.
+// NOT kept: no recovery of the native unity schedule or definition/material/point homes.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4902,6 +4906,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // decision with default/conditional/if-else assignments 336/368/364, second-pivot decision
 // 336/368/356. First/second decisions outside only the unused-property scope 336/336.
 // NOT kept: none recovers the matrix, origin or property slots. Complete arms move the call setup.
+// Shared travel limit before component lookup, after component lookup or after origin pointer
+// 446/446/446, after origin copy 414, after matrix query 392, inside accepted placement 403.
+// Const limit inside accepted placement 403. Shared local initialized separately on each path 336.
+// NOT kept: common evaluation grows the frame to 0x130. Separate evaluations tie with unchanged matrix/origin homes.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

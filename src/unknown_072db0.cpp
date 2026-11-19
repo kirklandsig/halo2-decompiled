@@ -1656,7 +1656,8 @@ static __forceinline void query_restore_pending()
         }
 }
 
-// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
+// score 703 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
 // variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
@@ -2121,6 +2122,8 @@ bool function_1900a5(long index);
 // selector 828, via the record reference 821, direct base reference 806.
 // With the SDK identity predicate these score 828/821/806. NOT kept: the typed forms
 // add sixteen bytes and retain the opening frame and exit-span mismatch.
+// Offline-first arm/return using direct status 703/703, shared availability 810/810, one task index 703/703,
+// conditional task status 812/812. The shared and conditional forms change the opening schedule and raise the score.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

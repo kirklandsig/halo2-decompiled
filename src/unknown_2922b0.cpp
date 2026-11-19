@@ -92,8 +92,6 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // MiniMax D (11-15): no new form, no lower score (558): the frame size and the five calls agree with retail, but the
 // success byte, the minimum float, the four hit flags and the copied input vector still sit at other frame homes, and
 // the inactive exit still comes before the ray loop instead of after it.
-// Earlier score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
-// Earlier score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // M3 lane 8 r150 (fast; aligned 406, register-masked 216 on this body): retail forms 1/range once and multiplies it by
 // the minimum twice with the minimum held in XMM2 (no reload, so not an aliasing effect). Tried: the third and fourth
 // offset points' scale as `0.0f - half_width` 592 (same code; re-measure of round 134's form); the point helper's products scale-first 592 (same code);
@@ -660,6 +658,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // it 669 (2865 B) [350/116]; `else return true;` then `return local_0;` 669; descriptive names for five locals 558
 // (same code); `bool local_0;` assigned true in both arms of the active test 552 (first difference +0x2e; six
 // points, a flag form). Body unchanged.
+// Mode-specific returns from the direction copy/projected output/both arms 558/554/558;
+// with inactive exit last 669/657/669; one range read with both returns and with
+// inactive exit last 661/651. NOT kept: projecting first gains four; the success slot stays at +0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
