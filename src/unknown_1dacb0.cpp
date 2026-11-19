@@ -1451,6 +1451,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // with their own `for (long i = 0; ...)` 828 (same code); the inheritance index set by `i = 0;` after the kinds request 828
 // (same code); the iterator set up graph, step, entries, then mode/class/type 828 (same code); the three outputs set by one
 // chained assignment before the iterator setup 828 (same code). Body unchanged.
+// MiniMax G (11-18): score 828 (was 828): no new form, no lower score. The frame agrees at 0x2c and the first difference
+// is still the NONE compare: retail keeps the compared argument in EDX and the computed -1 in ECX and this build
+// does the reverse, so retail materialises NONE again for the outputs; retail's result sits at F+0xc where ours sits at
+// F+0x08. The output homes do not follow the caller's declaration order (the six orders all compile alike) nor the
+// callee's write order, and every form the earlier rounds list still measures 828.
 // MiniMax B (11-18): score 828 (was 828): no new form, no lower score. Read from the listing again: retail keeps the
 // result at F+0xc, the three resolved outputs at F+0/+4/+8, the iterator from F+0x10 and the per-pass candidate in
 // found_mode's dead home F+0x44, so the output homes do not follow the caller's declaration order (the six orders all

@@ -1879,7 +1879,7 @@ void c_1e2990::function_1e2990(bool preserve)
 }
 
 #include "unknown_0259a0.h"
-extern bool g_4f55e5;
+#include "hud_messages.h"
 extern bool g_4f55e0;
 real function_259a0(dword *seed);
 long function_1469f0(real seconds);
@@ -2304,7 +2304,7 @@ void function_1e2a90(long actor_index)
 		long weapons[2];
 		weapons[0] = equipment_current_weapon_r21(actor->unknown018);
 		weapons[1] = equipment_secondary_weapon_r21(actor->unknown018);
-		if (!(g_4e6948->state == 1 && g_4f55e5) &&
+		if (!function_2ac270_get(9) &&
 			(!g_4f55d0->unknown340 || (grenade_options &&
 			*(real *)(grenade_options + 0x38) > function_x82e52f(&g_4e7408->unknown0, NULL, 0))))
 			*(short *)((byte *)unit + 0x23e) = 0;

@@ -592,6 +592,11 @@ struct s_item_collision_bsp
 // MiniMax G (11-18): no new form, no lower score (198): the frame 0xa0 agrees with retail; the instance indexing, the plane-normal rows and
 // the spin/speed homes still differ (the spin scale sits in a stack slot where retail holds it in st(1)), and the accumulating-statement form
 // of the plane distance scores 176, under the keep bar, so the body stands.
+// MiniMax A (11-18): no new form, no lower score (198): the frame 0xa0 agrees with retail; the transformed-plane rows
+// written as accumulating statements fix the sum's association to retail's tree and measure 196, and the accumulating
+// plane distance measures 196 as well, both under the eight-point minimum, so the body stands; the marker's coordinates
+// still come from different slots, the instance lookup folds the base into a lea where retail adds it, and the position
+// products stay in fresh registers where retail overwrites them in place.
 // score 198 (was 200): frame 0xa0 agrees; instance indexing, plane-normal and spin/speed homes remain.
 // Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
@@ -1235,6 +1240,11 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so
+// forty bytes of frame are unaccounted for and every stack home sits further out than retail's; the entry flags are
+// still held in registers where retail keeps them in stack bytes, and the forms the earlier rounds tried all grow
+// past retail's 4096 bytes or land below the eight-point gate, while the permuter over the body (one job, --fast,
+// 300 s) tried sixteen forms and its best is the 824 baseline, so the body stands.
 // MiniMax B (11-18): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c (forty spare
 // bytes below the homes), so every stack home sits further out; retail keeps the two entry flags in stack slots where
 // this build holds them in registers, and the item walk still differs, so no form of the body's locals changes it.
@@ -1761,6 +1771,13 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax B (11-18, round 2): no new form, no lower score (140): the permuter over this body (17 tries, 301 s) found
+// nothing below the 140, and the one new form - the spin flag's local lifted to the function's scope so that it
+// takes a frame slot of its own - compiles to the same code (140 at 892 bytes, the first difference still at
+// +0x4c), so the body stands; the result byte still sits at [esp+0xe] where retail has [esp+0xf], the release flag
+// is still cleared by a load, an and and a store where retail masks the byte in place, and the impulse helper is
+// still shared here where retail has two inlined copies, and the callee 0xba300's parameter order is fixed in a file
+// this lane may not edit: BLOCKED-BY 0xba300's file.
 // MiniMax B (11-18): no new form, no lower score (140): the frame 0xac agrees with retail's, but the returned byte
 // still sits at +0xe where retail keeps it at +0xf, retail clears the release flag with one byte read-modify-write where
 // this build splits it into a load, an and and a store, and the event and point homes and the location call's setup

@@ -1132,6 +1132,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // sent from word and resend from field 88; sent from field and resend from word 88; both fields 84;
 // packed test with byte field update 88; word fields with Boolean tests 88. NOT kept: the word field
 // recovers the memory OR, but the prologue, oldest load and message register differ.
+// Pending-bit exclusion first 36; sent gate with pending continue 89;
+// combined mask with array base 48; separate resend type 129;
+// selected resend return 124; byte memory OR 86; combined mask with byte OR 88;
+// low-byte assignment from saved flags 34. NOT kept: gains one point and
+// still assigns from the flag snapshot instead of ORing the bit into memory.
 // Absent-index branch 90/43, absent-index conditional 90/43, table base in the valid
 // branch 89/35, table base before validation 90/45 (in-place update / saved word).
 // NOT kept: the saved-word absent-index forms recover ECX/AX but change the lookup
@@ -1145,6 +1150,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // parameter's home 89 (the indirection folds); `next` declared at function scope 89; the update ahead of the three
 // stores 90; no flags local (tests on the member) 89. On the kept form: flags as `dword` with a `(word)` store 35
 // (same code).
+// Resend type selected by the sent bit, pending bit, both bits, or separate tests
+// 52/52/89/54. Nullable eligible message via conditional or rejection branches 89/89.
+// Qualifying cursor used for post-scan publication with an in-place or saved-word
+// update 98/82. NOT kept: single-bit type selection gives the retail cursor and
+// message pointer with a byte OR, but changes the flag read and return-value code.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

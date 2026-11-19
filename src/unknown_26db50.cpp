@@ -458,7 +458,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // of the point's x/z stores.
 // Earlier head (at 45, was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier score history (71 before).
-// score 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
+// Earlier 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // Earlier score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier: Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
@@ -1058,6 +1058,23 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 172, lifted point aggregate 67, named lifted coordinates 172, separate collision
 // probe point 58, disjoint transform and probe points 56, scoped pathfinding views
 // 77, direct pathfinding views 26, direction setter 248. Original body retained.
+// Round 101 (m3 lane 2, fast with 0x1ecf50 and 0x26d100, both MATCH each time; control 26). New: the rotation's dot
+// order follows the order of the three collision-offset statements further down, and only the y and z statements
+// count: z ahead of y gives retail's rotation exactly (direction j reloaded before k, dot (j + i) + k). Offset
+// statements z, y, x 12; x, z, y 12; z, x, y 15 (what is left on these: the offset stores in that order, and the
+// marker schedule); y, x, z 32; y, z, x 35 (rotation ours). The offset through real_point3d_set 26 (same code: the
+// arguments' text order does not count); as a component loop 45; through the existing vector3f_add_scaled 45. A named
+// z value or z term computed ahead of the x and y statements and stored last, `(void)` mentions of the axis's k, the
+// collision point's z or the point's z ahead of them, an unused `real` copy of the axis's k 26 each (same code: the
+// value is forwarded, so the statement order is what counts). The endpoint as statements in any of the six orders 45
+// to 168 (rotation ours each time). The lift as statements x, y, z (`+=`, or `point.x = axis * 0.5f + point.x`) 77/77
+// (1085 bytes, dot i first); z, y, x 131 (1095 bytes, retail's rotation); y, x, z 88; x, z, y 190; a downward loop 44;
+// a `short` counter 176; the loop with the product first 26 (same code); no lift (diagnostic) 190; the lift through
+// vector3f_add_scaled 177 (1082 bytes, retail's rotation). Grid on the marker-first block (20): endpoint {setter,
+// vector3f_add_scaled, statements} x lift {loop, product-first loop, `+=` statements, product-first statements,
+// vector3f_add_scaled} x offset {statements, sum-first statements, setter, loop, vector3f_add_scaled}, 75 forms: best
+// 20 (the six setter/loop forms with statement or setter offsets), the rest 36 to 199. Open: source that puts the z
+// offset tree ahead of the y one and still stores x, y, z.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
