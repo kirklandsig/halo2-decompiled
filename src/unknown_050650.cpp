@@ -2158,6 +2158,19 @@ struct s_actor_looking_structure_view
 // parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's
 // projection staged (`projection = dot; projection *= 1 - cos;`) 141 (927 B; 0x296e60 282); the helper's product written
 // `(1 - cos) * dot` 23 (same code); the fraction as a ternary after the trace 144 (re-measure of round 27's form).
+// M3 lane 12 r152 (fast with 0x296e60 270, 0x2980d0, 0x297660; control 23): the score as two statements on its local, `(j + k)`
+// then `+= i` 142 (928 B), `(i + j)` then `+= k` 128 (928 B), `(i + k)` then `+= j` 124 (928 B, lane 11 r126's two-stage form);
+// three statements i, k, j 143 (928 B). Redundant pairs shift every float product by their count mod 4 wherever they sit
+// (around the clamp product, the fraction product or a helper product alike; around the parenthesized ternary they count
+// nothing): `(i + k)` then `+= j` at shifts 0-3 124/143/59/9. LEAD at 9 (924 B, steering parens, not kept): the dot and
+// the score are retail's; left are three rotation products: cross k's first loads v.i where retail loads axis j, cross i's
+// second loads axis j where retail loads v.k, and the j row accumulates axis j * projection where retail accumulates
+// v.j * cosine. Other cycles at shifts 0-3: `(j + k) += i` 142/143/58/46; `(i + j) += k` 128/130/62/31; parens inside
+// the score's products, best 23/31/33; the axis through a const pointer local 169/67/168/144; a named `direction`
+// pointer for the copy, rotation and trace 143/68/19/128 (with the score through it 145/68/40/145); the helper's cross i
+// second product parenthesized (odd counts, 0x296e60 270 -> 282) best 35, with the score's k product too best 22.
+// Natural spellings on the `(i + k)` then `+= j` form (clamp compare reversed, fraction-first clamp product, `0.2f *
+// distance`, constant-first angle, fraction declared before the copy, `best_score < score`) 124 each (same code).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

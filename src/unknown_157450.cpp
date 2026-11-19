@@ -5866,6 +5866,11 @@ void __stdcall function_d6bc0(long object_index);
 // Locate-only (a volatile read of the parameter at every use, reverted at once): 198 at 880 B, the timer address is no
 // longer shared at all. Left as before: with the field test `entries` is taken into EDI over the whole loop and the
 // timer into EBX, where retail keeps the timer in EDI and reloads `entries` in each block.
+// M3 lane 12 r152 (fast with 0x15c150; flag recipe 7, its field-test form 172 at 858 B): on the field-test form a redundant
+// `if (0 < count)` guard around the loop 176; the guard on the 7 form 12; a second name for `entries` (`list = entries`)
+// at the 0x15aad0 argument, for the whole countdown block or at the schedule test 172/172/172 (same code: the copy
+// folds into the parameter); the reset counter as `value06 = reset ? 0 : value06 + 1;` 182 (851 B); the schedule test
+// through `s_netgame_entry_state *const &kept = entries;` 172 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
