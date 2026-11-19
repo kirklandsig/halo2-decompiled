@@ -990,6 +990,13 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax B (11-19): no new form tried this round, no lower score (232): our frame is 0x28 against retail's 0x30 and
+// the SSE registers differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7); the
+// forced-speed and time-scale parameters are still read through pointers to themselves, which the rules only allow
+// with a match. A permuter run with annealing over the body (60 tries in 906 s) reached 183 in the reduced and in the
+// full image, but its winning source is made of barred forms - a volatile real, a hand-inlined vector3f_scale, the PIN
+// arguments swapped, the function_fa580 arguments swapped, one-use temporaries and reference-bound locals - so it
+// cannot be applied and the body was restored.
 // MiniMax R (11-16): no new form, no lower score (232): our frame is 0x28 against retail's 0x30 and the SSE registers differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7); the forced-speed and time-scale parameters are still read through pointers to themselves, which the rules only allow with a match.
 // MiniMax A (11-14): no new form, no lower score (232): the frame is 0x28 against retail's 0x30, and the three
 // components are subtracted into xmm1, xmm0 and xmm4 where retail takes them in xmm7 and xmm3.
@@ -1350,6 +1357,11 @@ extern vector3f *g_4687ac;
 // MiniMax A (11-12): no new form, no lower score (163): our frame is still 0x48 against retail 0x34, and the last argument of the 0x1697c0 call rides in ebp here and in edx in retail, so the pushed arguments and the returned point slot differ; that callee lives in src/bipeds.cpp, which this lane may not edit, so its register convention cannot be moved from here. BLOCKED-BY 0x1697c0.
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax B (11-19): no new form kept, no lower score (163): our frame is still 0x48 against retail's 0x34 and the three ray
+// queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040. The permuter ran 112 tries in
+// 1233 s (--fast --anneal --jobs 1) and its best was 159 in both the reduced and the full image, but that variant swaps the
+// ignore-object and ignore-unit arguments of the first function_1697c0 query and reads the radius through a word pointer,
+// so it changes behaviour; it is dropped and the body stands.
 // MiniMax R (11-16): no new form, no lower score (163): our frame is 0x48 against retail's 0x34; retail keeps the definition in EBP and builds the query arguments in the outgoing area, while this build spills the definition to the frame and holds both endpoint pairs; using one endpoint pair for the opposite query gives 286, a named negative radius gives 184, and moving the opposite pair after the first call with one shared pair gives 220.
 // MiniMax A (11-14): no new form, no lower score (163): the frame is 0x48 against retail's 0x34, so the local homes do
 // not fit retail's shape, and the model entry and the collision point are taken in the other order afterwards.
@@ -3153,6 +3165,10 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
+// MiniMax B (11-19): no new form tried this round, no lower score (1196): our frame is 0x220 against retail's 0x218,
+// so every later offset is shifted, and the velocity and request homes and the material lookup's convention still
+// differ behind that frame; this round's classification of the differing pairs shows they are structural (globals and
+// register homes) and not stack displacements alone.
 // MiniMax R (11-16): no new form, no lower score (1196): our frame is 0x220 against retail's 0x218, so every later offset is shifted, and the velocity and request homes and the material lookup's convention still differ behind that frame.
 // MiniMax A (11-14): no new form, no lower score (1196): the frame is 0x220 against retail's 0x218, this build pushes
 // ebp where retail keeps the state in esi, and the tag's home is at esp+0x228 where retail has it at esp+0x220, so

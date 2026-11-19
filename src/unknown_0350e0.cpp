@@ -3445,6 +3445,14 @@ s_cached_input_list g_5234e8[4];
 // MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
+// MiniMax B (11-19): no new form kept, no lower score (113 on the full image, 146 on the reduced one):
+// the call to 0x31590 still takes the index in edi where retail keeps it in ebx - that callee is matched, so its
+// argument register preference is fixed - and the frame is still 0x9c against retail's 0xa0, where retail spills the
+// input list and reloads it at the loop top and keeps the total on the stack with the cursor in ebp and ours holds
+// the total in ebp. Measured in both images, because the reduced one is unfaithful here (it does not hoist the
+// three float constants into xmm5-xmm7 as the full build does): retail's `!(depth >= 0.0f)` clamp gives 147 against
+// 146 on the reduced image (a rise) and 111 against 113 on the full one (a gain of two, below the keep bar), so
+// the spelling is dropped and the body stands.
 // MiniMax S (11-17): no new form, no lower score (113): the call to 0x31590 still takes the index in edi where
 // retail keeps it in ebx, and the frame is still 0x9c against retail's 0xa0 - retail spills the input list and
 // reloads it at the loop top and keeps the total on the stack with the cursor in ebp, where ours holds the total
@@ -6194,6 +6202,10 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
     return NONE;
 }
 
+// MiniMax B (11-19): no new form tried this round, no lower score (47): the 0x494b0 call's arguments are still set
+// up ecx-then-eax where retail sets eax-then-ecx, the entry's radius still goes to edx where retail uses eax, and
+// the three group fields are still loaded into eax and ecx where retail uses ecx and edx; the callee's own
+// convention is in another file: BLOCKED-BY 0x494b0 (and by 0x44370's inlining, as in the passes below).
 // MiniMax C (11-14): no new form, no lower score (47): the 0x494b0 call's arguments are still set up
 // ecx-then-eax where retail sets eax-then-ecx, the entry's radius still goes to edx where retail uses eax,
 // and the three group fields are still loaded into eax and ecx where retail uses ecx and edx.
@@ -6377,6 +6389,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 
 #include "selected_source_pass.h"
 
+// MiniMax B (11-19): no new form tried this round, no lower score (111): the pass helper's late `enabled` store and
+// 0x14b60's first argument (retail passes it in eax) still differ; that call's convention belongs to the callee's own
+// file: BLOCKED-BY 0x14b60.
 // MiniMax C (11-14): no new form, no lower score (111): the pass helper's late `enabled` store and 0x14b60's
 // first argument (retail passes it in eax) still differ.
 // score 111 (was 165): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based 2/8 gate, two
@@ -6447,6 +6462,13 @@ void __stdcall function_15720(real x, real y);
 extern byte g_4ba018;
 extern dword g_4b843c;
 
+// MiniMax B (11-19): no new form tried this round, no lower score (212): the 0x4a1e0 call still sets its arguments up
+// in this build's order (the resource index in eax, the source in ecx) where retail passes the source in eax, the
+// camera in ecx and the resource index in edx, and leaves the flags on the stack; this round read retail's 0x4a1e0
+// prologue and found that its declaration is (camera, resource_index, source, flags, ...), so the callee's convention
+// is fixed by the declaration in this file (src/unknown_0350e0.cpp, with a copy in src/unknown_03fdf0.cpp) and not by
+// the call site alone: reordering it here would break the call in src/unknown_03fdf0.cpp, so both files have to move
+// together: BLOCKED-BY 0x4a1e0.
 // MiniMax C (11-14): no new form, no lower score (212): the 0x4a1e0 call still sets its arguments up in this
 // build's order (the resource index in eax, the source in ecx) where retail passes the source in eax, the
 // camera in ecx and the resource index in edx, and leaves the flags on the stack.
@@ -6538,6 +6560,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
+// MiniMax B (11-19): no new form tried this round, no lower score (100): 0x14b60's first argument still goes on the
+// stack here where retail passes it in eax, and the jump-table bytes it shifts still differ; that argument
+// convention belongs to the callee's own file: BLOCKED-BY 0x14b60.
 // MiniMax C (11-14): no new form, no lower score (100): 0x14b60's first argument still goes on the stack here
 // where retail passes it in eax, and the jump-table bytes it shifts still differ.
 // score 100 (was 138): r136 lane 7: the shared pass helper now follows 0x44370's own body (the 2/8 gate taken by mode,
@@ -6732,6 +6757,12 @@ void function_020770();
 void __stdcall function_13870(bool finish, bool blur);
 bool function_13630();
 
+// MiniMax B (11-19): no new form kept, no lower score (269): the permuter's variants again need a flag set by one
+// test and read by the next, a swapped argument pair at the second 0x25dc0 call and a constant held in a local, and
+// the one-use `bool` form that reaches retail's 1638 bytes (206) is kept only with a byte-for-byte match; what still
+// differs is retail's branch diamond for the call's first flag, the weapon lookup's tag read through esi, the byte
+// return of 0x3ba90 stored in a stack slot and reloaded, and the 0x14b60 call's first argument in eax:
+// BLOCKED-BY include/selected_source_pass.h and by 0x14b60's stub.
 // MiniMax I (11-15, second pass): no new form, no lower score (269): taking the return of 0x3ba90 as a byte makes
 //   the body exactly retail's 1638 bytes with 436 instructions, the same count as retail, but the score falls only
 //   from 269 to 266, so the body stands. What still differs: retail stores that byte in a stack slot and reloads it
@@ -7084,6 +7115,10 @@ PRIVATE __forceinline real absolute_32350(real value)
     return value >= 0.0f ? value : 0.0f - value;
 }
 
+// MiniMax B (11-19): no new form tried this round, no lower score (437): the constant 1 that retail holds in ebx
+// through the inlined pass and the result byte that shares that pass's enabled slot both come from 0x44370 being
+// inlined with its mode table folded, and that is blocked by 0x44370 (src/unknown_01cf50.cpp); what still differs is
+// retail's smaller frame, its five epilogue copies and its ja/jbe diamond for |x| > |y|.
 // MiniMax I (11-15): no new form, no lower score (445): the constant 1 that retail holds in ebx through the
 //   inlined pass and the result byte that shares that pass's enabled slot both come from 0x44370 being inlined
 //   with its mode table folded, and that is blocked by 0x44370. What still differs: retail pushes esi/edi only

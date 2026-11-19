@@ -1001,6 +1001,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // MiniMax A (11-12): no new form, no lower score (206): the frame is still 0x1a4 against retail 0x1b4 and the entry block still pushes before it reads the flags word and negates it, where retail reads the flags first; the first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax B (11-19): no new form tried this round, no lower score (206): the frame is still 0x1a4 against retail's
+// 0x1b4, so the argument slots sit lower here, and the first 0xbadc0 use is still expanded here where retail calls it
+// out of line; that site lives in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0.
 // MiniMax C (11-15): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it; the out-of-line form of that site lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 // MiniMax B (11-12): no new form, no lower score (206): the frame is 0x1a4 against retail's 0x1b4 and the argument
 // slots sit lower here; retail reads the flag word at [esi+0xc], masks bit 1 and negates it before the pushes where this
@@ -1566,6 +1569,12 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax B (11-19): no new form tried this round, no lower score (10): the two remaining differences are the owner
+// copy's register rotation (ecx, edx, eax here, eax, ecx, edx in retail) and the flag store's schedule (this build
+// stores the finished flags at [esp+0x1c] after the pushes, retail at [esp+0x14] before `push edi`); the earlier
+// rounds' copy, cast and pointer forms and a permuter with annealing (66 tries) leave both alone. The flag chain
+// written as three ternaries and the union's own dword member for the read, for the write and for both measure 10
+// as well, so neither the copy's rotation nor the store's schedule follows from that spelling.
 // MiniMax C (11-15): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the damage record's address is built where retail stores them before `push edi`; reading the flags before the owner copy measures 17 (worse); this round the owner copy written as a memcpy of the twelve bytes, as three member assignments (52), as three member assignments through a dword cast, as three long reads and writes through a pointer to the member, and the flags stored through the union's named dword member each measure 10 (unchanged), the first three of them because this build's twelve-byte copy always takes the three chunks through ecx, edx and eax, and a permuter run with annealing (66 tries, 1230 s) found nothing under 10.
 // MiniMax G (11-14): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where
 // retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built where retail
@@ -3240,6 +3249,17 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax B (11-19): no new form kept, no lower score (5): this round tried the two early-return spellings of the
+// team test - the team test as an early return, and both tests as early returns with a braced enemy block - and both
+// compile to the same bytes and leave the same order of the two cold exits, so that order is the scheduler's and not
+// the source's; four more spellings measured the same way - the not-enemy return hoisted ahead of the enemy path (60),
+// the outer test inverted with an else (5), the range test with an else arm that reaches the enemy path twice (70) and
+// the inner damage return dropped so the two exits merge (24) - and a permuter run with annealing over the body (127
+// tries in 1206 s, no confirming build) found nothing below the five either. The aligned listing pins the whole
+// difference on the block layout: the frame (8 bytes, damage at [esp+8], the flag byte at [esp+7]), the values in both
+// cold blocks (the xmm1 copy and the stack reload) and the bool store already agree, and what is left is three branch
+// displacements plus the pair of cold return blocks in the other order (this build lays the stack reload out first,
+// retail the xmm1 copy); the file was restored to the body that scores 5.
 // MiniMax C (11-15): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload before the xmm1 copy) where retail copies first, and inverting the two exits in the source compiles to the same bytes.
 // MiniMax G (11-14): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload
 // before the xmm1 copy) where retail copies first; the no-team case as an early return, the team test as an early
@@ -5063,6 +5083,10 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax B (11-19): no new form tried this round, no lower score (4): the two remaining differences are the mask's
+// position (after `push ebp` here, before it in retail) and the tag entry's register (edx here, eax in retail), not
+// stack slots; the earlier rounds' local and cast forms and a permuter with annealing (110 tries, round 11-16) leave
+// them alone.
 // MiniMax C (11-15): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail masks it before, and the tag entry is still loaded into edx where retail reuses eax.
 // MiniMax G (11-14): no new form, no lower score (4): the tag index is still masked after `push ebp` where retail
 // masks it before, and the tag entry is still loaded into edx where retail reuses eax; a permuter run with annealing
