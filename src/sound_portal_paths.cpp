@@ -116,7 +116,8 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
-// score 296 (was 296): The 0x428 frame agrees. The starting-cluster register, table loads, validity words
+// score 287 (was 296): Advancing the required index output restores gain-based output addressing.
+// The 0x428 frame agrees. The starting-cluster register, table loads, validity words
 // and sort scratch offset differ.
 // Before the sort scope, the frame was 0x42c.
 // Tried: const portal 371; const views 371; endpoint mask before shift 371; const portal and mask 371; shared
@@ -172,6 +173,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // assignments 377 (aligned 89, a shared zero register appears); one helper with the first pin in the normal arm 243;
 // macro pins in one helper 254; the exponent as one expression 262 (1352 B). With main's 0x14b240: the test helper
 // alone 317; the long-bits decibel helper alone 323; the path entry types alone 357; all three 359 (none kept).
+// Capped bound in loop declaration 297; sorted source cursor 313; index cursor 287 (kept);
+// gain cursor 290; index and gain cursors 296; common index store 316; common index/gain 303;
+// common output stores 324. NOT kept: gain cursor reaches 1364 bytes but gains six.
+// The starting-cluster register and both table reloads still differ.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -245,7 +250,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 		long index = order[i];
 		if (valid[index >> 5] & (1 << (index & 31)))
 		{
-			indices[i] = index;
+			*indices++ = index;
 			if (gains)
 				gains[i] = index != NONE ? portal_path_gain(distances[index], bsp->sounds[index].range) : 0xc2800000;
 			if (portals)
@@ -259,7 +264,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 		{
 			if (count)
 				break;
-			indices[i] = NONE;
+			*indices++ = NONE;
 			if (gains)
 				gains[i] = 0xc2800000;
 			if (portals)

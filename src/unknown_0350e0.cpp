@@ -2150,6 +2150,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // sign at dispatch exit 392, sign at inverse tangent only 206. NOT kept: 177 and 176 recover
 // the result home and length but compute the projection before retail and raise the caller
 // 492 to 572. Other gains shorten the body. The 0x14 frame still lacks the separate result.
+// Separate perpendicular receivers 193; fixed-axis receiver scopes 193; direction-relative receiver scopes 180;
+// third-case receivers 195; displacement aggregate in both cases 266 or before the third-case perpendicular 171;
+// fixed-axis aggregates 193; reversed direction aggregate alone 257.
+// NOT kept: the 180 and 171 forms reach frame 0x18 and 812 bytes but raise the caller from 492 to 572.
+// The earlier aggregate advances both X and Y ahead of the retail interleaving.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3908,6 +3913,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // individually and combined 399/390/397/437/388/397/388. All with a separate fallback count
 // 349. NOT kept: all regress. The state, prefix and creation ordinal still use different
 // registers on the original frame.
+// Swap record shared across all four passes, isolated per gate, shared across admission, shared across
+// removal, shared through creation, or shared after paired admission 317 each. Existing swap with a value capture,
+// direct or named, 367 each. The prefix and state registers and the ordinal homes remain exchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
