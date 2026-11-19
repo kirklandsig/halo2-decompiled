@@ -800,6 +800,10 @@ extern point2f *g_468778;
 // Typed actor row after/before settings 375/413; early row base with/without early slot 408/408;
 // early absolute actor slot 375. Settings declared in the admission test, then actor first and
 // typed actor first 409/413/413. NOT kept: ties or regressions, actor/settings/prop homes remain.
+// Facing k+j before forming the direction pointer 400; separate k and j products 402;
+// actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
+// partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
+// partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

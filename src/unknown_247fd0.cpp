@@ -851,6 +851,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Word index for particle 406, child 333, gate with particle 419, gate with child 363,
 // particle with child 422, velocity with particle 428, velocity with particle and child 428,
 // and all four slots 428. NOT kept: child alone gains one at retail length and leaves the gate unchanged.
+// Named flags low byte 334; separate pool base and slot 338; narrow named flags word 338;
+// gate storage scoped to the effect arm 338; separate velocity record 338; both effect addresses 334;
+// both with a short motion-mode read 334 or one prior-position weight 334.
+// NOT kept: the effect address still folds and the gate and settings slots do not move to retail's homes.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

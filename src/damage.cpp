@@ -2978,6 +2978,10 @@ struct s_unit_event
 // the region argument's dead home), ours holds object_index in ESI and leaves EDI free, so our constant 1 goes to EDI
 // from the 0x20000 test on (`push edi`, `or [x + 0x30], edi`) where retail uses immediates there and ESI = 1 only from
 // the vehicle block to the state compare.
+// One type byte per drop/effect 420; one shifted type mask 421; shared vehicle datum 420;
+// one datum per drop/effect 479; unsigned 16-bit slot for datum reads 549; shared weapon-slot
+// lookup 420; one attachment index per notification 420; one flags read per drop 420.
+// NOT kept: no gain and the region/permutation register assignments still differ.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

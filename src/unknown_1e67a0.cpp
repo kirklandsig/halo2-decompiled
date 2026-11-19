@@ -1218,6 +1218,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // (up, old) * (new, up) 112 (1393 B), on the single-store exit 112, with the preset flag too 109 (1391 B); (new, up) *
 // (old, up) with the staged old cross, single-store exit and preset flag 109, on this body 112; the staged old cross alone
 // 112 (1389 B); staged old cross, (up, old) * (new, up) and the preset flag 109. Body unchanged.
+// Named side projections before moved-away 170, with one direction store 171, or after
+// moved-away with one direction store 133. Shared axis rotate with projections after each cross 216,
+// before moved-away 170, after moved-away 150, with one direction store 111, or with named projections
+// and one direction store 133. NOT kept: the 111 form gains three and grows to 1393 bytes.
+// The axis-memory products and side/exit schedules still differ.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
