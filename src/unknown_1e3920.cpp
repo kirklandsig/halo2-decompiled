@@ -1295,6 +1295,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Shared present/missing squad test after settings 245/245, before settings 267/267.
 // Shared signed/unsigned low-half selector before/after settings 237 each.
 // NOT kept: the tests add a materialized flag and the selector forms tie with NONE in EDI.
+// Shared direction at actor/settings/entry scope 237/237/237, aggregate direction 237,
+// component setter and shared setter 237/237, two named facing parts with separate/shared vector 237/237.
+// The EDI sentinel and the squad and query homes still differ.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

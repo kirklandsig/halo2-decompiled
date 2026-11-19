@@ -347,6 +347,9 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // On it: the scan as 0x2157e0's `while` over the getter with the capacity test after a match 114; the cached scan's
 // index declared ahead of the cached count 114; the location declared beside the iterator 114 (all same code); an
 // early `return` with `*capacity = 0` when the cache is missing 212 (600 B). Still BLOCKED-BY the build flag above.
+// Common next-unit store 135, adjacent-unit default 177, pass advanced before selection 172,
+// separate next pass 183, pre-incremented output count for disk/built-in 213/164,
+// three-pass and one-pass defaults followed by adjustments 114/114. Cache and zero registers still differ.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

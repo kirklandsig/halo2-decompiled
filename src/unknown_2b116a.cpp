@@ -5887,6 +5887,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // emission 345; other-title join decision at emission 406; unmute decision at emission 328; both mute
 // decisions at their emissions 321; join, removal and promotion decisions at emission 420; all six
 // captured-input decisions at emission 454.
+// Online bit at the join test 443, origin calculated at admission 450, staged invitation 112,
+// removal permission reused for kick 275, shared roster/rank or complete management result
+// 374/361, shared mute eligibility 283, regular-friend result reused for removal 323.
+// All regress. The friend-query and later action byte homes still differ.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

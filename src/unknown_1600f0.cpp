@@ -1210,9 +1210,9 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
-// score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
-// score 679 (P622: a one-use caption-phase local at the division gives 671, match-only, reverted): Frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
-// score 679 (was 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes,
+// the scroll-limit conversion and the initial divisor spill still differ. Earlier reduced check 678.
+// One-use caption-phase local at the division 671 (match-only, restored).
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
@@ -1548,6 +1548,9 @@ PRIVATE inline long score_string_list_1608e0()
 // to the global's element for the clamp, the store and y 740 (2840 bytes); x as `left + width / 2 - g_4b9dd2 - 0x86` 679,
 // as `left + width / 2 - (g_4b9dd2 + 0x86)` 679, the width as `long` 679 (all the same code: retail reads the window's
 // left edge twice, ours once into CX). Re-measured: height not volatile 723, fade count not volatile 707, both 755.
+// Named score-buffer member and typed receiver 679/679, typed conditional 719, native team offset 681,
+// player score record 691, native team/player records 693, early player record 687, named player fields 691.
+// The 0x798 frame and viewer in EDI remain in the retail-length forms.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
