@@ -605,6 +605,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // first view's coefficients load into registers and up.i is carried into the second view, so the statement-level
 // scale branch is what keeps our coefficient loads from crossing into the second view; retail crosses it with one
 // test per view. The camera read from a separate plain global outside its storage aggregate (diagnostic) gives the same code.
+// M3 lane 3 r263 (fast; base 221): separate view outputs (raw offsets kept) with the depth limits written in the condition 304
+// (1078 B); the limits in the condition on the in-place form 259 (1114 B); `i*i < limit` compares 221, `4.f * k * k` limits
+// 221, `0.f > k` sign tests 221 (all the same code). Diagnostic: 1..7 dead initialised locals 222/222/223/223/221/221/221.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

@@ -128,7 +128,7 @@ static inline void quaternion_transform_vector(
 // score 205 (was 205): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier fast scores were 205 with the shared initial dot and 200 with the dot written out.
 // MiniMax E (11-17): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the permuter (39 tries) found no variant below the baseline.
-// score 205 (was 205): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Earlier status line (205, was 205; merged): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier dot3f for the initial dot 205; the written-out dot 200.
 // Earlier 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
@@ -446,6 +446,11 @@ static inline void quaternion_transform_vector(
 // or forceinline 242/205/246/209/242/205/246/209. All frames remain 0x1c. Shared-root forms reach
 // retail length at 242 or 246. The half-angle and cross spills still need independent homes in
 // frame 0x24.
+// M3 lane 3 r263 (fast; base 205, frame 0x1c against 0x24): retail keeps five 4-byte cells below the quaternion and never
+// reuses its sixteen bytes after loading them, and computes s = 2w*w - 1 ahead of the identity copy. cosine_half and sine_half
+// as plain locals 267 (1297 B); the rotation declared after the half-angle pair 205 (same code); the identity copy as the first
+// statement 320 (1330 B). Diagnostics: s computed ahead of the copy (kept alive through a global store) 263 (1306 B); w2 and s
+// computed once ahead of the copy and passed to a pre-scaled transform helper 292 (1280 B, frame 0x10).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1413,6 +1418,9 @@ void function_143250(
 // 1566; named entry-27 weighted product 939; const weighted products 939;
 // two-step weighted-component consumers and weighted cubic consumers 939/939.
 // The dedicated weighted product homes and the extra frame word still differ.
+// M3 lane 3 r263 (fast; base 939; with stack offsets masked 219 of 1768 lines differ): running sums like entry 8's for entry 12's
+// six products 939, entry 36's six triples 939, entry 40's eight terms 939, entry 22's seven terms 939 (all the same code: sums
+// with constant factors already run left to right); entry 29's seven terms 1253 (10821 B).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
