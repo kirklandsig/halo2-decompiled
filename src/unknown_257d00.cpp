@@ -725,6 +725,8 @@ short hs_thread_run_if_due(long thread_index); /* unknown_209520.cpp */
    it has no thread */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// Matched in a full build with stand-in SDK headers (was 2): the thread index is read through a pointer taken
+// before the three stores, so its load is ordered after them, and the second barrier is gone.
 // @retail 0x258880
 short function_258880(long actor_index, long cs_index)
 {
@@ -751,12 +753,12 @@ short function_258880(long actor_index, long cs_index)
 			g_50242c = 0xc3e703e7;
 		}
 		g_50240c = actor_index;
+		long const *thread_index = &cs->thread_index;
 		cs->type = NONE;
 		cs->unknown28 = NONE;
 		cs->unknown2c = NONE;
 		g_502410 = cs_index;
-		_ReadWriteBarrier();
-		result = hs_thread_run_if_due(cs->thread_index);
+		result = hs_thread_run_if_due(*thread_index);
 		g_502428 = NONE;
 		_ReadWriteBarrier();
 		g_50240c = NONE;
