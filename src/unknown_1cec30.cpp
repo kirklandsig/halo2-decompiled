@@ -3683,6 +3683,11 @@ struct s_1cf531
  word field_2 : 4;
 };
 
+// MiniMax G (11-19): no new form, no lower score (2): only the corrected vector's spill slot differs (retail stores it to
+// local_13's slot at 0x30 and folds its reload into the final mulps, this build stores it to 0x40 and reloads it there);
+// the correction in place in local_13 measures 23 (the store goes to 0x30 but the reload after 0x183dc0 is a separate
+// movaps, never folded), the correction as a named hkVector4 and the correction declared earlier both give the same 2,
+// the final product's operands swapped 19, and a plain correction sharing local_13's slot grows the frame to 0x64 (94).
 // score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
 // uses the saved impulse slot at 0x30.
 // Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
