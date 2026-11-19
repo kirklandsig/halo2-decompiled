@@ -1558,6 +1558,11 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // the loop bound 1 (all the same code); the increment in the for clause with `local_0 = i + 1;` ending the body 11 (870 B);
 // a `0 < count` guard enclosing the mirror and the loop 37. Retail's +0x30 store is a spill made after allocation, so no
 // IR constant store shares the entry block; any source store of the zero there feeds the compare's `cmp eax, ebx`.
+// M3 lane 1 r126 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, all MATCH; control 1; 0x1d1160's file was on the
+// avoid list): a `vector3f const *change = &a;` local for both change-a calls 1 (same code); the count initialised to
+// 1 with the selected arm storing only the index 10; the loop's rigid-body index declared ahead of the for 1; the two
+// change vectors declared at the function's top 1; the impulse and velocity-change calls nested under one `if
+// (change_a)` 115 (857 B). Restored.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

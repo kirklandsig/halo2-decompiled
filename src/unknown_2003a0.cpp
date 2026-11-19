@@ -3097,6 +3097,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // half's definition pointer NULL at the top and assigned in an `if` 107 (578 B: the NULL test is threaded away, the
 // reload stays); the first arm's unlock test as a forceinline predicate with early `return true` 179 (594 B, the lock
 // byte is loaded and tested in a register); the threshold as `mode == 0 ? 1 : count` 50 (same code). The reload stays.
+// M3 lane 1 r126 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20, all matched; control 50, aligned one line): the else-if
+// written as `else { if (...) }` 50; the reset index declared before the pending word 50; the delay out-value declared
+// after the two words 50 (all the same code); the compute arm's delay test as `>= 1` 55 (580 B, `cmp cx, 1; jl`, the
+// reload stays); the pending arm's two assignments swapped 50; the lock test as `(flags & 1) != 1` 50 (same code). The
+// first follow-up still reloads the index.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
