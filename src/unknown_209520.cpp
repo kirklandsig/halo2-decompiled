@@ -908,6 +908,10 @@ struct s_object_list_208070
     long unknown8;
 };
 
+// Matched in a full build with stand-in SDK headers (was 21): the value pointer is passed to 0x2099f0 through a
+// reference-bound local (`kept`), as in 0x2090a0; 0x2099f0 is unchanged, so the BLOCKED-BY 0x2099f0 reading does
+// not hold here either.
+// Before:
 // score 21 (was 47): the two record pools are loaded in the opposite order, so the pointer of the
 // second pool is read before the first one's. In the initialize arm retail forms the global value
 // pointer (ebx) before reading the expression; in the retain arm it masks the list index before
@@ -946,7 +950,8 @@ void __stdcall function_208070(short function_index, long thread_index, bool ini
         long index = variable->value;
         long slot = (index & 0x8000) ? (index & 0x7fff) : (index & 0x7fff) + 0x41d;
         long *value = (long *)&((s_hs_global_value *)g_4f9380->data)[slot].value;
-        function_2099f0(thread_index, value, *(long *)((byte *)hs_expression_get(variable_index) + 8));
+        long *const &kept = value;
+        function_2099f0(thread_index, kept, *(long *)((byte *)hs_expression_get(variable_index) + 8));
     }
     else
     {

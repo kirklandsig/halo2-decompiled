@@ -2276,6 +2276,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // called after the colour reads 190. The type query through a two-caller inline helper with a named definition local
 // (the form that takes 0x177040 to 54) leaves this body at 128 (same code); that helper was not kept at review (see
 // 0x177040's note).
+// The first colour still needs its own spill and the system still needs ESI.
+// Carry the initial spawn location across the type lookup, tint, multiply and
+// colour update, assembling the spawn record after each boundary in turn.
+// Colours at the update 188/186/188/188, early colours 210/210/208/208.
+// NOT kept: the tint boundary supplies a 0x44 frame at 572 bytes, but it
+// spills the traversal cursor and retains the system in EDI.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3199,6 +3205,9 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // register arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order (0xbf600's
 // call line). Checked this round: retail never takes 0x17e670's address (no immediate or table entry holds it), and
 // its two retail callers pass its first two parameters in ECX and EDX, so its convention comes from its own body.
+// M3 lane 2 r102 (fast): baseline 23 at 1328 bytes, first difference +0x24f (0x17e670's EDX/ECX register arguments,
+// BLOCKED-BY 0x17e670). The attached sound node index passed straight in the call 23 (same code); the detached record
+// filled compression, position, velocity, location 43. Body unchanged.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3414,7 +3423,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
 // MiniMax G (11-18): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, the system and the
 // next index still take EDI and ESI the other way round, and the definition still has no spill for the per-call mode reads.
-// score 53 (was 93): m3 lane 8 r186. Frame 0x54, the system in ESI, the next index and then colour B in EDI, the type
+// score 93 (was 93): The frame is 0x4c against 0x54, system/successor use exchanged registers and the definition is unspilled.
+// Earlier score 53 (was 93): m3 lane 8 r186. Frame 0x54, the system in ESI, the next index and then colour B in EDI, the type
 // object in EBX, the tint in the effect index's home and colour A in a frame slot now agree with retail; left: the mode
 // is cached in the slot where retail spills the definition and reads the mode at each call (that form makes LTCG pass
 // both indices in registers and loses the matched caller 0x176f60). Before, 93: the frame was 0x4c versus retail 0x54,
@@ -3844,6 +3854,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Not kept at review: the inline type accessor only gives the 0x1751d0 result a name (a steering helper,
 // kept only with a match); without it the spawn record and the in-argument queries give 120 [25] (fast), so main's body
 // stays at 93. The 53 form is saved as build/r186/lead-0x177040-53-accessor.patch in lane 8's worktree.
+// System lookup at color 117, location update 112, both 127, both and type query 148, all descriptor
+// and update uses 145; location update through the held pool 124, with live mode 135, with a word
+// slot 95. The held-pool and live-mode forms recover 0x54. Every relookup changes the caller.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

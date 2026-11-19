@@ -474,6 +474,19 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // first creature is read at the call); the sample reset (memset, the three NONE stores, the flag, the call) in a
 // forceinline helper taking the actor pointer and the first creature 50 (392 bytes); the loop's object and creature
 // pointers declared at the helper's top 28 (same code); that with the creature loop as a for 28 (same code).
+// Round 214 (m3 lane 4, fast with 0x1e3b60 and 0x28f890; aligned = difflib-aligned differing instructions, 17 on
+// this body): the actor pointer declared ahead of the pool data 28 (same code); the actor index in a function-scope
+// local for the test and the pointer 30; the centre update taking the perception by reference 60; the pool data read
+// after the copy 99; a `*const` perception pointer 28; the creature walk as a `for` 28; the actor pointer started
+// from the pool data and advanced by the scaled index after the copy (`p = data; copy; p += offset;`) 90 at 390
+// bytes, aligned 6: the prologue loads (pool ECX, data EDX, origin ECX) and the whole creature loop are then
+// retail's, and the one miss is the add, in place (`add edx, eax`) where retail adds into EAX and copies to EDX,
+// which moves the mask and multiply ahead of the copy's first store; the same with the product first 90, as a typed
+// element 90, through an actor-typed pointer then a byte copy 28; the pool data in a subscript 28; the scaled index
+// named after the copy 30; the data local declared at the function's top (NULL or not, before or after the
+// perception) and assigned in the arm 28/28/28; the data local copied into the actor pointer first 28. So retail's
+// data value is loaded early in EDX but is a separate value from the actor pointer, and only the two-step form keeps
+// the load early.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

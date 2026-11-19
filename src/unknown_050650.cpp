@@ -502,7 +502,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 270 (was 299): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
+// score 270 (was 270; earlier 299): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
 // Earlier at 299: 1433 bytes, first +0x19. Frame map before the ray scale change (F = esp
@@ -942,11 +942,29 @@ struct s_collision_result_buffer_1697c0
 // the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
 // The startup zero register and random/trig transfer word still differ.
 // Attempt- or function-scope candidate with the two draws and turns in one block, inner pitch block, pitch-only block, and pitch-only block with immutable draws all score 270 (eight forms).
+// Best fraction at the pitch-axis declaration or after fallback 267/292; result at those
+// two points 327/319; attempt initialized at the axis 302. Implicit trailing axis zero 384;
+// zero-initialized axis with component stores 404, also with later best fraction 404.
+// NOT kept: the 267 form gains three at the opening length and the 1423-byte result form
+// changes the matched caller. Zero register and later transfer still differ.
 // Ray before the draws or across attempts 270/270; query record at attempt entry or across
 // attempts 270/270; query default before scale 270; scale return passed to query 270; ray copied
 // and scaled in place 354; default direction before fraction 267.
 // NOT kept: the three-point gain retains the wrong zero register and transfer word. The ray copy
 // also raises the caller's score.
+// Round 264 (m3 lane 3, fast with 0x2967b0, 0x297660 (matched) and 0x297d30 (23); a single-address fast build reads
+// 412 at 1353 B, so always measure with the same set; control 270, aligned 198, register-masked 70): 0-8 dead
+// initialised long locals at the top 270 each (same code: no symbol-count window); the pitch axis set field by field,
+// j first 306, i first 270 (same code); the collision ray written out component by component (i, j, k or j, i, k)
+// 299 each; the wrapper's trig through sinf/cosf 273 (0x297d30 145); yaw and pitch declared at function scope and
+// assigned in the loop 270 (same code). Reading: register-masked, what is left is the rotations' operand ranks
+// (retail's dot adds the i term last, ours the j term), the clear-path magnitude order (retail k, j, i; ours k, i, j)
+// and the two transfer slots holding {magnitude, draws, first sine, second cosine} in retail, the cosine set in ours.
+// The pitch-axis j product still takes a reciprocal copy instead of preloading j.
+// Paired horizontal components 270, with the axis setter 296; copied-then-negated lateral component 361.
+// Magnitude supplied to the scaling stage directly, named for the axis, named for both outputs,
+// all named, or immutable 333/333/335/335/333. NOT kept: the split magnitude enlarges the frame
+// and leaves the initial zero register and later random/trigonometric transfer different.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1035,7 +1053,12 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // first, which restores retail's case-1 block layout; the body is 1424 B against retail's 1444. Left: the two
 // flags' byte homes are still swapped against retail's (the returned flag at +0x0a, the presence byte at +0x13),
 // the two 0xcafc0 calls still sit side by side where retail keeps them apart, and the jump table sits 20 B early.
-// score 257 (was 257): retail keeps case 1's and case 2's identical 0xcafc0 blocks inline where this build
+// score 72 (was 257): every point-producing path now ends at aim_at_point, whose `if (aiming)` weapon block falls
+// into the direction-from-actor code (round 264, below), which gives retail's block layout and its two separate
+// 0xcafc0 blocks. Left: the result/point-valid byte homes are swapped, cases 1 and 2's trailing failure exits take the
+// plain exit where retail stores result = false first, and the weapon block keeps the direction pointer in EBX where
+// retail uses EDI and reloads the actor index for 0x1ffbd0.
+// Earlier at 257: retail keeps case 1's and case 2's identical 0xcafc0 blocks inline where this build
 // tail-merges them (that moves case 2's block and the direction chain's fall-through predecessor); retail's failure
 // exit stores result = false (F+2, point-valid at F+3); the weapon block keeps the direction pointer in EBX where
 // retail uses EDI and reloads the actor index. Round 209 (m3 lane 4) at the end of this note.
@@ -1453,6 +1476,24 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // local 258, both case-local pairs 258, both pairs with read-only state 258.
 // NOT kept: all tie the reduced control at 258. The player-point blocks still merge.
 // MiniMax G (11-18), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
+// Round 264 (m3 lane 3; fast with 0x297660, 0x297a50, 0x2980d0 and the callees 0x1ffe00, 0x1e1f20, which reads the
+// full build's count; control 258): the weapon block moved after the return (label order only) 258 (same code); the
+// remembered branches as `if (!aiming) 0x1e3b00(...); goto aim_at_point;` (no weapon label) 258 (same code); on it
+// case 2's non-aiming object arm `goto aim_at_point`, case 1's object arm as if/else ending `goto aim_at_point` (case
+// 6's shape) and the aim test as `if (aiming) { weapon block }` falling into the direction code 73 fast, 72 plain
+// (1436 bytes; kept: it removes the direction and weapon labels and six gotos). On 73: `point_valid = result = false`
+// 75; `result = false;` before cases 1 and 2's trailing `goto done` 38 (1440 bytes); both 36 fast, 33 in the full
+// image (aligned 9: only the weapon block's EBX/EDI is left). On 36, same code each: the weapon index and origin
+// scoped in the weapon block; the 0x1ffbd0 result assigned inside its test; `aiming && (weapon_index = ...) != NONE`;
+// the fallback as `if (result) goto output_point;`; the fallback's test after its block; the actor index for 0x1ffbd0
+// read once through its address; a local copy of the actor index for 0x1e1f20/0x1fc710; those two calls through a
+// forceinline helper returning the weapon index. The permuter cannot search this function (its reduced image reads
+// 310 on the 36 form).
+// Separate remembered input in cases 2/1/both: 309/308/343. Case-local in-place
+// remembered point in cases 2/1/both: 338/337/399. Case-local player point in
+// cases 2/1: 313/203 (preview control 258). NOT kept: the 203 form adds a one-use
+// point copy, enlarges the frame, and grows to 1464 bytes against retail's 1444.
+// The adjacent Boolean homes and shared direction tail still differ.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1514,15 +1555,14 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				function_cafc0(object_index, &point);
 			else
 				point = *(point3f *)((byte *)state + 0x30);
-			goto direction_from_actor;
+			goto aim_at_point;
 		}
 		else if (state->unknown00 != NONE)
 		{
 			function_210850((s_type_c3b527 const *)&state->unknown48, &point);
-			if (aiming)
-				goto local_254539;
-			function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
-			goto direction_from_actor;
+			if (!aiming)
+				function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
+			goto aim_at_point;
 		}
 		goto done;
 
@@ -1542,18 +1582,17 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 					function_cafc0(object_index, &point);
 				else
 					function_caf60(object_index, &point);
-				goto direction_from_actor;
 			}
-			function_1caa40(object_index, &point);
+			else
+				function_1caa40(object_index, &point);
 			goto aim_at_point;
 		}
 		else if (reference->state >= 1 && state->unknown00 != NONE)
 		{
 			function_210850((s_type_c3b527 const *)&state->unknown48, &point);
-			if (aiming)
-				goto local_254539;
-			function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
-			goto direction_from_actor;
+			if (!aiming)
+				function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
+			goto aim_at_point;
 		}
 		goto done;
 
@@ -1598,26 +1637,24 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	}
 
 aim_at_point:
-	if (!aiming)
-		goto direction_from_actor;
-local_254539:
-	weapon_index = function_1e1f20(actor_index);
-	if (weapon_index != NONE)
+	if (aiming)
 	{
-		function_1fc710(actor_index, &origin);
-		result = function_1ffbd0(actor_index, weapon_index, 0, &origin, &point, false, direction,
-			NULL, NULL, NULL, NULL);
-		if (!result)
+		weapon_index = function_1e1f20(actor_index);
+		if (weapon_index != NONE)
 		{
-			vector3d_from_points3d(&origin, &point, direction);
-			result = function_30bf0(direction) > 0.f;
+			function_1fc710(actor_index, &origin);
+			result = function_1ffbd0(actor_index, weapon_index, 0, &origin, &point, false, direction,
+				NULL, NULL, NULL, NULL);
 			if (!result)
-				goto done;
+			{
+				vector3d_from_points3d(&origin, &point, direction);
+				result = function_30bf0(direction) > 0.f;
+				if (!result)
+					goto done;
+			}
+			goto output_point;
 		}
-		goto output_point;
 	}
-
-direction_from_actor:
 	vector3d_from_points3d(&actor->position, &point, direction);
 normalize_direction:
 	result = function_30bf0(direction) > 0.f;
@@ -2097,6 +2134,11 @@ struct s_actor_looking_structure_view
 // the aggregate initializer `{ forward.i, forward.j, 0 }` 199 (927 B); the direction array declared at the function top
 // 23; the counter declared ahead of its loop 23; the angle as `0.785398185f * i` 23; forward declared, then assigned 23
 // (the 23s the same code).
+// M3 lane 12 r143 (fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x2967b0; control 23): round 91's lead re-measured
+// on today's 0x296e60 (helper dot `((j + i) + k)`, score `(i + k) + j`) 13 with 0x296e60 270 -> 339; the score alone
+// parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's
+// projection staged (`projection = dot; projection *= 1 - cos;`) 141 (927 B; 0x296e60 282); the helper's product written
+// `(1 - cos) * dot` 23 (same code); the fraction as a ternary after the trace 144 (re-measure of round 27's form).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

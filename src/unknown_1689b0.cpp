@@ -2047,6 +2047,19 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // accumulated in a double i, k, j 634 (2902 B: retail's order, but the frame grows); the vertex clamp as `count =
 // point_count; if (count > 8) count = 8;` 552; the final averages written inverse first 551 (same code); the ray arms as
 // `if (use_normal) { normal } else { edge }` alone 547 (2868 B, an arm swap under the keep bar).
+// M3 lane 4 r215 (fast, control 551; aligned/masked = difflib-aligned exact/register-masked counts, control 363/139): the
+// edge loop from 0 with `long next_vertex = (vertex + 1) % prism->point_count;` named at its top 619 (2904 B, frame
+// 0xb968, aligned 361, masked 115: the clamp, the early inc/idiv and the loop tail are then retail's shape); with
+// `radius * radius` written in the test (no radius_squared local) 601 (2888 B, aligned 344, masked 114: the product is
+// computed after the guard and `push ebx` as retail; the frame keeps one compiler temporary too many). On that form:
+// the modulo inline in the second reconstruction 600 (frame 0xb964 as retail, but aligned 423, masked 137);
+// radius_squared named in the prism loop 617 (2900 B); first/second declared at prism scope 601 (same code).
+// Lead: the 601 form is the closest structure yet; what is left is one frame temporary and the cursor/point EBX/EBP swap.
+// Separate count/clearance assignments in edge-first or face-first pairs 550/551,
+// edge-first with declarations before the copies or face declarations first 550/550,
+// paired initialization beside each sum or counts beside sums with clearances last 550/551,
+// prism index before the square or square in the admitted loop 551/548.
+// NOT kept: the count and clearance homes remain, and the three-point gain is below the threshold.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

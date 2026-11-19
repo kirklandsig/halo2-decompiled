@@ -455,6 +455,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // MiniMax A (11-18): no new form, no lower score (77); the merge test moved out of the walk block (79), into the flag block (78), the merge test alone (152) and the record pointer in the flag block (176) all score worse, so the body stands; what still differs is that our compiler folds the redundant compare retail kept and the join copies the index in a register where retail reloads it from its stack slot.
 // Eviction scan with separate first/absolute/next slots and all pairings 77 each;
 // all three together, also with a named next-search start, 77 each. Cache-hit and return edges remain.
+// One pool pointer 77; one data base 150; both 150. Exhaustion tested against the terminal cursor 79,
+// with one pool pointer 79, with one data base 130, with both 130; cursor test to the common return 87.
+// The cache hit still enters the shared test and the exhausted walk still lacks retail's trailing ESI return.
 // First-candidate exhaustion returning allocation result or stamped handle 142/142,
 // sole exit from first candidate 109, split initialization with first-candidate exit 143,
 // initialize before allocation 148, raw slot exit with early return or sole exit 156/171,
@@ -475,6 +478,18 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // retail returns ESI (`mov eax, esi`) at the walk and the frame copy at the miss arm's close; the same with the walk's
 // own return dropped 145 (508 B); with the miss arm written first (negated hit test) 138 (same code). A pointer to
 // result written in the walk (diagnostic) 138 (same code).
+// M3 lane 6 r195 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77): the allocation and the eviction walk as one
+// forceinline helper returning the index, the caller closing with `if (result == NONE) return result; initialize =
+// true;` 110 (522 B), with `if (result != NONE) initialize = true;` 115 (506 B), with `initialize = true;` 102 (493 B); the
+// walk iterating in cache_index itself 77 (same code), that with `if (result != NONE) initialize = true;` closing the
+// else arm 85 (504 B, round 99's code). Body unchanged.
+// M3 lane 7 r183 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77): lane 11 r104's merge (`!initialize || result
+// != NONE`) re-measured 83 (508 B): from the found test to the end only the walk's NONE return differs, and it differs
+// because ours folds the returned value to the known -1 (`or eax, esi` with ESI as the -1 source) where retail returns
+// ESI unfolded from a trailing epilogue. Tried: the walk exit compared against the allocation's index (`if (result ==
+// cache_index) return result;`) 77 (same code), on the 83 merge 83 (same code: still folded); the exit returning
+// cache_index on that merge 83 (same code); diagnostic, reverted: the walk as a forced-inline function returning its pick,
+// on the merge, 169 (524 B); the merge as `initialize ? result != NONE : true` 81 (522 B). Body unchanged.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
