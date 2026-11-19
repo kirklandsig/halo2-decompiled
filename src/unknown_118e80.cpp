@@ -1460,6 +1460,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // helper with a bool force formal 41 (same code), without the member store 93, with a long force formal 41. All keep
 // the flag in AL for a `movzx`; the stack byte and dword push still need 0x1c4b00's bool formal (four of its
 // declarations sit in other lanes' files this round). Body unchanged.
+// M3 lane 4 r220 (fast with 0x119bc0 and 0x1c4b00, control 14): diagnostic, restored: 0x1c4b00's last parameter `bool` in
+// its definition and all 14 declarations (seven of those files are other lanes' this round) 90 with the member store
+// (1038 bytes), 40 without it (retail's stack byte and dword push; the copy still loads the object before the source's i,
+// 0x10b010 19 in the reduced image). On the kept form: the result as `bool const` 14; a named pointer to the move
+// output's velocity for the copy and the call 14; memcpy for the copy 14 (same code each); the result assigned straight
+// to the member and the member passed as the force 43 (the older form). Still BLOCKED-BY 0x1c4b00 (declarations),
+// 0x1ec690 (its draft is disabled) and 0x1e55d0 (another lane's file this round).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

@@ -858,6 +858,21 @@ struct s_item_collision_bsp
 // Spin k finished in each branch, carried to the join, published with angular velocity, or finished with a
 // shared factor. Real factors 233/233/233/197; double factors 238/250/250/238. NOT kept: the shared real
 // factor recovers spin, axis and speed homes and the x87 scale at 197, but raises the score overall.
+// Round 640: contact point accumulates normal displacement 199; updates a marker copy 267;
+// shared scale and point setter 199; indexed projection 190; two coordinate passes 492;
+// complete point initializer 190; named displacement components 194; scaled vector plus
+// indexed marker sum 199. Transformed plane and contact point homes still differ.
+// Marker X and Z kept for both calculations, Z declared first 190.
+// Marker X and Z kept for both calculations, X declared first 190.
+// Marker X Y and Z captured with the distance terms' Z Y X order 190.
+// Marker X Y and Z captured in coordinate order 190.
+// Marker X and Z kept as mutable scalar values 190.
+// Complete marker point value supplies both calculations 261.
+// Complete marker coordinates initialized at the join 190.
+// Marker Z at the first distance sum and marker X at its contribution 192.
+// NOT kept: six marker coordinate forms tie at 190. The complete point copy grows the body
+// and the split distance expression loses two points. The transformed normal and contact
+// position still use different XMM homes, and the spin scale still spills.
 // Axis-wide field passes 194, Up scale helper with axis-wide field additions 194, Left and forward multiply-add
 // helpers 194, Shared scale and multiply-add helpers for all axes 194, Indexed normal with a complete component
 // expression 196, Indexed normal with a field accumulator 192, Separate scaled left vector before the first sum

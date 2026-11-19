@@ -1911,6 +1911,18 @@ static inline bool unit_dual_wielding(long unit_index)
 // 0x1058b0(weapon, 10, immediate) 117 (503 B: LTCG expands it with retail's tail, 0x101f20 and 0xcd660 stay calls). On
 // this body, weapon_get_102e10 at lookups 1-3 15 (they take retail's offset-first order, lookup 4 flips). The permuter
 // cannot search the 0xc9d00 form (its reduced image scores it 80, the full image 27).
+// M3 lane 9 r143 (fast, plain where noted; a reduced-link LTCG screen of this file reproduced the fast build): the 0xc9d00
+// call in place of the `volatile` block re-measured 27; on it `bool result = false;` declared first in the body 4 (every
+// register then retail's; left: lookups 1, 2, 3 and the put-away lookup data-first, retail offset-first); with
+// weapon_get_102e10 at the first lookup as well 2 (plain 2: lookups 1-3 take retail's order, the animation-test lookup
+// flips with them, the put-away lookup stays data-first). Not kept: the declaration move carries the gain (without it 27).
+// On the 2 form, no change: the getter at every other subset of lookups (31), the holder and dual-wield helpers with a
+// pool copy, the getter, a result flag or no NONE test, the tail through the holder helper, the put-away pointer reusing
+// `current`, the animation test named, through a pool copy or through the getter; dead initialised locals 1-16 change
+// nothing on either form. Diagnostics: only a named `weapon_index & 0xffff` local at the first lookup flips the order
+// (the getter's local order is irrelevant); 0xc9d00 written with UNIT_GET at both uses or a header-array local in place
+// of its pool copy (scratch copies of its file, which is not ours this round) gives the put-away lookup retail's
+// offset-first order but drops retail's `mov eax, ecx` copy (13). The permuter cannot search this form (reduced 48, full 2).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -2961,6 +2973,11 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // two pointers spilled, and retail's switch is a comparison tree whose root branches jle to the less-or-equal
 // side where this build's branches jg and tests the two activity names before the switch; the single
 // 27-case switch with retail's pivots measures 412.
+// MiniMax A (11-19): score 389 (was 389): no new form, no lower score; the body stands as the earlier rounds
+// left it, with retail opening on one four-byte slot and taking the table entry into EBP where this build
+// reserves eight bytes and keeps the weapon index in EBP with two pointers spilled, and with the two activity
+// names tested before the switch where retail has them as cases of a tree whose root branches jle to the
+// less-or-equal side.
 // score 389 (was 389): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
 // tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
 // all 27 selectors, every field offset (0x180/0x184/0x18c/0x175/0x16c/0x16e/0x17e/0x248, barrels 0x1a4+0x34*i,
@@ -3339,6 +3356,11 @@ struct s_ammo_conversion_entry
 // transfer's two accumulators as long 214, the goto body as it stands 206, `int` for the loop index 278 (785 bytes), the
 // transfer's accumulators as int 191 and the acquisition flag with retail's polarity 211; a 300 s permuter run found
 // nothing below 190, and the frame, the length and every other function in this file are unchanged.
+// MiniMax A (11-19): score 190 (was 190): no new form, no lower score; retail opens with `push ebp` and keeps the
+// definition pointer in EBP, without a frame pointer, where this build pushes esi and edi, keeps EBP as the frame
+// pointer and leaves the definition pointer in EDI, and retail reads the definition table after the weapon lookup
+// where this build reads it before, so the saved-register set and the destination home differ before the first
+// case body; the frame size and the length still agree.
 // score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
@@ -3660,7 +3682,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // MiniMax H (11-18): score 643 (was 643): no new form, no lower score; the frame stays 0x1c64 against retail's
 // 0x1c60 and the weapon, barrel, definition and holder still live in other homes, so the prologue and the
 // barrel walk's register allocation differ; the plain image reads 607 for the kept body.
-// score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
+// Earlier score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
 // below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus
 // 0x1c60; weapon/barrel and scalar homes remain.
@@ -3769,6 +3791,17 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // everywhere, so the positional count comes from drift: retail keeps the weapon index in EBX up to the first
 // fire call, the magazine definition in EBX across the 0x106030/0xd1210 calls and the barrel offset in EDI.
 // Not kept: no count below 607. Original body restored.
+// Typed unit player fields 643, ordinary holder query 640, inventory-selected holder with
+// typed player fields 640, typed header table base 643, magazine record references 643,
+// magazine tag resolved at notification 601, indexed barrel tag fields 836, named replacement
+// barrel field 643. Reduced control 643. NOT kept: late magazine lookup reaches retail length
+// with frame 0x1c58 and delays an early retail lookup. The ordinary holder forms shorten the body.
+// MiniMax B (11-19): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in EBX and
+// the barrel's offset in EDI, spills the definition to [esp+0x14] and the unit index to [esp+0x24], where this build
+// gives EBX the barrel's offset, EDI the definition, [esp+0x14] the unit index and [esp+0x28] the definition, and
+// the full build still uses a 0x1c64 frame against retail's 0x1c60; a local copy of the weapon index, a computed
+// barrel offset, the definition declared after the barrel pointers and a non-volatile unit index all score the same
+// or more, and the fast check warns that this function builds differently in the reduced image.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

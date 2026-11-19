@@ -73,6 +73,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
+// where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
+// first, stored after the dot) and colours the cross terms differently.
 // MiniMax B (11-12): no new form, no lower score (173); retail's rotation takes the second cross with the
 // rotated vector on the left (its .x is the up vector's .k times the sine) and subtracts that from the sum,
 // so the helper's cross the other way round and subtracted is the same value: 187. Retail keeps one of the
@@ -87,9 +90,6 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // register colouring and the stack layout differ: 205 (1212 bytes, frame 0x118, the first difference at the
 // zero register and then at the heading's homes). NOT kept: the score rises from 173; the original helper
 // and body restored.
-// score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
-// where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
-// first, stored after the dot) and colours the cross terms differently.
 // M3 lane 11 r113 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): own `{}` blocks (slot sharing) around
 // the flag-2 arm's axis cross and rotation 173, around the creation tail 173, around the flag-4 arm's transform 173, around
 // the heading copy plus rotation 173, axis and tail blocks together 173 (all the same code; the frame stays 0x11c).
@@ -605,6 +605,20 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // kept: The heading cross with two scaled adds restores the frame, request and transform homes at 164 and 1209
 // bytes, first +0xa9. Its gain depends on three scaled-heading stores where retail has two cross spills with the
 // sine between them. Sine-first and dot-first follow-ups restore the extra frame word and regress to 226.
+// M3 lane 10 r125 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): the rotation helper's angle as `real
+// const &` 173 (same code); the projection as a reference-bound two-step (`real &projection = local_2; projection *= 1.0f -
+// local_1;`) 230; the heading declared at function scope above the creation data 173 (same code); the outer cross moved
+// into the helper (helper takes the up vector, axis a helper local) 226; the helper `static inline` instead of forceinline
+// 173 (same code). Body unchanged.
+// Planar vector/point/scalar capture with late direction promotion 306/306/307,
+// or the shared vector setter 306. Promote through the forward record 246, with
+// the outer cross reading that record 279. Early vector/scalar promotion 311/313.
+// NOT kept: all enlarge and regress. The opening frame and cross homes remain.
+// World-up pointer/reference at the cross 173/173, pointer before forward
+// publication 180. Position reference at the offsets, before forward
+// publication or with saved up pointer 173/173/173. Complete forward/up
+// displacement before publication 227/239. NOT kept: the 0x11c frame
+// persists for the pointer forms and both displacement forms regress.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

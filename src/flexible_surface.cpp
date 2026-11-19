@@ -367,6 +367,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 }
 
 // score 130 (was 130): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
+// M3 lane 2 r107 (fast with 0x118140, which stays MATCH; fast = plain 130): the convention is already retail's (index in EAX,
+// wind in EBX, plain ret). Retail loads the random-state pointer into ESI right after `push esi` and finishes the seed
+// update before the fimul; its sine and the fraction's integer take separate cells (ours share one). sine and cosine
+// named before the axis draw 152 (880 B); the time product before the definition lookup 153 (887 B); a `seed` pointer
+// local for the three draws, declared first or after the definition 174/174 (880 B; ESI still loaded after the time
+// load). Diagnostic only: 1..7 dead initialised locals 130/152/154/154/154/154/138 (head schedule unchanged).
 // 0x2551f0 inlines (include/axis_rotation.h), which loads the global's i, j and k up front and reloads j, where retail loads
 // j and k early, i late, and spills two cross terms; retail also loads the random-state pointer before the time product.
 // MiniMax E (11-15): no new form, no lower score (117, was 117): the rotation written out with scalar cross and dot
@@ -874,6 +880,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 130/130/130. Named subtracted product, both products, difference with named subtrahend, and subtrahend
 // scaled from the axis or direction 154/154/154/154/154. NOT kept: the frame is still 0x1c and both
 // matched shared rotation callers differ in every preview. The opening shared helper and body are restored.
+// M3 lane 14 r115 (fast with 0x118140, 0x117c80, 0x30bf0, 0x1462e0 and 0x2551f0, all matched each time; control 130):
+// 0x146320's rotation shape (dot summed k, j, i, cross j and k named, cross i inside the i row) as a file-local inline
+// taking the axis as three scalars, with both table draws through random_unit_vector 162 (880 bytes), with sine and
+// cosine named before the draw 163, with only the axis draw through it 162, with both draws through random_index 162;
+// the same shape taking the axis by pointer 147 (884 bytes), with random_index draws 147; re-measured: both draws
+// through random_unit_vector with the shared helper 125 (888 bytes, under the bar alone).
 // Named cosine complement before direction input 152, Named cosine complement after direction input 152, Named
 // cosine complement after unweighted dot 152, Weighted projection after first cross difference 152, Weighted
 // projection after second cross difference 151, Weighted projection after all cross differences 156, Projection
@@ -996,6 +1008,17 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
+// 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
+// tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.
+// M3 lane 2 r107 (fast with 0x117060 and 0x117100, both MATCH; fast = plain 322): with registers and numbers masked
+// 243 of 274 lines still differ, nearly all after the 0x1ccb0/0x1cd90 point: retail inlines those two (0x1c6b0 then
+// 0x1c710 twice) and calls the vertex-data setters out of line (0x3fb2d0, 0x3faae0), where ours calls the two helpers
+// and expands the setters inline, so the inlining budget, not a local form, decides the body. Lead only (a flag
+// question, not a source form): retail calls 0x1ccb0 from 0x47930, 0x52040 and 0x23ea80 but expands it here and in
+// 0x19f680. Body under `if (function_117100(index))` 322 (same code); the lighting expression passed straight to
+// 0x1bd50 (no local) 322 (same code); the material index as `= tag_index; if (== NONE) ...` 383; the cull state set
+// before the sign is formed 332 (1302 B); the definition looked up just before the side loop 416 (1315 B).
 // MiniMax I (11-17): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against this build's three stack arguments, so the scans' stack homes, the side loop and the outer vertex calls still differ; the first difference is at +0x13, where the jump into the first call's failure path lands at a different offset.
 // MiniMax I (11-16): no new form, no lower score (322): the first difference is the first call's argument setup - retail loads
 // the field into ESI, pushes it and keeps the header pointer in a stack slot, this build loads it into ECX and
@@ -1015,9 +1038,6 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // MiniMax G (11-18): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line and
 // passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against this build's three stack arguments; both callees sit in files this
 // lane may not edit, so the frame 0x2c, the attribute scans, the side loop and the outer vertex calls stand as they are.
-// score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
-// 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
-// tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.
 // Earlier: frame 0x44 versus 0x2c; attribute scans and D3D call expansion differ.
 // Integer orientation 529; null-first lighting 522; per-scan results 530; real type
 // cursors 574; existing format/state helpers 473 (kept, full); cursors/orientation

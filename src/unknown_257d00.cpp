@@ -2498,6 +2498,16 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // `return 1` / `return 0` exits and no result local 639 (2368 B, masked 75); with case 18's references in two named locals
 // checked one at a time and case 6's flag byte named for two stores 624 (masked 54; case 6 still folds to `or 0x69`); case
 // 18's named references alone 528 (2424 B, swapped); case 13 through the shared exit 478 (2400 B, masked 84).
+// M3 lane 5 r204 (fast with 0x110ab0; control 433; all restored): case 6's second OR through a signed char view 433
+// (same code: still `or 0x69`); case 4 reading the state's facing at each use 611 (2400 B, re-measured on this base:
+// actor EDI, state EBX); on it one, two or three unused locals in the case 611 each (same code: the exchange is not a
+// symbol-count tie), the case 2 vector written as three member copies from the actor 611; `default:` joined to case
+// 13's `return 1` 613 (2416 B).
+// score 433 (was 433):
+// Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
+// busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
+// fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
+// The dispatch and timer paths still reach the late completion block.
 // Selector case order 0-2-1 433, Selector case order 1-0-2 433, Selector case order 1-2-0 433, Selector case
 // order 2-0-1 433, Selector case order 2-1-0 433, Selector acknowledgement exits directly 477, Reverse selector
 // order with direct acknowledgement exit 477, Unsupported selector exits as completed 433. NOT kept: The selector

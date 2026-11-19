@@ -801,6 +801,23 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // candidate/duplicate search 144, lowest/candidate/duplicate row 144, lowest/candidate/duplicate search 144,
 // shared long lowest/candidate ordinal 651. NOT kept: The seven shared short scan ordinals tie without moving any
 // stack home. The shared long ordinal lengthens the function to 1095 bytes.
+// M3 lane 4 r219 (fast with 0x239d50 and 0x239b80, both MATCH each time; control 144): the count read once through
+// `short const *const count_home = &count;` for the classifier, a bool flag and the compaction through memcpy (retail
+// calls the CRT memcpy) 256 (767 B); count_home with memcpy 145; count_home alone 144 (same code). One hull counter
+// `while ((short)hull_count < count)` with `indices[(short)hull_count] = current; hull_count++;`, the bool flag and the
+// heading set before the lowest scan, memcpy and main's gotos 260 (757 B): frame 0x14, the hull count at +0x10, the flag
+// byte in the indices home and the early heading are retail's; left: the pass loop is rotated (retail tests at its head,
+// reached by a jmp, with the closure's back edges going there), and the candidate scan loses its `0 < count` guard, so our
+// compiler knows count > 0 inside the pass loop while retail re-reads the count from its home every time. On that 260
+// form: the pass bound or the classifier argument through a forceinline `short const &` accessor 260/260 (folds, the
+// count stays in EBX); `for (;;)` with the bound test first 260 (rotated the same way).
+// M3 lane 12 r148 (fast with 0x239d50 and 0x239b80, both MATCH each time; main 144). On lane 1 r103's completion-flag body
+// (match-only; re-measured 116, frame 0x14, flag byte and hull-count home as retail): the hull append through a forced-inline
+// helper taking the hull count by pointer 116 (same code: the pointer is scalar-replaced); the compaction through memcpy
+// 217 (the copy is expanded inline as `rep movs`; it gives retail's prologue to +0x1d, points in ESI and count in EBX, but
+// retail calls the CRT's memmove at 0x320890, as matched 0x18e470 does); `if (classifier != 2) return 0;` with the hull
+// count declared after it 237; `if (done) return hull_count;` ahead of the compaction in place of `if (!done)` 169 (763 B);
+// the heading declared and zeroed at function scope before the classifier call 121. Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1364,6 +1381,12 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // form: `i = 0` stored after the guard's branch (retail before it), dy/dx/denominator in XMM3/XMM1/XMM0 against
 // retail's XMM0/XMM3/XMM1 with dy first in both its products, retail's zero-fraction arm sitting between the two
 // clamp tests, and count hoisted into ECX for `result = count` where retail reads its home.
+// M3 lane 12 r148 (fast with 0x239e50/0x239d50/0x239b80; control 129). Reading: retail keeps both side bytes in memory
+// (inside +0xc, previous +0xd), so the count it loads into ECX at the alias join is still there for the loop guard; ours
+// keeps the previous side in CL and so reads the count twice. Tried: the previous side computed straight from the
+// distance expression (no previous_distance local) 133; the side test as `previous_inside != inside` 129; the previous
+// side updated before the previous point at the loop end 129; `inside` declared once ahead of the loop 129; the count
+// named once as `short total = count;` for every use (0x23a160's spelling) 129 (same code each). Body unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

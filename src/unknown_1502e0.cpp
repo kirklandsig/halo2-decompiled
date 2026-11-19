@@ -1242,6 +1242,14 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // (`hand ? 0x13 : 9`) 60 (148 B); a forceinline hand-weapon helper taking the unit index and hand (lookup, slot and
 // NONE-default weapon inside) 17 (all the same code). Re-measured: the getter-reload lead 5 (player address still
 // `mov edx, [edx + 0x44] ... add edx, eax`).
+// M3 lane 6 r201 (fast with 0x152bf0; control 17), forms that might keep the lookup's unit-index read apart from the
+// test's until after allocation: the hand through an inline routine writing an out-parameter 17; an object getter that
+// masks its own index parameter (`object_index &= 0xffff;`) 17; the slot and weapon through an inline routine writing a
+// weapon out-parameter 17; the lookup's index through an inline routine writing an out-parameter 17; the index as an
+// unsigned 16-bit bit-field view of the field 17, a signed one 38; as a truncated 64-bit read 17; as a one-member
+// aggregate copied from the field 17; as a `memcpy` of the field into a local 17 (every 17 the same code: each is
+// folded into the plain read before allocation); the unit through a getter returning NULL for NONE with the block
+// under `if (unit)` 52 (144 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1552,6 +1560,15 @@ void function_150820(dword *bits, bool local_only)
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
+// Shared post-query unit-index refresh, with mode first, with an index reused from before the
+// query (with or without mode first), with two const snapshots, and with the mode test first:
+// six at 49. Separate lookup with shared refresh 75, also read through the getter at the
+// query 40. NOT kept: the latter gains three, combines the player add and move into LEA,
+// and mixes player lookups. The 210-byte starting body and its saved-register exchange remain.
+// Full-width unsigned remainder at the object-header ordinal, extraction/parameter domain,
+// typed subscript/byte stride and direct/named ordinal: 43 each. The player and hand
+// still occupy EDI and ESI instead of ESI and EDI.
+// NOT kept: the shared ordinal forms also take the matched pickup caller to 277 in preview.
 // Round 264 (m3 lane 3, fast with 0x151b80 17, 0x14f820, 0x151940 and the callees; control 43): the cd4e0 arm as
 // `else if (function_cd4e0(...)) result = true;` 47; `result = true;` ahead of the a8f80 call 71 (215 bytes); the mode
 // test inverted with the cd4e0 arm first 72 (219 bytes); the hand as `bool` 89 (197 bytes); the hand set to 0 and then
