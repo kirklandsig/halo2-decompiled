@@ -310,7 +310,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 315 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
 // positional/aligned; on main 304/232): lane 13's r111 held form re-applied (lane 2's rebuilt patch) 15/16 at 1363 B,
 // the twin 244/17. Only the cluster pointer (ours EBX, retail EBP) and the widened portal index (ours EBP, retail
@@ -441,6 +441,13 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Signed fill-count scratch 350; scoped unsigned sort-count scratch 375; row ordinal scratch 371;
 // output bound scratch 311; two bounds at the latch 361. NOT kept: the 311 forms
 // recover 0x428 but gain four and leave the BSP table spills.
+// M3 lane 16 r146 (one-file LTCG harness on lane 13's held r111 form with the callee files, positional/aligned; the held
+// form reproduces at 15/16, 1363 B, 0x18d730 244/17): only the cluster pointer in EBX and the widened portal index in EBP
+// are left. No flip from: the cluster as `bsp->clusters + cluster_index` 15/16; the nearest test as `distance <=
+// nearest_distance` 15/16; both range tests with their operands reversed 15/16; the seed's set-bit index as a short
+// 15/16; the other cluster index as a short 15/16; the portal index cast to short before the mask 19/20. Diagnostics:
+// the loop's cluster compare through `bsp->clusters[cluster_index]` 371 (1393 B); a portal-index test added 351 (1380 B).
+// Main's body unchanged at 305.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

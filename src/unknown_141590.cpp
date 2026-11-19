@@ -484,6 +484,11 @@ static inline void quaternion_transform_vector(
 // (1317 B)/264/259, the low ones at frame 0x1c with more aligned differences (179-181). The sine branch's cross
 // through cross3f 208; the axis scale passed straight to vector3f_scale 201 (same code); the clamp as one conditional
 // expression 301 (1318 B). Body unchanged.
+// M3 lane 16 r146 (fast with 0x11d000, 0x143120 and 0x141710, all matched each time): the sine as `2.f * (sine_half *
+// cosine_half)` 244 (1308 B); the sine test as `0.f != sine` 201 (same code); the scalar part stored before the axis cross
+// 287 (1327 B); the clamp testing `cosine` instead of `dot` 201 (same code); the dot assigned to `cosine` directly (no
+// separate dot local) 207 (1321 B). Retail's 2.0 goes to XMM6 and the cosine half to XMM5 (ours XMM5 and XMM4); the repair
+// crosses' product sides differ as before. Body unchanged.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
