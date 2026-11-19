@@ -741,6 +741,12 @@ struct s_object_damage_view
 // through the primary award 353.
 // NOT kept: the 324 form splits one credited-player value into two locals. It recovers the
 // damage-code slot but still exchanges the credited-player and victim-team slots.
+// M3 lane 3 r267 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880 and 0xd9640; base 353, aligned 179, 60 with registers and
+// stack offsets masked): the consideration flag as `reported_player == NONE || !function_1df560(...)` 353, the assist
+// admission as `!(player_index == reported_player || amount > assist_threshold)` 353, the selection loop's `else if
+// (!consider_team) continue; else {...}` 353 (same code each); `if (killer != NONE) { if (killer == reported_player)
+// damage_code = code; } else if (reported valid) {...}` (retail's arm order) 363 (1532 B); the team byte read again for
+// the 0x1df560 argument, killer_team kept for the end 358 (1552 B).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

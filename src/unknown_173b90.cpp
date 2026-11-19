@@ -2120,6 +2120,11 @@ bool function_17afd0(long effect_index, long value);
 // `if (owner != NONE && g == owner) { if (available) same_view = true; }` 141 (513 B); P with every local of the arm
 // declared bare at the arm's top and assigned in retail's order 138 (P's code); `long owner = NONE;` at the loop body's
 // top, set only for a valid effect index, on this body 12 (same code), on P 171 (510 B).
+// M3 lane 3 r267 (fast with 0x174420 and 0x1751d0; base 12): same_view defaulted to `effect_index != NONE` (an effect-index
+// use ahead of the availability, r135's diagnostic as real code) 122 (504 B); same_view set true/false in the owner
+// lookup's two arms, then cleared by the same test 145 (516 B); the view compare written `owner != g_4b9ed8` 12 and the
+// query as `!function_155760(g_4b9ed8)` (0x3e9c0's spelling) 12 (same code each); the clearing test as
+// `same_view = same_view && owner != NONE && g_4b9ed8 == owner && available;` 138 (510 B, the plain conjunction's code).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

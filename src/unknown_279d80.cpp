@@ -2247,6 +2247,11 @@ void function_2818e0(void)
 // 2, with per-pass counts read from the settings global 400 (1684 bytes), in three declaration orders each; the
 // inheritance through a `s_graph_inheritance const *const &` local with one count 62 (the translation pass's fold
 // order flips, the reload pair stays), with the count copies 2. All restored.
+// M3 lane 3 r266 (fast with 0x27dff0, 0x285750, 0x288570, 0x289580, 0x28aaa0): function_288572 applying through the
+// file's component_apply in place of its duplicate function_288573 2 (0x288570 3, 0x289580 78: the duplicate is part of
+// the tie); the group end as `index + 8 < count ? index + 8 : count` 53 (all six 9-53); the saved frame index typed long
+// as its field 2; the scale counter under `else if (component == 2)` 2; the output pointer chosen by if/else in place of
+// the ternary 2 (all three the same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
