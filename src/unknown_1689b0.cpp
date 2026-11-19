@@ -2091,6 +2091,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // the ray's end) through one three-caller forceinline helper 588 (2898 B); the two averages through one two-caller
 // forceinline helper 552 (2879 B; the same averaging code: ours still copies the inverse and folds each sum component,
 // retail loads the component and multiplies by the inverse).
+// M3 lane 11 r125 (fast with 0x120790 and 0x2469b0, both MATCH; control 551, difflib-aligned 564, register-masked 238):
+// `real radius_squared = radius * radius;` declared right before its one use in the prism loop's test 543 (2878 B, aligned
+// 501, masked 223: the square is then hoisted after the loop guard and `push ebx` as retail, with the prism index stored
+// after the shape query; NOT kept, a moved declaration and a one-use local without a match); the product written in the
+// test with no local 553 (2883 B, not hoisted); the face count and radius then the edge count and radius as pairs with the
+// square at the top of the prism loop 548; the prisms walked by a pointer stepped with the index 552; the vertex clamp as
+// `point_count < 8 ? point_count : 8` 551 (same code); both sums copied through one const origin pointer 558 (2889 B).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

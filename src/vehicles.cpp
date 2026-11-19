@@ -1759,6 +1759,16 @@ long function_10f5f0(long object_index);
 // vertical scalar 565, or height sample 556. Complete radial velocity 599.
 // NOT kept: the altitude pair can reach frame 0x1988, but none meets the score threshold
 // or recovers retail's repeated height reads and 0x1984 frame.
+// M3 lane 11 r124 (fast, control 561; aligned 354, masked 189). Retail's six stored results are all one-bit flag reads (word +0xc0
+// bits 12 and 10 from one word load, byte +0xc1 bit 0 twice, byte +0xc0 bit 6, byte +0x348 bit 2), each `and reg8, 1; mov [esp+0x13],
+// reg8; jcc`. Diagnostic, a file-local two-definition test (result false, set under `bit < 32`) on exactly those six: 574 at 2312 B
+// (the listed form), aligned 348, masked 173, and the first 107 instructions then agree once slots are masked; the 48 extra bytes
+// are our four-way unrolled point sum, not the stores. Left on that form: the frame (0x1990), the result and `changed` slots
+// exchanged, `changed |= call` as one memory `or` where retail loads, ors and stores it around the next flag read, the unrolled sum
+// (retail: `addss xmm0, [eax]` on a pointer to the value field, a copy of the count counted down), three `shr; test reg8, 1` reads
+// (byte +0xc0 bit 6 at the kill-volume test, +0x10a bit 2, the definition's +0x1ec bit 6) and the kill-volume float block. On it:
+// the sum indexed (`state.points[i].value`) 617 (2344 B, masked 177); those three reads as one-bit conversions 594 (2328 B, masked
+// 173); both 614 (2340 B); `changed` declared first 579 (masked 175; it then takes retail's +0x12). Body unchanged.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4726,6 +4736,37 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Lateral subtotal, compound subtotal, separate lateral/axial contributions and all three terms named.
 // Existing scale call 193/220/213/202; aggregate projection 193/220/213/202. NOT kept: the first pair fixes
 // the i product but loses the forward j/k preloads. Cross and trig homes remain.
+// M3 lane 11 r124 (fast, 0xf44a0 alone: this body scores 117 there, 118 with caller 0xf4800; aligned = sequence-aligned differing
+// instructions, 110 for this body). Retail's flip block was merged before scheduling: both arms carry the up rows, the rows are one
+// copy from the sine load on (0xf4713), and only `cosine * up.i` stays in each arm because its operand order differs there (the
+// default arm copies the cosine and multiplies from memory, 0xf4658/0xf468d; the roll arm loads up.i and multiplies by the cosine,
+// 0xf46da/0xf470b), which is also why each arm loads the cosine into XMM4 right after its fstp; cases 1 and 2 hold only their angle.
+// Lead, not kept (positional rise): round 165's body (bool flag, setter fallback through the up pointer, sine and cosine ahead of the
+// axis) with the up rows as three member statements and `double angle` 163 at 792 B is aligned 27: retail's two trig homes, zero
+// register, `mov al, dl`, rows stored one by one, every flip-block operand order and the x87 forward rows; left there are the
+// aggregate fallback copy, the dot's i term, three first-cross products and the per-arm cosine product. That state is one switch for
+// the whole flip block (homes, operand orders and row scheduling flip together): the fallback as three member stores through the up
+// pointer keeps it (171 at 784 B, aligned 27); the aggregate fallback `*up = *g_4687a8` 132 (784 B, aligned 69), `facing->up = `
+// 132, memcpy 132, a pointer local for the source 140, the setter through `&facing->up` 166 all flip it, at every count of unused
+// locals 0-7 (132/130/124/124/126/126/128/132; 2-5 give the dot's i term, 4-6 four of the six first-cross loads). With the aggregate
+// fallback the state returns with the initial up copy also through the pointer (`*up = *g_4687b0`, pointer declared first) 149 at
+// 786 B (aligned 32, but the forward j/k preloads ahead of that copy go), with the dot through it too 149 (aligned 30), and with the
+// up rows through a pointer local declared at the rows 132 at 787 B (aligned 40; only with no unused local: 1-7 give
+// 128/124/124/126/128/130/132 in the other state). No effect on the state: the projection written out 130, the dot written out 143,
+// the subtraction through the setter 130, cross3f for the first/roll/final cross 141/130/129, the dot through the up pointer 142,
+// member forward rows 130, a byte flag 126, the axis through the setter 130, the forward and up copies swapped 150.
+// The per-arm product: on the 163 form the rows in both arms with a goto to the shared cross 163 (792 B: merged back whole, the
+// same at every unused-local count), with the roll arm's statements in five orders or cross3f 163 each, with per-arm sine, cosine
+// and axis locals 163 (same code), with only sine and cosine per arm 241 (886 B, no merge), default arm returning 148 (806 B, its
+// copy kept; 257 at 900 B with one or two unused locals), per-arm locals and returning 273/291; rows through a pointer in one arm
+// and members in the other 128 (788 B) / 187 (863 B), pointer in both 130; the product named in each arm ahead of shared rows 162
+// (793 B, merged back, three operand spellings); row i written cosine product first: same code. Other structures: three complete
+// switch arms with member rows 181 (856 B; bool 177 at 850 B: the default arm jumps forward into case 1's tail as retail, but cases
+// 1 and 2 merge late), default arm first 330; cases 1 and 2 as one arm with an inner angle select 133 (793 B; bool 147 at 787 B;
+// range compares, not retail's dec/je), with a ternary 228; a pointer-parameter rotation helper for the up rows 166, for both row
+// sets 165, in both arms 162, with the roll arm's trig as its arguments 236. On the current body: member rows 119 (800 B, aligned
+// 112), with a bool flag 131 (794 B), default arm returning 374 (982 B; its roll arm does show retail's per-arm product, with
+// up.i loaded inside the cross and `mulss xmm5, xmm4` between fsin and fstp).
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

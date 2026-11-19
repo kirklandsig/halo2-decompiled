@@ -618,6 +618,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // g_47d8e0 load above the definition store): unknown18 ahead of the +0x22 copy 5; unknown14 after the location stores 7; the
 // owner's team stored first 6; unknown18 after the three 1.0f stores 7; the +0x22 copy ahead of the leaf and cluster stores 6. Each
 // moves only the stores (they follow source order); `or eax, -1` stays right after the g_47d8e0 load.
+// M3 lane 11 r126 (fast with 0xd8cb0): the owner copied from the default-owner pointer (`*g_467420`) 49 (121 B); the owner,
+// unknown14 and the leaf/cluster NONEs as two chained assignments in store order 3 (same code); the material global read into
+// a short local ahead of the memset 28 (105 B, the bsp load then hoists above the definition store); the same local read
+// after the memset, ahead of the definition store 7 (the material takes EAX and `or` lands after the bsp load as retail,
+// but the definition goes through ECX); the material global's extern declared just above this function 3 (same code).
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -2405,6 +2410,13 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // place 190 (873 B), inside an (info, accumulator) guard 190, inside an (info, entry) guard 225 (878 B); the 23 form with
 // the flags test through the field as well 178 (860 B). So with the entry read in the info test's block, the flip follows
 // `info` being 0xdb090's register argument, not the use count.
+// M3 lane 11 r126 (fast with 0xd6660): on the entry local read in the guard's block (228, the flip), the variables renamed
+// (object as damage_object; info and entry renamed as diagnostics) 228 each, so symbol names do not decide the flip; the
+// entry read ahead of the 0xd5d20 call 218 (874 B); between that call and the inverse ternary 10 (re-measured: every
+// register retail's, the load ahead of the jbe); the entry local typed `short const *` with the index as `entry[3]` 228.
+// New: the plain entry local in the guard's block with 0xdb090's first argument as `accumulator->field_4_2` 24 (871 B;
+// the load and every register are then retail's; left the [edx + eax + 4] address and that argument, `mov ecx,
+// [edi + 4]` for retail's `mov ecx, ebx`), so on the plain body too the flip follows `info` being that call's argument.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

@@ -6130,6 +6130,9 @@ real magnitude3d(vector3f const *v);
 // 0x2c0d60 920->963, 0xf6d10 749->759), so still BLOCKED-BY 0x24590. Without it: three per-arm calls 20 (actor in ECX
 // across 0x24590, 892 bytes plus padding); the actor index read into a named local before the probes, with per-arm calls
 // 231 (874 B); per-arm calls with the falling arm last 34; per-arm calls with the upright test inverted 23.
+// M3 lane 11 r126 (fast with 0x24590/0x1fb7e0): redundant parens (which move float operand orders elsewhere) around the
+// half-tick product of the time test, one to three pairs, 2/2/2; around the flight vector's i product 2; around the angular
+// comparison in the type ternary 2 (all the same code). Still BLOCKED-BY 0x24590.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {

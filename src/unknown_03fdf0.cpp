@@ -602,6 +602,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // in mode's home, so the order of the induction variables' first uses does not decide it); the entry loop in a
 // forceinline helper taking (cache_index, first, selection) 2; the part context declared at the function top 2; the
 // selection in 0x40e90's spelling (`long`, NONE, then the ternary) 2 (all the 2s the same code).
+// M3 lane 11 r127 (fast with 0x404b0, which is 186 in the reduced image either way; control 2): the copy's source named
+// as an entry cursor (after or before first), passed to the copy and stepped at the end of the loop body, 163/163 (490
+// bytes: cache_index then arrives in ECX, and 0x404b0 rises to 206); the block's entry array named as a pointer after or
+// before first, used for the copy and `&entries[n]`, 2/2; first read back from the current counter after the store 2
+// (all three 2s the same code). Retail's first and the loop cursor take different homes though their final code does
+// not overlap, so at allocation time the cursor must start before first's last read (the index start).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

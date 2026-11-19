@@ -2770,6 +2770,15 @@ static __forceinline long player_round_ticks(real value)
 // through a forceinline wrapper taking `primary` 701 (same code: the constant still reaches the inliner); the six flag
 // sets through the file's SET_FLAG(..., true) 701 (same code); only the 0x16 request in its own block 804 (2842 B); the
 // flag sets through the `player` pointer fetched at entry 807 (2643 B).
+// M3 lane 11 r124 (fast, control 701): the last request site (zero the request, type 0x16, send) is the existing no-argument
+// request function 0xe68c0 written out, and retail's second request home (+0x64) is that function's own local expanded here; the
+// function already calls 0xe68c0 at three other places. `function_e68c0(0x16, unit_index)` there 727 at 2696 B (frame 0x4c): this
+// build keeps it a call where retail expands it, BLOCKED-BY 0xe68c0 (a contributor's /Ob1 file, a build-flag question, with
+// 0x151b80 and 0xccd20 as before). With that call: the 0x1b request declared in its own block 727 (same code); the decay read
+// from the settings at each use 735 (2703 B, frame 0x54: eight more bytes, so retail's 0x74 is this frame plus the expanded
+// request); the tick scale read at each use as well 736 (2702 B). Diagnostic, reverted at once: a file-local inline copy of 0xe68c0
+// at the last site 804 at 2842 B, frame 0x6c, the same instructions as two function-scope requests (the listed 804), and the first
+// 0x151b80 call is still expanded, so that expansion does not follow from the caller's size.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {

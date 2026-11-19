@@ -2158,6 +2158,15 @@ struct s_actor_looking_structure_view
 // parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's
 // projection staged (`projection = dot; projection *= 1 - cos;`) 141 (927 B; 0x296e60 282); the helper's product written
 // `(1 - cos) * dot` 23 (same code); the fraction as a ternary after the trace 144 (re-measure of round 27's form).
+// M3 lane 11 r126 (fast, this function alone; control 23): redundant parens (no grouping change) move the inlined
+// rotation's operand orders, since its nodes follow every node of this body: one pair around the angle argument or the
+// first score product gives the dot retail's order and orientation (axis j first, j, i, k) but moves its accumulator,
+// the cross and row orientations and the 0x26c590 pushes (132/128, 928 B); 1/2/3 nested pairs on the angle 132/150/89, on
+// the score products 128/144/62, on the clamp product 60/144/141; around plain leaves no effect. The 4 x 4 x 4 grid of
+// angle/score/clamp pair counts: best 21 (two score products and the clamp twice; the score's middle term then retail's),
+// then 23, 29, 31, 56, 60, 62. Under the four clamp shifts: the vector argument as `directions + i` the same code as
+// `&directions[i]` (23/60/144/141); the up axis through a pointer local 70/146/146/135. The angle with the conversion
+// implicit 23 (same code); the score as (i + k) then += j, or (k + i) then += j, 124/124 (928 B).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

@@ -151,7 +151,6 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 }
 
 // score 32 (was 32; earlier 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
-// score 32 (was 32): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
 // flags as a byte (`test byte [esp+0x21], 1`) and bit 11 by a dword load and shift, ours merges both into `test ch, 9`.
 // Every spelling that gives retail's test moves the request from EBX to EBP and onto the stack (45 at 476 B, callers lost).
 // MiniMax H (11-18), then at 106 (from 150): the priority is read from the request's audible byte, then the location is
@@ -513,6 +512,15 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // prior secondary maximum and selected maximum 45/46, variant flag after both stores 43,
 // marker copy using the published size 150. NOT kept: split-test forms move the request
 // onto the stack and lose callers, or change the matching prefix. The merged mask remains.
+// M3 lane 11 r125 (plain with the eleven matched callers, 0x221810 and 0x21d110; control 32 with all matched): on the
+// `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` end test, re-measured 45 (476 B); with the location copy
+// ahead of the flag word 134 (470 B); with the sound pointer declared after the state 45; with the audible test read from
+// the request (the copy's value) 86 (470 B); with the second lookup inline in the test 104 (483 B); in all five the callers
+// drop to 0x1895f0 13, 0x189650 13, 0x1896c0 10, 0x189710 11, 0x189760 10, 0x189340 19, 0x1890c0 17, 0x189a50 13, 0xfcea0
+// 36, 0x18bb80 63 and 0x153d10 170. Compile-only screens of the same end test (request home only): an early `return result` for NONE,
+// the priority as `1` then `if (audible) 3`, a short priority, the marker by memcpy, the variant through the request at
+// each use, the flag steps as if/else, `long end_time;` assigned apart, and the forms above all keep the request in EBP;
+// the split test only adds two compiler symbols (its labels number two higher) and changes nothing else in the body.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

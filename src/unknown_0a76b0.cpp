@@ -4369,6 +4369,10 @@ extern vector3f *g_4687bc;
 // bound to it 8; the element as the array's data pointer then `+= rigid_body_index` 8 (all the same code); the element
 // through a second havok_component_get of the root's component index (the impacts file's spelling) 80 (1105 B: the pool
 // is reloaded after the call).
+// M3 lane 11 r126 (fast): redundant parens (no grouping change), which do move float operand orders in other functions,
+// leave both register choices: 0-3 pairs on the perpendicular's i with 0-3 of the impulse products 8 each (16 builds); 0-3
+// pairs around the definition re-lookup's and the model lookup's masked indices 8 each (15 builds); the node-count test
+// as `>= 1` 25 (1099 B); the impulse products constant-first 8; the impulse as an aggregate initializer 8 (same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

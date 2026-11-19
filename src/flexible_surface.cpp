@@ -880,6 +880,18 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 130/130/130. Named subtracted product, both products, difference with named subtrahend, and subtrahend
 // scaled from the axis or direction 154/154/154/154/154. NOT kept: the frame is still 0x1c and both
 // matched shared rotation callers differ in every preview. The opening shared helper and body are restored.
+// M3 lane 11 r124 (fast with 0x118140, 0x117c80, 0x2551f0, 0x1ff360, all matched each time; control 130, aligned 93, register- and
+// slot-masked aligned 69; both sides end in a plain `ret`). Unused locals at the top, 0-7 (diagnostic, the first such scan here):
+// 130/130/152/154/154/154/154/138; 2-6 give retail's 880 bytes and 3-6 a masked count of 50, but the opening and the 0x1c frame never
+// move. Retail's rotation follows one operand order throughout: axis j and k are always the multiplied register, then the
+// direction's i/j/k and the projection, and axis i is always the memory operand (`[esp+0x1c]`, never loaded), which is what leaves
+// room to keep the direction's j in XMM5 and costs the second spilled cross term (the frame's fifth dword). Named-local equivalents
+// of those counts do not reproduce them: a record local with sine and cosine named ahead of the axis draw 152 (880 B, masked 73),
+// named after it 152 (same code), that with one seed pointer for the three draws 171, with the absolute gust named 152. Opening
+// orders (definition lookup D, draw F, time product T; the body is D, T, F): D, F, T 197 (886 B: ESI then loads between the two
+// pushes as retail, but the seed read moves ahead of the clock reads and the clock pointer leaves EAX); F, D, T 208; F, T, D 152
+// (891 B); T, F, D 152 (891 B); T, D, F 153 (887 B). Retail reads both clock fields through EAX, then the seed through EAX, and
+// multiplies afterwards. Body unchanged.
 // M3 lane 14 r115 (fast with 0x118140, 0x117c80, 0x30bf0, 0x1462e0 and 0x2551f0, all matched each time; control 130):
 // 0x146320's rotation shape (dot summed k, j, i, cross j and k named, cross i inside the i row) as a file-local inline
 // taking the axis as three scalars, with both table draws through random_unit_vector 162 (880 bytes), with sine and
@@ -1182,6 +1194,16 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // reference 322.
 // NOT kept: the standalone material-table refresh increases the score at the original frame size. The
 // complete chain and other lookup forms tie the reduced control at 322. Opening body restored.
+// M3 lane 11 r124 (fast with 0x117060; control 322 positional, but a sequence-aligned diff leaves 58 instructions and 22 with
+// registers and stack slots masked: the count is mostly the shift from the nine instructions of 0x1ccb0/0x1cd90 that retail
+// expands). Left after alignment: the object index in ESI ahead of the lookup, the 0x4b2d0 argument setup (BLOCKED-BY 0x4b2d0's
+// convention: the EBX/EBP exchange of variant and pass, the three scan homes and the vertex call's three spill slots follow from
+// it, since they reuse the parameter homes that call leaves dead) and the two expansions (BLOCKED-BY 0x1ccb0). The lighting pointer
+// NULL first and set under the test, the idiom of matched 0x3d430, 0x3dc90, 0x4c640 and the cached-level helper, re-measured 315
+// (aligned 53, masked 18; seven points, under the bar); the same at 1-7 unused locals (no phase effect on this integer code); with
+// the object index in a local, as matched 0x1171a0 and 0x117a80 write theirs, 303 (aligned 42, masked 14; a one-use local, so
+// match-only); the material index as a default overridden under `== NONE` 376, as an if/else with the tag arm first 318.
+// Body unchanged.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {
