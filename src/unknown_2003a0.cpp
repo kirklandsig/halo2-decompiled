@@ -3082,6 +3082,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // selection 50; absent-definition conditional 178; permission assigned in requested arm 50;
 // separate unlocked, absent and script permission branches 179; negated locked-definition gate 50;
 // conditional automatic selection 170. NOT kept: the four ties still reload the first event index.
+// m3 lane 5 r202 (fast with 0x202e90, 0x1fb8a0, 0x290cd0 and 0x290e20, all matched; control 50): the trigger threshold as
+// one positive ternary at its declaration 50; the pending word read from the squad at each use (no pending local) 50;
+// the trigger count `short` with the casts dropped from its threshold test 50; the first follow-up's index test and
+// argument without the short casts 50 (all four the same code); the latch store ahead of the trigger-index reads 60;
+// diagnostic, the squad's 0x40 flag read in both first-half tests as a one-bit field of a typed view 50 (same code).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

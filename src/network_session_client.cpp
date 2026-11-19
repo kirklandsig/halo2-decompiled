@@ -881,6 +881,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // 130 (493 bytes); a named player pointer for the test and the call 25 (the loop step moves to ECX); the copy counters
 // declared count first 22, a const reference to the copy source 22, the variant at the top of the state block 22 (all
 // the same code).
+// Round 202 (m3 lane 5, fast with 0x6e500, 0x72700, 0x5b080, 0x6d380, 0x5c5c0 and 0x6e910; control 22): the inlined
+// summary getter 0x5b080 with its state read once into a local 22, with its two tests merged into one `&&` 22 (both the
+// same code, the getter still matching); the tail's live and 0x5dd0 tests through a forceinline copy of the existing
+// 0x5dd0 getter (0x63e00's form) 127 (451 bytes: the limit helper's live test merges; both callers lost); the two
+// buffer clears swapped 26; the player buffer declared and cleared first 26.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

@@ -605,6 +605,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // `(void)ta.x; (void)ta.y;` 251 (988 B); the direct-inverse form re-measured 207 (974 B), with `(void)tb.z;` 207, with the
 // displacement reference for the sums 205. Compile-only (the stream agrees with the real build but two lines): mentions of the
 // displaced point's or the retransform point's components, before or after their sums, in every ordered subset, change nothing.
+// m3 lane 5 r202 (fast with 0x30bf0 and the callers 0x4f7e0/0x4ff50, unchanged at 325/43; control 195, aligned 80): the point
+// helper testing the scale through a const pointer to its camera parameter (0x142570's shape) 234 (971 B: the frame becomes
+// 0x2c, but the defaults land at +8 and in an argument slot); the helper's x row summed term by term (forward*z, up*y,
+// right*x, then position) with the y/z rows in that order 228 (972 B, frame 0x2c); both 216 (966 B); that product order as
+// single expressions 195 (same code); the existing out-of-line 0x142570 called for the three transforms 718 (475 B: a call
+// from this /Ob1 file).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

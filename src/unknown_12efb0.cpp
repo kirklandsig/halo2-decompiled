@@ -732,6 +732,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // common default and shared uncovered weight 609. NOT kept: the two shared uncovered-weight forms gain three
 // points at 3828 bytes and retain the provider, palette and record assignment gap. The common default block
 // forms regress. The opening executable source is restored.
+// m3 lane 5 r202 (fast with 0x131030, 0x1317a0 and 0x130f60, all matched; control 607, aligned 354, masked 146): the
+// touched flag declared ahead of the out value and the 0x130f60 call 609; the three per-cluster source resets stored
+// weight, index, kind 607 (store order only); the best-weight and best-index declarations swapped 609 (first difference
+// +0x2b); the palette arm's source-index store re-reading the +0x6f byte (retail re-reads it there) 703 (3831 B, aligned
+// 332); the record pointer declared NULL ahead of the palette test 607 (same code).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
