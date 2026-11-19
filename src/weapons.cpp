@@ -3629,6 +3629,8 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// score 603 (was 607): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
+// where the volatile home is read at each use here; weapon/barrel and definition/holder homes remain.
 // MiniMax B (11-18): no new form, no lower score (643 in the fast check, 607 in the plain one): retail keeps the weapon index in ebx, the barrel offset in edi and the definition spilled to [esp+0x14], where this build keeps the barrel offset in ebx, the definition in edi and the weapon index in a stack slot, so the prologue and every later home differ; dropping the volatile on the unit index measures 657.
 // MiniMax I (11-17, run 103): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in
 // EBX and the barrel index in EDI and reads the first argument after its first push, where this build keeps the barrel
@@ -3656,11 +3658,11 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
 // MiniMax C (11-01): no new form, no lower score.
-// score 607 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
+// Earlier 607 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // MiniMax H (11-18): score 643 (was 643): no new form, no lower score; the frame stays 0x1c64 against retail's
 // 0x1c60 and the weapon, barrel, definition and holder still live in other homes, so the prologue and the
 // barrel walk's register allocation differ; the plain image reads 607 for the kept body.
-// score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
+// Earlier 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
 // below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus
 // 0x1c60; weapon/barrel and scalar homes remain.
@@ -3769,6 +3771,18 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // everywhere, so the positional count comes from drift: retail keeps the weapon index in EBX up to the first
 // fire call, the magazine definition in EBX across the 0x106030/0xd1210 calls and the barrel offset in EDI.
 // Not kept: no count below 607. Original body restored.
+// Round 145 (m3 lane 16, plain): the unit index from the file's existing weapon_get_owner_unit_index (main wrote its
+// body out as an if/else), the volatile kept, 603 (kept); without the volatile 648 (2506 bytes); the helper's own shape
+// written in place (NONE stored first, then overwritten, as retail stores [esp+0x24] before its je) 596, not kept (a
+// hand-written helper body). Fast reads 636/640/637 for the three (fast control 643).
+// On 603 (plain): the second barrel-side argument as `barrel_index ? 2 : 1` 600 (retail recomputes it, no cached
+// slot; frame stays 0x1c64; a three-point gain, not kept); the first as `(barrel_index != 0) + (failure ? 3 : 1)` 644.
+// The four definition flag tests read from the definition's named bits instead of shifted raw words: 603 (same code, kept).
+// The extra frame word: retail keeps the magazine definition in EBX across the 0x106030/0xd1210 calls and reuses its
+// [esp+0x2c] for the rounds_loaded temporary; ours spills the magazine definition there and gives the temporary [esp+0x50].
+// The magazine definition read at its one use instead of the local 640 (2518 bytes); with the ternary above 641.
+// Left: ours caches the sign-extended rounds_loaded and the constant 1 of the unit-type test in frame slots where retail
+// keeps them in ECX/EDX, and retail holds the magazine pointer in [esp+0x34] with its definition in EBX.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -3776,9 +3790,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
     s_weapon_definition *definition = WEAPON_DEFINITION(weapon);
     s_weapon_barrel_definition *barrel_definition = &definition->barrels[barrel_index];
     s_weapon_barrel *barrel = &weapon->barrels[barrel_index];
-    volatile long unit_index;
-    if (TEST_FIELD_BIT(weapon->in_inventory)) unit_index = weapon->unit_index;
-    else unit_index = NONE;
+    volatile long unit_index = weapon_get_owner_unit_index(weapon_index);
     long tag_index = NONE, unit_tag_index = NONE;
     real scale_a = 0.0f, scale_b = 0.0f;
     bool fired = false, failure = false;
@@ -3800,9 +3812,9 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
             rounds = barrel_definition->rounds_minimum;
         }
         if ((magazine->rounds_loaded >= rounds || TEST_FIELD_BIT(barrel_definition->flag2)) &&
-            (!(bool)(((dword)WEAPON_LONG_AT(definition, 0x12c) >> 11) & 1) || !(weapon->heat >= 1.0f) ||
+            (!TEST_FIELD_BIT(definition->flag11) || !(weapon->heat >= 1.0f) ||
                 function_106030(weapon_index)) && magazine->rounds_loaded >= barrel_definition->rounds_per_shot &&
-            (!(bool)(((dword)WEAPON_LONG_AT(definition, 0x12c) >> 19) & 1) || unit_index == NONE ||
+            (!TEST_FIELD_BIT(definition->flag19) || unit_index == NONE ||
                 !(((1 << ((byte *)g_4e0300->data)[(unit_index & 0xffff) * 12 + 3]) & 2)) ||
                 !(function_d1210(unit_index) > 0.0f)) && !barrel->flag2)
         {
@@ -3815,7 +3827,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
             function_a7cd0(weapon_index);
         }
     }
-    else if (!(bool)(((dword)WEAPON_LONG_AT(definition, 0x12c) >> 11) & 1) || !(weapon->heat >= 1.0f))
+    else if (!TEST_FIELD_BIT(definition->flag11) || !(weapon->heat >= 1.0f))
     {
         fired = true;
         function_a7cd0(weapon_index);
@@ -3904,7 +3916,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
             WEAPON_REAL_AT(weapon, 0x180) = WEAPON_REAL_AT(definition, 0x154);
         else if (WEAPON_REAL_AT(weapon, 0x180) > 1.0f)
             WEAPON_REAL_AT(weapon, 0x180) = 1.0f;
-        if (!(bool)(((dword)WEAPON_LONG_AT(definition, 0x12c) >> 26) & 1))
+        if (!TEST_FIELD_BIT(definition->flag26))
             function_101db0(weapon_index, barrel_definition->value_a8);
         function_1058b0(weapon_index, (barrel_index != 0) + 1, false);
         if (!failure)
@@ -3995,7 +4007,17 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
         if (weapon->parent_index != NONE) weapon_index = weapon->parent_index;
     return weapon_index;
 }
-// score 1420 (was 1420): Frame 0x3c versus 0x38. Retail keeps the pool and header offset in EDI and ESI, and computes the scale complement in the two barrel arms.
+// score 1412 (was 1420): Frame 0x34 versus 0x38. Retail keeps the pool and header offset in EDI and ESI, and computes the scale complement in the two barrel arms.
+// Round 145 (m3 lane 16): blocked/down/up as bool (retail's byte homes at [esp+0x14..0x16]; no 16-bit stack homes in retail)
+// with the definition flag 27/10 tests read from the definition's named bits and the object flag 8 test through the file's
+// WEAPON_BIT_AT (all unsigned: retail's shr; the named bits and WEAPON_BIT_AT give the same code) 1412 plain at 5684
+// bytes (kept; frame 0x3c -> 0x34, register-masked aligned 680 -> 518); bool alone 1414, the bit tests alone 1418,
+// down alone 1424, up alone 1430, blocked alone 1414, down/up 1431, flag 27/10 only 1413, flag 8 only 1413 (all fast).
+// On 1412: word bitfields for the 0x16c status and 0x16e control bits 1444 (status only 1438, control only 1434), the same
+// read through TEST_FIELD_BIT 1510/1504/1448; control bit 7 through the 0x16e flag view or a word read 1412 each (same code);
+// a bool result 1494 (5616 bytes; retail keeps it in BL with the home at [esp+0x13]); down/up started false before the
+// timer test and set under `if (!blocked)` as at retail 0xfe633 1422 (5668 bytes); primary/secondary read from the
+// trigger definition at each use 1544 (5800 bytes); both 1519 (register-masked 444/488 against 518/523).
 // Earlier score 1413 (was 1420): the two definition flag tests read the bit through the field (flag27 at 0xfe02c, flag10 at
 // 0xff128), the blocked and down/up carriers are bytes and the pressed and released bits are taken with retail's shift
 // form, so the function has retail's length (5684 bytes). What still differs is the frame (0x34 against retail's 0x38),
@@ -4162,7 +4184,7 @@ bool __stdcall function_fdfb0(long weapon_index)
     long unit_index = weapon_get_owner_unit_index(weapon_index);
     real scale = function_d1490(unit_index, weapon_index);
     long player_index = NONE;
-    if ((bool)((WEAPON_LONG_AT(definition, 0x12c) >> 27) & 1)) scale = dual ? 1.0f : 0.0f;
+    if (TEST_FIELD_BIT(definition->flag27)) scale = dual ? 1.0f : 0.0f;
     real complement = 1.0f - scale;
     long owner_index = function_101fb0(weapon_index);
     if (owner_index != NONE)
@@ -4192,8 +4214,8 @@ bool __stdcall function_fdfb0(long weapon_index)
         if (WEAPON_SHORT_AT(weapon, 0x19e) <= 0) WEAPON_BYTE_AT(weapon, 0x16c) |= 0x20;
         result = true;
     }
-    if ((bool)((WEAPON_LONG_AT(definition, 0x12c) >> 10) & 1) && weapon->parent_index == NONE &&
-        (bool)((WEAPON_LONG_AT(weapon, 4) >> 8) & 1)) function_10d4e0(weapon_index);
+    if (TEST_FIELD_BIT(definition->flag10) && weapon->parent_index == NONE &&
+        WEAPON_BIT_AT(weapon, 4, 8)) function_10d4e0(weapon_index);
     if ((bool)((weapon->value_16e >> 7) & 1)) function_105840(weapon_index);
     if (weapon->value_16e & 1)
     {
@@ -4278,7 +4300,7 @@ bool __stdcall function_fdfb0(long weapon_index)
     bool pressed[3] = { (weapon->value_16e & 2) != 0, (weapon->value_16e & 4) != 0, (weapon->value_16e & 0x100) != 0 };
     bool released[3] = { (weapon->value_16e & 8) != 0, (weapon->value_16e & 0x10) != 0, false };
     s_weapon *updated = WEAPON_GET(weapon_index);
-    short blocked = (updated->value_16e & 0x20) || updated->state_ticks > 0 || (WEAPON_BYTE_AT(updated, 0x16c) & 2);
+    bool blocked = (updated->value_16e & 0x20) || updated->state_ticks > 0 || (WEAPON_BYTE_AT(updated, 0x16c) & 2);
     if (blocked) { weapon->value_174 = 0; result = true; }
     for (short i = 0; i < definition->magazine_count; ++i) result = result | function_fdd50(weapon_index, i);
     for (short i = 0; i < definition->trigger_count; ++i)
@@ -4287,8 +4309,8 @@ bool __stdcall function_fdfb0(long weapon_index)
         s_weapon_trigger_definition *trigger_entry = &definition->triggers[i];
         if (trigger->timer > 0) { --trigger->timer; result = true; }
         short input = WEAPON_SHORT_AT(trigger_entry, 4);
-        short down = !blocked && (pressed[input] || (signed char)WEAPON_BYTE_AT(trigger, 4) < 0);
-        short up = !blocked && released[input];
+        bool down = !blocked && (pressed[input] || (signed char)WEAPON_BYTE_AT(trigger, 4) < 0);
+        bool up = !blocked && released[input];
         short primary = WEAPON_SHORT_AT(trigger_entry, 8), secondary = WEAPON_SHORT_AT(trigger_entry, 0xa);
         long target;
         byte target_entry;
@@ -4682,6 +4704,15 @@ struct s_weapon_projectile_creation
 // 0x1ea0); the file's helper with three scalar results written back 1239 (5115 B, frame 0x1e94); the axis read as
 // `markers[marker_index].matrix.up` (retail reads it by index, not through the marker pointer) 1121 (same code), with the
 // shared helper 1185 (5155 B, 0x1ea0); `point3f clipped, center;` 1121 (same code).
+// Round 145 (m3 lane 16, fast, control 1121): retail rotates in place (cross terms precomputed, one spilled, result.i
+// stored straight back, j/k kept in registers into the second rotation; no 12-byte result temps): the file's
+// weapon_emission_rotate body written in place with the three cross terms named 1211 (5146 bytes, frame 0x1ea0,
+// register-masked aligned 286 -> 212); the same with the dot summed i, k, j 1211; with only cross_j/cross_k named 1211.
+// Retail's spread fallbacks are selects that re-read the field (`x != 0 ? x : y`, 0x104dd6-0x104e0a): that form 1121
+// (other code, register-masked 275); control bit 6 through the 0x16e flag view (retail's shr at 0x104e66) 1120; both
+// 1125 (5217 bytes); both on the in-place rotation 1194 (5162 bytes); with the axis read by marker index 1190 (5166
+// bytes, register-masked 210/229). The in-place forms are 46-66 bytes short of retail, so the length gap is elsewhere
+// (retail duplicates the 0x1fddd0 argument pushes in both arms of the average/origin select at 0x1048c3).
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
