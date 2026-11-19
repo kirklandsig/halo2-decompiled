@@ -150,7 +150,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
-// MiniMax H (11-18): score 106 (was 150): the priority is read from the request's audible byte, then the location is
+// score 32 (was 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
+// flags as a byte (`test byte [esp+0x21], 1`) and bit 11 by a dword load and shift, ours merges both into `test ch, 9`.
+// Every spelling that gives retail's test moves the request from EBX to EBP and onto the stack (45 at 476 B, callers lost).
+// MiniMax H (11-18), then at 106 (from 150): the priority is read from the request's audible byte, then the location is
 // copied, then the flag word is built, which is retail's order, and the source size's zero default is stored before the
 // marker's own assignment instead of in an else arm; what still differs: retail keeps the sound pointer in a frame
 // slot and reloads it, this build keeps it in EBP and pushes EBP at the start; retail loads the source before the tag lookup and builds
@@ -160,7 +163,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // inline-ness is set in src/unknown_221490.cpp) and the 0x21d110 call still takes the play state by pointer on the
 // stack where retail passes it in a register (that callee's declaration is in another file).
 // BLOCKED-BY 0x221810 and 0x21d110.
-// score 150 (was 110): The 0xa8 frame agrees. The first class lookup still expands, and playback state still passes on the stack.
+// Earlier at 150 (from 110): The 0xa8 frame agrees. The first class lookup still expands, and playback state still passes on the stack.
 // Native short priority and padding by separate stores, chain first, after flags, or before location 162/162/163/163.
 // Native priority and padding published before or after flags 152/152. Complete priority copy at the original store 150.
 // NOT kept: complete priority copy before flags 139 requires a one-use priority temporary.
@@ -451,6 +454,23 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // Left: the end test (retail tests bit 8 as a byte, then loads the dword for bit 11) without EBX going to the object index.
 // Coordinator (11-18): with 0x221810 called out of line from its own /Ob1 file (0x21d110's match) and the flags set bit by bit
 // on state.flags (the source read once), 89 at 458 B (was 106 at 472 B).
+// M3 lane 3 r261 (fast with the ten matched callers, 0x221810 and 0x21d110, all MATCH; control 89): the marker size as
+// an if/else (0x28 in the marker arm, 0 in the else, retail 0x18a0ae/0x18a0ba) 32 at 460 B, plain 32 with every caller
+// matched: kept. On the 89 body the end test through the location's word bitfields `flag8 || flag11 || !audible` 89 and as
+// `(flags & 0x100) || (flags & 0x800) || !audible` 89 (same code). On the 32 body: an inline location-flag test taking the
+// bit index, used for bits 8 and 11, 45 (476 B; retail's end test line for line, but the request arrives on the stack
+// and lives in EBP, the object index and the sound pointer in EBX, and all ten callers differ by 1 byte); a word-flags
+// test helper `(*flags & (1 << bit)) != 0` 45 (same code); `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible`
+// (the file's own idiom for the class-flag bits) 45 (same code); `(flags & 0x100) || TEST_FIELD_BIT(flag11) || !audible` 60
+// (473 B: one dword load tested twice); that 45 form with the 0x800 store as `flag11 = true` 45. Compile-only screens
+// (CL /c of the file; they reproduce both the EBX and the EBP homes) find the rule: whenever the end test starts with a
+// byte test from memory, the request takes EBP; one dword load first keeps EBX. None of 76 declaration orders of the tag
+// pointer, the source, the state and the priority (with or without the source, variant and priority locals), 72 helper
+// combinations (pointer/reference/word helpers, the 0x800 set through word_flags_set, the variant copies through the
+// local, `state.source = request->source`, the object index through `state.object_index` or a local, a const class-flag
+// pointer), unused locals 0..7, extra temporaries before the test or the 0x21d110 call, extra end-test blocks, a
+// `globals` local for g_4ed288, a named ticks local, a bool for the test, nested class-flag tests, flag-setting helpers or
+// the marker size as a ternary moves the request back to EBX with retail's end test.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -478,11 +498,14 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 			state.location.flags |= 0x800;
 		}
 
-		state.source_data_size = 0;
 		if (request->marker)
 		{
 			state.marker = *request->marker;
 			state.source_data_size = sizeof(s_sound_marker);
+		}
+		else
+		{
+			state.source_data_size = 0;
 		}
 
 		char const *variant = request->variant;

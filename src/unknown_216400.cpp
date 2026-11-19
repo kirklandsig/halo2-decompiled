@@ -536,6 +536,17 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // (setne CL, count EAX, list EDX), the same count local in the found block 51; the function-scope count with `if (count ==
 // 4096) break;` before the store and copy 54 (654 bytes); a function-scope `bool room` set in the found block with the copy
 // into `entries[count++]` and `else break` 54 (654), with the function-scope count too 54 (654).
+// Round 101 (m3 lane 2, fast with 0x216400/0x216d70/0x216e50/0x217590, all MATCH each time; control 20): the list as a type
+// with inline members. `full()` (count == 4096) and `new_index()` (`return count++`) called from the body, the copy by
+// assignment or memcpy, 54/54 (654 bytes: retail's tail with the list in ECX, no setne); a bool `add` member built on
+// them (`bool result = !full(); if (result) ...; return result;`) with assignment or memcpy 51/51; `new_index()` written
+// index-first 51, returning `dword` or `int` 51/51, with a named index in `add` 51; a `has_room()` member 51, in a
+// caller `room` flag tested for the copy and again for the break 51; a `current` count local in `add` 51; the slot
+// through a `get(index)` member with the entry by pointer or by const reference 51/51 (every bool form: setne CL, count
+// EAX, list EDX). Reading: retail's five values take no scratch-rotation step (the enumeration call after the block
+// continues the rotation from the format call before it), and its count and index are two webs joined by a copy
+// (`mov eax, esi`), which puts the flag ahead of the count; here the copy is always propagated, so the count outranks
+// the flag and takes EAX. Open: a form in which the index stays a copy of the count.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

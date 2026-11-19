@@ -942,6 +942,11 @@ struct s_collision_result_buffer_1697c0
 // the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
 // The startup zero register and random/trig transfer word still differ.
 // Attempt- or function-scope candidate with the two draws and turns in one block, inner pitch block, pitch-only block, and pitch-only block with immutable draws all score 270 (eight forms).
+// Ray before the draws or across attempts 270/270; query record at attempt entry or across
+// attempts 270/270; query default before scale 270; scale return passed to query 270; ray copied
+// and scaled in place 354; default direction before fraction 267.
+// NOT kept: the three-point gain retains the wrong zero register and transfer word. The ray copy
+// also raises the caller's score.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1026,6 +1031,10 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax G (11-18): score 175 (was 257): the player test of cases 1 and 6 is written with the == NONE arm
+// first, which restores retail's case-1 block layout; the body is 1424 B against retail's 1444. Left: the two
+// flags' byte homes are still swapped against retail's (the returned flag at +0x0a, the presence byte at +0x13),
+// the two 0xcafc0 calls still sit side by side where retail keeps them apart, and the jump table sits 20 B early.
 // score 257 (was 257): retail keeps case 1's and case 2's identical 0xcafc0 blocks inline where this build
 // tail-merges them (that moves case 2's block and the direction chain's fall-through predecessor); retail's failure
 // exit stores result = false (F+2, point-valid at F+3); the weapon block keeps the direction pointer in EBX where
@@ -1434,10 +1443,16 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // case 2 state-admitted 213, case 1 state-admitted with case 2 point-written 348, case 1 reference-state snapshot
 // 263, both reference-state snapshots 263. NOT kept: the two lower previews publish presence after the point calls
 // instead of at the state test. The 102 form also falls short of retail length.
+// Explicit live-state selection in cases 2, 1 and both 303/249/310.
+// Early case-one lower bound 263. Unit-kind range in cases 2, 1, 6 and all
+// 293/268/395/376. NOT kept: the 249 form reaches retail length but replaces
+// the native signed range branches with equality branches and leaves the
+// player-point blocks merged. Original complete body restored.
 // Case 2 state local 258, case 1 state local 258, separate case states 258, separate
 // case references 258, case 2 reference and state local 258, case 1 reference and state
 // local 258, both case-local pairs 258, both pairs with read-only state 258.
 // NOT kept: all tie the reduced control at 258. The player-point blocks still merge.
+// MiniMax G (11-18), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -2204,6 +2219,11 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax B (11-18, round 2): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
+// local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines below it,
+// where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four bytes
+// higher - so every stack home differs; the declaration order that would put the locals where retail has them is not
+// kept, and 0x1fdd90 is still expanded here where retail calls it out of line: BLOCKED-BY 0x1fdd90.
 // MiniMax B (11-18): no new form, no lower score (442): the entry block's register roles still differ - retail keeps
 // the actor index in ESI, the slot offset in EAX, adds it to the base and spills it at esp+0x30, where this build
 // colours the registers differently - and 0x1fdd90 is still expanded here where retail calls it out of line (its

@@ -1345,10 +1345,20 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
+// and the first difference is the elapsed time's register (retail XMM3, this build XMM2) with the reciprocal one
+// lower to match (retail XMM2, this build XMM1); the copy of the fade-in time dropped so that the inverse is
+// divided from the field measures 94 at 683 bytes, and with the copy in place the reciprocal's division is still
+// scheduled after the elapsed's subtraction where retail divides first, so the body stands.
+// MiniMax B (11-18): no new form, no lower score (87): retail keeps the elapsed time in XMM3 and its reciprocal in XMM2
+// while this build keeps them in XMM2 and XMM1, and that also fixes the fade-out home (retail multiplies by the
+// register, this build reloads the field from memory); the clamp with the division made eager (`real t = time /
+// ducking->fade_in_time; if (!(1.0f > time * inverse)) t = 1.0f;`) measures 143, a fade-out local 92 and the inverse
+// taken from the field 94, so the body stands.
 // score 87 (was 87): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
 // MiniMax G (11-18): no new form, no lower score (87): the elapsed time and its reciprocal still take different registers
 // (XMM2 against retail's XMM3), the first gain load is still separate, and the release-to-attack join still differs.
-// score 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
+// Earlier at 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
 // Earlier: MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
 // by the reciprocal where retail divides, because the divisor's spelling lets this build reuse the inverse - a fade-in
 // local used for the inverse and for the 0.001f test measures 101, and the one-use local form in the notes below (87)
@@ -1729,6 +1739,9 @@ long function_2197f0(real gain);
 // the three interpolated arms as `+=` 87 (all the same code: the join still carries XMM0); every sum as `+=` 100 (678 B: the
 // hold arm then reads the ducking gain directly where retail copies it through the stack for the by-value operand); arm 4's
 // sum written interpolation first 115.
+// Hold then transition 121, plain then composite 87, hold return 182, common interpolation 204,
+// shared release duration 92, shared attack duration 95, previous index snapshot 160,
+// named release window 87. The reciprocal, separate gain read and release-to-attack join still differ.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3201,6 +3214,10 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax B (11-18): no new form, no lower score (96): retail keeps the outcome in AL (set at the entry, cleared on the
+// failure path with xor bl, bl and moved back) while this build keeps it in a stack byte at [esp+0xf], so the frame
+// is 0xc against retail's 8; the closest form (15) needs a goto into an arm, a redundant store and a moved
+// declaration, and the file-local search helper taking `long type` on its own regresses to 127, so the body stands.
 // score 96 (was 96): MiniMax I (11-16, round 2): no new form, no lower score: our prologue still sets the frame up
 // before reading the voice index and loads two globals ahead of it, where retail reads the index first and keeps the
 // outcome in AL; our frame is 0xc against retail's 8, both with the saved ebx, so one local is spilled that retail
@@ -3608,6 +3625,10 @@ static inline short sound_voice_find_available_channel(char type)
 // as it, 108, each): the early exit as `goto done;` to a label at the return; the commit arm ending `goto done;`; the
 // commit arm first with the failure arm (and its label) second. The early test nested with its own `return result;` 135
 // (431 B).
+// Voice reference, playback reference, or both 96/96/96; provisional Boolean before or after
+// the search 129/132; provisional byte 151; assigned outcome in each admission arm 135;
+// existing-channel outcome first 135.
+// NOT kept: the Boolean paths recover the eight-byte frame but change entry and failure joins.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4558,7 +4579,9 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 122 (was 122): the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
+// score 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
+// and the second flag3 test shares a word load with the flag6 store. The countdown now uses byte operations.
+// Earlier at 122: the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
 // and sets the bit in memory, both pin sums trade EAX/EDX with the field_c store one slot late, and the synchronisation byte is
 // widened (see r136 at the end of this note).
 // Earlier at 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
@@ -4748,6 +4771,16 @@ struct s_128ca0
 // homes and pin joins remain. Original endpoint expression and full body restored.
 // N397: Complete native pitch, processed-gain and both submission-gain home identities 222/222/222/222/222/222/222/222.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// MiniMax B (11-18, round 2): no new form, no lower score (122): the first difference is still the swap between EAX
+// and EDX in both pin sums - retail loads the permutation-gain byte into EDX and the gain bits into EAX (the second
+// sum has the byte in EAX and the gain in ECX), and this build has each pair the other way round; the byte's
+// sign-extension, the bits' store to [esp+0xc] and the sum's operand order are retail's, so the swap is the
+// allocator's choice and the body stands.
+// MiniMax B (11-18): no new form, no lower score (122): the first difference is still the swap between EAX and EDX in
+// both pin sums (retail keeps the permutation-gain byte in EDX and the gain bits in EAX, this build the other way
+// round), and the later differences follow from that swap; the byte's sign-extension, the bits' store to [esp+0xc]
+// and the sum's operand order are retail's, so the swap is the allocator's choice and no spelling of the two
+// operands moved it this round.
 // b6U (11-06) statement-by-statement walk against retail (0x128ca0-0x1290be), fast build: no behaviour difference found.
 // Checked: the two memsets and the two stores (0x128cfc-0x128d18, local_3 clear is 4 + 0x2c + 4 + 0x444 bytes);
 // pitch (0x128d1a-0x128d58, upper - lower scaled, plus playback pitch, plus lower); gain sum (0x128d58-0x128d83,
@@ -4815,6 +4848,9 @@ struct s_128ca0
 // Default char plus postdecrement 189, branch-local publication 208, default
 // char plus prefix decrement 189, single-read subtract as char or long 188/129.
 // NOT kept: no gain in the existing pin layout and byte update.
+// Countdown variants using the packed byte: long 122, char 189, byte 147, sentinel-first long 122,
+// char default 189, bitfield read with a packed write 129, masked byte update 147, per-arm store 187.
+// Default before the effect gate: char 189, packed byte 81, existing bitfields with byte count 81.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4863,19 +4899,17 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 		function_21f8a0(local_0->channel_index, (s_looping_channel_properties *)&local_3, (s_looping_effect_playback *)local_3.field_48);
 		function_21f720((s_looping_impulse_parameters *)local_3.field_468);
 		sound_voice_queue_chunk(arg_0, local_8, local_1->chunk_index);
+		byte count = 0xff;
 		if (local_1->effect_index != NONE)
 		{
 			s_sound_controller_view *local_13 = (s_sound_controller_view *)((s_record_pool *)g_51ebd8)->data + (local_1->effect_index & 0xffff);
-			long local_14;
 			if (local_13->unknown04 != NONE)
 			{
-				local_14 = local_13->synch_count;
+				count = local_13->synch_count;
 				local_13->synch_count--;
 				local_13->synch_playback = false;
 			}
-			else
-				local_14 = NONE;
-			local_1->unknown03 = (char)local_14;
+			local_1->unknown03 = (char)count;
 		}
 		local_1->flags |= 0x200;
 	}
