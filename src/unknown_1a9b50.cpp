@@ -837,6 +837,12 @@ extern point2f *g_468778;
 // actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
 // partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
 // partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
+// Actor/slot names, settings/prop names and two orders of all four names:
+// settings-first 375/375/375/375, actor-first 413/413/413/413.
+// Typed settings view after admission, with existing or later slot binding:
+// settings-first 375/374, actor-first 413/413.
+// NOT kept: the one-point gain leaves the late actor read. Actor-first forms
+// reserve 0x44 instead of 0x40, spill the actor and grow to 1555 bytes.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

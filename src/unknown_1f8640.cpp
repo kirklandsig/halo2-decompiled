@@ -932,6 +932,10 @@ struct s_1f8a70_actor
 // the dispatch still follows case 7); the mode cases in source order 6, 7, 2, 3, 4, 5 382 (1616 B) and 2, 3, 4, 5, 7, 6
 // 334 (1608 B), so the layout follows source order; `return route_found;` after the two arms with `result` kept for the
 // first exit 439 (1672 B); case 6's test spelled `!route_mode` 182 (same code).
+// Missing targets rejected through the route selector in modes 4/5/6: 338/321/310.
+// Pairs 4+5/4+6/5+6: 404/405/405. All three 411, with missing movement 411.
+// NOT kept: all score higher. The 0x80 frame and branch condition agree. The
+// first branch displacement, route dispatch and failure result still differ.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

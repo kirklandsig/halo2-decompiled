@@ -1587,6 +1587,11 @@ void function_150820(dword *bits, bool local_only)
 // Integer player address and separate unit-index lookup 73, Integer player and unit-header addresses 43. NOT
 // kept: The separated player lookup recovers the saved registers but folds the player address into LEA and raises
 // the score. The other seven address forms preserve the original allocation and tie.
+// Shared table and absolute slot with the player bound before the guard, before the hand,
+// after the hand, or after the initial unit read: 32/28/28/71 with either player type.
+// Indexed unit reads throughout 74/74, one unit index through the mode query 43/43.
+// NOT kept: 32 folds the player address into the unit field address. The 28 forms add a
+// unit reload before the query and grow to 213 bytes. The consistent forms tie or regress.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
