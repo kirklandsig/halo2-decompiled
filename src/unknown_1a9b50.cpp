@@ -792,6 +792,10 @@ extern point2f *g_468778;
 // calls that take it in EBX (0x1e4f90, 0x1a9d80, 0x1a9e00) 392 (all four pushes at entry and the prop in EBX as retail,
 // but the actor EDI and spilled, settings ESI, slot EBP; masked 114); both of those together 404 (1562 bytes: arg_0
 // ESI). Neither the settings' register nor arg_0's EBX preference alone is what separates the two colourings.
+// MiniMax G (11-18): no new form, no lower score (375): computing the actor block before the settings call, as
+// retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
+// pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the
+// query in EDX, and this lane may not change the parameter order.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

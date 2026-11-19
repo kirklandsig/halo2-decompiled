@@ -2038,6 +2038,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // scalar sums with axis-first names 622; component loops for initial sum copies 623;
 // coordinate aggregates for initial sums 643.
 // NOT kept: All eight scores rise. The original sum copies agree with retail.
+// M3 lane 7 r180 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 551, register-masked aligned 449): the plain
+// zero-based edge loop (`points[edge_index]`, `points[(edge_index + 1) % point_count]`) 602 (2885 B); `bool inside = true;`
+// right after the plane distance 549; the nearest reset right after the plane distance 548 (masked 443; both moves under the
+// keep bar); the plane distance through dot3f 567 (2893 B); the squared radius ahead of the shape query 616 (2857 B).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

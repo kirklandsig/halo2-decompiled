@@ -1164,7 +1164,6 @@ bool function_1df5d0(short first, short second);
 bool function_1e11b0(long actor_index, bool active);
 bool function_114b60(short entry_index, short fallback_index, long unit_index, long priority, void const *extra);
 
-extern bool g_4f55e5;
 bool g_4f55e0;
 real function_259a0(dword *seed);
 long function_1469f0(real seconds);
