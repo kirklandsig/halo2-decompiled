@@ -851,6 +851,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Word index for particle 406, child 333, gate with particle 419, gate with child 363,
 // particle with child 422, velocity with particle 428, velocity with particle and child 428,
 // and all four slots 428. NOT kept: child alone gains one at retail length and leaves the gate unchanged.
+// M3 lane 4 r215 (fast, control 334): the field_50 test as the matched sibling 0x247fd0 writes it (`if (local_2 !=
+// arg_0->field_50) { field_50 = local_2; field_44 &= ~0xf80f; }`) 346 (that block is then exactly retail's, the count rises
+// from realignment); on it: the effect datum through an inline getter function at the gate and the velocity 346 (same
+// code: the gate still folds base+index); the four scalar locals renamed (effect_index/particle_index/definition/hidden
+// or gated) 346 (the gate byte stays at +0x1f: names do not move it); the blend as its own point3f summed through the
+// existing vector3f_add 371 (1617 B, frame 0xa4: the helper taking its address does not keep retail's slot); all four
+// draws through the one sample local (the sibling's form) 412.
 // M3 lane 16 r140 (fast with 0x247fd0/0x248cc0, both MATCH throughout; control 334, register-masked aligned 106): the
 // parent test written `local_2 != arg_0->field_50` 333 (retail's `cmp ebp, [esi+0x50]`; one under the bar); that with
 // field_50 stored before the field_44 clear 346 (masked 102: the clear becomes retail's load/and/store); the blend as its

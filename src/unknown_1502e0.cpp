@@ -1550,6 +1550,18 @@ void function_150820(dword *bits, bool local_only)
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
+// Round 264 (m3 lane 3, fast with 0x151b80 17, 0x14f820, 0x151940 and the callees; control 43): the cd4e0 arm as
+// `else if (function_cd4e0(...)) result = true;` 47; `result = true;` ahead of the a8f80 call 71 (215 bytes); the mode
+// test inverted with the cd4e0 arm first 72 (219 bytes); the hand as `bool` 89 (197 bytes); the hand set to 0 and then
+// to 1 under `if (!primary)` 45 (211 bytes). Body unchanged.
+// ESI player, EDX unit index and EDI hand still differ. Canonical object header table,
+// canonical player displacement/indexed table/read-only displacement with either header
+// lookup, and canonical displacement with a direct header read all score 43 at 210 bytes.
+// The types and lookup source were restored.
+// Two Boolean rows indexed by hand or selected by policy 43/88. Hand-pair field by policy or slot
+// ordinal 88/78, post-query pair copy or reference 88/88, first-row reference 43, separate hand
+// availability tests 78. NOT kept: neither workspace changes the saved player/hand allocation at
+// 210 bytes. The shorter and longer variants regress. The opening body is restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

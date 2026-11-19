@@ -124,7 +124,7 @@ void function_1d56f0(s_havok_component *component)
 // where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EBX, ECX
 // and EAX: BLOCKED-BY 0x1d0cf0, whose extra push ebx (needed only because the component arrives on the
 // stack) is what makes its frame 0x84 against retail's 0x88 and shifts every esp offset.
-// score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
+// Earlier (77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
 // Earlier (score 77, was 77): every frame home and the body up to the success tail agree; left: the rigid-body
 // lookup's address operands (ours `[base+index]`, retail `[index+base]`) and the success tail, BLOCKED-BY
@@ -364,6 +364,11 @@ void function_1d56f0(s_havok_component *component)
 // model (round 195's scripts on this baseline) has 0x1d0cf0 free to take a custom convention, reached through
 // 0x1d1b60 > 0x1d0c20 > 0x1d0cf0, with 0x1d1260 and 0x1d1540 at the default one. Nothing kept (0x1d0cf0 and 0x1d0c20
 // rise). Still BLOCKED-BY 0x1d0cf0 (the component's EBX).
+// m3 lane 14 r113 (fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10/0x1d56f0; control 77, aligned 27): the rigid body bound
+// to `hkRigidBody *const &` before the transform copy 99; the lookup through a `const &` to the component's slot 77 (same
+// code); the result flag set before the transform-set call 78; the settled count published after the transform-set call
+// 64 (aligned 21: retail stores it at 0x1d53a1, before the call, so this is a statement moved by score, not
+// kept); the settled count in a named local 77 (same code). BLOCKED-BY 0x1d0cf0's convention stands.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

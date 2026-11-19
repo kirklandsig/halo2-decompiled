@@ -653,6 +653,11 @@ union s_185be7
 // else-arm default, the weapon helper and the long mask local 76 [59] (fast); plus the havok pool data read first through
 // `s_havok_component *const &` (the 0xb9b90 form) 74 [59] (the pool load then precedes the mask as retail; the object
 // pointer and the pool global sit in ECX/EDX where retail has EDX/ECX). BLOCKED-BY 0x24590 (its six unmatched callers rise).
+// Native angle members 396; one named conversion 396; typed input-pair pointer 957; complete input
+// pair by value 949; value pair then snapshot then conversion 949; pair copied and converted in the
+// angle workspace 949, with snapshot before conversion 949; typed pointer kept across snapshot 957.
+// The pair and snapshot ordering reaches 3772 bytes, but the angle registers and downstream
+// instruction schedule still differ. The XMM clobber after magnitude remains unresolved.
 // N421 previews: typed seat table access at its existing definition field 396; separate unclamped fraction
 // and angle response 823; complete response with unclamped fraction confined to the positive span 942;
 // lower and upper velocity fields read through the bounds type 396; bounds view with a separately named

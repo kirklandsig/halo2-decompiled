@@ -1656,13 +1656,8 @@ static __forceinline void query_restore_pending()
         }
 }
 
-static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *arg_0)
-{
-    s_player_slot_flags *local_0 = NULL;
-    if (arg_0) local_0 = arg_0;
-    return local_0;
-}
-// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
+// score 703 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
 // variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
@@ -2098,6 +2093,15 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Disconnected group cursor with indexed players, ordered bound/nonempty loop/count 702/702/718.
 // With counted players 702/702/718; ordered/equality group bound with a player end 738/738.
 // NOT kept: the one-point gains leave the exit span and width unchanged.
+bool function_1900a5(long index);
+// M3 lane 3 r265 (fast with 0x1900a5; plain over the file, 0x1900a5 and its 18 callers, nothing changed): retail's slot
+// test (`mov ecx, 0; cmovne ecx, eax; test byte ptr [ecx + 8], 3`) is the matched guest test 0x1900a5 inlined, the
+// same code retail inlines into 0x6d080; calling it in place of the file's private copy of its null-tested accessor
+// gives the same code here, 703 (kept: it removes the hand copy; the cmovne still needs the SSE flag, so the
+// inlined body compiles to our je/mov). On it: the opening test through a switch on the logon status (retail's
+// `dec eax`) 823 (2926 B: the users loop loses its alignment pad); `valid = true` after the team test 703 (same
+// code); the identity's guest test through the SDK's guest macro 703 (same code); the identity copied after the
+// properties 705.
 // M3 lane 16 r138 (fast; control 703, aligned 330 by difflib with addresses masked). Round 136's 696 form re-built (the
 // incomplete arm setting `failed = true`, the request builder's free space named) 696 (2878 B, aligned 318), still one
 // short of the bar. On it: the users loop reading the slot index and properties through 0x647d0 with `inline` on its
@@ -2113,6 +2117,13 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // named space 714, with `failed = true` 706; the request loop's identity select the same way 733, with the completion one
 // 735, with the space 723, all four pieces 704 (2862 B).
 // Body unchanged; the slot test's cmovne still needs the SSE flag.
+// The user-base home and slot conditional move still differ with the 0xc0 frame.
+// SDK guest predicate for identity/both masks 703/703. Typed slot base through the
+// selector 828, via the record reference 821, direct base reference 806.
+// With the SDK identity predicate these score 828/821/806. NOT kept: the typed forms
+// add sixteen bytes and retain the opening frame and exit-span mismatch.
+// Offline-first arm/return using direct status 703/703, shared availability 810/810, one task index 703/703,
+// conditional task status 812/812. The shared and conditional forms change the opening schedule and raise the score.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
@@ -2128,9 +2139,7 @@ void function_074aa0(void)
                 XUID identity = g_4cd868.users[group].xuid;
                 byte properties[0x90];
                 memcpy(properties, g_4cd868.users[group].properties, sizeof(properties));
-                s_player_slot_flags *slot = function_74aa1((s_player_slot_flags *)
-                    ((byte *)&g_54e8e0[g_4cd868.users[group].unknown10] + 0x470));
-                if (!(slot->flags & 3) && !(identity.dwUserFlags & 3) &&
+                if (!function_1900a5(g_4cd868.users[group].unknown10) && !(identity.dwUserFlags & 3) &&
                     identity.dwUserFlags != 0xbad00000)
                 {
                     valid = true;

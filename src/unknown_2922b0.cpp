@@ -92,8 +92,6 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // MiniMax D (11-15): no new form, no lower score (558): the frame size and the five calls agree with retail, but the
 // success byte, the minimum float, the four hit flags and the copied input vector still sit at other frame homes, and
 // the inactive exit still comes before the ray loop instead of after it.
-// Earlier score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
-// Earlier score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // M3 lane 8 r150 (fast; aligned 406, register-masked 216 on this body): retail forms 1/range once and multiplies it by
 // the minimum twice with the minimum held in XMM2 (no reload, so not an aliasing effect). Tried: the third and fourth
 // offset points' scale as `0.0f - half_width` 592 (same code; re-measure of round 134's form); the point helper's products scale-first 592 (same code);
@@ -647,6 +645,26 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // (2866 B: retail's forward `jbe` to an end copy, but the success flag moves into BL); the hit flags `= { false }` 689 (2819 B);
 // the inactive test as `<= 0.0f` 663; the range bound as `real const &` to field_48 648 (2865 B); 1..8 dead initialised locals
 // after the object lookup (diagnostic) 559/580/589/617/598/574/574/574 (the symbol count moves code here; none beats 558).
+// m3 lane 10 r121 (fast; control 558, aligned / stack-masked 491 / 415 by this round's counter). Retail's inactive exit is a
+// separate `pop edi; mov al, 1; pop ebp; ret` after the main return, reached by `jbe` from the range test, and the range is
+// loaded once (XMM1), compared, and stored to its home only inside the active arm after EBX and ESI are pushed. The body inside
+// `if (field_48 > 0.0f)` with one shared return 667 (2866 B; 499 / 419: the success flag then lives in BL); the body inside the
+// test with its own `return local_0;` and `return true;` last 669 (2865 B; 486 / 409): retail's block order and exit, the entry
+// then differs only in the homes (success +0x13 for +0x17, hit flags +0x20 for +0x1c, input copy +0x3c for +0x40), the zero
+// in XMM1 loaded ahead of the copies where retail clears XMM0 after the minimum's store, and the range loaded twice; on that the
+// range read once into its local ahead of the test 651 (485 / 409: one load, but its home is stored ahead of the branch where
+// retail stores it in the arm); the success flag declared after the hit flags on those two forms 663 (486 / 411) and 645
+// (486 / 411). Retail's slot counts (stack-tracked) show a 16-reference home at +0x04 that this build does not have and the
+// success byte at +0x0b behind it, so the frame differs by more than declaration order.
+// M3 lane 13 r114 (fast; control 558, aligned/masked [348/117]): retail lays the inactive exit out as its own
+// epilogue at the very end (`jbe` to `pop edi; mov al, 1`). The active test positive with one `return local_0;` 667
+// (2866 B: the success flag is then held in BL); `return local_0;` closing the active block and `return true;` after
+// it 669 (2865 B) [350/116]; `else return true;` then `return local_0;` 669; descriptive names for five locals 558
+// (same code); `bool local_0;` assigned true in both arms of the active test 552 (first difference +0x2e; six
+// points, a flag form). Body unchanged.
+// Mode-specific returns from the direction copy/projected output/both arms 558/554/558;
+// with inactive exit last 669/657/669; one range read with both returns and with
+// inactive exit last 661/651. NOT kept: projecting first gains four; the success slot stays at +0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

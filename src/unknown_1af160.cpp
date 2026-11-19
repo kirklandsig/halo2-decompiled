@@ -194,6 +194,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 0x260670 (reverted): its read of the flag output dropped 12, the flag pointer stored to a global 9 (the bool output then takes
 // the lowest home; retail's 0x260670 reads and writes the flag as ours does, so the lever is elsewhere on that chain); the bool
 // output passed as `local_14 != false` 172 (978 B); the definition range test with its operands swapped 12 (same code).
+// M3 lane 13 r113 (`--fast 0x1af160 0x1e1f20`, control 12): the bool output alone in a block spanning its uses (the
+// reference result declared outside) 12; the actor offset `(arg_0 & 0xffff) * size` as a named local at both actor lookups
+// 12, renamed to sort last 12 (the CSE temporary's slot does not follow a user name); the three outputs in a block with
+// the reference result outside 44; the node looked up through a fresh actor lookup ahead of the actor local 79; the
+// equal arm's actor lookup through a named local 12 (same code).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

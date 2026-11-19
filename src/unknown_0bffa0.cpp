@@ -1360,6 +1360,18 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // y locals in the projection 479 (2814 B), storing y first 469 (2819 B); a named depth for the divide 537 (2809 B), y
 // first 533 (2812 B); the three rows as scalar locals 539 (2801 B), y first 567 (2775 B); scalar rows with x and y locals
 // 552 (2794 B), y first 578 (2769 B); the result built in a local point and copied 701 (2977 B).
+// M3 lane 1 r123 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0x31c80; base 290): the loop-top clear as
+// value-initialisation 648 (2840 B, a temporary and a new prologue), also in the cone arm 649 (2846 B); the bounds copied
+// with memcpy 290 (same code); the sphere arm's two flag clears swapped 292; the sphere depth after the flag clears 352.
+// A register-masked alignment puts the 10 missing bytes in operand folding (retail loads the matrix element and
+// multiplies by the point register) and in the cone arm's reciprocal, which retail divides after the centre projection,
+// reusing the projection's 1.0 in XMM6. Body unchanged.
+// m3 lane 3 r262 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, base 290): the sphere arm written through
+// `entries[i].` with no entry pointer 592 (2786 B); the projection's result products as `transformed.i * scale` 290 (same
+// code); the cone direction copied into a local vector before the centre projection 603 (2816 B); the sphere vertices as a
+// point3f table filled through the existing real_point3d_set 566 (2807 B); the vertex table as `real [8][3]` 290 (same
+// code). Diagnostic: dead initialised locals at the top of the cone arm, k = 1..8: 479/480/480/484/483/483/479/479
+// (2809-2814 B): no phase, every extra local costs ~190. Body unchanged.
 // M3 lane 16 r139 (fast with 0xc1a80; control 290): a `plane3f *plane = &entry->plane;` for the cone plane's normal copy,
 // dot argument and distance store (retail's `[ecx + 0xc]` store) 543 (2810 B; the sphere arm's constant setup moves too),
 // with 1 to 7 unused locals at the top 544/548/548/547/543/543/543 (diagnostic: not a symbol-count phase); declared at the

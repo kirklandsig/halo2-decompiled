@@ -3088,6 +3088,21 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // more uses of 1 at the else-if arm's level are enough (lead only); either delay test held in a named bool 50 (folded), both
 // 50; the first arm's lock test through the existing getter 0x203330 180 (594 B), the NONE and lock tests through it 162
 // (580 B), the else-if's NONE test as the getter's result 213 (610 B).
+// M3 lane 2 r102 (fast; control 50): both first-half 0x40 flag tests in the matched callee 0x202e90's shifted form
+// (`((dword)*(short *)(p + 2) >> 6) & 1`) 50 (same code: folded to the mask); one to four dead initialised locals at the
+// else-if arm's top 50 each (diagnostic); a 600 s permuter run reached 39 only by swapping 0x290e20's two arguments
+// with a constant-only local holding 1 for the lock test, threshold and trigger sense (not usable). Body unchanged.
+// m3 lane 5 r202 (fast with 0x202e90, 0x1fb8a0, 0x290cd0 and 0x290e20, all matched; control 50): the trigger threshold as
+// one positive ternary at its declaration 50; the pending word read from the squad at each use (no pending local) 50;
+// the trigger count `short` with the casts dropped from its threshold test 50; the first follow-up's index test and
+// argument without the short casts 50 (all four the same code); the latch store ahead of the trigger-index reads 60;
+// diagnostic, the squad's 0x40 flag read in both first-half tests as a one-bit field of a typed view 50 (same code).
+// M3 lane 15 r102 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, all matched; control 50): the pending delay test as `< 1` 51
+// (a real `cmp 1; jge`, not folded to the zero test); the squad's 0x40 flag in both arms read as 0x202e90 reads it,
+// `((dword)*(short *)(squad + 2) >> 6) & 1`, 50 (same code: the shift folds before the constants pool); the second
+// half's definition pointer NULL at the top and assigned in an `if` 107 (578 B: the NULL test is threaded away, the
+// reload stays); the first arm's unlock test as a forceinline predicate with early `return true` 179 (594 B, the lock
+// byte is loaded and tested in a register); the threshold as `mode == 0 ? 1 : count` 50 (same code). The reload stays.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

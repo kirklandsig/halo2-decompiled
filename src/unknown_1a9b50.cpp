@@ -413,11 +413,12 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
+// Earlier: Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax B (11-18): no new form, no lower score (375): the direct final return (true in the tail, false after the
 // entry test) drops 32 bytes and measures 440, and the actor-first body with that return measures 393 (listed), so the
 // actor's table entry stays in ebx and the settings pointer in esi where retail holds the actor in ebp and the slot in esi.
 // MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
-// score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // Earlier at 375 (was 375).
 // M3 lane 6 r188 (fast with the file's functions, 0x265d30 and the five callees, control 375; masked diff shows no block-order
 // difference, only homes, the planar test pair (retail: an aggregate copy, integer moves) and the result byte): actor first with
@@ -792,6 +793,16 @@ extern point2f *g_468778;
 // calls that take it in EBX (0x1e4f90, 0x1a9d80, 0x1a9e00) 392 (all four pushes at entry and the prop in EBX as retail,
 // but the actor EDI and spilled, settings ESI, slot EBP; masked 114); both of those together 404 (1562 bytes: arg_0
 // ESI). Neither the settings' register nor arg_0's EBX preference alone is what separates the two colourings.
+// Lane 13 r112 (fast, control 375, aligned 263, registers masked 124): re-measured the actor-first form with `if (!settings
+// || f13 || f14 || f2d) return false;` and the final expression returned 393 (aligned 266, masked 126). On it: the final
+// result as `!(f14 || f13 || f2d)` 393 (same code); the entry test as `!(settings && !f13 && !f14 && !f2d)` 393 (same code);
+// the end as `if (f14 || f13 || f2d) return false; return true;` 413 (1523 B, masked 108); the slot pointer declared between
+// the actor and the settings call 393 (same code). On the kept body: the result as `!(f14 || f13 || f2d)` 375 (same code);
+// the entry test as an early `return result;` 440 (1517 B, frame 0x3c). Diagnostics, restored: three, eight and sixteen
+// extra byte reads through the prop pointer in the facing arm on the actor-first form 436/481/546: the prop then takes ESI
+// (with a copy kept in arg_1's home), arg_0 moves to EBP and the actor stays in EDI, never retail's slot ESI / arg_0 EDI /
+// prop EBX / actor EBP. Read from the listing again: retail evicts arg_0 from EDI for the view pointer in the facing block
+// and reloads it from its parameter home at the tail, where ours evicts the settings from ESI for the facing pointer.
 // MiniMax G (11-18): no new form, no lower score (375): computing the actor block before the settings call, as
 // retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
 // pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the
@@ -806,6 +817,9 @@ extern point2f *g_468778;
 // retail; arg_0 ESI, the actor EDI with a spill at +0x24, the slot EBP); plus `local_13` declared at the dot test
 // instead of the block's top 423 (masked 79: retail's fresh `xorps xmm0` zero at that compare). Left: the actor spill
 // and frame 0x44 (retail keeps it in EBP), the facing pointer formed late (fold-then-form) and the shared copy tails.
+// Typed actor row after/before settings 375/413; early row base with/without early slot 408/408;
+// early absolute actor slot 375. Settings declared in the admission test, then actor first and
+// typed actor first 409/413/413. NOT kept: ties or regressions, actor/settings/prop homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
