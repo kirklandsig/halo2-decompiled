@@ -842,6 +842,13 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // timer flag as a bool 191 (1888 B: timer -0xe, tutorial -0xd, scripted still packed at -2 beside the split-screen byte,
 // where retail has -0xf/-0xe/-0xd below `origin`), with `origin` declared ahead of the split-screen flag 191 (same
 // code); `origin` scoped to its own block around the top/left computation 115, with the bool timer 191 (same code each).
+// MiniMax A (11-19): no new form, no lower score (114; 115 on this build's reduced image): what is left is the
+// frame homes and two widths - retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd
+// where this build writes the scripted flag as a dword at -0x14, the tutorial flag as a byte at -0xd and the
+// split-screen flag as a byte at -2; retail writes the left coordinate as a word at -0x3c where this build writes
+// a dword at -0x50 (the spelling that narrows it groups the two coordinates into one array, a banned
+// locals-grouping form); the view pointer sits at -0x44 against -0x30 here and the font at -0x50 against -0x4c.
+// The tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

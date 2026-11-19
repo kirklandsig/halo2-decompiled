@@ -3067,6 +3067,11 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // out-parameter; that callee's declaration lives in src/unknown_1d5120.cpp and a declaration's shape may not change here:
 // BLOCKED-BY 0x1d5120.
 // MiniMax R (11-17): no new form, no lower score (63): retail tests the +0x3aa byte in place and reads it again sign-extended at the call, where this build sign-extends it into a long before the test (the byte tested in place measures 82, the byte read again through the BIPED_GET lookup 68); retail also passes the settling count in EAX with six stack arguments, which is 0x1d5120's declaration in another file: BLOCKED-BY 0x1d5120.
+// MiniMax A (11-19): no new form, no lower score (63): the body still differs in the prologue and in the
+// call setup - retail keeps the index in ESI and pushes only the result pointer and the 1, this build saves
+// the index in EBX and pushes it too, and retail's settling call takes the count in EAX with six stack
+// arguments. A permuter run over the body (2 tries, 373 s) found no variant below 63. The call's shape is
+// 0x1d5120's declaration in another file: BLOCKED-BY 0x1d5120.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
