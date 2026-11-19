@@ -668,6 +668,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // pointer-to-volatile group views (local_6, local_11) 155 alone; lane 7's permuter set without them 98 (1604 B, the same
 // ESI exchange left). The table read once through `s_29de21 *const *` taken from the parameter (so its loads could be
 // shared) at the call, the range test or the endpoint search 155/155/155, and 0x29e730 (the caller) drops to 6: not kept.
+// Nearest-scan count, group link array, both together, or array at nearest scan 382 each.
+// First or current link reference and signed table-search bound 382 each.
+// Promoted group with a retained link array 453 at 1560 bytes.
+// The selected-index homes and link-list and group-table registers still differ.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

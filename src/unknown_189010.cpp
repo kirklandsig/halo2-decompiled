@@ -491,6 +491,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
 // NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
 // keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
+// Separate Boolean fields with location memcpy, marker memcpy, both prior timer values,
+// one platform value, nested variant validity or a scoped marker pointer 45 each.
+// Separate Boolean fields with early tag rejection or result by tag arm 151/155.
+// NOT kept: the split tail moves the request onto the stack and breaks matched callers.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

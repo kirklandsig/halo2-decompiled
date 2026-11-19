@@ -977,6 +977,10 @@ static inline long team_score_195ed0(long team)
 // installed-team and active-team references 100/100, count-first rank comparison 100,
 // admitted clamp with a shared result 177, unsigned terminal player inequality 732.
 // The flag still leads the configuration copy and the final score call still expands.
+// Clamp failures with rank continues and native or inline final score 192/128.
+// Team ordinal read at each use 216; signed count snapshots 100; rank before the
+// ranking query 104; team/rank cursors 337; signed rank sample at the store or
+// before the entry lookup 100/100. The early flag read and expanded final score remain.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

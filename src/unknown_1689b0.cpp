@@ -2055,6 +2055,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // paired initialization beside each sum or counts beside sums with clearances last 550/551,
 // prism index before the square or square in the admitted loop 551/548.
 // NOT kept: the count and clearance homes remain, and the three-point gain is below the threshold.
+// Squared radius at prism admission 553; nearest measure scoped to the prism 551;
+// one separation for the edge search and interior path 557. Carried wrapped successor
+// with live or retained point count 601/601; first-endpoint cursor 581.
+// Existing point setter for both accumulated sums or both output means 552/551.
+// The count and clearance homes and signed remainder schedule still differ.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
