@@ -1663,6 +1663,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // empty arm and the body in the else 5 (same code); the mode read into a char local in the result block with the
 // outputs in the mode block 43 (1031 B); the outputs in one declaration in the mode block 43; the outputs declared with
 // their NONE initialisers at the function top beside the unit index 275 (the -1 is set up at entry).
+// M3 lane 15 r110 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00 and 0x14cad0, all MATCH; control 5; B = the outputs in
+// the mode block, re-measured 43 at 1031 B, `mov eax, 0xffffffff`): a redundant `result = false;` after the 0xb8540 call
+// 249 (1034 B: the result test is no longer threaded), on B 251 (1036 B); on B the mode compared as `(mode & 0xff) != 4`
+// 43 (same code); on B the outputs declared bare and filled by `memset(&x, NONE, sizeof(x))` 45 (still `mov`, the two
+// stores swap); one output declared with its NONE ahead of the mode test and the other in the mode block, measured
+// (third person ahead) 243, (tag ahead) 242, both 1031 B.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
