@@ -1639,6 +1639,22 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // calls), the mode alone first 171, declared first and assigned after the counts 172; index fill in branch one only 169.
 // Homes: the four locals renamed (item_count / index_count to other names) 83 each and declared in four orders 83/83/83/84:
 // neither names nor declaration order move the two homes; they follow how often each is read from memory.
+// m3 lane 14 r113 (fast): the player_count reload after 0x19a9b4 appears when 0x19a951/0x19a9b4 (and 0x199ebc,
+// 0x199ef8, 0x199f34, 0x199fd6) call 0x656e0 with NULL for the outputs they do not use instead of reading the membership
+// through 0x5a680 by hand, and 0x656e0 calls 0x58d70 and 0x5a680 itself (every function in both files still matches);
+// this body is then 118 (434 bytes; retail's frame and reloads). On that base: 0x199dc9's output as its own local in each
+// branch (`long value = 0;`, retail's slot shared with item_count), index fills (`for (i = index_count; i < 16; i++)`)
+// and the three qsort calls written out (teams && values, values, teams) in the else arm after `item_count =
+// player_count`: 138 (434 bytes, aligned 10: only branch one's count register differs, retail ESI with immediate zeros
+// and `xor esi, esi` before the scan, ours EBX with the zero kept in ESI). On it: the nested teams/values calls 138
+// (aligned 14); the sort after the inner if/else 138; value renamed three ways 138; value declared before count 136,
+// assigned after its declaration 138, declared after maximum 138; count declared at five places at function scope 136
+// each; per-loop scan counters 138; one call through a comparator pointer 135 (436 bytes); 0x199dc9 taking pointers,
+// NULL or 0 last, 138. On the 118 base: index fills 172, the three calls at top level 152, both 174; rows through
+// data->data in each arm 143 (with fills 172, with the calls 145/174); the sort in the else arm with pointer fills
+// 159, index fills 167; `maximum = 0; if (call) maximum = item_count;` 51 (437 bytes, a test/je retail lacks: steering);
+// the separate value in one branch only 167/167, at function scope 141; with the sort at top level 175/175/125/175, with
+// pointer fills 153/154. Not kept: the callers' edit raises this body to 118 and no form here beats 83; all restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2754,7 +2770,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // bitmap_a 88 and its default arm in retail's last-loop order (text_b, bitmap_a, text_a, bitmap_b) 92; the reload of
 // players[i] after the 0x53b40 voice query still needs a store through a pointer in that chain (src/network_voice.cpp,
 // another lane's file) and the last loop still keeps the screen in ebx where retail gives ebx to bitmap_a.
-// score 87 (was 87): the spilled locals sit one six-step cycle off retail's slots, retail reloads players[i]
+// Earlier (87): the spilled locals sit one six-step cycle off retail's slots, retail reloads players[i]
 // after the 0x53b40 voice query (BLOCKED-BY 0x53b40's chain, whose bottom 0x59670/0x596a0 is a contributor's),
 // and the last loop keeps the screen in ebx where retail gives ebx to bitmap_a. Earlier rounds below.
 // MiniMax B (11-12): no new form, no lower score (95): the spill slots keep the next stack slot
@@ -2997,6 +3013,17 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // bytes); the mode read once ahead of the last loop 113 (933); one function-scope mode for the last two loops 323 (933
 // bytes, first difference +0x5, but aligned 66 and masked 56); the last loop's four indices as one array 128 (944).
 // Body unchanged.
+// m3 lane 14 r113 (fast): the players[i] reload after 0x53b40 follows 0x53de0's link-time summary. With the membership
+// read through one inline helper taking two optional member-index outputs, NULL for both in 0x53de0 (and for one each in
+// 0x54a20/0x54a70), all three still match and this body is 81 (aligned 80 -> 51: the voice block becomes retail's), but
+// 0x55990 rises 64 -> 137 (415 -> 427 bytes, retail's length), so not kept; with the helper in 0x53de0 only the same.
+// Diagnostics, restored at once: a store through a pointer to 0x53b40's own result 81; the same store in the session
+// getters 0x59670/0x596a0 81 (0x2514fd 118); a local copy of their out pointer, the result's address taken but only
+// read, an inline out-parameter accessor, an empty call, an empty variadic call 87 each; a never-run call to an undefined
+// extern 81. Left on the 81 form: the slot permutation and the last loop (retail pushes immediate zeros, gives EBX to
+// bitmap_a and EDI to text_b and loads the screen into ECX, then EDI; ours keeps the screen in EBX for all five calls
+// and false in EDI). On the 81 form: the helper's default arm chained (`*text_a = *text_b = NONE; *bitmap_b = *bitmap_a =
+// NONE;`) 86 (925 bytes, aligned 48); the last loop on its own counter 81 (same code); both 86.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

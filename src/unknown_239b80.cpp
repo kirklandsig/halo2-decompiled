@@ -920,7 +920,7 @@ bool function_23a160(point2f const *point, real radius, short count, point2f con
 /* true when the point lies on the inner side of every edge of the polygon,
    to within epsilon */
 // @retail 0x23a220
-bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon)
+bool function_23a220(point2f const *points, short count, point2f const *point, real epsilon)
 {
 	bool result = true;
 	for (short i = 0; i < count; i++)

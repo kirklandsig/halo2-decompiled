@@ -599,7 +599,7 @@ void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, lo
                     local_45.y += local_30.j * local_47;
                     local_45.z += local_30.k * local_47;
                     point2f local_48 = { local_45.n[local_23], local_45.n[local_24] };
-                    if (!function_23a220(&local_48, local_27, local_2, 0.0f))
+                    if (!function_23a220(local_2, local_27, &local_48, 0.0f))
                         continue;
                     vector3f local_49;
                     vector3d_from_points3d(&arg_2->field_30, &local_45, &local_49);

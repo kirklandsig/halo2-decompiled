@@ -45,7 +45,7 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // them moves with the frame; the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup
 // and the other way round, and the two flags written as bytes still give each its own home (439, one point,
 // below the bar); all restored.
-// score 440 (was 528): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions.
+// score 440 (was 440): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions.
 // Earlier 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // MiniMax H (11-18): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and the early
 // homes keep their order (ours the reference at 0x18, the flag bytes at 0xb and 0x13, the index offset at 0x20 and
@@ -220,6 +220,13 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // scale products one instruction short). In the frame-0x8a0 forms the lockstep count is lost at two places: the unknown40
 // loop's `inv * i` product is one byte short of retail's `i * inv`, which turns the main loop's pad `jmp; lea ecx` into
 // one `lea ebx`, and the random path keeps its own epilogue where retail has `je exit; jmp shared test`.
+// m3 lane 14 r113 (fast; 0x2605d0, 0x2613d0, 0x2600a0 matched throughout; aligned/masked in brackets, base 440 [290/254]):
+// retail's first evaluator pass tests the running result before the table's proc (0x2600a0's own `result && e->proc`
+// order: proc load at the head, `test al, al; jne` at the foot). The first pass's test as `possible && proc` 526 [248/216]
+// (3077 bytes, retail's length; that loop becomes retail's, the frame stays 0x8a4, site 2 still inlined and the owner
+// lookup still a call); that with the sort scratch in its block 518 [199/165] (3057 bytes, frame 0x8a0, first difference
+// +0x3b); the first pass as a pointer walk, `possible && e->proc` 604 [252/219] (3077 bytes), `e->proc && possible` 440
+// (same code); the pointer walk with the sorted index as long 611 [252/218] (3069 bytes). Lockstep score rises: not kept.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
