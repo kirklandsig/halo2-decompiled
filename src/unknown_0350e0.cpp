@@ -2155,6 +2155,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // fixed-axis aggregates 193; reversed direction aggregate alone 257.
 // NOT kept: the 180 and 171 forms reach frame 0x18 and 812 bytes but raise the caller from 492 to 572.
 // The earlier aggregate advances both X and Y ahead of the retail interleaving.
+// MiniMax A (11-18): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18, and retail keeps
+// the result in its own slot at +8, set to 0.0f in the prologue, where this build reuses the scale argument's home; the
+// case-one body still differs in its float order and in how retail loads the two components of the 0x4b9dac vector one
+// at a time and copies them through the stack, and restructuring the switch into a fall-through form measures 194.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -5292,6 +5296,23 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // The same four with color4f: 225/225/225/225. NOT kept: color recovers frame
 // 0xe0 and the collision home, but the radius stays at +0xc and the six-point
 // gain grows to 1826 bytes against retail 1819.
+// Round 101 (m3 lane 2; control 231). A compile-only build of this file gives our frame and corner math (0xd0, the same
+// two shared helper homes, radius and negated radius), so 580 forms were screened there against retail's code ahead of
+// the draw call (aligned differences of 230 lines; control 139), then nine in the fast check. Compile-only: the four-
+// channel colour with only its alpha stored and 1.0f passed for the rest 124 (frame 0xe0, alpha at retail's +0x78,
+// radius at retail's +8, but the second helper home at +0xc and the negated radius at +0x10 where retail has the
+// negated radius at +0xc and the scaled zero at +0x10); all four channels stored, or a brace initialiser, 127/127
+// (radius +0xc). On those: the offset refilled by three assignments or by real_point3d_set at each corner, the negated
+// radius as `-radius` or a named local, the helper's x row written up-first, the origin as the first operand of the
+// vector sum: 144 forms, best 124 (the row and operand orders change nothing). The helper's locals read z, y, x give
+// retail's leaf order in the first corner (forward.i, up.i, up.j loaded first and forward.i, up.j kept) with x and z
+// exchanged in their registers and homes (132 with the scale block y, x, z; 144/145 with z, y, x or x, y, z); the
+// other four read orders and all six scale orders with them 136 to 202; the helper's rows stored in another order 161
+// to 263; the offset's three first assignments in any order, chained, or y copied from x, with each read and scale
+// order (396 forms) best 124. Fast: the existing transform4x3f_apply_point with vector3f_add and the bias at each
+// corner, either operand order, 1016/1016 (1196 bytes: not inlined here); alpha-only colour 225 (1826 bytes), all four
+// channels 225; alpha-only with the z, y, x read 386, with the scale block y, x, z as well 391, z, y, x as well 230
+// (1830 bytes); all four channels with the z, y, x read 386; scalar alpha with the z, y, x read 390. Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

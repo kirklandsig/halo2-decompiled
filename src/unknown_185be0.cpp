@@ -653,6 +653,14 @@ union s_185be7
 // else-arm default, the weapon helper and the long mask local 76 [59] (fast); plus the havok pool data read first through
 // `s_havok_component *const &` (the 0xb9b90 form) 74 [59] (the pool load then precedes the mask as retail; the object
 // pointer and the pool global sit in ECX/EDX where retail has EDX/ECX). BLOCKED-BY 0x24590 (its six unmatched callers rise).
+// N421 previews: typed seat table access at its existing definition field 396; separate unclamped fraction
+// and angle response 823; complete response with unclamped fraction confined to the positive span 942;
+// lower and upper velocity fields read through the bounds type 396; bounds view with a separately named
+// interpolating fraction 823; upper velocity field retained as a distinct endpoint before the span 394;
+// magnitude and scaled speed stated as separate computations 394; complete lower and upper clamp arms over
+// the unclamped fraction 823.
+// NOT kept: the typed seat-table field (396 plain, no gain; body kept stable for the held 0x24590 inline lead);
+// naming the upper speed or magnitude gains only two points in preview, and the separate clamp forms regress.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
