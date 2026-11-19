@@ -1718,6 +1718,7 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // MiniMax S (11-17): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail writes the output's state with a conditional move that needs the SSE architecture flag this file's flags do not set.
 // MiniMax B (11-14): no new form, no lower score (339): retail's conditional move for the state store is still out of
 // reach - it needs the SSE architecture flag this file's flags do not set, and the flags stay as they are - and the
@@ -1897,6 +1898,72 @@ struct s_summary_player_sort_entry
 // pointer as the output of a small getter taking its address 339 (same code: it folds); the membership pointer the same way
 // for the name 339 (same code); the membership and member index from 0x5a680 (NULL, &member_index) for the name and identity
 // 353 (called, as listed); that with the nullable type pointer 392. Neither pointer gains a home in any form. Body unchanged.
+// M3 lane 10 r128 (fast with 0x5a680, 0x5b0d0, 0x5b180, 0x64160 and 0x5a620 listed, the final numbers re-measured plain over
+// this file's 59 functions; in brackets the sequence-aligned count and the register-masked aligned count, control 339
+// [181, 134]). HELD lead, body unchanged (needs the user's OK on this file's flag line; diff in
+// build/r128/held-64d70.patch): 205 plain at retail's 1291 bytes [18, 12] with every remaining difference inside the
+// conditional-move region, the file's other 58 functions still MATCH.
+// Cause: retail holds two values for the session. It loads the pointer into ECX, tests the state and the type through ECX,
+// copies ECX to EBX in the type-test block (`mov ebx, ecx` at 0x64dad) and keeps using ECX for the member index, the
+// membership address, the variant address and the map query's `this`; only the code after that first call reads EBX.
+// What is formed from the first value before the call cannot fold into EBX after it, which gives retail's three extra
+// homes (the type's address at +0x20, the membership address at +0x1c, the member index at +0x2c) and the 0xaa8 frame.
+// 0x5a680 does not have to be expanded for this: plain locals give the same homes in the plain build.
+// The lead's forms: `c_class_58d20 *current` read from the global, `long state = current->state;`, and inside the state
+// test `c_class_58d20 *session` read from the global again, then `const long *type = &current->value18;` tested as `*type`
+// and read as `*type` for output->type; `statistics` and `team_mask` declared ahead of `long member_index =
+// current->member_index;` and of a membership view pointer `(s_66050 *)&current->value4c` (that view's first eight bytes
+// split into two longs so the host index has a name); the variant, the name (through the view) and the map query on
+// `current`, everything after the query on `session`; the name copied through `wchar_t *summary_name` (the copy and the
+// terminator); the id and key through the existing network_session_get_key(session, &output->id, output->key, 0, 0), which
+// the link expands with retail's per-destination null tests; identity, counts, mask and players through the view; the
+// full-session arm as `long used` plus a switch on the mode with `case 1: case 2:`; the sort entry's key and properties
+// grouped as one nested record with `player = &entries[count].player` for both copies, a `source` pointer to the session
+// player, and the sort words written through `entries[count].sort`. Dropping any one of these raises the aligned count
+// (measured on the if-assigned-state body, 234 [10, 10]): name copied without the pointer 243 [19, 11]; the full arm as the
+// if chain 261 [27, 16]; the entry copies written on entries[count] with no record pointer 234 [26, 19]; no `source`
+// pointer 234 [14, 14]; the member index and view declared ahead of `statistics` 237 [12, 12]; the variant through the
+// file's inline getter 355 (1291 bytes) [74, 47] (it becomes a call); the id/key written out by hand 349 (1291) [114, 80].
+// The manager state: main's ternary gives 205 (1291 bytes); `short state = 0; if (initialized) state = ...;` gives 234 at
+// 1307 bytes [10, 10], where only the branch that stands for retail's conditional move and the loop padding its 16 extra
+// bytes cause still differ. One build-flag diagnostic (never kept): an earlier body of this lead (the session local one
+// block early, two orders off) with the if-assigned state and this file built for the SSE architecture scored 16 at 1291
+// bytes [10, 8] with the other 58 functions MATCH: the conditional move and all the code after it agreed. So the lead with
+// the if-assigned state is expected to match under that flag; that last step is not measured (one flag diagnostic per
+// function) and is the coordinator's to full-check.
+// Tried on the way (fast, in order): the file's out-parameter getter for the session with the range tests on
+// session->state 374 [204, 150], with the session initialised to 0 as well 374, with a `state` local 339 (same code as
+// main's); the state read through the global and `session` assigned from a second read, every later read on `session` 353
+// [178, 132] (the two reads merge into EBX); `session = 0; getter(&session); if (session)` with a `state` local 339 (same
+// code), with session->state tests 374; reads before the map query on the global itself with `session` assigned in the
+// state block 370 [159, 117] (frame 0xaa4, retail's copy and the type-address home appear, the state lands in ESI); that
+// with 0x5a680 on the global 370 [164, 111] (frame 0xaa8); with plain member-index and view locals instead 358 at 1323
+// bytes [139, 79] (all nine homes at retail's offsets); the five state tests on other expressions 359, 358, 359, 337 (no
+// type-address home), 372; with the name pointer, the key getter and the `used` switch 389 (1323) [95, 61]; then a `source`
+// pointer 389 [90, 58]; no entry pointer as well 372 (1307) [53, 35]; properties copied ahead of the key 372 [47, 34];
+// both copies through a pointer to the entry's key 372 [39, 26]; pair one of the range tests on global reads with pair two
+// on the local 354 (1291) [75, 56] (pair two folds); the variant through the file's inline getter on the global 355
+// (1291) [91, 57]; an explicit type pointer ahead of the session local 373 [39, 27]; the session local assigned inside the
+// type test 306 (1291) [62, 44] (state in EDX, no type-address home); one `&&` chain with the session assigned in the body
+// 313 (1291) [65, 54]; the variant computed first in the body 373 [56, 39]; the member index through the session local
+// 372 [40, 26]; the view through the session local 209 (1291) [86, 64] (it folds); the session local assigned right after
+// the state read, ahead of the state test 215 at 1291 bytes [28, 20], plain 215 (state in EDX, zero in EDI, but `push ebx`
+// and the copy one block early); the session assigned ahead of the state read 378 [137, 91] (frame 0xab0); the second
+// range test through one local read 372 [39, 26]; the getter for the session with later reads on the global 374 [48, 27];
+// the session declared at the top as 0, or uninitialised, and assigned in the state block 372, 372 [39, 26]; no second
+// range test (diagnostic) 354 (1291) [75, 56]; the second range test on the session local 373 [37, 24] (a real reload); no
+// later type read (diagnostic) 330 (1291) [66, 42] (the type-address value is what keeps the state out of EDX); no zero
+// stores at the body top (diagnostic) 278 [76, 38]; the if-assigned state on the 215 body 245 (1307) [20, 18], on the
+// state-block-capture body 368 [27, 20]; the key copied as an aggregate assignment 245 [20, 18] and 245 [34, 27], the
+// entry's key as twelve bytes 245 [20, 18] and 245 [34, 27] (same code as memcpy each time); `statistics` and `team_mask`
+// declared first 242 [18, 16] (retail's store order), the view after `team_mask` 242 [18, 16], after `statistics` 244
+// [20, 18]; the state-block capture on that 368 [25, 18], with no `state` local 368, with the local read after the capture
+// 368, as one `&&` chain 368, the capture as `state ? global : 0` 265 (1291) [47, 40]; a re-reading out-parameter getter
+// for the capture (diagnostic) 368 [25, 18]; 0x5a680 on the global with either capture position 242 [18, 16] and 368
+// [25, 18] (the reduced image expands it; same code as the plain locals); a type pointer formed from the session local
+// 309 (1291) [48, 36] (it folds); two session locals without the explicit type pointer 310 (1291) [47, 32] (state in EDX
+// and the copy in the right block, no type-address home); with the type pointer after the second local 234 (1307)
+// [10, 10] (retail's prologue instruction for instruction), ahead of it 236 [12, 12].
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

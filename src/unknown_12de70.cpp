@@ -703,6 +703,10 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // local with the loop's argument re-read from the field 51; the loop read at each use with the argument through
 // `geometry_cache_block_get(block_index)->block` and the tail block local 115 (293 bytes); the arm's physical block named
 // before the call 27 (same code).
+// M3 lane 10 r130 (fast with 0x12e210, which stays matched; control 27): the task count named, the block local read, then
+// the count stored to the async field 73 (266 bytes: the count takes EDI, the cache block EBP, the 24-byte index EBX); a
+// trivial forceinline identity (diagnostic) around the task count, the block read, the busy call's index, the release
+// address's index or the time compare 27 each (same code: identities fold before allocation, no rotation step).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

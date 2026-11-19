@@ -944,6 +944,24 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // contributor's and takes a short), the second offset block's scratch rotation (ours ECX/EDX/EAX, retail
 // EAX/ECX/EDX), atan2's operands reloaded radius first (retail magnitude, radius, fxch) and the latch's global load
 // after the NONE test with the datum product in ECX (retail EDX).
+// M3 lane 10 r129 (fast with 0xbf2c0/0x268c90 and the callees; base 76): round 149's lead (root pointer, cluster-table
+// pointer, `long` zoom level, `(real)atan2`, g_4e8c24 at each use, named call result) re-measured 2 (895 B; only the
+// object definition pointer in EDX, retail EAX). A one-object LTCG screen is exact here only with 0x100880's file and the
+// weapon file linked (without them 0xc8880 takes the short in EDI and the object pointer spills). On that screen, all
+// on the lead: the model index read through the definition at both uses 38 (definition EAX, but the model lookup's
+// pointer, the 0x16bc00 result block, the marker copy and the zoom block all rotate scratch registers), named at only
+// one of the two uses 38/38, typed dword/unsigned/int/const 2 each, through an accessor 2 (38 with the field form), the
+// lookups through a tag-data inline 2/38, the whole range block in a forceinline helper taking the index, the
+// definition or the field 2/2/2 (result-variable helper 4); radius/definition/model statement orders 2 each; the search
+// loop's body at depth 0 (while(true) with goto, goto found, flag) 2/4/2, with a re-test 57; dead locals K = 0..32 2
+// (38 with the field form) at every K; the range lookup's index as `(word)` 6 (state right, model index in EDX, movzx);
+// field test plus `long model_index` in the arm with `(word)model_index` 4 (3 aligned: `movzx edx, ax` / `shl edx` /
+// `[edx+ecx+8]` where retail masks EAX in place; plain fast 147 positional at 895 B, the same three lines). A `(word)`
+// index always compiles to movzx, even in place (`movzx eax, ax`), so retail's `and eax, 0xffff` is a mask; every mask
+// spelling gives 2 (named) or 38 (field). A 286-combination random screen of 17 natural toggles: best 2, every
+// definition-EAX row 38 or worse.
+// Also on the screen: the arm's named index masked in place (`model_index &= 0xffff`, long or dword) 38, masked at its
+// initialiser 38, the outer named index masked in place 2, the low half read as a 16-bit field 38.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -2323,6 +2341,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // with the byte activity bit `(header->flags & 4) != 0` 327; the ancestry walk alone through OBJECT_GET 328; the walk
 // through OBJECT_GET with the header through OBJECT_HEADER_GET and `index` not volatile 324 (1203 bytes); the node
 // copied into a long local 288 (1228 bytes). All restored.
+// M3 lane 10 r129 (fast with 0xb8ee0/0xb8bd0/0x141590/0x142570; base 285, 1240 B): a pool-data local read after the walk
+// for both the parent and the header 318 (1224 B); the same local read from g_4e0300 300 (1228 B); only the header from
+// g_4e0300->data 298 (1241 B); the `allowed` test ahead of the ancestry walk 314 (1238 B); the walk's match clearing
+// `allowed` and breaking, one return after it 343 (1290 B). BLOCKED-BY 0xb8bd0 as before.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

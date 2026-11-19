@@ -4040,6 +4040,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // input word named from the shifted local 9 (same code); the exponent search as a do/while from -1 947; permuter (600 s,
 // 55 tries) best 9. Diagnostics: mode zero's pin dropped, or its span quotient dropped: the reloads after the depth-bias
 // write stay 1.0f first, so the pair order does not follow the number of 1.0f or span uses after the call.
+// M3 lane 10 r130 (fast, control 9): 9-40 dead initialised locals after `small` 9 each (aligned 6; rounds 171 and 201
+// covered 1-8); the depth-bias write in its own skip test after the blending block at modes zero and one 9 (the tests thread
+// into one, same code); `input` typed byte with the shifted local 945 (4844 bytes), typed short 934; `low /= g_48565c;
+// high /= g_48565c;` in place of the explicit reciprocal 9 (same code: the compiler forms the reciprocal, pairs unchanged).
+// On the no-shifted-local form (939, shift retail's): 0-40 dead initialised locals after `small` 939 each (aligned 15).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

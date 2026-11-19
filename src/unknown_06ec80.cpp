@@ -189,6 +189,19 @@ union s_6ec80
 // 198; the mask scoped with the machines pointer read through a `const &` bound to it 225; the mask zeroed before the
 // guard as now and again at the guard's top 225 (the first zero dies, so the scoped allocation follows the live range's
 // start, not the source position). All restored.
+// M3 lane 10 r129 (fast with 0x6ec10/0x5b120; base 5, the scoped mask re-measured 225): the machines block's data test
+// read through the session (`arg_0->data4f24.data[0]`) with the mask scoped 222, unscoped 225; that plus the loop reading
+// the player block through the session 274 (986 B); round 101's form (counter zeroed before the guard, mask scoped) with
+// the session data test 236; the mask's zero declared right after the two block pointers' NULLs 51, ahead of them 210 (981 B).
+// Then a one-object LTCG screen (exact here with the caller's, the getters' and the callees' files linked; counts are
+// aligned differences against main's listing with the mask's zero moved into the guard): about 1000 random combinations of
+// 20 natural toggles with the mask scoped (guard and NULL orders, pointer declaration order, nested guard, typed mask and
+// counter, `+=`, the data test through the session, merged ready tests, chained NONE defaults, forced-inline result-default
+// getters for the 0x4da8/0x4db0/0x5dd0/0x4dac reads) all stay in the scoped state (57-60). Only moving a statement out of
+// the block between the 0x4dac read and the 0x4d08 getter restores the entry registers: the 0x49c8 NONE default moved
+// ahead of the 0x4dac block 18, the value_18 read moved after the getter 19; with the guard testing players first and the
+// two NULLs players first 11/13 (left: the moved statement and the two block pointers' EBX/EDI). Both misplace a store or
+// a load, so neither is retail's source.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
