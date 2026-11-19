@@ -579,8 +579,9 @@ extern s_fade_record *g_50942c;
 extern long g_509420, g_509424;
 extern real g_4670fc, g_467100, g_509428;
 
+__declspec(noinline) void function_398d0(real seconds);
 // @retail 0x398d0
-void function_398d0(real seconds)
+inline void function_398d0(real seconds)
 {
 	real const *time_reference = &seconds;
 	/* referenced first in the order the path without a record loads them */
@@ -5676,6 +5677,10 @@ bool __stdcall function_391f0(void *state);
 // block inside it and a break (257, drops retail's jmp at 0x36d45 but regresses). Retail passes 0x38450's state in ebx
 // (0x36e84) and pushes 0x391f0's (0x36efa); ours pushes the first and passes the second in eax. That follows the
 // unmatched callee bodies, not this function.
+// score 279 in a full build with stand-in SDK headers (was 292): function_398d0 is declared
+// `__declspec(noinline)` with `inline` on its definition; retail stores before and reloads after its call here, as
+// it does for an inline function that is called out of line (the head block and the xmm registers at +0xf8 become
+// retail's).
 // @retail 0x36b50
 void function_36b50()
 {
