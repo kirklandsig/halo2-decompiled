@@ -472,6 +472,18 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// score 42 (was 42): row i of both rotations, the offset's zero store before the list test, the 1.0 defaults' order
+// and three reload pairs differ. M3 lane 14 r112 (fast with 0x173c10/0x2477b0, both MATCH; control 42): scale first 40
+// (two points, not kept); indexed definitions without scale first 115; the translation through the existing
+// vector3f_add 122 (1136 B); both rotations through vector3f_rotate_into_axes 84; scale first with the definition formed
+// before the emitter lookup 45. Compile-only screen of the rotation block (it reproduces the LTCG block exactly; scored
+// with registers masked against retail's 62 block lines): this body already has the rotation order of round 120's
+// indexed-plus-motion-reference form (7 lines off: only row i of both rotations, ours left/up/forward, retail
+// left/forward/up); the indexed form moves it to 35 and nothing natural brings it back: 56 single and paired rewrites
+// on it (declaration orders of the frame outputs and colour, the particle pointer hoisted, the index declared at the
+// top or stepped first, `+=` translation, const masks, `!= 0`, the definition first, the next index read late) all 35;
+// dead initialised locals of any type 11 at best (four or five), placed after the first rotation no effect; private
+// helper texts (operand order, component locals, by-value vector) 22 to 37.
 // MiniMax B (11-18): no new form, no lower score (42): a local copy of the emitter definition for the three property
 // tests measures 125 and a local copy of the emitter flags for the same three tests 181, both above the plain body; the
 // permuter's annealed run (900 s) finds nothing below 39, so row i of both rotations still sums the up product before
@@ -486,7 +498,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // the forward one and that term order is the shared rotation helper's own text in include/matrix_transform.h, a file
 // this lane may not edit.
 // MiniMax S (11-16): no new form, no lower score (42): the emitter walk wrapped in an if with the offset's zero store inside it puts the store after the list test but shrinks the frame to 0x94 against retail's 0x98 (306), and moving the cache call ahead of the definition's test puts the two reloads in retail's order but flips the prologue's push order (140); the rotation's call sites (a temporary copy, a separate result, the two calls swapped and the origin added the other way round) leave the row-i order alone, as does the particle mask read before the particle loop.
-// score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
+// Earlier at 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
 // scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
 // reassociates each row's three-term sum, retail row i (left*y + forward*x) + up*z, ours (up*z + forward*x)
@@ -919,6 +931,16 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // bitfields 229, shared mutable update mask 209, input block copies 42,
 // linked latch with empty-emitter continue 212. NOT kept: the indexed
 // loop advances the first difference but the rotation rows grow the body.
+// M3 lane 1 r123 (compile-only build of the file, which reproduces both rotations; rows judged by the order the matrix
+// elements are read: retail l.i f.i u.i / f.j u.j l.j / u.k f.k l.k, ours l.i u.i f.i / the same j and k): explicit
+// parentheses (a reassociation barrier) always evaluate forward before up before left inside a pair, so retail's
+// left-then-forward pair is not reachable that way (row i parenthesised in all 6 term orders with matrix- or vector-first
+// products, all rows parenthesised: float ops aligned 20-57 against 18); the vector read into component locals in all 6
+// definition orders x 6 row-i term orders best 29; the helper's row statements in all 6 orders with the copy taken only
+// when aliased, always, or bound to a const reference (the first row computed gets left, up, forward when it is row i
+// and left, forward, up when it is row j or k); the translation's statements in all 6 component orders 18-25 (row i
+// unchanged); dead reads of the matrix elements before the rotation (no change). Reading: row i pairs the first two
+// components the in-place copy makes available (ours y, z; retail y, x).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

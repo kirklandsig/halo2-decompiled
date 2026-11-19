@@ -149,6 +149,11 @@ bool function_1946f0(s_bitstream *stream)
 // pointer to the data field taken before the index and read at both uses 2 (same code); the clear's start as
 // `&stream->data[byte_index] + 1` 2 (same code). A data symbol older than the index does not give the index-first
 // order once the data is read in the block.
+// M3 lane 6 r197 (fast): the masked byte read into a byte local and stored back 2; `saved / 8` at every use with the
+// read-modify-write written out 2; the mask as `(byte)~(0xffu << (saved % 8))` 4; both addresses through an
+// `(unsigned long)` index 2; the count as `size_in_bytes - (byte_index + 1)` 2. Compile-only probes (small model): a
+// plain indexed load or store folds index first (`mov [index + data], bl`, as 0x1957d0 does), while a read-modify-write's
+// address and a memset's start are formed data first in every spelling tried; retail has both LEAs index first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

@@ -1210,6 +1210,7 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
+// score 679 (was 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
@@ -1226,7 +1227,7 @@ PRIVATE inline long score_string_list_1608e0()
 // the body is off.
 // MiniMax E (11-01): no new form, no lower score; left: the entry register roles (retail loads the
 // player index first), the colour/bounds local homes and the missing bytes.
-// score 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
+// Earlier 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // limit conversion in retail) and coordinate/color homes remain.
 // Earlier (score 689, was 689): baseline frame 0x78c versus retail 0x79c; early player/panel roles and coordinate/color homes remain.
 // this round's reduced listing shows the frame at 0x790 against retail's 0x79c
@@ -1507,6 +1508,30 @@ PRIVATE inline long score_string_list_1608e0()
 // Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
 // reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
 // independent score visibility for name/caption 687, with explicit caption-width branches 687.
+// M3 lane 12 r143 (fast with 0x1600f0, 0x1603f0, 0x161420; control 679), aimed at the scroll clamp (retail reads the user
+// index in each arm, EDX then EAX, and converts the limit once after `0 > scroll`; ours hoists one index load above the
+// branch and converts the limit twice): a `short user` read in each arm 694 (2888 B: the hoist is gone, two conversions
+// remain); that with `real limit` named in the second arm 682 (2879 B: one conversion, but ahead of the zero test); the
+// named limit alone 720 (2856 B); the per-arm index with height not volatile 723 (2856 B: PIN takes retail's shape, the
+// index load is hoisted again and height stays in ESI); the screen width as `long` 679 (same code).
+// Joined zero cases with the original or one converted limit 690/709, with a retained
+// admitted scroll 709; nested lower-bound admission 685; default result with shared store
+// 742; conditional height selection 687; joined zero result with shared store 710;
+// admitted scroll adjusted before store 709. Frame and viewer register still differ.
+// The viewer multiply still follows the panel save, leaving the viewer in EDI and the frame four bytes short.
+// Separate byte displacement 679, explicit pool base and displacement 679, word viewer slot 714,
+// record reference 679, word slot with record reference 714, typed array base 679, word slot
+// with byte displacement 714, displacement with record reference 679.
+// NOT kept: the word slot changes the prologue without recovering the viewer register or origin word.
+// Staged short horizontal/full-width vertical/both/full-width horizontal/short vertical/both short origins
+// 679/679/679/684/681/681; in the row position, horizontal 675 and both 689.
+// NOT kept: staged row horizontal gains four, still above 30, with the same frame gap.
+// MiniMax A (11-18): no new form, no lower score (679): the length agrees with retail's 2879 bytes, but the frame is
+// 0x798 against retail's 0x79c; retail scales the player index into ebx and adds the player base before the panel work,
+// while this build loads the panel into ebp first and scales the index into edi after the register saves, and the scores
+// pointer's home is +0x50 here against retail's +0x34. Retail also keeps the computed x and y in their own word slots at
+// +0x10 and +0x12 and copies the pair into +0x18 with one dword move; giving this build the same origin pair and a four
+// byte copy into the row position measures 681 at 2888 bytes.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

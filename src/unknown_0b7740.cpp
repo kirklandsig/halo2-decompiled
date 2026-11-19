@@ -1128,6 +1128,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // 295, the outer parameters declared in the opposite order 295, five later object_index arguments made constants 304: in
 // each object_index still loads first (ECX or EAX) and the parameter takes ESI, so the entry roles follow neither
 // declaration order, the parameter's later reads nor object_index's use count. Body unchanged.
+// M3 lane 11 r119 (fast with 0xbfe20/0xbfe60/0xbdb60, all MATCH; masked = aligned count with registers and stack
+// offsets masked, base 69): final_matrices declared at the top and returned by both early exits 240 (masked 72); the
+// sibling 0xbd090 reads this same bit-29/+0x34b condition through a fresh `current` object read, and that spelling here
+// (`byte *current = (byte *)header->object;` for those two tests, bit 30 cleared through 0xbfe20) gives round 78's 194
+// (814 B, masked 59; a hand reload beside `object`, match-only), with final_matrices at the top 194 (masked 62);
+// `matrices`, `orientations` and `sample` (constant initialisers) declared ahead of the mask copy 239 (masked 64), at
+// the top after result 239 (masked 70).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1617,6 +1624,17 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // `byte *const *` to the data field declared at the branch top, one parent-object local 44 (forwarded). Diagnostic,
 // reverted: that pointer volatile 20 (same code: even with the data re-read forced, the pool is re-read too, so the pool
 // in ECX needs a value the allocator keeps live from the current lookup, not a different data-field base).
+// Lane 13 r112 (fast, control 20 at 1399 B, aligned 12): the no-model matrix through a file-local node-matrix helper
+// that masks its index parameter in place, forceinline / plain inline 20/20; that helper with a named absolute-index
+// local 20; that helper with the flag's lookup written out in full 20; the parent index field read at each use with
+// that helper 20, in both arms 20, with the existing accessors 20, in the render arm only 20, with a local for the
+// test only 20 (same code each); the matrix and the flag under two separate index tests 44 (1390 B, data from EDI);
+// the flag as `parent_index != NONE && bit` 42 (1395 B); the index stored back to its field after the flag read 20
+// (the store is dropped). Diagnostics, restored at once: the file of 0xb8bd0 built without /Ob1 394 (1373 B: 0xb8bd0
+// is then expanded at the render site too and 0x18c3b0 loses its match, so site frequency does not separate the two
+// sites in this build); a later compare of the index after the flag read re-measured 40 at 1406 B, aligned 3 (the
+// block is then retail's byte for byte). The order inside the lookup follows the pool: held in ECX, the index half is
+// computed first (retail); reloaded, the data load comes first (ours). No form here keeps the index live past its mask.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

@@ -1020,6 +1020,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // entity arm first 310 at 1243 bytes, named coefficient outputs 238,
 // first-node scope ending at input capture 245. NOT kept: frame 0x40 and
 // the second-node spill remain in all eight forms.
+// M3 lane 3 r263 (fast; base 238; compile-only snippet harness for the classifier): every ternary, MIN/MAX nesting and if chain
+// compares against an immediate; only the preset form (`limited = 1; if (limited <= value) { limited = 16; if (limited >= value)
+// limited = value; }`, or a pin helper with that body) keeps the constants in the result register, and it compares
+// `cmp value, limited` where retail has `cmp limited, value`. In the build: the preset clamp 320 (1243 B); the clamp compared
+// with its own `value` 320 (1243 B); the classifier written inline on `second->shape->data` 320 (1243 B); the three early
+// rejections after the component scan as one `||` chain 238 (same code); the component scan with a result local and `break`
+// 333 (1257 B).
 // M3 lane 4 r217 (fast with the file's other seven functions, all MATCH; control 238, aligned 138, masked 63). Kept: the 0x2001
 // property scan through include/unknown_1cec30.h's existing havok_entity_property_get in place of the hand-written private
 // copy (same code, 238; the copy and its two view types removed; the root walk stays written out, as 0x183da0's file is
@@ -1028,6 +1035,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the kind test and used for the material call 327 (the shape then takes EBX and its spill like retail's, but the second
 // node moves to ESI where retail keeps both in EBX and one slot); that with the non-24 arm written first 330; the root's
 // entity named once (`root->type == 1 ? root->entity : 0`) 238 (same code).
+// Shared clamp with direct field reads, named or direct result and unsigned or signed
+// data member: four at 238. Each with the short material output beside the input
+// snapshots reaches 230 and frame 0x44. NOT kept: the declaration moves the first
+// node out of its retail slot and does not recover the second-node and origin reuse.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

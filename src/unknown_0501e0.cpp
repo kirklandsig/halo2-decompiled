@@ -27,6 +27,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
     arg_2->j = g_4b9e14.right.j * scaled.i + g_4b9e14.up.j * scaled.j + g_4b9e14.forward.j * scaled.k;
     arg_2->k = g_4b9e14.right.k * scaled.i + g_4b9e14.up.k * scaled.j + g_4b9e14.forward.k * scaled.k;
 }
+// score 221 (was 234): Frame 0x20 versus retail 0x14. The second displacement and first rotation coefficients still have different homes.
 // MiniMax R (11-16): no new form, no lower score (206): re-measured in this round's nine-address set, the body is 1140 bytes against retail's 1136 and the frame is 0x18 against retail's 0x14; retail keeps the first point's three offsets in registers (XMM1, XMM3 and XMM5) and spills the second point's, where this build materialises both offset vectors in the frame, and the orthographic dot still runs i, j, k where retail runs j, k, i.
 // MiniMax C (11-16): no new form, no lower score (206): retail keeps the first point's three offsets in registers
 // (xmm1, xmm3, xmm5) and spills the second point's (frame 0x14), where ours materialises both offset vectors and
@@ -37,7 +38,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // offset vectors and both views in the frame), the orthographic dot product still runs i, j, k where retail runs
 // j, k, i, and the scale is still applied in place where retail copies the raw offsets before the test; the source
 // permuter's search on this function was cut at its time limit before it scored any variant.
-// score 221 (was 234): see the last entry (one `scale` local for the blend weight and the segment length). Earlier 234 (was 304): see lane 17 r45 (each offset transformed in place). Earlier 304 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// Earlier 221 (was 234): see the last entry (one `scale` local for the blend weight and the segment length). Earlier 234 (was 304): see lane 17 r45 (each offset transformed in place). Earlier 304 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
 // MiniMax G (11-13): no new form, no lower score (206): the diff re-read this round puts the first difference in the frame size (ours 0x20, retail's 0x14), and the forms that change the two offset loops' order or the scale step measure at or above the body, so the body stands.
@@ -605,6 +606,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // first view's coefficients load into registers and up.i is carried into the second view, so the statement-level
 // scale branch is what keeps our coefficient loads from crossing into the second view; retail crosses it with one
 // test per view. The camera read from a separate plain global outside its storage aggregate (diagnostic) gives the same code.
+// M3 lane 3 r263 (fast; base 221): separate view outputs (raw offsets kept) with the depth limits written in the condition 304
+// (1078 B); the limits in the condition on the in-place form 259 (1114 B); `i*i < limit` compares 221, `4.f * k * k` limits
+// 221, `0.f > k` sign tests 221 (all the same code). Diagnostic: 1..7 dead initialised locals 222/222/223/223/221/221/221.
+// Point-to-view indexed/aggregate/shared-helper/copied-scale displacement, first endpoint first 335/333/315/331;
+// second endpoint first 328/327/308/330. All shorten away from retail; original helper and body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

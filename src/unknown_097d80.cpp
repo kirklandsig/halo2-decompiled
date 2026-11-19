@@ -52,8 +52,9 @@ struct c_aggregate : c_child
 };
 
 
+// score 31 (was 31): The 0x8024 frame is a word larger than retail and the callback count retains a separate home.
 // MiniMax B (11-18): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 and the escaped count's slot and the children's cursor still come out in the other order; a /GL- build of this file's own flags line matches the body exactly but costs 0x97f60, 0x97fe0 and 0x980d0 their matches, so the flags line stays as it is.
-// score 31 (was 31): frame 0x8024 versus 0x8020 and different homes for the escaped callback count and loop cursors.
+// Earlier 31 (was 31): frame 0x8024 versus 0x8020 and different homes for the escaped callback count and loop cursors.
 // MiniMax I (11-17): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 because
 // the address-taken produced count keeps a slot of its own under /GL; the instruction sequence is retail's and only
 // the frame and the slot order differ, the produced count taking the slot at 0x1c where retail keeps it at 0x10 and
@@ -589,6 +590,21 @@ struct c_aggregate : c_child
 // Stop collection on callback error by break/loop test 83/37; with null-child skip 83/48.
 // With the final boundary set in the dispatch block 83/139/83/140.
 // The frame stays 0x8024 and the produced count still has a separate home.
+// M3 lane 3 r265 (fast with 0x97f60/0x97fe0/0x980d0, all still matched): the collection loop as `i != 3` 32; the start
+// stored ahead of the child read 31; v5's destination block named ahead of the call 31; the cleanup item tested without
+// `!= 0` 31; the cleanup bounded by a count read back from the last start 31. Frame 0x8024 in each; still BLOCKED by the
+// build flag.
+// M3 lane 12 r143 (fast with the six file-mates, all still matched): both child loops through one reference to the member
+// array (`c_child *const (&list)[3]`) 126; the call's result named `status` and stored to error at once 31; the room as
+// `0x100 - total` 31; the destination as `blocks + starts[i]` 31 (re-measure); the dispatch gate as `!(error != 0 ||
+// request->type == 4)` 31 (all 31s the same code). Still BLOCKED by the build flag.
+// Terminal boundary as output 31, cleared after use 145, cumulative terminal cell 155;
+// current boundary output 139; total as output with published origin 152 or held origin 175;
+// count cleared after use at function or collection scope 147/147.
+// The terminal boundary form reaches frame 0x8020 and 373 bytes but still exchanges the two low
+// slots and puts the callback output in the terminal cell instead of ESP+0x10.
+// Convert typed child elements at collection/dispatch/both 31/31/31; named typed slot table 146/100/126;
+// advancing typed slot cursor 64/108. None recovers the shared output and cursor home.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

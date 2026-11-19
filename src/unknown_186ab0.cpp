@@ -193,7 +193,7 @@ void player_action_initialize(s_player_action *arg_0);
 // MiniMax A (11-18): no new form, no lower score (114): the inlined 0xcbec0 count read still keeps our [edx + edi]
 // against retail's [edi + edx] and that callee's file is not this lane's; the selection comparison's operand order and
 // the counted byte's sign extension still differ, so the body stands.
-// score 114 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
+// score 114 (was 114): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,
 // MiniMax R (11-01): no new form, no lower score (the score-1 form needs a new inline_depth region
@@ -406,6 +406,11 @@ void player_action_initialize(s_player_action *arg_0);
 // shared action mask 114; angle unit reference 164; named inclination inputs 114.
 // NOT kept: the held-first latch reaches 1497/1515 bytes but scores 151.
 // The release arm and output/angle schedule still differ.
+// m3 lane 14 r113 (fast with every callee listed; control 114, aligned 55): the 0x60 and 0x4630200 masks tested apart
+// (retail 0x186ed2, 0x186ed9) on the flat latch 154 (1496 bytes), with `||` written without parentheses 154, with `!= 0`
+// on each 154; field_20/24 as two real stores (retail's movss pair) 141 (1500 bytes, masked aligned 41 -> 31); both 144
+// (1515 bytes, retail's length; aligned 75, masked 37). Left: the latch's release arm (retail after the return), the
+// tail's load order and the inlined count read; BLOCKED-BY 0xcbec0 stands.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {
