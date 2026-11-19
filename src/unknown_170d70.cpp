@@ -282,6 +282,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // The time cursor and group ordinal still spill in the opposite order. Their latch and the cross products also differ.
 // Tried time-group index name 64, ordinal before channel setup 83, time cursor before current 141, time cursor before constant 129,
 // indexed time address 88, shared copy width 329, self-dot length tests 64, accepted-orientation return 64.
+// Deadline cursor at linear coefficients 131, indexed deadline base 103, deadline cursor beside target 139,
+// scratch storage after coefficients 67, target-copy count snapshot 352, both strides before the advances 192,
+// scalar side components 108, separate orthogonality deviation after length checks 124.
+// The short group ordinal and deadline cursor still trade stack homes.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1326,6 +1330,10 @@ struct s_point_pool_173520
 // Tried negated ordered clamp 96, named clamp test 96, float clamp snapshot 83, clipped pointer range 197,
 // start from direction 119, clip-local buffer 96, population-local buffers 96, count-first recount 96,
 // traversal scoped to the positive count 111. NOT kept: the float snapshot grows to 882 bytes and spills.
+// Cache entry by index 296, cache entry reference 96, point arena bound at population entry 96,
+// reservation from the advanced count 115, pool commit before the state predicate 101, countdown
+// scoped to positive counts 96, named first slot in the recount 96, bounds pointer 96.
+// The advanced-count form reaches retail length but changes the reservation arithmetic and raises the score.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1698,7 +1706,9 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 284 (was 266): Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// score 270 (was 284): the winning displacement spills before the side offsets are stored
+// and reloads for refinement. The frame and point convention still differ.
+// Earlier logic walk against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
 // the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
 // calling convention: retail takes up in eax and forward in ecx with point, distance and offset on the stack
@@ -1734,6 +1744,12 @@ struct s_camera_reference_171830
 // all regress. The Boolean axis recovers frame 0xb8, but the point stays in EBX.
 // Indexed refinement passes the point in EDI and lowers the caller to 298, with the larger 0xc0 frame in this
 // function.
+// Separate sign and axis loops 278, fixed four-sample latch test 281, shared segment query for samples 283,
+// refinement 285 or both 270, input-point copy into center 289, best fraction at sample entry 286.
+// NOT kept: the shared segment queries shorten to 1214 bytes with the same larger frame.
+// The separate sign and axis loops recover frame 0xb8 but pass the point in EDI and grow to 1222 bytes.
+// Kept winning displacement and sign declared at the center trace return. The displacement lives in
+// a stack slot as in retail, four bytes above its retail home.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -1771,6 +1787,8 @@ void function_171830(point3f const *point, vector3f const *forward,
 	center.y = point->y + (0.0f - depth * forward->j);
 	center.z = point->z + (0.0f - depth * forward->k);
 	function_171d00(point, &center, &center_fraction, narrow);
+	vector3f const *best_offset = NULL;
+	real best_sign;
 	vector3f side;
 	side.i = up->j * forward->k - forward->j * up->k;
 	side.j = forward->i * up->k - up->i * forward->k;
@@ -1785,8 +1803,6 @@ void function_171830(point3f const *point, vector3f const *forward,
 	offsets[1].i = side.i * radius;
 	offsets[1].j = side.j * radius;
 	offsets[1].k = side.k * radius;
-	vector3f const *best_offset = NULL;
-	real best_sign;
 	for (short sample = 0; sample < 4; ++sample)
 	{
 		s_segment_collision collision;

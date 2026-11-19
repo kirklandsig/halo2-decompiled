@@ -1918,6 +1918,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // writable span end 202; last writable entry start 140; entry pointer distance for scan and mask 201;
 // pointer distance in both scans 268; pending-recipient word reused after store 198.
 // The opening capacity, traversal and recipient loads were restored.
+// Channel header for admission and membership 60, queue count held through scan 200, while scan 60,
+// budget test after a completed entry 161, initial count reused then reloaded 60, shared prefix size 196,
+// retained mask from removed entries 91, recipient reduction through the queue field reference 64.
+// EAX still takes the membership load, and capacity rejection keeps its own epilogue.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

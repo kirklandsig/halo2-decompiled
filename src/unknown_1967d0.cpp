@@ -965,6 +965,10 @@ static inline long team_score_195ed0(long team)
 // `*((byte *)&g_511000 - 0x225)` 373 (the flag after the copy, the address not folded). Third score read: the two
 // clamp tests through the file's inline copy and the value through the existing 0x1587f0 191 (1237 B: the link
 // inlines 0x1587f0 there and calls 0x161e60 and 0x162030 from it). build/r120/storage-lead holds the head-only header.
+// Short score through explicit bounds 191, named lower test 191, nested score validation 100,
+// early unavailable score return 170, static score query 322, eligibility from the mask tests 151,
+// one receiver for the score table 204, signed rank bound retained at entry 100. The teams flag
+// still precedes the copy, and the in-range score call remains expanded.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
