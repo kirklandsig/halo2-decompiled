@@ -837,10 +837,11 @@ extern point2f *g_468778;
 // actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
 // partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
 // partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
-// score 304 in a full build with stand-in SDK headers (was 375): the actor's table entry is formed before the
+// score 259 in a full build with stand-in SDK headers (was 375): the actor's table entry is formed before the
 // 0x1e4f90 call, there is no result local (the block returns true and the function ends with return false, retail's
-// two epilogues at 0x1aa6c5 and 0x1aa6d1), a pointer to field_1c is taken at the top of the third arm, and local_8
-// is declared inside the 0x110ab0 block with the first dot written through local_7.
+// two epilogues at 0x1aa6c5 and 0x1aa6d1), a pointer to field_1c is taken at the top of the third arm, local_8 is
+// declared inside the 0x110ab0 block with the first dot written through local_7, and the planar copy is one
+// point2f assignment (retail's two integer moves at 0x1aa54f).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -941,7 +942,7 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 				}
 				if (!local_2->field_2e && (local_2->field_15 == 0 || local_2->field_15 == 2 || local_2->field_15 == 3))
 				{
-					point2f local_16 = {local_9.i, local_9.j};
+					point2f local_16 = *(point2f *)&local_9;
 					if (normalize2d(&local_16) > 0.0f && 0.866025388f > local_0->unknown290.j * local_16.y + local_0->unknown290.i * local_16.x)
 						goto local_15;
 				}
