@@ -1342,10 +1342,13 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // the blend flag kept in DL across 0xe6800); on that, a resolved-set local for the three later set uses 237 (same code);
 // on that, transition_find's blend parameter read through its address (diagnostic) 285 (1136 B; the transition id
 // moves to [esp+0x4c]).
+// score 89 in a full build with stand-in SDK headers (was 210): see the pull request for the retail facts; with
+// function_0e6800 declared `__declspec(noinline) inline` (unknown_0e6800.cpp) its call here no longer forces the
+// registers it preserves to be saved around it.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {
-	byte result = false;
+	bool result = false;
 	s_animation_names names;
 	s_animation_names found;
 	c_type_709360 animation_id;
@@ -1377,14 +1380,10 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			transition_id = transition_find(names.mode, names.set, &blend);
 			blend &= !(flags & 1);
 			blend &= (((dword)state_flags >> 10) & (channel_valid(&channels[0]) && !function_0e6800(&channels[0]))) & 1;
-			if (blend)
-			{
-				unknown6e |= 1;
-			}
-			else
-			{
-				unknown6e &= ~1;
-			}
+		}
+		if (blend)
+		{
+			unknown6e |= 1;
 		}
 		else
 		{
@@ -1396,10 +1395,12 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			if (((state_flags & 0x20) || (state_flags & 0x40)) && channel_valid(&channels[0]))
 			{
 				real frame_count = (real)channels[0].function_1c6440()->frame_count - 0.0001f;
+				real frame_position = channels[0].frame_position;
 
 				if (frame_count > 0.0f)
 				{
-					fraction = PIN(channels[0].frame_position, 0.0f, frame_count) / frame_count;
+					frame_position = PIN(frame_position, 0.0f, frame_count);
+					fraction = frame_position / frame_count;
 					if (state_flags & 0x40)
 					{
 						fraction = 1.0f - fraction;
@@ -1418,17 +1419,21 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			{
 				bool unflagged;
 
+				result = true;
 				unflagged = channels[0].is_unflagged0() & loops;
-				if (transition_id.index != NONE && graph_tag_index != NONE)
+				if (transition_id.index != NONE)
 				{
-					if (channels[2].set(graph_tag_index, 0x15, variant_get(transition_id), names.set, NONE, NONE, 3))
+					c_animation_channel *transition_channel = &channels[2];
+
+					if (graph_tag_index != NONE)
+					if (transition_channel->set(graph_tag_index, 0x15, variant_get(transition_id), names.set, NONE, NONE, 3))
 					{
-						channels[2].set_frame_position(0.0f);
+						transition_channel->set_frame_position(0.0f);
 						if (channels[0].flags & 1)
 						{
 							channels[0].unknown11 |= 1;
 						}
-						unflagged &= channels[2].is_unflagged0();
+						unflagged &= transition_channel->is_unflagged0();
 						if (unflagged)
 						{
 							transition_offset_compute();
@@ -1458,7 +1463,6 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 					}
 				}
 				flags &= ~1;
-				result = true;
 				goto names_store;
 			}
 		}
@@ -1472,14 +1476,16 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 names_store:
 	{
 		s_animation_names *names_out = &stored_names;
-		bool changed = (names_out->mode != names.mode) | (names_out->weapon_class != names.weapon_class) | (names_out->weapon_type != names.weapon_type);
+		bool mode_changed = names_out->mode != names.mode;
+		bool weapon_class_changed = names_out->weapon_class != names.weapon_class;
+		bool weapon_type_changed = names_out->weapon_type != names.weapon_type;
 
 		*names_out = names;
-		if (changed)
+		if (mode_changed || weapon_class_changed || weapon_type_changed)
 		{
 			if (graph_tag_index != NONE && !(flags & 1))
 			{
-				resources_request(names_out->mode, names_out->weapon_class, names_out->weapon_type, true, true);
+				resources_request(names_out->mode, stored_names.weapon_class, stored_names.weapon_type, true, true);
 			}
 			if (!channel_valid(&channels[2]))
 			{

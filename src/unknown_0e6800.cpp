@@ -4,8 +4,11 @@
 #include "unknown_11c920.h"
 #include "unknown_1c62f0.h"
 
+/* Preserve the retail call boundary: 0x1cd070 does not rely on the registers this preserves. */
+__declspec(noinline) inline bool function_0e6800(c_animation_channel const *channel);
+
 // @retail 0xe6800
-bool function_0e6800(c_animation_channel const *channel)
+inline bool function_0e6800(c_animation_channel const *channel)
 {
 	// Retail materializes a full-width 0/1, then tests its low byte.
 	long playing = ((channel->flags & 1) && !(channel->unknown11 & 9)) ? 1 : 0;
