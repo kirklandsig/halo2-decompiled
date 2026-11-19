@@ -296,6 +296,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // the last stride 142, staged orthogonality sum 62, whole corrected up vector 234,
 // staged left products 126, aggregate left cross product 64.
 // NOT kept: the cursor forms grow the body. The staged sum gains two with the time and ordinal homes still swapped.
+// Traversal scope 64, scoped deadline pointer 125, deadline beside interpolation values 141,
+// elapsed time by subtraction assignment 134, linear cursor before the value or coefficient
+// advances 88/74, paired corrected-up stores 70, rejecting orientation disjunction 64.
+// NOT kept: the explicit cursor grows the orientation tail, and the in-place subtraction grows
+// the body. The time and group stack slots still trade places in the opening form.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1830,6 +1835,11 @@ struct s_camera_reference_171830
 // Rear displacements in scalars 270, signed vector 307 or product vector 278. Staged center coordinates 270.
 // Center fraction at the trace 269 or at depth setup 270. Toggled axis 295 or cyclic axis 300.
 // NOT kept: the center and sample forms do not recover the point's stack ingress at retail length.
+// Const point parameter reference 270, const basis parameter references 270, plane entry reference 270,
+// sign before trace material 276, sign by sample-pair boundary 295, Boolean sign bit 304,
+// conditional ray masks 302, distinct names for center and winning fractions 270.
+// NOT kept: the pair boundary restores the frame at 1211 bytes. Conditional masks shorten
+// the resolver to 1200 bytes and leave the point ingress unresolved.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2053,6 +2063,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Sweep/projection snapshot 406. Shared sweep address 325. View-axis memcpy 325.
 // Sign-extended cluster after the change check 295 (kept). Separate count-load guard 295.
 // The state still uses EBP and the collision point still uses EBX.
+// View up/forward/both by reference 295/295/295; horizontal direction scoped to displacement 295;
+// indexed state address 295; basis pointers bound after both copies 405; initial/final coordinate
+// clamp loops 434/456. NOT kept: the late basis pointers shorten the body and the clamp loops
+// grow it. The state base remains in EBP and collision point in EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

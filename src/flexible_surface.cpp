@@ -855,6 +855,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // or before angle weighting 130/130/130/130. With all draws using one seed
 // pointer 174/174/174/174. NOT kept: shared seed reaches retail length with
 // the frame difference and a higher score.
+// Table-axis reference/direct argument 187/183, separate axis assignment 130,
+// initial-direction/axis library copies 130/130, compound tick product 130,
+// named frame test 130, random-state record reference 130, compound wave gain 130,
+// shared double wind scale on the in-place rotation 154. NOT kept: direct table access
+// shrinks the frame to 0x0c. The shared scale reaches 880 bytes and loses the caller match.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
