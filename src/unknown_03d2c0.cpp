@@ -523,6 +523,35 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // retail's `je`, but both epilogues merge on ESI and the merge block reloads the result into EAX); that merge with the
 // walk's return moved to close the else arm 86 (506 B). On the 9 form only two points differ: ours reloads the result
 // before the merge test because the found edge enters it, and the walk's NONE return folds to `or eax, -1`.
+// M3 lane 3 r270: HELD (needs the owner's OK): byte MATCH in the fast and the plain check (518 B, every caller and callee
+// unchanged: 0x3d430, 0x4c640, 0x3dc90, 0x335e0, 0x3db00, 0x15e360, 0x17b5d0 matched as before, 0x4b5d0 93, 0x1794e0 63 and
+// 0x116b00 322 as in the baseline), not applied: the form changes this function's return type, so each caller's
+// call line needs `.index`, and one of them sits inside contributor function 0x1794e0 (src/unknown_175bd0.cpp); two
+// more callers are in files other lanes hold this round (src/unknown_03f2b0.cpp, src/unknown_157450.cpp). The full
+// diff is build/r270/held-0x3ddd0.patch (seven files). The form: the function returns a one-field aggregate holding the
+// index (returned in EAX as before); `result.index = NONE;`, the found test only setting it from the cached index,
+// then `if (result.index == NONE) { cache_index = record_pool_allocate(...); result.index = cache_index; if (cache_index
+// == NONE) { the walk storing its pick in result.index; cache_index = result.index; } if (cache_index != NONE)
+// initialize = true; else return result; }` and main's `if (result.index != NONE)` block. Why it matches: an aggregate
+// copy is not folded to the tested constant, so the walk's failed exit returns the register (`mov eax, esi`) as
+// retail's does, where every scalar spelling returns `or eax, esi` / `or eax, -1`; the else-arm return is laid out
+// after the main epilogue; and the found path is threaded past the second NONE test by the `result.index == NONE`
+// guard while the test stays for the two miss paths. Measured on the way (fast, 0x3db00/0x3dd10/0x3d2c0 MATCH each
+// time, all with the aggregate return; exact-aligned lines in brackets): main's skeleton with the early walk return 77
+// [20]; the guard skeleton with it 83 at 508 B [16: only the return block inline where retail's trails]; that
+// return as an else arm after an empty then, as a jump to a second return, inside a `for (;;)` walk, as `cache_index
+// != NONE || result.index != NONE` with an else return, 83 each (same code); a goto to the only return 85; the flag
+// set in both arms of the allocation test on main's skeleton 5 at 518 B [4: the found path enters the reload ahead
+// of the second test], on the guard skeleton 86 (506 B, the second test dropped); `if (result.index != NONE)
+// initialize = true; else return result;` after the walk block on main's skeleton 70 [7], on the guard skeleton 144;
+// those two with the merge as `!initialize || result.index != NONE` 88 at 503 B [3: only the second test missing];
+// that with `cache_index = result.index;` closing the walk and the exit tested on cache_index MATCH, with the merge
+// tested on cache_index 77 [5]; the matching form with the plain merge on the guard skeleton MATCH (the held form),
+// with the exit as an early return 83, with the walk keeping its pick in cache_index 153, with the exit tested on
+// result.index 144; the held body as a forceinline helper returning the aggregate behind this function's unchanged
+// `long` signature 85 (504 B: the helper's exit becomes a jump to the one return and the epilogues merge on ESI), as a
+// plain inline it stays a call. Diagnostic (removed): the result's address stored in a scratch global with a scalar
+// return still folds the exit.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

@@ -2147,6 +2147,21 @@ bool function_1900a5(long index);
 // 791, copied key/player array 776, cached key/player array 776, all three 776, cached owner and team
 // destinations 703. NOT kept: the ties leave the first difference in place and the other forms add
 // sixteen bytes. The status branch, user cursor and slot selection still differ.
+// M3 lane 3 r270 (fast with the file's 41 functions; control 703, aligned 500, masked 327). Build-flag lead, measured as
+// this function's one compiler-setting diagnostic and not kept (the flags line is the user's decision): with `/arch:SSE`
+// added to this file's flags line, retail's `mov ecx, 0; cmovne ecx, eax` appears at the slot test and every other
+// function of the file keeps its baseline result, in the fast check and in a plain check of all 41 plus 0x1900a5 (the
+// 39 matched ones stay matched, 0x73360 stays at its baseline 33, 0x1900a5 stays matched), so the flag costs nothing
+// in this file; this function then reads 748 (aligned 490, masked 317), the positional count rising because the body
+// was shaped without the flag. Source forms (current flags / with the diagnostic): the existing
+// online_logon_connected() with its header for the opening test 823 at 2926 B (retail's `dec eax`) / 792;
+// `failed = true` in the incomplete arm in place of the `||` 731 (2894 B) / 776; the request record's identity as a
+// by-value identity local (copied from the team entry, with an index scan of the earlier records and `continue` on a
+// duplicate, for type 5; from the owner otherwise) stored by assignment 858 (2990 B, first +0x8, masked 315) / 895
+// (masked 305); both 838 / 858 (masked 299); the completion's identity pointer taken once ahead of the record loop
+// 737 (2894 B). Reading of retail's request loop: the identity is held by value in three registers and saved to the
+// first loop's identity home only in the type-5 arm, whose scan counts an index kept in memory against the record
+// count and leaves for the next player on a duplicate.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

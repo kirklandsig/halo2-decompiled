@@ -1111,6 +1111,18 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // with the delta left unscaled 119 (first +0xb6); that with plane3f planes and `total` declared first 121; both planes
 // built through the plane-through-point helper of src/unknown_17d9a0.cpp 310 (and 0x17d9a0 itself stops matching in
 // the fast image, 256). The point memcpy after the segment clear re-measured 193 (a listed form).
+// M3 lane 3 r270 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115, exact-aligned 73; lane 12 r123's 18
+// form rebuilt 18, exact-aligned 22). On this body: one to seven unused initialised locals after `culled` 119, 135, 130,
+// 242 (1830 B), 246 (1830 B), 135, 127 (first difference +0xbb at every count: the head is not a numbering tie, as lane 11
+// r81 found at two other sites); the intersection through the existing vector3f_add_scaled (the point as the base, the
+// unscaled delta and the ratio) 119 (first +0xb6); `delta` declared at function scope 115, the intersection point and
+// the ratio declared at function scope 115 (same code each); the bounds copy and the segment clear moved below the near
+// clamp 191 (first +0x41); plane 0's near add moved below plane 1's set-up 176 (first +0x60). Reading of the head: both
+// builds sum the first plane's d as j, k, then i; retail evaluates the i term coefficient first (a fresh XMM4, its load
+// then hoisted above the copy) and the copied normal's i second (the k coefficient's freed XMM3), ours the copied
+// normal's i first; the k term is evaluated normal first and the j term coefficient first in both builds. In the clip
+// rows retail multiplies the y and z deltas by the ratio in place and copies the ratio only for x; ours copies it for
+// x and y, the scale helper's operand order.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
