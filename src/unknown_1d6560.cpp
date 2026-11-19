@@ -506,6 +506,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // [13], the first with a long type 97 [13]; headers declared ahead of the rigid body, both through `& 0xffff` 128 [213]
 // at 224 bytes, case 0 through `(word)` 36 [13] (the listed 36 form). Every twice-used form moves the component and the
 // index between EAX and ECX and loses the caller, so none is kept. Body unchanged.
+// M3 lane 6 r199 (fast, caller 0x1d5bf0 in brackets, matched each time): round 60's 24 form rebuilt 24 at 256 B [0], long
+// type 89 [0]; on it the kind test as `switch (kind)` with case 7 (the one-case type switch) and the main switch in its
+// default 94 [0]; case 7's kind test with its arms the other way round (`kind != 6` first) 34 [0], that with a long type
+// 88 [0]; case 1's flag test as a ternary 73 (260 B) [0]; no header-array local (both lookups through the global) 24 [0]
+// (same code). Reading of the 24 form: retail's object index shares ECX with the incoming rigid-body index (the index
+// copied to ESI first), where ours computes the rigid body in place in ECX and gives the object index EDX; every
+// declaration order that uses the index before the object-index read flips the incoming pair (listed grids).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

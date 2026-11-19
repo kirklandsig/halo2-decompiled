@@ -471,6 +471,15 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // true;` 110 (522 B), with `if (result != NONE) initialize = true;` 115 (506 B), with `initialize = true;` 102 (493 B); the
 // walk iterating in cache_index itself 77 (same code), that with `if (result != NONE) initialize = true;` closing the
 // else arm 85 (504 B, round 99's code). Body unchanged.
+// M3 lane 6 r199 (fast with 0x3db00 and 0x3dd10, both MATCH each time; control 77): on lane 11 r104's 83 form (merge test
+// `!initialize || result != NONE`, re-measured 83 at 508 B: only the walk's NONE exit differs, inline with `or eax, esi`
+// where retail jumps to a trailing `mov eax, esi` epilogue) the walk exit returning cache_index 83 (same code); the walk's
+// pick in its own `oldest_index` local copied into result after the loop 169 (524 B); `initialize = true;` ahead of the
+// walk's exit test, outside the walk block, on main 145 and on the 83 form 145 (508 B); the else arm closed by `if (result ==
+// NONE) return result; initialize = true;` with the record block unconditional (no outer test): without the walk's own
+// return 86 (506 B: VC drops the merge test because both paths into it know the result, so the found path enters the
+// record lookup as retail but retail's redundant `cmp esi, -1; mov cl, 1; je` is gone), with it 86 (same code), with
+// `initialize = true;` ahead of that test 145.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

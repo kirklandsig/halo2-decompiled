@@ -363,6 +363,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // library copy 490; pointer and orientation with library copy 490; reference and orientation with library copy
 // 490.
 // NOT kept: All eight forms shrink the frame to 0x60 and the body to 1720 bytes at a higher score.
+// M3 lane 6 r199 (fast, control 219): dead initialised `long` locals at the function's top, K = 1..31 each, 219 every time
+// (diagnostic, reverted: the symbol count does not reach this schedule); the rotation helper as a macro (the caller's
+// sine/cosine/axis spelled in place) 491 (1720 B, frame changes), the macro with the axis bound once to a pointer local
+// 485 (1724 B); `matrix3x3 basis, rotation;` 219 and the basis scoped to the second switch and the composition 219 (same
+// code each); the value array read once into a local for the four property calls and the update 495 (1716 B).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

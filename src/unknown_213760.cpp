@@ -1872,6 +1872,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // through a const cast 114, the write local read through the field's address 114, the close argument rebuilt from the table
 // element 114, the count declared at the mismatch block's scope 114, the invalid-handle constant first 114. Matched 0x2141f0 writes
 // the same header through a named `s_file_handle handle = file->file;` local, so the write local is the code base's idiom.
+// M3 lane 6 r199 (fast with 0x213760, 0x213800, 0x2138f0, all MATCH each time; control 33). Lane 9 r132's 5 form rebuilt
+// from its saved patch, 5 at 930 B (left: the write's flags zero in EAX ahead of the handle load). On it: a plain write
+// handle local (`s_file_handle write_handle = *handle;`) before the header strings 114 (917 B: the write call is then
+// retail's, the close call loses its `mov ecx, eax` copy and a loop pad), after the header strings 114, at the top of the
+// resized block 114 (same code each); the flags as a `s_file_write_flags const` object at the function's top 5; `written`
+// declared at the loop body's top beside `valid` 5 (same code each). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
