@@ -1197,6 +1197,18 @@ __forceinline long vehicle_round(real value)
 // vectors at the top of the arm 4 (same code); the up pointer dropped with the rate on vehicle->up.k 6; MiniMax I's rate on
 // vehicle->up.k re-measured 2 (not kept, see above); 1-8 dead locals inside the side block 6/8/6/4/6/10/4/4 and on the 2 form
 // 4/10/8/10/12/12/6/2 (diagnostic, never 0: no count fixes the side cross's last product with the others).
+// M3 lane 1 r128 (a compile-only screen of this file, exact for the products against --fast): redundant parens act
+// only around a float operation and shift every later product by their count mod 4 (0x153d10's lever; parens around
+// a leaf, a call argument, an integer or pointer sum, or the strength test change nothing). The rate's division in
+// 0/1/2/3 pairs leaves products [8,9]/[6,8,10]/[6]/[6,7,8,11] of the side cross flipped (two pairs: 2, the side
+// cross's forward.k * up.j then loads up.j); the condition's tick product in parens moves the first cross as well
+// (one pair 8; with one pair at the rate too 4); the rate on vehicle->up.k with one pair 8; `-2.0f * (up->k / rate)`
+// 6; the side scale and the dot named 97 (734 B). Screens, never under one flip: rate parens x condition parens x up
+// pointer at the cross/rate x cross3f/cross3f_staged at either cross (191 forms); the up pointer declared at the top
+// or in the arm and used at any subset of the condition, first cross and rate (176); a forward pointer at any subset
+// of its uses (248, 8-10 flips); a named side scale, named dot and mode local with the parens (256); 1-7 dead locals
+// at the top or in the side block with the parens (diagnostic, 448); `strength = strength * rate` / `rate * strength`
+// and `(-2.0f)` with the parens (96).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2269,6 +2281,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // copy of the vehicle index 12; the first lookup through a named `vehicle_index & 0xffff` local 12 (0x100130's lever for
 // the reverse order) and every callback passing 0 or the velocity call passing 0 (diagnostics) all keep the header lookup
 // offset-first; deleting the update block, either loop or any one overlay arm (diagnostics) never flips it either.
+// M3 lane 1 r128 (fast), at 9: the first lookup through a reference-bound header table (0xb9b90's data-first lever)
+// 486 (the table load moves above the pushes, the SIB pair stays offset-first); redundant parens in the forward-speed
+// sum around its k product once/twice/three times 9/9/9, around its i product 9, its j product 11, the k+j pair 11;
+// one to three pairs around overlay 1's quotient (a float operation ahead of the sum) 9/9/9 (no effect: the sum's
+// grouping and the i term do not follow these parens); the eight callbacks through a reference-bound vehicle index 17;
+// `state` bound by const reference 46.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
