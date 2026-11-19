@@ -452,8 +452,13 @@ void function_3dd10(long object_index, bool force);
 // The choice count, mask and blend use other homes. The first scan exits on inequality.
 // Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
 // the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
+// score 77 (was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
 // spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
 // The late variant byte restores the output/delta registers and keeps retail length.
+// The blend store, weight-scan exits and fallback unity reload also differ.
+// MiniMax S (11-19): the outer tint loop is now a redundant `if (0 < count)` guard around the for (the guide's form, as
+// at 0x2e5590); it emits no extra code but moves the object into EDI and the tint web into ESI as retail has them, and
+// the index's zero store now sinks after the guard's jle where retail stores it before.
 // The object and tint-table saves still trade ESI and EDI. The blend store, weight-scan exits and fallback unity reload also differ.
 // MiniMax I (11-17): the variant byte read before the blend value 123 (was 132): the byte is then held in BL across the fmod and the blend's store follows the call, so the compare moves behind it, but the colours pointer now takes EBX where retail uses EBP; the not-found exit still joins the clamp entry's 1.0 load and the first scan still leaves on inequality.
 // MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
@@ -787,87 +792,91 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
     s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
     color3f *output = (color3f *)(object + *(short *)(object + 0x126));
     long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
-    for (long i = 0; i < count; ++i)
+    if (0 < count)
     {
-        s_colour_choices_ab const *entry = &((s_colour_choices_ab const *)definition->tint_sets.address)[i];
-        if (color_mask & (1 << i))
-            output[i] = colors[i];
-        else
+        for (long i = 0; i < count; ++i)
         {
-            output[i] = *(color3f *)g_468710;
-            long choice_count = entry->count;
-            if (choice_count > 0)
+            s_colour_choices_ab const *entry = &((s_colour_choices_ab const *)definition->tint_sets.address)[i];
+            if (color_mask & (1 << i))
+                output[i] = colors[i];
+            else
             {
-                long last = NONE;
-                dword eligible = 0;
-                long variant = 0;
-                real weight = 0.0f;
-                real index = (real)i;
-                real seed = (real)fabs((*(real *)(object + 0x6c) * 744.1241455078125f + *(real *)(object + 0x64) * 315.89312744140625f + index * 431.1289367675781f) + *(real *)(object + 0x68) * 587.1294555664062f);
-                real selection = (real)fmod((double)seed, 1.0);
-                seed = (real)fabs(index * 0.7121099829673767f + *(real *)(object + 0x68));
-                real blend = (real)fmod((double)seed, 1.0);
-                byte variant_index = *(byte *)(object + 0xb1);
-
-                if (variant_index != 0xff && definition->model_tag_index != NONE)
+                output[i] = *(color3f *)g_468710;
+                long choice_count = entry->count;
+                if (choice_count > 0)
                 {
-                    byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
-                    variant = *(long *)(*(byte **)(model + 0x54) + (signed char)variant_index * 0x38);
-                }
+                    long last = NONE;
+                    dword eligible = 0;
+                    long variant = 0;
+                    real weight = 0.0f;
+                    real index = (real)i;
+                    real seed = (real)fabs((*(real *)(object + 0x6c) * 744.1241455078125f + *(real *)(object + 0x64) * 315.89312744140625f + index * 431.1289367675781f) + *(real *)(object + 0x68) * 587.1294555664062f);
+                    real selection = (real)fmod((double)seed, 1.0);
+                    seed = (real)fabs(index * 0.7121099829673767f + *(real *)(object + 0x68));
+                    real blend = (real)fmod((double)seed, 1.0);
+                    byte variant_index = *(byte *)(object + 0xb1);
 
-                long j = 0;
-                while (j != choice_count)
-                {
-                    s_colour_choice_ab *choice = &entry->choices[j];
-                    if (!choice->field_1c_4 || choice->field_1c_4 == variant)
+                    if (variant_index != 0xff && definition->model_tag_index != NONE)
                     {
-                        last = j;
-                        weight += choice->weight;
-                        eligible |= 1 << j;
+                        byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
+                        variant = *(long *)(*(byte **)(model + 0x54) + (signed char)variant_index * 0x38);
                     }
 
-                    ++j;
-                }
-                if (eligible && weight > 0.0f)
-                {
-                    real cumulative = 0.0f;
-                    real target = selection * weight;
                     long j = 0;
-                    do
+                    while (j != choice_count)
                     {
                         s_colour_choice_ab *choice = &entry->choices[j];
-                        if (eligible & (1 << j))
+                        if (!choice->field_1c_4 || choice->field_1c_4 == variant)
                         {
-                            cumulative += choice->weight;
-                            if (j == last || cumulative >= target)
-                            {
-                                hsv3f a, b, mixed;
-                                real inverse = 1.0f - blend;
-                                function_1318d0(&choice->lower, &a);
-                                function_1318d0(&choice->upper, &b);
-                                if (fabs(a.hue - b.hue) > 0.5f)
-                                {
-                                    if (b.hue > a.hue) a.hue += 1.0f;
-                                    else b.hue += 1.0f;
-                                }
-                                mixed.hue = a.hue * inverse + b.hue * blend;
-                                if (mixed.hue > 1.0f) mixed.hue -= 1.0f;
-                                mixed.saturation = a.saturation * inverse + b.saturation * blend;
-                                mixed.value = a.value * inverse + b.value * blend;
-                                function_131a00(&mixed, &output[i]);
-                                break;
-                            }
+                            last = j;
+                            weight += choice->weight;
+                            eligible |= 1 << j;
                         }
+
                         ++j;
-                    } while (j < choice_count);
+                    }
+                    if (eligible && weight > 0.0f)
+                    {
+                        real cumulative = 0.0f;
+                        real target = selection * weight;
+                        long j = 0;
+                        do
+                        {
+                            s_colour_choice_ab *choice = &entry->choices[j];
+                            if (eligible & (1 << j))
+                            {
+                                cumulative += choice->weight;
+                                if (j == last || cumulative >= target)
+                                {
+                                    hsv3f a, b, mixed;
+                                    real inverse = 1.0f - blend;
+                                    function_1318d0(&choice->lower, &a);
+                                    function_1318d0(&choice->upper, &b);
+                                    if (fabs(a.hue - b.hue) > 0.5f)
+                                    {
+                                        if (b.hue > a.hue) a.hue += 1.0f;
+                                        else b.hue += 1.0f;
+                                    }
+                                    mixed.hue = a.hue * inverse + b.hue * blend;
+                                    if (mixed.hue > 1.0f) mixed.hue -= 1.0f;
+                                    mixed.saturation = a.saturation * inverse + b.saturation * blend;
+                                    mixed.value = a.value * inverse + b.value * blend;
+                                    function_131a00(&mixed, &output[i]);
+                                    break;
+                                }
+                            }
+                            ++j;
+                        } while (j < choice_count);
+                    }
                 }
             }
+            output[i].red = output[i].red < 0.0f ? 0.0f : output[i].red > 1.0f ? 1.0f : output[i].red;
+            output[i].green = output[i].green < 0.0f ? 0.0f : output[i].green > 1.0f ? 1.0f : output[i].green;
+            output[i].blue = output[i].blue < 0.0f ? 0.0f : output[i].blue > 1.0f ? 1.0f : output[i].blue;
+            output[i + count] = output[i];
         }
-        output[i].red = output[i].red < 0.0f ? 0.0f : output[i].red > 1.0f ? 1.0f : output[i].red;
-        output[i].green = output[i].green < 0.0f ? 0.0f : output[i].green > 1.0f ? 1.0f : output[i].green;
-        output[i].blue = output[i].blue < 0.0f ? 0.0f : output[i].blue > 1.0f ? 1.0f : output[i].blue;
-        output[i + count] = output[i];
     }
+
     function_3dd10(object_index, true);
 }
 

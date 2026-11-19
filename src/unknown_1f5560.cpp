@@ -1645,6 +1645,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax S (11-19): no new form, no lower score (239): the body is retail's statement for statement and the whole
+// delta is the colouring of the vector block - retail holds the result in XMM0 as a copy of the zero constant
+// (`movaps xmm0, xmm1`, the zero in XMM1) where this build folds the constant into the store, retail normalizes the
+// direction's x before its y and this build the y before the x, and retail's left test multiplies the facing's y by
+// the direction's x with both in registers where this build copies the direction's x and takes the facing's y from
+// memory; the side vector's y replaced by the direction's x gives 256, the facing's x and y read into named locals
+// before the test 270, and the helper's multiply order and temporaries 239.
 // score 239 (was 239): The zero and radius have different XMM homes, and unsupported types use a separate return path.
 // The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
 // M3 lane 14 r112 (fast; control 239, aligned 198, register-masked 85): retail keeps the result in XMM0 from its zero
