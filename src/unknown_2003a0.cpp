@@ -3082,6 +3082,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // selection 50; absent-definition conditional 178; permission assigned in requested arm 50;
 // separate unlocked, absent and script permission branches 179; negated locked-definition gate 50;
 // conditional automatic selection 170. NOT kept: the four ties still reload the first event index.
+// M3 lane 16 r141 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, control 50): 1..8 dead initialised locals at the top 50 each;
+// the compute arm's delay test as `local_3 >= 1` 55 (580 B), the pending delay test as `< 1` 51, both together 50 at 578 B
+// with the reload gone (`mov eax, ebp`): only the two compares then differ (`cmp ..., 1` for retail's zero tests), so two
+// more uses of 1 at the else-if arm's level are enough (lead only); either delay test held in a named bool 50 (folded), both
+// 50; the first arm's lock test through the existing getter 0x203330 180 (594 B), the NONE and lock tests through it 162
+// (580 B), the else-if's NONE test as the getter's result 213 (610 B).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

@@ -168,6 +168,9 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // join and copies to EDI for 0xd1850; no force-arm reload), on it one game-time read shared by both elapsed values 216, the
 // three late object-index uses through one named copy 216 (same code each). Eight dead locals at the top (diagnostic) 21:
 // removed before allocation.
+// M3 lane 16 r141 (fast with 0x3d2c0 and 0xd1850, control 21): force as `!initialized` then `if (!valid) force = true;` 76
+// (834 B); force as `!(initialized & valid)` 239; the force arm as `update = force` 52; `update |= force;` then
+// `if (!force && hidden) return;` 231; the update-time NONE test as a signed long 21 (same code).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

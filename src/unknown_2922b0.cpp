@@ -643,6 +643,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 665/654; formed first and published between stores 665; conditional update between the stores 556.
 // NOT kept: selecting the minimum first recovers the success slot but regresses. The conditional
 // update gains only two points and leaves ESP+0x13.
+// M3 lane 16 r141 (fast, control 558): the active block as the `field_48 > 0` then-branch with one `return local_0;` 667
+// (2866 B: retail's forward `jbe` to an end copy, but the success flag moves into BL); the hit flags `= { false }` 689 (2819 B);
+// the inactive test as `<= 0.0f` 663; the range bound as `real const &` to field_48 648 (2865 B); 1..8 dead initialised locals
+// after the object lookup (diagnostic) 559/580/589/617/598/574/574/574 (the symbol count moves code here; none beats 558).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

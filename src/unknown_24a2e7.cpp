@@ -241,6 +241,14 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // indexed/cached terminator 79/92. With the indexed clear, form the destination before conversion 67
 // or publish the result before the clear 80. NOT kept: the closest 208-byte forms still use frame 0x24
 // and keep the list base in a register instead of reloading it after concatenation.
+// M3 lane 16 r141 (fast with 0x24a09b): a loop-top entry pointer used for the search test only, the found uses and the
+// terminator indexed 84 (197 B: the found address and the terminator share EBX); that with the plain arm through the
+// pointer 90 (184 B); the pointer for the field_4c uses only 75 (196 B); for every append-arm use with the test indexed
+// 75; for the test and the append arm 75 (196 B: frame, base spill, index in EBX, terminator and plain arm as retail;
+// the pointer stays the induction register in ESI where retail runs a scratch cursor and re-forms the entry from the
+// index), with the plain arm through it 83; the search loop then the found block under `if (i < count)` 69 (201 B: the
+// cursor is a scratch ECX as retail but copied to ESI each pass, and the count test is extra); a test-in-condition
+// search loop 87 (187 B).
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
