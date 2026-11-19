@@ -1694,7 +1694,7 @@ struct s_object_placement_data;
 struct s_effect_object_placement;
 long __stdcall function_b7b40(void *creation);
 extern long *g_4de2d0;
-bool function_d5060(s_scenario_block *palette, volatile long type, long index,
+bool function_d5060(s_scenario_block *palette, long type, long index,
     s_type_4f0dcc const *datum, bool enabled, s_object_placement_data *data);
 bool function_a7640(s_effect_object_placement *data);
 void object_dispatch_place(long index, long datum);

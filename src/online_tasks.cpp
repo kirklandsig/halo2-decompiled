@@ -176,34 +176,60 @@ long online_task_exists(long type, long controller_index)
 	return count;
 }
 
+struct s_online_task_iterator
+{
+	s_record_pool *data;
+	s_type_9df9da *task;
+	s_record_pool_iterator iterator;
+};
+
+static __forceinline void online_task_iterator_begin(s_online_task_iterator *iterator)
+{
+	online_task_iterator_new(&iterator->iterator);
+	iterator->data = g_4cf78c;
+}
+
+static __forceinline s_type_9df9da *online_task_iterator_step(s_online_task_iterator *iterator)
+{
+	long index = data_next_absolute_index_inlined(iterator->iterator.data, iterator->iterator.index + 1);
+	byte *result;
+
+	if (index != NONE)
+	{
+		result = iterator->data->data + iterator->data->size * index;
+		iterator->iterator.index = index;
+		iterator->iterator.datum_index = (*(short *)result << 16) | index;
+	}
+	else
+	{
+		iterator->iterator.index = iterator->data->maximum_count;
+		iterator->iterator.datum_index = NONE;
+		result = 0;
+	}
+	return (s_type_9df9da *)result;
+}
+
 /* disposes every task, the logon (0), change-logon (1), friends (2), mute
    list startup (11) and 33 tasks only once the tasks that need them are gone */
-// score 108: retail has a 0x14 frame that ours lacks. It keeps the global in
-// ebp (reloaded after 0x6b640 only) and the pool copy in ebx; ours has them
-// the other way round. Retail stores the iterator's pool pointer once per
-// outer pass at [esp+0x18] and re-reads it from memory at the top of every
-// bitmap scan (`mov ecx, [esp+0x18]`), and spills ebx to [esp+0x10], restoring
-// it there after `call 0x6b890` (ours reloads the global). The call to 0x6b890
-// already passes its arguments as retail does (push 0xc, ebx = 0xff), so the
-// callee does not cause this. `bool dispose` with `case 44: dispose = true;`
-// gives retail's switch exactly (range to 0x2c, the six-entry table, `sete al`
-// without `xor`), but scores 131 because the missing frame shifts everything.
-// Tried (all with that switch): plain bool, case 44 merged into default (127),
-// dispose set in default (131), case 44 falling into default (131), iterator
-// declared outside the outer loop (131), function_6b891 as the step (138),
-// the type read through online_task_get_type (132).
+// Matched in a full build with stand-in SDK headers (was 108): retail holds two copies of the pool
+// pointer (one in the iterator, re-read from memory by every bitmap scan, and one in a register for the
+// element address and the end index) in a 0x14 frame, so the walk has its own iterator struct whose
+// begin reads the global a second time after online_task_iterator_new; the unused task field gives the
+// frame its size. dispose is a bool. Retail's jump table has six targets with the shared "dispose"
+// target in the middle, which the compiler only builds when the other task types are real cases, so
+// they are listed (a default label always took the last index here).
 // @retail 0x6b950
 void online_tasks_dispose_all(void)
 {
 	while (g_4cf78c->actual_count > 0)
 	{
-		s_record_pool_iterator iterator;
+		s_online_task_iterator iterator;
 		s_type_9df9da *task;
 
-		online_task_iterator_new(&iterator);
-		while ((task = (s_type_9df9da *)data_iterator_next_inlined(&iterator)) != 0)
+		online_task_iterator_begin(&iterator);
+		while ((task = online_task_iterator_step(&iterator)) != 0)
 		{
-			short dispose = true;
+			bool dispose = true;
 
 			switch (task->type)
 			{
@@ -222,13 +248,53 @@ void online_tasks_dispose_all(void)
 			case 33:
 				dispose = g_4cf78c->actual_count <= 4;
 				break;
+			case 3:
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+			case 8:
+			case 9:
+			case 10:
+			case 12:
+			case 13:
+			case 14:
+			case 15:
+			case 16:
+			case 17:
+			case 18:
+			case 19:
+			case 20:
+			case 21:
+			case 22:
+			case 23:
+			case 24:
+			case 25:
+			case 26:
+			case 27:
+			case 28:
+			case 29:
+			case 30:
+			case 31:
+			case 32:
+			case 34:
+			case 35:
+			case 36:
+			case 37:
+			case 38:
+			case 39:
+			case 40:
+			case 41:
+			case 42:
+			case 43:
 			case 44:
+				dispose = true;
 				break;
 			default:
 				break;
 			}
 			if (dispose)
-				function_6b640(iterator.datum_index);
+				function_6b640(iterator.iterator.datum_index);
 		}
 	}
 }
