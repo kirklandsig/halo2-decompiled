@@ -322,7 +322,8 @@ PRIVATE __forceinline s_camera_track_reference_23c300 *camera_track_reference_23
 // track lookup returns the reference (the index is read in the caller's test), `q.w * 2.f` is written at each use, and
 // `first` is declared before `step`. The count test is written twice, once through a getter that holds the count in a
 // reference-bound local: the pair leaves no code, but it is one more reference of the count before registers are
-// chosen, which gives the count edi and direction ebx as in retail. Without the doubled test: 94.
+// chosen, which gives the count edi and direction ebx as in retail. Without the doubled test the two registers are swapped
+// through the whole body (positional score 397).
 // @retail 0x23c300
 void function_23c300(s_camera_tracks_23c300 const *camera, real time, point3f *position, vector3f *direction, bool alternate)
 {
