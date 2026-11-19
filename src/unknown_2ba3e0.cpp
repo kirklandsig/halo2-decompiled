@@ -889,6 +889,9 @@ real g_55e618;
 // 209 (1550 B, frame changes); no velocity copy, the particle's velocity field read at each use 199 (1543 B). Homes on the
 // base: ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100; retail tangent +0x38 (i, j spilled), sweep
 // +0x44, perpendicular +0xa4 (k spilled), collision +0xb0. All restored.
+// AC597: Typed placement output; surface construction at call, construction before position, and copy
+// before position; typed output with call construction or early copy; initialization before position
+// with call or early construction: 102/102/242/242/102/242/102/242.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

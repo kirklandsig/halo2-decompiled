@@ -856,6 +856,9 @@ struct s_physical_block_iterator
 // `candidates` 93, 1-8 dead locals 93; permuter on the 93 form (900 s, 94 tries) best 93. Left on 93: one EBX/EDI swap
 // over the whole tail (the walk's high-water mark and bit, the overlap test's data and sum registers, and the
 // insertion's result EDI / NONE EBX in retail, here the other way round with NONE also taking the `result != NONE` test).
+// AC597: Independent head retirement and policy result with admission/rejection flags, unequal-first and
+// equal-first tie breaks in both forms, and later/earlier timestamp gates:
+// 223/228/228/210/228/210/244/223.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

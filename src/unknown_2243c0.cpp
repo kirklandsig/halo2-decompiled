@@ -782,6 +782,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the pass and material definitions 23; all four zeros ahead of the pass definition 60; all four between the two
 // definitions 13; the material definition named in a plain local before its +8 read 8 (same code); that definition bound
 // as `void const *const &` from the tag-data accessor 92 (552 B). Body unchanged.
+// AC597: Tag table refreshed after virtual dispatch, with direct word/mask, named word/mask, masked
+// handle in place, typed word/mask and a shared signed/unsigned slot: 165/152/165/152/152/165/152/155.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
