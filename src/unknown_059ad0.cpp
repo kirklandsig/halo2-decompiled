@@ -4486,6 +4486,14 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // owner passed through a named `long owner = session->value10;` as 0x5e3f0 does 363 (the caller's dead owner store,
 // `mov edx, [ebx + 0x10]` / `mov [esp + 0x1c], edx`, still does not appear: 0x769a0 already declares the unread owner
 // parameter and this body passes it, so the earlier BLOCKED-BY note now reads: the link drops the unread argument).
+// M3 lane 1 r127 (fast with 0x5e3f0, MATCH each run; control 305): the peer flags in a block scope that ends before
+// `refused:` 305; `bool result;` then `result = false;` 305 (same code); a `member_state` pointer for the acknowledgement's
+// six member-state uses 317 (1264 B); the peer flags declared at function scope 305 (the byte homes do not move: they
+// follow liveness, not scope); `volatile` result (diagnostic, reverted at once) 319 (1280 B; it rotates the homes again,
+// result +9, identity +0xa, a peer flag +0xb). Re-measured: renamed result/better/same/identity flag (Round 87's form) 305
+// each, the host path as `if (sender != NONE) goto acknowledge;` 317. Reading: the three byte homes follow the reference
+// weights, and ours folds `result` to a constant at the reason-1/2/9 exits where retail reads its home, so the weights and
+// the homes' order differ. Body unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

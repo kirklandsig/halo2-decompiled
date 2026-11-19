@@ -1143,6 +1143,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // (814 B, masked 59; a hand reload beside `object`, match-only), with final_matrices at the top 194 (masked 62);
 // `matrices`, `orientations` and `sample` (constant initialisers) declared ahead of the mask copy 239 (masked 64), at
 // the top after result 239 (masked 70).
+// M3 lane 1 r127 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): `result` read through
+// the parameter's own address (`*input_reference`) 240; `result` written through a reference bound to it 240; the sample
+// arm's final_matrices assigned from `matrices` 240; the body after the early tests in its own block scope 240; the sample
+// arm's and the overlay copy's parameter reads written as final_matrices (diagnostic) 240 (each the same code: the compiler
+// propagates every one of these copies back to the parameter, so result and the parameter stay one value in ESI). Re-measured
+// the 0xbfe20 clear 262 (813 B: ours keeps `definition` in EAX across the mask copy, retail stores it and reloads it from
+// the slot it later gives the render-node count). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
