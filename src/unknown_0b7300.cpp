@@ -197,6 +197,8 @@ PRIVATE inline s_scenario_block *function_x6e4ccb(void *scenario, long type)
 // the only caller, 0xd4e60 (score 74), whose call site loads the type into edx
 // in retail and eax here. Permuter (17 min, 262 tries, seed 999): no form
 // below 10.
+// Matched in a full build with stand-in SDK headers (was 10): the type's palette block is also read into a local
+// beside the datum block (unused afterwards; it leaves no code but takes part in the register choice).
 // @retail 0xd5260
 s_type_4f0dcc *function_d5260(long type, long index)
 {
@@ -207,6 +209,7 @@ s_type_4f0dcc *function_d5260(long type, long index)
 	{
 		long size;
 		s_scenario_block *block = function_x71bcc9(g_4e0350, type, &size);
+		s_scenario_block *palette = function_x6e4ccb(g_4e0350, type);
 
 		if (PIN(index, 0, block->count - 1) == index)
 			result = (s_type_4f0dcc *)(block->elements + size * index);
