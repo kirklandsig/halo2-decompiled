@@ -4363,6 +4363,12 @@ extern vector3f *g_4687bc;
 // 0-8 dead locals at the top, or 1-8 just ahead of the material (diagnostics) 8 each, so neither scratch choice is a
 // symbol-count tie; the node count in a named local 8; the element through a const reference to the rigid-body array 8;
 // the element as `index + rigid_bodies.data` 8 (all the same code).
+// M3 lane 5 r211 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the rigid-body index read through a
+// `long const &` bound to it 8; the material as a reference bound to a default-material local 8; the material copied
+// from the global as the material type through a cast of its address 8; the effect tag read through a `long const &`
+// bound to it 8; the element as the array's data pointer then `+= rigid_body_index` 8 (all the same code); the element
+// through a second havok_component_get of the root's component index (the impacts file's spelling) 80 (1105 B: the pool
+// is reloaded after the call).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

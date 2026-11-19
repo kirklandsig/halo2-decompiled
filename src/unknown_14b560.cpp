@@ -781,14 +781,14 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
+// walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
+// place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
 // MiniMax H (11-18): no new form, no lower score (43): the player datum is still computed in EBX where retail has
 // EDI and the unit index in EDI where retail has EBX; writing retail's walk (the root NONE, the entry test before
 // the loop, the step object recomputed in the loop) makes the compiler peel the first iteration (109), and the same
 // walk with the step object taken from the root index instead also gives 109, so the walk stays as it is; the datum
 // iterator's register use comes from include/data_iterator.h, which this lane may not edit.
-// score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
-// walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
-// place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
 // MiniMax R run 92 (11-17): no new form, no lower score (43): the permuter cannot search this body over the reduced
 // image (it reads 44 there against 43 in the full one), and the carriers still come from the out-of-line 0xbaf80 walk
 // in src/unknown_0bad50.cpp and from the iterator's registers in include/data_iterator.h, both outside this lane's
@@ -988,6 +988,14 @@ bool function_e4050(long object_index);
 // on the `dword current` walk 171, on the long NONE-root walk 109; the `dword current` walk in its own `{}` block
 // 171; re-measured the `dword current` walk 171 (405 B). Diagnostic: 1 to 7 dead initialised locals on the kept
 // body 44 each (the EBX/EDI swap of the player datum and the unit is not a symbol-count tie).
+// M3 lane 5 r211 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): BLOCKED-BY 0xbaf80
+// stands (pinned out of line in src/unknown_0bad50.cpp, an avoid file this round). On the kept body: the unit read through a
+// `long const &` after its NONE test (lookup, walk start, 0xe4050) 43, the player datum through a `s_player *const &` for
+// the unit read and the three exits 43 (both the same code). On the `dword current` NONE-root walk (re-measured 171 at
+// 405 B: the walk's step object reuses ECX because the unit holds EAX for 0xe4050): 0xe4050 passed `root_index` (equal to
+// the unit on that path, so the unit dies at the walk) 181 (391 B); a redundant `if (unit != NONE)` around the walk 171
+// (same code); the unit object's parent named after the walk for the test, the 0xbaf40 argument and the exit store 174
+// (402 B).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2550,6 +2558,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax A (11-19): no new form, no lower score (701): retail still calls 0x151b80 where this build inlines it, the frame is still 0x4c against retail's 0x74, and the loop's index scratch is still in EBX where retail keeps it in ESI; the body is unchanged. BLOCKED-BY 0x151b80's inlining decision in src/unknown_1502e0.cpp.
 // MiniMax R run 92 (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
 // this build still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees
@@ -2581,7 +2590,6 @@ static __forceinline long player_round_ticks(real value)
 // MiniMax H (11-18): no new form, no lower score (701): the length agrees (2740 bytes), but the frame is still 0x4c
 // against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out
 // of line, and retail's two separate request homes are still one here; those callees sit in other files.
-// score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
 // its first 0x151b80 stays a call, while ours has one request home and LTCG expands that call into the body;
@@ -2725,10 +2733,10 @@ static __forceinline long player_round_ticks(real value)
 // still inlines 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files. The
 // activity tail spelled as a clamp gives 700 (retail's exact compare and cmovg, a gain of one), the clamp alone gives
 // 702 at 2741 bytes, and the activity words as `|` of shifted bools give 714 at 2743 bytes, so none of them is kept.
-// score 701 (was 701): unchanged this round: the frame is still 0x4c against retail's 0x74, and this build inlines
+// Earlier at 701 (was 701): unchanged that round: the frame is still 0x4c against retail's 0x74, and this build inlines
 // 0xccd20 and the first 0x151b80 call where retail calls them.
 // MiniMax E (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74; the permuter's best variant (700) used a flag set by one test and read by the next, a comparison written as `!= 0` and an argument swap, all ruled out.
-// score 701 (was 701): unchanged this round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
+// Earlier at 701 (was 701): unchanged that round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
 // 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
 // MiniMax I (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this
 // build still expands 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files.
@@ -2742,6 +2750,14 @@ static __forceinline long player_round_ticks(real value)
 // in its own block 804 (2842 B; listed); with the 0x80 test as its own block around the `||` 804 (still expanded); with the
 // candidate written as `input + 0x28` at each of its four uses 810; the 0x80 block's `a || b` in a named bool 701 (same
 // code, still expanded), with the block requests 804.
+// M3 lane 5 r211 (fast with 0x151b80, 0x151aa0, 0x151940; control 701). Lead for the flag decision (diagnostic, not kept):
+// 0x151b80's file built /Ob1 keeps both 0x151b80 calls out of line, and 0xccd20 then stays a call too (our 33 calls are
+// retail's 33): 775 at 2636 B; with each request in its own block 676 (2735 B, frame 0x6c), with the candidate written
+// as `input + 0x28` at each call as well 698 (2742 B). 0x151b80 itself differs from retail only by an ESI/EDI swap, so
+// its own form is not what keeps retail from expanding it. Source trials on main: the `0x151aa0 || 0x151b80` pair
+// through a forceinline wrapper taking `primary` 701 (same code: the constant still reaches the inliner); the six flag
+// sets through the file's SET_FLAG(..., true) 701 (same code); only the 0x16 request in its own block 804 (2842 B); the
+// flag sets through the `player` pointer fetched at entry 807 (2643 B).
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3138,6 +3154,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
+// function where retail loads it into ESI and reloads it after the busy check and again before the
+// final store, and the two loops swap the datum and unit registers with it; the reduced image
+// overstates this body, the full build gives the same 103 at retail's 611 bytes.
 // MiniMax A (11-19): no new form, no lower score (103): the players globals are still kept in one web across both loops in EDI, where retail reloads g_4e8c20 into ESI, ECX and EAX; the body is unchanged. BLOCKED-BY the 0xb8540/0xb7b40 drafts in other files.
 // MiniMax R run 92 (11-17): no new form, no lower score (103): the players-globals pointer still stays in edi where
 // retail keeps it in esi, and the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may
@@ -3161,10 +3181,6 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // MiniMax H (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail
 // loads it into ESI and reloads it late, and retail inlines the status test that this build calls out of line; that
 // callee is in src/unknown_13bf00.cpp, which this lane may not edit, and the reduced image overstates this body.
-// score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
-// function where retail loads it into ESI and reloads it after the busy check and again before the
-// final store, and the two loops swap the datum and unit registers with it; the reduced image
-// overstates this body, the full build gives the same 103 at retail's 611 bytes.
 // MiniMax E (11-11): no new form, no lower score (103 on the full build, 193 on the reduced one):
 // reading the globals pointer at each use (175 on the reduced image), keeping it for the last write
 // (173), writing the status after the countdown (181) and giving the second loop its own iterator
@@ -3402,6 +3418,13 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // base only: round 46's split failure test 91 (608 B, aligned 55, masked 13; flag form, not keepable without a match); left on
 // it is loop 1's inlined iterator step (retail keeps NONE in EDX and datum/unit in EDI/ESI, and stores no iterator.data before
 // loop 1). BLOCKED-BY 0xb8540/0xb7b40 stands (both still disabled stubs: nothing on loop 2's call tree is seen to write g_4e8c20).
+// M3 lane 5 r211 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40; control 103; 0x14f2e0 5 there as in the full
+// build): retail materialises NONE in EDX right after loop 1's 0x16bc00 call and reuses it for the exhausted iterator's
+// datum index, the last-unit test (against memory) and loop 2's set-up; ours uses immediates and loads the last unit into
+// EBP, which follows from the globals web. The prologue's globals pointer bound through a `s_players_globals *const &` 178
+// (the countdown becomes a memory decrement); the last unit through a `long const &` for its test and the 0x14e970 call
+// 103, the busy flag through a `bool const &` 103, loop 1's player pointer through a `s_player *const &` 103 (each the
+// same code); a second globals pointer taken at entry for the busy store and the final store 182 (606 B).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

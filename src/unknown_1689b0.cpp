@@ -1556,7 +1556,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
 // score 551 (was 551; earlier 580): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
-// score 551 (was 580): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
+// Earlier at 551 (was 580; a second score line, merged in round 211): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
 // Count, clearance and prism-index homes differ. The square precedes the nonempty branch.
 // The axis reload and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
 // MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
@@ -2084,6 +2084,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // named projection products 565, early nearest reset and common projection scale 564,
 // prism ordinal before the query 553. NOT kept: grouping moves the sum slots, and cached
 // plane components eliminate retail coefficient reloads and move the prism cursor.
+// M3 lane 5 r211 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0, control 551; the four matched ones stay MATCH):
+// a redundant `if (0 < count)` around the edge loop 599 (2894 B); the nearest-edge scan (nearest reset, `inside`, clamp
+// and edge loop) as a forceinline helper returning `inside` 556 (2878 B: the plane distance's y and z products then load
+// the plane first); the clamped count read through a `long const &` 565 (2893 B); the three ray casts (hit position or
+// the ray's end) through one three-caller forceinline helper 588 (2898 B); the two averages through one two-caller
+// forceinline helper 552 (2879 B; the same averaging code: ours still copies the inverse and folds each sum component,
+// retail loads the component and multiplies by the inverse).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
