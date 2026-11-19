@@ -261,6 +261,10 @@ void function_254200(void)
 // arguments 4, with the triple then constant, x, y + size (one alone leaves ours); the cache read back as the argument
 // the same 4. Diagnostic: 6 or 7 float probe stores ahead of the size give retail's triple, 0-5 and 8 ours, and with the
 // embedded stores 1, 2, 3, 5 and 7 all give ours: a hash-like tie that no natural form has reached.
+// M3 lane 7 r190 (single-address fast, control 4): the shared y + size bound to a `real const &` for vertices 1-2 64
+// (1113 B); the point copied member by member 88 (1117 B); the depth constant through a no-code forceinline accessor at
+// all eight uses 4; every positive sum, x and y, written size first 4; every device call of the body in member form
+// (Begin, 2s, 4f, render state, End) 4. All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

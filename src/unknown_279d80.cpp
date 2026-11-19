@@ -2095,6 +2095,11 @@ void function_27dd10(void)
 // Diagnostics: a used float literal in the blend-1 scale arm fixes this pair (one or two of them); a non-literal float
 // multiply there does not; `g_5044bc += 3` there fixes this pair but reverses pass 1's (EDX flags, ECX count); 15 to 24
 // dead initialised locals in this body 2 each. All restored.
+// M3 lane 7 r190 (fast with 0x281b60 and the four matched walk users): g_504430 declared ahead of g_504410 2; pass 0
+// given the count straight from the settings global, the local count only for passes 1-2, 286 (1742 bytes, every walk
+// user regresses); the bit-flags pointer stepped in the outer for's increment 414 (1751 bytes); in function_288572 the
+// bit-flags selection ahead of the output-cursor store 2 (0x288570 3, 0x289580 78); the blend's sign mask with external
+// linkage 2. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
