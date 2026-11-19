@@ -824,6 +824,11 @@ void __stdcall function_1160c0(real dt)
 // Separate physics point with fields, point setter or shared point difference 314/361/311.
 // Updating the physics point before publication, same forms 391/391/406. Early tag index
 // with separate or updated point 314/391. NOT kept: every split widens the frame and leaves the segment spill different.
+// Round 639 forms: traversal node array base or fixed extent 301/301, shared node velocity 241,
+// double constraint distance 260, spring segment or reach ratio name 144/144,
+// explicit sine or cosine 144/172, completed constrained point 336.
+// NOT kept: the node array forms reach retail length with a 0xa8 frame. The best forms tie
+// and leave the selected segment in EDI/ECX and at +0x20.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
