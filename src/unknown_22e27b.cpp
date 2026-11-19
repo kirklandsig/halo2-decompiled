@@ -526,6 +526,14 @@ static inline real interpolate_linear(real a, real b, real t)
 // field (no flags local) 208; the next index kept in its own `step` local with both boundaries testing it as separate
 // `if`s 160 (659 bytes, same second compare); the switches' common `frame = valuea` written once ahead of the low
 // block's switch 86 (659 bytes), ahead of both switches 219 (650 bytes). Screen: `else if` on the step local keeps the skip.
+// M3 lane 12 r151 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
+// the flag-8 store as an `else if` of the restart break 1 (same code); a function-scope `bool top_level = type == 0;` for
+// the three dispose and three restart tests 228 (663 bytes: the compare is hoisted); a `word` flags local declared in each
+// boundary block with the flag-8 test on the field 207 (frame and loop registers move); the join test through a result-style
+// `static inline` predicate on restart 1 (same code); an explicit `(short)` on the frame sum 1. Screen only, skip kept: the
+// flag-8 store guarded by `!restart` ahead of the break, the boundary pair nested under `frame < 0 || frame == count`, an
+// unused `wrapped` range flag, the break inside each boundary block with none at the join, an in-range result-style helper
+// as an empty first arm.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

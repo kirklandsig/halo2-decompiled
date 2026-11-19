@@ -874,6 +874,16 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // (inverse + cursor) + (collection + 4), retail (collection + inverse) + cursor + 4), with the occupied update as above 27;
 // the conflict scan as `j < 16 && !conflict` with no break 310 (1077 bytes). Diagnostic (a comma loop, not keepable): a
 // byte offset stepped beside `i` for the occupied key 283 (1080 bytes: the offset keeps its own induction variable).
+// M3 lane 12 r151 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; compile-only screen of the key, which
+// reproduces ours as (inverse + cursor) + collection + 4): `collection` taken through a reference bound to
+// `watcher->players` 28 (same code); the occupied key as `(byte *)(i * size) + (long)collection + 4` 28 (same code); on the
+// swap order (collection, player, update, other) at definition, declaration and call: that key 32, a players-array pointer
+// named between the swap and the occupied test 321 (1090 bytes), the key through an element pointer cast from `(byte
+// *)collection + 4` 32. Screen only (same grouping): `collection` declared in the else arm, `(collection->players + i)`,
+// a `players` array pointer before the slot search, a `(dword)i` index; `collection` before the second loop or at the top
+// gives the key its own induction variable. Reading: a user pointer local as the base (`players`) is also added last, so
+// the grouping is not a temporary-numbering tie; retail's (collection + inverse) is the shape of a whole-address reduction
+// with `collection` treated as invariant, which every in-loop definition here loses.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
