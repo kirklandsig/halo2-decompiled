@@ -1742,6 +1742,9 @@ long function_2197f0(real gain);
 // Hold then transition 121, plain then composite 87, hold return 182, common interpolation 204,
 // shared release duration 92, shared attack duration 95, previous index snapshot 160,
 // named release window 87. The reciprocal, separate gain read and release-to-attack join still differ.
+// Round 431: composite remainder before reciprocal 87; common remainder after attack or hold
+// admission 160/160; same-ambience fade/hold/both snapshots 160/162/116; existing scalar sum for
+// the composite gain (bit copy or native construction) 87/87. The original body is restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

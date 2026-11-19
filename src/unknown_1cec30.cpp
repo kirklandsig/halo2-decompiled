@@ -2802,6 +2802,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
 // NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
 // Early velocity j/k loads, speed-product residence and property-zero EDI remain.
+// Round 431: indexed velocity/sample/both material inputs 91/377/377; indexed output
+// alone or with material inputs 91/91; lateral axes through array 377; bound output array 99;
+// shared material addition with indexed output 139. Early j/k loads and property zero still differ.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
