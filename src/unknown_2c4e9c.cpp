@@ -1625,22 +1625,22 @@ void c_variant_parameter_setting_screen::v19()
 
 	if (definition)
 	{
-	long string_list = definition->string_list_index;
-	if (string_list != NONE)
-	{
-		if (title)
+		long string_list = definition->string_list_index;
+		if (string_list != NONE)
 		{
-			buffer[0] = 0;
-			function_1a0180(string_list, definition->title_string_id, buffer);
-			title->function_22f52e()->set_text(buffer);
+			if (title)
+			{
+				buffer[0] = 0;
+				function_1a0180(string_list, definition->title_string_id, buffer);
+				title->function_22f52e()->set_text(buffer);
+			}
+			if (description)
+			{
+				buffer[0] = 0;
+				function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
+				description->function_22f52e()->set_text(buffer);
+			}
 		}
-		if (description)
-		{
-			buffer[0] = 0;
-			function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
-			description->function_22f52e()->set_text(buffer);
-		}
-	}
 	}
 	list.select_current_value();
 	c_class_1473c9::v19();
