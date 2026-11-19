@@ -248,6 +248,13 @@ void function_254200(void)
 // ahead of the reservations), top ahead of left 174, only the two y edges named 126 (1119 B), only the two x edges 153
 // (1119 B). Diagnostic: 0x2548f0's body moved above this function in the file 4 (0x2548f0 2), so the order in which the
 // constant's pool entry is first used in the file does not set the pair either.
+// M3 lane 4 r220 (single-address fast, control 4; the reload triple after the second and third reservations is retail
+// x, constant, y + size, ours x, y + size, constant): vertices 2 and 3 through the member 4f form 4; y + size named as a
+// const local ahead of the state calls 206; the four edges as const locals after the colour call 173; integer zero
+// literals for the bitmap calls' real arguments 4 (same code); both cached render-state stores embedded in the call
+// arguments 4, with the triple then constant, x, y + size (one alone leaves ours); the cache read back as the argument
+// the same 4. Diagnostic: 6 or 7 float probe stores ahead of the size give retail's triple, 0-5 and 8 ours, and with the
+// embedded stores 1, 2, 3, 5 and 7 all give ours: a hash-like tie that no natural form has reached.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

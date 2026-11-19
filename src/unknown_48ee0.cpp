@@ -368,6 +368,12 @@ extern real g_4c9798[36];
 // first bit with dword height limit 243; reused pixel cap before height alignment 323, with dword height 351;
 // pixel cap between rounding calls 323; cap with separate width alignment 323.
 // NOT kept: every form regressed. Mode flag register, mode and size homes, and rounding reloads still differ.
+// M3 lane 4 r218 (fast with 0x48e70/0x1cf50, both matched; control 174, aligned 70, masked 36): the border expression is
+// reassociated here (divide, then 0.75) where retail multiplies first: `0.75f * (real)width / maximum`, `0.75f / maximum *
+// (real)width` and `(real)width / maximum * 0.75f` 174 each (same code); `(real)width * (0.75f / maximum)` 232 (1495 B);
+// the product and the divide as two statements 180 (1491 B, retail's mul-then-div, aligned 63, masked 31), with the
+// width converted first 180. On base / on that form, the second plane set from the direction with the dot through the
+// plane, the direction, or the read-back normal: 343/339/343 and 337/329/337 (state leaves ECX). Body unchanged.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

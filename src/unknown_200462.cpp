@@ -239,6 +239,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // keeps XMM4); a named advance with the half height written at each use 24; the bounds-record pointer with the half
 // height at each use 18 (the copy source becomes retail's `lea esi, [eax + 8]` and the advance takes XMM3, but the half
 // height is formed after the step, x moves to XMM4 and 0.5 to XMM7).
+// M3 lane 4 r221 (fast with 0x2008fc 0x200891, control 14): the advance bound by `real const &` to its product and
+// used by both x steps 55 (first difference +0x129), by the first step only (the second written out) 51 (850 bytes);
+// the half height built in place (`= y1 - y0; *= height; *= 0.5f;`) 14, the half width so 14, both 14 (all three the
+// same code: the advance product keeps XMM4 and the half-height copy XMM3).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

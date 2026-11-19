@@ -1351,6 +1351,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // not kept: build/r115/lead-42cf0.patch in the m3-lane11 worktree); the pixel in a named local stored to the first
 // vertex and then the outer one (retail's store order) 352 [132/108/29]; both 238 (2592 bytes) [121/97/22]; case 4's
 // no-previous arm written first 358 [150/166/46]. Body unchanged.
+// M3 lane 4 r218 (fast with 0x42c50/0x42b20/0x43740, all matched; control 351, aligned 132, masked 30): lane 8 r144's
+// two-member texture-scale lead on this base 475 (2580 B, frame 0xac, first difference +0x9e: the colour blend reschedules),
+// with the outer pixel store last 475; the outer pixel store last alone 352; the pixel named, stored to vertex[0] then
+// outer 352; case 4's z row with the first edge written before the second 341 (aligned 114, masked 29; a statement order
+// picked by score, not kept: lead only); case 4's first.z written product first 351 (same code); case 4's three rows
+// first edge first 423 (frame 0xa0), its x and y rows only 424; case 1/2's y row first-first with case 4's z row 341.
+// Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

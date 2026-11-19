@@ -279,6 +279,20 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Entry base named early/late, ordinal early/late, display result early, formatted
 // destination late, and adjacent base/count ranked early/late all score 67.
 // NOT kept: lexical order leaves the frame at 0x24 and the derived buffer live.
+// M3 lane 4 r219 (fast with 0x24a7bf; control 67). Reading: everything but the found entry's lifetime is retail's in
+// some form; retail forms the entry from i into ESI before the ascii call, keeps it across that call, drops it when ESI
+// takes the 0x31 count for the copy, and forms it again from i and the spilled base for the terminator, so the entry is
+// never shared with the terminator. Indexed terminator with the buffer local 84; the entries base passed by reference or
+// by pointer to a forceinline getter 84/84, `(*&entries)[i]` for the terminator 84, a `s_entry_24a64d *&` alias for the
+// base 84 (all fold: the base is promoted again); the found entry as byte arithmetic in the condition, in the arm, or
+// nested 84/83/84; a loop-top entry used only in the found block 75 (the loop cursor becomes the entry in ESI);
+// loop-top entry for the test with indexed found reads 84; loop-top entry for the test and the found reads 75;
+// the base and count as a two-member local (re-measure of the grouping form) 64; the search loop then `if (i < count)`
+// with the indexed terminator 59 (positional: the extra count test lines the found block up, the entry still stays in
+// EBX; NOT kept: a mix of the buffer local and the indexed field), with every buffer use indexed 59, with the buffer
+// terminator 80, `i != count` 59; the found block after a writable name local assigned to the result first 80;
+// `result = entries[i].field_0c;` before the append test 66; the loop-top entry used only for the terminator 84, and
+// for the terminator and the plain arm 96.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

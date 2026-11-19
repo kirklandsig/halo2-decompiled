@@ -234,6 +234,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // call and its animation read through a `c_class_1a2c81 *parent = screen;` declared in the model loop's body 23; the
 // text definition named before its call 23; the model definition named before its call 23; the text loop's animation
 // read through an explicit base-widget cast 23 (all five the same code).
+// M3 lane 4 r221 (fast, with the file's 10 matched functions): an `s_type_0cfb31 const &` to the screen's animation
+// record read for the start in the model loop 23, in the text loop 23, in both 23; the text loop's start through the
+// class's inline function_22e957 wrapper 23, both loops through it 23 (all the same code). Diagnostics: the text helper
+// given a constant 0 for its index 47 (420 bytes: the text loop's counter moves to memory and the offset to ESI, the
+// model loop unchanged, still `and` and the EAX copy); without the model's value0a store 54 (re-measured).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

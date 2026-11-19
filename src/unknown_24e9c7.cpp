@@ -584,6 +584,10 @@ struct s_24e9c7_points
 // half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
 // 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
 // with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// M3 lane 4 r218 (fast with 0x24e59f/0x22a664, both matched each time; control 125): by-value inline helpers (new):
+// the across pair returned by value with side from it 181 (770 B, frame 0x50), side initialised from it and scaled in
+// place 181, side from a by-value scale helper 213 (796 B, frame 0x58), up returned by value 169 (762 B); the in-place
+// side filled inside a block scoping size 144 (746 B). Return copies grow the frame. Body unchanged.
 // M3 lane 2 r102 (fast; control 125). Reading: retail's -0xc/-8 pair is the side point (x kept in XMM6, y spilled: first
 // the across-j product, then the scaled side.y in the same slot), so the side is filled with the across products and
 // scaled in place; the plain form of that (no other move) 144 (746 B: across products early as retail, result still at
