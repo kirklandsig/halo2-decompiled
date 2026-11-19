@@ -696,6 +696,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // indexed impulse with displacement update 741, settling length before the copy 603,
 // shared activation and normalization motion 676, shared scaled-reference displacement 673,
 // staged target point 717. NOT kept: these forms leave or worsen the sample register and coefficient schedule.
+// M3 lane 14 r116 (plain with 0x1eb6f0 and 0x30bf0, both MATCH unless noted; control 603, --fast 597 under a caveat): both
+// direction refreshes through one shared inline helper taking (s, pos, d) 603 (same code); the activation step as one
+// conditional expression 607; diagnostics: the activation block as an inline helper 1730 (not inlined, 1880 B; 0x1eb6f0
+// 2), forced inline 709 (2875 B; d still takes EBX, so moving d's activation reads behind a helper parameter does not hand
+// q the register); `s->start` copied field by field 673 (2877 B).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
