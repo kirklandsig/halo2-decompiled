@@ -493,6 +493,13 @@ struct s_visibility_bound_record
 // EDI to the entry, ESI to the state pointer and EBX to the views and then to a zero that serves the count test, the
 // active test and the four count stores, where retail tests with `test` and has a zero (EDI) only for the count stores
 // and the view counter. The geometry sitting in EDX is what pushes the state pointer into ESI.
+// M3 lane 12 r146 (fast with 0x142570, MATCH): the view counter declared ahead of the list setup (`long view = 0;`, the
+// loop without an initializer) 430 (its store joins the EBX zero); the query count named once for the outer test and
+// the parts test 430 (same code); the outer test inverted with the node-transform arm first 463 (1758 bytes); the outer
+// test as `>= 1` 453 (1760 bytes: the active test then also takes a register zero); the state pointer named for the
+// views read and the active test 434. A compile-only screen shows the early zero (`xor; cmp eax, reg; cmp [state +
+// 0x2a78], reg`) for per-list setup in three orders, separate count stores, `active == 0`, the parts flag set by an if,
+// the flags tested first, and even with the active test removed: the `> 0` count test alone joins the store zero.
 // MiniMax A (11-18): no new form, no lower score (430): retail forms the entry address with a lea into ebx from the scaled
 // index after the first register save and reads the tag through that pointer, while this build reads the tag through a
 // displacement from the scaled index and only then materializes the entry pointer; retail loads the tag table into esi
@@ -500,6 +507,12 @@ struct s_visibility_bound_record
 // against retail's [esp+0x30]. The geometry lookup goes through the header's visible_entry_geometry, whose own
 // &g_4ba138[index] is what the based-pointer folding applies to; the source permuter's best variant was one differing
 // instruction better and carried a declaration split and a pointer-to-a-local.
+// M3 lane 1 r127 (fast with 0x142570/0x1428b0/0x165010/0x2dd930/0x45a80/0x458d0, all MATCH; control 430): the entry local
+// renamed 430 (same code: the names do not move its [esp+0x48] home); the entry as a reference-bound local (`entry.` at
+// each use) 430 (same code); a redundant `if (0 < node_count)` around the node loop 430 (one `lea` operand order only); the
+// entry declared after the geometry and views 430 (same code); diagnostic: the geometry through a copy of the pointer-taking
+// (entry, flags) helper that src/unknown_044720.cpp keeps private 449 (1760 B: the entry is then formed before its reads,
+// `add edi, table`, but stays in EDI and the tag table moves to EDX). Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

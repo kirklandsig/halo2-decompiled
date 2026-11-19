@@ -1890,6 +1890,11 @@ done:
 // offset, size 27; the definition and its reads in an inner block assigning outer palette offset and datum 27; a short
 // type local 27; on main's body a short type local 115 (267 B). Retail's load, use, copy (`mov esi, eax`) shape occurs
 // nowhere else in the image, and no out-of-line getter of the type table exists to inline.
+// M3 lane 16 r143 (fast with 0xbf0f0/0xbf090): an inline taking the definition pointer that reads size and placement
+// offset and returns the datum, the palette offset read in the caller, 32 (scenario ECX, index SI, type EDX); the
+// palette through an inline taking the definition pointer on the 27 form 33; on main's body the placement offset and
+// the placements read ahead of the size 18 (237 B), that with the size as a long 27 (236 B, type still ESI); the 27 form
+// with 1-8 unused initialised locals 27 each (not a symbol-count state: the type stays ESI in every count).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -2056,6 +2061,7 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax A (11-19): no new form, no lower score (285): the pool's data pointer is still in EDI here and in EBX in retail, and the unit's flag byte is still read through a 32-bit copy instead of AL, so every later instruction inherits that difference; the body is unchanged. BLOCKED-BY 0xb8bd0 and 0x142570.
 // score 285 (was 285): the first difference is still the ancestry loop's exit at +0x76 (retail's shared epilogue);
 // behind it retail re-reads the pool data after the walk and takes the parent, the header and the node-matrix base
 // from it. Round 199 (m3 lane 5, fast; aligned / register-masked counts, the body 215 / 152): `index` and `node` not

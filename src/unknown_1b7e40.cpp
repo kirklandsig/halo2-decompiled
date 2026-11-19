@@ -69,350 +69,9 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
-// score 28 (was 28; 38 earlier): m3 lane 9 r136 (fast with the file and 0x25d690/0x25d740/0x25d810/0x25d9b0/0x26ed40/0x26f060/
-// 0x26f0c0/0xba1d0, faithful 38; aligned rows 12 -> 7). Kept: the evaluation as `if (priority <= 0) return 0;`, the
-// lookups, then one test returning the priority and a final `return 0`, with the node's distance read once into a
-// local for both range tests. That gives retail's fallback (no priority zeroing, its failures to the zero exit),
-// priority in SI, view in EDI, actor EBX/node EBP, and returns 0 for a non-positive priority as retail does (`jle` to
-// the zero exit; the old body returned the priority itself). Left: retail re-reads the distance for the second range
-// test (ours compares the register), and the two exits sit the other way round: retail `je` to a last `mov ax, si`
-// epilogue with a 32-bit `xor eax, eax` exit in line, ours `jne` to a last `xor ax, ax` exit.
-// Without the distance local every two-exit form compiles to one code, 65 (actor/node in EBP/EBX, exits as above):
-// `if (TESTS && !busy) return priority;` then `priority = 0; return priority;` 65; the failure test first with
-// `return 0` or `priority = 0; return priority;` and a gate else 65/65; `goto done` with a zero return before the label
-// 65/65, with the busy test nested 65; the early `priority <= 0` return with the failure test 65, as `!(priority > 0)` 65.
-// On that 65 code: a slot-owner pointer local 65; no invitation-index local 65; an invitation element pointer 170 (579
-// bytes); the declined index from the local 65; node from a ternary 165; priority declared first 65; the joint's target
-// in a local 130 (551 bytes); length_sq3f 65; the view getter called directly 65; velocity declared first 65; the top
-// test or the fallback lookup through actor->prop_index 65/65, both 218 (608 bytes); one priority read after the loop's
-// if 105 (560 bytes), with the distance local 104.
-// Other tails: single exit with `priority = 0` on every failure 76 (542 bytes: one shared return), with the busy test
-// nested 76, as `goto done` 76; a short result zeroed at its declaration 91 (554); the kept body plus a gate else
-// zeroing the priority 61; both `return 0`s as `priority = 0; return priority;` with a gate else 49 (aligned 8: the
-// busy test is a select again), without the gate else 38 (same code); `return 0` in all three 49; the early return
-// with the busy test in its own `if` 49 (select). With the distance local: single exit 49 (540 bytes); a per-arm short
-// result 26 (553 bytes: retail's `xor eax, eax`, but `mov eax, esi` for the priority; two points, not kept); the old
-// body 42. No form found puts the zero exit in line after the busy test without the select.
-// MiniMax E (11-17): no new form, no lower score (49): the busy call's two returns are still if-converted into a mask select (neg al; sbb eax, eax; not eax; and eax, esi) where retail tests the flag and branches to its own priority epilogue, and this build's shared zero exit still sits after the priority block where retail's sits before the fallback block; the inverted test measures 49 and a single result exit 163 in the full build.
-// MiniMax H (11-14): no new form, no lower score (49): retail's shared zero exit sits at +0x1de,
-// between the evaluation region and the fallback block, and the priority path ends in an epilogue of
-// its own at +0x26a, so retail branches where this build turns the two returns into a mask select; the
-// permuter's 300 s search over the reduced image (4 tries) found nothing below the baseline.
-// MiniMax A (11-13): no new form, no lower score (49); what still differs: retail calls function_26f060 with the
-// actor index in ECX and the invitation type in EDI where this build passes them in EAX and ESI, and that moves the
-// actor and the node between EBX and EBP through the body; the busy test then becomes a numeric select
-// (neg/sbb/not/and) where retail branches into the success epilogue; the convention is set by the callee
-// (src/unknown_26e370.cpp): BLOCKED-BY 0x26f060.
-// MiniMax D (11-14): no new form, no lower score (49): retail passes the actor index to 0x26f060 in ecx and the
-// invitation type in edi where this build passes them in eax and esi, and that convention is set by 0x26f060 in
-// src/unknown_26e370.cpp, which this lane may not edit, so the busy selection and the zero and success epilogues
-// still differ. BLOCKED-BY 0x26f060.
-// MiniMax R (11-15): no new form, no lower score (49): the busy call's two returns are still if-converted into a
-// mask select (neg al; sbb eax, eax; not eax; and eax, esi) where retail tests the flag and branches to its own
-// priority epilogue, and this build's shared zero exit still sits after the priority block where retail's sits
-// before the fallback block; the branch-shaped spellings swap the actor and node registers.
-// MiniMax S (11-16): no new form, no lower score (49); the busy test's two returns are still if-converted into a mask select where retail branches to its own priority epilogue, and splitting the two exits with a goto reaches retail's exit shape but moves the actor into ebp and the node into ebx, which measures 65.
-// Earlier (score 49, was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
-// M3 lane 11 r113 (fast with the file's functions and callees, faithful 49; aligned 9: the busy select, the zero exit's
-// `xor ax, ax` and the success block's place): the busy test joined to the && chain with `return priority` 65 (aligned 69:
-// no select, but actor/node swap to EBP/EBX and the success return stays inline ahead of the fallback); on it the decline
-// passed the invitation index local 65, the fallback through actor->prop_index 65, the participant priority read once
-// after the found/acquired arms 105 (560 B), the busy test through a fresh actor lookup 213 (610 B); on the body the
-// decline with the invitation index local 49 (same code).
-// MiniMax I (11-17): the busy call's result branches to the priority epilogue now, and the conditions' failure has a
-// zero return of its own; retail holds the priority in SI and the view in EDI where this build uses DI and ESI, retail's
-// zero exit is a 32-bit `xor eax, eax`, and retail compares the slot's field in memory. The fallback's failures
-// returning 0 directly (no priority zeroing) give retail's SI and EDI homes for the priority and the view but swap the
-// actor and the node (65), the guard-return fallback measures 65 as well, the joint's target read hoisted into a local
-// measures 121 at retail's length, and the permuter's three rewrites in 300 s found nothing below the baseline.
-// Earlier (38, was 49): the busy test branches to the priority epilogue like retail; the priority and view registers, the
-// MiniMax G (11-18): no new form, no lower score (38): the busy test branches to the priority epilogue like retail and the block order
-// matches, but the priority is held in DI where retail holds SI (the view in ESI against retail's EDI), the shared zero exit zeroes 16
-// bits (`xor ax,ax`) where retail zeroes 32 (`xor eax,eax`), and the fallback reads the slot's field with an unfolded compare where
-// retail folds it (`cmp dword ptr [ebx+0x7c],-1`); the gate's failure returning 0 gives retail's actor, node, priority and view homes and
-// the folded compare (49) but if-converts the busy test into a mask select, the fallback's failures returning 0 or the priority swap the
-// actor and the node (65), the first iterator call separated from the loop merges the two exits and grows the body (109), `return false`
-// and a long zero leave the zero exit's width alone (38), and the permuter found nothing below the baseline.
-// Earlier (score 38, was 49): the busy test branches to the priority epilogue like retail; the priority and view registers, the
-// zero exit's width and the fallback's memory compare still differ.
-// MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
-// (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
-// Round 107 kept form, 86 -> 49: the `priority > 0` gate after both branches gives retail's block order (no-invitation
-// frame 0xc and actor/node homes agree; the busy test becomes a numeric select,
-// shifting fallback and separate zero/success epilogues.
-// Earlier: the `priority > 0` gate after both branches gives retail's block order (no-invitation
-// the `priority > 0` gate after both branches gives retail's block order (no-invitation
-// the `priority > 0` gate after both branches gives retail's block order (no-invitation
-// branch last, jumping past the gate), priority in SI, view in EDI and the state spilled to the argument slot.
-// Left: actor and node swap EBX/EBP through the body, and the zero exits share `xor esi, esi; mov ax, si` where
-// retail has its own `pop ebp; xor eax, eax; pop ebx` epilogue (9 bytes short). Frame 0xc and invitation call agree.
-// Round 30 (fast, file and callees in the image; with this function alone the image is unfaithful,
-// 157 on the same source): the lookups through the existing actor_get/prop_node_get/
-// element_502424_get and prop_node_view 125 (same code, kept in place of the written-out bodies);
-// the found path breaking out of the loop 186; the evaluation inside the invitation branch with
-// the fallback going to it 125; node declared first 125.
-// Earlier: retail passes the actor index to function_26f060 in ECX and
-// the invitation type in EDI, ours passes them in EAX and ESI; that choice also swaps
-// the prop index and the node between ESI/EBP and EBP/EDI through the body. The
-// convention is set by function_26f060 (src/unknown_26e370.cpp), not editable here.
-// Tested iterator for with native priority/node-getters/length graph: fast
-// 170/169/170/169/170/169/170/169 versus fast control 170; full baseline 131 retained; one-point
-// reductions rejected.
-// Round 371: actual participant array 170 reduced; long invitation index 168 reduced;
-// shared result 154 reduced / 169 plain; long index/shared result 156 reduced;
-// existing view helper ties each form. Opening body restored at 131.
-// Round 86 (plain): the evaluation as one forceinline helper used by both branches
-// 418 (768 bytes, the copies are not merged); plain `return 0` at the loop's end 172,
-// with the for-form iterator loop 172; priority test inverted around the goto 131;
-// invitation test named 131. Retail places the no-invitation branch last, jumping
-// into the evaluation that follows the loop. BLOCKED-BY 0x26f060.
-// State query after view/velocity/at consumer, or its field snapshot, with
-// mutable/readonly actor 170/152/152/164 reduced in each case. Post-velocity
-// plain 124 at 555 bytes is a seven-point gain and is restored; existing
-// length/self-dot helpers with the two late queries all tie 152 reduced.
-// Initial actor/prop/node registers and fallback placement still differ.
-// Every-use property observations with late state query / long priority / both: reduced
-// 170/152/169/151; the existing view getter ties all four. Both late-query/long-priority
-// forms plain 124 at 554 bytes (seven below 131), rejected; original body restored.
-// The invitation convention, initial property/node ranks and fallback placement remain.
-// Round 223: complete eligibility bool/byte/short/long with short priority 150/150/150/150 reduced;
-// with long priority 166/166/171/169. Minimal bool form plain 119 at 556 bytes (six below 125), rejected.
-// Original body restored; current invitation call agrees, actor/node ranks and fallback placement remain.
-// Round 20 (lane 15, fast): `short result = 0` and priority 0 at the top, loop `break`, `else if` fallback, gate with
-// `result = priority` 137 (actor EBX/node EBP as retail, both locals on the stack); without result 145; priority as
-// the result with `if (!ok) priority = 0` 127 (retail's `xor eax, eax` exit, priority spilled), with priority declared
-// first 127, long 126; the loop's `goto evaluate` kept with that gate 83 (551 bytes, but a non-positive priority
-// returned itself) and the gate's `else priority = 0` added 86 (kept, plain); result declared at the label 118;
-// `if (ok) return priority; } return 0;` 105; result at the top with each failure `return result` 150; `return ok ?
-// priority : 0` 125, on the old body 119 (retail's zero epilogue, `movsx eax, si`), with `(short)0` 118; the old body
-// with `if (ok) result = priority; else result = 0;` 118 (`mov eax, esi`); on the kept form: node declared first 86,
-// the fallback through actor->prop_index 86, priority declared first 86, no prop_index local 86, node from a
-// conditional expression 167, node set in an if/else either way round 167/167, priority 0 at the top 86, plain
-// `return 0` after the loop 119; loop-break forms with the else-if fallback and five tails 92/145/137/140/139;
-// goto forms with direct return/result/conditional/if-else result tails 105/117/125/124.
-// Round 33 (plain): no-invitation branch written first 154 (VC keeps that order); the evaluation
-// written out in both branches 265 (730 bytes, copies not merged); the evaluation inside the loop
-// body with the fallback's goto into it 125 and in the first arm with `return priority` after the
-// if/else 125 (same code each); single exit with a per-arm short result and `goto done` 124 (the
-// zero return becomes retail's `xor eax, eax`, layout unchanged); no gotos: `short priority = 0`,
-// the found path breaking out, the fallback as `else if`, then `if (priority > 0) { evaluation }`
-// 145 (578 bytes) -- the first form with retail's block order (evaluation after the loop, the
-// fallback last jumping in past the priority test), but priority is spilled and the state kept in
-// ESI (retail the other way) and the zero exit sits at the loop bottom; that without the top-level
-// init plus `if (!entry) return entry` after the loop 186 (entry spilled, frame 0x10).
-// Round 13 (fast): `short result = 0;` at the top with `if (ok) result = priority;` in the gate 117 (551 bytes:
-// actor EBX and node EBP as retail, but result gets its own slot, frame 0x10, and priority is spilled to the
-// argument slot), result declared before the invitation test 169, with `else result = 0;` 141; a separate
-// pointer for the node the evaluation uses (node copied into it in the loop, the loop's and the fallback's
-// lookups assigned to it) 110 (retail's head, actor EBX/node EBP, but that pointer spilled, frame 0x10),
-// declared first 110. Any extra value live from entry, or a split node, gives retail's actor/node registers;
-// retail gets them without a stack slot.
-// Round 26 (lane 14, fast, file and callees in the image, control 86): the 0x26f060 call now agrees. One
-// extra actor read inside the loop (diagnostic: `|| actor->unknown07c == 99` in the decline test) gives
-// retail's actor EBX/node EBP at 551 bytes (116); an extra actor read in the evaluation or one node read
-// fewer there keeps ours. The evaluation as early `return 0`s with `return priority` last 128 (570
-// bytes); the near distance read once into a local 90; an invitation element pointer for the joint and
-// participant reads, with or without the index local, 148/148 (aligned 78: the pointer is kept in EDI
-// where retail recomputes the index); the loop's new prop stored in prop_index 86 (same code); the gate
-// as `return priority` / `return 0` 105 (priority spilled, state in ESI, `xor ax, ax`).
-// Round 451: Native iterator aggregate/entry scope/entry-result role-name subsets
-// 1/2/1+2/4/1+4/2+4/all, then late entry aggregate: 88/86/155/86/88/86/155/151, with faithful
-// callback/callee controls. Original descriptor and body restored.
-// Round 53 (lane 9, fast): retail's `xor eax, eax` zero epilogue is a tail-duplicated `priority = 0; return
-// priority;` (compile-only screens: `return 0` gives `xor ax, ax`). `if (ok) return priority; } return 0;` 105
-// (priority spilled, `xor ax, ax`); `if (ok) goto done; } priority = 0; done: return priority;` 91 (554 bytes:
-// retail's exact zero epilogue, but priority is spilled to the argument slot and the state kept in ESI, the
-// other way from retail), with priority initialized at its declaration 91, also without the fallback's own
-// zero store 91, with a long priority 91, with the state declared at the top 91.
-// Round 119 (plain; a --fast image of the file's three loop functions is unfaithful here, 145 on this source):
-// on this body a long priority 84 (priority moves to EDI, the view to ESI; not retail's shape); `return 0` at the
-// loop's end 119 (551 bytes, the loop exit gets its own zero epilogue); both 125; the gate's arms as `return
-// priority` inside and `return 0` after it 114 (567 bytes); the same with a long priority 140 (fast image).
-// Round 465: default-first/branch-complete property acquisition result, short/long priority,
-// existing/entry velocity workspace: 86/86/84/84/86/86/84/84. Two-count lead rejected; original body restored.
-// Round 143 (lane 4, fast with the file and its callees, faithful 86): the gate as `if (ok) goto done; }
-// priority = 0; done: return priority;` 91 again (retail's whole layout and zero epilogue; left: actor/node
-// EBP/EBX and priority spilled to the argument slot with the state in ESI), with `return priority` in the
-// gate and `priority = 0; return priority;` after it 105 (560 bytes), with the state fetched after the
-// velocity declaration 91; on the kept form the gate inverted (`if (priority <= 0) priority = 0; else`) 86
-// (same code) and the participant index named in the found path 86 (same code).
-// Round 122 (lane 6, fast, file and callees in the image, control 86): `short result = 0` at the label with
-// `result = priority` on success and a long priority 117 (554 bytes); the `goto done` zero-epilogue form with node
-// declared first 91 (554), with the fallback through actor->prop_index 91 (in both the priority is spilled to the
-// argument slot and the state kept in ESI); the loop's object compare written node-field first 87; the node's
-// near distance read once into a local for both range tests 90 (541). The recorded goto form with an initialised
-// priority and with a long priority re-measured 91 each.
-// Round 57 (lane 16, fast with the file's loop functions): the fallback as an if/else choosing the priority (a
-// `>= 2 ? 3 : 0` select) 110 (552 bytes); the iterator entry declared in the `while` condition with `return 0`
-// after the loop 119 (551 bytes, actor/node still EBP/EBX); velocity declared before the state and view lookups
-// 86, the decline test through a NONE-preset `new_prop` 86, a short participant-index local 86 (same code each).
-// Round 107 (lane 7, plain, with the file and its callees in the image), kept 86 -> 76 -> 65: in the loop the
-// already-held prop tested first (`if (node && target == node->object_index) priority = ...; else { acquisition,
-// decline, new node, its own priority read }` before the existing `goto evaluate`; at review the lane's second
-// `goto evaluate` in the first arm was folded into this if/else, same 49 plain) (retail's scratch registers
-// in the acquisition and participant reads: both tails are cross-jumped into one); then the evaluation as
-// `if (ok) return priority; } return 0;` (now 557 bytes: retail's zero exit is shared by every failure). Tried:
-// the acquisition test inverted with one priority read 86, as `< 4 && != NONE` with the decline last 76, the
-// acquisition result preset to NONE 86, float sqrt 86 (all on the old evaluation); on the found-first loop the
-// round-53 `goto done` tail 76, `priority = 0; return priority;` 65, the negated test returning 0 65 (same code),
-// `return 0` for the loop's exit 142 (it gets its own epilogue), no prop_index local 65, the compare operands
-// swapped 66, `return false` 65. Then kept 65 -> 49: the busy-prop test (0x25d9b0) as its own
-// `if (...) return 0; return priority;` inside the other tests' block: actor EBX/node EBP as retail through the whole
-// body, but the two returns become a select (`neg al; sbb eax, eax; not eax; and eax, esi`) where retail tests
-// (`test al, al; je` to a `return priority` placed last) and falls into the shared `xor eax, eax` exit. On that
-// block: `if (!busy) return priority;` 65 (old registers), `if (busy) priority = 0; return priority;` 82, the whole
-// test as one && with an extra `return 0` 65. Left: the select, the success/zero block order and `xor ax, ax`.
-// Round 53 (lane 11, fast with the file and its callees): `short result = 0` at the top, `if (!busy) result =
-// priority; return result;` with the loop's own `return result` 153 (`xor ax, ax` there, frame 0x10), keeping the
-// loop's return 87 (result spilled); the busy test as `if (!busy) goto done; } } priority = 0; done: return
-// priority;` 76 (542 bytes: retail's block order, zero exit after the busy test and the fallback after it, but
-// actor EBP/node EBX and one shared `xor esi, esi; mov ax, si` return where retail has two epilogues), the same
-// with the busy test in the && chain 76; `return priority` inside and `priority = 0; return priority;` after 65
-// (success epilogue falls through, zero exit last as `xor ax, ax`), nested 65, with node or priority declared
-// first 65/65. Diagnostic only (reverted): an extra actor read in the decline test flips the goto form to
-// retail's actor EBX/node EBP, leaving only the shared return (12 aligned rows, 551 bytes); so the two causes
-// left are the actor/node register tie and retail's duplicated epilogue (`xor eax, eax` copy for the zero path).
-// Round 55 (fast with the file and its callees, faithful 49): VC if-converts the busy test (`neg al; sbb;
-// not; and`) for `if (busy) return 0; return priority;` with a final `priority = 0; return priority;` 49,
-// `if (!busy) return priority; return 0;` 49, a named bool 65 and `return busy ? 0 : priority` 83 (573);
-// `if (!busy) return priority;` with the final `priority = 0` 65; busy joined with `&&` 65 (no select, but
-// actor/node swap to EBP/EBX), with node declared first 65, a long priority 62, both 62, the fallback or
-// every lookup through actor->prop_index 65/65; `goto done` after the `&&` test / after the busy test 65/49;
-// the condition inverted returning 0 65; single exit with `priority = 0` through goto/if-else 76/76 (542);
-// a short result at the label 91/108/94; the evaluation after `if (priority <= 0) return 0;` with early
-// returns, `&&` busy, inverted test and busy in its own if 49/65/49/49; a goto-free form (found paths `break`,
-// fallback `else if`, `short priority = 0`) with an if/else result 141 (574), `short result = 0` 201 (594),
-// `&& !busy` returning priority 142, busy in its own if 118 (571); on the current loop an if/else short result
-// with `&& !busy` 63 (555; no select, actor/node swap) and `if (busy) result = 0; else result = priority;` with
-// else-arms `result = 0` 48 (556; retail's `xor eax, eax` zero exit, still a select; one point, not kept), with
-// a long priority 60/53, with a long invitation index 141/140. A short result zeroed in an if/else is what
-// gives retail's 32-bit `xor eax, eax`; `return 0` gives `xor ax, ax`.
-// Round 278: full-width return result at entry/default, entry/complete, evaluation/default,
-// evaluation/complete: short priority 87/64/94/64; long priority 81/53/90/53. Restored.
-// P255: Actual invitation-record receiver with common priority/full-width result/conditional
-// node subsets 0-7 172/145/156/155/168/126/149/147. All original reads, helpers and body restored;
-// frame/actor/node homes agree, busy select and zero/success epilogues remain.
-// P255 follow-up: View after velocity/at its predicate, with state-at-consumer and
-// full-width priority interactions 100/78/78/80/102/80/81/81. Original view/state ownership and body
-// restored. Earlier P255 record-receiver family overlaps old forms and is excluded from new credit.
-// Round 86 (KIMI2): evaluation result with busy goto/single exit 91; the same without goto 91;
-// scoped zero result 51; priority-initialized result 49; reversed branch-complete result 49;
-// that with velocity declared first 49; selected_priority/outcome result names 49/49. Original body restored.
-// Round 125 (lane 8, fast with the file): the existing length_sq3f for the speed 49; the existing magnitude3d 49;
-// `short priority = 0` at the declaration in place of the fallback's store 49; the busy test as `== false`
-// returning priority inside 65; the busy test as an if/else of the two returns 49 (still the select).
-// Round 128 (lane 8, fast with the file and its callees, faithful 49; plain confirmed): kept 49 -> 30: the busy test
-// (0x25d9b0) joined into the evaluation's && chain with `return priority` and the fallback's node test written as
-// `prop_index != NONE` (the && chain alone 65 swaps actor/node to EBP/EBX; the fallback test through the prop
-// index gives retail's actor EBX/node EBP and no select; `actor->prop_index != NONE` 30, same code). Tried: the busy
-// call through the prop_index local 143; `priority = 0; return priority;` at the end 30 (same code); the whole test
-// inverted returning 0 first 30 (same code); `return 0` for the loop's exit 123 (575 bytes); the old busy `if` with
-// the prop-index fallback 50; a short result zeroed at the label 92.
-// NOT kept (review): the 30 needs the fallback to test the prop index (`cmp esi, -1`) where retail tests the node
-// (`test ebp, ebp`), a form picked by score against retail's test; the && chain alone is 65. Body restored at 49.
-// Round 402: Single complete outcome including iterator exhaustion, short/long/word/dword, default-zero or complete busy branches.
-// Scores 132/135/132/135/136/170/136/170. NOT kept: unmatched outcome forms; original complete body restored.
-// Round 138: busy result in byte/short/long storage, Boolean at entry/evaluation scope 49 each;
-// evaluation-scope Boolean with priority cleared 82; unsigned-short result initialized from priority 49
-// (558 bytes), branch-complete unsigned-short result 49. Original tail restored; busy select and exits remain.
-// AC545: Native ordered admission in nested predicate groups, eight boundary
-// partitions, 49 each. Original busy call, zero/priority exits, iterator
-// exhaustion and fallback node test restored; the select and epilogues remain.
-// AC557: Busy provider char/signed-char/byte/short/word/int/long/dword returns,
-// coherent definition and all prototypes: 49/49/49/51/51/49/49/49. NOT kept:
-// no target gain; wider transports also demote provider and five other users.
-// Round 398: Native velocity square/length producers, their paired/range-observation forms,
-// immutable complete graph and shared squared-length producer: eight at 49 (556/557 bytes).
-// An isolated range-copy control also scores 49 and is excluded from new-trial credit. NOT kept:
-// no score gain; original velocity/range observations, busy select and complete body restored.
-// M400: Original velocity/iterator defaults via aggregates or CRT, at original phases/entry,
-// separately/together: 95/90/163/211/231/187/187/230. NOT kept: all regress;
-// original twelve-byte workspace producers, busy test and all exits restored.
-// MiniMax G (11-10): no new form, no lower score (49); five tail spellings (the busy call negated into the return, a named bool, an explicit == false, an explicit else arm and the busy test folded into the && chain) score 116, 145, 142, 145 and 156, so the busy call's result still becomes a mask where retail branches to its own epilogue that returns the priority in AX.
-// MiniMax E (11-10): no new form, no lower score (49); our build still turns the busy call's result into a mask (neg al; sbb eax,eax; not eax; and eax,esi) where retail tests it and branches to its own epilogue that returns the priority in AX, and our shared "return 0" exit still sits after the fallback block where retail's sits before it, so the body stays six bytes longer (557 against 551) (the inverted test and the busy test folded into the chain with the negated call both score 65, and 61 permuter tries found nothing lower).
-// MiniMax E (11-10): no new form, no lower score: the sequence matches retail's up to the last block, and
-// what is left is its layout and the form of the final choice, which is a mask in our build and a
-// branch to an epilogue of its own in retail, so our body is six bytes longer.
-// MiniMax E (11-09): no new form, no lower score (49); the instruction sequence matches retail's up to the
-// last block, and what is left is its layout and the form of the final choice: retail tests the 0x25d9b0 result
-// and branches to an epilogue of its own that returns the priority in AX (pop edi; mov ax,si), where our build
-// computes the choice as a mask (neg al; sbb eax,eax; not eax; and eax,esi) and returns it in EAX, and our
-// shared "return 0" exit sits after the priority block where retail's sits before it, so our body is six bytes
-// longer (557 against 551); the inverted test, a local for the result and an extra return all give the same 49.
-// MiniMax R (11-09): no new form, no lower score (49): the busy call's tail is still the select
-// neg al, sbb eax, eax, not eax and and eax, esi where retail tests the flag and branches to its
-// own return-priority block, and the velocity's square is still built from the twelve-byte
-// workspace; the native velocity producers, the paired observations and the busy select forms were
-// all measured (49 each), and the form that removes the select (30) was dropped at review because
-// it tests the prop index where retail tests the node.
-// MiniMax A (11-11, second pass): no new form, no lower score (49); what still differs is unchanged: the busy call's tail is still the
-// mask select (neg al, sbb eax, eax, not eax, and eax, esi) where retail tests the flag and branches to its own return-priority epilogue
-// that returns the priority in AX, and our shared return-0 exit still sits after the priority block where retail's sits before it, so the
-// body stays six bytes longer (557 against 551); every spelling that breaks the select swaps the actor and node registers from retail's
-// EBX and EBP to ours EBP and EBX, which costs more than it gains.
-// MiniMax A (11-11): no new form, no lower score (49); the busy call tail is still the mask select (neg al, sbb eax, eax, not eax, and eax, esi) where retail tests the flag and branches to its own return-priority epilogue, and our shared return-0 exit still sits after the priority block where retail sits before it, so the body stays six bytes longer (557 against 551); the inverted test, an explicit else, a goto, the early-return chain, a priority guard with return priority last and the negated busy test all compile to the same 49 bytes.
-// MiniMax C (11-11): no new form, no lower score (49); the busy test folded into the && chain (65), the inverted busy test (65) and an explicit if/else (49) all leave the numeric select where retail branches to its own priority epilogue.
-// MiniMax H (11-11): no new form, no lower score (49); the body is unchanged, because the busy call's
-// result still becomes a numeric select where retail tests it and branches to its own epilogue that returns
-// the priority, and the fallback still tests the prop index where retail tests the node.
-// MiniMax I (11-08): no new form, no lower score (49); the busy-true path falling through to the shared zero exit gives 65 with the actor and node registers swapped.
-// MiniMax R (11-07, run 38): no new form, no lower score (49); the busy test still becomes a numeric select
-// where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit, and the
-// fallback still tests the prop index where retail tests the node, so the block order and the two epilogues
-// keep it at 49.
-// MiniMax C (11-06): no new form, no lower score; the busy test still becomes a numeric select
-// where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit,
-// and the fallback still tests the prop index where retail tests the node, so the block order and
-// the two epilogues keep it at 49.
-// MiniMax H (11-05): no new form, no lower score; the busy test still becomes a numeric select
-// where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit,
-// and the fallback still tests the prop index where retail tests the node.
-// MiniMax B (11-04): no new form, no lower score.
-// MiniMax S (11-09): no new form, no lower score (49); the fallback still ends in retail's shared zero exit and
-// the busy test still becomes a numeric select, so the block order and the two epilogues stand.
-// MiniMax B (11-12): no new form, no lower score (49); the busy call's tail is still the mask select (neg al; sbb eax,eax; not eax; and eax,esi) where retail tests the flag and branches to its own return-priority epilogue (pop edi; mov ax,si), so the body stays six bytes longer (557 against 551); the ternary, the named result, the explicit else, the empty then-arm, the merged outer if and the busy test folded into the && chain score 83, 49, 145, 65, 152 and 150, and passing the node's object index instead of the actor's prop index scores 36 but is not what retail does (retail loads the actor's prop index from [ebx+0x338] before the call).
-// M3 lane 12 r119 (fast with the file and 0x25d810/0x25d690/0x25d740/0x25d9b0, faithful 49): the busy call joined into
-// the `&&` chain with `return priority` 65 (re-measure: no select, actor/node in EBP/EBX, and the success return is the
-// busy test's fall-through where retail falls into the shared `xor eax, eax` exit and returns the priority last); on
-// that form the node or the actor local renamed to sort first or last 65 each, byte-identical (local names do not break
-// the actor/node register tie); the busy call reading `actor_get(actor_index)->prop_index` 213 (610 bytes).
-// m3 lane 6 r178 (--fast with the file and 0x25d690/0x25d740/0x25d810/0x25d9b0, faithful 49; a one-file LTCG
-// harness is not faithful here, 87): the busy call joined into the `&&` chain with `return priority` 65
-// (re-measured: no select; actor/node in EBP/EBX, the zero exit last as `xor ax, ax`); on that form a folded
-// `actor &&` before the busy call 65 and a folded `node &&` heading the chain 65 (same code: the actor/node tie
-// does not follow these block weights); that with `short result = 0;` after the label, `result = priority;` and
-// one `return result;` 91 (554 bytes). On this body: the busy test as `if (!actor || busy)` 49 and
-// `if (actor && busy)` 49 (still the select). Body unchanged.
-// MiniMax D (11-15): no new form, no lower score (49): the busy test's two returns are still if-converted into a mask select
-// (neg al; sbb eax,eax; not eax; and eax,esi) where retail branches to its own priority epilogue; inverting the test gives the
-// branch but swaps the actor and node registers (65), and an explicit else on either side keeps the select at 49.
-// MiniMax B (11-14, run 75): no new form, no lower score (49); the body is left as it was. What still differs: retail branches on the
-// busy call's result to its own priority epilogue and keeps the shared zero exit ahead of the fallback block, while this build if-converts
-// the two returns into a mask select and puts the zero exit last, which is why this build is 6 bytes longer than retail's 551.
-// b11F (11-17) walk against retail, fast build on r843 (checked with
-// 0x25d690/0x25d810/0x25d9b0/0x26ed40/0x26f060/0x26f0c0/0xba1d0/0x1b8070): every statement, offset, jcc sense (NaN
-// included), callee argument and constant agrees with retail through the busy call at 0x1b8015: loop guard 0x1b7eb7,
-// joint/participant reads 0x1b7ec0-0x1b7f68, decline push of the whole iterator dword 0x1b7f18, the float tests
-// 0x1b7fb4/0x1b7fe5/0x1b7ff4/0x1b8002, state byte 0x1b8008, fallback jump past the priority gate 0x1b8055; no
-// behaviour fix found. Only the tail differs (49, 557 vs 551 bytes): retail branches on the busy result (0x1b801c je
-// 0x1b805a), keeps its 32-bit `xor eax, eax` exit (0x1b8021) ahead of the fallback (0x1b802a) and the `mov ax, si`
-// epilogue (0x1b805b) last; this build if-converts the two returns. New: `switch (busy) { case 0: return priority;
-// default: return 0; }`, `while (busy) return 0; return priority;` and `if (busy) return 0; goto done;` with `done:
-// return priority;` after `return 0;` all 49 (select kept); `if (!busy) goto done;` with `return 0; done: return
-// priority;` 65 (success inline, actor/node swap); fallback textually after the evaluation with gotos 120; `volatile
-// bool busy` (match-only) 63 (569 bytes). No match-only recipe below 49.
-// MiniMax I (11-17): no new form, no lower score (49): retail branches on the busy call's result, keeps its 32-bit
-// zero exit ahead of the fallback and its priority exit last, while this build if-converts the two returns into a
-// mask select; the permuter's rewrites (300 s) found nothing below the baseline, the switch, while, goto and
-// one-use-flag forms of the earlier rounds all keep the select, and the two returns swapped (if (!busy) return
-// priority; return 0;) compile to the same bytes (49).
-// M3 lane 13 r111 (fast with the file and its callees, matched each time; base 28, aligned 7): the distance local for the
-// first range test and the field for the second 65 (aligned 68, masked 9: retail's second compare from memory, but
-// actor/node swap again); that with `goto done` and `priority = 0` 103 (551 B = retail, aligned 74); the local at both
-// tests with that exit 83 (544 B); direct reads with that exit 103 (551 B); the mixed read with a negated test clearing
-// the priority 103; the mixed read with `return priority` then `priority = 0; return priority;` 65. Retail's layout
-// re-read: the evaluation, the 32-bit zero exit, the no-invitation block (its failures jump to that exit, its success
-// loads 3 and jumps past the gate), then the priority exit last.
+// the actor's priority for joining a prop joint: the participant priority of the first invitation whose joint
+// targets the actor's prop node (or a prop it can acquire), else 3 for a settled prop; 0 unless the target is
+// between 1.6 and 15 away, nearly still, under the view threshold, not in use and not busy
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -421,20 +80,21 @@ short __stdcall function_1b7e40(long actor_index)
 	s_prop_node_view *node = NULL;
 	if (prop_index != NONE)
 		node = prop_node_get(prop_index);
-	short priority;
+	s_prop_node_view *target;
+	short priority = 0;
 	if (actor_has_joint_invitation(actor_index, 0x12))
 	{
 		s_slot_entry_iterator iterator;
 		iterator.actor_index = actor_index;
 		iterator.reference.unknown2 = 0x12;
 		iterator.reference.unknown0 = NONE;
-		s_slot_memory_entry *local_1;
-		while ((local_1 = function_26f0c0(&iterator)) != NULL)
+		while (function_26f0c0(&iterator))
 		{
 			short invitation_index = iterator.reference.unknown0;
 			s_502424_element *joint = element_502424_get(((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].joint_index);
 			if (node && joint->target.unknown0 == node->object_index)
 			{
+				target = node;
 				priority = *(short *)((byte *)joint + ((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].participant_index * 12 + 0xa);
 			}
 			else
@@ -445,32 +105,31 @@ short __stdcall function_1b7e40(long actor_index)
 					joint_decline(actor_index, iterator.reference.unknown0);
 					continue;
 				}
-				node = prop_node_get(new_prop);
+				target = prop_node_get(new_prop);
 				priority = *(short *)((byte *)joint + ((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].participant_index * 12 + 0xa);
 			}
-			goto evaluate;
+			break;
 		}
-		return (short)(long)local_1;
 	}
-	priority = 0;
-	if (actor->unknown07c != NONE && node)
+	else if (actor->unknown07c != NONE && node)
 	{
-		node = prop_node_get(prop_index);
-		if (node->unknown27 >= 2)
+		target = prop_node_get(prop_index);
+		if (target->unknown27 >= 2)
 			priority = 3;
 	}
-evaluate:
-	if (priority <= 0)
-		return 0;
-	s_type_5cfb45 *state = function_25d690((s_prop_datum *)node);
-	s_prop_view_fields *view = prop_node_view(node);
-	vector3f velocity;
-	function_ba1d0(node->object_index, &velocity, NULL);
-	real distance = node->unknown28;
-	if (distance > 1.6f && (real)sqrt((double)(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k)) < 1.0f &&
-		view->unknown54 < 0.31 && distance <= 15.0f && !state->unknown64 && !function_25d9b0(actor->prop_index))
-		return priority;
-	return 0;
+	if (priority > 0)
+	{
+		s_type_5cfb45 *state = function_25d690((s_prop_datum *)target);
+		s_prop_view_fields *view = prop_node_view(target);
+		vector3f velocity;
+		function_ba1d0(target->object_index, &velocity, NULL);
+		if (!(target->unknown28 > 1.6f && (real)sqrt((double)(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k)) < 1.0f &&
+			view->unknown54 < 0.31 && target->unknown28 <= 15.0f && !state->unknown64 && !function_25d9b0(actor->prop_index)))
+			priority = 0;
+	}
+	else
+		priority = 0;
+	return priority;
 }
 
 /* the slot's status: 0x10 when the prop node's distance is under 0.8; continue (g_46fbe8)
