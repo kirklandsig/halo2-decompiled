@@ -2785,6 +2785,11 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // helper's dy as a load then `-=` declared first 414. Screens (compile-only, the real block's code): the helper's six
 // difference orders (the y pair leads exactly when y is created before z, and the registers follow creation order);
 // dy declared first and assigned last (same code).
+// M3 lane 5 r201 (fast with 0x20cbd0, matched; control 3): the two NONE tests as nested ifs 3 (same code); the squared
+// distance held in the function-scope distance local 406 (1940 B); the helper's last square added in its return
+// re-measured 3; the whole distance classification as one inline helper over the two positions 1016 (kept out of line,
+// 1428 B), the same forced inline 587 (1860 B; 0x20cbd0 39/32); the selector read once ahead of its nonzero test and
+// used by the switch 591 (1856 B).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

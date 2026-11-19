@@ -1617,6 +1617,24 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // Retail masks the index in place in the render arm (0xbd24c, where it dies) and copies it first in the no-model
 // arm, so there the index is still live after the mask when registers are chosen; what reads it afterwards with no
 // instruction is still open.
+// M3 lane 4 r217 (fast with 0xb8bd0/0xbdc40/0xbc820/0xbd020/0xbee60/0xbfa40/0xbdb60, all MATCH; control 20): a pool local
+// at the top of the no-model branch with one parent-object local 44 (1390 B, data from EDI), with the matrix and flag lookups
+// both spelled through it 20 (same code: the local is forwarded into the lookup); the index copied into a local masked in
+// place, one parent-object local 44; parent and mirrored flag as two conditionals on `parent_index != NONE` 45 (1391 B); a
+// `byte *const *` to the data field declared at the branch top, one parent-object local 44 (forwarded). Diagnostic,
+// reverted: that pointer volatile 20 (same code: even with the data re-read forced, the pool is re-read too, so the pool
+// in ECX needs a value the allocator keeps live from the current lookup, not a different data-field base).
+// Lane 13 r112 (fast, control 20 at 1399 B, aligned 12): the no-model matrix through a file-local node-matrix helper
+// that masks its index parameter in place, forceinline / plain inline 20/20; that helper with a named absolute-index
+// local 20; that helper with the flag's lookup written out in full 20; the parent index field read at each use with
+// that helper 20, in both arms 20, with the existing accessors 20, in the render arm only 20, with a local for the
+// test only 20 (same code each); the matrix and the flag under two separate index tests 44 (1390 B, data from EDI);
+// the flag as `parent_index != NONE && bit` 42 (1395 B); the index stored back to its field after the flag read 20
+// (the store is dropped). Diagnostics, restored at once: the file of 0xb8bd0 built without /Ob1 394 (1373 B: 0xb8bd0
+// is then expanded at the render site too and 0x18c3b0 loses its match, so site frequency does not separate the two
+// sites in this build); a later compare of the index after the flag read re-measured 40 at 1406 B, aligned 3 (the
+// block is then retail's byte for byte). The order inside the lookup follows the pool: held in ECX, the index half is
+// computed first (retail); reloaded, the data load comes first (ours). No form here keeps the index live past its mask.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

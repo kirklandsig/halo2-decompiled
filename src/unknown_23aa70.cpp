@@ -151,6 +151,7 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`). BLOCKED-BY 0x17e670
 // (contributor code); held patch unchanged.
 // M3 lane 11 r121: no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair (ours the
+// M3 lane 10 r122: no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair (ours the
 // entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`). BLOCKED-BY 0x17e670
 // (contributor code); held patch unchanged.
 // @retail 0x23aad0

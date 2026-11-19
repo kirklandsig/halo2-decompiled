@@ -1094,6 +1094,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
 
+// score 234 (was 347): Damping extraction still uses ECX in place of EDX. The gravity store, input address and later vector homes also differ.
 // Earlier 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // Earlier 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
@@ -1577,6 +1578,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // MiniMax A (11-18): no new form, no lower score (234); what still differs is the damping's first extraction (ours keeps it in
 // ECX), the vector homes and the vertical output tail; the homes only move when the arms' shapes change, which raises the
 // score, so the body stands.
+// gravity result assigned in each motion path 604; gravity defaults off until an active path selects it 660;
+// gravity result selected with the bounded step 597; gravity admitted by the enabled and gravity flag mask
+// 558; named enabled decision shared with gravity admission 628; gravity selection at the final vertical sum
+// 236; gravity and plain vertical values selected before the output sum 486; bounded vertical value with an
+// optional gravity correction 486. The final vertical conditional is closest at 236 and retains retail length
+// and the same entry mismatch. The other forms score 486 to 660. All four matched controls hold. Opening
+// executable source restored.
 // Entry contact-word snapshot 610; scoped settings/contact reads 630; shared motion mask
 // with disabled/direct first 614/650; three-way motion selection 628; general before direct 612;
 // enabled-input dispatch 635; gravity retained from bounded-step admission 453. NOT kept: all
@@ -1590,6 +1598,25 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // through a `vector3f *` local for out + 0xc 589 (3027 B); the direct arm's rotation and the positive-normal arm's desired.i/j
 // (the same planar rotation of the input by the facing) through one two-caller file-local helper writing a point2f, plain
 // `inline` or forceinline, 489 each (3047 B: the helper's bound parameters shift the numbering as K = 2 does).
+// M3 lane 12 r143 (fast with 0x1f0450 and 0x24590, both MATCH; control 234). Retail's tail structure: the first arm clears
+// gravity and cross-jumps into the general arm's `movss [edi + 0x14], xmm0`; the direct arm stores i, j, then k from XMM1
+// and jumps past it; the general arm stores each row as formed (XMM3, XMM0, XMM0, current loaded first). The cross-jump
+// needs the general k row in XMM0; ours commutes it into the dying limited.k (`addss xmm2, [eax + 8]`) whenever both arms
+// are row statements. Forms: a `vector3f const *up` for the first arm's cross and last add-scaled 429 (3052 B); a facing
+// pointer for its cross and scale 429 (3052 B); one `vector3f *velocity` for its three helper calls 591 (3027 B); the
+// general arm as three row statements 559 (3037 B: its tail is retail's, but the direct arm's k store merges as well);
+// both arms as row statements 347 (3052 B; 1-8 unused locals on it 347/478/579/575/490/479/474/474, the k row commutes at
+// every K); output-form grid, direct rows / vector3f_assign / real_point3d_set by general rows / vector3f_assign /
+// vector3f_add either order / real_point3d_set: 234-559, retail's merge pattern only with direct rows and general
+// vector3f_assign or real_point3d_set (543 each, general rows not interleaved). LEAD: both arms as row statements and the
+// direct arm's speed read at each use (no `speed` local) 437 (3053 B), with the speed-scaled point named `desired` and the
+// delta through the existing vector2d_from_points2d 398 (3049 B): first arm merged, direct not, general rows retail's, and
+// the direct arm after the normalize call retail's but for the delta/limited homes; left is speed loaded twice (retail
+// loads it once into XMM3 and copies it), two bytes that shift the rest. Every `speed` local brings the commuting k row
+// back: declared first 347, after rotated 456, assigned late 456, function scope assigned in the arm 456, const 347,
+// renamed 347, scoped around the two products 569, with the 2-D helper 445, products written rotated-first 347; with the
+// one-use `maximum` passed straight 442 (347 on the plain both-statements form). Also: step before delta 560, limited
+// declared before delta 347, the rotation's second row written the other way 347.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

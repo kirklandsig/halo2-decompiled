@@ -848,6 +848,24 @@ real g_55e618;
 // (the same code: names do not order the product's operands). Every once-computed form multiplies a copy of the normal by the
 // dot (frame 0x118, first difference +0x2); only the compiler's own temporary for the repeated expression is copied and scaled
 // in place as retail does. Body unchanged.
+// M3 lane 2 r102 (fast; control 102). Reading: with any named dot ours copies each normal component and multiplies it by
+// the dot (three copies, the dot kept to the end); retail copies the dot for perp.i/j and multiplies it in place for
+// perp.k, which is what the compiler does only for its own temporary of a repeated expression. On the current body: the
+// velocity pointer, the position setter and the dot written in each product 75 (1536 B; lead only, as before); the
+// same with the dot named once 188 (frame 0x118); that with one to seven dead initialised locals 188/186/186/186/188/189/
+// 189 (diagnostic: the dot's first term turns to retail's side, the products do not); the products written normal first
+// 188 (same code); the normal components in named locals declared ahead of the named dot 190. Body unchanged.
+// M3 lane 3 r263 (fast; base 102). LEAD: an early-evaluated value argument. On round 75's 44 form (re-measured 44 now that
+// 0x1697c0 matches, so its match did not lift the block), passing the value through an inline accessor that returns the value
+// type by value, or as an explicit temporary `c_placement_value(*(c_placement_value const *)&...)`, moves its load to the
+// block's top and the position stores after impact.index, as retail; with the value type two bytes the load is a word into a
+// temporary (accessor 211, temporary 207); with a second short member (four bytes, made up) the load is retail's dword:
+// accessor 114 (1539 B), temporary 59 (1535 B, masked 46), but in EAX where retail has EDX, so every later block rotates one
+// step (round 158's named short did the same). Two probe copies between dummy globals ahead of the block leave the value in
+// EAX (the probe takes EDX). On the accessor form: direct position stores before/after the index 241/241 (frame changes),
+// named sums 116, the setter as its own statement 165, `keep * field` 114 (same code). On lane 3 r194's 179 form: `real dot;`
+// declared ahead of the normal locals 179, the dot bound to vector3f_scale's scale 179 (same code: the dot * normal operand
+// sides follow neither); 1..7 dead locals 179/179/181/181/190/189/179; on the body 102/102/103/103/103/102/102.
 // M3 lane 11 r120 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): on the velocity pointer with the position
 // setter, the dot written at each product re-measured 75 (1536 B, aligned 24; with plain position stores 121 at 1549 B); dot
 // once: a named real 188 (1536 B, frame 0x118), from dot3f either operand order 188, with the perpendicular through the

@@ -95,8 +95,17 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 // score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // The bitmap path still allocates blend and aspect intermediates differently. The body is 1947 bytes against 1937.
 // Earlier scores 211 and 223.
+// M3 lane 14 r114 (fast with 0x2243c0, which matches throughout; control 162, aligned 127): retail keeps the blend in XMM5
+// from the sequence arm through the aspect block (the arm jumps past a join that reloads it for the other paths), ours
+// computes it in XMM2 and reads it from memory in the aspect block. Extents and reciprocals in retail's order (ax, ay,
+// by, inv_ax, inv_ay, bx, inv_bx, inv_by) 167 (1950 B); that with `remaining_blend` before the first aspect test 252;
+// `remaining_blend` moved alone 225; the aspect defaults assigned in the arms of the first test 223 (1953 B); that with
+// retail's extent order 226 (aligned 119). Diagnostic (one-object link screen): 0 to 32 dead initialised locals leave
+// the blend in memory (129 aligned up to 19, 136 from 20). The two blended next terms declared together, and the two
+// aspect updates without their named next terms, give the same code.
 // MiniMax C (11-15): no new form, no lower score (194): the tint still sits at +0x60 where retail has +0x50 with the
 // second UV set in the other slot, and the aspect block still leaves the blend in XMM5; the tint in a nested scope
 // measures 234 and swapping the two UV declarations gives the same code, so the homes cannot be moved that way.
@@ -692,6 +701,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Independent initialized/branch-set scales 355/244; final vector scales 363/342.
 // With secondary reciprocals after primary aspect 392/310/415/327.
 // NOT kept: each form regresses and widens the extent; blend remains unmatched.
+// Secondary aspect accumulation 162; staged inverse sum 322; named current inverse terms 322;
+// context scale in horizontal aspect 173, before both inverse sums 170, read before final product 173;
+// secondary reciprocals after complement 310 or between flip and primary aspect 290.
+// The join still spills blend and the fixed-arm jump remains longer.
 // Both UV encodes before, between, or after the aspect phases 431/438/419;
 // flip between span pairs 356; in-place reciprocal division for primary,
 // secondary or both pairs 162/162/162; blend initialized in each arm 497.
@@ -712,6 +725,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // the four uses (no remaining_blend) 338 (1972 B); the second aspect test's arms without the next-value locals 162 (same
 // code); `blend` declared after `definition` 162 (same code); the first aspect products as `inv_ax*ay`/`inv_ay*ax` 162;
 // `width` after both inverse sums 173 (1951 B).
+// Blend still spills at the bitmap join. Next inverse products at their divisions, with current products
+// at the complement or late in two axis schedules: 260/241/241. Current products at the complement
+// with late next products: 313/313. Next products at the complement: 255. Both pairs there: 265/265.
+// NOT kept: Earlier weighting leaves the blend spill and changes the frame or grows the body.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

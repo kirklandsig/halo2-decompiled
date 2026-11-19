@@ -493,6 +493,13 @@ struct s_visibility_bound_record
 // EDI to the entry, ESI to the state pointer and EBX to the views and then to a zero that serves the count test, the
 // active test and the four count stores, where retail tests with `test` and has a zero (EDI) only for the count stores
 // and the view counter. The geometry sitting in EDX is what pushes the state pointer into ESI.
+// MiniMax A (11-18): no new form, no lower score (430): retail forms the entry address with a lea into ebx from the scaled
+// index after the first register save and reads the tag through that pointer, while this build reads the tag through a
+// displacement from the scaled index and only then materializes the entry pointer; retail loads the tag table into esi
+// after the tag compare and this build hoists it into ecx at the very top, and the entry's spill is at [esp+0x48] here
+// against retail's [esp+0x30]. The geometry lookup goes through the header's visible_entry_geometry, whose own
+// &g_4ba138[index] is what the based-pointer folding applies to; the source permuter's best variant was one differing
+// instruction better and carried a declaration split and a pointer-to-a-local.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
