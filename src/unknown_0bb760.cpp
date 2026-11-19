@@ -448,6 +448,8 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// score 97 (was 97): the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
+// spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
 // MiniMax I (11-17): the variant byte read before the blend value 123 (was 132): the byte is then held in BL across the fmod and the blend's store follows the call, so the compare moves behind it, but the colours pointer now takes EBX where retail uses EBP; the not-found exit still joins the clamp entry's 1.0 load and the first scan still leaves on inequality.
 // MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
 // still the order of the 1.0f load and the zero xorps before the first clamp; the blend still sits at [esp+0x38]
@@ -527,21 +529,21 @@ void function_3dd10(long object_index, bool force);
 // sits at [esp+0x38] where retail keeps it at [esp+0x1c] with the choices pointer in the other slot, and
 // the first scan's `!=` exits still differ from retail's signed `<` loop, which unrolls by four in every
 // spelling measured so far; the body stands.
-// MiniMax C (11-16): score 84 (was 84): no new form, no lower score; at retail's 1034 bytes the first
+// MiniMax C (11-16): 84 (was 84): no new form, no lower score; at retail's 1034 bytes the first
 // difference is still the 1.0f load before the zeroing before the first clamp (retail's clamp entry is
 // xorps, movss, comiss), the blend still sits at [esp+0x38] where retail keeps it at [esp+0x1c] with the
 // choices pointer in the other slot, and the first scan's `!=` exits still differ from retail's signed `<`
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
+// Earlier 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
 // Earlier opening state (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
 // and the variant byte is read before the second remainder. The first scan's `!=` exits
 // differ from retail's signed `<` loop (unrolled by 4 in every
 // The 0x54 frame and 1034-byte extent agree. The first difference is an outer exit
 // displacement. The build holds the early variant byte across the second fmod in BL and swaps the output and
 // delta saved registers. Retail compares the byte in CL after the call and then stores the rounded blend.
-// Earlier score 123 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
+// Earlier 123 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
@@ -729,6 +731,12 @@ void function_3dd10(long object_index, bool force);
 // unsigned late variant byte 97.
 // Kept the late unsigned byte with signed decoding at the index calculation. The byte compare gates the
 // lookup and the index sign-extends at use as in retail. The 0x54 frame and 1034-byte length agree.
+// M3 lane 13 r113 (fast with 0x1318d0, 0x131a00, 0x3dd10, control 97): the first scan as a do-while like the second 230
+// (995 bytes); a redundant `if (0 < count)` around the outer loop 77 (not kept, steering: the object then takes EDI and
+// the bank/entry web ESI as retail, but the index's zero store sinks after the guard's jle, where retail stores it
+// before; left are that store and the first scan's count/mask/weight homes); the index declared and zeroed ahead of
+// that guard 97 (the guard's effect goes with it); the outer loop as a while 97; the count computed ahead of the
+// output pointer 291 (1017 bytes).
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
