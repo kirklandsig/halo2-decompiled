@@ -2295,6 +2295,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Colours at the update 188/186/188/188, early colours 210/210/208/208.
 // NOT kept: the tint boundary supplies a 0x44 frame at 572 bytes, but it
 // spills the traversal cursor and retains the system in EDI.
+// M3 lane 3 r269 (fast with 0x178eb0/0x179020/0x178bc0/0x177040/0x176f60/0x175a80/0x174a30, matched or unchanged): the
+// early-colour lead (colours after the spawn stores, both queries in the colour call, location_point_in_zone_inline)
+// re-measured 184 at 568 B; on it 1..7 unreferenced locals, plain or initialised, 184 each (no tie); the location loop
+// in a forceinline helper taking the system 184 (same code); the 0x1751d0 result named 184 (same code).
 // M3 lane 5 r206 (fast with 0x178eb0, 0x179020 and the callees, all matched throughout; positional, then aligned and
 // register-masked aligned counts, control 128 [85/40]): both colours read into locals after the spawn stores with both type
 // queries as the colour call's arguments 181 [73/26] (frame 0x44 and colour A's spill at +0x10 as retail; system in EDI and
@@ -3909,6 +3913,13 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // System lookup at color 117, location update 112, both 127, both and type query 148, all descriptor
 // and update uses 145; location update through the held pool 124, with live mode 135, with a word
 // slot 95. The held-pool and live-mode forms recover 0x54. Every relookup changes the caller.
+// M3 lane 3 r269 (fast with 0x176f60/0x178c80/0x175a80/0x174a30/0x178bc0; 0x176f60 in brackets, [0] = matched): retail's
+// shape written plainly (spawn record whose location index is the particle-location cursor, colours read after it, both
+// queries in the colour call, the mode read from the definition at each call) 103 [25] at 331 B; on it 1..7 unreferenced
+// and 1..16 dead initialised locals 103 [25] each (no symbol-count effect); a named tint 109 [25]; the tint and the 0x1751d0
+// result both named 126 [0] (352 B; convention kept, definition EBX, system EDI), with colour B read first 126 [0]; tint
+// and multiplied named 127 [0] (result named) / 122 [25] (not named); multiplied alone named with the result named 110 [25].
+// A compile-only (no /GL) listing shows the same first-pass frame for the [25] and [0] forms.
 // M3 lane 5 r206 (fast with 0x176f60, 0x178c80 and the callees; caller in brackets, [0] = still matched; control 93 [0]):
 // the mode read at each call re-measured 108 [25] (effect index EAX, system index ECX); with the effect index read once
 // through its own address 127 [18] (effect on the stack, system ECX, frame 0x50, 352 B); with the system index read so 127

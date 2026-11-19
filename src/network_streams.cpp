@@ -1199,6 +1199,21 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 88, Byte pending bit with separate sent and pending admissions 86. NOT kept: The bitfield update emits the byte
 // OR, including at 225 bytes, but changes the opening register allocation and raises the score. The original
 // message layout and body are restored.
+// M3 lane 3 r271 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched or unchanged each time; control 35). The live
+// flags word is confirmed as the one cause: with the in-place update and any read of `flags` after it, the scan, the
+// message in ECX, the flags in AX, the found path's EDX/ESI temporaries, the pointer-first `*time` store and the byte OR
+// are all retail's, and only the read's own instructions are left. Diagnostics, reverted at once: `type = (flags & 2) ?
+// 2 : 4;` after the in-place update 28 (232 B: the five-instruction select in place of `mov eax, 4`; a test that is
+// always false there), `type = (flags & 1) ? 4 : 0;` 36 (230 B), `type = (flags & 2) ? 0 : 4;` 90 (226 B: folded from
+// the enclosing test before allocation, so the in-place form's allocation), `if (flags & 8) type = 4; else type = 4;`
+// 91 (the equal arms fold early as well). Other forms: the in-place update with the message zeroed at its declaration
+// re-measured 59, that with the flags read again into the local before the update (`flags = message->flags;
+// message->flags = flags | 2;`) 59 (same code: fused into the memory OR before allocation); the kept structure with that
+// re-read 89, with `flags = message->flags | 2; message->flags = flags;` 89; the in-place update under a second
+// `if (!(flags & 2))` 87 (226 B); `type = 4;` between the three stores and the in-place update 103 (209 B); the update
+// as `m_messages[index].flags |= 2;` 100 (240 B); the found block without `break` and `if (type) break;` after it 70
+// (231 B). Left: a read of `flags` after the update that leaves no instruction; a value that the enclosing test already
+// decides is folded before allocation, so it is not a repeated test.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

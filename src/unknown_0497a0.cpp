@@ -534,6 +534,22 @@
 // both add-scaled products 536 (same code); the two wave values as the members of one point2f 634 (2672 B, retail's
 // 0x60 frame, stored and reloaded into XMM as retail but the body grows); the mixed wave halved as `/ 2` 536; the two
 // wave values declared at function scope 536; the plain sine's sum written `x * 5.6f + (double)y` 536 (all same code).
+// M3 lane 3 r270 (fast with 0x4a1e0; control 536 = baseline, aligned 593, masked 201; both builds end `ret 0x20`): both
+// wave values passed as real arguments to a forceinline helper doing the two scaled adds 535 (the arguments are
+// substituted back: the same code but for one line); the two values returned as a two-real aggregate from a forceinline
+// helper 734 (2714 B, frame 0x68: s1 first and both stored as floats as retail, but the returned copy gets cells of its
+// own); the two values written through a `vector2f *` by a forceinline helper taking the camera point 615 (2622 B,
+// retail's frame 0x60 and retail's offsets for the first three vectors, aligned 551, masked 187: s1 is evaluated first
+// and both are stored as floats and scaled in SSE as retail; left: the pair is overlaid on w's cells at +0x28 where
+// retail has two 4-byte cells at +0x18/+0x1c, the fourth basis vector at +0x4c for retail's +0x64, the first cross's i
+// in a cell of its own for retail's w cell, and the x87 factor order), that with the first cross through
+// cross3f_staged 615 (same code), with the first cross written into w 637 (2607 B, frame 0x5c). Compile-only: the helper
+// with two `real *` or two `real &` outputs, or one helper per value, compiles as this body does (folded); the two
+// `real *` helper reading the local copy keeps only s1 stored. Reading: retail's cells are s0 +0x18, s1 +0x1c, the first
+// cross's j and k +0x20/+0x24 and its three shared products +0x28..+0x30, with the first cross's i overlaid on w; the
+// wave values are not substituted into the scaled adds, which this build does only across a block boundary or for
+// memory-resident values (round 249), and the three factors popped late need a use that is removed late (rounds 170
+// and 257), so no plain spelling is left here.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -1258,6 +1258,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // point3f table filled through the existing real_point3d_set 566 (2807 B); the vertex table as `real [8][3]` 290 (same
 // code). Diagnostic: dead initialised locals at the top of the cone arm, k = 1..8: 479/480/480/484/483/483/479/479
 // (2809-2814 B): no phase, every extra local costs ~190. Body unchanged.
+// M3 lane 3 r272 (fast with 0x11f5f0/0x141590/0x163db0/0x30bf0/0xc1a80, all matched; control 290, aligned 273, masked
+// 103): the loop under a redundant `if (0 < *count)` 604 (2815 B); the sphere arm's up vector bound by `vector3f const &`
+// for both crosses 530 (2815 B); the left vector bound by `vector3f &` for the cross, normalize and second cross 632 (2791
+// B); the reference axis as one `vector3f const &` chosen by a conditional 698 (2751 B); the sphere radius as a `real
+// const &` to the shape field 612 (2816 B). Each new frame symbol again shifts the whole body (~15 bytes shorter).
 // M3 lane 16 r139 (fast with 0xc1a80; control 290): a `plane3f *plane = &entry->plane;` for the cone plane's normal copy,
 // dot argument and distance store (retail's `[ecx + 0xc]` store) 543 (2810 B; the sphere arm's constant setup moves too),
 // with 1 to 7 unused locals at the top 544/548/548/547/543/543/543 (diagnostic: not a symbol-count phase); declared at the

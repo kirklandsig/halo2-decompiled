@@ -1919,6 +1919,33 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // with the close as a pointer-taking forceinline (test, close, wait, invalidate) 114; the close helper alone 5 (same
 // code); the close call through a by-value forceinline (close and wait; test and invalidate in the body) 119 on the 5
 // form, 114 on the write-local and write-helper forms. Body unchanged at 33.
+// M3 lane 3 r270 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33, aligned 19, masked 8; lane 9 r132's
+// 5 form rebuilt at 5). New forms, all match-only (helpers with one caller): the handle of each asynchronous call built
+// by a forceinline helper that turns the raw handle into the file-handle aggregate, on the 5 form: at all four calls 118
+// (917 B), at the write 114, at the write and the close 114, at the close 119 (the write is retail's wherever the helper
+// feeds it, the close then pushes EAX without retail's `mov ecx, eax`); the by-value write helper taking the caller's count
+// by pointer and returning `*bytes_written == 0x800` 114; a generic blocking write helper (buffer, size and count pointer
+// passed in) with `written = helper(...)` 107 (930 B, a `sete al` join); the header owned by the caller and passed to the
+// helper 107; on the by-value write helper with the else-if header read (114, exact-aligned 6: the close copy, two pads
+// and the checksum in ECX): the close test on a named raw-handle local with the unnamed argument 114, the helper
+// returning the count into a named local 114, the helper's count `volatile` 114, the resize result `volatile` 114, both
+// 114 (each the same code). Diagnostics (one dword load and store between two scratch globals, removed at once): on the
+// by-value write helper + pointer close helper + else-if read + reference-bound checksum form, the probe placed anywhere
+// from just after the write call to just ahead of the close's handle test gives retail's code exactly but for the probe
+// (it takes EAX, the close copy then takes ECX); placed ahead of the write call it takes EDX and moves the header address
+// to ECX and the close copy to EDX; placed ahead of the resize it also moves the resize handle to EDX. On the 5 form a
+// probe ahead of the write gives handle ECX, zero EAX, header EAX, copy EDX, and one after the write's wait leaves the
+// write as it is and gives copy EDX. Reading: the flags zero takes the first free scratch register where it stands and
+// does not advance the rotation, the header address and an unnamed handle argument do; retail's zero in ECX means its
+// handle was already loaded (a value that takes no step), so retail has one step with no instruction of its own between
+// the write call and the close's argument, and a second before the checksum load. No plain statement that supplies the
+// first was found: the wait, the count test and the close's handle test take none in any spelling tried here. Later
+// the same round, forceinline accessors returning the file-handle aggregate, on the 5 form: one copying `*file` into a
+// local and returning it, or one building it from the cache record's raw handle, at the write 114, at the write and
+// the close 114, at all four calls 118, at the close 119 (the named-copy code each time); one returning `*file`
+// directly, at the write, 5 (the 5 form's code: it is substituted back and the handle loads after the zero). On the
+// by-value write helper form: the close's handle test through either accessor's result with the unnamed argument 114
+// (same code), test and argument both through the accessor 114.
 // @retail 0x213970
 void function_213970(void)
 {

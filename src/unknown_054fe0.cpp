@@ -744,32 +744,48 @@ bool network_session_interface_can_add_player(void)
 	return result;
 }
 
+/* the membership block at +0x4c of the session (unknown_059670.cpp) */
+struct s_network_session_membership
+{
+	long value4c;
+	long value50;
+	long member_count;
+	s_session_member members[16];
+	long player_count;
+	dword player_mask;
+	s_network_session_player players[16];
+};
+
+s_network_session_membership *function_5a680(c_class_58d20 *session, long *current_member, long *member_index);
+bool function_058d70(c_class_58d20 *s);
+
 // @retail 0x656e0
 bool network_session_get_membership(c_class_58d20 *session, long *value4c, long *host_member_index, long *local_member_index, long *value50, long *member_count, s_session_member **members, long *player_count, dword *player_mask, s_network_session_player **players)
 {
 	bool result = false;
-	if (SESSION_STATE_IS_LIVE(session->state))
+	if (function_058d70(session))
 	{
-		long host = session->current_member;
-		long local = session->member_index;
+		long host;
+		long local;
+		s_network_session_membership *membership = function_5a680(session, &host, &local);
 		if (value4c)
-			*value4c = session->value4c;
+			*value4c = membership->value4c;
 		if (host_member_index)
 			*host_member_index = host;
 		if (local_member_index)
 			*local_member_index = local;
 		if (value50)
-			*value50 = session->value50;
+			*value50 = membership->value50;
 		if (member_count)
-			*member_count = session->member_count;
+			*member_count = membership->member_count;
 		if (members)
-			*members = session->members;
+			*members = membership->members;
 		if (player_count)
-			*player_count = session->player_count;
+			*player_count = membership->player_count;
 		if (player_mask)
-			*player_mask = session->player_mask;
+			*player_mask = membership->player_mask;
 		if (players)
-			*players = session->players;
+			*players = membership->players;
 		result = true;
 	}
 	return result;

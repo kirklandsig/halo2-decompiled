@@ -154,6 +154,9 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // M3 lane 10 r122: no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair (ours the
 // entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`). BLOCKED-BY 0x17e670
 // (contributor code); held patch unchanged.
+// M3 lane 3 r269: no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair (ours the
+// entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`). BLOCKED-BY 0x17e670
+// (contributor code); held patch unchanged.
 // M3 lane 5 r206 (fast): the previous-mask test nested with the current-mask test inside it 118 (336 B); the stop and start
 // tests as two separate ifs 79 (353 B); the palette globals pointer named ahead of the spawn loop 78 (359 B); the mask word
 // index and bit named once for the four tests 85; the direction declared first in the spawn loop's body 16 (same code).

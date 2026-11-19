@@ -775,6 +775,17 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // *` to itself 245 (833 B, both arguments on the stack, callers lost); the same with the parameters (index, observer)
 // everywhere 245; the two owner-notify loops as one two-caller inline helper 333 (705 B), the same without the volatile
 // 359 (701 B); volatile dropped with one function-scope loop counter 177 (callers lost).
+// M3 lane 3 r269 (fast with 0x75da0, 0x76a40, 0x785d0, 0x78880, 0x78900, 0x784a0, 0x77330): with the volatile dropped
+// (177) the body is retail's instruction for instruction with the parameters' roles mirrored (observer EBX, index from
+// the stack into EDI and pushed from its home in both loops), so only LTCG's register choice differs. Volatile dropped
+// with 1..7 unreferenced locals 177 each (no tie); with owner cursors in both loops 177 (same code); with the index
+// `dword` 177 (same code); the snapshot-copy lead re-measured 124 (821 B, callers matched) and with 1..7 unreferenced
+// locals, plain or initialised, 124 each (copy ESI / zero EDI never flip).
+// A compile-only /Gd listing of the plain body (no volatile) reproduces the cause: the first pass keeps the observer in a
+// callee-saved register and re-reads the index from its home in both loops (retail's LTCG result implies the reverse).
+// Screened there (index still re-read in every one): parameters swapped, `observer->channels + channel_index`, an owner
+// cursor in loop 1, in loop 2, in both, an element pointer per loop, the state in a local, the connection declared first
+// (with and without both cursors), the sequence named before loop 2 (one loop's re-read left).
 // M3 lane 5 r206 (fast with the seven callers/callees): a compile-only /Gd pass predicts the split: the parameter
 // that pass reloads from its home stays on the stack, one held in a register throughout is passed in one. Without the
 // volatile it reloads channel_index in both owner loops (observer EBP, channel_index EDI), so observer is passed in EBX;

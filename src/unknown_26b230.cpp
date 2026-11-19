@@ -2228,6 +2228,20 @@ void function_269250(long clump_index, long actor_index);
 // parameter is copy-propagated, so the selection keeps EDI); on the in-arm form the actor index read into a local at the
 // top of the actor body 126 or after the walk 126 (same code), the actor's previous clump in a local for the post-loop
 // compare 126. Body unchanged.
+// M3 lane 3 r270 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0/0x268510/0x268c90/0x26ae30, all
+// matched each time; control 87, aligned 54, masked 45; the in-arm compare re-measured 126 at 480 B, the datum-index
+// selection on it 128). New on the in-arm form: a phase scan of one to seven unused initialised locals 126 at every count
+// (no symbol-count tie here); the selection as a local of a two-view overlay type 126 and as a one-element array 126 (both the same
+// code: still promoted to EDI); the selection's address passed to the score function as an extra, unread pointer
+// parameter 126, with the best score's address too 126 (same code, 0x268bb0 still matched: the dropped arguments leave
+// both locals register candidates). Diagnostic (removed): with the last call taking a constant in place of the selection
+// (three after-loop uses) the selection is memory-only with retail's immediate store, x87 compare and shared best store
+// (147, 461 B), but its home moves to +0x1c with best at +0x18 and the score at +0x14 (retail +0x14/+0x1c/+0x18, as the
+// in-arm form has them), the pool is still read from the walk at each use and the found block still trails. Reading:
+// retail's frame order ranks the selection first of the three homes, as when it holds a register here, yet retail gives
+// it none and gives the walk's pool EBX, reloading it after the bit scan takes EBX for the mask; this build gives that
+// one spilled register to the selection (EDI, reloaded at the loop top) and nothing to the pool. The matched 0x268840
+// has the same walk with pool EBX, index EDI, datum EBP; here retail leaves the index in memory as well.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
