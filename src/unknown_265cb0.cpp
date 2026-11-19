@@ -368,7 +368,7 @@ real function_30bf0(vector3f *vector);
 // operand), and the shared header helper's spelling fixes that order, so the products cannot be moved from here; the
 // seat loop's result still lands four bytes above retail's and the range still loads into xmm2 for xmm0.
 // MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
-// score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// score 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // M3 lane 8 r189 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): names do not order these homes (result,
 // range or the facing maxima renamed to sort first or last, diagnostic, 84 each); the facing copies as secondary then
 // primary 84; distance_squared declared at the top of the settings block 84; the clip amount declared in the motion
@@ -896,6 +896,9 @@ real function_30bf0(vector3f *vector);
 // the clip block 84 (same code); the posture switch as an if/else-if chain 131 (1308 B); `use_facing && !actor->unknown007`
 // 86. Diagnostic, reverted: 1..7 dead initialised locals 84/86/138/138/82/82/82. Reading: retail shares one slot between the
 // clip amount and distance_squared ([esp+0x1c]) with the result lowest; ours gives the clip amount the lowest slot.
+// M3 lane 6 r200 (fast; control 84): distance_squared and everything after it in its own `{}` block 84; `vector3f delta`
+// declared ahead of the range 84; the endpoint test as two nested `if`s 84; the posture switch with a `default: break;`
+// 84; the range `real const` 84 (each the same score; homes and the two seat-loop products unchanged).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2165,7 +2168,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
 // retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
 // registers.
-// score 168 (was 168): The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// score 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // M3 lane 8 r189 (fast with 0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 168): the first difference is the
 // inlined 0x26be00, whose head load retail addresses as [table + slot offset + 0x58] and ours as [offset + table + 0x58]
 // (the slot offset is shared with the actor lookup). Forms: the byte alias `data` dropped for `(byte *)actor` 168; the
@@ -2747,6 +2750,14 @@ real function_2683f0(long actor_index, long node_index, short type)
 // of the short index for its NONE test, a long second counter) 378 (register-masked aligned 41 -> 39: both searches are then
 // retail's line for line, one line late because the iterator's table load takes ECX where retail's takes EAX); on that, the
 // NONE fields first 380, the iterator set up before the vehicle lookup 401 (2889 B), the NONE fields chained 380.
+// M3 lane 6 r200 (fast; control 168): re-measured round 65's search recipe (both searches as the existing 0x1c8180 and
+// 0x1c8150 helpers 849 at 2642 B; `inline` on 0x1c8180's definition 795 at 2682 B, all its callers still matched, the
+// forward getter then drops out of line; plus a `__forceinline` declaration of that getter 383 at 2880 B with every search
+// line retail's); a dead field read beside the vehicle lookup on it 383 (eliminated). On the base: the other actor as `other =
+// NULL; if (other_index != NONE) other = actor_get(...)` 382; very_close declared ahead of close 406; `facing, approach`
+// declared in that order 170; `close` as one direct `||` expression 620 (first difference +0x0); the other-actor ternary
+// with the test negated and the arms swapped 173. Still left on the recipe: the players iterator's table pointer in ECX for
+// retail's EAX (`mov eax, [abs]` is a byte shorter), which shifts the loop pad and everything after it.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

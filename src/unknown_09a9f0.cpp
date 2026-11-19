@@ -226,14 +226,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): r123 unchanged. The entry saves EBP instead of EBX for the byte result. The header flag and object reads
+// score 49 (was 49): r200 unchanged (r123 too). The entry saves EBP instead of EBX for the byte result. The header flag and object reads
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
 // MiniMax H (11-18): no new form, no lower score (49): the outcome byte is still split between BL and AL where retail
 // keeps it in BL from before the creation call, retail's EBP window around the header test is still missing, and the
 // header and the object are still read through one shared address where retail looks the header up twice.
-// score 49 (was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
+// Earlier score line (49, was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
 // remains (retail keeps it in BL and copies it to AL at the return, ours keeps it in EBP) and retail reloads the
 // table's data pointer and recomputes the scaled index between the flag test and the object read; the earlier legal
@@ -913,6 +913,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // for the two lookups 49 (same code); those getters on the early bool result set after the attach 77 (160 B); early returns
 // for NONE and the flagged header with a constant true at the end 77 (155 B). A scan of retail for a header-flag test
 // followed by a second load of the table's data pointer from the same register finds only this function.
+// M3 lane 6 r200 (fast; control 49, the early bool result set after the attach re-measured 77 at 160 B: f cached in EBP
+// from entry, one header address for the test and the object read): on that early bool form the index typed dword 77,
+// `long const` 77, the flag read as `(flags >> 4) & 1` 77 (each scores as the base form); the bool declared after the entity store
+// 80 (158 B); an early `return false;` for NONE with the bool declared after it 72 (176 B, the NONE exit gets its own
+// epilogue and the false byte is set after the header test). Retail's push/pop EBP window is a code-generation temporary
+// (all six other registers busy at the test: index in EAX, false in BL, the table global in EDX, the scaled index in ECX,
+// this and entity); matched windows of the same kind sit in 0x130f60, 0x15e530, 0x1e18f0 and 0x263670.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
