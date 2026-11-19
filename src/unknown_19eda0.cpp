@@ -642,6 +642,10 @@ real g_47ff94 = 1.5f;
 // code); taking references 331 (same code); forceinline 331 (same code); for the fade and vertex distances but not the
 // edge 321 (1497 B). Not kept: the positional score rises (the body is 20 bytes shorter). Left on that form: 0x1ccb0(59)
 // and 0x1cd90 expanded in place and the 0x4b2d0 call. BLOCKED-BY 0x4b2d0 and the /Ob1 file of 0x1ccb0/0x1cd90.
+// M3 lane 3 r269 (fast with 0x244470, 0x2be5d0, 0x4b2d0 and 0x116b00, all unchanged): the current vertex bound as
+// `point2f const &vertex` for the alpha, the bottom point and the edge 322 (same code); copied into a `point2f` local for
+// those uses 347 (1478 B); a pointer to the previous vertex for the edge 322 (same code); a vertex pointer for the alpha
+// distance only 320 (1497 B, frame still 0x34; one-use pointer, gain under the bar); for the bottom point only 334 (1483 B).
 // @retail 0x19f680
 void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
