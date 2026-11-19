@@ -666,6 +666,14 @@ union s_185be7
 // the unclamped fraction 823.
 // NOT kept: the typed seat-table field (396 plain, no gain; body kept stable for the held 0x24590 inline lead);
 // naming the upper speed or magnitude gains only two points in preview, and the separate clamp forms regress.
+// M3 lane 4 r222 (fast with 0x24590, 0xc8880, 0x185ab0, 0x185b00, 0x185b30, 0x187b30, 0x1a4900 matched and 0x186ab0 114
+// throughout; control 396): the first difference is the angle conversion (retail: factor in XMM1, x in XMM7, y in XMM0, both
+// stores after the record copy's `rep movsd`; ours: factor in XMM2, x in XMM0, y in XMM7, stores ahead of the copy). The
+// record copy ahead of the two conversions 395 (the stores then follow the copy as retail's, the registers unchanged; a
+// statement order picked by score, not kept); that with the factor first in each product 395; the factor first alone 396
+// (same code); the factor as a file-level `static real const` for all four uses 396 (same code); the source row through one
+// `real const *` for both components 957. The XMM numbering follows the clobber set of 0x24590 (its file is held this round):
+// BLOCKED-BY 0x24590 still.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

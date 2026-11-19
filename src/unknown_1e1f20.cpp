@@ -922,6 +922,11 @@ void swarm_leader_detach(long actor_index);
 // with a false-then-set result 216 (966 B; the byte lands in the dead index slot as retail, the same code as the flag
 // form reverted on 11-15, a match-only form), through a helper returning the direct expression 236 (same code). Still
 // BLOCKED-BY 0x26ed40: retail expands it here and its file's inline setting keeps it a call in this build.
+// M3 lane 4 r222 (fast with 0x26ed40, 0x1e2150, 0x258600, 0x1e4990 and 0x1e0160, all matched; control 236, aligned 108): the
+// iterator compared against the cached actor alone 308 (942 B); the memory walk as the existing joint_decline call under the
+// type test 348 (910 B, a call where retail expands it); the definition bit as a byte test `*definition & 8` 236 (same code);
+// `(bool)value` for the 0x203ed0 argument 236 (same code); the counts loop index as short 236 (same code). Still
+// BLOCKED-BY 0x26ed40 (expanded in retail, kept out of line by its file's inline setting).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

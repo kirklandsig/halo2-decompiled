@@ -556,7 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 115 (was 114): earlier 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// score 115 (was 115): earlier 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // MiniMax R (11-17): no new form, no lower score (114; 115 in the batch of all fourteen, whose reduced image is wider): retail's timer message, left coordinate and view pointer still sit in byte and word homes where this build gives them dwords, and the difference still rests on the text buffer's call convention in 0x15f120: BLOCKED-BY 0x15f120.
 // MiniMax R (11-14, run 65): no new form, no lower score (114 in the reduced image, 115 in the full one): retail
@@ -819,6 +819,15 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // The full build reads 115 once src/unknown_1ee340.cpp's constructor stores its vertices through the component accessor
 // (this round's 0x1edd00 match) and 114 with that file as before (plain checks of both trees): the reload pair before the
 // flag setup (`mov edi, [ebp - 0x64]` against retail's `mov ecx, [ebp - 0x40]`) follows the whole-image link, as in round 97.
+// M3 lane 4 r222 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115): the tutorial colour as
+// `if (flag_1384) unpack(a4) else unpack(bit ? a8 : a4)` 214 (1890 B: the a4 load then comes first as in retail, but the shared
+// call follows it where retail's follows the a8 load); that with g_510c94 read at each use 446 (1903 B); negated with the arms
+// swapped 214 (1890 B); the first on the bool timer 151 (1889 B); the timed message colour read through g_510c94 at each use
+// (no `timed` local) 416 (1890 B). Same code: `left` as `short const` on the bool timer (191); 0 to 5 dead locals ahead of the
+// bool-timer body (homes unchanged, so not a symbol-count state). A one-object LTCG screen names the homes: retail shares the
+// flash scalar with the row counter and the row fade with the total height, and gives the row height a cell of its own; on the
+// bool timer ours shares the row height with the total height and the flash scalar with the row fade, and the row counter has
+// its own cell. A scan of every matched retail function finds no other lone word-sized frame local like `left` (only an /Od one).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
