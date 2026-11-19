@@ -474,7 +474,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 218 (was 218): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// score 218 (was 218): r123 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // M3 lane 11 r113 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 76): actor_index declared first (the stack
 // order and register arguments unchanged; definition, declaration in src/path.cpp and the call together) with corners a, b,
@@ -1064,6 +1064,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Diagnostics (reverted at once): 1-7 dead initialised locals on the recipe 291/279/284/284/284/284/284 (only the origin
 // dot's term order moves; at 2 the body is 1280 B, aligned 39); a no-code read of first.j ahead of the projection puts
 // 1.0 in retail's XMM6, one of first.k puts first.j in retail's XMM3 (286/289), one of the parent point's y does nothing.
+// M3 lane 10 r123 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, aligned 70): the actor parameter copied into a
+// `long const` local at the top and used in cases 5 and 2, 219 [70]; case 5's test written `NONE != actor_index` 218 (same
+// code); case 5's test held in a bool computed ahead of the direction 218 (same code); case 5 first in the switch 329; case 2
+// ahead of case 5 353 (1284 B). Retail's case 5 compares the entry-loaded EAX before the direction is formed, while case 2
+// reads the actor from its stack home again, so the entry value is not a whole-function register home for the parameter.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

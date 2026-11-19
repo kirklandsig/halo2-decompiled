@@ -51,7 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// score 176 (was 176): r123 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
 // stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
 // return value 267 and the length local initialised before the call 171, all dropped; the helper's locals renamed
@@ -612,6 +612,17 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Shared 2-D normalization of the XY prefix with depth scaling and common length, early zero,
 // separate length arms, or length before depth: 423/441/441/423. With the first magnitude returned:
 // 420/429/430/420. NOT kept: root and yaw homes still differ and the shared normalizer raises 0x29b990 to 31.
+// M3 lane 10 r123 (one-object /GL harness with src/unknown_11cc90.cpp and src/character_tag_accessors.cpp linked, byte-exact
+// against the fast build; aligned counts against retail in brackets, base [229]): renames do not move the 4-byte homes here:
+// local_8 as two names on either side of the others [229], the normaliser's root local as two such names [229], local_9 as
+// five names [229]. The else arm's zeros chained `local_8 = local_9 = 0.0f` [232], `local_9 = local_8 = 0.0f` [229]; the final
+// pitch add and the final yaw add each written field-first [229]; local_9, local_8, local_7 declared in that order [229]. A
+// forceinline turn-rate helper shared by the yaw and pitch clamps (delta, default limit, field override, scale unless
+// turning back, clamp, add back; the current angle through a pointer) [248], fast 285 (1716 B); with the current angle by
+// value [314]; the delta formed after the limit [317]; the clamp and add returned as one expression [337]. Mapping the
+// harness homes onto retail's: retail shares the root locals' home with the yaw (+0xc) and keeps the first pitch component
+// alone at +0x10, then the first rotation's sine at +0x10 and its cosine in the first stack argument's home, and the final
+// pitch in the scale's home; ours shares the roots with the first pitch and the final pitch (+0x10).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

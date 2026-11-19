@@ -226,7 +226,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): The entry saves EBP instead of EBX for the byte result. The header flag and object reads
+// score 49 (was 49): r123 unchanged. The entry saves EBP instead of EBX for the byte result. The header flag and object reads
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
@@ -907,6 +907,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // NONE gives 69 and a bool result set at the attachment gives 77, because this build then spills the flag to the
 // stack and keeps a parameter in EBP; this build still holds the validity result in EBP with a setne and CSEs the
 // table's data pointer, where retail keeps the result in BL and reloads the header's data pointer.
+// M3 lane 10 r123 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10, 0xbb780, matched throughout; control 49): a 600 s
+// permuter run (48 tries) found only the flagged arm returning false at once, 48 (fast 48: one point); that with the object
+// read through the entity's field 48; slot_handler.h included at the top and the existing inline header and object getters
+// for the two lookups 49 (same code); those getters on the early bool result set after the attach 77 (160 B); early returns
+// for NONE and the flagged header with a constant true at the end 77 (155 B). A scan of retail for a header-flag test
+// followed by a second load of the table's data pointer from the same register finds only this function.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
