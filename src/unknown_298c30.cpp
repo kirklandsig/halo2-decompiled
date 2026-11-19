@@ -1244,6 +1244,27 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 0x2108a0 and 0x210770, whose definitions are in another lane's file; the frames agree at 0x114 and the two trace results
 // sit at the same homes (+0xd0 and +0xf4) but are taken in the opposite order, and the pivot's home is +0xa0 here against
 // retail's +0x94.
+// M3 lane 6 r201 (fast with 0x2108a0, 0x29a190, 0x298d90, 0x298c30; the lead also plain-checked with 0x29cbb0, 0x210770,
+// 0x210d10; aligned = instructions equal after alignment out of retail's 810, base 595; all restored). LEAD, not kept:
+// three pieces together give retail's exact length and 490 (3372 B, aligned 625; plain check 490 with 0x2108a0,
+// 0x210770, 0x210d10, 0x298c30 and 0x29a190 MATCH, 0x298d90 305 and 0x29cbb0 378 as before): (1) `inline` on the
+// definition of 0x2108a0 in src/unknown_20fe20.cpp (its one call here stays out of line in the present tree and 0x2108a0
+// still matches; the caller then has no register summary for it, as lane 5 r197's diagnostic showed for retail, and the
+// radius is loaded in each block instead of sitting in XMM5); (2) each sweep scale assigned to one `scale` local right
+// before its two products, in both arms (retail's order: scale, x and y products, three times; the side trace homes
+// +0xd0/+0xf4 then agree); (3) the body after the sector read under `if (local_11 != NONE) { ... return local_0; }
+// return true;` (retail's last block is that `mov al, 1` exit). Not kept: (2) is a statement order and (3) an if with
+// its arms exchanged, both kept only with a match, and (1) alone raises the count. Steps: (1) alone 726 (3349 B, first
+// difference +0xd0, aligned 602); (1)+(2) 769 (3351 B, aligned 617); (1)+(2)+(3) 490. On (1)+(2): the offset helper's
+// products written component first 769 (same code); a direction pointer local for the pivot offset calls 769 (aligned
+// 612). On the 490 form: the scale expressions written in each product 672 (3380 B); the direction's i and j named
+// before the arms 781 (3333 B); three named scales each declared before its products 770 (3348 B); one `scale` declared
+// ahead of the arms 676 (3372 B, aligned 625). With one `return local_0;` after the nested body: 566 (3348 B) with (2),
+// 786 (3332 B) without. Left on the 490 form: the pivot offset's negative arm (retail loads each component and multiplies
+// it by the negated radius, storing x before it loads y, with no shared tail), the pivot home (+0x94, ours +0xa0, the
+// first sweep point's home), the sweep arms' XMM registers (retail: scale XMM2, i XMM0, j XMM1; the false arm copies
+// each component and keeps the first y product in XMM3 until the arm's end), the endpoint block after the arms, and the
+// three rotations in the loop. The patch is build/r201/lead-299460.patch in the lane 6 worktree.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

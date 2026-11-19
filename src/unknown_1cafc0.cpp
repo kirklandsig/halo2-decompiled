@@ -545,6 +545,12 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
 // the graph in EBX and graph+0x34 in EBP; the inheritance loop then keeps the graph in EBP (ours reloads it per use) and
 // retail's final `mov al` is not normalised (ours `test al, al` / `setne al`).
+// M3 lane 11 r123 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1dc8c0/0x1cccd0, all MATCH): bool success 478 (1809 B, aligned
+// 53 -> 102, masked 42 -> 59: the return is retail's and the graph moves to EBP, but the found names' copies change homes
+// and graph+0x34 is formed per group); that with success declared ahead of the graph 478; char success 348 (same code);
+// the request under `if (success != false)` 348; that with bool success 478. The roles in the request (graph+0x34 kept
+// in EBX, the graph reloaded per loop) come from the shared request helper (BLOCKED-BY 0x1dc8c0's file, whose matched
+// contributor function uses the same helper).
 // Round 8 (lane 17, on the call): bool success 478; byte return type 478; `success != false` as the urgent argument
 // with no test 645; `return success != false;` 351; found-name locals type/class/mode 348 (same code).
 // Earlier 399: Frame eight versus twelve and independent hidden-result homes remain; request graph/name allocation still differs.
@@ -855,6 +861,21 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // or identifier gate 566/547. Separate failure return 612, Boolean phase result 664.
 // NOT kept: the split phases lose the matching lookup prefix. The Boolean form offsets EBX
 // in place with a different frame and different graph reloads.
+// M3 lane 10 r125 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1cccd0/0x1dc8c0, all MATCH unless noted, 0x1cd070 210 and
+// 0x1db170 828 unchanged; control 348, aligned 53). The three request helpers copied into this file under other names
+// (a private copy of the shared request) 348 (same code); on that copy: the urgent loop's resource table read into a local
+// before the loop 404; the inherited graph named in the inheritance loop 348 (same code); the found record read through a
+// `request` pointer at the call (shared helper) 348; the inheritance index declared `long i = 0;` with the loop's own
+// initialiser dropped 269 (aligned 11: the graph is loaded before the last found name, the sum formed in place with `add
+// ebx, 0x34` and the graph reloaded into EBP per preheader, as retail; left: our early `i = 0` store after the parameter
+// homes, retail's `xor ecx, ecx` zero for the loop entry's compare and two stores, and the final normalization); the same
+// edit in the shared helper itself 269 here but 0x1dc8c0 474 (lost); that copy with `bool success` 256 (aligned 9, the
+// return unnormalised as retail; 1777 B); the index initialised again in the loop 348 (the early store is dropped and
+// the roles go back); the index zeroed above the urgent test, or the loop as a while, 256 each; the copy's original loop
+// with `bool success` 478 (aligned 102), with the index declared above the urgent test 478. With `bool success` and the
+// shared helper, the found names read into locals in the six orders m-c-t 487, m-t-c 486, c-m-t 479, c-t-m 479, t-m-c
+// 478, t-c-m 478. Lead: something live from the request's start to the inheritance loop gives retail's graph roles;
+// retail's own index is set at the loop (zero in ECX). Body unchanged.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

@@ -1284,6 +1284,17 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Indexed byte rows with low word/mask/available first/guarded assignment 237/252/353/371.
 // Typed rows with the same four lookup forms 237/252/353/371. NONE is still in EDI;
 // retail reloads the squad index and holds NONE in ESI.
+// M3 lane 16 r142 (fast with the eight matched callees and the callers 0x1e0fe0/0x203780/0x256bd0, all MATCH; control
+// 237): retail's loop shape `if (substitute && squad) while (squad_index != NONE && next != NONE)` re-measured 411 (1319 B:
+// 0x1e4990 expands in the loop); `if (substitute) while (squad && squad_index != NONE && next != NONE)` 431 (1335 B, expands);
+// the two query bools declared forced first 237; `squad` declared first and assigned in place 237; the cleanup arm as an
+// `else if` chain 237 (all same code). Reading: retail calls 0x1e4990 at a site our link expands, one frequency level
+// apart (an extra enclosing test keeps it a call, as round 146 found), the calibration gap recorded for 0x25d740 in round
+// 141; with retail's loop shape the entry and loop come out as retail's, so the loop is blocked by the build's inline
+// calibration, not by a source form.
+// Shared present/missing squad test after settings 245/245, before settings 267/267.
+// Shared signed/unsigned low-half selector before/after settings 237 each.
+// NOT kept: the tests add a materialized flag and the selector forms tie with NONE in EDI.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1917,7 +1928,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
-// MiniMax G (11-18): no new form, no lower score (251): retail loads the object-pool global into EDI above the
+// score 251 (was 251): retail holds the object-pool global in EDI from the options lookup on (actor ESI, options EBP);
+// ours reloads it at each lookup, so the actor and the options take EDI and ESI. The forms tried follow.
+// MiniMax G (11-18), no new form, no lower score (251): retail loads the object-pool global into EDI above the
 // options lookup's `je` and keeps that base for every field read ([edi+0x84], [edi+0x18], [edi+0x225],
 // [edi+0x722], [edi+0x764]), while ours holds the actor in EDI and re-reads the global for the second lookup; the
 // actor and the weapon options take the other two registers (ours actor EDI, options ESI; retail actor ESI,
@@ -2279,6 +2292,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // probability and delay 327, grenade and fraction 251, both 327, per weapon 251,
 // probability and per weapon 327, all equipment draws 251, with probability 324,
 // and one receiver through fraction with a fresh round receiver 332.
+// M3 lane 16 r142 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0/0x1e5380/0x2758b0/0x1e3b60, all MATCH; control 251):
+// diagnostic, the tail 0x1e1a00 call dropped 289 (1187 B: the pool global is still reloaded at each lookup, so the
+// unmatched tail callee is not what keeps it out of a register); the random-state pointer read once into a local for
+// all five draws 302 (1199 B); the options probability read once into a named local for its clamp 256; the two-weapon
+// loop as `for (short i = 0; i < 2; i++)` 251 (same code); the raised probability kept by `if (probability <=
+// increased)` 253.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

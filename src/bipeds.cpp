@@ -1830,6 +1830,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Shared motion word 546, named predicates from the saved word 554, word before turning 551, saved-word masks 550.
 // Masks on the field 548, named predicates from direct tests 554, promoted motion word 475, initializer-scoped word 546.
 // NOT kept: the argument staging variants displace frame homes and retain the early unity load or change the frame size.
+// Shared object flags word 546. Byte animation flags receiver 175. Shared object word and byte animation
+// flags 546. Saved animation flags offset 645. Saved initial state offset 663. Saved state offset with byte
+// animation flags 663. Saved state and animation offsets 637. Linear velocity through the Havok vector
+// reference 640. NOT kept: The saved animation offset reproduces the unity-load schedule and moves the first
+// difference to +0x4e at retail length, but scores 645. The byte animation receiver ties. The other flag and
+// velocity receivers regress.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4305,6 +4311,23 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // 620/620/643/643. Test at the consumer with the same base choices: 626/626/627/627.
 // Reduced control 612, full 548. NOT kept: The two 2712-byte forms change the entry schedule,
 // and none of the forms improves the reduced score or recovers the full result and flight homes.
+// Round 640: typed animation fields and named key fields 602/602; key-record reference
+// or pointer 610/610; state or key record confined to walking 624/626; saved mode or
+// previous turn 643/623; keys before tag 621; whole-state reference 602. Reduced
+// control 602, full 537. The key-record forms recover the reduced frame and flight
+// threshold slot but lengthen the body and leave the return byte at +0x12.
+// Saved animation key through the stationary decision 636.
+// One animation key for the walking and stationary tests 636.
+// Walking predicate as a byte permitting the stationary turn 645.
+// Byte permitting stationary turns until the saved animation excludes them 660.
+// Shared return with the grab result assigned at admission 602.
+// Shared return combines a captured grab admission with the earlier result 729.
+// Shared return combines the earlier result with a captured grab rejection 729.
+// Shared true return with the unchanged result tested only outside grab admission 606.
+// NOT kept: the admission-time assignment ties, and the other result and animation-state forms regress.
+// The reduced image still differs in the 0x11dbb0 context. The full 0x78 frame, changed byte at +0x12
+// and flight threshold at +0x14 remain in the restored body.
+// Reduced control 602, full control 537.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -5949,6 +5972,13 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // side/axis/rotated-up and rotated-up/axis/side names: 79 each. NOT kept: all ties.
 // The first cosine-complement spill and the final cross memory operands stay in place.
 // Rotated-up/side/axis lexical order: 79.
+// Biped and forward pointer lexical ranks: biped before angle or after sine 79/79, forward before
+// biped or after sine 79/79, both before cosine or after sine 79/79, and mixed early/late ranks 79/79.
+// NOT kept: all tie. The first rotation spill and the final cross memory operands stay in place.
+// Alternate inline/outlined axis normalization 208/239; inline normalization of both published vectors 445.
+// Immutable normalized axis by copy/component initialization 258/225; typed header reference 153;
+// common header accessor 79; absolute-index word 123. NOT kept: the accessor ties, and the index word
+// reaches 887 bytes with a different frame and a sibling regression. The complement spill and final cross remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
