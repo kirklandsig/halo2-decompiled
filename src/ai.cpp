@@ -983,6 +983,33 @@ void function_1ca290(long tag_index, long ticks, long object_index, long node_in
 	}
 }
 
+/* data_datum_iterator_next (data_iterator.cpp), which retail inlines here */
+static inline bool data_datum_iterator_next_inlined(s_data_datum_iterator *iterator)
+{
+	s_record_pool *data = iterator->data;
+	long index = data_next_absolute_index_inlined(data, iterator->index + 1);
+	byte *datum;
+
+	if (index != NONE)
+	{
+		datum = data->data + data->size * index;
+		iterator->index = index;
+		iterator->datum_index = (*(short *)datum << 16) | index;
+	}
+	else
+	{
+		iterator->index = data->maximum_count;
+		iterator->datum_index = NONE;
+		datum = 0;
+	}
+	iterator->datum = datum;
+	return datum != 0;
+}
+
+// Matched in a full build with stand-in SDK headers (was 243): the prop nodes are walked through a 16-byte datum
+// iterator and a file-local inline next(), and the two prop tests read iterator.datum_index (no node_index local).
+// The earlier note said this form cost 0x54590 and 0xc2d00 in the full build; in this gate neither moved.
+// Before:
 // b5H (11-06) walk against retail, statement by statement: the tests, constants (15.0, 12.0, 5.0, 4.0, 3.0 seconds) and the
 // three returns of the actor index agree. Fixed (precision): the distance adds z, y, x as retail does ((dz^2 + dy^2) + dx^2,
 // 0x1ca499-0x1ca4c7, rounded once at 0x1ca4d1). Found: retail walks the prop nodes with a 16-byte datum iterator at +0x38
@@ -993,12 +1020,14 @@ void function_1ca290(long tag_index, long ticks, long object_index, long node_in
 long function_1ca2d0(bool unknown)
 {
 	long game_time = g_510c54->game_time;
-	long node_index = NONE;
-	long index = NONE;
+	s_data_datum_iterator iterator;
 
-	while ((index = data_next_absolute_index_inlined(g_502418, index + 1)) != NONE)
+	iterator.data = g_502418;
+	iterator.datum_index = NONE;
+	iterator.index = NONE;
+	while (data_datum_iterator_next_inlined(&iterator))
 	{
-		s_prop_node_view *node = (s_prop_node_view *)(g_502418->data + g_502418->size * index);
+		s_prop_node_view *node = (s_prop_node_view *)iterator.datum;
 		s_ai_prop_target *target;
 		long actor_index;
 		s_ai_conversation_actor *actor;
@@ -1008,7 +1037,6 @@ long function_1ca2d0(bool unknown)
 		real distance;
 		real range;
 
-		node_index = (*(short *)node << 16) | index;
 		target = &((s_ai_prop_target *)g_50241c->data)[node->unknown08 & 0xffff];
 		if (!target->unknown25 || !target->unknown23 ||
 			ai_conversation_object_get(target->object_index)->player_index == NONE)
@@ -1028,7 +1056,7 @@ long function_1ca2d0(bool unknown)
 		{
 			ignore = true;
 		}
-		if (unknown && node->unknown28 > 15.0f && (actor->unknown6fe == 0 || actor->prop_index != node_index))
+		if (unknown && node->unknown28 > 15.0f && (actor->unknown6fe == 0 || actor->prop_index != iterator.datum_index))
 		{
 			continue;
 		}
@@ -1050,7 +1078,7 @@ long function_1ca2d0(bool unknown)
 		{
 			return actor_index;
 		}
-		if (actor->prop_index != node_index)
+		if (actor->prop_index != iterator.datum_index)
 		{
 			continue;
 		}
