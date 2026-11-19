@@ -4247,6 +4247,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // shaped like 0x16bbc0 (start/index/result, the pool global passed so its load follows the ternary) 78. Retail's loop
 // end reads as 0x16bbc0 inlined, but that function sits in an /Ob1 file our LTCG does not inline from. The range as a
 // const reference bound to the pointer temporary in case 0 78.
+// Round 433. The pool reload still precedes the next-slot choice.
+// word seed extraction 68; mode one falls to advance 49; while with bottom advance 49; while with separate search
+// and salt 49; while with separate entry and advance pools 49; unready mode path first 115; separate class and
+// range gates 8; while with zero mode admission 92.
+// NOT kept: separate class and range tests tie. The bottom-advance loops lose the native mode comparison and leave
+// the pool reload early.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
