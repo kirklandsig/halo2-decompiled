@@ -322,6 +322,10 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // bare and zeroed in the cache block and in an else 140; the unit count by if/else 114 (same code); the cached
 // generation through saved_game_storage_get_cache() 138; the entry test through that getter 114 (same code). Our
 // build still loads g_51ea14 into EAX at entry with EBP as the zero register, retail into EDX with EBX.
+// Disk handle named parts or accumulator 171/114; the same with the iterator
+// advanced at the latch 170/170. Built-in handle named parts or accumulator 114/114;
+// both scans with named parts or accumulators and delayed device advance 170/170.
+// The cache load and pass-latch refresh still differ.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

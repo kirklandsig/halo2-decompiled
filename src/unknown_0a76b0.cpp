@@ -2430,7 +2430,7 @@ __forceinline char unit_action_round(real value)
 // reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
 // compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
 // stands.
-// score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
+// Earlier comparison: MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
 // `goto done`s, which the rules drop. Body unchanged.
@@ -2675,6 +2675,10 @@ __forceinline char unit_action_round(real value)
 // index*12 > pool > first-person name and ours actions > pool > first-person name > index*12; retail's `or ebx, -1` is one
 // hoisted NONE serving the name's initial value, the hand getter's 16-bit compare and the weapon default store, which no
 // form here produces; `channel` lives in the dead `mode` parameter's home; `current` takes the dying actions register.
+// A shared masked datum slot for all three lookups as word/long/dword or through the
+// header accessor with a word 316/311/311/316; each with the short-slot hand getter
+// 319/311/311/319. The long slot forms recover EDI and the saved slot offset; the pool
+// still loads into EDX and the completion byte remains different.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

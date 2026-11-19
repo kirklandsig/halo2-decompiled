@@ -4627,6 +4627,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // the projection forms. First cross and trig homes remain.
 // Facing forward/up and rotated up field references, seven subsets 184/170/182/166/200/139/133,
 // then all with rotated forward 196. NOT kept: the first preload, cross and trig homes remain.
+// Branch-local pitch angle 118; stage pitch or roll trig values before shared result 124/118;
+// pitch angle with pitch or roll staging 124/118; both trig pairs staged 124;
+// all three 119, also with const branch values 119. NOT kept: the staged roll forms
+// repair the projection prefix but gain no points and leave the sine/cosine homes.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

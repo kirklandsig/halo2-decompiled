@@ -194,6 +194,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // Direct list/portal/both indexed records/direct list and portal 358/374/392/329.
 // Live-length link cursor/positive end cursor/consumed count/empty-range cursor 374/359/373/364.
 // The direct list form recovers the initial EBP save; both table reloads remain unresolved.
+// Sort count shared with fill 306; fill ordinal as sort scratch 319; unsigned sort count scratch 313.
+// Separate output bounds, available first 287 and cap first 288; in-place cap 287;
+// row ordinal or limit as sort scratch 357/319. NOT kept: the separate bounds reach retail length
+// without a score gain. Starting-cluster register and BSP table reloads still differ.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -376,6 +380,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Required index cursor at the stores 362 or row latch 315 (kept, plain); required-index
 // position/end 390/388; separate sorted cursor/sorted end 369/383; scoped sort scratch or
 // validity memset with the index cursor 359/359. The latch restores gain-based row addressing.
+// Sort scratch scoped at the common row latch 311; late order buffer 315; both 311.
+// Signed fill-count scratch 350; scoped unsigned sort-count scratch 375; row ordinal scratch 371;
+// output bound scratch 311; two bounds at the latch 361. NOT kept: the 311 forms
+// recover 0x428 but gain four and leave the BSP table spills.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
