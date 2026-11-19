@@ -280,7 +280,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 206 (was 206; 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
 // Earlier note (206, was 214): The frame is 0x24 against retail's 0x2c and the source arrives in ECX.
 // Earlier scores were 209 and 214 after the j-row correction.
@@ -786,6 +786,49 @@ void function_245400(s_source_245400 const *source, long index,
 // both codes in stack homes (stored after the widening, masked in the register, reloaded for the shift), the first
 // side in a stack byte and EAX unused through the plane code (frame 0x2c against 0x24 to 0x28), the edge in XMM3 to
 // XMM5, the cross's operand order, the same-side return with its own epilogue, and the rows.
+// Lane 13 r112 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH unless noted; control 206, aligned 244; aligned
+// counts in brackets). KEPT: the facing test as one condition, `if (!((same && facing > -eps) || (differ && facing <
+// eps))) return;`, 206 -> 164 (785 B, plain-confirmed, [193]): each side is read twice, so both are values ahead of the
+// plane-index compare, EBP is saved around the plane code only, the matrix is read from its home at its test and the
+// same-side failure has its own epilogue (`jne; comiss; ja; pop, ret; movss; comiss; jbe`), as retail. On it: named
+// plane indices 164 (same code); the dot written i, j, k 164; the edge after the long codes 164; the plane table read
+// late 166; the or operands swapped 160 (under the keep bar; retail tests the same-side arm first); the sides ahead of
+// the plane pointers 207; the sides from the short codes 213 (one epilogue); shifted sides 232 (752 B); the table
+// after the codes 205 (789 B); shifted sides with the table late 207 (767 B); the second code widened first 211, with
+// the table late 212.
+// On lane 1 r119's head (second record pointer, codes read again, table late; its two-test form [173] 212, 761 B):
+// the single condition [147] 212 (760 B), with main's rows 198 (783 B), with the scale select 194 (783 B); main's
+// if/else on that head 208; main's declaration order with it 234 (754 B); codes ahead of the points 234 (756 B). The
+// edge written as three member differences [152] (two tests) / [147] (single condition): the edge is then in XMM3-5
+// as retail's and the dot and the select agree (a helper body written out, match-only). Facing-test forms on that:
+// if/else [191]; if/else with braces [191]; an empty then-arm with `else return` [177] (two epilogues); the two tests
+// differ-first [154]; as two nested blocks [152]; the negated operands joined by `||` [152]; a forceinline bool helper
+// with two returns, with if/else returns, with a ternary, with a result local, a bool local set by if/else and a
+// ternary in the test [219] each (same code: retail's return layout, but the sides fold into one xor again); a helper
+// with two early `return false` tests [114] 211 (763 B, one epilogue); a helper with two positive returns [147]; two
+// positive `faces =` assignments under separate tests [120] 202. Vertex part, same code as [173]/[147] unless noted:
+// a vertex-table local; index locals; the second pointer written in the edge call; vertex record pointers; a `point`
+// local for the call (declared at the matrix test, after the first pointer [139] 212, after the second [171]); the
+// call's point by a ternary after the rotation; the transform in the call's argument; the transform's result unused
+// with `matrix ? &transformed : first` in the call; the second pointer reused for the call's point; records with the
+// existing edge helper [177] 194 (783 B); the second pointer first [180]; codes ahead of the points [192]; the final
+// call written in both arms of the matrix test 267 (832 B, 0x245aa0 22: the matrix becomes a register argument).
+// Order forms on the single condition: second code, table, first code [164]; named plane indices [153]; long codes
+// with dword-cast shifts [164]; the edge after the sides [145] 204 (763 B, frame 0x28; with the helper [174] 198), with
+// the table between the codes [166], after the plane pointers [174], after the codes [147], table first [166]; the
+// direction computed again after the test from the points [164]; the rows from the points again [184]; the edge
+// computed again inside the plane test, written out / helper / after the cross / on the kept body 204 (794 B) / 194 /
+// 181 (783 B) / 163 (791 B): each second computation is merged away and changes nothing in the head.
+// Diagnostics, restored at once: retail's EAX holds the second vertex pointer through the plane code. A float compare
+// through it after the facing test 239 (812 B, [117]): frame 0x2c, the first vertex pointer formed before its loads
+// (`shl ecx, 4; add ecx, edx; subss xmm3, [ecx]`), both long codes stored to homes and the first side in a stack byte,
+// as retail, with the pointer in ESI. The pointer stored to a scratch global inside the plane test 168 (783 B, [102]):
+// retail's frame, prologue, local `push ebp`, early first pointer and stack offsets, the pointer in EAX; stored ahead
+// of the index test 177 (783 B), after the facing test 192 (785 B), ahead of the call 205 (785 B). A null test of it
+// ahead of the index test, inside it or after the plane pointers [120] and `__assume(second != NULL)` after the test,
+// ahead of the index test or in the matrix block [120], ahead of the call [147]: no change in the head. Left: what
+// reads the second vertex pointer inside the plane test with no instruction; then the long codes' register roles
+// (retail widens the second code into EDX ahead of the table load and the first into EBP) and the float orders.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
@@ -814,12 +857,7 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 			vector3f local_12;
 			cross3f(&local_8->n, &local_9->n, &local_12);
 			real local_13 = local_12.k * local_6.k + local_12.j * local_6.j + local_12.i * local_6.i;
-			if (local_10 == local_11)
-			{
-				if (!(local_13 > -0.0001f))
-					return;
-			}
-			else if (!(local_13 < 0.0001f))
+			if (!((local_10 == local_11 && local_13 > -0.0001f) || (local_10 != local_11 && local_13 < 0.0001f)))
 				return;
 		}
 		point3f local_14;
