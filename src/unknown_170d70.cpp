@@ -1682,6 +1682,11 @@ struct s_pool_view_172840
 // reservation subscript postincrement 228; unsigned selection with signed publication 55.
 // NOT kept: the 55 forms recover the flag homes at 870 bytes but still place the sign extension
 // ahead of the retail link and key schedule and load the sentinel with a five-byte mov.
+// With independent failures and signed publication, template reference after predecessor,
+// key or both identifiers 55/55/55; direct buffer publication before reservation 140;
+// named wrapped enqueue index 55; full queue arm first 59; arena reference 55;
+// unsigned portal bit 55. NOT kept: the 55 forms recover the flag homes at 870 bytes,
+// with the key and list-index schedule still different and a five-byte sentinel load.
 // One state read 153, separate exclusions 153, branch admission 196, both sets separate 196, grouped per state 153.
 // Selected exclusion mask 217, traversability conditional 207, one state read with independent limit results 249.
 // Chained narrow publication then signed index 134, signed index first 86, with independent limits 243/241.
@@ -1959,6 +1964,10 @@ struct s_camera_reference_171830
 // separate plane result and clear-side assignment 298; indexed basis scales 363. NOT kept: fraction
 // bounds recover the 0xb8 frame at 1215 bytes, with the point still in EBX. The original 1219-byte
 // body is restored.
+// Shared direction workspace 275, with shared collision output 275. Scaled-add helper for sample,
+// refinement or both 270/270/270. Miss-first midpoint selection 291; endpoint decision after the
+// hit test 270; midpoint point setter 270. NOT kept: sharing the direction recovers the frame at
+// 1215 bytes with the point still in EBX. The other forms tie or regress.
 // One collision result for sampling and refinement 270, Shared collision result declared at center trace return
 // 270, Shared collision result declared in the entry phase 270, One direction workspace for both collision loops
 // 275, Shared result and direction across the two loops 275, Unsigned ray masks in both phases 270, Shared
@@ -2212,6 +2221,11 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
 // Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
 // The collision point still occupies EBX.
+// Guard-scoped adjusted distance 374, guarded input point copy 419, both 447,
+// immutable input point until clamping 473. Projection X through the retained
+// forward axis 357, with direct up fields 369; separate displacement vector
+// 304; three projected coordinates before their stores 295. NOT kept: the
+// guarded copies enlarge the frame or body, and the point still uses EBX.
 // Two horizontal offset channels by value with component expressions 385.
 // Two horizontal offset channels by value with shared dot product 385.
 // Two horizontal offset channels by value with shared cross product 385.

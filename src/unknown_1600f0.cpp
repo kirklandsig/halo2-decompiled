@@ -1213,6 +1213,9 @@ PRIVATE inline long score_string_list_1608e0()
 // score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and origin slots,
 // scroll-limit conversion and initial divisor spill still differ. Earlier fast check 678.
 // One-use caption phase at the division 671 (requires a match, reverted).
+// Frame 0x798 versus retail 0x79c. Viewer and coordinate homes,
+// the scroll-limit conversion and the initial divisor spill still differ. Earlier reduced check 678.
+// One-use caption-phase local at the division 671 (match-only, restored).
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
@@ -1567,6 +1570,9 @@ PRIVATE inline long score_string_list_1608e0()
 // origin or cursor 678/678, 700/700, 694/694. Copy origin after title, before caption
 // fade or at caption geometry 680/681. NOT kept: the one-point gain adds nine bytes
 // and leaves frame 0x798. Viewer and separate origin homes still differ.
+// Named score-buffer member and typed receiver 679/679, typed conditional 719, native team offset 681,
+// player score record 691, native team/player records 693, early player record 687, named player fields 691.
+// The 0x798 frame and viewer in EDI remain in the retail-length forms.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

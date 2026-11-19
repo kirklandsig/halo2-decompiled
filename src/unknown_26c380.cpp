@@ -740,6 +740,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // The return byte still uses +0xf rather than +0xe. Initial return byte as the blocked default, transition
 // default or both 244/244/244. Chained return/block clear in either order 382/383, chained transition clear 389.
 // Initialize the return from either published default 389/389. The direct uses leave the byte homes exchanged.
+// Separate crossing output at edge/sector scope, publish on traversal advance 387/387,
+// on any hit 380/380, on admitted crossing 380/380, or on advance without clearing the
+// consumed successor 413/413. NOT kept: separate output grows the frame to 0x68 and
+// leaves the return-byte slot and both cutoff branches unresolved. Original body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

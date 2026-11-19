@@ -883,6 +883,11 @@ struct s_item_collision_bsp
 // 311/322 for compound or aggregate rows and 343/353 when copying the input normal first.
 // NOT kept: every form grows the body, and early publication also grows frame 0xa0 to 0xa4.
 // The transformed normal and contact position registers and pending x87 spin scale still differ.
+// Left-axis products as a vector 192, all scalars 195, or row-local scalars 195;
+// output carrying left products into the row sums 196 or all sums before forward 194;
+// separate paired-product vector 193; separate left and up vectors 194; all three basis
+// vectors 246. NOT kept: all regress. The transformed plane's j input still misses its
+// retail XMM home through the three rows.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

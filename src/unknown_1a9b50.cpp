@@ -854,6 +854,10 @@ extern point2f *g_468778;
 // settings-first 375/374, actor-first 413/413.
 // NOT kept: the one-point gain leaves the late actor read. Actor-first forms
 // reserve 0x44 instead of 0x40, spill the actor and grow to 1555 bytes.
+// Unit handle in facing arm or at slot/facing boundary 389/385; live unit field
+// at the same boundaries 374/375. With actor lookup first 408/418/409/413.
+// NOT kept: the one-point gain leaves entry scheduling unresolved, and the
+// actor-first forms enlarge the 0x40 frame.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

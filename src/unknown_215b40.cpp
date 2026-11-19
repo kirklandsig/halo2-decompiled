@@ -375,6 +375,9 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // Select the current controller card by switch only on the two non-disk passes: 259.
 // Compute the current unit directly from the controller port and card ordinal: 276.
 // NOT kept: The sentinel-first switch ties at retail length. Changing the controller cursor or hoisting selector normalization raises the score and changes the extent. The cache still reloads after the built-in guard.
+// Common next-unit store 135, adjacent-unit default 177, pass advanced before selection 172,
+// separate next pass 183, pre-incremented output count for disk/built-in 213/164,
+// three-pass and one-pass defaults followed by adjustments 114/114. Cache and zero registers still differ.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

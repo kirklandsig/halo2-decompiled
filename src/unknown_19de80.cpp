@@ -823,6 +823,10 @@ static inline bool teams_enabled_19e1c0()
 // local 691, through a local copy 691, `token` through a local copy 691, both copies 691 (1170 B each, same code as the
 // plain result); the volatile result with the `remaining` copy 390 (same code). Copies of a parameter fold away before
 // the allocator weighs token against remaining.
+// Zero-result terminators for player names, team names, scores, or all 467/413/433/487.
+// Ordinary result for player, team, score, or cause names 691/691/691/691.
+// NOT kept: the team-name form reaches retail length but keeps the 0x208 frame.
+// Ordinary results recover the 0x204 frame and merge the name-copy tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

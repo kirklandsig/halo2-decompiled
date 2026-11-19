@@ -1312,6 +1312,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // masked 260, no gain in the count); the squad entry index masked `& 0xffff` in place of the word 252 (retail's
 // `and eax, 0xffff` but four instructions more); both 252; the squad bit started false and set under `if (squad)` on
 // this body 238 (masked 257); the three together 253. Body unchanged.
+// Shared direction at actor/settings/entry scope 237/237/237, aggregate direction 237,
+// component setter and shared setter 237/237, two named facing parts with separate/shared vector 237/237.
+// The EDI sentinel and the squad and query homes still differ.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

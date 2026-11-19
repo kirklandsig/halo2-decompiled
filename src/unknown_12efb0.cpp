@@ -792,6 +792,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Compound tag admission before the shared palette/default arm with a guarded lookup, conditional
 // record or explicit missing slot scores 714 with a word and 703 with a signed byte.
 // Testing provider validity first scores 832 with a word or 729 with a signed byte.
+// Select record base and ordinal before forming the pointer. Short slot with default
+// base, guarded/conditional 705/716; explicit base 709/617. Signed byte slot with
+// default base 721/720; explicit base 677/698. NOT kept: the provider and palette
+// registers remain different, including the 3818-byte guarded form. Original body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

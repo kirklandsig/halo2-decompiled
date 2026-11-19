@@ -5881,6 +5881,11 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // membership, feedback/offer, cancellation/removal, and the final membership phase
 // 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
 // NOT kept: these forms shorten the body and move the first difference before the friend query.
+// Session availability complement 134; origin complement 90; title-join restriction 118;
+// unavailable member/friend complements 211/90; origin after identity check 96;
+// separate membership request availability 89; known-contact exclusion 119.
+// NOT kept: the separate availability form ties and the other forms regress.
+// The query output stays displaced in the retail-length forms.
 // Session-presence name, player/change names, selection/request names, host/pending names,
 // addressed byte declarations after the dwords, pending false default, invalid-selection
 // guard with common completion, and immutable mute decisions: 89/89/89/89/89/353/89/89.
@@ -5893,6 +5898,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // emission 345; other-title join decision at emission 406; unmute decision at emission 328; both mute
 // decisions at their emissions 321; join, removal and promotion decisions at emission 420; all six
 // captured-input decisions at emission 454.
+// Online bit at the join test 443, origin calculated at admission 450, staged invitation 112,
+// removal permission reused for kick 275, shared roster/rank or complete management result
+// 374/361, shared mute eligibility 283, regular-friend result reused for removal 323.
+// All regress. The friend-query and later action byte homes still differ.
 // Matched in a full build with stand-in SDK headers (was 89): cancel_friend is one && chain (no `? : false`),
 // pending_member and change_member are two initialised bools (no if/else assigning both), and the joined-title test
 // is its own bool instead of a reassignment of can_join_title. The code was already retail's; these fix which bools

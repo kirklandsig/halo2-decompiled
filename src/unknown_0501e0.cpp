@@ -655,6 +655,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // condition) 314 (1192 B); round 96's macro transform (out of place, limits in the condition) on this tail 252 (1136 B,
 // frame 0x14, the first view loads its coefficients as retail but the scale takes XMM7 where retail keeps right.i, the
 // scale in XMM6); that macro applied in place 301 (1180 B).
+// Paired indexed view rows with separate/common scale tests 329/297, with shared
+// coefficient values 465/448, direct paired rows 367/335, separate completed
+// view results 477/454. NOT kept: all enlarge the frame and score higher.
+// The second displacement spill and the live right-axis coefficient still differ.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

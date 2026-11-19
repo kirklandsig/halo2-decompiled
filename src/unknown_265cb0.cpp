@@ -2822,6 +2822,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Contact step results declared in the while condition or advanced in the for loop score 168/168
 // and 753/753 as a node view and prop datum, respectively. Keeping the other object across both
 // actor-index reads scores 163/163 and 753/753. NOT kept: five-point gain at 163.
+// Post-increment loss/age/both 168/168/168; separate increment publication
+// loss/age/both 224/206/223; post-increment loss or age with shared actor displacement
+// and other-object field reads 162/162 at 2880 bytes. NOT kept: the six-point gain
+// leaves a score above 30. Player iterator and scoring registers still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
