@@ -330,6 +330,16 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // (1373 B); the send test with the has-host term first 419 (1356 B); diagnostic, the has-host flag started false and set
 // in the call's arm (match-only) 402 (1376 B); the reliable window passed straight into the ratio 356 (same code).
 // 0x75910's byte result stays BLOCKED-BY 0x75910 (its file was another lane's this round).
+// M3 lane 13 r122 (fast with 0x75910/0x76520/0x765c0/0x77940/0x89030, all MATCH each time; control 356, aligned 194):
+// `bool local_16 = false;` declared beside `local_7` ahead of the has-host call (a constant initialiser moved up; retail
+// stores two false bytes from a zero register there) 353 (1370 bytes: `xor ebx, ebx`, `cmp [eax], ebx` in the search and
+// the two `bl` stores appear as retail's, the index in EBP); with 0x75910 returning bool (round 136's held form) and the
+// has-host arm as `arg_3 = arg_4 = true` 352; 0x75910 bool alone re-measured 355, with the chained arm 354; the two NONE
+// locals ahead of the found test on the bool callee 406 (1371 bytes); on the 352 form every channel field read as
+// `((s_75fc0 *)&arg_0->channels[local_0])->` with no pointer local 436 (1389 bytes), the pacing test as `!(local_17 > 0
+// && 1 / local_22 > local_17)` 352 (aligned 189), the same on the 353 form 353 (aligned 190). Left on 352: NONE in ESI and
+// `this` in EDI at entry, the channel base `this + index * 0x528` (0xa8 folded into every field), the 0x76520 result in
+// BL, the window size in EDI, the counter snapshot as two plain loads, and the has-host flag set in its arm (match-only).
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,
