@@ -514,6 +514,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // condition and the result set in if/else arms 52 (90 bytes, [36]). Every plain-string form ends the result's AL life
 // early (two exits), which frees a register for the string; retail keeps the result in AL across the scan and the
 // string on the stack.
+// M3 lane 6 r197 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time unless noted): the sign tests nested 21
+// [match]; the length kept unsigned with a `(long)` compare 21 [match] (same code); the body as a const member of the text
+// aggregate in 0xb61d0's shape (`string = bytes`, `start += (long)string` after the clamp, both calls through the cast) 48
+// (93 bytes) [82]; a trivial forceinline identity around start or count in the sign test, or around the length in the
+// compare 21/21/21 [match] (all fold away: no rotation step).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

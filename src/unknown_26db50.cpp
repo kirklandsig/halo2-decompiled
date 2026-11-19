@@ -1084,6 +1084,16 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // point-along-vector helper (`result->x = vector->i * t + point->x`, the shape the other files' copies have) for the trace
 // endpoint 45, for the 0.1 offset 45, for both 51; the collision point through `point3f const *hit` at the three offset
 // reads 42; the axis re-read into a `vector3f const *` local for the three offset statements 45.
+// M3 lane 6 r198 (fast with 0x1ecf50/0x26d100, both MATCH each time): the z offset computed first into a reference-bound
+// local (not forwarded, unlike a named z) and stored last 21, initialised then bound 21 (the rotation is retail's: first
+// difference +0x2aa); the marker and entry pointer at the top of the success block 22, marker first 20; the reference-bound
+// z with the marker-first block 15 (only the offset block left: retail computes x, y, z in order through XMM1 with 0.1 in
+// XMM0, ours z first). The lift through the existing vector3f_add_scaled from a separate endpoint local or in place 177/177
+// (1082 B: the axis's k becomes a memory operand in the rotation), with the marker-first block 179/179. Diagnostics on the
+// marker-first block: only the collision point's z read first through a reference 39, only the axis's k 40 (neither gives
+// retail's rotation); the z tree into an unread reference-bound local 20 (removed before it counts); the lift loop counted
+// down 42 (rotation ours). Reading: only a live z offset tree ahead of the y tree gives retail's rotation, which computes z
+// first where retail does not, so retail's (j + i) + k comes from its rotation helper (the held private-helper match).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

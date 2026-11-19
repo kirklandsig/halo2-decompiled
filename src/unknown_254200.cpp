@@ -593,6 +593,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // lookups moved inside the flag test 152 (first +0x0); the alpha as `long` 133; the texture tests as `!= NULL` 2 (same
 // code); the alpha product named before the byte conversion 2 (same code); the colour's three components read into
 // named `real const` locals ahead of 0x1cf50 377. The reload pair after the second texture reservation stays swapped.
+// Round 195 (m3 lane 6, fast with 0x254490 4 and 0x254200 matched; control 2): the file's prototype and extern
+// declarations in reverse order 2; every shader block's texture-mode store written ahead of the combiner count (as
+// 0x254200) 2; the draw-ready flag defined as bool 2; the two lookup helpers defined after the colour helper 2; all
+// four together 2 (all the same code). No matched caller of the reservation helper has a true two-value reload pair,
+// so no matched function shows this build emitting retail's first-defined-first order.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

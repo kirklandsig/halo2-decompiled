@@ -227,6 +227,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // swapped and the model loop's EAX copy of the screen): the flag as `char` 23; a `const` pane pointer 23; the text
 // test as `text != NULL && animating` 23; the text loop's tests as `if (!text || !animating) continue;` 23; the text
 // loop's counter reset as `i = 0;` ahead of `for (; ...)` 23; the same for the model loop 23 (all the same code).
+// M3 lane 6 r197 (fast): `int i` 23 (same code); on the first loop's `for (i = 0;` under `long i = 0;` (66, re-measured): the
+// text loop on its own `for (long t = 0;` counter 66, the model loop on its own 66, both 66 (every reset is then `mov` from
+// the one zero register EBX, and the zero-register difference is not per loop).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

@@ -1169,6 +1169,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // results after accepted seeks separately, as case locals, or as a shared value 34 each. Verified request size for
 // offset advance 128, and for signature input and advance 139. Verified header count for signature input 34. NOT
 // kept: the entry total and case extent stay in EAX and ESI.
+// M3 lane 6 r195 (fast; control 34): the direct arm's size as `size = body_size; size -= body_offset;` 34 (same code); the
+// signature position written at both of its uses with no local 221 (694 B), with the entry total folded too 217 (694 B); both
+// position locals typed long 34 (same code); the total folded alone re-measured 88: the entry is then retail's and the signature
+// case's scratch registers are exactly one rotation step ahead (ECX/EDX/EAX for retail's EAX/ECX/EDX), the step retail spends
+// on its hoisted body_size in ECX where ours keeps it in ESI.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

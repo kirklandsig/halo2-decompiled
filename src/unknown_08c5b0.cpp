@@ -246,6 +246,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // controller looked up ahead of the selector 15; the controller and its old setting read ahead of the selector 24; the
 // change test as `old_setting != setting` 5; a top-level const request parameter 4 (same code); the selector with early
 // returns (`if (kind != 1) return 1;`, then the availability test) 4 (same code).
+// M3 lane 6 r198 (fast with 0x8c5b0/0x8c660): the kind as a `short const &` bound to the request field (plain) 32
+// (95 bytes, folded); the controller index read into a reference-bound local 4; both reads through a reference-bound
+// copy of the request pointer 4 (diagnostic); the controller pointer declared at the top and assigned after the
+// selector 4; the availability and selector helpers defined ahead of the controller accessor 4 (all the 4s same code).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

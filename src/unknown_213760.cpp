@@ -1872,6 +1872,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `*handle` with a close handle local 114 (917 B); the write handle local ahead of the header 6 (same code). Probes
 // (diagnostic, one dword load and store): in the write block they give the write retail's registers (header EDX, the
 // handle pushed from EAX) but the close's `mov ecx, eax` copy then drops, as round 195's write-local form.
+// M3 lane 6 r195 (fast, round 117's generator; control 33, the 7 / 6 / write-local forms re-measured 7 / 6 / 114): with the
+// write handle local, the not-resized arm storing a zero count 105 (932 B), `written = bytes_written == 0x800;` 107, the plain
+// header-read arm 119 (914 B). On the write-local form (write exact, only the close call's `mov ecx, eax` copy missing): the
+// close test through `file->handle` 114, the invalidating store through it 114, the write local const 114, the close argument
+// through a const cast 114, the write local read through the field's address 114, the close argument rebuilt from the table
+// element 114, the count declared at the mismatch block's scope 114, the invalid-handle constant first 114. Matched 0x2141f0 writes
+// the same header through a named `s_file_handle handle = file->file;` local, so the write local is the code base's idiom.
 // @retail 0x213970
 void function_213970(void)
 {

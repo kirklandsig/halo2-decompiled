@@ -475,6 +475,11 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // retail returns ESI (`mov eax, esi`) at the walk and the frame copy at the miss arm's close; the same with the walk's
 // own return dropped 145 (508 B); with the miss arm written first (negated hit test) 138 (same code). A pointer to
 // result written in the walk (diagnostic) 138 (same code).
+// M3 lane 6 r195 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77): the allocation and the eviction walk as one
+// forceinline helper returning the index, the caller closing with `if (result == NONE) return result; initialize =
+// true;` 110 (522 B), with `if (result != NONE) initialize = true;` 115 (506 B), with `initialize = true;` 102 (493 B); the
+// walk iterating in cache_index itself 77 (same code), that with `if (result != NONE) initialize = true;` closing the
+// else arm 85 (504 B, round 99's code). Body unchanged.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
