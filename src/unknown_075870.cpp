@@ -2487,6 +2487,9 @@ void __stdcall function_78880(void *p)
 void link_connection_connect(s_type_99af70 const *address, s_link_connection *connection, bool initiator);
 long function_75890(long time);
 
+// Matched in a full build with stand-in SDK headers (was 8): the attempts count is read through a reference bound
+// before the two time stores, and the channel's address is passed through a reference-bound local.
+// Before:
 // score 8 (was 160; was 180 before that; the text up to the b15A paragraph describes the old 160 layout, which the
 // `due` form below removed): no behaviour difference found. The prologue and the
 // state-2/5/9 setup now match (retail reads observer->configuration separately in
@@ -2582,12 +2585,13 @@ void s_network_observer::function_776a0(long channel_index)
 				return;
 			}
 		}
+		short const &attempts = channel->attempts;
 		channel->time98 = 0;
 		channel->time9c = 0;
 		bool due;
-		if (channel->attempts >= 0 && channel->attempts < count)
+		if (attempts >= 0 && attempts < count)
 		{
-			long delay = delays[channel->attempts];
+			long delay = delays[attempts];
 			due = function_75890(channel->time) >= delay;
 		}
 		else
@@ -2607,7 +2611,9 @@ void s_network_observer::function_776a0(long channel_index)
 			}
 			else
 			{
-				link_connection_connect(&channel->address, connection, true);
+				s_type_99af70 *address = &channel->address;
+				s_type_99af70 *const &kept = address;
+				link_connection_connect(kept, connection, true);
 				if (channel->state == 5)
 					network_observer_set_channel_state(observer, 6, channel_index);
 				else
