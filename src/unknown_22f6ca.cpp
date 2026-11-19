@@ -230,6 +230,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // M3 lane 6 r197 (fast): `int i` 23 (same code); on the first loop's `for (i = 0;` under `long i = 0;` (66, re-measured): the
 // text loop on its own `for (long t = 0;` counter 66, the model loop on its own 66, both 66 (every reset is then `mov` from
 // the one zero register EBX, and the zero-register difference is not per loop).
+// M3 lane 3 r266 (fast, control 23): the text loop's tests nested as `if (text) { if (animating) ... }` 23; the model
+// call and its animation read through a `c_class_1a2c81 *parent = screen;` declared in the model loop's body 23; the
+// text definition named before its call 23; the model definition named before its call 23; the text loop's animation
+// read through an explicit base-widget cast 23 (all five the same code).
 // M3 lane 4 r221 (fast, with the file's 10 matched functions): an `s_type_0cfb31 const &` to the screen's animation
 // record read for the start in the model loop 23, in the text loop 23, in both 23; the text loop's start through the
 // class's inline function_22e957 wrapper 23, both loops through it 23 (all the same code). Diagnostics: the text helper

@@ -1556,6 +1556,9 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
 // score 551 (was 551; earlier 580): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
+// score 551 (was 580): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
+// Count, clearance and prism-index homes differ. The square precedes the nonempty branch.
+// The axis reload and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
 // MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
 // Retail saves ESI and walks the prisms from &prism->plane.j (the plane's i at [esi-4], the point count at [esi+0x14])
 // where ours saves EBX and walks from &prism->point_count (the plane's i at [esi-0x18]); the first accumulator has
@@ -2047,6 +2050,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // zero-based edge loop (`points[edge_index]`, `points[(edge_index + 1) % point_count]`) 602 (2885 B); `bool inside = true;`
 // right after the plane distance 549; the nearest reset right after the plane distance 548 (masked 443; both moves under the
 // keep bar); the plane distance through dot3f 567 (2893 B); the squared radius ahead of the shape query 616 (2857 B).
+// M3 lane 5 r203 (fast with 0x16a440, 0x120790, 0xc2d00, 0x17a380 and 0x2469b0; control 551): both square roots (direction,
+// half) of the sum written `(i*i + k*k) + j*j` 551 (the x87 sums then run k, i, j; retail i, k, j at both sites); the sums
+// accumulated in a double i, k, j 634 (2902 B: retail's order, but the frame grows); the vertex clamp as `count =
+// point_count; if (count > 8) count = 8;` 552; the final averages written inverse first 551 (same code); the ray arms as
+// `if (use_normal) { normal } else { edge }` alone 547 (2868 B, an arm swap under the keep bar).
 // M3 lane 4 r215 (fast, control 551; aligned/masked = difflib-aligned exact/register-masked counts, control 363/139): the
 // edge loop from 0 with `long next_vertex = (vertex + 1) % prism->point_count;` named at its top 619 (2904 B, frame
 // 0xb968, aligned 361, masked 115: the clamp, the early inc/idiv and the loop tail are then retail's shape); with
@@ -2071,6 +2079,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `if (use_normal) { normal } else { edge }` 539 (2868 B, a swap picked by score). The arm swap alone on main 547.
 // Diagnostic: 1..7 dead initialised locals on main 558/558/558/555/554/553/553 and on the 542 form
 // 553/553/553/546/545/544/544, so the operand sides here are not a symbol-count state.
+// Grouped surface sums with aggregate or separate initialization 538/538, grouped counts
+// and clearances 567, counts before initial sum copies 551, shared plane components 540,
+// named projection products 565, early nearest reset and common projection scale 564,
+// prism ordinal before the query 553. NOT kept: grouping moves the sum slots, and cached
+// plane components eliminate retail coefficient reloads and move the prism cursor.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

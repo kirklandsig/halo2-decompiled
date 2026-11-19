@@ -775,6 +775,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // `& 0xffff` 135; TAG_GROUP at each compare with `& 0xffff` 135; main's instance pointer read twice with `& 0xffff` 152
 // (re-measure). Reading: the unfused group read needs the instance pointer read twice, the table stays in EDI only when
 // the group is read once; no form gives both.
+// M3 lane 12 r148 (fast with 0x2243c0/0x224d90/0x173ba0, all MATCH each time; main 117): lane 1 r59's reference chain
+// rebuilt on this main (the type-14 search through vertex_input_index) 8 at +0x9e, the same eight lines (pass definition
+// EDX where retail reuses EAX, material tag ECX for EDX, material definition EDX for EDI, the zero's `xor` after the
+// definition's +8 read where retail has it between the tag's `and` and `shl`). On the chain: the first cache zero between
+// the pass and material definitions 23; all four zeros ahead of the pass definition 60; all four between the two
+// definitions 13; the material definition named in a plain local before its +8 read 8 (same code); that definition bound
+// as `void const *const &` from the tag-data accessor 92 (552 B). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

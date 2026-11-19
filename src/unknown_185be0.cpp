@@ -132,6 +132,12 @@ union s_185be7
 };
 
 // score 396 (was 396): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
+// M3 lane 3 r268 (fast): the input-record copy ahead of the two angle conversions 395 (the copy then precedes the angle
+// stores as retail, registers unchanged); that copy first with the second angle converted first 393 (the pair then takes
+// retail's XMM7/XMM0 and only the conversion constant stays in XMM2 where retail has XMM1, which retail frees because it
+// treats 0x24590 as clobbering); both a gain under the keep bar from statement order only. The angle pair read through one
+// `real *` pointer 957; the pair copied as one vector2f and scaled in place 949 (3772 bytes); the range fraction as one
+// conditional expression with the clamp inside 911 (3788 bytes). Still BLOCKED-BY 0x24590 (its file is avoided this round).
 // MiniMax E (11-17): no new form, no lower score (590): the body is still two bytes over retail's 3777, the control global is still carried in ebx from the entry block where retail reads it into ecx a second time at the flag test after the magnitude and pow calls, and the only spelling seen to reproduce that reload takes the global's address, which this lane may not do.
 // MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
 // `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on
@@ -674,6 +680,10 @@ union s_185be7
 // (same code); the factor as a file-level `static real const` for all four uses 396 (same code); the source row through one
 // `real const *` for both components 957. The XMM numbering follows the clobber set of 0x24590 (its file is held this round):
 // BLOCKED-BY 0x24590 still.
+// M3 lane 13 r115 (fast, all restored): the range-fraction clamp as `if (v < 0) v = 0; else if (v > 1) v = 1;` 396 (same
+// code); the fraction declared without a value and cleared in an else arm of the span test 942 (3740 B), with the
+// if/else clamp too 942; the quotient clamped inside one PIN expression 932 (3791 B); the exponent named for the test
+// and the power call 634.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

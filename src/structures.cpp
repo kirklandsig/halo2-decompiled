@@ -551,6 +551,15 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // tested only after the first vertex); that uninitialised success-only flag gives 165 (163 with
 // other declaration orders; 119 with an uninitialised definition), but it reads an uninitialised
 // flag and drops the checks on the second and third vertices, so HEAD's body stays.
+// M3 lane 3 r268 (fast with 0x14a8e0, 0x14af40, 0xd47d0, all MATCH): lane 7 r123's form rebuilt (vertex getter's
+// result left unset on a miss, result/definition/section initialised at their declarations, unknown18 stored before
+// part_index) 208 with a bool result, 222 (736 bytes) with the byte result; on it the clear as a one-field memset 208
+// (same code), the type tests as a switch 218, and the declarations as definition, section, result 133 (733 bytes: no
+// zero register, the section's NULL store through the definition's EDI as retail, but the range never takes EBP in
+// the head, so EBP is pushed only before the loop and every home sits four bytes low; the section then stays in EDX
+// into the loop and NONE takes ESI); range declared first on that 133 (same code). Diagnostic: without the clear the
+// 133 form puts the range in EBP as retail (182, 729 bytes). Not kept: a declaration order picked by score and the
+// unset getter result give no match.
 // Tried: output declarations reordered 185; outputs renamed 185; part index/unknown stores swapped
 // 185; bool result 197; success-only flag 235, with bool result 221; instance index at each use
 // 226/227/201; vertex loop with a break 287; inverted ternaries 165; surface range index at each use
@@ -789,6 +798,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // instance_index's declarations, and range never wins it here. 19 of the 24 orders of the instance_index, result,
 // definition and section declarations (screen): three states only, aligned 19 (the lead's), 36-37 (result ahead of
 // instance_index) and 70-75 (section ahead of result).
+// M3 lane 13 r115 (fast, 0x14a8e0, 0x14af40, 0xd47d0 MATCH throughout; all restored): lane 7 r123's form rebuilt 208 at
+// 726 B (zero still in EBP); on it: definition and section cleared by statements after the declarations 208; the empty
+// count's early return giving `result` 208; `if (!section) return result;` with the loop unnested 212; the count test
+// as `!= 0` around the rest of the arm, no early return 227 (707 B); the section declared as a const pointer 208.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

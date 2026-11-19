@@ -347,7 +347,7 @@ PRIVATE __forceinline byte *score_next_entry(s_record_pool *data, long *cursor, 
 }
 
 // @retail 0x23f260
-long function_23f260(long mode, long player, long excluded_team)
+long function_23f260(long player, long excluded_team, long mode)
 {
 	long better = 0;
 	long tied = 0;

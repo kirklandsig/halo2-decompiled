@@ -259,6 +259,14 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // indexed/cached terminator 79/92. With the indexed clear, form the destination before conversion 67
 // or publish the result before the clear 80. NOT kept: the closest 208-byte forms still use frame 0x24
 // and keep the list base in a register instead of reloading it after concatenation.
+// M3 lane 16 r141 (fast with 0x24a09b): a loop-top entry pointer used for the search test only, the found uses and the
+// terminator indexed 84 (197 B: the found address and the terminator share EBX); that with the plain arm through the
+// pointer 90 (184 B); the pointer for the field_4c uses only 75 (196 B); for every append-arm use with the test indexed
+// 75; for the test and the append arm 75 (196 B: frame, base spill, index in EBX, terminator and plain arm as retail;
+// the pointer stays the induction register in ESI where retail runs a scratch cursor and re-forms the entry from the
+// index), with the plain arm through it 83; the search loop then the found block under `if (i < count)` 69 (201 B: the
+// cursor is a scratch ECX as retail but copied to ESI each pass, and the count test is extra); a test-in-condition
+// search loop 87 (187 B).
 // M3 lane 13 r114 (fast; aligned/masked [28/11] on this body). Lane 10 r119's two-member aggregate re-measured 39
 // [17/3]; on it a plain `if (append && entries[i].field_4c[0]) { entry ... } else ...; break;` 39 (same code), every
 // access indexed 64, the terminator through `buffer` 65 or `entry` 54, the ascii argument indexed 52, no `buffer`
@@ -293,6 +301,14 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // terminator 80, `i != count` 59; the found block after a writable name local assigned to the result first 80;
 // `result = entries[i].field_0c;` before the append test 66; the loop-top entry used only for the terminator 84, and
 // for the terminator and the plain arm 96.
+// M3 lane 12 r148 (fast with 0x24a64d/0x24a763/0x24a52b, all matched; main 67), on lane 10 r119's 39 form (re-measured 39:
+// it differs from retail only in that the found index's product i*0x248 is shared by the entry pointer and the terminator,
+// so EBX holds the product and i lives in ECX, where retail keeps i in EBX and multiplies again after the library calls):
+// a `use_suffix` flag set under the append test and tested after it 68 (211 B: threaded on the append path, product still
+// shared); the terminator's offset written size-first as a byte offset 39 (same code: the product is canonicalised); the
+// terminator indexed through `long const &found = i;` 39 (same code); the buffer named before the suffix conversion with the
+// suffix declared in the arm 44. Diagnostic (behaviour change, reverted): the append arm continuing the loop 59 (211 B).
+// Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

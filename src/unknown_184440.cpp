@@ -442,6 +442,11 @@ __forceinline bool function_184448(long arg_0)
 // bytes). Read in the entry block: retail takes the start face (arg_3) in EDI, clears the record's home with an
 // immediate store and never holds the record or the list in a callee-saved register, where ours takes the face in
 // ESI and keeps the record in EDI and the list in EBX; none of the five forms moves that.
+// M3 lane 13 r117 (fast, control 965): everything after the definition lookup as a new forceinline inner function
+// taking the looked-up pointers 965 (same code); the same split right after the record/list choice 976 (4575 bytes);
+// the entry surface through an element pointer (retail forms its address with a lea and reads +6 through it) 965;
+// the block count named before its compare (retail loads it into EBX first) 965; both 965; the group entry through
+// its own element address 965 (the four are the same code: the pointers are folded away). Body unchanged.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

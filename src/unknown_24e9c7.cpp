@@ -609,6 +609,15 @@ struct s_24e9c7_points
 // Quad aggregate from one shared origin before size, after across, after height or after half width:
 // 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
 // NOT kept: The across-y spill and the returned-height home remain different at retail length.
+// M3 lane 1 r126 (fast with 0x24e59f/0x22a664, both MATCH; control 125, aligned 87): the size read ahead of the bitmap
+// pointer 125; the scale read there too, ahead of the size 125; the side point declared ahead of up 125; back, side, up
+// declared in that order ahead of the up products 125; the corner record declared ahead of up 125 (all the same code).
+// M3 lane 11 r122 (fast with 0x22a664; control 125, register-masked aligned 94; a compile-only /O1 screen reproduces
+// this body): re-measured lane 7 r183's side point set to the across products and scaled later 144 (746 B), with `size *
+// (0.0f - forward_j)` 139 (742 B, masked 105), with compound scaling 139; new: the back point written as the negated
+// half-width products of the across locals (a second use of each) 154 (753 B, masked 109), with `size * (0.0f -
+// forward_j)` 137 (749 B, masked 119). Compile-only, forward i and j read into locals for the across and up products
+// leaves the products late (same order as main). Each early-product form leaves the result home at [ebp-8].
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

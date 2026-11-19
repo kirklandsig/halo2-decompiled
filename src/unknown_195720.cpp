@@ -154,6 +154,11 @@ bool function_1946f0(s_bitstream *stream)
 // `(unsigned long)` index 2; the count as `size_in_bytes - (byte_index + 1)` 2. Compile-only probes (small model): a
 // plain indexed load or store folds index first (`mov [index + data], bl`, as 0x1957d0 does), while a read-modify-write's
 // address and a memset's start are formed data first in every spelling tried; retail has both LEAs index first.
+// M3 lane 3 r266 (fast): the mask and the clear in a forceinline (stream, byte index, bit offset) helper given `saved / 8`
+// and `saved % 8` as expressions (parameter-only values) 2; a `byte *const *` to the data field formed after the index
+// and read at both addresses 2; a `byte *const &` bound to the field after the index 2; the byte mask named before the
+// index 2 (all four the same code, both LEAs data first); a named next index (`byte_index + 1`) for the count and the
+// clear 24 (the size load moves ahead of the accounting store).
 // M3 lane 4 r221 (fast, with the file's 18 matched functions): the mask's bit offset named right after the pop, at the
 // function's top, 2; the masked byte as `*(stream->data + byte_index) &= ...` 2; the clear's start as
 // `&stream->data[byte_index] + 1` inside the `count > 0` test 2; the two count tests as one `count >= 0 && count != 0`
