@@ -2554,6 +2554,15 @@ void function_cfec0(long unit_index)
 // NOT kept: no exact separate NONE exit; original body and lazy saves restored.
 // MiniMax S (11-17): no new form, no lower score (1): the one difference left is still the branch at the NONE test, where this build's greater-than test gives jle and retail has je; the equality test with the body as the then arm gives retail's branch but folds the NONE exit's value into the constant (2), the same with the parameter copied into a local of its own (2), the equality test as an early return (92) and the one's complement form (96, which builds not/test instead of cmp); a local copy of the parameter that the body reassigns measures 46 and 47 and shortens the body to 247 bytes, so the copy goes to memory and the branch and the exit cannot both be had from one source shape.
 // MiniMax C (11-17): no new form, no lower score (1): the entry branch is still jle where retail has je; the equality spelling gives retail's je but VC folds the NONE exit to or eax, 0xffffffff again (2), and dropping the inner returns to one return at the end moves retail's lazy pushes into the prologue (62), so the jle spelling stands.
+// MiniMax A (11-19): no new form, no lower score (1): the one difference left is still the branch at the NONE
+// test, where this build's greater-than test gives jle and retail has je. The equality spelling gives retail's
+// je on EBX but VC then folds the NONE exit's register copy to the constant (2). A copy that all four exits
+// return keeps the copy alive - the exit is no longer folded - but the copy takes EBX and the test moves to
+// EAX, which loses retail's `mov ebx, eax` prologue (47). A copy that the test and the lookup share is
+// propagated back into the parameter, so the branch matches and the exit folds again (2); the same copy
+// tested and returned on its own gives the test on EAX (47). One exit at the end merges the four epilogues
+// into one and moves retail's lazy pushes into the prologue (113). Retail's exit block has a single
+// predecessor, so no merge can restore the copy there.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -4799,6 +4808,15 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // the forward, result and seed pointers, this build forms the pointers first - and the callee's parameter list
 // is in src/unknown_146240.cpp: BLOCKED-BY 0x146320.
 // MiniMax S (11-17): no new form, no lower score (2): the only difference left is that retail spills the sampled speed before it forms the forward, result and seed operands, where this build forms them first; that order comes from the cone helper's own convention in another file: BLOCKED-BY 0x146320 (src/projectiles.cpp).
+// MiniMax A (11-19): no new form, no lower score (2): the one difference left in the whole body is a single
+// swapped pair in the cone call's setup - retail spills the sampled speed (`fstp dword ptr [esp + 0x18]`)
+// and only then forms the forward pointer (`add ecx, 0x168`), this build forms the pointer first and spills
+// after it; every other instruction, the frame and the length agree. The spill is the x87 value's store,
+// which has to happen before the call, and the `add` is the last piece of the forward argument, so the order
+// of the two is the scheduler's tie-break rather than the source order (inferred, not measured). A permuter
+// run (5 plain tries and then 13 annealing tries over the whole body, 373 s) found no variant below 2: the
+// annealing walk's variants scored 2 eight times, 6, 15 and 90 once each and two failed to build. The order
+// comes from the cone helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x146320.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {

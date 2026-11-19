@@ -1513,6 +1513,30 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // positive normalize branch 91; named normalized length 73; shared weapon normalization with separate
 // flag defaults 109; nested point-publication guards 77; common switch exit and combined normalize guards 73.
 // Reduced control 73; the swapped Boolean homes and aiming registers persist.
+// MiniMax A (11-19): score 36 (was 72): retail has two exit blocks, the plain one at 0x296aaa that returns the
+// result flag and the failure one at 0x296d22 that stores 0 to the result flag before returning it, and the
+// failure block is reached from the two remembered-branch failures (0x2969e0 and 0x296ae3) and from the two
+// normalize failures (0x296a6a and 0x296d16), while this source has one `done` label, so the failure paths
+// never stored the flag and the two Boolean homes came out the wrong way round (this build's result flag
+// landed above the presence byte). Storing the flag on the four failure exits as retail does - `result =
+// false;` before the trailing `goto done` of cases 1 and 2 and before the two normalize failures - gives
+// retail's homes, and `point_valid = result = false` at the entry gives retail's store order (the result
+// flag first). Round 264's diagnostic measured the same idea at 38 and called it a diagnostic; it is retail's
+// own failure block, so it is kept here. The matched neighbours 0x297a50, 0x297660 and 0x2980d0 stay matched
+// and every other function of the queue keeps its score. What is left is one instruction: the body matches
+// retail's instruction for instruction up to the weapon block, where retail loads the direction into EDI and
+// reloads the actor index from its home (`mov eax, dword ptr [esp + 0xbc]`, 7 bytes) for the 0x1ffbd0
+// argument, while this build keeps the actor index in EDI (`mov eax, edi`, 2 bytes) and gives the direction
+// EBX; that five-byte difference makes the body 1440 bytes against retail's 1444, so the jump table sits four
+// bytes earlier and the branches to the failure block name a different address. The forms tried for it (the
+// weapon locals scoped in the block, the 0x1ffbd0 result assigned inside its test, `aiming && (weapon_index =
+// ...) != NONE`, the fallback as `if (result) goto output_point;`, the actor index read through its address, a
+// local copy of the actor index, the two calls through a forceinline helper, a local for the direction pointer)
+// all compile to the same code, so this is the register allocator's choice and not the source's. A full-image
+// permuter run on this body was stopped at its time limit without scoring a variant (baseline 33 differing
+// instructions in the full image; the reduced image cannot score this function at all, as it builds it 36
+// bytes shorter there). The two 0xcafc0 blocks now match again.
+// MiniMax A (11-19), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

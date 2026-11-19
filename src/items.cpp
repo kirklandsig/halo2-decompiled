@@ -2238,6 +2238,15 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // NOT kept: both captured-bit OR forms tie. Direct success restores +0xf and
 // shortens the body by 18 bytes. The logical join still spills the return byte at +0xe.
 // MiniMax R (11-17): no new form, no lower score (140): the result byte sits at [esp+0xe] where retail has [esp+0xf], the flag clear is a load, an and and a store where retail has a byte read-modify-write, and the impulse helper is shared here where retail has two inlined copies; a permuter run over the body (17 tries, 308 s) found nothing below the 140.
+// MiniMax A (11-19): no new form, no lower score (140): the three differences that are left are all frame or width
+// ones. The returned flag lives one byte lower here (ours [esp+0xe], retail [esp+0xf] in the same 0xac frame), and
+// retail keeps the event buffer at [esp+0x28] with the damage record at [esp+0x38] where this build keeps the buffer
+// at [esp+0xb0] and the record at [esp+0x2c]. The release flag is a byte inside a union with word bitfields, and this
+// compiler writes that union member through memory (a load, an `and` and a store) where retail masks the byte in
+// place (`and byte ptr [ebp+0x12c], 0xdf`); a narrower view of the field's own address would give retail's
+// instruction, but that is a cast of the field's own address. Retail computes the release impulse twice, once in
+// each branch, with the two flag clears around the two copies, where this build shares one copy - BLOCKED-BY the
+// transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
