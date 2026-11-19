@@ -1284,6 +1284,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Indexed byte rows with low word/mask/available first/guarded assignment 237/252/353/371.
 // Typed rows with the same four lookup forms 237/252/353/371. NONE is still in EDI;
 // retail reloads the squad index and holds NONE in ESI.
+// NONE still occupies EDI rather than ESI, with different substitution homes.
+// Positive successor block 237, conditional successor block 349, successful
+// continue 844, positive adoption with settings in the increment 494.
+// Nullable squad fallback for the first, second or both palette selectors
+// 341/340/341, both with the positive successor block 341.
+// NOT kept: the first form ties. The other forms grow the body, and the
+// continue and increment also increase the frame to 0x12c.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

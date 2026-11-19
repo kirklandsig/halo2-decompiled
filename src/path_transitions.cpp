@@ -1082,6 +1082,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Early root and actor allocation still differ. Second-edge start/end/both addresses after the
 // first normalization 311/335/229, or inside the positive-length arm 334/336/361.
 // Both addresses with the second vector scoped there 229/361. All forms regress.
+// Retail retains the root in EBX before the actor load at entry.
+// First, second or both end vertices read at their differences 355/336/339.
+// Direction scaled from the vertex directly or through one vertex base
+// 379/379, and with both end reads 354. Staged projection and origin
+// products 220, and with both end reads 339.
+// NOT kept: all scores rise. The current frame and input handoff remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

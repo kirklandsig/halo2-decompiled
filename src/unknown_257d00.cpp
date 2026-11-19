@@ -2496,6 +2496,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // `return 1` / `return 0` exits and no result local 639 (2368 B, masked 75); with case 18's references in two named locals
 // checked one at a time and case 6's flag byte named for two stores 624 (masked 54; case 6 still folds to `or 0x69`); case
 // 18's named references alone 528 (2424 B, swapped); case 13 through the shared exit 478 (2400 B, masked 84).
+// The frame and entry ownership hold, with a longer dispatch branch and different
+// copy-carrier registers. Release-direction assignment 433; requested and settled
+// direction snapshots 519/433; release and delayed workspace names 433; inverted
+// turn decision 433; byte turn decision 433; fallback value selection 589; named
+// delay mode 518; staged turn-direction test 433.
+// NOT kept: the equal scores leave the copy schedule and dispatch span different;
+// the regressing forms disturb the entry register roles or lengthen the tail.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
