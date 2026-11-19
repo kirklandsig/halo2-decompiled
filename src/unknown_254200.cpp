@@ -261,6 +261,9 @@ void function_254200(void)
 // arguments 4, with the triple then constant, x, y + size (one alone leaves ours); the cache read back as the argument
 // the same 4. Diagnostic: 6 or 7 float probe stores ahead of the size give retail's triple, 0-5 and 8 ours, and with the
 // embedded stores 1, 2, 3, 5 and 7 all give ours: a hash-like tie that no natural form has reached.
+// M3 lane 4 r223 (single-address fast, control 4): the size as `arg_2 * 2` 4 and as a copy doubled in place
+// (`size *= 2.f`) 4 (same code each); the point copied by an aggregate initialiser from its two fields 88 (1117 B,
+// float loads); the cull mode spelled with its enumerator 4; the size as a copy added to itself 15 (addss).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

@@ -1567,6 +1567,14 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // 1 with the selected arm storing only the index 10; the loop's rigid-body index declared ahead of the for 1; the two
 // change vectors declared at the function's top 1; the impulse and velocity-change calls nested under one `if
 // (change_a)` 115 (857 B). Restored.
+// M3 lane 4 r223 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300; control 1). R = the two changes and the index as
+// one local record with a plain `for` and no mirror: 106 (864 B, no reload after the 0x1d1160 call). On R, in 0x1d1160's
+// impulse arm: the self-copy through the velocity re-measured, both MATCH (a dead store, not kept); the velocity's three
+// components loaded with the SSE load intrinsic and stored with the store intrinsic, this MATCHES but 0x1d1160 43 (204 B, a
+// `lea` per store); loaded with the intrinsic and stored through the vector's set() 79 (231 B, stack copies); one unused
+// load intrinsic on the velocity's first member added after the conversion (diagnostic, a dead statement) MATCH with
+// 0x1d1160 still matched. So the caller's write summary of 0x1d1160 is taken before dead code goes, and any
+// address-taking intrinsic on the velocity counts as a write; retail's 0x1d1160 needs such a use that leaves no code.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
