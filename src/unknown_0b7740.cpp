@@ -1676,6 +1676,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // `inline` on 0xb8bd0 394 (1373 B: both sites expanded, 0x18c3b0 157). Diagnostic, reverted: `__assume(parent_index !=
 // NONE)` after the flag read 392. Retail keeps the pool in ECX while the defaults (EAX, DL) are live across the lookup,
 // so its index has to take ESI; ours spends ECX on the index and reloads the pool.
+// M3 lane 12 r151 (fast with 0xb8bd0, 0xbdc40, 0xbc820, 0xbd020, 0xbee60, 0xbfa40 and 0xbdb60, all MATCH; control 20 at
+// 1399 B): the no-model test inverted with the defaults in the NONE arm and the lookups in the else 25 (1395 B); the
+// else-arm defaults (r267's 18) with the flag read before the matrix 18 (1394 B: the node's `movsx` moves ahead and takes
+// ESI), with the flag's object through object_header_get 18 (same code as r267's); 0xb8bd0 called for the matrix with the
+// else-arm defaults 48 (1387 B); defaults first with a parent header pointer named in the arm for both reads 41 (1392 B).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

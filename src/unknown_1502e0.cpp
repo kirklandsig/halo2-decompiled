@@ -1250,6 +1250,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // aggregate copied from the field 17; as a `memcpy` of the field into a local 17 (every 17 the same code: each is
 // folded into the plain read before allocation); the unit through a getter returning NULL for NONE with the block
 // under `if (unit)` 52 (144 B).
+// M3 lane 12 r152 (fast with 0x152bf0; control 17): `s_tail_player *const &kept = player;` ahead of or after the result
+// with the lookup reading `kept->unit_index` 17/17; the unit pointer bound to a `*const &` for the slot and weapon reads 17;
+// the slot test through a `short const &` 17 (all the same code); a redundant `result = false;` at the top of the tested
+// block 33 (140 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

@@ -840,6 +840,11 @@ struct s_physical_block_iterator
 // where retail loads it into EAX); on it the clock read once into a `dword now` used by both ages 209, the comparison
 // written `candidate->pages * best_age < best.pages * age` 209, the products as `age * best.pages > best_age *
 // candidate->pages` 209; both ages as unclamped `dword` locals with MAX() inside the products 373 (first difference +0x11).
+// M3 lane 12 r149 (fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): the deletion walk's iterator
+// declared with the scan's locals 201 (same code); `oldest_time` initialised to 0 362 (1230 B); `best` declared ahead of the
+// ring 201 (same code). Lane 9 r109's lead rebuilt on this body 93 (1213 B; walk count/bit and the overlap sum's register
+// still swapped: retail sums into the pages register and keeps best.offset for the second test through a copy); on it
+// the iterator declared with the scan's locals 93 (same code), `oldest_time` initialised 357 (1223 B).
 // M3 lane 3 r267 (fast with 0x13d320, MATCH throughout; base 201, aligned 118): case 0's flag written false and set by an
 // `if` 201 (same code, still jump-threaded); `bool better = !have_best;` with `if (better)` 222 (1228 B); the arms in the
 // order default, 1, 0 204, in the order 1, 0, default 201; case 0 as `better = candidate->time < best.time; if (equal

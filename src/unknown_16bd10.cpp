@@ -1291,6 +1291,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // ordered fraction clamp, staged angle accumulation, named angular delta, branch-local command
 // field stores, and a role-named projection scale: 126/141/390/126/126/395/154/126.
 // NOT kept: The direction-k preload and length/zero register split remain.
+// M3 lane 12 r152 (fast with 0x16c6f0/0x13cb40/0x142d10, all MATCH; control 126): redundant parentheses (no grouping
+// change) around the field-of-view lerp product 1-3 pairs 126/126/126, around the case-2 division 126/126/147, around the
+// timer division 126/126/147; the plane length written out j, k, i without dot3f 397 (1700 B: left.j hoisted as retail, but
+// the normal's i/k registers swap and left.k is read off the camera pointer), with 1-3 pairs around its first product
+// 398/398/392 or its leading pair 397/397/391; written out i, j, k 397, with the same pairs 398/398/392 and 397/397/393.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

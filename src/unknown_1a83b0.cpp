@@ -677,6 +677,12 @@ s_1a8a10 g_4453c0[] =
 // swapped 142. Diagnostic (an invented layout, not keepable): the rotated point as the first two reals of a six-real value
 // array (so its stores go to an address-taken local) 99 (frame 0x28; j is still loaded once, so the y store's aliasing is
 // not what reloads j in retail).
+// M3 lane 12 r151 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH; control 17): the forward sum's `i * x` named
+// ahead of the left sum with the copy's j assigned after the left sum 36 (the j re-read appears, the zero takes XMM2 even
+// in the switch arms), with the copy's j before it 38; round 115's frame-transform lead re-measured 31, with the
+// perpendicular's j taken from the copy's i 32; the four values as an array initializer after the sums
+// (`{left, 0 - left, forward, 0 - forward}`) 18, with the identifier, index, score initialisation order 16 (a gain of one
+// from an initializer and a declaration order: not kept).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

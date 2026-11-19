@@ -1626,6 +1626,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 876/885/885. With the shared availability test 875/905/903, direct pointer publication with the
 // shared test 885, complete nullable expression 871. NOT kept: the expression ties, and the other
 // forms regress. The opening lookup still expands and no trial reaches the retail frame.
+// M3 lane 12 r152 (fast with 0x73530, MATCH each time; control 871, both builds `ret 4`): the admission test as two `if`s
+// (summary, count and variant, then the two capacity calls) 871; `bool result = true;` declared first 871; the variant
+// declared, then assigned 871; 0x193300's result named for the second test 871 (all the same code); diagnostic, the output
+// memset after the admission test 934 (2716 B).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

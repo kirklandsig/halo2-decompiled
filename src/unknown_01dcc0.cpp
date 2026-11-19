@@ -395,6 +395,13 @@ long g_55e6c0;
 // 0x1dc40 and 0x1d770 change too). A 1200 s permuter run on that lead (118 tries) found none below it.
 // Also on that lead: a trivial forceinline identity accessor for the height store, the kind store, the width store,
 // the data store or the offset's zero 29 each (same code: no scratch-rotation shift).
+// M3 lane 12 r151 (fast with 0x1dc40/0x1db10/0x1d6f0/0x1d770/0x1db90/0x1de20, all MATCH each time). r122's lead (signed
+// pitch/packed, the clamp in a `long levels` local stored after the packing, `long *header` for the header word and the
+// register call) re-measured 31 at 484 bytes (the top block's height/count swap, and the pitch part now scheduled ahead
+// of the height part). On it: the packing computed ahead of the clamp 33 (483 bytes: the zero moves to EDX); the header
+// pointer declared at the block top 42; `levels` typed `dword` 31 (same code); the clamp stored in place (main's
+// position) with the signed packing and the header pointer 30. On main's body: the clamp as `count > 0 ? (count > 4 ? 4 :
+// count) : 0` 32.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

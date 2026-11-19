@@ -1336,6 +1336,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // through `memcpy(dest++, ...)` or `memcpy(*dest++, ...)` 53/53. Re-measured the indexed copy 195 (the state takes EBX
 // from the top, `current` stays in ESI up to the preheader and its spill slot swaps with `joining`'s, the count is
 // spilled).
+// M3 lane 12 r151 (fast with 0x6fcc0, 0x6f940, 0x6fa60, all MATCH; control 9; re-measured: indexed 195, `[count++]` 40):
+// `count++;` then `memcpy(identities[count - 1], ...)` 203 (704 B); the count typed `dword` 9 (same code); a slot pointer
+// named from `identities[count++]` ahead of the copy 40; identities as a byte array filled by `memcpy(identities + count++
+// * 12, ...)` 40; the walked destination filled by three dword stores from a source dword pointer 225 (684 B). Reading of
+// the indexed listing: the state takes EBX for the whole function (reloaded after the loop) and `current` ESI at the top,
+// so count, state and `current` compete for the two callee-saved registers that survive the close call and the clear.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
