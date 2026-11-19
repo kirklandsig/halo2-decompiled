@@ -963,6 +963,7 @@ void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
 // MiniMax A (11-19): no new form, no lower score (65): the component still arrives on the stack, so the frame is still 0x84 against retail's 0x88 and the copy of the transform is still a block copy against retail's four aligned moves; the argument registers are still chosen by LTCG over the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files.
+// MiniMax H (11-19): no new form, no lower score (65): the transform copy is still a block copy where retail stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX; the frame stays 0x84 against retail's 0x88.
 // MiniMax B (11-18): no new form, no lower score (65): the transform copy is still a block copy here where retail
 // stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX;
 // the memberwise set form measures 90 (worse), and the component's home is decided across the
@@ -1253,6 +1254,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 }
 
 // MiniMax A (11-19): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX; that is 0x1d0cf0's convention and is decided with the bodies of its call cycle, which are in other files. BLOCKED-BY 0x1d0cf0.
+// MiniMax H (11-19): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided across a call cycle whose other bodies are in other files.
 // MiniMax B (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
 // component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided
 // across a call cycle whose other bodies are in other files: BLOCKED-BY 0x1d0cf0.
