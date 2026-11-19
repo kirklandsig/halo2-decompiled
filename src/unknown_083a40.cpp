@@ -855,6 +855,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // the occupied block with the late `collection` 30; the pointer ahead of the slot search on main's order 33. Reading:
 // retail's sum is (collection + offset) + cursor + 4, as if the key's tree were `collection + i * size` with the base
 // first, so the strength-reduced index flattens into it; ours keeps the index's replacement (offset + cursor) whole.
+// M3 lane 10 r122 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): the second loop's first mask test
+// through `collection->player_mask` 193 (1063 bytes); the conflict scan's mask test through it 193 (1063); the conflict
+// scan's player as `&collection->players[j]` 263; a `players` array pointer (`collection->players`) declared right after
+// the slot search on main's order 33 (the key is then (offset + cursor) + (collection + 4)); diagnostic, not keepable (a
+// comma loop): the second loop's player as a pointer stepped with `i` 299 (1095 bytes; the key is then a sum of two
+// spilled values, so the shared `i * size` is what keeps our (offset + cursor) whole).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

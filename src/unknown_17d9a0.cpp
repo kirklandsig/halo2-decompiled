@@ -931,6 +931,18 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // pending 535 (same code); the two counts in one declaration, face count first 535 (same code); `first_face` renamed
 // `seed_face`, and `group_count` renamed `grouped_count` (the name-order lever for same-size cells) 535 each (homes
 // unchanged); the first loop as a `while` over a function-scope `next` index 535 (same code). Body unchanged.
+// M3 lane 3 r263 (plain each; base 535, masked 498 of 787): retail forms axis.i * sine on x87 (`fld [axis.i]; fmul [sine]`) and
+// spills k*k and j*sine, a register-pressure shape. `real sine_i = axis.i * sine;` for its two uses 535 (same code); a pointer
+// to the limits entry for the flags test and the angle limit 718; the limits index read once into a `short` for its four uses
+// 741; the three axis rotations ahead of the offset's 527 (frame 0x21e4, masked 542: a positional drop and a reorder, not kept);
+// re-measured: face count declared first with `long face = faces[i++];` 524; the short-axis arm (`length = 0.0f`) written
+// first with the test un-negated 535 (same code).
+// M3 lane 4 r217 (plain each; base 535, aligned 442, register-masked 192, stack- and register-masked 194): the normalize as
+// `axis.n[component] /= length` with no inverse 533 (normalize code unchanged; two x87 products take retail's sides, one
+// symbol fewer), with `face_count` declared first and the group pass as `if (flags) { remaining; while (remaining > 0) }`
+// 532; three `/= length` statements 560 (3631 B); three `*= inverse` statements 559 (3631 B, the 1.0 still divided in place);
+// the limits index named once as a short local 741. Diagnostic, reverted: 1..7 unused initialised locals
+// 535/570/568/699/702/533/533, so no symbol count fits and the frame order is not a symbol-count state here.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

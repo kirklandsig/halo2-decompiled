@@ -142,6 +142,18 @@ bool function_1946f0(s_bitstream *stream)
 // `long bit_index = saved % 8;` for the mask 2; the pop as `checkpoint_count--;` then the read 2; the mode and position
 // tests nested 2; unknown2c stored first, then the index, then `unknown30++` 15. Both LEAs stay data-first in every
 // 140-byte form.
+// M3 lane 4 r214 (fast, with the file's 18 matched functions): a data local declared ahead of the byte index and
+// assigned from the field inside the mask block and inside the clear block (declared just before the index, at the
+// mode block's top or at the function's top) 35/35/35 (the mask access becomes `[edi + edx]` memory operands with the
+// data first, no LEA; the clear stays data-first); the same assigned in the mask block only 35; a `byte *const *`
+// pointer to the data field taken before the index and read at both uses 2 (same code); the clear's start as
+// `&stream->data[byte_index] + 1` 2 (same code). A data symbol older than the index does not give the index-first
+// order once the data is read in the block.
+// M3 lane 6 r197 (fast): the masked byte read into a byte local and stored back 2; `saved / 8` at every use with the
+// read-modify-write written out 2; the mask as `(byte)~(0xffu << (saved % 8))` 4; both addresses through an
+// `(unsigned long)` index 2; the count as `size_in_bytes - (byte_index + 1)` 2. Compile-only probes (small model): a
+// plain indexed load or store folds index first (`mov [index + data], bl`, as 0x1957d0 does), while a read-modify-write's
+// address and a memset's start are formed data first in every spelling tried; retail has both LEAs index first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

@@ -413,11 +413,12 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
+// Earlier: Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax B (11-18): no new form, no lower score (375): the direct final return (true in the tail, false after the
 // entry test) drops 32 bytes and measures 440, and the actor-first body with that return measures 393 (listed), so the
 // actor's table entry stays in ebx and the settings pointer in esi where retail holds the actor in ebp and the slot in esi.
 // MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
-// score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // Earlier at 375 (was 375).
 // M3 lane 6 r188 (fast with the file's functions, 0x265d30 and the five callees, control 375; masked diff shows no block-order
 // difference, only homes, the planar test pair (retail: an aggregate copy, integer moves) and the result byte): actor first with
@@ -806,6 +807,19 @@ extern point2f *g_468778;
 // retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
 // pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the
 // query in EDX, and this lane may not change the parameter order.
+// M3 lane 16 r140 (fast; control 375, register-masked aligned 102): the result declared after the three lookups, actor
+// first, 426 (1525 B: the result then sits in AL through the entry tests); in the original order 409 (1519 B); the
+// planar test pair as an aggregate copy (`point2f local_16 = *(point2f *)&local_9;`) alone 384 (the copy becomes retail's
+// integer moves but the request's word store and the facing products move); a `vector3f const *` to the object's
+// velocity (field_1c) for the length, the dot and both prediction rows 397 (1576 B, frame 0x44, masked 90: the
+// prediction block then reads the velocity through EBX as retail); that with actor first and the listed early `return
+// false` / returned final expression 417 (1563 B, masked 82: the settings pointer then lives only in its frame home as in
+// retail; arg_0 ESI, the actor EDI with a spill at +0x24, the slot EBP); plus `local_13` declared at the dot test
+// instead of the block's top 423 (masked 79: retail's fresh `xorps xmm0` zero at that compare). Left: the actor spill
+// and frame 0x44 (retail keeps it in EBP), the facing pointer formed late (fold-then-form) and the shared copy tails.
+// Typed actor row after/before settings 375/413; early row base with/without early slot 408/408;
+// early absolute actor slot 375. Settings declared in the admission test, then actor first and
+// typed actor first 409/413/413. NOT kept: ties or regressions, actor/settings/prop homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

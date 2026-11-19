@@ -187,7 +187,7 @@ real function_30bf0(vector3f *vector);
 void function_118e80(long object_index, vector3f *forward);
 bool function_1faf80(long object_index, void const *settings_pointer, vector3f const *control,
 	real threshold, vector3f *facing, real *turn);
-void function_11f0d0(vector3f *position, vector3f *forward, vector3f const *target, real rate, real max_angle, real scale);
+void function_11f0d0(vector3f *forward, vector3f const *target, real rate, vector3f *position, real max_angle, real scale);
 void function_11d180(vector3f const *in, vector3f const *up, vector3f *forward, vector3f *left, vector3f *out);
 real function_11ce20(vector3f const *a, vector3f const *b);
 void object_dispatch_moved(long object_index, long a, long b, long c);
@@ -248,7 +248,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // addresses by adding to ebp where retail leas them, so the tail's registers differ, and the frame stays 0x78 against
 // retail's 0x6c; that frame needs 0x11f0d0's named double local and double parameter, whose body is in
 // src/unknown_11eed0.cpp, which this lane may not edit: BLOCKED-BY 0x11f0d0.
-// score 218 (was 218; earlier 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
+// score 218 (was 218; earlier 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0 and 0x1faf80. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
 // callee's double local makes this function keep 8-byte stack parity, so it pads its frame and cannot
@@ -426,6 +426,18 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // code, this frame unchanged while the named double quotient stays); 85 orders and types of its seven declarations all
 // give the same seventh product (compile-only). Still BLOCKED-BY 0x11f0d0's double local; the 46 form stays a lead
 // (a one-caller helper and block scopes need a match).
+// M3 lane 7 r182 (fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80; body unchanged at 218):
+// round 255's lead (build/r258/lead-1197b0.r255.patch in m3-lane3: 0x11f0d0's position step through a file-local
+// forceinline helper with a double distance and `real angle`, block scopes here) re-measured 46 (1030 B, aligned 36). On it:
+// the turn velocity stored before the orientation test 69; the two agreements named (`real up_agreement = dot3f(...)`,
+// `real forward_agreement = ...`, both rows) 28 (aligned 26: the tail's up and forward copies are then retail's, interleaved
+// with direct offsets, no `lea ecx`), the same with the dots' arguments local-first, forward local-first or up local-first
+// 28 each (same code). Left at 28: both dots' i products (retail loads the local first), the zero-limit copy's pointer
+// register, the second 0x11f0d0 call's `mov esi, ebx` (retail `lea esi`) and the 0x1faf80 call's setup: retail pushes turn,
+// rate, control and settings and only then loads the requested forward into EBX, ours loads EBX after the first push
+// (argument evaluation in declared order), so that one needs 0x1faf80's parameter order, which lane 3 found unmatches
+// 0x1faf80 (BLOCKED-BY 0x1faf80). A dead-local scan on 0x11f0d0 with the helper form (K = 0..20, diagnostic) left its
+// cross-product tie at 2 at every K but one (K = 4: 37), so that tie is not the symbol count.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -454,7 +466,7 @@ void function_1197b0(long object_index)
 	{
 		function_118e80(object_index, &forward);
 		turn_velocity = object->turn_velocity;
-		function_11f0d0(&turn_velocity, &forward, &object->requested_forward, g_510c54->rate, max_angle, acceleration);
+		function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
 	}
 	vector3f up;
 	world_up_1197b0(object_index, &up);
@@ -464,7 +476,7 @@ void function_1197b0(long object_index)
 	function_11d180(&forward, &up, &forward2, &left, &up);
 	if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
 	{
-		function_11f0d0(&temporary_velocity, &up, &target_up, g_510c54->rate, max_angle, acceleration * 2.0f);
+		function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
 		function_11d180(&forward, &up, &forward2, &left, &up);
 	}
 	else
@@ -1165,17 +1177,27 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
-// MiniMax A (11-18): the 0x119bc0 result now has its own named bool, which is stored into the move output's byte
-// member and passed to 0x1c4b00 from that local: 14 (was 43). The force argument's own zero extension and the member's
-// slot are what still differ; retail still spills the result to a stack byte of its own and reloads the containing dword.
-// Dropping that member store measures 90, so the store stays.
 // score 14 (was 14; 43 before): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
 // and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still
 // spills the result to a stack byte of its own and reloads the containing dword where this build keeps it in al.
+// M3 lane 14 r112 (fast; control 14): the member store after the 0x1c4b00 call 96 (1041 B); after the velocity copy,
+// before the call 11 (three points, the force still widened by `movzx edx, al`; not kept); that with the member passed as
+// the force 11; the object looked up before the member store 40; a named pointer to the move output's velocity for the
+// copy and the call, member store after the copy, 11. The member store is never read afterwards (a dead store that only
+// moves the scratch rotation). Still BLOCKED-BY 0x1c4b00 (its bool formal; declarations in other lanes' files this round).
+// M3 lane 14 r114 (fast; control 14, aligned 14): the 0x1c4b00 linear argument as the object's own +0x88 copy 29 (aligned
+// 18); the re-fetched object held as a byte pointer for the copy 14 (same code); the member and the local set by one chained
+// assignment 14 (same code); the member set from the call and the force read back from the member after the lookup 97
+// (1039 B); a named pointer to the move output's velocity for the copy and the call 14 (same code). Three of 0x1c4b00's
+// declaration files (src/unknown_1eb8a0.cpp, src/unknown_0b7740.cpp, src/unknown_1e67a0.cpp) are other lanes' this round.
+// MiniMax A (11-18): the 0x119bc0 result now has its own named bool, which is stored into the move output's byte
+// member and passed to 0x1c4b00 from that local: 14 (was 43). The force argument's own zero extension and the member's
+// slot are what still differ; retail still spills the result to a stack byte of its own and reloads the containing dword.
+// Dropping that member store measures 90, so the store stays.
 // Before, 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
 // MiniMax A (11-18): no new form, no lower score (43): the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al, and that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its 14 declarations, which live in other files: BLOCKED-BY 0x1c4b00.
-// score 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
+// Earlier at 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
 // from the 0x119bc0 result on: retail keeps it in its own stack cell [esp+0x14] (shared with the rounding temporary),
 // pushes that dword, and every later scratch register follows; ours stores it in the move output's byte member and
 // zero-extends it, one scratch step ahead from there on. A bool local for it (long force) 90 (1034 bytes: the tail

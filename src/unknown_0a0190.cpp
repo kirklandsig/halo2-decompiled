@@ -8,11 +8,6 @@
 
 #define k_real_tolerance 0.001f
 
-static inline bool function_x41b793(real value)
-{
-	return (*(long *)&value & 0x7f800000) != 0x7f800000;
-}
-
 // @retail 0xa0190
 inline bool function_a0190(vector3f const *vector)
 {

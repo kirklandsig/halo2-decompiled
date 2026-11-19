@@ -231,6 +231,24 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // aggregate 84. What is left on 39: ours keeps i * 0x248 in EBX across the calls (i itself in ECX in the loop), retail
 // keeps i in EBX and multiplies again for the terminator and the plain arm. The aggregate is a grouping form
 // (match-only); build/r119/lead-0x24a691-39.cpp.
+// M3 lane 15 r101 (fast; main 67, aligned 23): a per-iteration `entry = &entries[i]` at the loop top used for the name
+// test, ascii argument, buffer and copy source, with `entries[i].field_1e4[49] = 0` and the plain arm `entries[i].field_0c`
+// indexed, 75 (196 B, aligned 8): frame 0x28, the entries spill at [ebp-8], i in EBX and the terminator and plain-arm code are
+// retail's with no aggregate; left: our loop keeps the per-iteration pointer in ESI (pushed ahead of the loop) where retail
+// runs a scratch cursor in ECX and forms the entry again from i after the append test. On it: the loop test indexed the same
+// code; 32 subsets of the uses through the pointer best 75 (the name test through it is what keeps the terminator apart);
+// the pointer at function scope 75; the found block after the loop behind a found flag 75 (threaded, same code), behind `i <
+// count` 69 (201 B, aligned 5, the extra compare stays), `i != count` 76; the plain arm through the pointer 83; with the
+// two-member aggregate 75. Other forms: the indexed terminator alone (re-measured) 84; the entries pointer written through
+// its own address 84 (folded); an inline (entries, index) accessor for the arm's entry 84 nested / 90 combined (the multiply
+// is still shared); entry pointer at the found block's top with the aggregate 72 (192 B, aligned 6: loop as retail, but the
+// entry is formed ahead of the append test and shared by the terminator and plain arm), with plain locals 90. Body unchanged.
+// The 0x28 frame, EBP-8 base spill and indexed clear return with the item pointer/count
+// record. Common plain-name fallthrough 52, selected suffix 39; mismatch continue 52/39;
+// direct found exits 71; explicit cursor with indexed fallback 52, while cursor 52,
+// cursor and selected suffix 39; shared suffix source 39, final append's result 73.
+// NOT kept: the grouping form requires a match. At 39, ECX carries the ordinal in the
+// search, then EBX carries its scaled offset through the appends.
 // Remaining count with a separate ordinal 80, with indexed clear 78, with
 // a selected entry 95, and with both 69. Wide result with direct/indexed
 // clear 67/84. Shared entry lookup 131. Clamped signed range 74.
@@ -257,6 +275,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // and then `if (i < count)` 69 [5/5] (the cursor is copied to ESI each iteration and the count test is not
 // threaded); an indexed search then `if (i < count)` with the entry formed after it 87 (product shared again); a
 // found flag 90; `entry = NULL` then `if (entry)` 88. Body unchanged.
+// The base still needs EBP-8 and the successful ordinal needs to survive the appends.
+// Entry base named early/late, ordinal early/late, display result early, formatted
+// destination late, and adjacent base/count ranked early/late all score 67.
+// NOT kept: lexical order leaves the frame at 0x24 and the derived buffer live.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
