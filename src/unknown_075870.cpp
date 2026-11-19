@@ -1380,6 +1380,9 @@ static __forceinline long observer_round(real value)
 	return real_to_long(value);
 }
 
+// Matched in a full build with stand-in SDK headers (was 7): the burst limit is the product read through a
+// reference-bound local, and the larger of it and the minimum is named before the clamp.
+// Before:
 // score 7 (was 7): the differing instructions are in the last clamp. The checker also
 // lists relocated calls and trailing padding while the function differs. Retail forms
 // lea ecx, [ebp + 1]; imul ecx, eax and loads the minimum burst afterwards;
@@ -1416,10 +1419,11 @@ void function_79850(s_network_observer *observer, long index)
 	long intervals = real_truncate(delay * rate * 0.001f) + 1;
 	long local_0 = intervals + 1;
 	long local_1 = delay * budget / (intervals * 8000);
-	long limited_burst = local_0 * local_1;
+	long const &kept = local_1;
+	long limited_burst = local_0 * kept;
 	long local_2 = *(long *)((byte *)observer->configuration + 0xe0);
-	limited_burst = local_2 > limited_burst ? local_2 : limited_burst;
-	if (burst > limited_burst) burst = limited_burst;
+	long limit = limited_burst > local_2 ? limited_burst : local_2;
+	if (burst > limit) burst = limit;
 	function_79600(observer, index, budget, burst, rate);
 	channel->loss_penalty += *(long *)((byte *)observer->configuration + 0x184);
 	if (channel->loss_penalty >= *(long *)((byte *)observer->configuration + 0x188))

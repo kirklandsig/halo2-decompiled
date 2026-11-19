@@ -193,6 +193,8 @@ void juggernaut_set(long player_index, bool juggernaut)
 	juggernaut_update_teams();
 }
 
+// Matched in a full build with stand-in SDK headers (was 20): the two flag bits are tested one at a time instead of
+// with one two-bit mask.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {
@@ -212,7 +214,11 @@ void function_192a30(long excluded_player_index)
 			s_juggernaut_player *player = iterator.player;
 			bool waiting = function_15d770(player_index) || function_15db30(player_index);
 
+<<<<<<< ours
 			if (!waiting && player->unit_index != NONE || !(player->flags & 1) && !(player->flags & 2))
+=======
+			if (!waiting && player->unit_index != NONE || !(player->flags & 1 || player->flags & 2))
+>>>>>>> theirs
 				candidates[count++] = player_index;
 		}
 	}

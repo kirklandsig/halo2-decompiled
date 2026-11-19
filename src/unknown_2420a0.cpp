@@ -1527,6 +1527,9 @@ void function_2422d0(long slot)
 	}
 }
 
+// Matched in a full build with stand-in SDK headers (was 7): the free-slot assignment sits in its own else-if arm
+// with `continue`, and both failure arms set the result.
+// Before:
 // score 7 (was 7): the object index is kept in EDI and the object in EBP, retail keeps them the other
 // way round. Native index/eligibility/object reference 7; team-index/team-object/
 // other-count names 7; second-loop element address/nested accept 7; native slot table/
@@ -1666,15 +1669,16 @@ bool function_2423f0()
 		long slot = object->slot;
 
 		/* the table test reads the slot again after the call */
-		if (function_243a80(slot) && slot_objects[object->slot] == NONE)
+		if (!function_243a80(slot))
+			result = false;
+		else if (slot_objects[object->slot] == NONE)
 		{
 			slot_objects[object->slot] = object_index;
+			continue;
 		}
 		else
-		{
 			result = false;
-			others[count++] = object_index;
-		}
+		others[count++] = object_index;
 	}
 
 	for (i = 0; i < count; i++)

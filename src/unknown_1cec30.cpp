@@ -806,6 +806,9 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 	}
 }
 
+// Matched in a full build with stand-in SDK headers (was 29): the body slot and its fixed flag are read through
+// reference-bound locals.
+// Before:
 // score 29 (was 29): retail keeps the slot address in eax, tests the fixed flag through edx/dl and reads the
 // rigid body again after the vector's stores; ours reads it once into esi. Tried: the Havok vector declared
 // at the top, in the outer block, with the body read at its use, with every local at the top, or with the
@@ -860,13 +863,16 @@ void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_ha
 	if (!TEST_FIELD_BIT(component->flag1))
 	{
 		hkRigidBody *const *local_1 = &component->rigid_bodies.data[rigid_body_index].rigid_body;
-		if (!(*local_1)->m_fixed)
+		hkRigidBody *const *const &kept_slot = local_1;
+		bool fixed = (*kept_slot)->m_fixed;
+		bool const &kept_fixed = fixed;
+		if (!kept_fixed)
 		{
 			hkVector4 havok_velocity;
 			hkRigidBody *rigid_body;
 
 			havok_from_vector3d(&havok_velocity, velocity);
-			rigid_body = *local_1;
+			rigid_body = *kept_slot;
 			havok_rigid_body_activate(rigid_body);
 			rigid_body->m_motion->setAngularVelocity(havok_velocity);
 		}
