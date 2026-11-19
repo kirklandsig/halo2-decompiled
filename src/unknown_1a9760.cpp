@@ -280,6 +280,13 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // the `(double)` cast 266 (1045 B, the float overload is called); the direction copy through memcpy with the row loop 4
 // (same code); the row loop counted down with the flag store still ahead of it 21; each row written velocity-term first
 // 4 (same code); no facing pointer (the final dot reads the field at each use) 21.
+// Round 103 (m3 lane 2, fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time; control 4): round 151's
+// lead re-measured, `real partial = i*i + k*k;` named ahead of the flag store and the root on `j*j + partial`, 182 (1002
+// B): retail's whole x87/SSE interleave (the second add after the first row's subss, the root after the second's), but the
+// named partial stays on the x87 stack (`fadd st(1)`, then `fstp; fstp st(0); fld` around the fabs test); the square sum
+// staged as `length_squared = i*i + k*k; length_squared += j*j;` ahead of the flag store 4, at the root 4 (same code: the
+// staged sum is folded back), split with the first part ahead of the flag store and the `+=` at the root 182 (1002 B, the
+// partial's code); the root computed ahead of the row loop 181 (1000 B).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

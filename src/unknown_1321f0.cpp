@@ -658,6 +658,14 @@ struct s_visibility_object_header
 // the packer's own order); 0x134390's hand-written flag expression as a second call of the packer 4 (0x132b10 and
 // 0x133390 MATCH). Diagnostics: `!!` on both arguments 144 (607 bytes; behind is read first, into CL), on behind
 // alone 130. Open: a read or store of in_front ahead of the packer's arguments that leaves no instruction.
+// Round 103 (m3 lane 2, fast with 0x132fd0/0x132b10, both MATCH each time; control 4). Diagnostics, restored at once:
+// in_front stored to a byte global right after the plane call 52 with retail's homes (in_front in flag_b's slot; the
+// load is pinned ahead of the packer's arguments, which confirms the first-read rule); in_front or behind stored to
+// that global after the 0xbec70 call 88/89 (homes ours: the value is loaded once into BL ahead of the packer, so no
+// later memory read exists). Forms: in_front passed through a one-line inline identity function 4; a `bool const`
+// copy taken right after the plane call and passed 4; a `bool &` bound to in_front for the plane call and the packer
+// 4 (all three the same code: the read is forwarded to the argument); the list read into a local at the top of the
+// visible block 107; `long entry = NONE;` declared ahead of the two outputs 160.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {
