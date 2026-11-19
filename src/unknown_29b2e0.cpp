@@ -665,6 +665,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // square-root homes and the yaw share +0xc, its final pitch is stored in the dead scale parameter's home (+0x40) with
 // the first rotation's sine at +0x10, and the rotated result is written into the first copy's home (+0x20); ours gives
 // the yaw +0xc, the roots +0x10, the pitch +0x10, that sine +0x40 and the result the second copy's home (+0x2c).
+// MiniMax C (11-19): no gain (176, baseline; body restored). The single-exit normalizer with the XY vector before the second copy is the known 169, a gain of seven and under the bar; on it the roots and the inlined 0x11cc90 arc-cosine result sit at +0x10 where retail packs them at +0xc with the clamp input and the yaw. Re-measured here: the single-exit normalizer written with a result local and a length store 404, with a bool and ternaries 270, and the XY vector before the second copy 174.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

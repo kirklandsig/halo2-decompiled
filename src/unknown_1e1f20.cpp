@@ -978,6 +978,7 @@ void swarm_leader_detach(long actor_index);
 // from existing functions (joint_decline called, direct definition test, the prop walk, the cached compare, bool value) 397
 // (862 bytes), so no part of the lead is a gain without the expanded helper. Still BLOCKED-BY 0x26ed40 for a natural form
 // (marked inline it also expands in 0x1bead0 and 0x26ef70), and on the link-time state for the handler pointer.
+// MiniMax C (11-19): no gain (236, baseline; body restored). The known 216 form holds the definition bit in a byte flag set by the tests and read by the next test, which is kept only with a byte match. What is left is the head: ours loads the pool global and the slot table into other registers than retail (the pool into EAX against retail ECX) and keeps the actor index in EBX against retail EAX.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

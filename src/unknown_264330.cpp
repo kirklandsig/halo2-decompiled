@@ -804,6 +804,7 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // still held in EBX across the calls, so it is not the iterator's storage that decides the pair. Not kept: the walk
 // raises the count (412 -> 442) although it removes the hand-written step; the next round should start from the walk
 // and look for what ranks the actor index above the prop index (retail's inlined 0x2641c0 is one read of it fewer).
+// MiniMax C (11-19): no gain (412, baseline; body restored). Retail holds the actor index in EBX for the whole body and gives the prop index EDI with a stack home; ours keeps the argument in its stack home and reloads it, and the prop index takes EBX, which also leaves the frame at 0xa4 against retail 0xa0. The inlined 0x2641c0 inline decision belongs to another lane file.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

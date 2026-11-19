@@ -911,6 +911,7 @@ void function_245400(s_source_245400 const *source, long index,
 // endpoint and plane receiver names in both orders 164/164; all geometry names 164;
 // all geometry names with the plane table after the edge 166. NOT kept: the late
 // table still reserves 0x24 and raises caller 0x245aa0 to 3.
+// MiniMax C (11-19): no gain (164, baseline; body restored). Retail reads the second surface index (field_0a) before the first (field_08) and homes the two decoded material codes as dwords at +0x14 and +0x18 with the first index at +0x1c, which is the 0x2c frame; ours has two homes and the 0x24 frame. Reading the two material codes in retail order measures 163, a gain of one and under the bar.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
