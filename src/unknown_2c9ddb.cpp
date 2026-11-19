@@ -55,6 +55,12 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax G (11-19): no new form, no lower score (61): retail's second half still has two 0x212bc0 call sites (the
+// default arm inline, the selected arm out of line at 0x2ca467), each with its own g_54e49c store and its own copy
+// into g_54e4a0, and it calls the name copy out of line at 0x13fac0; ours keeps one call site with the
+// default/existing choice in a byte slot and expands the copy in place, because 0x13fac0 lives in
+// src/unicode_strings.cpp, a file this lane may not edit, and the two pushed load-proc addresses cannot match in the
+// reduced image; the body stands.
 // score 61 (was 61): retail has one 0x212bc0 call and one copy in each second-half arm and calls the name copy out of line; this body has one call and a spilled byte; rounds below.
 // Round 192 (m3 lane 8, fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all matched; control 61): two load arms as
 // `if (entry->variant == NONE) { if (load(saved)) ... } else if (load(entry->variant)) ...` 174 (595 B); as two

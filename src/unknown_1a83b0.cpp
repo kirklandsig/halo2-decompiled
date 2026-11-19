@@ -670,6 +670,13 @@ s_1a8a10 g_4453c0[] =
 // order; screen: every instruction retail's but the xmm numbering): all 24 orders of the four component assignments give
 // the zero XMM3 (or XMM2) and x/y XMM5/XMM6 (retail zero XMM1, x XMM4, y XMM5, copy XMM6); 0-16 dead locals inside the
 // block or 0-14 ahead of it only permute i/j/copy among XMM1/XMM2/XMM4.
+// M3 lane 10 r124 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH each time; control 17): the four products
+// named where they are computed (both sums from them) in the orders forward-x, forward-y, left-x, left-y / left-x, left-y,
+// forward-x, forward-y / forward-x, forward-y, left-y, left-x / forward-y, forward-x, left-x, left-y 17 each (same code: the
+// IL order is not the source's); the facing copied whole as a 3D vector 142 (564 bytes), that with the forward sum's terms
+// swapped 142. Diagnostic (an invented layout, not keepable): the rotated point as the first two reals of a six-real value
+// array (so its stores go to an address-taken local) 99 (frame 0x28; j is still loaded once, so the y store's aliasing is
+// not what reloads j in retail).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

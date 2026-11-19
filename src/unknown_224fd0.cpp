@@ -363,6 +363,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // library copy 490; pointer and orientation with library copy 490; reference and orientation with library copy
 // 490.
 // NOT kept: All eight forms shrink the frame to 0x60 and the body to 1720 bytes at a higher score.
+// M3 lane 6 r199 (fast, control 219): dead initialised `long` locals at the function's top, K = 1..31 each, 219 every time
+// (diagnostic, reverted: the symbol count does not reach this schedule); the rotation helper as a macro (the caller's
+// sine/cosine/axis spelled in place) 491 (1720 B, frame changes), the macro with the axis bound once to a pointer local
+// 485 (1724 B); `matrix3x3 basis, rotation;` 219 and the basis scoped to the second switch and the composition 219 (same
+// code each); the value array read once into a local for the four property calls and the update 495 (1716 B).
 // M3 lane 3 r262 (fast with 0x246cd0/0x142eb0/0x30bf0/0x11d000/0x173ba0, all MATCH): retail's second rotation case (the
 // g_4687b0 axis, in ECX) forms the cross terms as (t * i) * j and t * k, the operand order of the axis rotation written
 // out in the matched 0x1544e0 (squares, sine products, forward.i, t, tij, left.i, forward.j, left.j, tk, tki, up.i,
@@ -389,6 +394,19 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // computing sine and cosine itself 447 (1780 B); the helper reading the axis through a `vector3f const &` binding 485
 // (1724 B); the orientation in a named local read at the top for both switches 501 (1732 B), read just before the rotation
 // switch 495 (1716 B). Body unchanged.
+// M3 lane 7 r185 (fast with 0x173ba0, 0x246cd0, 0x30bf0, 0x11d000 and 0x142eb0, all MATCH; control 219, aligned 225): the
+// rotation helper in the sibling spellings of this math elsewhere in the code base (all three hosts unmatched): named
+// complement, squares and a shared k*complement with the rows in matrix order and `j * complement * i` 394 (1824 B,
+// aligned 340); squares, complement and named ij/ik/jk products with `(1 - s) * c + s` diagonals 392 (aligned 354); the
+// same with `s + (1 - s) * c` diagonals 393; the kept statement order with a named complement, k*complement shared by
+// ik and jk and `j * complement * i` 497 (1712 B); named complement, squares, k*complement and ij with matrix-order
+// rows 399. Retail's code ahead of the jump tables is a few bytes longer (a `lea ecx, [ecx]` pad where ours ends
+// with int3 padding), so the equal length is a coincidence of the schedule.
+// M3 lane 14 r117 (fast; control 219): each rotation call given its axis through a block-scoped `vector3f const *axis`
+// local 485 (1724 B, the frame and prologue move); the second axis's case group written first in the rotation switch 491
+// (1720 B); in the rotation helper the i-j cross term as `(1.0f-cosine)*axis->i*axis->j` 219 and the i sine product as
+// `axis->i*sine` 219 (same code each); in the basis switch the third/fourth cases crossing straight from the second axis
+// global before copying it into `basis.up` 364 (1844 B). Body unchanged.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

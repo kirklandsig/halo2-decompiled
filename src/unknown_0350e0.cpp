@@ -1923,6 +1923,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->j = direction->i * cross.k - direction->k * cross.i;
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
+// MiniMax B (11-19): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18 and the result still shares the scale argument's home instead of the slot at +8, the reference vector still starts at +8 where retail's starts at +0xc, and the four cases still differ in their float schedule; an else that writes the zero result, a literal zero in the early returns, a declared copy of the result, an angle local, a scaled local and the declaration orders all give byte-identical code, and the 177 form needs the XMM7 clobber that raises the caller 0x2e9e0 from 492 to 572.
 // score 193 (was 193): see the forms below.
 // MiniMax D (11-14): no new form, no lower score (193): retail's four cases still compute their cross products with
 // their own temporaries - its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before
@@ -2571,6 +2572,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Separate decode with record construction from fields or scalars 516/557.
 // NOT kept: the indexed-field lead groups the decoder outputs and keeps
 // frame 0x90. Scalar record construction reaches frame 0x94 but grows by 26 bytes.
+// M3 lane 5 r205 (fast, control 492): one-field locals dropped for reads at each use: the entry flags pointer 492, the
+// displacement 492 (same code each), the colour curve pointer 531; the loop index declared at function scope beside the
+// outputs (retail homes it between alpha and tag) 492; the near angle read at each use 492. The frame stays 0x90.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3980,6 +3984,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Swap record shared across all four passes, isolated per gate, shared across admission, shared across
 // removal, shared through creation, or shared after paired admission 317 each. Existing swap with a value capture,
 // direct or named, 367 each. The prefix and state registers and the ordinal homes remain exchanged.
+// M3 lane 5 r205 (fast with 0x4b160, MATCH each time; control 317): passes 3 and 4 sharing their own index (passes 1-2 and
+// the decay loop keep `i`) 317; pass 1 with its own in-loop index 375 (1342 B); `register` on `first` 317; the decay loop
+// with its own in-loop index 317; pass 2 with its own in-loop index 317. `first` keeps EBP in each.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4366,6 +4373,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // conditional publication 506, per-arm publication 492; separate phase advance/accumulator/
 // fraction 500; radius in size arm 495; optional size update 486. NOT kept: cycle-local
 // displacement gains one at retail length and still reserves 0x60 bytes.
+// M3 lane 5 r205 (fast, control 486): the old position advanced in place as the moved point (no `moved` local) 535 (1985 B,
+// frame 0x5c); the two projections as const locals 486; the offset updates as `+=` 486; the current position projected
+// before the moved point 546 (2097 B); `old` copied through the position pointer declared ahead of it 486.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

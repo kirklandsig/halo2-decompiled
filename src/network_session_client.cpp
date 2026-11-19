@@ -886,6 +886,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // same code, the getter still matching); the tail's live and 0x5dd0 tests through a forceinline copy of the existing
 // 0x5dd0 getter (0x63e00's form) 127 (451 bytes: the limit helper's live test merges; both callers lost); the two
 // buffer clears swapped 26; the player buffer declared and cleared first 26.
+// Round 116 (m3 lane 13, fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22): the NULL-preset stored pair with a
+// `const dword *` mask pointer named before the summary 46, with the member count read above the pair 136, with the
+// summary fetched above the pair 55, with the variant and the summary above the pair 55; the summary fetched above the
+// three-test opening with the variant after it 59 (session ESI and both callers lost in each). Re-measured: the variant
+// and the summary above the opening 32. Compile-only first pass (lane 5's round 175 harness): a 0-16 dead-local sweep on
+// the preset pair keeps ESI, and mask or 0x49c8 pointer locals named before the summary are propagated back (ESI), so
+// the preset pair's flip is a ranking change, not a symbol-count tie.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1290,6 +1297,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // `&current->players[i].user_id` 40; `[count++]` with a player pointer named at the top of the loop body (before the
 // mask test) 40; the indexed copy with that player pointer 195; `long count = 0;` declared between `current` and
 // `joining` 11; the flag parameter read once through its address 9 (same code).
+// M3 lane 10 r124 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): all with the destination declared in the branch
+// (re-measured 195: the state in EBX for the whole function, `current` in ESI at the top and its spill slot above
+// `joining`'s, the count spilled): the tail's live test and mode call through `state->owner->session_a` 168 (725 B); the
+// call's session read through the owner instead of `joining` 210 (715 B); the session close after the identity clear
+// 201; no `current` local before the tail (the branch reading the session through the owner) 213; `current` declared
+// in the branch and again for the tail 213.
 // M3 lane 16 r139 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): a single-exit `bool result` (assigned true on the
 // call's success, the live test and the store in the else arm) 9 (same code); with it the indexed copy 195, the
 // `[count++]` copy 40, the destination declared in the branch 195; identities without the align(8) attribute 9 (same

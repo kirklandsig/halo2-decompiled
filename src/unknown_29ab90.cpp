@@ -45,6 +45,11 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // [esp+0x48]..[esp+0x38], and site 1's planar normalize still keeps its own zero path where retail uses the
 // shared helper in include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
 // MiniMax B (11-18): no new form, no lower score (286): the magnitude and the settings pointer still take each other's frame homes (ours [esp+0x10] and [esp+0x14] against retail [esp+0x14] and [esp+0x10]), the unit pointer still sits at [esp+0x24] where retail has [esp+0x1c], the three working vectors are still a rotation off retail's, and site 1's planar normalize still keeps its own zero path where retail calls the shared 0x2b400 helper in include/unknown_11cc90.h: BLOCKED-BY 0x2b400.
+// MiniMax G (11-19): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24] where
+// retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the magnitude), the
+// working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has [esp+0x38]..[esp+0x48], and site 1's
+// planar normalize still keeps its own zero path where retail uses the shared 0x2b400 helper in
+// include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
 // score 286 (was 286): The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
@@ -507,6 +512,18 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // ours magnitude +0x10, settings +0x14, a planar pair +0x18/+0x1c, object +0x20, a planar pair +0x24/+0x28: the three
 // scalar homes and the two planar pairs trade places together, and retail's first planar vector is normalised in
 // place in its home (the 0x2b400 shape). Still BLOCKED-BY 0x2b400.
+// M3 lane 6 r201 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286; aligned-equal of retail's 454
+// with addresses / also registers and stack offsets masked, base 270 / 413; all restored). New finding: retail does not
+// fold the gain's constants. Its last product is `(1 - floor) * 0.5`, times the gain, times 4.0 (mulss by the 0.5
+// register, by the gain, by the 4.0 literal at 0x45dc10); main's one expression `(1.0f - local_26) * 0.5f * local_20 *
+// 4.0f` compiles to two multiplies with the 2.0 literal. Any split restores retail's three: a named half-complement
+// local 326 (1869 B, 272 / 415); `local_18 = (1.0f - local_26) * 0.5f; local_18 = local_18 * local_20 * 4.0f;` 326
+// (same code); `local_18 = (1.0f - local_26) * 0.5f * local_20; local_18 *= 4.0f;` 326 (259 / 415); the gain factor
+// grouped as `(local_20 * 4.0f)` 326 (259 / 414). None is kept: the body is then six bytes longer than retail's and
+// every later line shifts (the count rises by 40). Diagnostic (a file-local copy of 0x2b400's body for site 1, not
+// keepable): 286 (270 / 420: site 1's branch order and in-place scaling are then retail's, the zero still has its own
+// home), with the split product 326 (272 / 422). Still BLOCKED-BY 0x2b400 for site 1; the frame homes and the turn
+// dot's operand order remain as the earlier notes describe.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

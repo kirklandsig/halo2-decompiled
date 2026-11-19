@@ -1074,6 +1074,13 @@ struct s_device_machine_view
 // after the machine test, but its load rises above the group lookup: 16 (654 B); the same local declared bare and assigned
 // before the power test, or declared just before it, keeps the pushed ESI; declared ahead of the group pointer 32 (screen).
 // So a float live across the group tests moves the pointer to EAX, while retail's power load stays below them.
+// M3 lane 5 r205 (fast): the group pointer before the machine flags with the word flags read after the machine test under a
+// re-test of the group index (threaded away) 122 (pushed ESI); that pointer with the lane S bits read from it after the
+// machine test, `(byte)(group->flags & 3)`, 115 (655 B): retail's `lea eax, [eax + edx*4]` before the machine flags and the
+// load after the machine arm with the pointer in EAX, left only `mov al, [eax + 2]; and al, 3` for retail's `mov ax,
+// [eax + 2]` (the masked byte is a one-use temporary, so the pointer wins EAX); the same with a word local and an unmasked
+// byte copy 121 (byte load, pushed ESI); a `word` bits local `group->flags & 3` 117 (657 B, `movzx eax, byte; and eax,
+// 3`); the machine flags read before that pointer 129 (658 B). Body unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1292,7 +1299,7 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
-// score 127 (was 121): coordinator decision (round 119): the plan block in the order that makes both callers match
+// score 127 (was 127; 121 before the coordinator decision): coordinator decision (round 119): the plan block in the order that makes both callers match
 // (0x108600 31 -> MATCH, 0x108670 13 -> MATCH; this body ret 0x14 with the initial velocity in XMM6 as retail), kept over
 // this body's 121: the cruise velocity through the motion field, velocity/deceleration/start/target stores first, the
 // half ramp-up, the acceleration zero, the half ramp-down, the denominator with the cruise time written out
@@ -1307,6 +1314,7 @@ bool function_108530(long device_index, long name)
 // the body is retail's length and the ramp-down minimum written as an if-statement measures 121 in every arrangement
 // tried, so the clamp's XMM homes stand.
 // MiniMax B (11-18): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6; an early use of it (squared 142, copied 121) does not promote it, and the ramp-down minimum written as an if-statement measures 121 in every arrangement tried, so the clamp's XMM homes stand.
+// Earlier 121 (was 121; a second stacked first line, merged in r108): Frameless at retail length. Retail keeps ramp-down in memory and takes
 // Earlier at 121: Frameless at retail length. Retail keeps ramp-down in memory and takes
 // initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.
 // MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
@@ -1660,6 +1668,14 @@ bool function_108530(long device_index, long name)
 // nearest 75 aligned lines from retail), about 480 leave the ramp-down uncached as retail does (the nearest 53), none
 // does both with retail's body. A diagnostic with the cruise time's ramp-down term dropped gives retail's exact
 // uncached clamp pair, so the ramp-down sits one reference from losing its register.
+// M3 lane 2 r108 (fast with both callers, which stay MATCH only on the first two): on the kept 127 body, the ramp-down
+// zero clamp as `if (!(ramp_down_time > 0.0f)) ramp_down_time = 0.0f;` 127 (same code); its minimum as `if
+// (!(remaining > ramp_down_time)) ramp_down_time = remaining;` 127 (same code); the denominator from `remaining -
+// ramp_down_time` 139 (534 B, callers 31/13); no remaining local (the difference written in the minimum) 139 (534 B,
+// 31/13); both ramp-down clamps as PIN(ramp_down_time, 0.0f, remaining) 140 (530 B, 31/13); the ramp-up clamps as
+// PIN(ramp_up_time, 0.0f, duration) ahead of the ramp-down zero clamp 141 (530 B, 31/13). Left as before: the ramp-down
+// held in XMM2 from its zero clamp to the minimum (retail compares the slot) and duration/position in XMM3/XMM5
+// (retail XMM5/XMM3).
 // M3 lane 8 r191 (fast with 0x108600/0x108670, control 127, both callers MATCH; a compile-only build of this file gives
 // this body exactly except the velocity's one load, which LTCG turns into the XMM6 parameter): the denominator through
 // `remaining` 139 (534 B, callers 31/13); both length tests as early returns 127, the duration test alone 127 (same
@@ -1920,6 +1936,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // model) 328, fstp unmoved; the three tag lookups through the shared TAG_GET macro 131 (same code). Diagnostic only (the
 // harness links the callee's old object, so its convention moved): the render model as a one-member aggregate argument.
 // Compile-only (no /GL) hoists the render model's load into EDI above the flag branch, so there the block starts at the fld.
+// M3 lane 5 r205 (fast): the render model through a file-local forceinline accessor taking the model 2; `__assume(render_model
+// != 0)` at the top of the flag block 2 (no block boundary, unlike the real test); the render model zero-initialised at
+// function scope and assigned at its lookup 2; had_animation set at the end of the flag block 270 (fstp unmoved); a const
+// channel reference with the time read before the animation 2. Diagnostic (reverted at once): any real branch between the
+// two flag-block sample calls (an integer parameter test) moves the time to SSE (`movss; mulss`, its store after all four
+// pushes), so retail's x87 time needs both calls in one block.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

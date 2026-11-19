@@ -2307,6 +2307,7 @@ __forceinline char unit_action_round(real value)
 // reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
 // compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
 // stands.
+// Earlier comparison: MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // Earlier (234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
@@ -2552,6 +2553,15 @@ __forceinline char unit_action_round(real value)
 // index*12 > pool > first-person name and ours actions > pool > first-person name > index*12; retail's `or ebx, -1` is one
 // hoisted NONE serving the name's initial value, the hand getter's 16-bit compare and the weapon default store, which no
 // form here produces; `channel` lives in the dead `mode` parameter's home; `current` takes the dying actions register.
+// M3 lane 14 r118 (fast with 0xe9ed0, 0xea090, 0xe9780, 0xe99a0, all matched throughout; aligned 141): first_person_name
+// declared between name and type 234 (same code); no result variable, `return false;` at each failure and `return true;`
+// at the end 234 (same code: the result is folded either way, where retail keeps it in its stack byte and has one exit);
+// that with first_person_name = NONE declared first 312 (1191 B, aligned 115); that with the 0xe9780 fallback as a switch
+// 237 (1192 B, aligned 126); is_biped without the byte cast 234 (same code).
+// A shared masked datum slot for all three lookups as word/long/dword or through the
+// header accessor with a word 316/311/311/316; each with the short-slot hand getter
+// 319/311/311/319. The long slot forms recover EDI and the saved slot offset; the pool
+// still loads into EDX and the completion byte remains different.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4349,6 +4359,10 @@ extern vector3f *g_4687bc;
 // CX there, but the pool's data then takes EAX and the component EAX/ESI order changes; both sites still differ).
 // Diagnostics: a probe copy between two globals at the function's top, before the definition re-lookup or before the
 // effect tag read leaves both sites as they are; after the tag read it reloads the component index (the store aliases).
+// M3 lane 2 r106 (a one-file LTCG harness with the callee files linked in gives 1098 B and both sites as the check):
+// 0-8 dead locals at the top, or 1-8 just ahead of the material (diagnostics) 8 each, so neither scratch choice is a
+// symbol-count tie; the node count in a named local 8; the element through a const reference to the rigid-body array 8;
+// the element as `index + rigid_bodies.data` 8 (all the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
