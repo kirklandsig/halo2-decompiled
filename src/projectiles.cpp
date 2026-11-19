@@ -880,10 +880,14 @@ void function_fd740(point3f const *point, byte const *effects, long index, short
 // this function to 66, but the caller's setup then grows (0xfaa60 1234), so the form is reverted. What is left here is the
 // register choice for the four register arguments (ours takes the projectile index in ecx and effect0 in eax where retail takes
 // them in eax and ecx) and the projectile lookup, which this build sinks below the game-state test where retail keeps it above.
+// Matched in a full build with stand-in SDK headers (was 69): the parameters are declared in retail's order (the three
+// effect out-pointers first, then the stack arguments) and the NONE block is grouped as retail has it, the element index
+// is a c_type_47f957 passed on as it is (the caller 0xfaa60 builds it from the material index; a class object lives in
+// memory, so the call's block has one register candidate less and effect2 gets edi), and the projectile is read through
+// a reference-bound local in the game-state test. The caller 0xfaa60 goes 1196 -> 1160.
 // @retail 0xfd7d0
-void function_fd7d0(long object_index, point3f const *point, byte const *effects,
-	long index, long element_index, long *sound0, long *sound1, long *sound2, long *effect0,
-	long *effect1, long *effect2)
+void function_fd7d0(long object_index, long *effect0, long *effect1, long *effect2, point3f const *point,
+	byte const *effects, long index, c_type_47f957 element_index, long *sound0, long *sound1, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
@@ -894,26 +898,27 @@ void function_fd7d0(long object_index, point3f const *point, byte const *effects
 		if (object_index != NONE)
 		{
 			s_projectile *object = PROJECTILE_GET(object_index);
+			s_projectile *const &kept = object;
 
-			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)object + 0xd4) != NONE)
+			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)kept + 0xd4) != NONE)
 				ignore_distance = true;
 		}
-		function_1883e0(effect_index, ignore_distance, point, c_type_47f957(g_47d8e0), c_type_47f957((short)element_index), index, 0, sound0, effect0,
+		function_1883e0(effect_index, ignore_distance, point, c_type_47f957(g_47d8e0), element_index, index, 0, sound0, effect0,
 			sound1, effect1, sound2, effect2);
 		return;
 	}
-	if (sound0)
-		*sound0 = NONE;
 	if (effect0)
 		*effect0 = NONE;
-	if (sound1)
-		*sound1 = NONE;
 	if (effect1)
 		*effect1 = NONE;
-	if (sound2)
-		*sound2 = NONE;
 	if (effect2)
 		*effect2 = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (sound1)
+		*sound1 = NONE;
+	if (sound2)
+		*sound2 = NONE;
 }
 
 /* sticks a projectile to what it hit; location is the hit's s_location, which the
@@ -3447,8 +3452,8 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 	default:
 		goto no_effects;
 	}
-	function_fd7d0(projectile_index, &collision->point, (byte const *)definition, effect_type, material_index,
-		&sounds[0], &sounds[1], &sounds[2], &effects[0], &effects[1], &effects[2]);
+	function_fd7d0(projectile_index, &effects[0], &effects[1], &effects[2], &collision->point, (byte const *)definition,
+		effect_type, c_type_47f957((short)material_index), &sounds[0], &sounds[1], &sounds[2]);
 no_effects:
 
 	if (g_4e6948->mode != 4 && (collision->type == 1 || collision->type == 3) && (collision->unknown58 & 8))
