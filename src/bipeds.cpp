@@ -5943,6 +5943,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // side/axis/rotated-up and rotated-up/axis/side names: 79 each. NOT kept: all ties.
 // The first cosine-complement spill and the final cross memory operands stay in place.
 // Rotated-up/side/axis lexical order: 79.
+// Biped and forward pointer lexical ranks: biped before angle or after sine 79/79, forward before
+// biped or after sine 79/79, both before cosine or after sine 79/79, and mixed early/late ranks 79/79.
+// NOT kept: all tie. The first rotation spill and the final cross memory operands stay in place.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

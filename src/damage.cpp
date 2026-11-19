@@ -5286,7 +5286,7 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
-// score 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
+// score 178 (was 146): Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // the scan) gives 166 with retail's EAX/EDI section-loop registers; a one-use local is match-only, so not kept. With it
 // the first mask still extends before the count guard, and the late detached-mask zero, piece search and final lookups
 // still differ. Earlier: m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
@@ -5532,6 +5532,10 @@ struct s_damage_object_creation
 // NOT kept: sharing the first mask through detachment loses the retail EAX/EDI roles and word admission;
 // moving the bitmap zero on the scoped-mask form changes the frame allocation and grows to 811 bytes.
 // Plain confirmation of the scoped first mask changes only this function among 65 checked markers.
+// Shared dword/word test bit 178/223, shared dword/word store bit 220/156. Primary mask extraction
+// with separate/shared writes 208/188, secondary mask extraction 200/188. NOT kept: the 156 form
+// hoists the second mask and shares the two store shifts while retail reloads the second mask and
+// shifts separately. The count and detach bitmap homes still differ.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

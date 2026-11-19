@@ -605,6 +605,10 @@ struct c_aggregate : c_child
 // slots and puts the callback output in the terminal cell instead of ESP+0x10.
 // Convert typed child elements at collection/dispatch/both 31/31/31; named typed slot table 146/100/126;
 // advancing typed slot cursor 64/108. None recovers the shared output and cursor home.
+// Explicit cleanup count reload in for/while 31/31, with the shared call-output carrier 31/31, with
+// the collection count reused as the cleanup bound 70/70. Count declared at cleanup scope 31/31. NOT
+// kept: shared call output reaches 0x8020 with the low homes exchanged, while reusing it for the bound
+// grows to 381 bytes. The callback output still needs the retail spill home.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

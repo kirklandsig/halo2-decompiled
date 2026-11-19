@@ -2124,6 +2124,10 @@ bool function_1900a5(long index);
 // add sixteen bytes and retain the opening frame and exit-span mismatch.
 // Offline-first arm/return using direct status 703/703, shared availability 810/810, one task index 703/703,
 // conditional task status 812/812. The shared and conditional forms change the opening schedule and raise the score.
+// Copied team key base 703, cached team key base 791, cached player array base 776. Copied/cached keys
+// 791, copied key/player array 776, cached key/player array 776, all three 776, cached owner and team
+// destinations 703. NOT kept: the ties leave the first difference in place and the other forms add
+// sixteen bytes. The status branch, user cursor and slot selection still differ.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

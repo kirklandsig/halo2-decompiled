@@ -1043,8 +1043,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
-// score 871 (was 871; 964 before): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
@@ -1607,6 +1606,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // group statistics or before histogram 914/914. Split store with dword histogram 933.
 // NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
 // The opening variant lookup still expands and the frame still differs.
+// Inner lookup candidate held for validation, selected from validation, or cleared on failure
+// 876/885/885. With the shared availability test 875/905/903, direct pointer publication with the
+// shared test 885, complete nullable expression 871. NOT kept: the expression ties, and the other
+// forms regress. The opening lookup still expands and no trial reaches the retail frame.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
