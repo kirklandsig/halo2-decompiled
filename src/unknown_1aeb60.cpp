@@ -662,6 +662,10 @@ struct s_1af5c6
 // helper 148 bytes (out of line, 0x1c8df0 inside); LTCG inlines 0x1c8df0 at that call site at any nesting level. On this body:
 // the object index re-read through a fresh prop node lookup 178 (594 bytes); the ignore index bound by `long &` for the probe 20
 // (same code). Still BLOCKED-BY 0x1c8df0's call-site inlining.
+// Shared component setter for the ray 16, for the measured vector 5, for both 16; shared point setter
+// on the ray workspace 16. Set the mask bit from a cleared default 8, with the ray setter 19, with the
+// measured-vector setter 8, with both 19. The ray setters load the ignore index at retail's offset but
+// stage the vector components in another order. The hit product still loads the fraction first.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

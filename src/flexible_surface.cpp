@@ -1103,6 +1103,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // references 322, direct material arm first 322. NOT kept: the 300/296 forms use a one-use
 // object-index local. Retail reads the definition first. Other forms gain fewer than eight or tie.
 // The record spill, material-call convention and state expansion remain.
+// Existing virtual reference method, material traversal scoped to its output, and immutable named
+// vertex-input results, separately and together, 322 each. Typed index pointer through the existing
+// virtual method and the direct-material arm 322. The record spill, four search-result homes,
+// material-call convention and two draw-state expansions remain.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {
