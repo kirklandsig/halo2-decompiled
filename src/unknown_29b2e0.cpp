@@ -51,7 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 176): r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// score 176 (was 176): r121, r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
 // stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
 // return value 267 and the length local initialised before the call 171, all dropped; the helper's locals renamed
@@ -648,6 +648,15 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // current-vector copy or XY copy 408/402/420. Early failure test 387; test after
 // current normalization with component copies 279. NOT kept: early heading
 // and failure tests recover unity in XMM4 but still spill the root at +0x10.
+// M3 lane 13 r121 (fast with 0x29b990, 0x29ab90, 0x29bab0, 0x11ce20, 0x11cc90, 0x1e5450; control 176 = plain, aligned 229):
+// the length, yaw, pitch or first-angle local renamed to sort first or last, or all three given natural names, 176 each
+// (same code); the rotated result, the cross axis or either normalised copy renamed 176 each (same code): neither the
+// 4-byte nor the 12-byte homes follow names here. The rotated result kept in the first normalised copy's variable 192
+// (1708 B, aligned 228), in the second's 209 (1715 B); the final yaw and pitch as their own variables with the deltas
+// block-local 179; the two angle locals declared at the top 176 (same code). Read from the listing: retail's three
+// square-root homes and the yaw share +0xc, its final pitch is stored in the dead scale parameter's home (+0x40) with
+// the first rotation's sine at +0x10, and the rotated result is written into the first copy's home (+0x20); ours gives
+// the yaw +0xc, the roots +0x10, the pitch +0x10, that sine +0x40 and the result the second copy's home (+0x2c).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
