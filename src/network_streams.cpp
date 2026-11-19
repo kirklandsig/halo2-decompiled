@@ -1155,6 +1155,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Qualifying cursor used for post-scan publication with an in-place or saved-word
 // update 98/82. NOT kept: single-bit type selection gives the retail cursor and
 // message pointer with a byte OR, but changes the flag read and return-value code.
+// Shared word flag setter with original, Boolean, named and split sent tests 89/89/89/89;
+// Boolean and named bits with the saved update 64/64, separate sent rejection 35;
+// setter after pending rejection 89. NOT kept: the setter gives the byte OR,
+// but moves the entry/output allocation. Separate sent rejection retains the full-word store.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -774,6 +774,10 @@ static inline bool teams_enabled_19e1c0()
 // team names, local scores and timers, or all tokens. Existing count storage scores
 // 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
 // ordinary count gives frame 0x204 but still merges the name producers.
+// Standard signed minimum after a single name-length call. Player/team/all names/all
+// names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
+// with an ordinary result. NOT kept: the minimum stays out of line and needs
+// a larger frame. The 415 form restores the opening extent, with the preload still missing.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
