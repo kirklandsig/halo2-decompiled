@@ -71,7 +71,7 @@ struct s_cluster_palette_globals_23aa
 };
 
 struct s_effect_source;
-void function_17e670(s_effect_source *source, point3f const *point, long tag_index,
+void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
 	vector3f const *direction, real radius, long first, long second, long third);
 
 /* a cluster's bit in a mask with one bit per cluster */
@@ -170,6 +170,10 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // MiniMax D (2026-11-19): no new form, no lower score (16): the sixteen points are register allocation around the
 // palette lookup - the global and its data in EDX/EAX against our EAX/ECX, and the entry pointer in ECX against EDX.
 // Tried: computing the entry pointer before the tag index so the global load comes first (17, worse).
+// Matched (coordinator, 11-19): 0x17e670 is declared (point, source, ...) at its definition, both declarations and both
+// calls (here and 0x17a8a0), and the entry is declared before the tag. That parameter order is match-only: retail sets ECX
+// (the source) last at both calls, which points to the (source, point) order, so it is kept for this byte match rather than
+// as evidence; revisit it when 0x17e670 (430) nears retail. Full check: this function gained, 0x17a8a0 23 -> 21, nothing lost.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {
@@ -191,13 +195,13 @@ void __stdcall function_23aad0(long previous_address, long current_address, long
 				{
 					for (long j = 0; j < cluster->count7e; j++)
 					{
-						long tag_index = ((s_cluster_palette_globals_23aa *)g_4e0350)->types[structure->entries[cluster->value7c + j].palette_index].tag_index;
 						s_cluster_spawn_23aa *entry = &structure->entries[cluster->value7c + j];
+						long tag_index = ((s_cluster_palette_globals_23aa *)g_4e0350)->types[entry->palette_index].tag_index;
 						real yaw = entry->yaw * 0.02473695f;
 						real pitch = entry->pitch * 0.012368475f;
 						vector3f direction;
 						direction_from_angles(&direction, yaw, pitch);
-						function_17e670(0, &entry->position, tag_index, &direction, 1.0f, 1, NONE, 0);
+						function_17e670(&entry->position, 0, tag_index, &direction, 1.0f, 1, NONE, 0);
 					}
 				}
 			}

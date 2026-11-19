@@ -1575,7 +1575,7 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
     point3f const *source, point3f *destination);
 
 // @retail 0x17e670
-void function_17e670(s_effect_source *source, point3f const *point, long tag_index,
+void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
 {
     if (!g_46dd48)

@@ -417,7 +417,7 @@ long __stdcall function_177040(long particle_system_index, long effect_index);
 void __stdcall function_174990(real dt);
 void function_156b60(s_effect_beam *beam, real progress, transform4x3f const *matrix);
 void function_248c60(s_particle_location_datum *particle_location, s_particle_system_datum *particle_system, transform4x3f const *matrix, bool field_b4);
-void function_17e670(s_effect_source *source, point3f const *point, long tag_index, vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2);
+void function_17e670(point3f const *point, s_effect_source *source, long tag_index, vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2);
 void __stdcall function_b7880(long object_index, long node_index, point3f const *point, vector3f const *impulse, vector3f const *angular_impulse); /* stubs/damage.cpp */
 
 /* unknown_0259d0's inline matrix and vector helpers */
@@ -3261,6 +3261,8 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // order 29; after the point copy, velocity, then the compressed store, location 14 (round 117's form: point copy and
 // store order left; a one-use local, not kept without a match); after the point copy, location, compressed store,
 // velocity 37; retail's order re-measured 40. Body unchanged.
+// Coordinator 11-19: 0x17e670 is now declared (point, source, ...) for 0x23aad0's match; that gives 21 here (first
+// difference at +0x472), so the call's register pair no longer blocks this function.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3303,7 +3305,7 @@ void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_
 			vector3f velocity;
 
 			function_177d10(effect, &random->seed, forward, &direction, &velocity, part->velocity_lower, part->velocity_upper, part->velocity_cone_angle, part->a_scales, part->b_scales);
-			function_17e670(g_510c78, point, part->tag_index, &velocity, function_259d0(&random->seed, __FILE__, __LINE__, part->radius_lower, part->radius_upper), 0, NONE, 0);
+			function_17e670(point, g_510c78, part->tag_index, &velocity, function_259d0(&random->seed, __FILE__, __LINE__, part->radius_lower, part->radius_upper), 0, NONE, 0);
 		}
 		break;
 	}
