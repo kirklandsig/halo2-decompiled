@@ -606,11 +606,33 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // first view's coefficients load into registers and up.i is carried into the second view, so the statement-level
 // scale branch is what keeps our coefficient loads from crossing into the second view; retail crosses it with one
 // test per view. The camera read from a separate plain global outside its storage aggregate (diagnostic) gives the same code.
+// Shared right-axis coefficient after offsets 266, Shared right-axis coefficient after offsets with one scale
+// read 292, Shared right-axis coefficient before offsets 266, Shared right-axis coefficient before offsets with
+// one scale read 292, Horizontal camera row after offsets 258, Horizontal camera row after offsets with one scale
+// read 276, Horizontal camera row before offsets 258, Horizontal camera row before offsets with one scale read
+// 276. NOT kept: Capturing the horizontal coefficient row reaches 1136 bytes in two forms at 258 but raises the
+// score. Sharing the scale shortens both forms and the original offset and transform layout is restored.
 // M3 lane 3 r263 (fast; base 221): separate view outputs (raw offsets kept) with the depth limits written in the condition 304
 // (1078 B); the limits in the condition on the in-place form 259 (1114 B); `i*i < limit` compares 221, `4.f * k * k` limits
 // 221, `0.f > k` sign tests 221 (all the same code). Diagnostic: 1..7 dead initialised locals 222/222/223/223/221/221/221.
 // Point-to-view indexed/aggregate/shared-helper/copied-scale displacement, first endpoint first 335/333/315/331;
 // second endpoint first 328/327/308/330. All shorten away from retail; original helper and body restored.
+// Round 640: shared vector setter 221. Right/up/forward vector products through
+// scale and scaled-add, three scaled axes, two scaled axes, or a separate forward
+// product 281/256/267/271. Endpoint traversal in two passes, fused, or axis-first
+// 289/389/310. The second raw displacement and shared coefficient still have
+// different homes. Original view helper and body restored.
+// In-place transform pointer, direct scaled default 221.
+// In-place transform reference, direct scaled default 221.
+// In-place transform pointer, scaled default used by the scale branch 221.
+// In-place transform reference, scaled default used by the scale branch 221.
+// In-place transform pointer, separate raw input retained for the scale branch 355.
+// In-place transform reference, separate raw input retained for the scale branch 355.
+// In-place transform pointer, scale result chosen before the raw default store 310.
+// In-place transform reference, scale result chosen before the raw default store 310.
+// NOT kept: the pointer and reference forms tie with the default copy and in-place scale.
+// A separate raw snapshot or branch-owned copy raises the score and grows past retail length.
+// The original 0x20 frame, raw displacement homes and coefficient schedule remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

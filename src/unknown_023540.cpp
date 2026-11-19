@@ -374,7 +374,7 @@ static inline bool structure_has_matching_samples(void)
         *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
 }
 
-// score 223 (was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
+// score 209 (was 226; earlier 223, was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
 // false path last (0x22adc comiss, 0x22ae0 jbe 0x22c1d), so a NaN period clears g_5093f4 (was: ran the update);
 // rotation[5] and [7] use j*(k*complement) with k*complement shared with [2]/[6] (0x22a0e, 0x22a36), was (j*k)*complement.
 // Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22889);
@@ -410,6 +410,8 @@ static inline bool structure_has_matching_samples(void)
 // Round 102 (m3 lane 9): retail reads the sample set pointer (+0x84) twice, once inside the admission test chain and
 // again after it, the shape of an inlined test; the admission through the shared structure_has_matching_samples (also
 // used by 0x23690) 252 -> 223 plain, kept. Left: frame 0x64 against 0x68 and 18 bytes short (969/987).
+// M3 lane 14 r116: `inline` on 0x22750's definition (kept for 0x22cf0) gives this function retail's reload of the
+// fraction into XMM0 before each 0x22750 call: 226 -> 209 at retail's 987 bytes (plain).
 // @retail 0x22850
 void function_22850(void)
 {
@@ -2874,7 +2876,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // is still compared with minus one where retail does that before the size is stored; re-measured at 330 (1591 bytes
 // in the reduced image, against retail's 1543). BLOCKED-BY 0x235a0.
 // MiniMax R (11-15): no new form, no lower score (330): the first difference is still at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; retail inlines the first 0x235a0 copy and calls the second one, while this build inlines both, and retail's dword rounding of the byte count (sub size, remainder; add size, 4) written out after the zero test measures 392 (1624 bytes), since the body is already misaligned there.
-// score 330 (was 364; earlier 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
+// score 354 (was 330; earlier 364, was 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
 // made 0x4b5d0 175, long makes it 93); the structure global is read
@@ -3005,6 +3007,8 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // not kept.
 // MiniMax R (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// M3 lane 14 r116: 330 -> 354 with no change here: 0x22cf0 now takes the position pointer in EDX as retail's does, so
+// both calls gain retail's `mov edx, eax` (the only change in this function's code) and the body is 4 bytes longer.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3141,7 +3145,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax R (11-16): no new form, no lower score (54): the body is still retail's length and the scheduler still places the
 // x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527); the corner rows in the
 // other orders give 54 or worse, and the permuter (13 tries in 339 s, annealing) found no variant under 54.
-// score 54 (was 54): earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
+// score 54 (was 54): r200 unchanged; earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
 // (first difference +0x527). Round 176 (m3 lane 5, fast = plain): the hand-written slot-12 shader call
@@ -3380,6 +3384,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours. Tried, all 54 (same code): outputs by reference, `/ 2.0f`, u and v as two helpers; with each of a set's 8
 // statements written separately: retail's first-set order 219, single swaps in one set 54-225 (none under 54), 6 random
 // orders 96-247. Nothing kept: the body is as on r843.
+// M3 lane 6 r200 (fast with 0x144f0/0x1cc30/0x2a2f0, all MATCH; control 54): the second trig pair computed ahead of the
+// first corner set 261 (2006 B); the second scale's zero fix moved down to just ahead of the second set 233 (2042 B); the corner
+// helper plain `inline` 54 (same code); sine first in the first pair only 249 (2006 B); sine first in the second pair only
+// 128 (2022 B). Left as before: at each tie in both corner sets retail issues the SSE step ahead of the x87 one (the
+// coordinates 3, 4 and 5 of each set run on x87 in both builds).
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

@@ -134,6 +134,14 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // MiniMax S (11-16): no new form, no lower score (902); retail's scale helper is still unrolled while this build's loop is rolled, the frame stays 0x1f0 against retail's 0x1d4, and the contact array's destructor that blocks the unroll is set in another lane's header.
 // Earlier at 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // MiniMax A (11-18): no new form, no lower score (949 in the reduced image): the first difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, ours the other way round) and the frame (0x1f0 against retail's 0x1d4), so every stack home below the top is out of step.
+// score 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// M3 lane 3 r268 (fast, control 949): the three entry flags renamed (time step, newly active, velocity changed) 949
+// (same code: the flag bytes stay at +8/+9 where retail leaves +9 between them); the newly-active test with the
+// flags-word bit first and the time-step flag second 997; the swap-remove copy reading `[--size]` in one statement 949
+// (same code); the speed product written field first 949 (same code); the object-type mask computed at each of its two
+// tests (no mask local) 1008 (4283 bytes). The three cross-file causes above (rolled scale loops behind the contact
+// array's destructor, 0x24590 treated as clobbering, 0xbadc0 treated as writing memory) are unchanged and their files
+// (src/unknown_1cec30.cpp, src/unknown_023540.cpp, src/unknown_0bad50.cpp) are avoided this round.
 // Earlier at 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Walked against retail block by block (b2A, 11-06): conditions, fields, callees, argument order and loop/removal shape agree. One precision
 // difference fixed: the angular block's x87 dot product (0x1d31a6-0x1d31f2) adds (i + k) + j, where the helper's other two sites (0x1d289c, 0x1d2c6d) add

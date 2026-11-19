@@ -888,7 +888,14 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
-// score 90 (was 90): the identity pointer and the requested rank take EAX/ECX the other way round, so one extra copy into
+// score 90 (was 90): the identity pointer takes ECX and the requested rank EAX (retail EAX/ECX), so a `mov eax, ecx`
+// before the removal call adds the two bytes that move every later jump. M3 lane 3 r268 (fast with 0xac050, 0xac360,
+// 0x2399da, 0x23955e, 0x2b278e, all MATCH): the over-rank and rank-3 refusals as guard returns inside `rank != NONE`
+// with one `rank == NONE ? remove : set_rank` call after them 95 (437 bytes); both ranks read through a file-local
+// inline rank getter 90; a named team-identity pointer in the removal arm 90; have_member and may_change declared
+// together at their first assignments 90; `rank != NONE` tested first with the removal in the else arm and the
+// over-rank refusal as the nested else 92. Identity ECX/rank EAX remain in all five.
+// the identity pointer and the requested rank take EAX/ECX the other way round, so one extra copy into
 // EAX before the removal call shifts every later jump by two bytes; the forms below were measured.
 // MiniMax B (11-18): no new form, no lower score (90, was 90): the identity pointer and the requested rank
 // still take the two registers the other way round, so this build copies the identity into EAX before the
@@ -935,6 +942,7 @@ bool __stdcall function_2399da(long controller_index)
 // jump; the frame, the call arguments and every other instruction still agree with retail row for row. A
 // permutation search over this body (300 s, annealed, one job, with the callees in the reduced image) tried 34
 // variants and none scored below the baseline.
+// Earlier 90 (was 90): the difference is purely the register colouring of the two values the
 // Earlier at 90 (was 90): the difference is purely the register colouring of the two values the
 // matched callee 0xac050 takes: retail reloads the selected identity pointer into eax and the
 // requested rank into ecx, so the callee needs no copy, ours keeps the pointer in ecx and the

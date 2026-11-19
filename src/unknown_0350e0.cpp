@@ -70,20 +70,21 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// score 334 (was 334): the builder's squares spill where retail keeps them in XMM1/XMM4/XMM6 and re-reads the axis.
 // MiniMax A (11-18): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7
 // with the squares in xmm1, xmm4 and xmm6, takes the cosine on the x87 stack before the cross terms and forms them as
 // (inverse * j) * i, (inverse * k) * i and (inverse * k) * j, while this build keeps the axis in xmm4, xmm5 and xmm6,
 // spills the squares and reassociates the cross products; the helper's named sine products in retail's order measure
 // 386, the three diagonals first measure 347, the cross terms split into named scaled components measure 336 and the
 // nine matrix writes in retail's order measure 352, so the body stands.
-// score 334 (was 334): Frame 0x90 agrees. The first axis load uses a different XMM register.
+// Earlier at 334: Frame 0x90 agrees. The first axis load uses a different XMM register.
 // The build spills the squares before the cross products.
 // MiniMax S (11-17): no new form, no lower score (334): the body is still 1781 bytes against retail's 1779 and
 // the frame still 0x98 against retail's 0x90; retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with
 // the squares in xmm1, xmm4 and xmm6 and takes the cosine on the x87 stack before the cross terms, while this
 // build keeps the axis in xmm4, xmm5 and xmm6 and forms the cross terms first.
 // MiniMax R (11-16): no new form, no lower score (334): the body is retail's 1779 bytes; retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with the squares in xmm1, xmm4 and xmm6, while this build keeps the axis in xmm4, xmm5 and xmm6 and publishes the nine entries from xmm0, xmm1 and xmm2, and the frame stays 0x98 against retail's 0x90.
-// MiniMax S (11-16): score 334 (was 334): no new form; the frame 0x90 agrees but the length is 1781 against
+// MiniMax S (11-16): at 334, no new form; the frame 0x90 agrees but the length is 1781 against
 // retail's 1779, and the trig prologue still loads the three axis squares into different registers than retail
 // and forms the cross terms before the sine and cosine instead of retail's order, so the body is offset from
 // the start.
@@ -408,6 +409,15 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // or named sine products 350/351/338/357. All pairs seeded before row corrections
 // in the same four forms 343/399/367/376. NOT kept: even the closest form
 // shrinks the frame, and the frame-preserving named-sine form grows to 1794 bytes.
+// M3 lane 8 r191 (fast with 0x137ed0, matched throughout; control 334): a compile-only build of this file gives this
+// function's code exactly, so 180 builder and pass shapes were screened there and five confirmed: sine products named
+// first (i, k, j) with the complement and cross terms named and the diagonals first, rows rotated in place on transform
+// locals (i and j copied, k read again) 334 (1782 B); sine products named after the squares (i, k, j), each cross term
+// written in its two entries, diagonals first, in-place rows 328 (1780 B; a statement order and a value written at each
+// use, not kept); sine products first, the complement inline, retail's computation order, in-place rows 355 (1753 B);
+// the kept rows with sine products first (i, k, j) and each cross term written at its uses in retail's order 336 (1785 B);
+// that with the complement inline and field order 333 (1786 B). In-place rows give retail's row schedule (aligned 418
+// against 622), but no builder shape screened keeps the squares in registers. Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1913,6 +1923,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->j = direction->i * cross.k - direction->k * cross.i;
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
+// MiniMax B (11-19): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18 and the result still shares the scale argument's home instead of the slot at +8, the reference vector still starts at +8 where retail's starts at +0xc, and the four cases still differ in their float schedule; an else that writes the zero result, a literal zero in the early returns, a declared copy of the result, an angle local, a scaled local and the declaration orders all give byte-identical code, and the 177 form needs the XMM7 clobber that raises the caller 0x2e9e0 from 492 to 572.
 // score 193 (was 193): see the forms below.
 // MiniMax D (11-14): no new form, no lower score (193): retail's four cases still compute their cross products with
 // their own temporaries - its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before
@@ -2561,6 +2572,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Separate decode with record construction from fields or scalars 516/557.
 // NOT kept: the indexed-field lead groups the decoder outputs and keeps
 // frame 0x90. Scalar record construction reaches frame 0x94 but grows by 26 bytes.
+// M3 lane 5 r205 (fast, control 492): one-field locals dropped for reads at each use: the entry flags pointer 492, the
+// displacement 492 (same code each), the colour curve pointer 531; the loop index declared at function scope beside the
+// outputs (retail homes it between alpha and tag) 492; the near angle read at each use 492. The frame stays 0x90.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3273,6 +3287,10 @@ real magnitude3d(vector3f const *v);
 // Ordered signed dot bounds, lower/upper first 191/192; lengths first 191/191;
 // fallback-first for the same four forms 191/192/191/191. NOT kept: the two
 // comparisons replace the x87 absolute test and change the frame.
+// M3 lane 8 r191 (fast with 0x24590/0x30bf0, control 170): the rotation through the shared in-place helper of
+// include/axis_rotation.h on `first` 181 (1030 B; its projection sums i first, retail's dot k first); with a named float
+// copy of the dot for the arccosine 182 (1026 B, frame 0x34); `dot` or `first`/`second` declared at the top 170/170 (same
+// code); the fallback first under the negated test with its own return 170 (same code). Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3966,6 +3984,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Swap record shared across all four passes, isolated per gate, shared across admission, shared across
 // removal, shared through creation, or shared after paired admission 317 each. Existing swap with a value capture,
 // direct or named, 367 each. The prefix and state registers and the ordinal homes remain exchanged.
+// M3 lane 5 r205 (fast with 0x4b160, MATCH each time; control 317): passes 3 and 4 sharing their own index (passes 1-2 and
+// the decay loop keep `i`) 317; pass 1 with its own in-loop index 375 (1342 B); `register` on `first` 317; the decay loop
+// with its own in-loop index 317; pass 2 with its own in-loop index 317. `first` keeps EBP in each.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4352,6 +4373,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // conditional publication 506, per-arm publication 492; separate phase advance/accumulator/
 // fraction 500; radius in size arm 495; optional size update 486. NOT kept: cycle-local
 // displacement gains one at retail length and still reserves 0x60 bytes.
+// M3 lane 5 r205 (fast, control 486): the old position advanced in place as the moved point (no `moved` local) 535 (1985 B,
+// frame 0x5c); the two projections as const locals 486; the offset updates as `+=` 486; the current position projected
+// before the moved point 546 (2097 B); `old` copied through the position pointer declared ahead of it 486.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5389,6 +5413,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // 641/598. With four-channel color 382/382/610/622.
 // NOT kept: the forms at retail length still miss frame 0xe0 and raise the score.
 // The original corner helper and scalar alpha keep the lower count.
+// M3 lane 8 r191 (fast, control 231): the offsets as `-radius` 235 (1819 B: a `0 - radius` subtraction where retail
+// multiplies by -1.0); radius renamed size 231 (same code); the four-channel colour read at the call 225 (1826 B,
+// re-measured), with `-radius` 226 (1822 B), with radius renamed extent or width 225/225 (radius still spills at +0xc,
+// so the slot does not follow the name). Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

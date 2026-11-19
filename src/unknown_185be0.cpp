@@ -132,6 +132,12 @@ union s_185be7
 };
 
 // score 396 (was 396): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
+// M3 lane 3 r268 (fast): the input-record copy ahead of the two angle conversions 395 (the copy then precedes the angle
+// stores as retail, registers unchanged); that copy first with the second angle converted first 393 (the pair then takes
+// retail's XMM7/XMM0 and only the conversion constant stays in XMM2 where retail has XMM1, which retail frees because it
+// treats 0x24590 as clobbering); both a gain under the keep bar from statement order only. The angle pair read through one
+// `real *` pointer 957; the pair copied as one vector2f and scaled in place 949 (3772 bytes); the range fraction as one
+// conditional expression with the clamp inside 911 (3788 bytes). Still BLOCKED-BY 0x24590 (its file is avoided this round).
 // MiniMax E (11-17): no new form, no lower score (590): the body is still two bytes over retail's 3777, the control global is still carried in ebx from the entry block where retail reads it into ecx a second time at the flag test after the magnitude and pow calls, and the only spelling seen to reproduce that reload takes the global's address, which this lane may not do.
 // MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
 // `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on

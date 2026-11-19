@@ -592,6 +592,14 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ. M3 lane 3 r268
+// (fast with 0xf0fd0, 0x1fb360 and the eleven matched callers/neighbours, all MATCH): the prop walk through 0x26be00/
+// 0x26be30 with the view index read through a prop_node_get pointer after the callback 285 (948 bytes); the
+// actor-iterator test as `actor != other` against the cached actor 308 (942 bytes); the participant slot read at each of
+// the two stores 282 (974 bytes); the slot loop through a handler pointer (`handler->stop` tested and called) 236 (same
+// code); the prop walk and the cached compare together 299. Without the expanded 0x26ed40 (its file keeps it a call)
+// and the bool parameter (one declaration sits in src/unknown_1e3920.cpp, avoided this round) every form here rises:
+// BLOCKED-BY 0x26ed40.
 // MiniMax G (11-18): no new form, no lower score (236): the head still loads the actor pool into EAX where retail
 // loads it into ECX and keeps the scaled index in EAX where this build keeps it in EBX, and the body is still 22
 // bytes short of retail's 980 because retail expands 0x26ed40 into it; that expansion is settled in
@@ -631,7 +639,7 @@ void swarm_leader_detach(long actor_index);
 // still spills the actor pointer to a stack slot retail holds in EBP; the body is also still 22 bytes short of
 // retail's 980 because retail expands 0x26ed40 into it, and that helper's body lives in src/unknown_26e370.cpp,
 // which this lane may not edit: BLOCKED-BY 0x26ed40.
-// score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ.
+// Earlier 236 (was 236): actor pool register, displacement spill and invitation countdown still differ.
 // Earlier: no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
 // is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
