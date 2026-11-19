@@ -1471,6 +1471,11 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // output's velocity for the copy and the call 14; memcpy for the copy 14 (same code each); the result assigned straight
 // to the member and the member passed as the force 43 (the older form). Still BLOCKED-BY 0x1c4b00 (declarations),
 // 0x1ec690 (its draft is disabled) and 0x1e55d0 (another lane's file this round).
+// M3 lane 4 r223 (fast with 0x119bc0 and 0x1c4b00, control 14): the velocity copy into the first object pointer with no
+// second lookup 302 (1009 bytes); the force bool declared bare at the top of the block 14; the re-fetched object pointer
+// declared bare there 14; a named destination pointer for the +0x88 copy 14 (same code each); the 0x119bc0 result
+// compared `!= false` at its declaration 97 (1039 bytes). Still BLOCKED-BY 0x1c4b00 (its bool formal: declarations in
+// other lanes' files this round) and 0x1ec690 / 0x1eb6f0 (their file is another lane's this round).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

@@ -1942,6 +1942,19 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // channel reference with the time read before the animation 2. Diagnostic (reverted at once): any real branch between the
 // two flag-block sample calls (an integer parameter test) moves the time to SSE (`movss; mulss`, its store after all four
 // pushes), so retail's x87 time needs both calls in one block.
+// M3 lane 4 r225 (fast; control 2). Compile-only study of the schedule (small functions with `fld; fmul; fstp` ahead of a
+// call's loads and pushes): the fstp lands at a fixed slot counted from the start of its scheduling region, index 7 (the
+// eighth instruction) when the fld is the region's first or second instruction, else six after the fld. A call starts a
+// region as its index 0; a label or the fall-through of a conditional jump starts one with nothing counted; lea, register
+// moves, pushes, movsx loads and stack loads count one each (imul three); the prologue's frame push is not counted and a
+// string copy is no region start. Ours follows it (mov edx 0, fld 1, fstp 7); retail's fstp at index 8 fits only a block
+// that starts at the fld, so retail's render-model load was outside the scheduled block (round 120's reading). Trials:
+// the animation id through an inline getter returning it by value 2 (same code); a named copy of the render model with
+// `__assume(copy != 0)` at the block top 2 (same code). Diagnostics (reverted at once): the matrix copy moved into the
+// flag block 379 (x87 instructions cross the copy, fstp again at index 7); a second way into the flag block that holds
+// the render model in a register (`!render_model ||` ahead of the flag test) 421 (no load in the block, fstp at index 7
+// behind `push edi`); the samplers' unused third parameter as a one-member aggregate with a converting constructor 2
+// (same code: promoted to a long).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

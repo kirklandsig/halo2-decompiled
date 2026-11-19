@@ -284,6 +284,19 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // incremented and then read in a separate statement 76 (same code); the old maximum as `index == NONE ? NONE : ...` 79;
 // `old_maximum` declared ahead of `enabled` 76 (other code); the clamp limits read ahead of a nested `index != NONE`
 // test (0x1968b0's own shape) 76 (other code: the index jump moves below the two limit loads, as retail). Body unchanged.
+// M3 lane 4 r225 (fast with the file's functions, src/unknown_1967d0.cpp's and the helpers' other callers; control 76,
+// aligned 70). HELD lead (needs the owner's OK: one word in src/unknown_1967d0.cpp, another lane's file this round; full
+// diff in build/r225/held-0x1ea5b0.patch): `inline` on 0x196960's own definition makes the link expand the real getter
+// here, so no copy of it is needed, and every other function of both files and the callers keeps its state (0x1969a0
+// still calls it). With it: this body with only the two maximum reads as `if (g_510ca0) x = function_196960(...)` 101
+// (428 B, aligned 66); those reads with the increment written through the statistics address first, no `consecutive`
+// or `team` local and the setter's own body (its `g_510ca0 && !g_510ca1` test, long limits, a counter pointer and the
+// nested conditional clamp) 86 (426 B, plain 86; aligned 33, first difference +0xa1: retail's code to the reload of the
+// enable byte, the one thing left, which needs the enable byte and the counters in one address-taken object); that with
+// the setter as a plain call 158 (371 B: it stays out of line). `inline` on 0x1968b0's definition as well 111 (414 B)
+// and costs matched 0x1ea770 (26), 0x1e9ce0 (179), 0x1e9df0 (129) and 0x15ca10 (46), which call it in retail: the
+// setter must stay as it is. Diagnostic: a file-scope pointer to g_510ca0, set by an initialiser or by a store in an
+// uncalled function, gives no reload in this build (86 both).
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -754,6 +767,13 @@ struct s_object_damage_view
 // (!consider_team) continue; else {...}` 353 (same code each); `if (killer != NONE) { if (killer == reported_player)
 // damage_code = code; } else if (reported valid) {...}` (retail's arm order) 363 (1532 B); the team byte read again for
 // the 0x1df560 argument, killer_team kept for the end 358 (1552 B).
+// M3 lane 4 r225 (fast with the file's functions, src/unknown_1967d0.cpp's and 0xd9640; control 353, aligned 179).
+// Reading: in the selected block retail keeps the record pointer in EAX and the record's player in EDX and gives the
+// callee-saved registers to the validation's masked index (EBP), data pointer (EBX) and salt copy (EDI), where ours
+// gives EBP to the player and EBX to the record. Tried: the selected block's validation written with function-scope
+// index and datum locals 403 (1596 B), all three validations written that way 403 (same code as the first: the two
+// locals alone move the frame); the selection loop's index as a long with the slots cast 355; `best` declared ahead
+// of `selected` 353 (same code); the object lookup ahead of the two tick windows 424.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

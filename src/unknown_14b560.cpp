@@ -1669,6 +1669,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // empty arm and the body in the else 5 (same code); the mode read into a char local in the result block with the
 // outputs in the mode block 43 (1031 B); the outputs in one declaration in the mode block 43; the outputs declared with
 // their NONE initialisers at the function top beside the unit index 275 (the -1 is set up at entry).
+// M3 lane 4 r223 (fast; control 5, the outputs moved into the mode block re-measured 43 at 1031 bytes, `mov eax,
+// 0xffffffff`; compile-only screens agree with each): on that form the location index declared bare at the top of the
+// mode block 43, or in the result block ahead of the mode test 43; the globals pointer declared bare at the top of the
+// mode block 43; the reuse flag declared bare there 43; the two outputs as a two-long array bound by references 52.
+// Compile-only only (mov each): a spawn bool computed at the top 301 lines; the mode read as long or short locals.
+// In every form the folded mode compare first loads the byte into AL (a second compare unfolds it: `mov al, [edx+12]`).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

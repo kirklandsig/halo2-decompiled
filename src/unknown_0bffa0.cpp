@@ -1275,6 +1275,18 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // already sum in retail's order (forward (k, j), i; left (k, j), i; up (k, j), i); only the sphere arm's differ, and the
 // left normalize there is 0x30bf0's code inlined by the linker, which its noinline declaration in src/unknown_030290.cpp
 // (another lane's file this round) prevents: BLOCKED-BY 0x30bf0's noinline. Body unchanged.
+// m3 lane 4 r224 (one-object LTCG screen with the reduced link's objects and the ballast: 0 rows from the full build,
+// 199 aligned rows from retail; rows 140-235 are the left cross, its normalize and the forward cross, 34 of them off):
+// 0x30bf0 called for the left normalize with its noinline declaration removed (a scratch copy of its file) is inlined at
+// link time and gives exactly this body's code, also across dead-local counts K = 1..39 odd (the block stays 33-35 rows
+// off), with the noinline kept it stays a call (424 aligned), `__forceinline` on its definition 316: the noinline is not
+// what blocks the normalize. Dead initialised longs at the top, K = 21..40 and 44..64 step 4: 184-217 aligned, K = 31 330,
+// K = 32 178 (masked 68), the cross block wrong in every state. Left cross/normalize helpers x K = 0/24/26/32 (block rows):
+// normalize_inline 40-43, cross3f 35-38, cross3f + normalize_inline 37-39, direction_normalize_c0840 and the file's
+// cross_product_c1a80 for the left cross the same code as the body; a named unused length 34. The forward cross through
+// cross_product_c1a80(up, left, forward) puts that block right but for 13 rows (retail's left-first loads) and moves the
+// projection rows (164 -> 196 rows off after the block): 433 (2821 B, aligned 210) on the fast check, 258-280 aligned
+// at K = 1..40 in the screen. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

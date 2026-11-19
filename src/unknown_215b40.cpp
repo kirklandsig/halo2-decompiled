@@ -247,8 +247,6 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 
 // score 114 (was 114): BLOCKED-BY the `/GL-` flag of src/unknown_215880.cpp (see round 141 below);
 // check with 0x2157e0 in the image (it defines g_51ea14;
-// check with 0x2157e0 in the image (it defines g_51ea14;
-// check with 0x2157e0 in the image (it defines g_51ea14;
 // without it the fast check builds differently). The iterator struct gives
 // retail's frame: table at [esp+0x24], the index's slot [esp+0x28] unused, and
 // index << 6 recomputed for each copy (a plain table pointer and index
@@ -347,6 +345,21 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // On it: the scan as 0x2157e0's `while` over the getter with the capacity test after a match 114; the cached scan's
 // index declared ahead of the cached count 114; the location declared beside the iterator 114 (all same code); an
 // early `return` with `*capacity = 0` when the cache is missing 212 (600 B). Still BLOCKED-BY the build flag above.
+// M3 lane 4 r225 (fast with this file, src/unknown_2157e0.cpp, src/unknown_215880.cpp, src/unknown_020670.cpp,
+// src/saved_game_storage.cpp, 0x1249f0 and 0x13de30; control 114): why 0x215880 needs its flag, measured with the flag
+// lines changed for the measurement only (flags are not a lane's to change; full diff build/r225/held-0x215900.patch).
+// Built as a link-time object 0x215880 is 28 and differs in two things: retail calls the compiler's array-constructor
+// helper 0x20670 (pushing the record constructor 0x215b40) where our link expands the helper's loop in line, and retail
+// reads g_55c15c again after the store through the new storage where ours keeps the first read. (1) With g_55c15c's
+// address passed to a called function (a stand-in for retail's one address-taken block 0x55c030..0x55c284, the single
+// clear at 0x2156a9, see 0x215690's note) the second read appears (37, the helper loop alone left). (2) With the
+// helper's file built without link-time code generation as well (the helper is the compiler's own, never expanded in
+// retail) 0x215880 MATCHES as a link-time object, 0x20670 stays matched and this function MATCHES with round 141's
+// body; that trial costs 0x20e50 (2) and 0x2e1e0 (30), which share the helper's file and need link-time code
+// generation, and leaves 0x215b40 at 5. (3) The table as a real `c_location_record entries[0x1000]` member (the
+// compiler's own helper call) 39: the link expands that loop too, with 0x215b40 matched. So the flag stands in for the
+// native helper and the one-object block; with both in place 0x215880 needs no flag and this function is free.
+// Re-measured: round 141's body under the present flags 52 (aligned 35; not kept, as round 141 says).
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {
