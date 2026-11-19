@@ -1090,6 +1090,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Normal first at near/far/intersection 265/252/224; near and intersection 221; far and
 // intersection 222; all three 286. Point first for classification 263. NOT kept: all regress.
 // Near-plane x load and XMM coefficient/zero roles remain.
+// M3 lane 12 r147 (fast with 0x1648d0/0x320b0, both MATCH each time; control 115), existing exported helpers not tried
+// before: the far plane's negated vector through vector3f_negate (src/unknown_0b7740.cpp) 257 (1830 B); both planes'
+// normals negated in place through it 129; the intersection through point_along_vector_221e30 (src/unknown_221da0.cpp)
+// with the delta left unscaled 119 (first +0xb6); that with plane3f planes and `total` declared first 121; both planes
+// built through the plane-through-point helper of src/unknown_17d9a0.cpp 310 (and 0x17d9a0 itself stops matching in
+// the fast image, 256). The point memcpy after the segment clear re-measured 193 (a listed form).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
