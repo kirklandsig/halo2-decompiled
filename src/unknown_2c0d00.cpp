@@ -662,6 +662,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // only, the aligned count is worse) and 937 [678]. Retail reads the type byte four times in the loop: once sign-extended
 // for the four arm compares (`movsx eax`, then `cmp eax, 1`, `7`, `0xb`), and as a byte at the range test, at the
 // `1 << type` and in the sphere loop.
+// MiniMax H (11-19): no new form, no lower score (920): retail lays the join out of source order, with the type 0
+// other-actor branch followed by the join and the remaining arms jumping back to it, and no form tried here changes
+// that layout; the plain and the fast score are the same (920), so the body is as it stands.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

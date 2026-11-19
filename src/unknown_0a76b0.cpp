@@ -2567,6 +2567,11 @@ __forceinline char unit_action_round(real value)
 // `first_person_name = name = X` 234 and `long type = NONE;` 234 (same code each); re-measured: the fallback switch 237
 // (1192 B), the short-slot hand getter 297 (1196 B), both 267 (1191 B).
 // MiniMax C (11-19): no gain (234, baseline; body restored). The best known forms of this function (101-107) need a goto to the shared exit, which is kept only with a byte match, and the goto-free single-exit forms measured 536-552. What is left is the register homes: retail ranks actions, index*12, pool and the first-person name in ESI, EDI, EBP and EBX, ours ranks actions, pool, the name and index*12, and the hoisted NONE initialisation has no form here.
+// MiniMax H (11-19): no new form, no lower score (234): retail keeps the pool in EBP, the unit's index in EDI and
+// compares the sign extended hand index in sixteen bits against the NONE in EBX, while this build keeps the pool in
+// EDI, the index in EAX and compares the byte against an immediate; the forms tried by the earlier rounds (a short
+// local for the index, a local for the pool, the masked datum slot as a word, a long or a dword) are recorded above
+// and none of them recovers retail's register split, so the control (234) stands.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

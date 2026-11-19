@@ -3026,6 +3026,15 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // M3 lane 14 r116: 330 -> 354 with no change here: 0x22cf0 now takes the position pointer in EDX as retail's does, so
 // both calls gain retail's `mov edx, eax` (the only change in this function's code) and the body is 4 bytes longer.
+// score 249 (was 354): the render-memory allocation now rounds the byte count up to a dword boundary, keeps the
+// handle's NONE test and takes the output pointer through the masked handle, as retail does; the loop's pair
+// pointer, the level's table entry and the second 0x235a0 copy still differ.
+// MiniMax H (11-19): no new form below the committed score (249): the level's table entry was tried as a byte pointer
+// with the record's own twelve byte stride (296, the entry still loads folded), as a byte pointer with a four byte
+// stride (224 but the record's stride is wrong), as a named offset local (325) and with the level's limit as a named
+// local (253); the limit still comes down with a decrement where retail takes it with a lea, so the level's table
+// entry and the second 0x235a0 copy still differ.
+// NOT kept (coordinator screen, MiniMax H 11-19): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

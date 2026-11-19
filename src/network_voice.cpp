@@ -2375,6 +2375,10 @@ static inline dword voice_get_player_mask_inlined(void);
 // test and the clear 64 (all the same code); the muted test through the existing volatile-read inline twin of 0x53850,
 // last 137 or first (retail's order) 137. Retail's first port flag reuses the second availability byte the muted test
 // loaded (CL), so retail's reads there are plain; the per-site inlining of 0x53bb0 still blocks the rest.
+// MiniMax H (11-19): no new form, no lower score (64): retail's tail tests the two availability bytes before it asks
+// the mode query and then makes an extra call to 0x53be0 whose result it halves and masks to a bit, while this build
+// asks the mode query first and keeps the two bytes' test after it; the earlier rounds' 85 point forms need the
+// active and passive mode flags, which only a byte match would keep, so the control (64) stands.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

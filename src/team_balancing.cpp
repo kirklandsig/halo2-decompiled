@@ -1010,6 +1010,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // a plain fill value the load takes EAX at the top of the fill block and the player count cannot have it, and only a
 // fill value that is computed (the conversion) leaves EAX to the player count. No value-preserving natural form of
 // that was found.
+// MiniMax H (11-19): no new form, no lower score (34): the earlier rounds' notes record that the register this
+// function's parameters arrive in follows the caller 0x7e210, which is in another file and outside this lane, so the
+// remaining difference in the body is not reachable from here; the forms tried by the earlier rounds are recorded
+// above and none of them moves this body.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
