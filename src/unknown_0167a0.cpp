@@ -74,6 +74,9 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
+// Tried (full build with stand-in SDK headers, where this function starts at 124, not the SDK build's 273): the
+// test of the old entry and its data pointer evaluated into a bool first (`bool has_data = false; if (old)
+// has_data = *(byte **)(state + 0x20); if (has_data)`) 51; not kept, a test-and-set flag stays only in a byte match.
 // score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
 // MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
