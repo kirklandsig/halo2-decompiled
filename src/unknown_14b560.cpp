@@ -478,11 +478,6 @@ void player_action_initialize(s_player_action *action)
 	target->unknown08 = NONE;
 }
 
-static inline bool function_x41b793(real value)
-{
-	return (*(long *)&value & 0x7f800000) != 0x7f800000;
-}
-
 static inline bool player_action_target_valid(s_player_action_target const *target)
 {
 	short type;

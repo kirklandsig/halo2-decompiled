@@ -1638,6 +1638,11 @@ void function_2422d0(long slot)
 // `s_slot_object *const &` 7; the slot as `long const &` 7; both 7 (all the same code); the index as a `long const &`
 // to a cast copy of the team entry 104 (267 bytes: the cast folds and the reference reads the entry again after the
 // call); the bound object with no slot local 79.
+// M3 lane 9 r139 (fast with 0x2447f0, 0x243a80, 0x2422d0 and 0x15e130): `__assume(object != NULL);` at the end of the
+// first loop's body 7, `__assume(object->slot >= NONE);` there 7 (diagnostics of reference weight at the join,
+// reverted); the accept test split with a `long *entry` to the table slot under the 0x243a80 test, `continue` after
+// the accept and the reject code after it 7 (all the same code); the team array base read into a local before the
+// first loop 82, at the function top 65.
 // @retail 0x2423f0
 bool function_2423f0()
 {

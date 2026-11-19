@@ -194,6 +194,12 @@ static inline real function_x82e52f(dword *seed, char const *file, long line)
 	return (real)_random(seed, file, line) * (1.f / 65535.f);
 }
 
+/* true when a real is finite: its exponent bits are not all set */
+static inline bool function_x41b793(real value)
+{
+	return (*(long *)&value & 0x7f800000) != 0x7f800000;
+}
+
 real distance3d(point3f const *a, point3f const *b);
 real function_259d0(dword *seed, char const *file, long line, real lower_bound, real upper_bound);
 
