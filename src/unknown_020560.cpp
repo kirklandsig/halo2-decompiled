@@ -834,7 +834,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 439 (was 547):
+// score 439 (was 439):
 // Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
 // offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
 // Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
@@ -1195,6 +1195,13 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Coordinator review (11-19): the second difference vector (435) recomputes offset by hand, so scan 2's distance goes
 // through distance_sq3f(&samples[i].position, position) like scan 1 instead: 439 in the fast and the full check (2088 B),
 // 0x22850 209, nothing lost. Retail's scan 2 still sums (k + j) + i, as a vector's length_sq3f would.
+// M3 lane 14 r118 (fast with 0x22750, 0x22c30, 0x24550; difflib-aligned counts in brackets, this body 439 [285]):
+// scan 2's distance as dot3f(&offset, &offset) 531 [317] (2023 B, the same code as length_sq3f(&offset)); as
+// length_sq3f(&offset) 531 (its distance sums (k + j) + i as retail's, its dot (k + i) + j); that with
+// dot3f(&offset, &delta) 531 (same code); scan 2 through `source->entries` 554 [220] (2112 B: retail's two pointers,
+// pass counter at +0x18 and loop latch, but `nearest` lives in memory in both scans and delta.j is spilled); that with
+// length_sq3f(&offset) 635 [296]; that with `if (i == nearest) continue;` 554 (same code). Dead-local scan K = 1..12 on
+// the length_sq3f form: 531 at every K, so its dot order is not a symbol-count tie.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

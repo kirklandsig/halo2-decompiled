@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 920 (was 920): r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// score 920 (was 920): r118 (lane 14) unchanged; r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
 // MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
 // from both listings.  Retail's function-scope homes are the raised point at F+0x24, the range_min short at F+0x30,
@@ -624,6 +624,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 986/986. Reduced control 926. NOT kept: the delayed typed read recovers
 // the scaled unit-field access, but the 879 form retains frame 0x2cb4
 // and shortens the body to 3708 bytes against retail 3731.
+// M3 lane 14 r118 (fast with 0x29a190, 0x2c0d00 and 0x2c3550, all matched; fast control 920 = plain; difflib-aligned in
+// brackets, control [687]): the type arms as `switch (type)` on the type local 926 [700] (3740 B); `long object_count` 925
+// [636] (3722 B); the combined flags as `moving | (sphere_flags | obstacle_flags)` 920 (same code, first plain-equivalent
+// measurement); the object fetched after the unit/ignore skip test, defaults kept ahead of it, 919 [673]; the defaults and
+// the fetch both after that test 926 [673]. Retail's layout puts the join (distance test, definition bit, classification
+// start up to its first `jmp`) right after the type-0 other-actor branch, with the type-0 `else if` branch and the type
+// 1/7/11 arms after it jumping back; every form here keeps source order.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

@@ -872,6 +872,11 @@ real g_55e618;
 // existing vector3f_scale 188, as vector3f_scale's argument (dot3f or the written-out sum, no named dot) 188 each; with
 // plain position stores 194 (1541 B). Diagnostic (reverted): K initialised dead locals at the top of the named-dot form, K
 // = 1..6, 8, 10, 12, 16, 20, 24, 28, 186 to 189 each: the copied-and-scaled normal is not a symbol-count effect.
+// M3 lane 14 r118 (fast with 0x2ba3e0, 0x2b8e10 and 0x246cd0; aligned 84): the velocity copied as one aggregate
+// (`vector3f velocity = particle->velocity;`) 223 (1556 B, first difference +0x48, aligned 136), with the dot through
+// dot3f 223; the final rows written coefficient-first 102 (same code); the tangent after the position stores 102 (same
+// code); the tangent as a copy of the velocity minus the perpendicular in place 283 (1598 B). Retail reads v.j/v.k from
+// memory in both the dot and the tangent and loads v.i twice, spilling tangent.i/j to the 12 bytes below the sweep.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
