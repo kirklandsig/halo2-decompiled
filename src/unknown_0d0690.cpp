@@ -2612,6 +2612,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // call-boundary difference left is the second arm's 0x13da30 lookup, expanded here): the three per-component scale loops
 // written as explicit i/j/k statements 657 (3057 B), the two normalize loops only 606 (3108 B), the final length loop only
 // 542 (same code); surface_pin_color as plain `inline` 955 (2794 B), surface_sample_unpack as plain `inline` 1039 (2689 B).
+// The result/part and mesh slots still use +0x30/+0x2c. Planar coordinate outputs for
+// structure base, lightmap or both 611/611/611. Model base alone 621. Model base with
+// structure base or lightmap 626/626. All three with aggregate or separate clears 628/628.
+// NOT kept: the coordinate pairs shrink the frame and move the first difference to the prologue.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

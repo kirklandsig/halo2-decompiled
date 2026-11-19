@@ -1125,6 +1125,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // long 262/262. Word index at each address, position/direction first 266/219.
 // Direction vertex reference 265, both vertex references 271.
 // NOT kept: all scores rise and the early root copy and actor load remain unresolved.
+// The root and actor are still acquired in different registers before the dispatch.
+// Vertex table in the paired case 219, in the actor case 218, separate in both cases 219.
+// Shared vertex table after or before surface lookup 307/230, after result initialization 307.
+// Typed surface table with separate vertex reads 220 or a shared read 306.
+// NOT kept: All variants preserve the length but leave the first difference at the EBX save.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

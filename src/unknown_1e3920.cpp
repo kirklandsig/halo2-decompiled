@@ -2315,6 +2315,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // array 251; header array after grenade metadata 301; shared header accessor 251; primary
 // weapon result inside the flag/delay gate 251. The late pool and header forms still give the
 // actor and options different registers.
+// Pool, actor and options registers still differ. Phase-local random receiver sharing:
+// probability and delay 327, grenade and fraction 251, both 327, per weapon 251,
+// probability and per weapon 327, all equipment draws 251, with probability 324,
+// and one receiver through fraction with a fresh round receiver 332.
 // M3 lane 16 r142 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0/0x1e5380/0x2758b0/0x1e3b60, all MATCH; control 251):
 // diagnostic, the tail 0x1e1a00 call dropped 289 (1187 B: the pool global is still reloaded at each lookup, so the
 // unmatched tail callee is not what keeps it out of a register); the random-state pointer read once into a local for

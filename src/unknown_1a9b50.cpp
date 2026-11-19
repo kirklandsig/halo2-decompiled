@@ -848,6 +848,12 @@ extern point2f *g_468778;
 // raised six callers in earlier rounds).
 // planar output aggregate near and aggregate prediction transfers 406; planar output component near and aggregate prediction transfers 387; planar output aggregate near and component prediction transfers 376; planar output component near and component prediction transfers 371; planar output aggregate near and aggregate prediction transfers with actor first 415; planar output component near and aggregate prediction transfers with actor first 414; planar output aggregate near and component prediction transfers with actor first 423; planar output component near and component prediction transfers with actor first 373.
 // NOT kept: The best planar form scores 371 at retail length, a four-point gain. The actor-first component form scores 373 and moves the first difference to +0x9. Neither meets the retention threshold. The original actor, settings, and request lifetimes are restored.
+// Actor/slot names, settings/prop names and two orders of all four names:
+// settings-first 375/375/375/375, actor-first 413/413/413/413.
+// Typed settings view after admission, with existing or later slot binding:
+// settings-first 375/374, actor-first 413/413.
+// NOT kept: the one-point gain leaves the late actor read. Actor-first forms
+// reserve 0x44 instead of 0x40, spill the actor and grow to 1555 bytes.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

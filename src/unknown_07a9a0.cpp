@@ -1048,6 +1048,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // selector remains a call (two stacked first lines merged in r108).
 // Earlier score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
+// the frame is 0xd0 versus 0xb4, the opening variant lookup expands,
+// and the upper-capacity selector stays a call. An earlier body scored 964.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
 // M3 lane 14 r114 (fast with 0x73530, which matches throughout; control 871): the convention already agrees (session in
@@ -1609,6 +1611,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // group statistics or before histogram 914/914. Split store with dword histogram 933.
 // NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
 // The opening variant lookup still expands and the frame still differs.
+// Typed shared machine-ID and histogram storage (long/word cells): one shared histogram 936/892,
+// separate overlapping histograms 936/892, first histogram overlapping 931/894, and second
+// histogram overlapping 911/871. NOT kept: the full overlap reserves 0xb0 instead of 0xb4,
+// the first variant lookup still expands, and no form matches.
 // M3 lane 2 r108 (fast with 0x73530; control 871): `long histogram[16];` plus a memset at its declaration (retail's
 // dword cells: 16-dword rep stosd at 0x7e66c/0x7e6a5, 4-byte increments) 936 (2716 B, frame 0xb0); `long histogram[16]
 // = {0};` 911 (2748 B); the machine-ID copy loop in its own block 871 (same code); that block with the memset dword
@@ -1638,6 +1644,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // NOT kept: The shared word-cell traversal ties. Dword cells reserve 0xb0 and shorten the body. The scoped
 // dword form reaches 0xb4, but changes the session ingress to the stack and shortens to 2652 bytes. All nine
 // checked peers retain their opening measurements.
+// Variant/summary names, index/capacity names and two complete entry name orders,
+// each with word buckets 871/871/871/871 and dword buckets 911/911/911/911.
+// NOT kept: word forms tie. Dword forms reserve 0xb0, shorten to 2748 bytes and
+// raise the score. The opening lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

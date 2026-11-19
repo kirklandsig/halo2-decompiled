@@ -956,6 +956,10 @@ struct s_1f8a70_actor
 // default 316.
 // NOT kept: Case-local path and root lifetimes tie. The real target-mode switch scores 316 and shortens the
 // body to 1620 bytes. The route join and failed-result reload remain open.
+// Missing targets rejected through the route selector in modes 4/5/6: 338/321/310.
+// Pairs 4+5/4+6/5+6: 404/405/405. All three 411, with missing movement 411.
+// NOT kept: all score higher. The 0x80 frame and branch condition agree. The
+// first branch displacement, route dispatch and failure result still differ.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

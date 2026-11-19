@@ -3130,6 +3130,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // follow-up's two calls 50; the reset word declared first in the arm 50; the pending arm's test as `!(delay > 0)` with
 // its two assignments swapped 50; the second call's index read through the parameter's address 50 (all the same code,
 // the first follow-up still reloads the index from its home).
+// Capture the encoded trigger event at its original read. Map it after iterator setup
+// as short/long/dword/assigned short 60/39/39/60, or after the walk 64/55/55/64.
+// NOT kept: the 39-point forms grow to 581 bytes, test EDI instead of DI and still
+// reload the first squad index. Retail maps the event before setting up the iterator.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

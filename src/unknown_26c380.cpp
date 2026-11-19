@@ -737,6 +737,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // form and 435 (1552 B) on the goto form; the five tail point computations written with `distance` at each product 319 (1605 B)
 // on the aggregate five-use form and 326 (1612 B) on the plain aggregate form (the offset keeps XMM0). Re-measured: the
 // aggregate goto form 304 (1612 B). Body unchanged.
+// The return byte still uses +0xf rather than +0xe. Initial return byte as the blocked default, transition
+// default or both 244/244/244. Chained return/block clear in either order 382/383, chained transition clear 389.
+// Initialize the return from either published default 389/389. The direct uses leave the byte homes exchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

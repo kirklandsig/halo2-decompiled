@@ -944,6 +944,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // predicate with a result variable or two returns, `index == NONE || !flag`, a flag local under its own NONE test) 64/64/75/64
 // (the predicate's bool is materialised); diagnostics, removed: an empty `if` (five spellings) or an empty inline call under a
 // condition (four) ahead of the object read 77 each (gone before CSE). Body unchanged.
+// The saved result register and shared lookup still differ. Bind the shared virtual-call size, state,
+// size then state, or state then size. Creation-validity result 49/49/49/49. Attachment-success
+// result 77/77/77/77 at 160 bytes, with the last argument still cached in EBP.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

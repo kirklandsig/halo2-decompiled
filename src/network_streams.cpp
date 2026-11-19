@@ -1222,6 +1222,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // as `m_messages[index].flags |= 2;` 100 (240 B); the found block without `break` and `if (type) break;` after it 70
 // (231 B). Left: a read of `flags` after the update that leaves no instruction; a value that the enclosing test already
 // decides is folded before allocation, so it is not a repeated test.
+// In-place resend update, two scan-local naming orders, each with original or renamed output
+// parameters: clear after lookup 89 in each form; initialize before lookup 59 in each form.
+// NOT kept: early initialization restores the ECX message and AX flags but places the
+// zeroing and output loads differently. The other initialization changes the entry frame.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

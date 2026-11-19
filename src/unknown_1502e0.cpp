@@ -1598,6 +1598,11 @@ void function_150820(dword *bits, bool local_only)
 // eligibility unit 45; secondary hand enumerator default with captured eligibility unit 45.
 // NOT kept: The conditional and paired assignments tie at 43. The explicit defaults add one byte and score 45.
 // Sharing the eligibility unit index leaves both results unchanged. The original body is restored.
+// Shared table and absolute slot with the player bound before the guard, before the hand,
+// after the hand, or after the initial unit read: 32/28/28/71 with either player type.
+// Indexed unit reads throughout 74/74, one unit index through the mode query 43/43.
+// NOT kept: 32 folds the player address into the unit field address. The 28 forms add a
+// unit reload before the query and grow to 213 bytes. The consistent forms tie or regress.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

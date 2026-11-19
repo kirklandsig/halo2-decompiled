@@ -499,6 +499,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // cache_index) return result;`) 77 (same code), on the 83 merge 83 (same code: still folded); the exit returning
 // cache_index on that merge 83 (same code); diagnostic, reverted: the walk as a forced-inline function returning its pick,
 // on the merge, 169 (524 B); the merge as `initialize ? result != NONE : true` 81 (522 B). Body unchanged.
+// The cache hit still enters the shared NONE test, and the exhausted scan folds its return.
+// Typed optional owner record via a conditional value 158/157 or an assignment guard 150/151.
+// Missing-handle arm with a hit decision 145/146 or a miss decision 145/146
+// (original merge / hit bypass). The opening body is restored.
 // M3 lane 2 r108 (fast with 0x3db00/0x3dd10, both MATCH): the listed 9 form re-measured 9 (519 B, 6 aligned lines: the
 // found path enters the reload ahead of the merge test where retail's merge block is `cmp esi, -1; mov cl, 1; je` with
 // the found path landing on the record block's own reload, and the walk's NONE return folds to `or eax, -1` after the

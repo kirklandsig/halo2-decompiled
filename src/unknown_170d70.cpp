@@ -311,6 +311,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // named copy decision 142, existing placement cross for left 68 or with explicit deadline cursor 125.
 // NOT kept: the explicit cursor restores the traversal at 1413 bytes, and the other forms leave the
 // deadline and group homes exchanged.
+// Direct j/k/i up reconstruction 137, or with independent deadline 133.
+// Six named cross products 126, or with independent deadline 125.
+// Independent deadline with captured up components 134, one orientation
+// acceptance result 125, shared copy width 120, or shared inner index 127.
+// The independent deadline recovers the slot order in the traversal,
+// but the retained correction schedule still differs and the body grows.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -894,6 +900,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // both count field bindings 129, reserved volume name 129, named projection result 129.
 // NOT kept: the cluster array changes extent, and the projected slot changes the prologue.
 // The other forms leave the opening register exchange.
+// Shared capacity result with a loop break 125, with joined cluster address 139,
+// early camera key 118, camera base 125, common plane store 118, signed
+// successor 122, widened volume slot 125, paired group cells 125,
+// post-reservation camera key 125, and map miss first 132.
+// NOT kept: the 118 forms leave cluster creation inline and move the camera
+// key ahead of the count store or merge the separate plane stores.
+// The signed-successor form gains seven.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1183,10 +1196,20 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // and arctangent in both scale paths 336. NOT kept: the float paths admit
 // different precision boundaries. The two lower scores still spill two
 // squares, and the 337 form adds a move while using XMM7 for unity.
+// Common real unity for the two matrix expansions and inverse 363, also for the vertical
+// arctangent 333, or separate matrix-local unity 345. Shared unity with staged cosine
+// complement 339, grouped diagonal complements 402, symmetric field initialization 370,
+// diagonal field accumulation 370, or separate cosine conversion 361.
+// NOT kept: 333 still spills two axis squares and uses XMM7 for unity. The extra unity local
+// and helper argument change allocation only. The separate cosine conversion loses the initializer.
 // Sine j/k before cosine and i after; double i sine intermediate; descriptive trig names
 // Axis reference, matrix output reference, immutable original forward, symmetric matrix
 // with signed corrections, and the builder returning its output pointer: 370/364/346/346/346/346/395/346.
 // NOT kept: Two first-axis squares still spill across the half-angle tangent and unity starts in XMM3.
+// Unity still starts in XMM3. Forward-field pointer through deviation or only the rotations 355/357.
+// Up-field pointer at first rotation or entry 362/361. Both pointers early or up bound later 360/360.
+// Both field references or both pointers at first rotation 361/359. NOT kept: all regress, and six
+// forms also demote the matched initializer.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

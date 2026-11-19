@@ -906,6 +906,11 @@ void function_245400(s_source_245400 const *source, long index,
 // two or three lines with period 8 and nothing else; steps 2 to 5 in main's statement order 236 (751 B). Diagnostics,
 // reverted: the function returning the second vertex pointer at the facing failure 214 (the pointer then takes ESI, the
 // homes appear); the dot written edge-first on main's body 207 at 783 B (aligned 157: retail's in-place products).
+// The 0x24 frame still lacks the separate code and side homes. The matrix already loads at its test.
+// Edge/cross names in both orders 164/164; edge/point names in both orders 164/164;
+// endpoint and plane receiver names in both orders 164/164; all geometry names 164;
+// all geometry names with the plane table after the edge 166. NOT kept: the late
+// table still reserves 0x24 and raises caller 0x245aa0 to 3.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -2521,6 +2521,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // symbol-count tie), the case 2 vector written as three member copies from the actor 611; `default:` joined to case
 // 13's `return 1` 613 (2416 B).
 // Further forms on the 433 base:
+//
 // Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
 // busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
 // fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
@@ -2538,6 +2539,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 447 (2420 B, aligned 139, masked 97: the result test then sits after case 0 as in retail, case 20's first arm jumps
 // back to it where retail has its own return-1 epilogue, and its else arm still stores the d1 flag; a case moved by
 // score, match-only), `default: return 1` last 613, with case 13 613, `default:` through the shared exit last 641.
+// The dispatch default and shared success target still span different blocks.
+// Direct type-19 release 475; direct ordinary release 473; direct returns in both release arms 474.
+// Direct completion at the unit request 679, playback 493, animation 405, object mode 438, all four 622.
+// NOT kept: The animation form adds a short-return epilogue where retail joins the shared completion test.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

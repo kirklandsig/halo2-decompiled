@@ -2078,6 +2078,7 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // MiniMax B (11-18): 450 -> 448: the detail request's tail grows to 0x94 bytes (six bytes after
 // tracking_data_size, which sits at 0x8c), which makes this function's frame 0x128, retail's. The frame
 // follows the tail's size: 0x8e and 0x92 to 0x94 give 0x128, 0x96 and 0x98 give 0x12c, 0x9c gives
@@ -2503,6 +2504,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // guard 305; full state and gain accumulated in the table 433.
 // NOT kept: The full-state variants reserve 0x12c and the gain-table store lengthens the body. The remaining forms
 // tie or raise the difference score.
+// Shared record-array base for the range gain and flag, direct/datum/absolute-index/two-address
+// forms: real sum 302/302/302/302 at 1923 bytes, decibel sum 335/335/335/335 at 1909.
+// NOT kept: the gain is three points and the frame remains 0x11c. Decibel forms also shorten
+// the body. The original level, flag and all call sites stand.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

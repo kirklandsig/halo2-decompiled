@@ -918,6 +918,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // over this written-out form (which locals, their place, the dot's order and sides, the projection's sides, named
 // crosses, row orders and sides; about 170 variants scored on the SSE block alone) found nothing nearer than three of
 // the block's 62 instructions: retail's block needs the two cross spills at once, and no spelling tried keeps both.
+// Early random-state binding with the unit-vector sampler for initial direction/axis/both
+// 126/126/154; with sine before axis 154/126/154. Early binding with table indexing,
+// axis between sine and cosine or before both 152/152. NOT kept: the sampler's four-point
+// gain is below the bar, and all forms retain the 0x1c frame and later seed load.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
