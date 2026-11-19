@@ -1400,6 +1400,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
+// score 175 (was 183): The 0xfc frame and length agree. Unity loads early, and the definition, material and point homes differ.
 // MiniMax A (11-18): no new form, no lower score (175): the 0xfc frame and extent agree, but the constant loads still come early and the definition, material and point homes differ.
 // MiniMax D (11-15): no new form, no lower score (566): the frame is still 0xf8 against retail's 0xfc and the definition pointer
 // still sits at frame+0x0c where retail has it at frame+0x08, so the argument slots after the prologue pair with the wrong rows;
@@ -1410,7 +1411,6 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // MiniMax C (11-16): no kept form: our 1.0f is materialised at the top of the prologue where retail loads it after
 // the tag lookup, which shifts the whole listing by one instruction, and the definition, material, position and
 // facing homes stay four bytes out of retail's, so the body stands.
-// score 175 (was 183): The 0xfc frame and extent agree. The constant loads early, and the definition, material and point homes differ.
 // Earlier score 175 (was 183): Definition/material/point slots, entry scheduling and the walking preload still differ.
 // Earlier 183 (was 203): m3 lane 4 r208 (plain; every function of this file checked). KEPT 203 -> 185: the alternate
 // facing through the existing function_cb7e0(arg, &facing) (retail expands 0xcb7e0 there; the copy itself is the same
@@ -1827,6 +1827,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Split across tag lookup in either order 177/177. Both after component lookup 176.
 // Split between component lookup and airborne test in either order 176/176.
 // NOT kept: no recovery of the native unity schedule or definition/material/point homes.
+// Shared motion word 546, named predicates from the saved word 554, word before turning 551, saved-word masks 550.
+// Masks on the field 548, named predicates from direct tests 554, promoted motion word 475, initializer-scoped word 546.
+// NOT kept: the argument staging variants displace frame homes and retain the early unity load or change the frame size.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4550,6 +4553,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
+// score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
 // MiniMax A (11-18): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and the matrix, placed-point and property homes shift together although the 0x12c frame agrees.
 // MiniMax E (11-17): no new form, no lower score (336): this build's locals still sit 0x10 higher in the frame than retail's (the matrix receiver at esp+0x44 against retail's esp+0x40, the argument block at esp+0x60 against esp+0x50), so the home sequence and the jumps after it land elsewhere.
 // MiniMax I (11-16): no new form, no lower score (336): the first difference is a stack home (this build's vector workspace at
@@ -4567,7 +4571,6 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // second property at 0x60 against 0x88, the travel limit at 0x5c against 0x84 and the placed pivot at 0x50 against 0x88),
 // the pivot select still takes EAX and ESI where retail takes ECX and EDI, and the body is 1924 bytes against retail's
 // 1937 because retail keeps the travel test as a byte flag.
-// score 336 (was 356): The 0x12c frame agrees. The origin and body matrix start at 0x44 and 0x60 here, and at 0x40 and 0x50 in retail. The travel test and later pivot homes still differ.
 // Earlier score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // MiniMax B (11-18): no new form, no lower score (336): the frame 0x12c and retail's 1937-byte length still agree, but the matrix home (0x60 against retail's 0x50), the origin (0x44/0x48/0x4c against 0x40/0x44/0x48) and the pivot select's register pair (EAX/ESI against ECX/EDI) are still ours; no new spelling of the homes was found this run.
 // Earlier score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
@@ -4910,6 +4913,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // 446/446/446, after origin copy 414, after matrix query 392, inside accepted placement 403.
 // Const limit inside accepted placement 403. Shared local initialized separately on each path 336.
 // NOT kept: common evaluation grows the frame to 0x130. Separate evaluations tie with unchanged matrix/origin homes.
+// Direct matrix member for body, parent or both 336/336/336, matrix declared at its query 336, at direct query 336.
+// Origin pointer scoped to the setter 336, result declared after the setter 337, aggregate origin with direct queries 368.
+// NOT kept: direct queries leave the slots in place. The aggregate copy moves the divergence earlier and shortens the body.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

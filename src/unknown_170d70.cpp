@@ -1547,7 +1547,7 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 134 (was 205): The entry now saves ESI and initializes AL at retail length. The flag stack homes and false-return tail still differ.
+// score 134 (was 205): The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return still differ.
 // Earlier comparison at 221.
 // the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
 // (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
@@ -1619,6 +1619,10 @@ struct s_pool_view_172840
 // reservation subscript postincrement 228; unsigned selection with signed publication 55.
 // NOT kept: the 55 forms recover the flag homes at 870 bytes but still place the sign extension
 // ahead of the retail link and key schedule and load the sentinel with a five-byte mov.
+// One state read 153, separate exclusions 153, branch admission 196, both sets separate 196, grouped per state 153.
+// Selected exclusion mask 217, traversability conditional 207, one state read with independent limit results 249.
+// Chained narrow publication then signed index 134, signed index first 86, with independent limits 243/241.
+// NOT kept: the 86 form shrinks to 860 B and retains the displaced flag homes. Independent limits recover 868 B at 241.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

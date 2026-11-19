@@ -740,7 +740,8 @@ void network_samples_reset(s_network_samples *samples);
 
 static inline void observer_statistics_reset(s_network_statistics *statistics);
 
-// score 170 (was 170). Lead not kept (AC579, register steering without a match): one observer snapshot local read for the
+// score 170 (was 170): The stack-held observer loads before the stride multiply here. Retail saves EDI and loads it afterward.
+// Lead not kept (AC579, register steering without a match): one observer snapshot local read for the
 // dispatch plus a reload of the volatile parameter before the registration loop reaches 134 at retail length (plain
 // confirmed); the first save and register allocation still differ (observer in ESI where retail uses EDI).
 // At 170, the logic walk found no difference (state/close-reason dispatch, flag handling, the reset stores and
@@ -774,6 +775,10 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // *` to itself 245 (833 B, both arguments on the stack, callers lost); the same with the parameters (index, observer)
 // everywhere 245; the two owner-notify loops as one two-caller inline helper 333 (705 B), the same without the volatile
 // 359 (701 B); volatile dropped with one function-scope loop counter 177 (callers lost).
+// Entry invalidation ordinal or one ordinal for both passes 243/243, inactive-channel guard 170, missing connection first 296.
+// Fixed-count post-test owner loops 321, owner skip guard 170, established-state break 170.
+// Shared retry increment 213, close-reason fallthrough 170.
+// NOT kept: entry ordinals add a spill. The post-test loops and shared increment change matched callers.
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {

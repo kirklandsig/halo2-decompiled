@@ -94,6 +94,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// score 305 (was 305): The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax B (11-14): no new form, no lower score (382): retail carries the constant at +0x57 in xmm2 where this build
 // carries it in xmm1, which then swaps the product registers, retail's counter is in BX where this build's is in BP, and
 // the body is still 40 bytes shorter than retail's (1692 against 1732); the normalizer's two products follow the source
@@ -114,7 +115,6 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // then `fld` of the threshold and `fcompi st(1)`) while this build pops it (`fstp` of the magnitude) and compares a reloaded
 // float, and the body is still 40 bytes shorter than retail's.
 // MiniMax R (11-16): no new form, no lower score (382): the first sum still lands in xmm3 where retail keeps it in xmm0, retail keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4, and the inner cursor, the wrapped angle and the candidate width still take other homes.
-// score 305 (was 305): 1732 bytes and frame 0x64 as retail (305 since the staged y, 382 before it). First +0x57
 // 1732 bytes, frame 0x64 and `ret 0x1c` as retail. First +0x57
 // loads unity into XMM1 instead of XMM2. Near cosine precision, inner cursor,
 // wrapped-angle homes and candidate width differ.
@@ -593,6 +593,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // counter `long` 483 (1675 B, `ret 0x18`); one shared inline rotation of the facing direction (cos x - sin y, cos y + sin x)
 // for both near-arm emissions and the far arm 382 (1692 B); the existing normalize2d_fast for both normalizations (their
 // results are unused) 305 (same code).
+// Staged near-turn y rows previously lowered the score from 382 to 305.
+// Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
+// Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.
+// NOT kept: every signed-count form shortens the body and changes the matched caller.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
