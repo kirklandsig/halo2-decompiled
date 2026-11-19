@@ -2154,6 +2154,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // the result in its own slot at +8, set to 0.0f in the prologue, where this build reuses the scale argument's home; the
 // case-one body still differs in its float order and in how retail loads the two components of the 0x4b9dac vector one
 // at a time and copies them through the stack, and restructuring the switch into a fall-through form measures 194.
+// Round 144 (m3 lane 12, fast with 0x2e9e0 and 0x497a0; control 193/492): round 73's case-3-offsets-first lead
+// re-measured 177 (812 B) with 0x2e9e0 572 (2232 B; same calls, the change is register allocation around the callee that
+// now clobbers XMM7, as retail's does); on it the second cross written k, j, i 160 (0x2e9e0 572); with that, case 1/3's y
+// terms i, j, k 163, k, j, i 172 (816 B); case 1 reading g_4b9dac directly with no reference copy 196 (784 B). The pair
+// stays BLOCKED-BY 0x2e9e0: it has to be reworked against the XMM7-clobbering callee first. Body unchanged.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3227,6 +3232,12 @@ real magnitude3d(vector3f const *v);
 // Tried current/target/both vector initializers 170/170/170, axis at outer scope 170, rotated initializer 170,
 // named absolute dot 196, tangent with shared/staged cross 186/186, angle after normalizer 246,
 // shared projected scale and sum 183.
+// Round 144 (m3 lane 12, fast with 0x24590/0x30bf0, control 170): the parallel test as `(real)fabs(dot) < 0.9999f` 170
+// (same code); with the angle as `(real)acos(dot) * step` too 170 (other code); explicit `(double)dot` at fabs and acos 170
+// (the 0.9999 constant then loads as a qword); the current length clamped through the file's existing forced-inline
+// three-argument clamp (its value parameter names the raw length) 251 (1037 B, as round 221's named raw length: the raw
+// length stays on the x87 stack and is stored straight to `a`); both lengths through it 320 (977 B: the target's three
+// expansions fold into one). Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3912,6 +3923,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // individually and combined 399/390/397/437/388/397/388. All with a separate fallback count
 // 349. NOT kept: all regress. The state, prefix and creation ordinal still use different
 // registers on the original frame.
+// Round 144 (m3 lane 12, fast with 0x4b160, control 317): pass 1's tests nested (`if (last > i)` around the flag
+// test) 317 (same code); pass 4's created-flag test ahead of the key tests 373 (1342 B); the growth loop as a plain
+// `for` over state->entries[i] with the entry pointer 814 (1655 B), with its own index 794 (1639 B: the plain loop
+// is unrolled, so retail's guard plus countdown do-while stands); pass 2 setting `first = 1` (it is always 0 there)
+// in place of `++first` 385. `first` keeps EBP in each.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

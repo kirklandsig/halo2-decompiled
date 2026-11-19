@@ -6006,6 +6006,12 @@ real magnitude3d(vector3f const *v);
 // `BIPED_GET(...)` 260 (940 B); a 0x56 default with falling setting 0x54 and the joined upright/angular `else if`
 // setting 0x55 60 (895 B); `falling` initialised from the negated first probe 109; the upright arms swapped
 // (`<= 0.6f` gives 0x56 first) 5; the non-falling arm as a 0x56 default plus the joined test setting 0x55 212 (899 B).
+// Round 144 (m3 lane 12, fast with 0x24590/0x1fb7e0): re-measured because two of the seven magnitude3d callers moved
+// (0x185be0 590 -> 396, 0x1d24a0 902 -> 949): `inline` on magnitude3d's definition with three per-arm calls MATCH again,
+// but all seven rise (0xf8eb0 947->1030, 0xd1e10 542->596, 0x185be0 396->836, 0x1aa0d0 375->402, 0x1d24a0 949->1014,
+// 0x2c0d60 920->963, 0xf6d10 749->759), so still BLOCKED-BY 0x24590. Without it: three per-arm calls 20 (actor in ECX
+// across 0x24590, 892 bytes plus padding); the actor index read into a named local before the probes, with per-arm calls
+// 231 (874 B); per-arm calls with the falling arm last 34; per-arm calls with the upright test inverted 23.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {
