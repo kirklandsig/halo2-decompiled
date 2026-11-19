@@ -214,7 +214,7 @@ struct s_shape_carrier_contact
 	byte flag_a8;
 	byte unknowna9[0xe8 - 0xa9];
 	point3f point;
-	byte unknownf4[0x100 - 0xf4];
+	vector3f forward;
 	vector3f up;
 	byte unknown10c[0x118 - 0x10c];
 	vector3f basis;
@@ -227,6 +227,7 @@ struct s_shape_carrier_contact
 };
 typedef char assert_shape_carrier_contact_normal[(offsetof(s_shape_carrier_contact, normal) == 0x8c) ? 1 : -1];
 typedef char assert_shape_carrier_contact_point[(offsetof(s_shape_carrier_contact, point) == 0xe8) ? 1 : -1];
+typedef char assert_shape_carrier_contact_up[(offsetof(s_shape_carrier_contact, up) == 0x100) ? 1 : -1];
 typedef char assert_shape_carrier_contact_input[(offsetof(s_shape_carrier_contact, input) == 0x138) ? 1 : -1];
 typedef char assert_shape_carrier_contact_direct_acceleration[(offsetof(s_shape_carrier_contact, direct_acceleration) == 0x148) ? 1 : -1];
 
@@ -673,6 +674,17 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // not kept (the local is only for the score). On it 384 one-use-local combinations (case 2 index locals, entries base,
 // selected-index local in either case, case 1 element forms, function-level up): floor 9, bands 9/13/28/201+, nothing
 // lower; velocity declared first 9 (same code).
+// M3 lane 16 r144 (fast; sites on the 9 lead: S1/S2 the first cross's j-row products, S3 its k-row a.i*b.j, S4 average.i,
+// S5 dot_a's i term, S6 the tail's j product): unused initialised locals at the top of the lead (diagnostic only) 1-8:
+// 13/13/13/26 (975 B)/9/7/39 (974 B)/9; at 6 only S5 and S6 are left. The same unused locals declared after case 2's first
+// cross (in case 3 or before the tail call) move nothing; in the loop or before the switch they count like top ones. The
+// count is reachable with names: in the loop the call's parts named (base point, flags, stepping bit, settings, height)
+// with a `contacts` list pointer for `entry`, six names: on the lead 7 (S5, S6 left), on this body 29 (two points, a
+// symbol-count steer, not kept); two names (stepping, height) 13 on the lead, 35 here; three (base too) 13/35. S6 never
+// flips by symbol count; case 3's scale through a no-op `(real)(x * 1.f)` chain of depth 1-3 on the lead 197/193/178
+// (case 2's arms unmerge), with 1-7 top locals as well 156-202 (none keeps the arms merged). On the six-name lead
+// (7), case 3 written with a named scale 7, written out per row 7, `0.0f - normal->k` 7, a named selected index 7,
+// the normal through a selected contact pointer 7: S5 and S6 unmoved. Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -971,13 +983,19 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // written per component (axis named before limited) 307 (1270 B); `limited` declared, then assigned 235; the rotation's
 // cross declared at the top of its block 235; the outer cross declared ahead of the old-forward pointer 235 (all three the
 // same code); the rotation dot through the file's `shape_dot(limited, axis)` (forward-declared) 239 (1243 B).
+// M3 lane 16 r144 (fast, 0x1e5af0 matched in each): `state` typed as the file's carrier-contact record (0x1e67a0's
+// caller hands the same record to 0x1f0450 under that type and reads +0xf4/+0x100 there; the +0xf4 vector named
+// `forward`) 235 (same code; kept). Unused initialised locals at the top (diagnostic only) 1-7: 236/285 (1229 B: the
+// rotation dot's fold goes, the first cross recolours)/232 (1240 B)/235/235/235/235. The settings alias dropped 235;
+// the old-forward alias dropped 235; both 235; the rotation and acceptance dots unparenthesized i, j, k 248 (1243 B).
 // @retail 0x1f1460
-void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
+void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
+    s_shape_carrier_contact const *state)
 {
-    byte *settings = *(byte **)(state + 8);
+    byte *settings = state->settings;
     if (function_1f1462(*(dword *)settings))
     {
-        vector3f const *old_up = (vector3f const *)(state + 0x100);
+        vector3f const *old_up = &state->up;
         vector3f up = ground->normal;
         vector3f axis;
         contact_cross(old_up, &up, &axis);
@@ -1011,7 +1029,7 @@ void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f 
             if ((cross.k * axis.k + cross.j * axis.j) + cross.i * axis.i > 0.0f)
                 up = limited;
         }
-        vector3f const *old_forward = (vector3f const *)(state + 0xf4);
+        vector3f const *old_forward = &state->forward;
         vector3f cross;
         contact_cross(old_forward, &up, &cross);
         vector3f forward;
@@ -1031,7 +1049,7 @@ void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f 
     }
     else
     {
-        *forward_result = *(vector3f const *)(state + 0xf4);
+        *forward_result = state->forward;
         *up_result = *g_4687b0;
         forward_result->k = 0.0f;
         if (function_30bf0(forward_result) == 0.0f)
@@ -2072,6 +2090,11 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // `dec eax; je; dec eax; jne`) 439 [133]; switch + both bit tests 433 (2105 B) [119]; switch + the first bit test 448 [118].
 // Retail's 0x109fd0 uses no XMM register and 0x1f2e60 only XMM0-5 (neither makes calls), so retail's entry zero survives
 // both in XMM6 up to the normalize test and is materialised again after the 0x1f2a80 call for the final loop.
+// M3 lane 16 r144 (fast, 0x1f19c0 matched in each): unused initialised locals at the top (diagnostic only) 1-7
+// 413/413/413/412/412/412/413, so the homes are not a symbol-count phase. `count` and `indices` declared ahead of
+// `component` 412; the four output stores ahead of `component` and `relative` 473 (2073 B); both negations through
+// vector3f_scale(normal, -1.0f, &desired) 412 (425 on the 418 body); the preferred surface index named for the guard
+// and the loop compare 419; the normalize result named and tested 413 (same code).
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
