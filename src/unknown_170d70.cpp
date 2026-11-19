@@ -1306,53 +1306,45 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 	return function_23a220(points, (short)polygon->count, &point, 0.0001f) != false;
 }
 
-// score 23 (was 23): logic equals retail (inside test, state <= 0 / >= 3 returns, 1 vs 2 by the sign of the
-// distance). Only the x term's fld/fmul operand order (retail loads the plane first) and the block layout differ:
-// retail keeps `return 0` right after the first state test and jumps back to it from the inside branch; we put it
-// last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
-// `if (state > 0) ... else return 0` (23), result variable (80), early returns split by branch (28, 34).
-// Permuter (25 min on r621): best 21, with the plane's d read into a local before the origin pointer; not kept.
-// b13N (11-17) walk against retail, fast build on r846: logic equals retail (no sort_4byte call here; the maintainer's
-// lane 6 sort_4byte change does not touch this function). Both jbe senses (0x1738d0 fabs <= 1/64 goes inside, 0x1738e9
-// distance < 0 gives 1) and the 3 / 0 / 1 / 2 results match. Remaining: the x term's fld [ecx] / fmul [edx] at
-// 0x1738b6, and retail's single `xor eax, eax` block at 0x1738d9 sits right after the jg at 0x1738d7 and is reused by
-// the jle at 0x173907; ours keeps it last. Also 23: `if (*inside || state > 0) return 3; return 0;` for the inside
-// arm, nested ifs, assignment in the condition, the x term as its own statement, the sum right-associated (first 11 of
-// 48 orders), plane->d in a local. Worse: both arms returning 1/0/3 in full (38), inside arm first (27), one shared
-// state test (75), origin declared first (52), origin->position.x spelled out (47).
-// M3 lane 8 r182 (fast), on this body: the zero label at the end of the function with both paths jumping to it 23 (same
-// code: no label position or return shape moves the shared block); two plain `return 0`s 23 (same code); the plane
-// factors through the union's vector member (`plane->n.i` for x alone, or all three) 23/23; the x term's origin factor
-// as `origin->n[0]`, or every factor through the array/vector members 23/23 (the x term keeps origin first); the 1/2
-// result as a ternary 28; the inside arm as `if (*inside || state > 0) return 3; goto zero;` 23 (same code).
+/* how the context's origin sees a polygon that keeps `state` points after clipping: 0 = nothing to show,
+   1 = from behind its plane, 2 = from in front, 3 = from within 1/64 of the plane or with fewer than three
+   points left; *inside is set when the origin is that close and lies in the polygon */
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
-	point3f const *origin = &context->origin->position;
-	real distance = origin->x * plane->i + plane->j * origin->y + plane->k * origin->z - plane->d;
+	s_polygon_context_173910::s_origin const *origin = context->origin;
+	real distance = plane_distance_to_point(plane, &origin->position);
+	long result;
 	if (fabs(distance) > 0.015625)
 	{
 		*inside = false;
 		if (state <= 0)
 		{
-		zero:
-			return 0;
+			result = 0;
 		}
-		if (state >= 3)
+		else if (state >= 3)
 		{
-			if (distance < 0.0f)
-				return 1;
-			return 2;
+			result = distance < 0.0f ? 1 : 2;
+		}
+		else
+		{
+			result = 3;
 		}
 	}
 	else
 	{
 		*inside = function_173910(context, polygon);
 		if (!*inside && state <= 0)
-			goto zero;
+		{
+			result = 0;
+		}
+		else
+		{
+			result = 3;
+		}
 	}
-	return 3;
+	return result;
 }
 
 struct s_projected_polygon_173520

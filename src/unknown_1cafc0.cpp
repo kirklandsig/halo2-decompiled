@@ -871,6 +871,26 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // shared helper, the found names read into locals in the six orders m-c-t 487, m-t-c 486, c-m-t 479, c-t-m 479, t-m-c
 // 478, t-c-m 478. Lead: something live from the request's start to the inheritance loop gives retail's graph roles;
 // retail's own index is set at the loop (zero in ECX). Body unchanged.
+// M3 lane 13 r120 (fast with 0x1cd070 210, 0x1cccd0/0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1dc8c0 MATCH throughout; control 348,
+// aligned 53; body unchanged). bool success re-measured 478 (1809 B, aligned 102) and read against retail: with bool the
+// graph is loaded into EBP at the request start, so graph+0x34 is re-formed per group (`lea eax, [ebp + 0x34]`), the mode
+// name takes EBX for groups 2-4, and from group 5 EBX holds the inheritance index's zero (`xor ebx, ebx`, then `cmp eax, ebx`
+// for that group's tests and both loop-entry stores). Retail is that form with one decision changed: the graph is not in a
+// register at the request start, so the sum takes EBX for all five groups, the mode stays in its home and the zero only
+// gets ECX at the loop entry (`xor ecx, ecx` / `cmp eax, ecx` / two stores). With byte success the closing `!= 0` keeps a
+// zero use at the function's end, so no zero register is made at all (immediates) and both the graph and the sum get
+// registers. The `lea esp, [esp]` / `jmp` differences after +0x1de are padding only: a loop top and the label after a
+// loop are each aligned when 7 bytes or fewer are needed, so they follow the 3-byte shift of the first block.
+// Retail's own 0x1ddd00 keeps its index in EBP (`xor ebp, ebp` after the first group call, `cmp eax, ebp`, the offset
+// stored from EBP), the same shape as this function's loop entry with ECX.
+// Private copies of the three request helpers in this file (diagnostics, all restored; byte / bool success): the copy
+// alone 348 / 478 (same code); the mode array taken once as a `modes` pointer by the group level and passed to each
+// lookup 348 / 478 (same code); a `resources` local read before each urgent loop 404 / 457 (first +0x2); with bool: the
+// index started from a `first = 0` local 478; the inherited graph declared at the request's scope 478, with a NULL
+// initialiser 478; the inheritance count read into a local above the five groups 513; a short index zeroed at its
+// declaration 483; the index zeroed at its declaration with the loop as a while 256 (aligned 9: re-measure of lane 10's
+// form: retail's roles, left the early zero store and retail's ECX zero at the loop entry). Only an index live from the
+// request's start moves the graph out of its register, and that form stores its zero early, which retail does not.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1342,6 +1362,39 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // the blend flag kept in DL across 0xe6800); on that, a resolved-set local for the three later set uses 237 (same code);
 // on that, transition_find's blend parameter read through its address (diagnostic) 285 (1136 B; the transition id
 // moves to [esp+0x4c]).
+// M3 lane 13 r120 (fast with 0x1ccda0/0x1cccd0/0x1ccae0/0x1cb410, plus 0x10ee20 and 0xe6800 where the definition of
+// 0xe6800 was touched; control 210, body unchanged): HELD (needs the owner's OK), build/r120/held-1cd070.patch: MATCH
+// in the plain check and in a full check (12233 matched, nothing lost; 0xe6800, 0x10ee20 and the callers 0x10f430,
+// 0x10fd40, 0x119650, 0x118510, 0x1ccae0 still match) with `inline` on the definition of 0xe6800 (a contributor's
+// function: retail expands that body once inside 0x10ee20 and calls it there and here, so it is a header inline in
+// retail; with it this caller no longer keeps the blend byte in EDX across that call) and this body: bool result with
+// `result = true;` first in the channel_start block; the unknown6e update written once after the 0x200 block (`if
+// (blend) |= 1; else &= ~1;`, which keeps the blend byte in memory with retail's load/and/store at each `&=`);
+// `real frame_position = channels[0].frame_position;` declared after the frame count and pinned in place
+// (`frame_position = PIN(frame_position, 0.0f, frame_count); fraction = frame_position / frame_count;`: position in
+// XMM0, count in XMM1); the transition channel and the blend channel started through the existing channel_start
+// (flags 0x15 and 0x3c0) in place of its body written out (retail's `lea ebx, [edi + 0x40]` before the graph test and
+// the id copied without a rotation step); the tail as `if (!result) { if (state_flags & 4) result = true; } else {
+// flags &= ~1; } if (result) {...} return result;` (the flag block then sits after the return and jumps back to the
+// store); the store as three bools (`mode_changed`, `class_changed`, `type_changed`) around `stored_names = names;`
+// joined with `||`, the request reading stored_names. Without the 0xe6800 change that body is 305 (1118 B, first
+// +0xb1: the blend byte stays in DL with no stores), so it is not kept here.
+// Steps on the way, each with the 0xe6800 change unless noted: lead A rebuilt without it 249 (1140 B); with it 253;
+// + shared unknown6e update 244 (without it 276); + the channel pointer between the id and graph tests 248; + frame
+// position local declared after the count 106 (after a short count 243); tail as `result = result || (state_flags &
+// 4)` or an early `return result` 260 (the frame changes), `if (!result) result = (state_flags & 4) != 0;` 346,
+// `if (result || (state_flags & 4)) { result = true; ...}` 202, nested `if (!result) { if (state_flags & 4) ...}`
+// with the flag clear left in the block 106, a second flag for the store 106; the flag clear in the else-arm 19; arms
+// the other way round (`if (result) flags &= ~1; else if (state_flags & 4) ...`) 87; a two-use last-frame helper
+// 261/276; the position pinned in place 2; second frame-count read through an animation pointer local, a count
+// local or with the product swapped 19 each (same code); a named `state_flags & 0x20` local 4; a named variant id
+// 168; `state_flags & 0x60` at the second test 360; the fraction test first 10; channel_start for the transition
+// channel alone MATCH, for the blend channel alone 2, both MATCH; on the match: one changed bool with `||` 301, byte
+// result 21, the frame count through an animation pointer local MATCH (not needed).
+// In-tree forms without the 0xe6800 change (64 subsets of the six changes on main's body, then 16 result/tail/store
+// combinations): every subset is above 210 except bool result + the else-arm tail + three bools 168 (1139 B) and
+// the same with byte result 184; those two need the flag clear moved to the else-arm and three one-use bools (with
+// the clear left in the block 249/256, with one bool 272-279), so neither is kept without the match.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {
