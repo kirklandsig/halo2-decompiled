@@ -5821,6 +5821,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // output-to-scalar transfers 89/89/89; roster transfers at first predicate 89; regular contact
 // before pending queries 384; regular-friend test at invitation 400. NOT kept: the first six
 // forms retain the displaced title-state byte and the invitation forms change the branch layout.
+// The query byte homes still differ in the 0x844 frame. Mode read once for all actions, roster,
+// membership, feedback/offer, cancellation/removal, and the final membership phase
+// 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
+// NOT kept: these forms shorten the body and move the first difference before the friend query.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

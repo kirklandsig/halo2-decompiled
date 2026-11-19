@@ -448,6 +448,7 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// score 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
 // MiniMax I (11-17): the variant byte read before the blend value 123 (was 132): the byte is then held in BL across the fmod and the blend's store follows the call, so the compare moves behind it, but the colours pointer now takes EBX where retail uses EBP; the not-found exit still joins the clamp entry's 1.0 load and the first scan still leaves on inequality.
 // MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
 // still the order of the 1.0f load and the zero xorps before the first clamp; the blend still sits at [esp+0x38]
@@ -534,7 +535,6 @@ void function_3dd10(long object_index, bool force);
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 97 (was 123): The late variant byte restores the output/delta registers and keeps retail length.
 // Earlier opening state (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
 // and the variant byte is read before the second remainder. The first scan's `!=` exits
 // differ from retail's signed `<` loop (unrolled by 4 in every
@@ -729,6 +729,9 @@ void function_3dd10(long object_index, bool force);
 // unsigned late variant byte 97.
 // Kept the late unsigned byte with signed decoding at the index calculation. The byte compare gates the
 // lookup and the index sign-extends at use as in retail. The 0x54 frame and 1034-byte length agree.
+// The 0x54 frame and 1034-byte extent agree. The object and tint entry exchange EDI and ESI.
+// Lexical ranks for the object and tint entry before definition or after output score 97 each,
+// alone and in all four pairs. Neither saved register moved. The blend spill and signed scan still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
