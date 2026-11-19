@@ -1898,6 +1898,14 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // look outputs 196/196, shared aim-velocity pointer 206, unit reference 188.
 // NOT kept: independent look locals reduce the frame to 0x28 and raise
 // the score. The paired outputs keep both retail clamp homes at frame 0x30.
+// M3 lane 15 r102 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the frame reference dropped, every
+// rate read through g_510c54 219 (2193 B: the yaw/pitch division and reload change); the weapon-active value passed
+// straight to first_person_weapon_set_active without its local 378 (2192 B); the sound callback written into the update
+// call 188 and the channel pointer spelled `&weapon->channelb8` at its uses 188 (same code each); the look pair as two
+// scalars with the frame reference kept 196 (their homes move to -0xc/-0x8). Slot map against retail: every EBP offset
+// used is the same; ours has one unreferenced dword below the look pair (frame 0x30), and packs the weapon-active byte
+// with the unit/flags home (-0x18) and the zoom, indices pointer and idle globals with the spring_d home (-0x14), where
+// retail packs the active byte with spring_d (-0x14) and the zoom group with unit/flags (-0x1c), mode at -0x18.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

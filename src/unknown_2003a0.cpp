@@ -3082,6 +3082,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // selection 50; absent-definition conditional 178; permission assigned in requested arm 50;
 // separate unlocked, absent and script permission branches 179; negated locked-definition gate 50;
 // conditional automatic selection 170. NOT kept: the four ties still reload the first event index.
+// M3 lane 15 r102 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, all matched; control 50): the pending delay test as `< 1` 51
+// (a real `cmp 1; jge`, not folded to the zero test); the squad's 0x40 flag in both arms read as 0x202e90 reads it,
+// `((dword)*(short *)(squad + 2) >> 6) & 1`, 50 (same code: the shift folds before the constants pool); the second
+// half's definition pointer NULL at the top and assigned in an `if` 107 (578 B: the NULL test is threaded away, the
+// reload stays); the first arm's unlock test as a forceinline predicate with early `return true` 179 (594 B, the lock
+// byte is loaded and tested in a register); the threshold as `mode == 0 ? 1 : count` 50 (same code). The reload stays.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

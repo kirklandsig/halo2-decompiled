@@ -1816,6 +1816,15 @@ PRIVATE __forceinline real const &component_time_step()
 // Reading: a product takes the step from memory when the base pointer is a block-local temporary; retail has that at
 // both products plus the materialised `base + 4`. 0x1d2280 is the only game function with that load-then-add shape on a
 // float read.
+// M3 lane 15 r102 (one-file LTCG harness, exact here: this body 17/14 = 26 at 470 B; stop-first 36/36): a forceinline
+// helper returning `value * rate` for both products 462 B, 133/19 (the 0.001 constant hoists into XMM7 and the stop
+// distance reassociates to `(v / s + 1) * rate * v`); that helper for the first product only 17/14 (same code); the stop
+// distance in a helper taking (velocity, step) and reading the global itself 17/14 (same); the mass eligibility as a
+// ternary inside the step product (`(scale && mass > 0.001f ? a / mass : a) * dt`) 473 B, 115/15: the head becomes
+// retail's (scale in XMM0, mass in XMM1, `divss xmm0, xmm1`) but the step is still loaded first, after a `movaps xmm1,
+// xmm0`, and the global load hoists above the mass test; the rate's address handed back through a helper's out parameter
+// 17/14 (same); the reference accessor, or a pointer accessor, called again at each product 17/14 (same). Each with the
+// stop-first test 36/36 (462 B forms 133/41, ternary 115/35). Every spelling folds `base + 4` at both reads.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

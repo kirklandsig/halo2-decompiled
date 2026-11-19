@@ -1218,6 +1218,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // (up, old) * (new, up) 112 (1393 B), on the single-store exit 112, with the preset flag too 109 (1391 B); (new, up) *
 // (old, up) with the staged old cross, single-store exit and preset flag 109, on this body 112; the staged old cross alone
 // 112 (1389 B); staged old cross, (up, old) * (new, up) and the preset flag 109. Body unchanged.
+// M3 lane 15 r102 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114): the velocity rows as `scale * movement.x`
+// 114 (same code); the rotation angle computed before the forward copy 125 (1388 B); the angle product written into both
+// trig calls 144 (1382 B: every rotation product turns load-first); the snap exit with `flags |= 32` ahead of the goal
+// copy 107 (1384 B: the gain is the shorter `or [mem], 0x20`, not retail's register update; an order picked by score, not
+// kept); the goal copied through a named local first 140 (1382 B: the copy folds back to the interleaved form, but the
+// extra local turns the rotation). Retail's exits load all three dwords (ESI/EDX/EAX) and the flags (EBX) before storing,
+// in both exits; no spelling here gives the three-register copy.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
