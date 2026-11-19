@@ -2998,6 +2998,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // reserves eight bytes and keeps the weapon index in EBP with two pointers spilled, and with the two activity
 // names tested before the switch where retail has them as cases of a tree whose root branches jle to the
 // less-or-equal side.
+// MiniMax D (11-19): no new form, no lower score (389): retail's 27-case selector is a comparison tree whose root
+// branches jle to the less-or-equal side, where this build's compiler always branches jg; the case orders, the if-chain
+// with the default, and the merged switch all measure 389 or worse (412, 434, 726, 760), so that part of the gap is the
+// compiler's dispatch shape and not the source's.
 // score 389 (was 389): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
 // tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
 // all 27 selectors, every field offset (0x180/0x184/0x18c/0x175/0x16c/0x16e/0x17e/0x248, barrels 0x1a4+0x34*i,

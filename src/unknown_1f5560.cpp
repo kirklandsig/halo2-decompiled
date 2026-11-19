@@ -717,6 +717,11 @@ struct s_1f9762
 // argument order, a subtract-assignment form, a named local for the input pointer, the current point read
 // through the path or through the actor's own field, or the first dot's argument order; reading the index
 // through the path instead rotates the whole float block (score 10). The committed body (score 1) stands.
+// MiniMax D (11-19): no new form, no lower score (1): retail's `inc eax` needs the index in EAX and the count
+// in EDX, and every spelling that increments the index puts it in EDX instead (`index + 1 >= count` 4, the same
+// test as `count <= index + 1` 4 with `setle al`, the count and the index each through a one-use local 6 and 6,
+// and the count through a one-use local minus one 3 which also rotates the two dot products), while every
+// spelling that keeps the index in EAX decrements the count instead; the committed body (score 1) stands.
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
