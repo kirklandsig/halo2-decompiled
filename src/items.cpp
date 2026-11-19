@@ -604,7 +604,8 @@ struct s_item_collision_bsp
 // plane distance measures 196 as well, both under the eight-point minimum, so the body stands; the marker's coordinates
 // still come from different slots, the instance lookup folds the base into a lea where retail adds it, and the position
 // products stay in fresh registers where retail overwrites them in place.
-// score 190 (was 198; earlier 200): the 0xa0 frame and transformed instance address agree. The rejection span, plane-normal and contact-position XMM homes, and pending spin scale still differ.
+// score 190 (was 198): the 0xa0 frame and transformed instance address agree. The rejection span, plane-normal and contact-position XMM homes, and pending spin scale still differ.
+// Earlier score 200.
 // Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
 // the settle call 0x10d056 (ja 0x10d245); contact marker query args 0x10d05f..0x10d06d; surface_index == NONE test 0x10d082; instance
@@ -854,6 +855,9 @@ struct s_item_collision_bsp
 // 0xa0 frame. Retail reads the section index before adding the instance base, then adds the up and left
 // products before the forward product. The shared instance and staged normal rows are retained. All plain
 // controls keep their opening scores.
+// Spin k finished in each branch, carried to the join, published with angular velocity, or finished with a
+// shared factor. Real factors 233/233/233/197; double factors 238/250/250/238. NOT kept: the shared real
+// factor recovers spin, axis and speed homes and the x87 scale at 197, but raises the score overall.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1585,6 +1589,11 @@ struct s_item_flags_view_10b850
 // 820. NOT kept: limiting the geometry or carrier scope reaches 820 at 4096 bytes, four below baseline. All
 // eight forms retain the 0x154 frame and first entry difference. The timestep scope alone ties at 824.
 // Opening executable source restored.
+// Ray and flow share storage, with the lateral result from a value-returning cross, direct cross, staged
+// cross or existing item output helper. Component ray 881/943/944/943; point-difference ray
+// 829/944/949/944; component ray and direct cross with real absolute value 923. NOT kept: the real absolute
+// value recovers the 0x12c frame at 923 and 4029 bytes. The entry flags and later code still differ, and
+// all forms raise the score.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

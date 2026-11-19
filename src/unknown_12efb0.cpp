@@ -732,6 +732,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // common default and shared uncovered weight 609. NOT kept: the two shared uncovered-weight forms gain three
 // points at 3828 bytes and retain the provider, palette and record assignment gap. The common default block
 // forms regress. The opening executable source is restored.
+// Palette read before the kind store, between kind and index, or between index and weight, then between
+// kind and index with a separate promoted lookup index. Signed byte 700/700/700/749; long 706/706/706/704.
+// NOT kept: the byte comparison width agrees at 700, but BL remains the slot carrier and EAX still holds
+// the tag result.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
