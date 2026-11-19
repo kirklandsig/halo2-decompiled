@@ -176,6 +176,16 @@ __forceinline long portal_path_gain(real distance, real range)
 // build/r111/held-0x18dc90.patch (the r110 patch with the aggregate-returning pin helper) the fmul schedule is retail's
 // at both sites: harness 244 positional / 17 aligned at 1364 B, fast 250 (the r110 patch 249, aligned 23). Left: the
 // cluster pointer in EBX and the widened portal index in EBP, and the padding that follows from it.
+// Keep the table reloads and starting cluster in EBP together on the 0x428 frame.
+// Path-list ordinal before seed 357; separate seed and search lookup 365; seed
+// validation before bitmap clear 296; walk count snapshot 364; link cursor 355;
+// sound comparison before portal flags 322; nearest distance after path-list
+// lookup 293; signed admission index through range and bitmap 317.
+// NOT kept: 293 gains three and moves the first difference earlier.
+// Portal-table, destination-table, both, or seed-through-destination table references 296 each;
+// packed link base or address 296; path ordinal advanced at the link read 367;
+// starting-cluster and decoded portal names 296. NOT kept: the starting cluster and both
+// live BSP table bases retain their opening allocations.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -353,6 +363,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // 15/16; the valid words as an initializer or assignments flip the pair but share a zero register (1339 B, 348/34); the
 // 24 orders of the deep block's statements 15 or worse; a separate stored-index copy (9 forms) 19/20; an index local in
 // the nearest block 19/20; the nearest test with the NONE test first flips the pair but changes the block order (322/30).
+// Shared bitmap setters at the seed, destination or both 354/354/354. Shared tests for distance,
+// sort fill or output 333/354/354, all three 333, complete bitmap API 333.
+// NOT kept: the distance test shortens the function to 1347 bytes and leaves both BSP table spills.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

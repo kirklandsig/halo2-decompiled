@@ -271,6 +271,17 @@ static __forceinline long real_to_long(real value);
 // random-state local 418; +0x3c read at each use 447 (1846 bytes); that with the ordered limits and the named +0x38 448
 // (1845 bytes). The +0x14/+0x18 locals are one-use and the resolver is 0x210850's body, so the composite of rounds
 // 63/110/112 still needs an exact match, and 0x210850 is inlined only here: BLOCKED-BY 0x210850.
+// M3 lane 9 r138 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0; base 373): `inline` on 0x210850's definition
+// with a call here 466 (1889 bytes), and 25 of its 43 matched callers expand it too (diagnostic); its file built
+// without /Ob1 (diagnostic) 466 with the same callers lost: neither gives retail's single expanded site (retail's
+// other 52 sites call it under a test or in an arm, this one is unconditional). Round 112's composite re-measured 347
+// at 1855 bytes (aligned 127, register-masked 16); on it: the resolver as a forced-inline file-local function taking
+// the output pointer 347 (same code, the failed-lookup copy stays load/store interleaved); 1-7 dead initialised
+// locals (diagnostic) masked 18/18/16/16/16/16/16; the side vector through cross3f or cross3f_staged with a constant
+// {0, 0, 1} vector, static or automatic, 347 (aligned 131, masked 16), with the output rows' 0 and 1 factors read
+// from that constant too 347 (aligned 131), the written cross with only the output rows through the constant 347
+// (same code as the composite). Left on the composite: the resolver's copy order, a copy of the k*0 product ahead of
+// its two uses in the side vector, and the output rows' register copies. BLOCKED-BY 0x210850 (single-site expansion).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

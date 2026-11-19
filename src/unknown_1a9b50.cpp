@@ -802,6 +802,10 @@ extern point2f *g_468778;
 // (with a copy kept in arg_1's home), arg_0 moves to EBP and the actor stays in EDI, never retail's slot ESI / arg_0 EDI /
 // prop EBX / actor EBP. Read from the listing again: retail evicts arg_0 from EDI for the view pointer in the facing block
 // and reloads it from its parameter home at the tail, where ours evicts the settings from ESI for the facing pointer.
+// MiniMax G (11-18): no new form, no lower score (375): computing the actor block before the settings call, as
+// retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
+// pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the
+// query in EDX, and this lane may not change the parameter order.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

@@ -107,6 +107,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// score 93 (was 93): BLOCKED-BY 0x17cfa0 (contributor, unmatched: ours passes the NONE first index in ECX and the
+// definition in EAX, retail the other way round). Round 199 (m3 lane 5, fast): the short count-loop index re-measured 102
+// (aligned 81, register-masked 36); dead initialised locals at the top, k = 1..7, 168/169/169/169/169/213/216 (diagnostic:
+// the transform rows' operand sides never move, the field sums and the count slots do); the same on the short index
+// 177/178/178/178/178/222/225; k = 1..4 inside the transform helper 169/169/213/216; the transform helper taking and
+// returning the point by value 721 (2940 bytes).
 // MiniMax H (11-18): no new form, no lower score (93): retail's transform rows compute the up product first and keep
 // each product's first operand in the destination register, where this build computes the left product first with the
 // two operands the other way round; spelling the three products in the opposite order compiles to the same bytes, and
@@ -159,7 +165,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // word where retail tests it and zero-extends, the count sum and the vertex cursor take the opposite stack slots,
 // and the transform's x row computes left.i*y before up.i*z where retail computes up.i*z before y*left.i; the call to
 // 0x17cfa0 that passes the first index in ecx where retail passes it in eax belongs to that callee's own file.
-// score 93 (was 93): frame 0x4040 agrees; left are the entry guard's registers (ours loads the strip record into
+// Earlier 93 (was 93): frame 0x4040 agrees; left are the entry guard's registers (ours loads the strip record into
 // ecx after the pushes, retail into eax before them), the count loop's movsx where retail tests the word and
 // zero-extends, the count/counter slots swapped, the 0x17cfa0 call setup (BLOCKED-BY 0x17cfa0, a contributor's)
 // and the transform rows' product forms. Earlier rounds below.

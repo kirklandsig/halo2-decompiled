@@ -300,6 +300,17 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // Live shape slot 328, saved shape identity with live virtual accesses 342, direct shape field 331,
 // conditional child comparison on the saved identity form 353. Capsule floor first 319,
 // single minimum-radius read 319, extracted activity byte 319, typed late parent access 319.
+// M3 lane 9 r138 (fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, MATCH each; positional / bytes / aligned /
+// register-masked, base 319 / 1176 / 320 / 235): the unparented position move as a file-local forced-inline function
+// with 0xb7430's own parameter tests (`if (position)`, `if (physics)`, the keep-partition tests) called with
+// constants 355 / 1104 / 299 / 207: 0x1c4a80 is then a call as in retail, whose call sits under 0xb7430's `if
+// (physics)` (the test folds away after the expansion but keeps the nested call out of line). The shape flag assigned
+// in the two arms of the compound test, non-compound arm first 411 / 1220 / 336 / 204, compound arm first 388 / 1212
+// / 268 / 116 (retail's out-of-line arm with `sete al; test al, al`); the position function with the compound-first
+// flag 358 / 1140 / 244 / 91; those with the 0x20 flag in shift form 358 / 1140 / 241 / 90. None is keepable without
+// a match (the positional count rises). Left on the last: the output/input registers (BLOCKED-BY 0x1ec690), retail's
+// null test and single rate load from the expanded 0xb77d0, and the shape re-read from the input at each use of the
+// capsule chain. BLOCKED-BY 0xb7430 (disabled: it closes a call cycle) for the 0x1c4a80 call.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

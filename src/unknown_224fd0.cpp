@@ -80,8 +80,8 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
-// MiniMax R (11-17): no new form, no lower score (219): retail keeps two separately scheduled rotation copies whose complement products take their operands on different sides, which one shared helper cannot produce, and the helper's body may not be written out by hand unless the function then matches.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
+// MiniMax R (11-17): no new form, no lower score (219): retail keeps two separately scheduled rotation copies whose complement products take their operands on different sides, which one shared helper cannot produce, and the helper's body may not be written out by hand unless the function then matches.
 // MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
 // still hoist and spill the sine products where retail keeps them in registers, and the jump table
 // still sits four bytes earlier than retail's.
@@ -353,6 +353,16 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // frame changes); the second-axis cases written first in the rotation switch 491 (1720 B, frame changes), with
 // forward.i moved 407 (1784 B); the sine vector renamed to sort after the squared one, on this order and on retail's,
 // 219 / 357 (same code each: the two vectors' homes do not follow their names here).
+// M3 lane 6 r194 (fast, control 219, aligned 221, masked 157): a private forced-inline helper returning the components'
+// squares as a vector by value (an aggregate return, which elsewhere stops the scheduler hoisting across it) for the
+// rotation's squares 370; one returning the sine products by value in place of the three sine statements 419 (1884 B);
+// both 617 (2020 B); the sine helper after the i square (retail's first copy computes k^2, k*s, i^2, then the other sine
+// products) 416 (1884 B); that with forward.i moved ahead of ij 413 (1880 B).
+// Tried shared alternate axis pointer 490; shared alternate axis reference 490; direct pointer and shared
+// orientation 490; direct reference and shared orientation 490; pointer with library copy 490; reference with
+// library copy 490; pointer and orientation with library copy 490; reference and orientation with library copy
+// 490.
+// NOT kept: All eight forms shrink the frame to 0x60 and the body to 1720 bytes at a higher score.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

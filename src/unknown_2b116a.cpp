@@ -4527,8 +4527,16 @@ bool __stdcall function_2b278e(long controller_index)
 // The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
 // Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
 // native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
+// Shared unsigned/short dialog mask 208/208, with the first or both virtual
+// queries 210/210. Conditional dialog calls with Boolean/existing membership
+// 199/54. Early confirmation with direct/short masks 201/202. The controller
+// reference is still absent after the membership query.
 // The incoming controller reference and the two post-membership index reloads still differ.
 // Dispatch-scope controller index for the initial queries, then with name entry, message permission, both dialog masks, name and permission, name and masks, or all three groups each score 54. All uses with Boolean membership score 199.
+// Named identity-query result 54, index assigned at the identity call 54, Boolean membership with
+// warning assigned on the eligible path 199 or cleared for the excluded kind 192, signed warning result 199,
+// conditional dialog invocation 199, function-scope identity 199, inherited dialog receiver 199.
+// The original controller reference and both index reloads still differ.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5788,6 +5796,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
 // friend result in removal test 320, reused removal result in kick test 269, membership statuses
 // assigned from tests 312, friend-query result declarations in spill order 97.
+// Origin assigned in both type branches 89; final eligible origin assignment 422;
+// complementary join/player/removal/request/mute predicates 382/433/91/389/401;
+// host-arm promotion assignment 92. The query and later Boolean byte homes still differ.
+// NOT kept: ties or regressions. Original complete body restored.
 // Conditional invitation 369; add friend 375; player removal 90; offer by mode 336;
 // feedback by mode 349; promotion 322; friend removal 224; membership change 100.
 // NOT kept: all regress, and the two retail-length forms pass the title-state byte at +0x72 and +0x71.
@@ -5800,6 +5812,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // guards 392 or selections 396, roster actions under other-user gate 349 or by
 // player status 402, paired modification actions under rank gate 360 or
 // regular-player gate 365. NOT kept: title output byte remains displaced.
+// Outer title-output scope 89; query outputs before list reset 89; title, player and friend
+// output-to-scalar transfers 89/89/89; roster transfers at first predicate 89; regular contact
+// before pending queries 384; regular-friend test at invitation 400. NOT kept: the first six
+// forms retain the displaced title-state byte and the invitation forms change the branch layout.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
