@@ -442,6 +442,12 @@ __forceinline bool function_184448(long arg_0)
 // bytes). Read in the entry block: retail takes the start face (arg_3) in EDI, clears the record's home with an
 // immediate store and never holds the record or the list in a callee-saved register, where ours takes the face in
 // ESI and keeps the record in EDI and the list in EBX; none of the five forms moves that.
+// M3 lane 6 r203 (fast with the callers 0x9cca0/0x184060, both MATCH throughout; control 965, aligned 711/705): dead-local
+// scan after the early return, K = 1, 2, 3, 5, 7 ... 31 (diagnostic, removed): the frame stays 0x11d4 (first difference +0x7)
+// at every K, so the 8 extra bytes are not a symbol-count state; lengths 4557-4595 B, scores 964 (K = 7, 29) to 991. Tried:
+// the two plane offsets through the existing dot3f in place of the private dot helper 984 (4573 B); the six clamps through
+// the existing PIN_126660 965 (same code); the start face through a pointer local for local_7 (retail forms that address
+// with its own lea) 965 (same code: folded); the record and list chosen by two conditional expressions 998 (4608 B).
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

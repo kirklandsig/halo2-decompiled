@@ -1082,6 +1082,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Early root and actor allocation still differ. Second-edge start/end/both addresses after the
 // first normalization 311/335/229, or inside the positive-length arm 334/336/361.
 // Both addresses with the second vector scoped there 229/361. All forms regress.
+// M3 lane 6 r203 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 60/60): the corners form (actor_index
+// declared first in the definition, the declaration and 0x270d90's call, corners a, b, c, d) re-measured 281 (aligned
+// 46/46), with case 5's position read before its direction 283 (aligned 33/33: only case 1's float block left, the
+// first vector's j/k in xmm4/xmm3 for retail's xmm3/xmm4, the 1.0 in xmm7 for xmm6, and the margin loading the radius).
+// Dead-local scan on that form, K = 0..31 (diagnostic, removed): period 8, K = 2, 10, 18, 26, 27 give 279 at 1280 B
+// (aligned 36: the origin dot reorders, the margin's radius load goes) and the rest 283-291; no K moves the j/k roles
+// or the margin. On that form: no-code reads of first.k then first.j ahead of its fill 292, j then k 289 (diagnostics);
+// the second edge vector computed before the first is normalised 360.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

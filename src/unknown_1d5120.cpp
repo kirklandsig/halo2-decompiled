@@ -369,6 +369,19 @@ void function_1d56f0(s_havok_component *component)
 // code); the result flag set before the transform-set call 78; the settled count published after the transform-set call
 // 64 (aligned 21: retail stores it at 0x1d53a1, before the call, so this is a statement moved by score, not
 // kept); the settled count in a named local 77 (same code). BLOCKED-BY 0x1d0cf0's convention stands.
+// M3 lane 6 r203 (fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10/0xe1c40/0x1d3fc0, all their callers' files in the image;
+// control 77, 0x1d0cf0 65, 0x1d0c20 38). LEAD: the tail as a call to the existing matrix setter 0x1d0c20 (a
+// transform4x3f filled from local_1's columns, scale 1) with `inline` on 0x1d0c20's definition and 0x1d0cf0's copy
+// through hkTransform::set and one body pointer for the m_fixed test and the plain arm gives 0x1d0cf0 retail's
+// convention (transform EAX, component EBX, index ECX) and both 0x1d0cf0 and 0x1d0c20 match, 0x1d1b60 and 0x115b10
+// still match (plain check agrees); but our link keeps the setter out of line here (113, 794 B) and expands it in
+// matched 0x1d3fc0 (/Ob1 file, 1155 B), where retail does the opposite. Patch: build/r203/lead-1d0cf0-d8.patch.
+// The EBX component needs both parts: without `inline` 113 (0x1d0cf0 88, component pushed), and with this
+// body still calling 0x1d0cf0 directly 73 (0x1d0cf0 88, 0x1d3fc0 lost). Measured: the setter tail alone 113; with
+// `inline` 111 (0x1d0cf0 91: EBX component, index pushed; 0x1d1b60 13, 0x115b10 20); `inline` alone 77 (0x1d3fc0
+// lost); `inline` + set copy 73 (0x1d3fc0 lost); setter tail + set copy 113; + `inline` 113 (0x1d0cf0 50,
+// 0x1d0c20 MATCH); + body pointer 113 (0x1d0cf0 and 0x1d0c20 MATCH); set copy + body pointer alone 73, with
+// `inline` 73. Next: find what makes retail expand the setter here and not in 0x1d3fc0 (site frequency).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

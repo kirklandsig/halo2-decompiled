@@ -684,6 +684,15 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the
 // steering-side block 730 (3463 B); the input copy and its normalize ahead of the position query 762 (3499 B). Diagnostic,
 // reverted: 1..7 dead initialised locals 665/665/665/665/669/500/493.
+// M3 lane 6 r203 (fast with 0x30bf0; control 489, aligned 178/178): dead-local scan K = 0..31 at the top (diagnostic,
+// removed): K = 1-5, 9-13, 17-21, 25-29 move the frame homes (3499 B, 658-669), K = 6-8, 14-16, 30-31 493-500, K = 22-23
+// 574 (3509 B), K = 24 484 (aligned 176); the normaliser's squares stay k, j, i at every K, so that order is not a
+// symbol-count state. A matched-function scan of retail for the x87 square sums finds i, k, j only in 0x195070 (a vector
+// filled by a callee, then normalize_inline); k, j, i (ours) in 0x195370, 0x1b81c0, 0x1f1ee0, 0x23cbb0, 0x25dd50.
+// Tried: the input copy normalised through the existing function_30bf0 (retail calls it out of line three times
+// here) 874 (3398 B: stays a call); local_26 through the existing vector2d_from_points2d 665 (3499 B, frame moves);
+// local_25's components written y first (diagnostic: retail computes y in the select's arms) 708; the vector add's
+// operands as (arg_2, local_8) 489 (same code).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
