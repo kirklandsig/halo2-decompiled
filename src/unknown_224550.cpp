@@ -95,7 +95,6 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 // score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
-// score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // The bitmap path still allocates blend and aspect intermediates differently. The body is 1947 bytes against 1937.
 // Earlier scores 211 and 223.
 // M3 lane 14 r114 (fast with 0x2243c0, which matches throughout; control 162, aligned 127): retail keeps the blend in XMM5
@@ -729,6 +728,16 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // at the complement or late in two axis schedules: 260/241/241. Current products at the complement
 // with late next products: 313/313. Next products at the complement: 255. Both pairs there: 265/265.
 // NOT kept: Earlier weighting leaves the blend spill and changes the frame or grows the body.
+// M3 lane 10 r126 (fast with 0x2243c0, 0x23ed30, 0x246cd0, 0x246d80 and 0x173c10; control 162, aligned 127): the two
+// inverse sums without their named next terms 322 (1959 B, frame moves); the width product after the y inverse 173 (1951 B);
+// the flip read just before the two UV flips 318 (1957 B); blend declared beside the UV sets 497 (1953 B); `1.0f - blend`
+// written at its four uses 338 (1972 B). Retail keeps blend in XMM5 through the aspect block and reloads it from its home at
+// the join (both predecessors also reload the context into ESI); ours reads it from memory at each aspect use.
+// Round 639 forms: primary bounds member reference 171, frame progress product 162, current or next
+// pivot contributions 176/178, both pivot contributions 347, compound aspect weights 162,
+// compound reciprocal weights 162, both compound weight pairs 162.
+// NOT kept: staging both pivot contributions grows the frame. The best forms leave the blend spill
+// and fixed-arm displacement different.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

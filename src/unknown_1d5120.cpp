@@ -87,6 +87,7 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax A (11-19): no new form, no lower score (77): the rigid-body lookup still reads [eax + edx + 0x40] where retail reads [edx + eax + 0x40], and the tail still passes the component and the index to 0x1d0cf0 on the stack where retail passes them in EBX and ECX; the body is unchanged. BLOCKED-BY 0x1d0cf0.
 // MiniMax B (11-18): no new form, no lower score (77, was 77): the prologue is instruction for instruction
 // retail's, with the two registers holding the same two values in the same order, and the one difference is
 // the rigid-body lookup's address: ours reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
@@ -382,6 +383,13 @@ void function_1d56f0(s_havok_component *component)
 // lost); `inline` + set copy 73 (0x1d3fc0 lost); setter tail + set copy 113; + `inline` 113 (0x1d0cf0 50,
 // 0x1d0c20 MATCH); + body pointer 113 (0x1d0cf0 and 0x1d0c20 MATCH); set copy + body pointer alone 73, with
 // `inline` 73. Next: find what makes retail expand the setter here and not in 0x1d3fc0 (site frequency).
+// M3 lane 13 r117 (fast with 0x1d56f0, MATCH each time; control 77): the rigid-body lookup written as the array's
+// own subscript, as `(data + index)->`, as `(index + data)->`, through a named body pointer, and as byte arithmetic
+// with the data pointer first or the scaled index first: 77 each, the same code (`[eax + edx + 0x40]`): the spelling
+// does not set which register is the base. Diagnostic on the blocker, its file restored at once: 0x1d0cf0's whole body
+// as a forceinline inner function behind its entry point leaves 0x1d0cf0 at 65 with the component still on the
+// stack and this function at 77, so an inner function is not what gives retail's EBX argument. Still BLOCKED-BY
+// 0x1d0cf0 for the success tail.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

@@ -448,6 +448,11 @@ __forceinline bool function_184448(long arg_0)
 // the two plane offsets through the existing dot3f in place of the private dot helper 984 (4573 B); the six clamps through
 // the existing PIN_126660 965 (same code); the start face through a pointer local for local_7 (retail forms that address
 // with its own lea) 965 (same code: folded); the record and list chosen by two conditional expressions 998 (4608 B).
+// M3 lane 13 r117 (fast, control 965): everything after the definition lookup as a new forceinline inner function
+// taking the looked-up pointers 965 (same code); the same split right after the record/list choice 976 (4575 bytes);
+// the entry surface through an element pointer (retail forms its address with a lea and reads +6 through it) 965;
+// the block count named before its compare (retail loads it into EBX first) 965; both 965; the group entry through
+// its own element address 965 (the four are the same code: the pointers are folded away). Body unchanged.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

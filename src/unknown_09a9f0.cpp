@@ -920,6 +920,16 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // epilogue and the false byte is set after the header test). Retail's push/pop EBP window is a code-generation temporary
 // (all six other registers busy at the test: index in EAX, false in BL, the table global in EDX, the scaled index in ECX,
 // this and entity); matched windows of the same kind sit in 0x130f60, 0x15e530, 0x1e18f0 and 0x263670.
+// M3 lane 7 r186 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10, 0xbb780, 0xa3c70, matched throughout; control 49,
+// aligned/masked [35/27 best]): retail's shape (bool false first, true after the attach, NONE in the flagged else) 77 (160 B,
+// re-measured: retail's BL result, but `f` cached in EBP); one combined test `object_index != NONE && !(flags & 0x10)` with
+// the entity's index stored in each arm 66 (176 B: the store between the test and the object read makes the data pointer
+// reload from the kept table pointer as retail [45/37]); that with the object read and attach through the stored index 65;
+// with the store and attach through the existing 0xbb780 66. Diagnostics (a cast that only steers, not keepable): on the
+// combined form the header indexed by `(word)object_index` 64 [35/27: the object read is then retail's instruction for
+// instruction]; on retail's shape alone 72 (index rebuilt as retail, data load still shared). Reading: retail's reload of
+// the data pointer needs a store between the header test and the object read, and its rebuilt index needs the header
+// lookup built from a different index expression than the object read's; retail's only store is before the NONE test.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1347,6 +1357,11 @@ bool c_projectile_type::v8(long a, long b)
 // group power through a pointer declared after the flags or inside the 0x800 block; a `real const *` to the group's power
 // in place of the entry pointer; `b` throughout or the flags local. Every form without the state-power and group-power
 // pointers 12 (same code); the group-power pointer 15; the state-power pointer 16; both 19. The object/flags pair never moved.
+// M3 lane 11 r121 (fast; word read 5, mask 12), all with the full-width mask: 0 to 8 initialised dead locals after the object
+// 12 each (diagnostic: no referenced-local count shift); one or two dead locals initialised with 0x800, 0xffff, 0x400 or
+// `b + i` 12 each (dead constants do not join the pair); flags dword/long x result long/dword x index reference long/dword,
+// all eight 12; the group entry through a `(index & 0xffff) * 12` offset local 12, with the object through 0xa1f70's offset
+// local as well 12, the object offset local alone 12.
 // M3 lane 13 r113 (fast with 0xa5e70, matched each time; mask control 12: the group data then reuses ESI after the flags,
 // retail after the object), all with the full-width mask: a `long` group offset local `(index & 0xffff) * 12` added to
 // the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the

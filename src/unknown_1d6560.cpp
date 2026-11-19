@@ -530,6 +530,21 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // (`index * sizeof`) 96 [0]; a model local declared first 21 [2] (the owner then arrives in EAX and the component on the
 // stack); the header pool read into a pool local first 24 [0] (same code); a model local in place before the rigid body 24 [0]
 // (same code); headers and the model ahead of the type with the rigid body last 124 at 276 B [189]. Body unchanged.
+// M3 lane 7 r185 (fast with the file and the caller 0x1d5bf0, caller in brackets; control 96 [0]): round 60's 24 form
+// rebuilt 24 at 256 B [0]; every dependency-respecting order of its five locals (object index o, absolute index a, rigid
+// body r, header array h, type t), each with a byte and a long type: oarht 24/89 [0], oahrt 88/97 [0], ohart 83/91 [0],
+// ohrat 21/86 [13], horat 21/86 [lost], hoart 83/91 [lost], oahtr 111/122, ohatr 106/122, hoatr 106/126 (264-276 B),
+// oraht 94/93, orhat 94/96, roaht 96/95, rohat 96/98, rhoat 96/98, hroat 94/93 [all lost]. Only o-first orders with
+// the rigid body after the absolute index keep the caller, and every order keeps the same inner colouring (object index
+// EDX, header array ESI, rigid body in place in ECX; the 21 forms only trade EAX/ECX between the component and the
+// index). Retail's call sets up EAX (component) last, after the pushes, as the declared order implies. On the 24 form,
+// case 0 through the existing havok_object_get(component->object_index) 24 [0] (same code), through
+// havok_object_get(object_index) 101 [0]. Body unchanged.
+// M3 lane 14 r117 (fast with the caller 0x1d5bf0, caller in brackets): round 60's 24 form rebuilt 24 at 256 B [0]; its
+// three entry values are a rotation of retail's (object index EDX for ECX, headers ESI for EDX, rigid body ECX in place
+// for ESI). On it, the same code each: the type local const 24 [0], the object-index local const 24 [0], case 11 as one
+// nested ternary 24 [0], the rigid body as a reference 24 [0]; the kind-7 route as `if (type != 1) return 1; return
+// 0xc;` 94 [0]; the object index as a const reference to the component's field 96 [208]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

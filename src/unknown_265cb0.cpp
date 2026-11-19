@@ -891,6 +891,14 @@ real function_30bf0(vector3f *vector);
 // sides elsewhere move); the range read after the delta 87; both 145 (1308 B); the clipped point through the shared
 // vector3f_add_scaled 90; the facing results copied at the end of the facing block in place of the second `if (facing)`
 // 101. The range still loads into XMM2 (retail XMM0) and every 4-byte home but the delta's is where round 81 found it.
+// M3 lane 11 r121 (fast with 0x263740, MATCH each time; control 84): the range as a `real const &` bound to the settings field
+// 215 (1308 B: read at each use); the occupant test as `if (occupant == NONE) continue;` 84 (same code); unused locals inside the
+// facing arm, n = 1, 2, 3, 5: 84, 86, 138, 82 (diagnostic, the same phase round 81 found at the top); the endpoint test written
+// `!actor->unknown007 && endpoint` 88; the seat index declared ahead of the count 84 (same code).
+// Use the eventual up vector for the world-up input to the side cross, then overwrite it with
+// corrected up. Copy initialization, direct/staged crosses: 219 each with frame 0x34c.
+// Component setter with the same four cross pairs: 167 each at 1308 bytes. The result and
+// clip homes still differ.
 // M3 lane 5 r200 (fast with 0x263740, 0x25c9d0 and 0x26d370, all MATCH; control 84, frame-blind 9): the endpoint clip block
 // through a new forced-inline helper 417 (1392 B); the facing pair declared first 84 and distance_squared declared before
 // the clip block 84 (same code); the posture switch as an if/else-if chain 131 (1308 B); `use_facing && !actor->unknown007`
@@ -899,6 +907,13 @@ real function_30bf0(vector3f *vector);
 // M3 lane 6 r200 (fast; control 84): distance_squared and everything after it in its own `{}` block 84; `vector3f delta`
 // declared ahead of the range 84; the endpoint test as two nested `if`s 84; the posture switch with a `default: break;`
 // 84; the range `real const` 84 (each the same score; homes and the two seat-loop products unchanged).
+// M3 lane 7 r186 (fast with 0x263740, 0x25c9d0, 0x26d370, all MATCH; control 84, aligned/masked 57/22): the occupant and
+// player tests combined in one `&&` test 90 (1308 B; 70/36); `i++` for `++i` 84 (same code); the squared distance as
+// dot3f(&delta, &delta) 84 (same code); the facing query writing `secondary`/`primary` directly (no facing copies, no
+// re-test) 196 (1328 B, on this base); the vehicle index as the typed `actor->unknown26c` 84 (same code). Diagnostic, not
+// kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
+// retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
+// the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2744,6 +2759,14 @@ real function_2683f0(long actor_index, long node_index, short type)
 // base/index order, the players loop (retail's table pointer in EDX, the datum index in EBP, the found index in ESI, the
 // player in EDI, and no jump over the loop-top padding), and the direction's components held in XMM1..XMM3 across the
 // relative and facing dots (retail loads two of them ahead of the relative-length test).
+// M3 lane 11 r121 (fast with 0x25d810, MATCH each time; control 168): the players iterator started through a file-local
+// inline helper returning the iterator by value 383 (2883 B: the whole iterator is copied, the table pointer still misses EAX;
+// diagnostic for a scheduler boundary, not kept); the two NONE stores chained 170; the players iterator declared at function
+// scope 168 (same code); the actor looked up as the byte pointer first with the typed actor derived from it 168 (same code: the
+// iterator start keeps `[eax + ecx + 0x58]`); the byte alias dropped, the raw offsets through `(byte *)actor` 168 (same code).
+// Shared actor displacement with pool pointer, pool reference, refreshed data or field reads:
+// 167 each, first +0x1a7. Typed indexing across the same reads: 168 each.
+// NOT kept: the one-point SIB gain is below the retention threshold.
 // M3 lane 5 r200 (fast with the eight callees, all MATCH; control 168; on lane 3 r261's 163 form unless noted): `visible` as
 // `reference == NONE || prop_ref_get(reference)->unknown27 >= 1` 423 (the frame changes); the iterator's NONE fields chained
 // 165; the player as a ternary on the found index 367; both searches in ai_player_get's shape (player NULL first, a long copy
@@ -2758,6 +2781,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // declared in that order 170; `close` as one direct `||` expression 620 (first difference +0x0); the other-actor ternary
 // with the test negated and the arms swapped 173. Still left on the recipe: the players iterator's table pointer in ECX for
 // retail's EAX (`mov eax, [abs]` is a byte shorter), which shifts the loop pad and everything after it.
+// M3 lane 7 r186 (fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740, 0x25d810, all MATCH; control 168, aligned/masked
+// 107/88): `player` cleared before the first search and the slot search on a long counter 376 (702 rows; the slot search
+// becomes retail's pointer walk, the NONE test threads); the player through the existing ai_player_get with the long slot
+// search 849 (2642 B: ai.cpp's /Ob1 keeps it a call, re-measured); ai_player_get's shape written out (player NULL first,
+// short index copied to a long for its NONE test, long slot counter) 383 (107/83: both searches are retail's instruction for
+// instruction, but the players table then loads into ECX, a 6-byte load against retail's 5-byte EAX load, so the loop-top
+// pad becomes `jmp` plus `lea ecx, [ecx]` and every later row is one off); plus the decrease test as `!(distance > 3.5f)`
+// 317 (108/84); plus the established arm nested in `if (established || !(far && slow)) { ...; positive = score > 0; }`
+// 377 (2882 B, 99/75: retail's block order for the far-and-slow test). Left: the players table's register at the iterator
+// setup (the matched siblings' identical three statements load it into EAX) and the direction components, which retail
+// keeps in XMM1-3 from the relative dot to the facing dot.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

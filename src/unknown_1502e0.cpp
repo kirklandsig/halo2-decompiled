@@ -1296,7 +1296,9 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
-// score 43 (was 43): The 210-byte extent still agrees. Retail uses ESI for the player, EDI for the hand and EDX for the unit index. This build assigns those values to EDI, ESI and ECX.
+// score 43 (was 43): The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
+// the first unit-index load uses ECX instead of EDX.
+// Earlier score 43 (was 43): The 210-byte extent still agrees. Retail uses ESI for the player, EDI for the hand and EDX for the unit index. This build assigns those values to EDI, ESI and ECX.
 // Earlier score 43 (was 43): a one-step scratch rotation (ours ECX/EAX/EDX where retail has EDX/ECX/EAX) and the player/hand
 // ESI/EDI exchange. LEAD (round 209, end of this note): the unit lookup reading the index again through the player
 // getter leaves only the player address (aligned 3).
@@ -1539,7 +1541,7 @@ void function_150820(dword *bits, bool local_only)
 // for two player lookups 73; direct object header index after separate player read 73; common success
 // after dispatch with sole exit 63; common success after dispatch with failure return 106. NOT kept: the
 // separate lookups recover those three registers but combine the player-address calculation into LEA and
-// score worse. The shared success paths change the extent and regress. The original body was restored.
+// Earlier score worse. The shared success paths change the extent and regress. The original body was restored.
 // MiniMax A (11-17): no new form tried this round, no lower score (43): a register rotation only (retail keeps the player in esi, the unit index in edx and the hand in edi, this build keeps them in edi, ecx and esi, and the primary byte follows in cl against al); the body, the length (210) and the calls agree.
 // M3 lane 16 r136 (fast with 0x151b80/0xcd7b0/0xa8f80/0xcd4e0/0x14f820; control 43, aligned 64 rows): round 209's lead
 // re-measured 73 (aligned 3: `lea esi, [eax + edx]` for retail's `add eax, edx; mov esi, eax`); the unit test through the
@@ -1558,6 +1560,15 @@ void function_150820(dword *bits, bool local_only)
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
+// Shared post-query unit-index refresh, with mode first, with an index reused from before the
+// query (with or without mode first), with two const snapshots, and with the mode test first:
+// six at 49. Separate lookup with shared refresh 75, also read through the getter at the
+// query 40. NOT kept: the latter gains three, combines the player add and move into LEA,
+// and mixes player lookups. The 210-byte starting body and its saved-register exchange remain.
+// Full-width unsigned remainder at the object-header ordinal, extraction/parameter domain,
+// typed subscript/byte stride and direct/named ordinal: 43 each. The player and hand
+// still occupy EDI and ESI instead of ESI and EDI.
+// NOT kept: the shared ordinal forms also take the matched pickup caller to 277 in preview.
 // Round 264 (m3 lane 3, fast with 0x151b80 17, 0x14f820, 0x151940 and the callees; control 43): the cd4e0 arm as
 // `else if (function_cd4e0(...)) result = true;` 47; `result = true;` ahead of the a8f80 call 71 (215 bytes); the mode
 // test inverted with the cd4e0 arm first 72 (219 bytes); the hand as `bool` 89 (197 bytes); the hand set to 0 and then
@@ -1570,6 +1581,12 @@ void function_150820(dword *bits, bool local_only)
 // ordinal 88/78, post-query pair copy or reference 88/88, first-row reference 43, separate hand
 // availability tests 78. NOT kept: neither workspace changes the saved player/hand allocation at
 // 210 bytes. The shorter and longer variants regress. The opening body is restored.
+// Integer player address converted at lookup 43, Integer player base advanced before conversion 43, Integer
+// player address converted after unit admission 43, Integer player address used for every unit index read 43,
+// Byte unit-header displacement before typed access 43, Integer unit-header address before typed access 43,
+// Integer player address and separate unit-index lookup 73, Integer player and unit-header addresses 43. NOT
+// kept: The separated player lookup recovers the saved registers but folds the player address into LEA and raises
+// the score. The other seven address forms preserve the original allocation and tie.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

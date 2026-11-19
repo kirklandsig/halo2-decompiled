@@ -498,6 +498,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // engine load above the stores (32). Left: the mask's word load and word spill, its one reload into ECX ahead of the
 // first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // MiniMax E (11-15): no new form, no lower score (32): the word mask read through the pointer still gives retail's head and loop (77) but not its tail, the mask read off the field rematerialises it (129), and a one-use team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) is retail's loop and reaches 29 - not kept, it is a one-use local and 3 points is under the bar (MiniMax D's 11-14 form, dropped by the coordinator); what is left is the old mask's word load and word spill (retail's `mov cx` and a word store against our zero-extended ECX and a dword store), its one reload into ECX ahead of the first jne, the playing teams in EDX and the engine index read at the head of the change block.
+// MiniMax B (11-19): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, its reload ahead of the first jne is still split between the compare and the change block, the playing teams are still in EAX where retail keeps them in EDX, and the present update still lands in ESI where retail keeps it in EBX; a word mask with a separate dword copy folds back to the same code, and the word mask alone (77), the plain present (102), the field paths (129), the guard orders (78, 91) and the store orders all score 63 or more.
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
 // D's form, not kept: score 29 (was 32): the old team mask is still zero-extended to a dword when it is loaded and spilled as a dword, where retail loads and spills a word; its reload into ECX ahead of the first jne also still differs.
 // MiniMax D (11-14), NOT kept (coordinator: the gain is a one-use `dword team_bit` local, kept only with a
@@ -1891,6 +1892,14 @@ short function_15cca0(long player_index, byte code)
 // the p27 arguments written inline 25; team and other_team swapped 24; `!= 0` tests 24; early-return guards 24;
 // pointer-increment countdown loop 24; other player pointer as a named local before or after `team` 24; the
 // other player pointer hoisted above the lookup 74 (the parameter does move to EAX there, but so does the lookup).
+// M3 lane 9 r142 (fast): the parameter takes whatever scratch register the lookup's temporaries leave: with the
+// player lookup replaced by the unchecked array read (diagnostic) it arrives in EAX and the temps take ECX/EDX as
+// in retail, so retail's lookup leaves EAX free from entry. New, none below 24: the teams as char locals 67 (236 B);
+// the player's team passed as `player->team` with only other_team named 24; the p27 test merged into the outer
+// condition 25; the engine test after the player's team read (early return) 24; other_team read from the typed
+// player array of g_4e8c24 24. Diagnostics (24 each): 1 to 8 dead initialised locals; the parameter copied into a
+// local; `+ (other - other)` on the other team; a private lookup copy without the index local 24, without the
+// datum local 71, with early returns 81.
 // Round 636: other-player EDX versus retail EAX still rotates the lookup. Shared player pool 24, pool
 // reference 24, typed roster 24 or word slot 68; other team lvalue 52, both team lvalues 82, shared
 // pool with virtual receiver 24, other team field address 52.
@@ -2088,6 +2097,16 @@ void function_15e460(long object_index, long value)
 // nested ternary return 31; three early returns 30; a local engine pointer with true-first 30; a `long one = 1`
 // local compared against 30, and a long result reused as the comparand (103 bytes) 39: no form makes the early
 // `mov edx, 1` appear ahead of the first branch.
+// M3 lane 9 r142 (fast; a one-file compile-only screen of this body reproduces the fast build's code line for line,
+// ~500 forms screened): matched 0x15b2f0 (src/unknown_15b2f0.cpp) is the only other retail body with `mov edx, 1` ...
+// `mov al, dl`: a false-started result and three uses of 1 after its first test. Here retail's four uses (the
+// entry-path true, the special-case true, the shift base and the compare) share EDX from the entry block, with the
+// options record in EAX; every true-first form instead substitutes the result variable itself (EAX) for the shift
+// base and the compare, with the options in EDX. New: an uninitialised result set in an if / else-if / else chain 33;
+// `result = special || compare` under the guard with true in the else 33; one `||` guard for both trues with the
+// compare in the else 33; true-first with `return result` for the guard and the special case and the compare
+// returned 30; the options pointer declared first (re-measured) 29. Compile-only grid (no fit): five options
+// spellings x eight arm shapes x two compare spellings x bool/char/byte/long result x declaration order.
 // Round 636: EDX one and ESI/EDI saves still differ. Option first in the existing branch chain 27,
 // as the gate for the role result 29, as a short-circuit return 30, as a restriction conjunction 40;
 // flag before role 30, with role result 30, with the option gate 36; option-first assignment 31.
@@ -4795,7 +4814,7 @@ void __stdcall function_15bb20(long player_index)
 }
 
 long function_23f360(long team, long mode);
-long function_23f260(long mode, long player_index, long value);
+long function_23f260(long player_index, long value, long mode);
 
 // @retail 0x158e90
 long function_158e90(long team)
@@ -4819,81 +4838,9 @@ bool function_158eb0()
     return result;
 }
 
-// score 5 (was 5): BLOCKED-BY 0x23f260 (mode declared first). The mode and the player index are kept
-// in swapped registers: retail computes the mode in ecx and the index in edx, ours the other way round.
-// Tried: `(long)(flag != 0)` 5; `!!flag` 5; a byte flag 5; `> 1` for `/ 2 > 0` 35.
-// actual mode reference 38; options record reference 5; complete iterator 46;
-// iterator scope 5; byte result 69; wide result 59; byte plus mode reference 66;
-// direct final count rejection 23. Cardinality bias 12; bounded count 43; singleton states 56;
-// retained quotient/raw score 63/63; signed/unsigned halfword result 58/58; bounded extra-player
-// count 46. Rejection state 27; rejection predicate 63; wide/byte rejection 51/27; rejection
-// from score 67; rejection cardinality exit 32; rejection fallthrough 85; rejection after iterator 30.
-// Mode local before the count 38; in-argument ternary on the global 38; inline helper taking the
-// mode last 5; `!!` on the global 38; index local read after the count, before the flag 5.
-// The flag through engine_options() 5; `flag ? 1 : 0` 5; a named score 5; count assigned after
-// its declaration 5; index initialised first 7; the bool flag passed directly 41.
-// Round 124: retail evaluates the mode before the index (so the mode takes ECX and is copied to EAX);
-// ours evaluates the index first. A long mode local after the flag 37 (the mode goes straight to EAX,
-// 144 bytes); the mode local in place of the flag 37; `(bool)` on the global for that local 44; the
-// flag read before the count 5; the score named and the count moved after the call 5.
-// Round 196: the index read into a local after the flag 5; the flag and call in a scoped block with
-// the score outside it 5; the flag, call and test in a scoped block 5; the count, flag, named score
-// and test in a scoped block 5; a named index and a named score 5. Matched 0x15c6f0 (flag in AL, then
-// `xor ecx, ecx`) shows the first free register goes to the mode when nothing is read before it, so
-// retail's mode is evaluated before the index: the parameters declared with the mode last would give
-// that, in a held file.
-// Round 96: iterator result stored in an active bool 5; iterator pointer 5; const flag 5; byte normalized
-// mode 35; plain for 5; guarded do/while 16; count postincrement 5; named positive predicate 5.
-// Original body restored.
-// Round 124 (m3 lane 7, fast): `g_4e6948->flag1128 != 0` in the argument 38 (144 bytes); result declared
-// before the count 7; the iterator fields stored index, absolute index, data 7; `/ 2 >= 1` 11 (147 bytes);
-// a long mode cleared then set under `if (flag)` 62 (130 bytes). Original body restored.
-// Round 147 (m3 lane 6, fast): the index through a `long const &` 5; the flag declared at function scope 5;
-// `flag == true` 6; a long flag local 12 (147 bytes); `!flag ? 0 : 1` 5. Original body restored.
-// Round 74 (m3 lane 11, fast): the mode from a forceinline helper in the argument 5; the index from a
-// forceinline accessor 5; the flag, call and halving in a forceinline rank helper taking the index 5
-// (the register choice survives inlining in every form); the iterator declared first 5; an options
-// pointer local at function scope 27 (147 bytes). Original body restored.
-// Round 96 (m3 lane 9, fast): diagnostic probe (one dword global load and store, reverted): anywhere ahead of the call's
-// arguments, at entry or in the loop body, it gives retail's exact setup (`mov edx, [esp+0x18]` / `xor ecx, ecx` / `setne cl` /
-// `mov eax, ecx`); after the loop it moves nothing. So the swap is one temporary-rotation step: retail has one more expression
-// temporary ahead of the index load. Chained `iterator.index = iterator.absolute_index = NONE` 5; next() given `&iterator.player`
-// 5; the iterator set through its record-pool view 5; `flag != false` 5; the raw rank named and halved in the test 5.
-// Original body restored.
-// Round 98 (m3 lane 16, fast): inline helpers whose parameters could supply the missing rotation step: a typed
-// wrapper around the iterator's next call 5; the iterator's three stores in an inline setter taking its address 5;
-// both 5; the rank call through a forwarding helper taking (mode, index) 5, (bool flag, index) 5, (mode, index,
-// value) 5, (index, flag) with the halving inside 5; the whole test in an inline predicate taking the index 5
-// (the same code in all eight). Original body restored.
-// Round 173 (m3 lane 5, fast): `result &&` in the loop condition in place of the break 67 (120 bytes); result declared
-// after the iterator setup 9; `0 < rank / 2` 5; `return count != 1 ? result : false;` 47 (161 bytes); `return result &&
-// count != 1;` 63 (128 bytes). Re-measured: `++count` after the flag read 5; the flag through TEST_FIELD_BIT (the same
-// bool) 5; the iterator's index stored before its absolute index 7. Original body restored.
-// Round 113 (m3 lane 16, fast): a named player index with a long mode local `flag != 0` 37 (144 bytes, the mode straight to
-// EAX); the ternary on the global in the argument 38 (re-measured); the flag read before `++count` with the rank named 5; a
-// named player index with `flag ? 1 : 0` 5; the flag normalised at its read (`bool flag = g->flag1128 != 0`) and passed
-// directly 35. Diagnostics (removed): the iterator's data store written twice 5, the flag read twice 5 (copies removed before
-// allocation do not rotate the registers). Original body restored.
-// HELD (needs the owner's OK: src/unknown_23f260.cpp is a held file): m3 lane 6 r178, one-file LTCG harness
-// (this file with src/player_queries.cpp, src/unknown_23f260.cpp, src/unknown_16b570.cpp, src/unknown_15b2f0.cpp,
-// src/unknown_15d770.cpp, src/unknown_15e410.cpp and the build's ballast object; it reproduces the 5 exactly):
-// 0x23f260 declared `(long player, long excluded_team, long mode)`, with the definition, the three declarations and
-// the five calls changed together (build/r178/held-158f50.patch), gives 0 here with 0x23f260 itself still exact.
-// The swap is one scratch-register rotation step: with fewer callee files in the harness g_4e6948 is reloaded in
-// the loop and that extra temporary alone gives retail's setup. On main's order in the harness: the iterator data
-// through a named pool pointer 5, the iterator stores reordered 7, result declared before the count 7, `!= false`
-// on the iterator call 5, `(bool)` on the flag read 5, `count++` 5, `/ 2 >= 1` 7, `return count != 1 && result;` 11.
-// Round 247 (m3 lane 3, fast): the count declared after the iterator setup 10; the test as `<= 0` with `continue` 67; an
-// options pointer local in the loop for the flag read 5; `flag == false ? 0 : 1` 5; the iterator named `players` 5.
-// Round 170 (m3 lane 7, fast with 0x23f260/0x19f240, both matched each time): an `unsigned long` count 5; the result
-// assigned from the halved rank's `<= 0` test with `if (!result) break;` 64 (129 bytes); `result &&` ahead of the
-// iterator call in the loop test 67 (120 bytes); re-measured a named player index after the flag 5 and
-// `g_4e6948->flag1128 ? 1 : 0` in the argument 38 (144 bytes). Still the
-// mode/index scratch pair (ours EDX/ECX, retail ECX/EDX): BLOCKED-BY 0x23f260 (its file is held this round).
-// Round 179 (m3 lane 8, fast with 0x23f260/0x19f240, both matched each time): `if (count == 1) return false;
-// return result;` 23; `return false;` in the loop with `return count != 1;` and no result 65 (126 bytes); a
-// short count 8 (147 bytes); the short count with the early return 22; the short count with the in-loop
-// return 64 (127 bytes). Still BLOCKED-BY 0x23f260.
+// true when no player's halved 0x23f260 rank (no excluded team, mode from the options flag, passed last: retail
+// evaluates the mode before the player, and sibling 0x158e90 passes 0x23f360 its mode last) is positive, and false
+// when there is exactly one player
 // @retail 0x158f50
 bool function_158f50()
 {
@@ -4907,7 +4854,7 @@ bool function_158f50()
     {
         ++count;
         bool flag = g_4e6948->flag1128;
-        if (function_23f260(flag != 0, iterator.index, NONE) / 2 > 0)
+        if (function_23f260(iterator.index, NONE, flag != 0) / 2 > 0)
         {
             result = false;
             break;
@@ -5921,6 +5868,16 @@ void __stdcall function_d6bc0(long object_index);
 // loop-top index local at function scope 172; the object pointer declared before the index 172; `entries` copied into a
 // function-scope local 172; the default arm first 172. On the label form: case 1's bit through a trivial forced-inline
 // accessor 7 (same code; CL stays).
+// M3 lane 9 r142 (fast; base 29, label form re-measured 7, label + field test 172 at 858 B): on the label + field-test
+// form the 0x15aad0 call given another pointer (diagnostic) 12 (871 B): every line but that argument is then retail's
+// (switch test on the field, case 1 in AL, the timer in EDI, `entries` never in a register), so the whole 172 gap is
+// `entries` crossing the allocator's promotion point. Other single uses removed (diagnostics): the reset block's
+// `value04 = 1` store 25 (874 B); `++value06` 169; 0x158ff0 given the loop-top index 207; the countdown's `= 1` store
+// 186; 0xd6bc0 given the loop-top index 192. New forms: the reset counter in an inline helper taking `&entries[i]`
+// 287 (810 B); the schedule decision as an inline bool predicate in the zero test's condition (returns, or a result
+// set per case) 367 (724 B: not inlined, called), with the loop-top index test 349; the predicate `__forceinline`
+// with returns 139 (869 B: `entries` in EDI, the delay block laid out before the case code, `and al, 1` for the
+// returned bit), with a result set per case 172 (858 B).
 // M3 lane 8 r188 (fast): the flag recipe re-measured 7 (869 B; left the index test on the local and case 1 in CL); on it,
 // with the field test: the object pointer declared at function scope (assigned NULL at the loop top) 172 (858 B), no
 // loop-top index local at all (every read through the field, the object block too) 172 (858 B), the schedule test on
