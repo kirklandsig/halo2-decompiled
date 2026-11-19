@@ -6,6 +6,16 @@ The newest entry comes first.
 
 ```
 matched 10713 of 11326 game functions (2088025 of 2786206 bytes, 74.94%)
+matched 1433 of 1436 Havok functions (281366 of 290362 bytes, 96.90%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1351: `0x30e720` match.
+
+## 2026-11-18: 10713 functions match
+
+```
+matched 10713 of 11326 game functions (2088025 of 2786206 bytes, 74.94%)
 matched 1432 of 1436 Havok functions (279803 of 290362 bytes, 96.36%)
 ```
 
