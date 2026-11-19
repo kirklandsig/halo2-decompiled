@@ -2033,6 +2033,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // score 433 (was 433): r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
 // Earlier score 433 (was 433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
+// MiniMax I (11-19): no new form, no lower score (433): the case-13 body still returns through its own 16-bit move instead of
+// retail's shared 32-bit return-1 block, the turn-facing sum is still added in the other order, and the case-4 dot product is
+// still computed with the vector helper from the other file where retail inlines it.
+// score 433 (was 433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
 // MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
 // MiniMax H (11-18): score 433 (was 479): the switch's cases now sit in retail's order and case 13 returns 1;
 // what still differs is the shared return-1 block, which this build keeps at the end of the function where retail
