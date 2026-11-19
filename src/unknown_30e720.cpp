@@ -260,19 +260,32 @@ static __forceinline void append_island_30e720(islands_30e720 &list, island_30e7
 // whether the grouping left every body in one group, as a stored flag
 static __forceinline bool one_group_30e720(grouping_3720a0 const &grouping)
 {
-	bool const single = ((long *)grouping.parents->data)[0] == -grouping.parents->size;
+	long const count = grouping.parents->size;
+	bool const single = ((long *)grouping.parents->data)[0] == -count;
 	return single;
 }
 
 // the island of the body a linked pair's side belongs to
-static __forceinline island_30e720 *side_island_30e720(side_30e720 *side)
+static __forceinline body_30e720 *side_body_30e720(side_30e720 *side)
 {
 	char *address = (char *)side;
 	address -= sizeof(head_30e720);
-	return ((linked_30e720 *)address)->body->island;
+	return ((linked_30e720 *)address)->body;
 }
 
-// score 87 (was 216): an island is appended by comparing its list's size
+// Matched (was 87): the joins loop reads its start from the list through a
+// const-reference size accessor and each join's two bodies through helpers;
+// the accessor leaves the loop's `c >= 0` test as one more use of the shared
+// zero, which makes the zero's long piece cheaper to reload than to keep in
+// ebp (retail reloads it), and the two returned bodies are candidates that are
+// coloured before the counter, which then takes edi. In the island section
+// the bodies count is read through an accessor, the group count is named in
+// the single-group test, and the action is addressed through a helper.
+// Before, 80 (was 86): a linked pair's side gives its body through a helper and
+// the caller reads the island from it, the second side is read again from the
+// list, and the link counter starts before the loop's entry test: the second
+// side's loads, the address order and the entry test's place agree with retail.
+// Before, 86 (was 189): an island is appended by comparing its list's size
 // with its capacity through two const-reference accessors, the moved island is
 // read through the list's data pointer, the counter starts at the list's size
 // less one, and the bodies loop has its own entry test like the other lists:
@@ -321,10 +334,41 @@ static __forceinline void move_island_30e720(island_30e720 **const &data, long l
 	data[index] = data[last];
 }
 
+// the number of bodies in an island
+static __forceinline long body_count_30e720(island_30e720 const *island)
+{
+	return island->bodies.size;
+}
+
+// an island's action at `index`
+static __forceinline action_30e720 *action_at_30e720(island_30e720 const *island, long index)
+{
+	return island->actions.data[index];
+}
+
+// the number of joins in a list
+inline long size_30e720(joins_30e720 const &list)
+{
+	return list.size;
+}
+
+// the second body of a join
+static __forceinline body_30e720 *second_of_30e720(join_30e720 const *join)
+{
+	return join->second;
+}
+
+// the first body of a join
+static __forceinline body_30e720 *first_of_30e720(join_30e720 const *join)
+{
+	return join->first;
+}
+
 // @retail 0x30e720
 void c_311100::function_30e720()
 {
-	for (int i = islands.size - 1; i >= 0; i--)
+	int original_count = islands.size;
+	for (int i = original_count - 1; i >= 0; i--)
 	{
 		island_30e720 *island = islands.data[i];
 		if (island->bodies.size == 0)
@@ -338,10 +382,10 @@ void c_311100::function_30e720()
 		{
 			island_pairs_30e720 pairs(island->links.size, island->joins.size, island->actions.size);
 			((class_317d90 *)island)->function_317d90((id_pairs_317d90 *)&pairs);
-			longs_2e1ab0 parents(island->bodies.size);
+			longs_2e1ab0 parents(body_count_30e720(island));
 			longs_2e1ab0 scratch(pairs.size);
 			grouping_3720a0 grouping((array_2d91d0 *)&parents, (array_2d91d0 *)&scratch);
-			grouping.function_372200((array_2d91d0 const *)&pairs, island->bodies.size);
+			grouping.function_372200((array_2d91d0 const *)&pairs, body_count_30e720(island));
 			if (!one_group_30e720(grouping))
 			{
 				groups_372300 groups;
@@ -373,9 +417,10 @@ void c_311100::function_30e720()
 						created->bodies.data[j] = body;
 					}
 				}
+				int k = 0;
 				if (0 < island->bodies.size)
 				{
-					for (int k = 0; k < island->bodies.size;)
+					for (; k < island->bodies.size;)
 					{
 						body_30e720 *body = island->bodies.data[k];
 						if (body->island != island)
@@ -394,9 +439,10 @@ void c_311100::function_30e720()
 					inline_bodies_30e720 listed;
 					island->actions.data[a]->list_bodies(&listed);
 					island_30e720 *owner = 0;
+					int n = 0;
 					if (0 < listed.size)
 					{
-						for (int n = 0; n < listed.size; n++)
+						for (; n < listed.size; n++)
 						{
 							owner = listed.data[n]->island;
 							if (!owner->taken_out_of_world())
@@ -405,7 +451,7 @@ void c_311100::function_30e720()
 							}
 						}
 					}
-					island->actions.data[a]->island = owner;
+					action_at_30e720(island, a)->island = owner;
 					island_30e720 *kept_by = island->actions.data[a]->island;
 					if (kept_by != island)
 					{
@@ -413,12 +459,12 @@ void c_311100::function_30e720()
 						island->actions.remove_at(a);
 					}
 				}
-				for (int c = island->joins.size - 1; c >= 0; c--)
+				for (int c = size_30e720(island->joins) - 1; c >= 0; c--)
 				{
-					island_30e720 *owner = island->joins[c]->first->island;
+					island_30e720 *owner = first_of_30e720(island->joins[c])->island;
 					if (owner->taken_out_of_world())
 					{
-						owner = island->joins[c]->second->island;
+						owner = second_of_30e720(island->joins[c])->island;
 					}
 					if (owner != island)
 					{
@@ -435,15 +481,16 @@ void c_311100::function_30e720()
 
 				links_30e720 &links = island->links;
 				long kept = 0;
+				int l = 0;
 				if (0 < links.size)
 				{
-					for (int l = 0; l < links.size; l++)
+					for (; l < links.size; l++)
 					{
 						link_30e720 &link = links.data[l];
-						island_30e720 *owner = side_island_30e720(link.first);
+						island_30e720 *owner = side_body_30e720(link.first)->island;
 						if (owner->taken_out_of_world())
 						{
-							owner = side_island_30e720(link.second);
+							owner = side_body_30e720(links.data[l].second)->island;
 						}
 						if (owner != island)
 						{
