@@ -224,6 +224,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // M3 lane 3 r260 (fast with 0x2008fc 0x200891, control 14): both half extents in one declaration 14; the centring steps as
 // plain assignments 14; the first pass's width sum as `sum = product + sum` 14; the corner array declared ahead of the first
 // x step 14; the first pass's pulse query written in the sum (no pulse local) 14 (all the same code).
+// m3 lane 14 r111 (one-file LTCG screen of this file with its callees' objects; it reproduces the XMM3/XMM4 pair, the
+// running x takes XMM5 there where the full build has XMM7): 0 to 32 dead initialised locals at the top never move the
+// advance product off XMM4 (not a symbol-count tie); the pulse as `real const`, both half extents as `real const`, the
+// corners as a flat array of eight reals, all the same code; the bitmap entry pointer computed after the pulse query
+// 14 -> worse (the entry load moves past the call); the four corner edges as const locals named after the x step worse.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

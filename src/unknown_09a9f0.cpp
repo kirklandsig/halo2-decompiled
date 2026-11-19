@@ -901,6 +901,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // helper at both lookups 47 (the multiply is then repeated with scale 4 as in retail, but the mask and the data load are
 // shared again and the data takes EBX). Other forms: the whole 12-byte header returned by value 120 (217 B); no index local,
 // every read from the entity's field through a by-value copy 74 (one data load, f cached in EBP).
+// MiniMax G (11-18): no new form, no lower score (49): setting the result where retail sets it (at the attachment,
+// before the value test) gives 80, with the else arm also clearing it 74, with the true set after the value test 82,
+// and the clamped value read as a word, an unsigned short or a short gives 98/98/116; a bool result compared against
+// NONE gives 69 and a bool result set at the attachment gives 77, because this build then spills the flag to the
+// stack and keeps a parameter in EBP; this build still holds the validity result in EBP with a setne and CSEs the
+// table's data pointer, where retail keeps the result in BL and reloads the header's data pointer.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
