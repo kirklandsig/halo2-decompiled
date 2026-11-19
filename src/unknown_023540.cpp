@@ -2425,7 +2425,10 @@ dword __cdecl function_131fc0(real alpha);
 // reached 54 reads a global twice through a volatile, which the rules ban; re-measured at 140 (1729 bytes, as
 // retail's). BLOCKED-BY the callee.
 // MiniMax R (11-15): no new form, no lower score (140): the preserve_alpha load is still hoisted above the `simple` branch where retail loads it after the branch and again in bl, and retail's two writes of the chosen default into the parameter's own home are still missing; the callee 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp. BLOCKED-BY the callee.
-// score 140 (was 140): frame and length agree; left: retail keeps both rectangle parameters as memory
+// score 100 (was 140): 1733 bytes against 1729; everything up to the default rectangles now equals retail (the
+// flag loads, the short arm's reload and the two parameter-home writes included). Left: the order of the eight
+// default stores, the reciprocals' registers and the operand order of the UV products (see round 117 below).
+// Earlier reading (140): frame and length agree; left: retail keeps both rectangle parameters as memory
 // variables (each chosen default is written into the parameter's home, `lea ecx; mov [home], ecx; mov ebx, ecx`)
 // and re-reads preserve_alpha after 0x131fc0 where ours hoists its load above the `simple` branch into CL.
 // Round 176 (m3 lane 5, fast = plain): box2f views of the rectangles (diagnostic cast) 154; PSTextureModes set
@@ -2677,7 +2680,35 @@ dword __cdecl function_131fc0(real alpha);
 // store 140 (same code). Reading of the flag difference: ours loads preserve_alpha once above the `simple` branch (CL, kept
 // across 0x131fc0) because both the test and the short arm read it; retail loads it after the global store into AL (the
 // call's result register), so it must load it again after the call (BL).
-// @retail 0x2a8d0 standard
+// M3 lane 13 r117 (fast = plain, single-function image, control 140): the cause of the memory-resident parameters was
+// the marker's standard word. Without it this build keeps all thirteen arguments on the stack by itself (`ret 0x34`)
+// and treats them as retail does: 139 at 1745 bytes with the old conditional defaults. Kept on top of that: both default
+// rectangles built before either null test, source tested first (retail's order) 100 (1733 B). Not kept, match-only
+// forms, each on the one before: the eight default stores in corner order x0, y0, x1, y1 (indices 0, 2, 1, 3; retail's
+// store order), written out or through a new corner-setter inline 77/77; then the u coordinates as `source[x] / width`
+// (the compiler multiplies by a stored reciprocal by itself) with inverse_height still named 14 at 1729 bytes, the
+// same with `(1.0f / width) * source[x]` 14; that in index order 35. What the 14 leaves: width and height trade homes
+// (0x10/0x14, ten lines) and the bottom edge's two v products load the coordinate first where retail loads the
+// reciprocal (four lines). Measured around it: both divisions written out 85 (1725 B, every product reciprocal-first);
+// inverse_width named with `source[y] * (1.0f / height)` 18 (homes right, products reversed); inverse_height named for the top
+// edge with `source[3] / height` or `(1.0f / height) * source[3]` below 82/82 (1735 B, two homes); inverse height
+// declared first 85; four named corner coordinates 481 (1683 B, each product stored once); UV products spelled
+// reciprocal-first on the kept form 100 (same code: the spelling does not set the operand order); the inverse-height declaration at
+// the top of the function 14; unused locals (up to seven longs, three reals) 14 each (no phase effect here); the
+// default statements in other orders 14/37/37, destination tested first 40. The homes follow which reciprocal the
+// source reaches first (the first one's dimension takes 0x10) in every form tried; retail has width at 0x10 with the
+// height reciprocal in the copied register. Diagnostics, reverted: an inline-assembly statement 401 and 24 more inlined
+// state writes 862 (parameters stay register candidates); the quad draws in a forceinline by-value helper 471/612 and
+// the whole body as a forceinline inner function 456; the address of `source` passed to a call 131 (still no home
+// write); a real read of source[3] ahead of the inverse-height declaration flips the bottom edge's products to
+// retail's order (188, the read itself is extra code), reads of source[0] or source[1] flip nothing.
+// On the 14 form, later the same round: width, height and inverse_height under three other names each 14 (names move
+// neither the homes nor the products); inverse_height computed before the primitive is opened 119, before the defaults
+// 122 (1737 bytes each: retail divides after opening it); width and height declared in the other order 12 and the bitmap block
+// reading the height first 12 (the homes stay swapped; only the order of the first stores changes). Control for
+// the kept form: the hoisted defaults in the old order (destination group and destination test first) 133 at
+// 1739 bytes; retail tests source first.
+// @retail 0x2a8d0
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
     real strength, bool blend, bool inverse, bool alternate_target,
@@ -2777,22 +2808,16 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_1ccf0(&g_484f68);
     function_1cc30(12);
     function_1c710(g_51f0f0);
-    if (!destination)
-    {
-        default_destination[0] = 320.0f - width * 0.5f;
-        default_destination[1] = 320.0f + width * 0.5f;
-        default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
-        default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
-        destination = default_destination;
-    }
-    if (!source)
-    {
-        default_source[0] = 0.0f;
-        default_source[1] = width;
-        default_source[2] = 0.0f;
-        default_source[3] = height;
-        source = default_source;
-    }
+    default_source[0] = 0.0f;
+    default_source[1] = width;
+    default_source[2] = 0.0f;
+    default_source[3] = height;
+    default_destination[0] = 320.0f - width * 0.5f;
+    default_destination[1] = 320.0f + width * 0.5f;
+    default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
+    default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
+    if (!source) source = default_source;
+    if (!destination) destination = default_destination;
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
     real inverse_width = 1.0f / width;
     real inverse_height = 1.0f / height;
