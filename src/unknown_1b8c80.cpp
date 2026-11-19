@@ -225,144 +225,8 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 	return result;
 }
 
-// score 3 (was 3): at the 0xc8200 call (now in retail's (unit, object, seat) order, which loads
-// the unit last as retail) ours reloads the seat pointer into ECX and reads the object at once;
-// retail reloads it into EAX and loads the seat index in between. Before the reorder ours loaded
-// the unit index first. Round 23: the other parameter orders 3/4/4/2 (the last, (object, unit,
-// seat), loses 0x11b0c0's match); flag tested through seats[i] 82; actor lookup at the call 135;
-// seat pointer 100; nested 0xc8200 test 3; actor after result 3; named actor team 3; seat array
-// declared first 3; plain bitfield test 69. Round 70: one result with `break` for
-// the two rejections, bool result and the seat count from 0xc8b80 (retail inlines it) gave the
-// shrink-wrapped ebp/esi saves (109 -> 3); 0xc8b80 alone 109, bool alone 117, without 0xc8b80 7
-// (harness), long result 48 (harness); every 0xc8200 parameter order 4-27 (harness); nested
-// c8200 test 3; actor declared after result 3; unit index local 122; named seat index 78; seat
-// pointer 71; named seat object 71 and occupant test inverted 46 (harness).
-// Round 270: complete seat snapshot 121; reused object/seat/both snapshots 75/104/137;
-// named hostile/reservation/both decisions 3/3/3; native tag receiver 3. Restored.
-// Round 252: eligibility accumulated with logical OR 43, bitwise OR 31, conditional 3;
-// named eligibility 3; actor at every use 116 (matched caller lost); read-only actor,
-// read-only flags, both 3/3/3. Original complete body restored.
-// Round 42: unit/seat/object/paired field-address locals 3/3/3/3; const actor pointer 3;
-// read-only full definition 3; separate occupied flag 62; read-only count 3. Restored.
-// Round 56 (lane 9, fast): the definition pointer itself kept and its flags read at the test 3; the
-// 0xc8200 test nested under `!function_1b8d80(...)` 3; `result |= function_c8200(...)` there 31; the
-// c8200 arguments read through `(&seats[i])->` 3; a block-scoped seat pointer for the c8200 arguments 73
-// (380 bytes). A one-file LTCG harness is not exact here (349-361 bytes).
-// Round 54 (m3 lane 11, fast; 0xc8200 now matches): the count from a direct 0xc8a40 call 3; `if (bit11)
-// continue;` with the occupant code unnested 3; the definition-flags pointer declared after the object block 84;
-// the loop index at function scope 3; last_object_index declared after the seat array 3 (a repeat); a `long`
-// count 121 (390 bytes); the occupant's object in a named pointer for the team read 3.
-// Round 124: actor declared after the last-object local/seat array/count 3/3/116; object and team
-// rejections inverted 3/3; object and team tests nested 3/3; the else-if split into an else 3. Restored.
-// Round 34 (lane 17, fast): occupant declared at the loop top 3; team compare written actor-first 4;
-// occupant test as `== NONE` with the team arm in the else 49; last_object_index stored before the
-// object test 8; result declared after the count 52 (366 bytes). Restored.
-// Round 169 (lane 4, fast): occupant renamed 3; `continue` closing the occupant arm with the reservation
-// test unnested 3; the reservation result in a named bool 3; `continue` when reserved, c8200 test after 3;
-// the bit11 skip as `continue` (a repeat) 3; the loop as `while` with the increment at its end 3; a 600 s
-// fast annealing permuter run: 25 tries, its reduced image scores the original 112, none below 3. Restored.
-// Round 85 (fast, 0xc8200 matched): 0xc8200's parameter orders again, at its definition, declaration and
-// all five calls: (unit, seat, object) 3 (0x11ade0, 0x1b8eb0 lost), (object, unit, seat) 2 (0x11b0c0 lost;
-// the unit load then moves ahead of the object load), (object, seat, unit) 3 (0x11b0c0 lost), (seat, unit, object) 4,
-// (seat, object, unit) 4; last_object_index as the 0xc8200 object argument 69, as all three calls' 128
-// (358 bytes); the definition read at the test without its local 84; object or occupant at function scope 3/3.
-// Round 172 (m3 lane 4, fast): (object, seat, unit) again (definition, declaration, five calls): the
-// seat-pointer reload then takes EAX as retail but the unit load moves from last to second, 3 (0x11b0c0
-// lost, its unit/object moves swapped); `long i` 127 (361 bytes); a fresh actor lookup at the 0xc8200 call
-// 135 (399 bytes); `last_object_index != seats[i].object_index` 4; the seat's object index named at the
-// loop top for the object test, the store, 0xc8f60 and 0x1b8d80 3 (same code); `dword last_object_index` 3;
-// `object->unknown3b4 != 0` 3. Restored.
-// Round 156 (m3 lane 6): the seat index named in the unoccupied arm for both calls 78 (fast); the seat's object index
-// named there 74 (fast). LTCG one-file harness (this file, units.cpp, unit_object_type.cpp, unknown_1c9830.cpp and the
-// ballast reproduce 3): 45 combinations of declaration order, flags-pointer placement, `long i`, `(&seats[i])->`
-// arguments, a unit local and else-if/nested/else forms best 3 (declaration-order shuffles 5-107); 0xc8200's result in
-// a named bool 3; the seat's object index named at the loop top for every use including 0xc8200 69. Probes: a constant
-// unit or seat argument still reloads the seat pointer into ECX.
-// Round 157 (m3 lane 6, harness): our reload of the spilled `&seats[i]` returns to its home register ECX; retail's goes to
-// EAX with the seat-index load between. A seat pointer at the loop top for the 0xc8200 arguments 69 (fast 73 at 380 bytes; the
-// pointer takes EBP, frame 0x310), for every use 84; a reference for every use 84; the pointer for both unoccupied-arm calls 82; the
-// 0xc8200 test nested under the 0x1b8d80 test 3 (fast 3); a short seat index local for both unoccupied-arm calls 70.
-// Round 224 (m3 lane 3, fast): a seat pointer declared at the loop top and used only for the 0xc8200 object
-// argument (the seat index still through seats[i]) 3 (same code); a `long *` to the seat's object index used only
-// there 3 (same code); the loop-top seat pointer for every object-index read and the definition 25; the 0xc8200
-// result as `result = c8200(...) ? true : result` under the 0x1b8d80 test 3; the loop test as `count > i` 5; the
-// occupant looked up again for the team read instead of a local 67 (387 bytes).
-// Round 156 (m3 lane 8, fast): 1-8 unused initialised locals at the top or at the loop-body top all 3 (no numbering
-// tie); the seat index named at the top of the bit11 block for all three calls 78, the seat's object index there 74
-// (both repeats of round 156 lane 6), both 137 (349 bytes); the 0xc8200 test ahead of the 0x1b8d80 test 40 (383 bytes);
-// 0xc8200 nested under the 0x1b8d80 test with its own `result = true` 3 (same code); a walking seat pointer advanced
-// at the body's end for every seat read 130 (360 bytes); the two rejections as direct `return false` 118 (365 bytes);
-// `result = false;` assigned just before the loop 52 (366 bytes, round 34's code).
-// Round 175 (m3 lane 5, fast with 0xc8200 0xc8b80 0xc8f60 0x1b8d80 0x1df560 0x11b0c0 0x11ade0 0x1b8eb0): retail's setup is
-// the plain last-to-first order of (unit, object, seat) with the reload lifted above the seat load: seat into DX, the saved
-// seat address into the first free register (EAX) and through it, the unit into ECX. Ours reads the object argument first,
-// through ECX, in every form: an unsigned conversion on the object argument 3 (same code); the object index in a local
-// just before the call 3 (same code); the seat index in a short local just before the call 33 (381 bytes: the seat is then
-// zero-extended and loaded last, the object still first through ECX); both locals 33; a function-scope seat pointer set at
-// the loop top for the object argument 3 (same code); the seat pointer kept in a local record ahead of the seat list, read
-// back for the object argument, 17 (the store moves ahead of the object read at the loop top, the reload still ECX).
-// tools/permute.py with the eight callers and callees as `--context` (its reduced image then scores 3, not round 169's
-// 112): 78 tries in 900 s, 17 at 3, none below.
-// Round 176 (m3 lane 6, fast, base fast 3): a loop-top `&seats[i]` pointer used only for the 0xc8200 seat argument 73
-// (380 bytes), only for the 0x1b8d80 arguments 74, only for the 0xc8f60 arguments 94, only for the object test, lookup
-// and store 102 (392 bytes), for the object arguments of both unoccupied-arm calls 94 (382 bytes). Also: 0xc8200 nested
-// under the 0x1b8d80 test with the unit read into a block-scoped local just before the call 3 (the seat-pointer reload now
-// takes EAX and the seat loads between it and the object read, as retail, but the unit load moves first: `mov ecx,
-// [edi + 0x18]` ahead of the seat); the occupied-object rejection alone as `return false` 102 (391 bytes); the hostile-team
-// rejection alone as `return false` 118 (391 bytes). Restored.
-// Round 101 (m3 lane 11, fast with 0x1b8eb0/0x1b9640/0x1b99d0/0x11b0c0/0x11ade0, all MATCH): a seat pointer declared at
-// the top of the bit11 block for all three calls' arguments 103 (363 bytes, frame 0x310); a loop-top seat pointer for the
-// definition and the object block (test, lookup, store) 99 (389 bytes); a loop-top pointer for the c8f60 and c8200 object
-// arguments 100 (390 bytes); for the c8f60 object argument alone 100 (390 bytes); for the 0x1b8d80 object argument alone
-// 94 (382 bytes); re-measure of the loop-top pointer for every object-index read and the definition 25 (379 bytes: the
-// c8200 setup keeps `mov ecx, [esp + 0x20]; mov eax, [ecx]` ahead of the seat load). Reading: in every form ours issues the
-// dependent load right after the reload of the spilled seat address, where retail puts the seat load between them, as if
-// retail's [esp + 0x20] were a memory-resident variable the scheduler sees rather than a spill reload. Restored.
-// Round 122 (m3 lane 16, fast): the unit index read into a local at the top of the unoccupied arm's else block 58 (387 bytes,
-// the unit loaded ahead of the 0x1b8d80 call and kept in a stack slot); last_object_index as the 0x1b8d80 object argument 95
-// (383 bytes); the unoccupied arm as a separate `if (occupant == NONE && ...)` after the occupant block 3 (same code); a short
-// seat index named at the loop top for all three calls 104 (358 bytes); a 1800 s fast annealing permuter run (seed 122, the
-// eight callers and callees as context, base the c8200 test nested under the 0x1b8d80 test, 3, same code): 152 tries, none
-// below 3. Restored.
-// Round 89 (m3 lane 2, fast with 0x1b8eb0/0x11b0c0/0x11ade0): the occupant's team as `long` 5 (a long
-// compare); the occupied-vehicle test looking the object up at each use 3 (same code); the unoccupied arm
-// nested under the reservation test with the unit, then the vehicle, in named locals before the 0xc8200 call 4
-// (the reload goes to EDX); the reservation mask tested before the object type 8; the unoccupied arm first,
-// closed by `continue`, the team test unnested 49. Diagnostic: a probe global store before the return 72
-// (409 bytes; the reload stays ECX). Reading: 0x1b8d80 takes the seat in BX, so EBX holds the seat from the
-// 0xc8f60 call on; retail's reload into EAX with the seat load scheduled before the dereference looks like
-// the unit's ECX being reserved before the object is set up, with the unit load later sunk below it. Restored.
-// Round 94 (m3 lane 2, fast with 0x1b8eb0/0x11b0c0/0x11ade0, all matched throughout): trivial inline accessors at
-// the 0xc8200 call (no code of their own): the object through `seat_object(&seats[i])` 3 (same code), through
-// `seat_object_at(seats, i)` 3, through a const-reference accessor 3; the seat through an accessor returning `short`
-// 33 (the seat is zero-extended, branches move); object and seat accessors 33; the unit through an accessor (pointer,
-// reference or force-inline) 3: the reload then takes EAX as retail, but the unit load moves first (round 176's
-// block-local unit, same code); the unit accessor returning `long const &` 3 (same code as the body); unit and object
-// accessors together 4; the seat through an accessor returning `short const &` 3 (same code), with the unit accessor
-// 3, with the object accessor 3. Restored.
-// M3 lane 15 r96 (fast with 0x1b8eb0/0x11b0c0/0x11ade0, which stay matched): a redundant `if (0 < count)` guard around the
-// loop 101 (388 bytes); a trivial inline accessor for the 0x1b8d80 object argument 3 (same code); a `const &` to the seat in
-// an else block for both unoccupied-arm calls 99 (368 bytes); the unit index read once at function scope with `unknown3b4
-// != 0` 109 (389 bytes); both unoccupied-arm tests through an inline helper taking the seat by `const &` 95 (frame 0x310: the
-// seat address is no longer spilled, its fields read through ESI). Restored.
-// Round 118 (m3 lane 10, fast with 0x1b8eb0/0x11b0c0/0x11ade0, all matched each time): a pointer local to the
-// seat-index field at the bit11 block top for all three calls 3 (same code); a forceinline helper taking (unit, seat
-// pointer) for the 0xc8200 test 74 (frame 0x310, 380 bytes); a `const &` to seats[i] at the bit11 block top for all
-// three calls' arguments 103 (363 bytes); pointer locals to both the object-index and seat-index fields there 102 (392
-// bytes); the seat-index field pointer with 0xc8200 nested under the 0x1b8d80 test and a block-local unit index 3
-// (reload EAX as retail, but the order is reload, unit, seat, object where retail has reload, seat, object, unit).
-// Restored.
-// Round 117 (m3 lane 11, fast with 0x1b8eb0/0x11b0c0/0x11ade0/0xc8200/0x1b8d80/0xc8f60/0x1df560, all matched each time): a
-// `long const &` bound to the seat's object index in the innermost block and passed to 0xc8200 3 (same code); a `short
-// const &` bound to the seat index there 3 (same code); an `s_object_seat const &` bound to seats[i] there for both
-// arguments 73 (380 bytes, the block-scoped pointer's code); a loop-top seat pointer with its address taken (`(void)&seat;`)
-// for the object argument 3 (same code); that pointer read through a `s_object_seat *const *` at the call 3 (same code).
-// Diagnostics: with `last_object_index` (a plain stack operand) as the object argument the setup loads seat, object, unit,
-// last to first; with the definition-flags pointer declared after the object block (round 54's 84 form) the seat address is
-// first formed in EAX at the loop top and the 0xc8200 setup is retail's four instructions exactly. So the reload returns
-// to the register the address was formed in, and from EAX the arguments load last to first; retail forms the address in
-// ECX (EAX holds the scaled index there) and still reloads it into EAX, as if the stored address and the reloaded
-// pointer were two values. Restored.
+/* whether one of the object's seats is free for the actor: false as soon as a listed vehicle is flagged
+   at +0x3b4 or a hostile occupant is found */
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -393,9 +257,9 @@ bool function_1b8f30(long actor_index, long object_index)
 
 			if (occupant != NONE)
 			{
-				short team = object_get(occupant)->team;
+				s_slot_object_view *occupant_object = object_get(occupant);
 
-				if (team != actor->unknown024 && function_1df560(team, actor->unknown024))
+				if (occupant_object->team != actor->unknown024 && function_1df560(occupant_object->team, actor->unknown024))
 				{
 					result = false;
 					break;
@@ -871,6 +735,10 @@ extern "C" void _ReadWriteBarrier(void);
 // test stored as a bool, or a two-use memory load there keep the load in the entry block but move the base to ESI or
 // pull the 0x26c load into EDX. Reading: retail's entry needs a use of the slot pointer's own value in the entry block (a
 // dereference sinks to its use); no code-free form of such a use is known.
+// Round 144 (m3 lane 12, fast; control 6): the busy field in a named `long target_index`, with/without the barrier 6/44
+// (208 bytes); the state formed as a const pointer from the parameter inside the NONE block, with/without the barrier
+// 6/44; the point copied through a `point3f const &`, with/without the barrier 6/44; `s_slot_4c const *const state` 6
+// (all the 6s are the base's code); the 0x86 test written `> 6` 8.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

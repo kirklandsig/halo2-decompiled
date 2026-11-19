@@ -733,6 +733,138 @@ struct s_player_axes_153d10
    its own expression keys, so the k row's parenthesized products, its forward.j
    read through the forward pointer and the forward dot accumulated in two
    statements give retail's operand orders (any other spelling flips one of them) */
+// score 2 (was 2): one product is built with its operands in the other order: retail multiplies up.k by
+// forward.i, ours multiplies forward.i by up.k. Everything else is identical. Retail keeps every
+// cross product's text order; ours orders all six by the axis pointers' age. Round 14 (plain):
+// cross3f, cross3f_staged or the cross through forward/up 41; no axis pointers 35 and the axis
+// pointers after the cross 10 (all six up first); only forward or only up declared before the
+// cross 8/6 (three products flip).
+// Round 38 (plain): up pointer declared before forward 6; cross rows in i, k, j order 10; only an up
+// pointer (cross and dots of up through it, forward through axes) 16; up read through its pointer in
+// the j row only, every other read through axes 102; delta declared before the axes 2. A compile-only
+// screen of the whole SSE block (exact here: 2, 6, 10, 16 as the plain checks) over ~1100 spellings of
+// each cross/dot read through forward/up or axes and both pointer orders found none at 0 (best 10);
+// a few spellings fix the cross alone but then reorder the dots.
+// Round 134 (plain): forward's dot read through axes (no forward pointer) 2 (product 5 right, product 1
+// flips); parentheses around every cross product 8; each row as `x = a; x -= b;` 4; delta as three
+// statements 2; parentheses around every dot product 6. A one-file LTCG harness (cross/dot block exact)
+// shows the six operand orders follow a period-4 count of expression nodes anywhere in the block (an
+// extra paren or cast shifts them; unused locals only move the dots); every shift flips products 1 and 5
+// together (up.k against forward.j and forward.i), and none of 64 dot spellings, 64 paren sets, 32 j-row
+// pointer spellings, the cross helpers or row orders separates them.
+// Round 128 (plain): both/up-only/forward-only array components through axes 2/2/2; both pointer arrays 18;
+// pointer up array with axes forward 18; axes up array with pointer forward array 2; pointer up field with
+// pointer forward array 18; pointer up array with pointer forward field 18. Original body restored.
+// Round 41 (lane 2, plain; --fast builds this function differently, 345 at 1335 bytes): delta through the point difference
+// helper 119 (1303 bytes); dots through the dot helper 2; both 119; relative declared before delta 2; cross declared before the
+// axes 2; slot vector through a real pointer 18.
+// Round 132 (plain): `vector3f basis[2]` in the axes struct 2; a sub-struct holding both axes 2; `(real)` casts on products 2-5 2;
+// the j row's first product up-first 2; all six products up-first 2. One-file harness, float window only (base 5, three of those
+// the slot register): all 63 sets of `(real)` casts on the six products 5 or above; dots before the cross 47; only the forward or
+// up dot before it 46/36; delta after the cross 47; rows jik/jki/kij/kji 48; six named products 48; three scalar cross locals 48;
+// negated j row 48; `real basis[2][3]` 48; a basis pointer 10; a pointer to the axes sub-struct 48, with the dots through it 10.
+// Round 56 (m3 lane 2; one-file harness over the whole file, control 5: this product plus 3 harness-only lines; plain not run because none beat the control): an inline cross helper with
+// pointer parameters in four parameter orders, all row orders, direct or staged, all product text orders, 4 phases: 240 samples, best 31 (helper forms flip far more products); per-read spelling of the 12 cross reads through axes
+// or forward/up, dot spellings, both pointer orders, 0-3 unused locals: 1,100 samples and three hill climbs, floor 5, several at 7/9 with this product right but the up.k-against-forward.j product or the up.i one wrong, none with all right;
+// origin and target swapped or split 5/5; state dropped, axes from the call 11; axes at the top of the block 5; the pointers after delta 5; relative before cross 5; owner index named 9; slot fields by array 5.
+// Round 94 (lane 16, plain): forward/up as const references 2; cross as an aggregate initializer 2; relative as an aggregate
+// initializer 2; a const axes view pointer 2; const axis pointers (`vector3f const *const`) 2.
+// Round 98 (m3 lane 12, plain): the local player tests and lookups through the existing 0x14ddc0/0x14de70 at both
+// sites 2 (the same code: LTCG inlines both; kept in place of the hand copies), at the first site only 2, the second only 2,
+// 0x14de70 only 2, 0x14ddc0 only 2. Compile-only (exact here): 1-12 unused locals at the top, before the axes pointer or
+// before delta leave the cross block unchanged; 1-4 redundant parens in any cross row or in delta all shift the six
+// products together with period 4 (3 puts this product right and the up.k-against-forward.j one wrong).
+// Round 60 (m3 lane 2, plain): the unit-index reads through the existing player datum type 2, the object header read
+// through the existing header type 2, both 2 (all the same code); `state != NULL` 2 (same code); named forward/up fields
+// in the player state and a named 0x8c vector in the speed slot (globals.h), the cross and slot stores through them
+// without the axes view 4 (this product right, the k row's forward.i x up.j and the j row's forward.k x up.i flipped).
+// Untried on that named-field form: the axis pointers dropped or declared after the cross.
+// Round 145 (m3 lane 7, plain): a compile-only build differs from the LTCG build in products 1 and 5 together, so
+// its screens are no model here. The i and j rows read partly through forward/up (the closest form of a compile-only
+// screen) 14; mixed reads with every product swapped 25; this product's up.k through the up pointer 16 (the
+// up.k-against-forward.j product flips with it); its forward.i through the forward pointer 2 (same code); both 16.
+// Round 74 (m3 lane 2, plain): up.k named once for both products that flip together 112 (1296 bytes); delta from three
+// named components 2 (as round 134's three-statement delta); cross declared before delta 2; cross and relative in one
+// declaration 2 (all three the same code); the slot's direction written through a real pointer as an array 18 (re-measured,
+// as round 41). Forms earlier measured only in a harness, now plain: the axes, forward and up pointers declared at the top
+// of the block 2; forward and up declared after delta 2 (both the same code).
+// Round 117 (m3 lane 12, plain), on round 60's named-field form (forward 0x20 / up 0x2c in the player state, the 0x8c
+// vector in the speed slot, globals.h; the axes view dropped): both axis pointers dropped, cross and dots through the
+// state 37; the pointers declared after the cross 6 (this product right; the i row's first and the k row's two products
+// load up first); the pointers before delta with the cross and dots through them 103; cross3f and dot3f 8; cross3f_staged
+// and dot3f 8 (the same code). Header and body restored.
+// Round 91 (m3 lane 14, fast with 0x154d70/0x154df0/0x155240/0x170d70 listed, which reproduces 2): forward and up
+// copied by value 419 (1393 bytes), forward only 183, up only 183; up as `forward + 1` with the cross and dots through
+// the pointers 105, with the cross through axes 12; the j row's first product with up.i through the up pointer 2 (same
+// code), forward.k through the forward pointer 24, both 24. Diagnostics: 1-7 unused locals 2/2/101/102/16/2/2 (the
+// six products never move); 1-3 parens in delta give per-product windows {0,1} fj*uk, {0,3} fk*uj and fk*ui,
+// {0,1,3} fj*ui and fi*uj, {2,3} uk*fi, so no shift fits; three parens around the j row's first product move only
+// later products but flip fj*uk with uk*fi (2): the two share up.k's key.
+// Round 107 (m3 lane 10, fast with the four callees listed): both fabs calls as fabsf 10 (all six products load up first);
+// atan2 as atan2f 2 (other code: this product right, the up.k-against-forward.j one up-first), on it the i row's first
+// product read `forward->j * axes->up.k` 6, `axes->forward.j * up->k` 18, `forward->j * up->k` 18. Diagnostics:
+// `#pragma optimize("p", on)` (float consistency) 98 (1325 bytes; atan2/fabs become calls, the six products unchanged);
+// the cross as a plain out-of-line function in another /O2 file, inlined by LTCG 105 (three products flip), removed.
+// M3 lane 8 r171 (fast with the four callees listed, control 2): the cross through this file's own cross helper (the one
+// 0x1546f0 uses, declared ahead) 105; a named 0x8c vector in the speed slot alone, axes view kept 2 (same code); the axes
+// view taken straight from the state call (no state local) 4 (+0x379); target declared before origin 2 (same code).
+// Diagnostic screens (redundant parens, not kept): 1/2/3 parens around any one product give 6/10/2 (around the i row's
+// first product 4/10/8): one paren flips fk*uj and fk*ui to up first, two flip every product but uk*fi; the first product
+// wrapped twice with 1/2/3 around the k row's last product 2/2/6, with one around any other product 2, but always either
+// fj*uk or uk*fi stays wrong (they share up.k); 1 or 2 parens around any single operand change nothing (2).
+// M3 lane 4 r204 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): the i row's first forward.j and this
+// product's forward.i read through the forward pointer 2 (same code); the k row's first forward.i through it 2 (same code);
+// every forward read of the cross through the forward pointer 12; the j row as `forward->k * up->i - up->k * forward->i`
+// 34 (first difference +0x13); every up read of the cross through the up pointer 28.
+// M3 lane 4 r205 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): the cross written inside relative.i's dot (no
+// cross local), rows in k, j, i order 46 (an earlier inlined block reorders, first difference +0x364), in i, j, k order 46; the
+// cross read through the forward and up pointers with this product's text kept 105; relative declared before cross 2 (same
+// code); the j row as `-(up.k * forward.i - forward.k * up.i)` 117 (1301 B).
+// Also r205: forward/up as const references (cross and dots through them) declared after delta, after the cross and
+// relative declarations or at the top of the block 105 each, declared after the cross for the dots only 10, after delta for
+// the dots only 2; a `real const &` to up.k for both its products 8, declared after the i row for the j row only 2; to
+// forward.i for both its products 6, after the i row 10; to forward.j for both 6; the axes view as a const reference after
+// or before the two point calls 2/2.
+// M3 lane 6 r188 (fast with the four callees listed, control 2): the j row as `-(up.k * forward.i) + forward.k * up.i` 6;
+// a `(real)` cast on this product's up.k or forward.i operand alone 2/2 (same code); the axis pointers, the axes view, or
+// cross/relative/delta renamed 2/2/2 (names do not key the order); in the real build the forward and up dots ahead of the
+// cross 115 (1300 B), the forward dot only 47, the up dot only 46.
+// M3 lane 3 r256 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70, control 2; without 0x154df0 listed every form reads
+// 345 at 1335 B): the second unit index as one ternary 2 (same code); as `unit_index = NONE;` then the lookup under the
+// player test 63 (1296 B); the cross as three named scalars feeding relative.i (real build) 47; delta declared after
+// the cross 121 (1303 B); all three dots written delta-first 2 (same code).
+// Round 138 (m3 lane 12, fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): delta as three statements in
+// k, j, i order 35; this product's up.k read through the array form of up (`[2]`) 2, its forward.i through the array
+// form of forward 2, the i row's up.k through the array form 2 (all the same code: the array reads fold before the
+// operands are ordered); this product written forward first in the text 2 (same code: the compiler orders the two
+// operands itself, so the text order of this product never reaches the code).
+// m3 lane 14 r109 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): forward.i named once for its two cross
+// products, ahead of the cross 113 (1297 B: the named leaf takes a register) and between the i and j rows 111 (1297 B);
+// the cross as a `real[3]` 2 and delta as a `real[3]` 2 (both the same code); the up dot's k leaf read through the axes
+// view (the rest through the up pointer) 20 (the k row and both i-row second products now load up first, this product
+// unchanged); the forward dot's i leaf through the axes view 24 (every product loads up first but this one); one leaf
+// through the axes view: the forward dot's k 26, its j 13, the up dot's j 19, its i 10 (each flips forward.k's two
+// products or all six; up.k against forward.i never moves alone).
+// Round 142 (m3 lane 12, fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2). Diagnostics with K dead
+// initialised locals (`long unused_k = 0;`): at the function top K = 0..26 gives 2 except K = 3/4/5, 11/12, 19/20
+// (101/102/16, 101/16, 101/16), period 8, and in every state the six cross products stay as they are (only the i terms
+// of the forward/up dots flip); the same pattern with the locals after the target fetch, after the axes view or between
+// the two axis pointers; after the `up` pointer or after delta nothing moves. So the hand-written cross does not follow
+// the symbol count. Forms, each scanned over K = 0..7 at the top: cross3f(&axes->forward, &axes->up, &cross)
+// 8/6/8/105/106/24/10/6 (the cross products now move with K; the first two stay up-first in every state); a file-local
+// textbook-order cross helper called the same way, the same eight states; with dot3f for the three dots in either
+// argument order 10/10/10/105/104/22/6..10. LEAD: cross3f(forward, up, &cross) through the two axis pointer locals
+// 105/104/104/106/107/100/101/103, and at K = 5 all six cross products are retail's (fj*uk fk*uj fk*ui fj*ui uk*fi
+// fi*uj), the first form that separates up.k's two products; there the delta components take other registers (xmm1,
+// xmm5, xmm4 for retail's xmm4, xmm5, xmm3) and two dot terms flip. On that form: dot3f dots in either argument order
+// the same eight states; cross3f_staged the same eight states; 1-7 dead locals between delta and the cross call 105
+// each (no effect: only symbols ahead of the axis pointers count); the axis pointers declared after delta the same
+// eight states; delta through vector3d_from_points3d 115/116/116/109/102/112/113/113 (1294-1299 bytes). Untried: other
+// ways to bring the delta registers back on the pointer-helper form at K = 5 (mod 8), then natural symbols for the K.
+// Same-role locals merged (round 142, after one shared loop index matched 0x12eb00): one unit-index variable for both
+// lookups 2, one player-index variable for both 2, both 2 (all the same code); the owner's position fetched into the
+// vector that later holds the relative direction (no separate target point) 2 (same code); delta and the relative
+// vector as one vector through three named dots 112 (1302 bytes).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

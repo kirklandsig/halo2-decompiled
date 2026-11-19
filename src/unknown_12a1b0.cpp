@@ -1415,6 +1415,10 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // a pool local read once at the top for the state test 42 (the state load folds ahead of the add); a for loop whose init
 // and step are the next call 64 (219 bytes); a named const element for the state test 24; the call's index through a
 // block-scoped copy 24; an explicit `else continue;` 24.
+// M3 lane 12 r145 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870; `ret 8` and 210 B in both builds): a const first
+// index parameter 24; the iterator's count as a short 41 (214 B; 0x21b870 8, 0x21bd00 18, restored); the loop index
+// declared at function scope with the iterator in the guard 24; the loop test as `NONE != (index = ...)` 24. Diagnostic
+// (0x126df0's fade-in half written out on a named element, not keepable without a match) re-measured 35 at 211 B.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

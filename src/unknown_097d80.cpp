@@ -593,6 +593,10 @@ struct c_aggregate : c_child
 // stored ahead of the child read 31; v5's destination block named ahead of the call 31; the cleanup item tested without
 // `!= 0` 31; the cleanup bounded by a count read back from the last start 31. Frame 0x8024 in each; still BLOCKED by the
 // build flag.
+// M3 lane 12 r143 (fast with the six file-mates, all still matched): both child loops through one reference to the member
+// array (`c_child *const (&list)[3]`) 126; the call's result named `status` and stored to error at once 31; the room as
+// `0x100 - total` 31; the destination as `blocks + starts[i]` 31 (re-measure); the dispatch gate as `!(error != 0 ||
+// request->type == 4)` 31 (all 31s the same code). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

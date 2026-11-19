@@ -1909,6 +1909,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // `index == 0` 188 [84], with the preceding active form 345 [80]; the user flags stored before the look history 195 [92];
 // the look pointer declared const at its use 188 (same code). The `fmod` is the x87 intrinsic, so no double slot pads
 // the frame. ESI/EDI placement: still BLOCKED-BY the build's stand-in caller (round 98).
+// M3 lane 12 r145 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): retail keeps unit (later the zoom
+// value) at -0x1c, mode at -0x18 and spring_d with the active byte at -0x14; ours unit and the active byte at -0x18, mode at
+// -0x1c, spring_d and zoom at -0x14 (every other slot agrees; ours leaves a dword at -0x30 unreferenced). Renames for the
+// name-order tip: mode as weapon_mode or animation_mode, unit as aiming_unit, zoom as aim_speed, active as weapon_active,
+// 188 each (same code: these spill slots do not follow names); the active test passed straight to the set-active call 378
+// (2192 B). Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

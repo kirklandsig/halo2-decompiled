@@ -894,6 +894,25 @@ static inline void observer_statistics_initialize(s_network_statistics *statisti
 	observer_statistics_reset(statistics);
 }
 
+/* the text form of a title address: its internet address in dotted form and,
+   on request, its hardware address after it. Retail has this sequence inline
+   in 0x76aa0 and 0x78900 (the copy, the swap and the unread store of the
+   swapped address at both; the hardware address only in the first). The
+   swap's operand order in 0x78900 follows the count of locals ahead of `ip`:
+   with the hardware bytes read through a pointer here and the address named
+   in 0x78900 it is retail's (both match). */
+static __forceinline char *format_title_address(const XNADDR *address, char *string, long length, bool include_hardware)
+{
+	XNADDR remote = *address;
+	byte const *hardware = remote.abEnet;
+	dword ip = remote.ina.s_addr;
+	ip = (((ip & 0xff0000) | (ip >> 16)) >> 8) | (((ip << 16) | (ip & 0xff00)) << 8);
+	function_11c9c0(string, length, "%hd.%hd.%hd.%hd", ip >> 24, (ip >> 16) & 255, (ip >> 8) & 255, ip & 255);
+	if (include_hardware)
+		function_11c9e0(string, length, "!MAC=%02X:%02X:%02X:%02X:%02X:%02X", hardware[0], hardware[1], hardware[2], hardware[3], hardware[4], hardware[5]);
+	return string;
+}
+
 // @retail 0x76aa0
 long network_observer_attach_channel(s_network_observer *observer, long owner_index, const XNADDR *address)
 {
@@ -949,12 +968,8 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 		{
 			s_network_observer *local_1 = observer;
 			s_network_observer_channel *channel = &local_1->channels[index];
-			XNADDR remote = *address;
-			dword ip = remote.ina.s_addr;
-			ip = (((ip & 0xff0000) | (ip >> 16)) >> 8) | (((ip << 16) | (ip & 0xff00)) << 8);
 			char name[256];
-			function_11c9c0(name, sizeof(name), "%hd.%hd.%hd.%hd", ip >> 24, (ip >> 16) & 255, (ip >> 8) & 255, ip & 255);
-			function_11c9e0(name, sizeof(name), "!MAC=%02X:%02X:%02X:%02X:%02X:%02X", remote.abEnet[0], remote.abEnet[1], remote.abEnet[2], remote.abEnet[3], remote.abEnet[4], remote.abEnet[5]);
+			format_title_address(address, name, sizeof(name), true);
 			long connection_index = link_connection_allocate((long)name, 0x38);
 			if (connection_index != NONE)
 			{
@@ -2794,15 +2809,6 @@ void network_observer_update(s_network_observer *observer)
 	function_7a4a0(observer);
 }
 
-// score 2 (was 2): the byte swap of the address is the same IR, but retail
-// masks the original register (and ecx, 0xff00) and shifts the copy
-// (shl edx, 0x10); ours does the opposite. Operand order of the | and +,
-// the usual htonl macro spellings, splitting into lo/hi locals in either order
-// and a separate mid = ip & 0xff00 all compile to the same 2.
-// Permuter (25 min on r660): nothing below 2.
-// Separate input and host address 2; store back to copied address 10; staged octet pairs 2;
-// two 16-bit halves 79; shifts distributed by octet 2; typed octet fields 89;
-// shared middle mask 70; swap word lanes then bytes 63.
 // @retail 0x78900
 void network_observer_recreate_connections(s_network_observer *observer)
 {
@@ -2811,11 +2817,9 @@ void network_observer_recreate_connections(s_network_observer *observer)
 		s_network_observer_channel *channel = &observer->channels[i];
 		if (channel->state)
 		{
-			XNADDR remote = *(XNADDR *)channel->remote_id;
-			dword ip = remote.ina.s_addr;
-			ip = (((ip & 0xff0000) | (ip >> 16)) >> 8) | (((ip << 16) | (ip & 0xff00)) << 8);
+			XNADDR const *remote_address = (XNADDR const *)channel->remote_id;
 			char name[256];
-			function_11c9c0(name, sizeof(name), "%hd.%hd.%hd.%hd", ip >> 24, (ip >> 16) & 255, (ip >> 8) & 255, ip & 255);
+			format_title_address(remote_address, name, sizeof(name), false);
 			long connection = link_connection_allocate((long)name, 0x38);
 			channel->connection_index = connection;
 			if (connection != NONE) link_connection_get(connection)->owner = (c_connection_owner *)observer;

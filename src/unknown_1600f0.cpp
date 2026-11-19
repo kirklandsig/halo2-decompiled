@@ -1507,6 +1507,12 @@ PRIVATE inline long score_string_list_1608e0()
 // Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
 // reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
 // independent score visibility for name/caption 687, with explicit caption-width branches 687.
+// M3 lane 12 r143 (fast with 0x1600f0, 0x1603f0, 0x161420; control 679), aimed at the scroll clamp (retail reads the user
+// index in each arm, EDX then EAX, and converts the limit once after `0 > scroll`; ours hoists one index load above the
+// branch and converts the limit twice): a `short user` read in each arm 694 (2888 B: the hoist is gone, two conversions
+// remain); that with `real limit` named in the second arm 682 (2879 B: one conversion, but ahead of the zero test); the
+// named limit alone 720 (2856 B); the per-arm index with height not volatile 723 (2856 B: PIN takes retail's shape, the
+// index load is hoisted again and height stays in ESI); the screen width as `long` 679 (same code).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
