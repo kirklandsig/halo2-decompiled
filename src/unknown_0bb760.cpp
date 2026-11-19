@@ -748,6 +748,14 @@ void function_3dd10(long object_index, bool force);
 // fields 97; native tint block, position and variant fields 97; complete native tint object with shared datum
 // lookup 97. All eight previews retain 1034 bytes and the same initial register mismatch. The native tag-
 // index form adds spill differences. Opening executable source restored.
+// M3 lane 9 r144 (fast with 0x1318d0/0x131a00/0x3dd10, control 97): a one-object screen (this file with the two
+// callee files, frame 0x54 as retail) unrolls the signed first scan by four with or without /GL, so the unroll is
+// not an LTCG effect; it stays rolled only with a volatile weight, last, eligible or variant (each of the four is
+// memory-resident in retail's loop); taking their addresses (passed to an opaque call), a named eligibility bool,
+// a named bit, nested or ternary eligibility tests, indexed field reads, byte-offset element access, the weight
+// added first, `weight = weight + w` and a weight test all still unroll. Real trials: the scan locals declared
+// ahead of the count test 315 (999 bytes); the first scan as a `for` with `!=` 97 (same code); a signed eligible
+// mask 97 (same code); weight/eligible/last/variant declaration order 97; target before the running sum 100.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

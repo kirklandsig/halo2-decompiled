@@ -2160,7 +2160,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // lazily where retail loads both before the muted test and keeps the remote mask in esi. The second query's helper is
 // in this file, but marking it inline takes the matches of 0x54890 and 0x53a20 with it, and the session getters
 // 0x59670/0x596a0 live in another file: BLOCKED-BY 0x53bb0 and 0x59670/0x596a0.
-// score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
+// Earlier 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
 // word outer/target induction 118/106; word active 97; mask names 94; skip cleared inactive entries 110.
@@ -2306,6 +2306,14 @@ static inline dword voice_get_player_mask_inlined(void);
 // form), with both plain 74 (427 B); no `inline` on 0x53b90 122 (393 B), with `inline` 0x53bb0 84 (427 B). Every form
 // with `inline` on 0x53bb0 loses 0x54890 and 0x53a20 (83/84, 72/72 with both plain, 21/28 without `inline` on 0x53b90),
 // and every form without `inline` on 0x53b90 loses 0x53b40 (59) as well; no form expands 0x53bb0 here alone. Body unchanged.
+// M3 lane 9 r144: this file is built /Ob1, so the non-inline 0x53bb0 is expanded nowhere; with `inline` on it, a
+// one-object /GL screen of this file alone (retail's test order) gives the smallest inline threshold that expands
+// each site: 0x53bb0 here about 22, 0x53bb0 in 0x54890 about 24, 0x53b90 in 0x53a20 about 27, 0x53bb0 in 0x53a20
+// about 45. Retail expands 0x53b90 in 0x53a20 and 0x53bb0 here but calls 0x53bb0 in 0x54890, which no single
+// threshold gives with these callers, so the site frequencies of the matched callers (or the calibration) block it.
+// Fast trials (control 64): retail's test order muted word, first flag, second flag 85 (427 bytes); with a named
+// target bit 85; with the flag tests nested under the mask test 85; with `local & active & bit` 82 (415 bytes); with
+// an early return on !enabled 85.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
