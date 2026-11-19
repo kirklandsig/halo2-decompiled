@@ -1897,6 +1897,20 @@ static inline bool unit_dual_wielding(long unit_index)
 // split comparison declaration 41; nested holder index 41; mixed pool/data locals 41;
 // function-scope holder pointer 41; existing object-header getter 41.
 // Permuter, 25 minutes (11-05): nothing below 17.
+// M3 lane 6 r196 (fast with 0xc9d00, which matched each time; plain where noted): the block after the barrel loop is
+// 0x1058b0's body for state 10, and the `volatile` compare is 0xc9d00 expanded for type 10 (its `first` flag is the dead
+// byte store into the `immediate` slot). `function_c9d00(put_away->unit_index, weapon_index, 10)` in place of the
+// volatile block 27 (plain 27, 532 B): every line from the b7360 call on is retail's (`mov eax, ecx`, `or edx, -1`,
+// `sete dl`), but the weapon offset and the pool pointer swap ESI and EBP and the animation pointer and the weapon-kind name EDI and ESI. Not
+// kept (above 17). On it: weapon_get_102e10 at lookups 1, 2, 3, every pair, all three, the put-away and the animation
+// lookups 27 each; 0xcd660 called for the dual-wield test 106 (511 B: its /Ob1 file is never expanded); 0x1058b0's text
+// mirrored (the lookup-3 pointer reassigned for the re-fetch) 27, with the animation lookup named 27; the holder through
+// weapon_inventory_unit_get 27; a trigger pointer from a fresh lookup 137 (533 B); `result` declared first 27; the
+// animation pointer after the weapon-kind name 185 (570 B); the dual-wield helper with a result flag 27; the holder helper without
+// its NONE test 27; per-loop counters 27; `result = true` ahead of the ticks store 49. The whole block as a call to
+// 0x1058b0(weapon, 10, immediate) 117 (503 B: LTCG expands it with retail's tail, 0x101f20 and 0xcd660 stay calls). On
+// this body, weapon_get_102e10 at lookups 1-3 15 (they take retail's offset-first order, lookup 4 flips). The permuter
+// cannot search the 0xc9d00 form (its reduced image scores it 80, the full image 27).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -3074,6 +3088,9 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // Round 605. The frame remains eight bytes versus retail's four. Timed barrel read before stale test 409, or
 // fresh-shot case exit 409. Cached heat threshold 406. Named overheat difference 389. Named signed tens
 // quotient 389. Raw and classified progress defaults 401 each. Shared flag-property cases 414.
+// M3 lane 6 r196 (fast): the clamp as two plain ifs, the upper bound first, 404; `*active` stored before `*value` 432
+// (1614 B); 0x120006e4 folded into the three progress cases (the inner chain's final else) 422 (1625 B); the unknown-name
+// exit braced 389 and the units digit as `/ 10.0f` 389 (both the same code).
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -4621,6 +4638,15 @@ struct s_weapon_projectile_creation
 // Damage mode gate 1121.
 // Shot player slot 1121.
 // Unit flag field 1121 (kept after plain check).
+// M3 lane 6 r196 (fast): retail's frame below the markers, from the top: inverse 0x274, center 0x268, point 0x25c, damage
+// 0x1d4, clipped 0x1c8, creation 0x104, synchronized point 0xf8, unit velocity 0xec, motion 0xb4, average 0x78, axis 0x6c,
+// origin 0x48, direction 0x28 (offsets after the four pushes). Ours has creation above clipped and 12 more bytes of small
+// locals. Retail's two rotations keep no 12-byte result: the axis and the direction are written back in place, with
+// single floats spilled (0xc8, 0xd0, 0xd4) and the dot product summed i, k, j; ours keeps two 12-byte results (24 bytes).
+// Rotation through the shared in-place helper (axis_rotation.h, sine and cosine computed first) 1190 (5150 B, frame
+// 0x1ea0); the file's helper with three scalar results written back 1239 (5115 B, frame 0x1e94); the axis read as
+// `markers[marker_index].matrix.up` (retail reads it by index, not through the marker pointer) 1121 (same code), with the
+// shared helper 1185 (5155 B, 0x1ea0); `point3f clipped, center;` 1121 (same code).
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

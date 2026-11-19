@@ -576,6 +576,11 @@ struct s_ai_scene_assignment
 // B (re-measured as a base: retail's head, then the stores movsx the role from its slot and the variant store moves up);
 // the leaf and recursion arms swapped 65; the last-role flag declared ahead of the role pointer 103; the iterator loop as
 // `for (iterator_new; iterator_next; )` 59 (same code).
+// M3 lane 6 r196 (fast with 0x291b40/0x291800, both matched each time; int-copy base 12): the head test as `if (count <
+// limit) score...; else break;` 12 (same code); the leaf as `if (count < limit) { copy } else break;` 12 (same code); one
+// assignment-pointer update after both arms (the leaf copying by index) 128 (366 B); copy and parameter mixed, the leaf
+// test on the parameter with the head test and the recursion on the copy 18 (350 B); the head test and the recursion on
+// the parameter with the leaf test on the copy 70 (353 B).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

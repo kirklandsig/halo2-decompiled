@@ -857,6 +857,11 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // switch 12 (92 B, `test al, al` in place of retail's shl/test, still the tail jump); the type mask taken into a bool
 // at the top, before the three calls, 48 (106 B); the final call as a ternary statement 13; the unit read through a
 // header-record pointer 13; the shift on `(long)unit->type` 13. Still BLOCKED-BY 0xe4bd0 (EAX tail call, retail ESI).
+// M3 lane 6 r196 (fast; src/bipeds.cpp held by four lanes this round, so 0xe4bd0 untouched): the +0x33e clear through the
+// file's `byte *state = (byte *)unit + unit->unknown33e;` idiom with a word clear 10 (95 B: retail's EAX shift, only the
+// 0xe4bd0 tail call and its argument register left; one-use pointer and gain 3, not kept); that local with a byte clear 22
+// (99 B); that local from a second unit lookup 59 (114 B); `return function_e4bd0(unit_index);` 13; the mask in a named
+// long 13 (both the same code). Still BLOCKED-BY 0xe4bd0 (EAX convention, tail call), itself BLOCKED-BY 0xe5930.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
