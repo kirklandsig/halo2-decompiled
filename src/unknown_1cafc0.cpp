@@ -545,6 +545,12 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
 // the graph in EBX and graph+0x34 in EBP; the inheritance loop then keeps the graph in EBP (ours reloads it per use) and
 // retail's final `mov al` is not normalised (ours `test al, al` / `setne al`).
+// M3 lane 11 r123 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1dc8c0/0x1cccd0, all MATCH): bool success 478 (1809 B, aligned
+// 53 -> 102, masked 42 -> 59: the return is retail's and the graph moves to EBP, but the found names' copies change homes
+// and graph+0x34 is formed per group); that with success declared ahead of the graph 478; char success 348 (same code);
+// the request under `if (success != false)` 348; that with bool success 478. The roles in the request (graph+0x34 kept
+// in EBX, the graph reloaded per loop) come from the shared request helper (BLOCKED-BY 0x1dc8c0's file, whose matched
+// contributor function uses the same helper).
 // Round 8 (lane 17, on the call): bool success 478; byte return type 478; `success != false` as the urgent argument
 // with no test 645; `return success != false;` 351; found-name locals type/class/mode 348 (same code).
 // Earlier 399: Frame eight versus twelve and independent hidden-result homes remain; request graph/name allocation still differs.

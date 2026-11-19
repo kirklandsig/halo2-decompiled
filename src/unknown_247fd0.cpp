@@ -231,6 +231,15 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Still differs: the gate byte is read with the base and the index in one operand where retail adds the index to
 // the base first and reads the byte from it (0x247985-0x247987), and the flag byte and the settings sit in the
 // frame's later slots where retail keeps them at +0x1b and +0x1c.
+// M3 lane 11 r123 (fast with 0x247fd0/0x248cc0, both MATCH): the cache block as matched 0x247fd0 writes it (pointer test
+// `local_2 != arg_0->field_50`, pointer stored before the mask clear) 346 (aligned 246 -> 242, masked 106 -> 102: the
+// load/and/store is retail's); the store order alone 347; the test order alone 333. Compile-only screens: /G5, /G6, /G7,
+// /GB, /O1, /Ox, /Os, /Oy-, /Ob0, /Ob2, /Op all fold the gate's base+index and the 0x30 field address as ours does; an
+// inline record getter, a byte-pointer record helper (sizeof or 0x190) and an inline flag test fold too; only a record
+// pointer kept alive past the byte read (a volatile copy, diagnostic) gives retail's `add eax, edx; mov dl, [eax+2]`,
+// so retail's record pointer outlives the gate read. An inline real getter or a named real for the age copy keeps
+// the integer move (retail copies it through XMM0). The first block realigns at the first sample, which ours also
+// stores to the grouped local (`fst [esp+0x70]`, absent in retail).
 // MiniMax G (11-14): no new form, no lower score (334): the effect datum's address still folds into the scaled index in
 // the flag byte's load and in the definition pointer's load, where retail keeps the address in a register; the flag
 // byte's and the definition pointer's frame homes still differ.

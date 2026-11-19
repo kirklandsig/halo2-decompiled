@@ -1492,6 +1492,10 @@ long function_1fa7f0(void);
 // score 400 (was 400): r123 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
+// M3 lane 11 r123 (fast with 0x2c3030/0x26ccb0, both MATCH): retail never holds the count parameter in a register (every
+// use reads [ebp+0xc]); a no-code address-take of it, diagnostic, 400 (same code). The emitted type from the `type`
+// local instead of the step 403 (1755 B; retail re-reads the step); `found` declared ahead of the edge 400 and the edge
+// as a dword 400 (same code each); the step pointer declared after the loop's NONE defaults 400 (same code).
 // m3 lane 3 r250 (fast with 0x2c3030/0x26ccb0, control 400): the step's fields read through points[index] with no
 // step pointer 473 (1758 B); `bool other_side = !side;` at the top of the attempt loop 435 (retail's 1746 B,
 // register-masked aligned 79 against 80); the center as `side ? corners[0] : corners[1]` 473 (1710 B); index, used

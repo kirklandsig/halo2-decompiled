@@ -691,6 +691,14 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 
 // MiniMax B (11-18): no new form, no lower score (114): the first difference is still inside the shared inlined rotation helper, whose source is in another lane's file, so the block copies, the side crosses and the small-turn exit remain.
 // score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// M3 lane 11 r123 (compile-only screen with the rotation helper pasted in, which reproduces this body's rotation; the
+// axis products' sides as a signature, retail j/k-with-j/k copy-first, ours load-first): no-code reads of the rotated
+// vector's or the axis's components before the call, all 64 subsets: the axis reads change nothing, any vector read
+// turns more products load-first; 0-7 extra referenced locals: never copy-first; the rotated copy built field by field,
+// through vector3f_assign or assigned after its declaration, or declared at the function top: same or worse; the seven
+// input copies in 60 random orders: identical rotation; four helper bodies (crosses first, an input copy, a cross
+// aggregate, a staged result): none gives retail's sides. So the sides follow the helper body (BLOCKED-BY 0x1ecf50's file,
+// which holds the helper), not this caller. Fast: the rotated copy taken from the forward parameter 194.
 // Earlier header detail: 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Earlier copy of the first line (114, was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // MiniMax D (11-16): no new form, no lower score (114): the permuter searched this file for 303 s (31 tries, 5 worse
