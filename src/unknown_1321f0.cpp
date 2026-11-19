@@ -658,6 +658,13 @@ struct s_visibility_object_header
 // the packer's own order); 0x134390's hand-written flag expression as a second call of the packer 4 (0x132b10 and
 // 0x133390 MATCH). Diagnostics: `!!` on both arguments 144 (607 bytes; behind is read first, into CL), on behind
 // alone 130. Open: a read or store of in_front ahead of the packer's arguments that leaves no instruction.
+// M3 lane 6 r198 (fast, 0x132b10/0x132fd0 MATCH each time; control 4): an unused trailing packer parameter fed in_front
+// (dropped at link time) 4 (homes ours: the dropped argument's read does not count); 1 to 8 dead initialised locals at
+// the function top 4 each (not a symbol-count tie); the packer declared `__stdcall` 4 (same code), `__cdecl` 124;
+// in_front through a pointer-taking inline accessor at the packer call, plain or forced with a result local, 4/4
+// (forwarded); the outer test's arms in the other order 203 (601 B, homes still ours); a reference-bound copy of
+// in_front made after the plane call and passed to the packer, assigned through the reference or initialised then
+// bound, 4/4 (forwarded, homes ours).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

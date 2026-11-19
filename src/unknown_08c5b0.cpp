@@ -242,6 +242,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // ordinary non-inline function 32 (inlined at link time, folded); the selector taking `short const &` 32; the selector
 // `__forceinline` 32; an inline accessor writing the kind through an out pointer 32 (that indirection folds once inlined,
 // unlike a reference-bound local).
+// M3 lane 6 r198 (fast with 0x8c5b0/0x8c660): the kind as a `short const &` bound to the request field (plain) 32
+// (95 bytes, folded); the controller index read into a reference-bound local 4; both reads through a reference-bound
+// copy of the request pointer 4 (diagnostic); the controller pointer declared at the top and assigned after the
+// selector 4; the availability and selector helpers defined ahead of the controller accessor 4 (all the 4s same code).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
