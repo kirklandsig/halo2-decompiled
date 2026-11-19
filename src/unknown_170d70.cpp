@@ -1571,6 +1571,11 @@ struct s_pool_view_172840
 // shared point index 60, explicit cluster selection arms 55.
 // NOT kept: the 55 forms recover the four flag homes but add two bytes and still
 // schedule the cluster store and sentinel differently. The body stays at retail length.
+// With independent failure stores, widen selected cluster after key or after link 55/55;
+// narrow explicit arms 133; box-typed template copy 55; native predecessor or published index 55/55;
+// reservation subscript postincrement 228; unsigned selection with signed publication 55.
+// NOT kept: the 55 forms recover the flag homes at 870 bytes but still place the sign extension
+// ahead of the retail link and key schedule and load the sentinel with a five-byte mov.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

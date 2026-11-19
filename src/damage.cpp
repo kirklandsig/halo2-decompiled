@@ -5274,7 +5274,10 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
-// score 178 (was 146): m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
+// score 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
+// the scan) gives 166 with retail's EAX/EDI section-loop registers; a one-use local is match-only, so not kept. With it
+// the first mask still extends before the count guard, and the late detached-mask zero, piece search and final lookups
+// still differ. Earlier: m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
 // arguments, `ret 0xc` at 0xdbfa5): the callee order that matches 0x1c4040, 0x146bf0 and 0x1c51c0 builds 0xd7b80 ahead of
 // this function, which without the keyword hands it ECX/EDX (243) and loses 0xd6800 and 0xd8a40. The positional count
 // rises at the same 799 bytes, but the top is now retail's (pool and tag loads ahead of the register saves, the datum
@@ -5510,6 +5513,13 @@ struct s_damage_object_creation
 // same code (the address folds away once inlined); `~piece_nodes` named once for the update and the node mask 146 (same
 // code). Diagnostic: one to three dead initialised locals on the for/break lead 221/222 each, so the flip is not a
 // symbol-count phase. Every search with retail's for/break shape hands the mask a register (frame 0x13dc).
+// Nullable bound, assigned bound and nullable while 178/183/178; scoped unsigned first mask 166 (one-use local, match-only: not kept);
+// mask shared through detachment 155; nullable bound/shared bit 221; shifted mask tests 180;
+// scoped damage record with first mask 166; first mask inside scan or with shared test bit 178/178;
+// reversed first mask expression 166; first mask with late scan zero 217.
+// NOT kept: sharing the first mask through detachment loses the retail EAX/EDI roles and word admission;
+// moving the bitmap zero on the scoped-mask form changes the frame allocation and grows to 811 bytes.
+// Plain confirmation of the scoped first mask changes only this function among 65 checked markers.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
