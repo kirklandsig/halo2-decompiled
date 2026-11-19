@@ -5574,20 +5574,23 @@ void function_1486b8(long error, bool keep);
 // its copy still takes EBX); the completion store ahead of the declaration 55; the task declared at the
 // top 56; `if (result && !*completion) return result;` before the call 56; the probe branch calling the
 // cleanup itself and returning 55; `else result = false;` on the no-task path only 52 (156 bytes).
+// Matched in a full build with stand-in SDK headers (was 10): result is false at its declaration instead of in the
+// else arm, and qos_is_complete's value is tested through a reference-bound local.
 // @retail 0x2bb04e
 bool function_2bb04e(long task_index, bool *completion)
 {
-    bool result;
+    bool result = false;
     *completion = false;
     if (g_475338 != NONE)
     {
         result = true;
-        if (qos_is_complete(g_475338))
+        bool found = qos_is_complete(g_475338);
+        bool const &kept = found;
+        if (kept)
             *completion = true;
     }
     else
     {
-        result = false;
         if (task_index != NONE)
         {
             s_type_9df9da *task = function_6b910(task_index);
