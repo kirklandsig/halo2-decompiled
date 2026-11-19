@@ -1879,6 +1879,17 @@ done:
 // on it the three definition reads in one declaration 27, the datum in one expression with the placement offset read inline
 // 27, the placements read folded into the datum with a placement-offset local 27 (all the 27 form's code); the slot lookup
 // as `NONE` then an `if` (for the ternary) 59 (243 B), that on the 27 form 59 (240 B).
+// Round 181 (m3 lane 7, fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x2a12f0, all matched): long palette offset, size
+// and placement offset with an `index * size` datum local and the palette formed at the call 33 (236 bytes: the definition
+// stays in EAX and the size is read last, so no copy; type EDX, scenario ECX, index SI), with `size * index` 33, with the
+// call adding `datum + placements` 33; the datum named before the placement offset read 30 (placements become the add's
+// destination); the palette pointer named after the datum 30.
+// M3 lane 12 r145 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x29fd80/0x2a12f0/0x2a1340; the 27 form re-measured 27):
+// on the 27 form the table indexed by the name field with the type local declared after the three reads 27 (same code);
+// `if (placement_index == NONE) return result;` before the call block 81 (244 B); reads in the order palette, placement
+// offset, size 27; the definition and its reads in an inner block assigning outer palette offset and datum 27; a short
+// type local 27; on main's body a short type local 115 (267 B). Retail's load, use, copy (`mov esi, eax`) shape occurs
+// nowhere else in the image, and no out-of-line getter of the type table exists to inline.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

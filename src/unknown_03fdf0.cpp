@@ -591,6 +591,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // compared as `(long)n` 2 (all three the same code); the counter declared `long n = 0;` ahead of first with the `for`
 // init left empty 149 (495 bytes). Re-measured: the entry from `index - first` 2; first read from previous after the
 // count update 119.
+// M3 lane 6 r198 (fast with 0x404b0; control 2): an explicit entry cursor set before the `for` and stepped last in the
+// body 9 (first in retail's slot, the cursor start above the guard, the latch steps the cursor first); the same inside
+// its own `if (count > 0)` 9 (the guard folds, same code); the function declared `__stdcall` 2 (same code); `__cdecl` 31
+// (diagnostic: first takes its own slot shared with material as in retail, but the cursor also leaves mode's home: frame
+// 0x4c, plain `ret`); the parameters as (mode, cache_index) at the definition and the call 2; a leading unused parameter
+// (mode then a front-end stack parameter) 2 (both the same code). So the front-end convention does not decide first's slot.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

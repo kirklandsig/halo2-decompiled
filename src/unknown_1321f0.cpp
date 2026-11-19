@@ -666,6 +666,13 @@ struct s_visibility_object_header
 // copy taken right after the plane call and passed 4; a `bool &` bound to in_front for the plane call and the packer
 // 4 (all three the same code: the read is forwarded to the argument); the list read into a local at the top of the
 // visible block 107; `long entry = NONE;` declared ahead of the two outputs 160.
+// M3 lane 6 r198 (fast, 0x132b10/0x132fd0 MATCH each time; control 4): an unused trailing packer parameter fed in_front
+// (dropped at link time) 4 (homes ours: the dropped argument's read does not count); 1 to 8 dead initialised locals at
+// the function top 4 each (not a symbol-count tie); the packer declared `__stdcall` 4 (same code), `__cdecl` 124;
+// in_front through a pointer-taking inline accessor at the packer call, plain or forced with a result local, 4/4
+// (forwarded); the outer test's arms in the other order 203 (601 B, homes still ours); a reference-bound copy of
+// in_front made after the plane call and passed to the packer, assigned through the reference or initialised then
+// bound, 4/4 (forwarded, homes ours).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

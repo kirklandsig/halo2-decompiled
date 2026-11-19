@@ -9,6 +9,8 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
+/* chooses and stores an actor's movement direction from a stored vector, a perpendicular side test and a
+   path trace; the length's sum of squares is staged around the flag store, as retail schedules it */
 // score 4 (was 4): only the x87 faddp/fsqrt schedule against the first two subss rows remains (retail subss, faddp; ours faddp, subss). Earlier summary: frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
 // the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
 // Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
@@ -301,10 +303,13 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     vector3f local_3;
     vector3f unit;
     vector3f const *facing = &local_0->unknown290;
+    double squares = local_2.i * local_2.i + local_2.k * local_2.k;
+    double &sum = squares;
     local_0->unknown456 = true;
     for (long component = 0; component < 3; ++component)
         local_3.n[component] = (local_0->position.n[component] + local_0->unknown258.n[component] * 0.5f) - local_0->unknown370.n[component];
-    real local_4 = (real)sqrt((double)(local_2.j * local_2.j + (local_2.i * local_2.i + local_2.k * local_2.k)));
+    sum += local_2.j * local_2.j;
+    real local_4 = (real)sqrt(sum);
     if (!((real)fabs((double)local_4) < 0.0001f))
     {
         real local_8 = 1.0f / local_4;
