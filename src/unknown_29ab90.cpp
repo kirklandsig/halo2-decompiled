@@ -50,7 +50,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has [esp+0x38]..[esp+0x48], and site 1's
 // planar normalize still keeps its own zero path where retail uses the shared 0x2b400 helper in
 // include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
-// score 286 (was 286): The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// score 286 (was 286): r209 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
 // magnitude), the working-vector group is still a rotation off retail's, site 1's planar normalize still keeps its own
@@ -524,6 +524,12 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // keepable): 286 (270 / 420: site 1's branch order and in-place scaling are then retail's, the zero still has its own
 // home), with the split product 326 (272 / 422). Still BLOCKED-BY 0x2b400 for site 1; the frame homes and the turn
 // dot's operand order remain as the earlier notes describe.
+// M3 lane 5 r209 (fast with 0x29b2e0 at 176, 0x1f9760 at 1, 0x1e5450/0x30bf0/0xb9dd0 MATCH; control 286, aligned 234,
+// register-masked 191): the turn factor's half width named (`half_width`, squared into the numerator) instead of
+// reusing local_20, with the gain as one expression 325 (1868 B), the gain then halved 326 (1871 B), with the named
+// numerator kept 286 (aligned 233, masked 186: not kept, no gain); the blend rows with the history product written
+// first 286 (same code); the complement computed ahead of the sums 316. Retail loads the history weight once into
+// XMM6 ahead of the sums and re-reads the field for the complement; site 1 is still BLOCKED-BY 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

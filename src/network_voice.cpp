@@ -2110,7 +2110,7 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
-// score 64 (was 85): left: retail tests the muted-word bit first, then the first port flag reusing the second
+// score 64 (was 85): r209 unchanged. left: retail tests the muted-word bit first, then the first port flag reusing the second
 // availability byte in CL, then the second port flag expanded in place (two calls of 0x53be0); this body tests the two
 // port flags first and calls 0x53bb0 out of line, 12 bytes short. BLOCKED-BY 0x53bb0 (its per-site inlining).
 // MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes
@@ -2334,6 +2334,11 @@ static inline dword voice_get_player_mask_inlined(void);
 // Fast trials (control 64): retail's test order muted word, first flag, second flag 85 (427 bytes); with a named
 // target bit 85; with the flag tests nested under the mask test 85; with `local & active & bit` 82 (415 bytes); with
 // an early return on !enabled 85.
+// M3 lane 5 r209 (fast with 0x54890, 0x53a20, 0x53bb0, 0x53b90, 0x53b40; control 64, aligned 17, register-masked 16): on
+// this order, an early return on !enabled 64, the inner mask test as a `continue` 64, the inner bit named once for the
+// test and the clear 64 (all the same code); the muted test through the existing volatile-read inline twin of 0x53850,
+// last 137 or first (retail's order) 137. Retail's first port flag reuses the second availability byte the muted test
+// loaded (CL), so retail's reads there are plain; the per-site inlining of 0x53bb0 still blocks the rest.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

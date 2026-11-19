@@ -2030,7 +2030,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 433 (was 433): The dispatch-default branch span, return placement and timer and request scheduling still
+// score 433 (was 433): r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
 // Earlier score 433 (was 433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
 // MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
@@ -2503,7 +2503,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI, state EBX); on it one, two or three unused locals in the case 611 each (same code: the exchange is not a
 // symbol-count tie), the case 2 vector written as three member copies from the actor 611; `default:` joined to case
 // 13's `return 1` 613 (2416 B).
-// score 433 (was 433):
+// Further forms on the 433 base:
 // Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
 // busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
 // fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
@@ -2513,6 +2513,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // order with direct acknowledgement exit 477, Unsupported selector exits as completed 433. NOT kept: The selector
 // orders and unsupported-selector return tie. The direct acknowledged return shortens the body to 2400 bytes at
 // 477. The checked callee stays at 164.
+// M3 lane 5 r209 (fast with 0x110ab0 at 164; control 433, aligned 151, register-masked 130). Retail's jump table sends
+// type 13 to the same return-1 block as the default (`ja`) target, after the post-switch result test that retail lays
+// out right after case 0 (cases 7/8, 0, 5 and 10 cross-jump into its `sete`). On retail's case order: case 13 removed
+// 481 (2404 B), as `break` 481, through the shared exit 481, removed with case 7/8 falling into case 0 481 (all with
+// the test moved to the end after case 20); case 13 moved after case 20 as `return 1` 515 (2432 B), as the shared exit
+// 447 (2420 B, aligned 139, masked 97: the result test then sits after case 0 as in retail, case 20's first arm jumps
+// back to it where retail has its own return-1 epilogue, and its else arm still stores the d1 flag; a case moved by
+// score, match-only), `default: return 1` last 613, with case 13 613, `default:` through the shared exit last 641.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
