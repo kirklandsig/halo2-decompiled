@@ -1102,6 +1102,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // moved between the trace endpoint and the 0.5 lift 25; with the entry pointer after them, still ahead of the lift, 20
 // (every remaining difference inside the rotation's dot; the marker, entry and point stores are then retail's); that
 // with the lift as x, y, z `+=` statements 179 (1082 B). Not kept: statements moved, no match.
+// M3 lane 14 r119 (fast with 0x1ecf50/0x26d100, both MATCH each time; control 26): the 0.1 offset as a component loop
+// (`point.n[c] = axis.n[c] * 0.1f + collision.point.n[c]`) 45 (the rotation's XMM roles change again: dot k, j, i);
+// a one-use axis pointer local for the rotation call 42, with the collision record, marker and entry pointer ahead of
+// the lift 36; that axis local also read by the three offset statements 165 (1103 B); the direction copied as three
+// component statements 232 (1081 B).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

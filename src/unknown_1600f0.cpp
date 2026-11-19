@@ -1555,6 +1555,14 @@ PRIVATE inline long score_string_list_1608e0()
 // initialised `{ x, (short)y }` 679, with far edges / far edges and += / all edges / += only 679 each; initialised with
 // all four title edges from row_position and += 698 (2888 B: the player index then loads into EBX first as retail and
 // row_position[1] is reloaded after the call, but the panel takes EBX and the frame stays 0x798).
+// M3 lane 14 r120 (fast; control 679, 714 instructions against retail's 718; cut at the 20 calls and masked, 521
+// differ with registers kept and 223 without). Between the title's two calls retail has 71 instructions to our 63: it
+// keeps 1.0 in XMM2 for the fade division and both clamps (ours loads it three times), stores the row number 2 before
+// the widths, computes the score width before the time width (ours the time width first) and advances the row's top in
+// its register (`add edi, 0x18`, later `add edi, 0x19` for the left edge). Forms: `long row_number = 2;` ahead of the
+// title's text call 685; right after the fade count 685; the row's top advanced in place (`y += 0x18; row_position[1]
+// = y;`) 679 (same code); the time width declared before the score width 692 (2888 B, 711 instructions); the title's
+// four edges from the row position 679 (same code); that with the in-place advance 679 (same code). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

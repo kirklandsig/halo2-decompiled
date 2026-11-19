@@ -6662,6 +6662,34 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // with or without the state rotation as well: frame 0xdc, flipped at +0xb4 as retail, 1016 (5080 bytes; a 4-byte
 // hole is left at +0, the desired orientation at +0x34, the shared matrix at +0x58, the inertia on the flipped
 // output); that with `bool boosting` 1108 (frame still 0xdc).
+// M3 lane 14 r120 (fast; control 978, 1183 instructions against retail's 1179; with stack offsets masked and the code
+// cut at its 15 calls 985 instructions differ, with registers masked too 500). Retail's first 0x142eb0 call passes
+// the desired matrix, the current one and a third output address, [esp+0xc4], the flipped matrix's home: the product
+// goes to its own matrix and the returned pointer feeds 0x141f60; the third call reuses the second's returned
+// pointer for both its first argument and its output, as ours does. Retail's frame, counted from the first local:
+// two scratch reals +0/+4, flipping +0xb, velocity +0xc, offset +0x18, a scratch +0x1c, acceleration +0x20, desired
+// and inertia +0x2c, boosting (a byte) +0x53, target (also the drift vector and the sum) +0x54, facing / current /
+// the state rotation +0x60, angular velocity / the strafe acceleration / the quaternion / the torque +0x84, the
+// strafe velocity and the force +0x94, the definition +0xa0, three scalars, maximum speed +0xb0, flipped +0xb4.
+// Diagnostics (reads of the facing matrix pointed at the flipped one): any facing read inside the strafe block keeps
+// the frame at 0xfc (only the reads before the 0xf1380 call replaced 1048, only those after it 1039, only the brake
+// arm 1049, the block after the call but the brake arm 1041), all of the block's reads replaced 0xdc (1069), the drift
+// block's alone 0xfc (1051), both blocks 0xdc (1005). A compile of the file alone without LTCG shares no matrix home
+// at all, so the sharing rests on what the link-time build knows of the callees. Forms: the product into a separate
+// function-scope `relative` matrix 1021 (5046 B, 1179 instructions, frame 0xfc: facing, current and rotation share,
+// desired and inertia share, the output alone); that matrix in its own block with the call 1032 (5062 B, frame 0xdc,
+// flipped at retail's [esp+0xc4], an unused 4-byte cell left at +0 and target above facing), with `bool boosting` 1142.
+// The reversal loop: ours unrolls `for (i = 0; i < 3; i++)` over the function's `long i` (79 instructions between the
+// two calls against retail's 71); a bool for the acceleration sign 1035 (still unrolled), a conditional store with
+// that bool 1112 (5155 B), without it 1072, with both signs named 1062, the arms the other way round 1112; a block
+// `short` index 1036 (5094 B: a real three-pass loop, 70 instructions there, masked 451); `i = 0; do ... while (++i <
+// 3)` 1062 (5075 B, masked 449). Together: the block matrix with the short index 1065 (masked 446), with the short
+// index and the bool conditional store 1043 (5062 B, masked-stack 801, masked 420: the lead, saved as
+// build/r120/lead-0xf4800-c2.diff in the m3-lane14 worktree), those with `bool boosting` 1140 / 1122 (masked 435 /
+// 417). Not kept: every one of them raises the count. Left after the lead: the 4-byte cell at +0, target and facing
+// the other way round, the index kept in a register past 0xf44a0 (retail reloads it from its argument home and gives
+// ESI to the forward pointer), the tick store ahead of the pitch loads, and the 267 masked differences between the
+// second 0xf1380 call and the first product (the lift block's repeated magnitudes among them).
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
