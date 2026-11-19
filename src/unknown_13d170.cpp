@@ -861,6 +861,14 @@ struct s_physical_block_iterator
 // `candidates` 93, 1-8 dead locals 93; permuter on the 93 form (900 s, 94 tries) best 93. Left on 93: one EBX/EDI swap
 // over the whole tail (the walk's high-water mark and bit, the overlap test's data and sum registers, and the
 // insertion's result EDI / NONE EBX in retail, here the other way round with NONE also taking the `result != NONE` test).
+// M3 lane 15 r110 (fast with 0x13d320 and the file's six other functions, all MATCH each run; control 201): lane 1
+// r124's 40 lead rebuilt on today's base, 40 at 1213 B (first difference +0x356). On it: both insertion stages tested
+// directly on best.previous 93 (the threading is then retail's `cmp esi, ebx; jne`, but the NONE constant takes a
+// register from the allocation test on, `or edi, -1; cmp eax, edi`, and the result moves to EBX); the first stage
+// direct and the second through the bool 96 (1220 B); the first through the bool and the second direct 93. In the
+// deletion walk: best.offset read into two locals with one initialiser, one per overlap test, 40; the same with
+// `pages + start` 40; best.offset in a local read through a `long const &` for both tests 40 (each 40 the same code:
+// best.offset is still re-read for the second test, where retail keeps it in EDI and compares a `mov edx, edi` copy).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

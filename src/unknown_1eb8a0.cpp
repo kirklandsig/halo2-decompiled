@@ -728,6 +728,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // d still loads into EBX at entry. The positional score rises with each of these because the later stages shift; the
 // combined form (factor first, scale helper, limit at each use) is saved as build/r198/lead-0x1eb8a0-565aligned.diff in
 // the m3-lane8 worktree.
+// M3 lane 15 r108 (fast with 0x1eb6f0 and 0x1ed4a0, both MATCH; control 603): the zero-tick fallback as `q = counter == 0
+// ? g_4687a4 : q;` 603 (same code: q stays in memory, no cmove, where retail selects into EBX with cmove); the zero-tick
+// test reading `s->counter` 603 (same code); no count local, `s->counter` at its three uses 603 (same code); the count
+// read at the top of the active block ahead of the clamp 609 (2883 B); the scaled sample through the existing
+// vector3f_scale(&qr, globals->rate, &qr) after the displacement 683 (2871 B).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

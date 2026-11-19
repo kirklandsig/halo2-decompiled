@@ -204,6 +204,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // copied 131 (470 bytes: the initial copy of the global point is then dead and dropped); the angle pair computed into
 // a local pair then stored 71 (486 bytes); the constructor called through a record pointer local 19; the point copied
 // into a const local ahead of the constructor and stored from it 19 (same code each).
+// M3 lane 15 r110 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the transform parameter
+// non-const 19 (same code); the origin copy moved into the node arm (the else arm overwrites it) 33 (the copy follows the
+// branch; the EBX/EBP pair stays); the whole function as a member of the record (`this` for arg_3) 113 (453 B, the
+// convention changes); two stages, the node matrix chosen first (NULL when there is no object, false return on a bad
+// node) and then `if (node)` transform else copy 134 (478 B), the same with `if (arg_0 != NONE)` as the second test 19
+// (same code). In both builds the point's x outranks y and z (x ESI, z spilled), so the transform sits between x and
+// y in ours and below y in retail.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

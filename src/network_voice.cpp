@@ -1995,6 +1995,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // throughout 160 [73], with the per-arm stores 158 [73]. Lead: a kept-first form in which the player is not the cheapest
 // value to drop while the per-player decrement stays after the mask clear, and in which the length does not reuse the
 // size's register.
+// m3 lane 15 r108 (fast with 0x56380/0x564c0/0x53b00/0x56000, all matched each time; control 60), statement orders of the
+// four head statements (S size, K kept, W written, C `capacity -= 2`) with `11 + 2 * include_mask` and a dword kept: SWKC
+// 118 (456 B: the head is retail's through the has-player test with the bit in EBP and the size in EBX, but the live EAX
+// zero is reused for `cmp edi, eax` and `written = 0`, and kept then takes EAX), SKWC 60, SWCK 130, KSWC 60, CSWK 130,
+// SCWK 130; on SWKC: `11 + 2 * (include_mask != 0)` 139, `include_mask ? 13 : 11` 139, kept typed long with `!= 0` 139,
+// the player bit declared after the clamp 118 (same code). A /Gd first-pass screen of all 288 order x size x kept-type x
+// bit-position forms holds the player in EDI in every size-first order, but each one that keeps the EAX zero reuses it.
+// On SWKC the result typed dword or int 118 each (same code), dword with `!= 0` 139: the zero is reused whatever its type.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4282,6 +4290,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // two calls 192 to 197 (457/451 B: the index is read once). Lead, saved as
 // build/r198/lead-0x55e10-70-diagnostic.diff in the m3-lane8 worktree: the s z c p cursor form needs a natural reason
 // for the channel to outweigh the member (a fifth reload point), then the immediate cursor add and the zero-trip exit.
+// m3 lane 15 r108 (fast with 0x564c0, matched each time; control 139): on the packet-cursor form (re-measured 164, 478 B):
+// the relay arm's three talker calls reading a `long channel_index = channel->index;` named inside the member-bit test
+// 158 (476 B: the member takes EBP straight from the call and the channel no register, retail reads [ebp + 0xc] three
+// times), that local in the plain arm too 193 (455 B); the member typed dword 164, the stride typed dword 164 (same code
+// each). On this body: the relay arm's channel_index local 174 (471 B).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -187,6 +187,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // 21; the parent index read into a local before its lookup 21; the position store as memcpy 21; the blend clamp as one
 // nested ternary 21 (same code each). Re-measured lane 14 r97's combined hidden return with update started from
 // force 246 (804 bytes).
+// M3 lane 15 r110 (fast with 0x3d2c0, 0xd1850 and 0x3db00, all MATCH; control 21): `(void)&cache_index;` at the top (its
+// stack slot is where update lives) 21; `(void)&update;` after its declaration 21; `(void)&priority;` 21 (same code each:
+// none takes update out of the allocator); the hidden bit read into a named bool ahead of force 237 (833 B); the object
+// read through a const reference to its header entry 21 (same code).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

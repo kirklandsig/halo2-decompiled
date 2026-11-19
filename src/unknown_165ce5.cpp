@@ -1962,6 +1962,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // ESI/EDI are still saved ahead of the unit test). Re-measured: every rate read through g_510c54 219. Other matched
 // functions of this file save a register after an early exit with the build's extra caller present (0x168896), so the
 // extra caller does not forbid a late save in general; what makes this function's unit test wait for both saves is open.
+// M3 lane 15 r108 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): every 0xb000067-arm use of the
+// +0xb8 channel through the channel pointer (the overlay call, the frame position, the duration and the set) 202 (2189 B);
+// the look pointer typed `point2f const *` 188 (same code). On round 105's 40-point lead (re-measured 40 at 2199 B on
+// current main; still match-only and BLOCKED by the stand-in): the channel pointer at every channel use 81 (2192 B); the
+// callback selected ahead of the orientation pointer 45; the weapon object looked up after the orientation pointer and
+// the callback 97 (2200 B). Left on the lead: frame 0x30/0x2c, the ESI/EDI saves, the weapon reloaded into EDI ahead
+// of the object lookup (ours after the callback select), the overlay set load order and the channel pointer register.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

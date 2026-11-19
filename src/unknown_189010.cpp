@@ -125,8 +125,7 @@ struct s_sound_class_play_flags
 
 struct s_sound_play_tag
 {
-	byte unknown00;
-	byte flags;
+	word flags;
 	char class_index;
 	byte unknown03[0x10 - 3];
 	long duration;
@@ -521,6 +520,8 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // the priority as `1` then `if (audible) 3`, a short priority, the marker by memcpy, the variant through the request at
 // each use, the flag steps as if/else, `long end_time;` assigned apart, and the forms above all keep the request in EBP;
 // the split test only adds two compiler symbols (its labels number two higher) and changes nothing else in the body.
+// starts a sound from a request: builds the play state and starts it, then, when both of the sound's category
+// flags are set, moves the looping-sound globals' end times out to when this sound ends
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -543,7 +544,7 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 		state.source = source;
 		state.platform_playback = request->platform_playback;
 
-		if (TEST_FIELD_BIT(((s_sound_class_play_flags *)function_221810(sound->class_index))->flag23) && !(sound->flags & 1))
+		if (TEST_FIELD_BIT(((s_sound_class_play_flags *)function_221810(sound->class_index))->flag23) && !(sound->flags & 0x100))
 		{
 			state.location.flags |= 0x800;
 		}
@@ -575,7 +576,7 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 				long end_time = g_510c54->game_time + game_seconds_to_ticks_round((real)sound->duration * 0.001f) + 10;
 
 				g_4ed288->value20 = end_time > g_4ed288->value20 ? end_time : g_4ed288->value20;
-				if ((state.location.flags & 0x900) || !state.location.audible)
+				if (TEST_FIELD_BIT(state.location.flag8) || TEST_FIELD_BIT(state.location.flag11) || !state.location.audible)
 				{
 					g_4ed288->value24 = end_time > g_4ed288->value24 ? end_time : g_4ed288->value24;
 				}
@@ -766,7 +767,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 	if (object_index != NONE)
 	{
 		char audible = 1;
-		if (!(((s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes)->unknown00 & 4))
+		if (!(((s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes)->flags & 4))
 		{
 			function_18d4f0(object_index, &audible, &local_player_index);
 		}

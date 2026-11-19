@@ -1683,6 +1683,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // mode block 43; the reuse flag declared bare there 43; the two outputs as a two-long array bound by references 52.
 // Compile-only only (mov each): a spawn bool computed at the top 301 lines; the mode read as long or short locals.
 // In every form the folded mode compare first loads the byte into AL (a second compare unfolds it: `mov al, [edx+12]`).
+// M3 lane 15 r110 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00 and 0x14cad0, all MATCH; control 5; B = the outputs in
+// the mode block, re-measured 43 at 1031 B, `mov eax, 0xffffffff`): a redundant `result = false;` after the 0xb8540 call
+// 249 (1034 B: the result test is no longer threaded), on B 251 (1036 B); on B the mode compared as `(mode & 0xff) != 4`
+// 43 (same code); on B the outputs declared bare and filled by `memset(&x, NONE, sizeof(x))` 45 (still `mov`, the two
+// stores swap); one output declared with its NONE ahead of the mode test and the other in the mode block, measured
+// (third person ahead) 243, (tag ahead) 242, both 1031 B.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

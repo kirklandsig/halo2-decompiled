@@ -892,6 +892,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // volatile and the byte tested 405; the list head read into a named local, the head store, then the element's link 365
 // (aligned 237: after the 0x1751d0 call the scratch registers are then retail's, ECX for the allocated index first, EAX for
 // the old head and EDX for field_02, but the link store follows the head store; retail stores the link first).
+// M3 lane 15 r109 (compile-only screen of this file reproduces the folded gate; each then fast with 0x247fd0/0x248cc0,
+// both MATCH): the gate's byte read through a new inline helper writing the flag through a pointer, through a named effect
+// pointer, through a pointer to the byte, through a named `effects` table pointer indexed, and as byte arithmetic on the
+// table with `sizeof`: 334 each (same code: `[eax + edx + 2]` stays folded); an effect pointer with the flag from
+// `(effect->flags >> 3) & 1` (compile-only only: an extra reload of the flag). Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -894,6 +894,15 @@ extern "C" void _ReadWriteBarrier(void);
 // a bool ahead of the actor lookup 44. Compile-only (same code as the no-barrier body): a const reference to the
 // point at the top, the state NULL test joined to the busy test, the busy field in a long, the flags bool at the
 // top, a point pointer at the top; flags /G6, /Ob2, /Oi-, /Ot leave the slot load after the branch.
+// M3 lane 15 r108 (fast with 0x1ba3f0/0x1ba990, both MATCH; control 6): the busy test as an empty first arm of one flat
+// else-if chain, with the barrier, 6 (same code); the flags arm's point copied through a `point3f *` to the actor's
+// destination point, with the barrier, 9; the body as a forced-inline member function of a view derived from the 0x4c
+// state, called on the slot, with/without the barrier at its top 6/44 (208 B); the busy field in a `long` read right after
+// the actor lookup, then the state, then the barrier, 49 (210 B). Compile-only diagnostics (not counted): a second
+// definition of the state (a NULL fallback) after or before the actor lookup puts the slot load in the entry block but
+// moves the data base to ESI; a real slot read after the outer if, with or without the barrier, loads the slot just
+// before the jne (after the compare: an allocator load is not hoisted); `#pragma optimize` g off, s on, y off are all
+// further off. Retail's entry needs the state as a real, unpropagated definition made after the data-base load.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
