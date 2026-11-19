@@ -2058,6 +2058,9 @@ void function_15e460(long object_index, long value)
 	game_engine_get()->p24(object_index, value);
 }
 
+// Matched in a full build with stand-in SDK headers (was 26): the option compare is written in each arm (juggernaut
+// arm and the other modes) instead of once after them.
+// Before:
 // score 26 (was 26): retail keeps one in EDX and saves ESI/EDI; ours keeps
 // false in BL and one in EAX. False result after both guards 29, after engine
 // guard 27, after player guard 28; narrowed scope with options record reference
@@ -2091,13 +2094,19 @@ void function_15e460(long object_index, long value)
 // @retail 0x15eb20
 bool function_15eb20(long player_index)
 {
-	bool result = false;
-	if (!game_engine_get() || player_index == NONE)
-		result = true;
-	else if (g_4e6948->mode_180 == 7 && juggernaut_is((short)player_index) && (g_4e6948->flags22c & 2))
-		result = true;
-	else if (engine_options()->value1c4 != 1)
-		result = true;
+	bool result = true;
+	if (game_engine_get() && player_index != NONE)
+	{
+		if (g_4e6948->mode_180 == 7)
+		{
+			if (juggernaut_is((short)player_index) && (g_4e6948->flags22c & 2))
+				result = true;
+			else
+				result = engine_options()->value1c4 != 1;
+		}
+		else
+			result = engine_options()->value1c4 != 1;
+	}
 	return result;
 }
 
