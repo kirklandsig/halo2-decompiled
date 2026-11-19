@@ -1881,6 +1881,10 @@ struct s_summary_player_sort_entry
 // pointer as the output of a small getter taking its address 339 (same code: it folds); the membership pointer the same way
 // for the name 339 (same code); the membership and member index from 0x5a680 (NULL, &member_index) for the name and identity
 // 353 (called, as listed); that with the nullable type pointer 392. Neither pointer gains a home in any form. Body unchanged.
+// MiniMax B (11-19): no new form, no lower score (339): retail writes output->state with a conditional move, which needs
+// /arch:SSE that this file's flags do not set (adding the flag to the file's @flags line measures 353, so it is not kept),
+// and retail's inlined 0x5a680 is out of line here; the frame is still 0xa9c against retail's 0xaa8 with the type,
+// membership and member-index homes still different - BLOCKED-BY 0x5a680.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

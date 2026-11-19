@@ -676,6 +676,9 @@ union s_185be7
 // code); the fraction declared without a value and cleared in an else arm of the span test 942 (3740 B), with the
 // if/else clamp too 942; the quotient clamped inside one PIN expression 932 (3791 B); the exponent named for the test
 // and the power call 634.
+// MiniMax B (11-19): no new form, no lower score (396): retail treats 0x24590 as clobbering the XMM registers, which is
+// what fixes the whole block from the speed fraction to the stick clamps; the `inline` lead on 0x24590 is measured above
+// (384 [65], one shift left) and is not kept because six of its other callers' counts rise - BLOCKED-BY 0x24590.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
