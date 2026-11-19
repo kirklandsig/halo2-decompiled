@@ -668,6 +668,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Route-table reference, record-array reference, read-only record base, candidate reference,
 // candidate state local, and separate sign guard 382 each. Record-array reference or route-table
 // reference with a short selected terminal 383 each. The selected default slots stay displaced.
+// Group-end publication of group, point or anchor 397/433/422; group and point
+// 414; point and anchor 409; all three indexes 421; group-local best distance
+// 453; group-local distance and all three indexes 427. NOT kept: each regresses;
+// selected defaults keep different homes.
 // M3 lane 16 r138 (fast with 0x29e730; control 382, aligned 268). Round 64's recipe (as saved by m3 lane 7 r146) re-applied to
 // today's file: 155 at 1596 B, aligned 20 (match-only, not kept); its one structural cause is unchanged: retail keeps the
 // table parameter in ESI from the range test to the 0x29de20 call and loads the target point into EDX for the pair

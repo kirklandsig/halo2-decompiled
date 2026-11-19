@@ -700,6 +700,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // predecessor veto after node admission 297, early predecessor eligibility 392;
 // first-edge or first-edge/hit initialization after the target test 265/265.
 // The two byte homes stay exchanged. Nested transition guards reproduce the opening code.
+// Return default after sector clear, both index clears, requested distance,
+// transition distance, all output defaults or both distance defaults:
+// 386/387/388/388/389/390. False result before/after unobstructed finalization
+// 385/386. NOT kept: the two byte homes and shared cutoff tail remain different.
 // M3 lane 5 r200 (fast with 0x26c380 and 0x270600, both MATCH; control 244): `success = false;` before each cutoff's
 // `next_sector_index = NONE; break;` 229 at retail's 1605 B (not kept: success is already false there, a redundant store; but
 // retail stores it too: `mov byte ptr [esp + 0xe], 0` at 0x26cb08 is reached only from the two cutoffs, so retail's cutoff

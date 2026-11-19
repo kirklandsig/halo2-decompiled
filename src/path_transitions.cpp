@@ -1098,6 +1098,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 283 (aligned 46); both projections in one fraction expression 283 (same code); the upper bound named once as `upper`
 // 283 (aligned 41). Diagnostic: two dead initialised locals 279 (1280 B, but the margin still loads the radius into a fresh
 // XMM6; the length only matches because the origin dot's a.z load moves). Body unchanged.
+// Case-five indices before the vertex table, word position/direction first 358/358,
+// long 262/262. Word index at each address, position/direction first 266/219.
+// Direction vertex reference 265, both vertex references 271.
+// NOT kept: all scores rise and the early root copy and actor load remain unresolved.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

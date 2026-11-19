@@ -734,6 +734,10 @@ void function_3dd10(long object_index, bool force);
 // unsigned late variant byte 97.
 // Kept the late unsigned byte with signed decoding at the index calculation. The byte compare gates the
 // lookup and the index sign-extends at use as in retail. The 0x54 frame and 1034-byte length agree.
+// Last ordinal, eligibility mask or weight initialized at scan entry 199/191/286;
+// mask and weight 275; all three 312; all three with signed bound 562.
+// Last ordinal gates selection 232; one choice-name read 106.
+// NOT kept: regressions in the scan and saved-register layout.
 // M3 lane 13 r113 (fast with 0x1318d0, 0x131a00, 0x3dd10, control 97): the first scan as a do-while like the second 230
 // (995 bytes); a redundant `if (0 < count)` around the outer loop 77 (not kept, steering: the object then takes EDI and
 // the bank/entry web ESI as retail, but the index's zero store sinks after the guard's jle, where retail stores it

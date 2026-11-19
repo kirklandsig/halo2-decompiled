@@ -3617,6 +3617,11 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // acceleration copies 91/91/91/91/91; typed full-record assignment 132, aggregate
 // snapshot 250, typed sources with byte result 85 (396 bytes). NOT kept: best gains
 // six and merges the retail's three epilogues.
+// Shared matrix position 110; both axes by fields, ordinals or cursors
+// 105/105/105; rotation subrecord 91; axis value copies 163. Shared
+// position with fields or rotation subrecord 112/110. NOT kept: sharing
+// position reaches 396 bytes but grows the frame and changes the caller,
+// and the other forms leave the seat-stride and camera-base differences.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {

@@ -1499,6 +1499,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
+// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // MiniMax E (11-17): no new form, no lower score (400): the permutation search over the body (38 tries, 300 s, annealed,
 // one job) reached nothing below the baseline of 395 differing instructions on both the full and the reduced image, so the
 // body is unchanged. What still differs is the frame and its slots: ours reserves 0x114 against retail's 0x10c, so every
@@ -2100,6 +2103,11 @@ long function_1fa7f0(void);
 // and the step pointer formed at the emit 473; the step pointer declared `const *const` 400 (same code); the attempt
 // counter as long 399 (1751 B); the copied last point as points[end - 1] 545 (1811 B). Retail keeps index in EDI and the
 // step pointer in a slot at the loop top where ours keeps the step pointer in EDI and count in EBX. Body unchanged.
+// Reuse scan success for the left corner with named/direct right 400/400,
+// then combine with Boolean AND 477. Reuse it for right 400, join after both calls 400,
+// or clear the saved left result on right failure 400. Right AND left 477,
+// or clear the saved right result on left failure 401. NOT kept: ties or regressions.
+// The aligned 0x114 frame and edge/count homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
