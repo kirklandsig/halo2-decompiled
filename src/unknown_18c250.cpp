@@ -923,6 +923,11 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // through TEST_FIELD_BIT(sound->flag0) instead of sound->flags & 1 compiles to the same bytes (184).
 // M3 lane 6 r191 (fast with 0x188790/0x21db80; fast and plain agree on this body, checked at 49 and 20): `inline` on
 // 0x188790's definition kept, 184 -> 49 (plain, 1031 B; main has 83 @retail definitions marked inline, and retail's call
+// Matched in a full build with stand-in SDK headers (was 49): the top value is read into a local used through a
+// reference before it is stored, the owner is passed through a reference-bound local, unknown02 is cleared through
+// a pointer to the field (which keeps case 2's `or byte [edi], 2` separate), the listener is chosen before the 0x10
+// flag is set, and the audible object index is named before the 0x18d4f0 call.
+// Before:
 // sites show the clobber: xmm0 re-zeroed after each call, the object held in EBX). Not kept, on that (match-only forms): the
 // flags cleared by memset 31 (gives retail's `or byte ptr [edi], 2`), plus the listener named ahead of the 0x1000 flag 29,
 // plus the object index named before audible 20 (plain 20, 1029 B). On the 20 chain: the pointer select `*(type == 0 ?
@@ -949,8 +954,11 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 	s_loop_location_datum *sound = &((s_loop_location_datum *)g_4ed28c->data)[looping_sound_index & 0xffff];
 	byte *definition = g_4e3b44[sound->tag & 0xffff].bytes;
 	location->flags = 0;
-	location->unknown08 = sound->type == 0 ? sound->owner : g_444ae0;
-	location->unknown02 = 0;
+	long top = *(sound->type == 0 ? &sound->owner : &g_444ae0);
+	long const &kept_top = top;
+	location->unknown08 = kept_top;
+	byte *unknown02 = &location->unknown02;
+	*unknown02 = 0;
 	switch (sound->type)
 	{
 	case 0:
@@ -960,8 +968,9 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		{
 			location->spatial.location.cluster_index = cluster;
 			location->spatial.location.leaf_index = NONE;
-			location->spatial.location.bsp_index = sound->type == 0 ? sound->listener : NONE;
+			long listener = sound->type == 0 ? sound->listener : NONE;
 			((byte *)&location->flags)[1] |= 0x10;
+			location->spatial.location.bsp_index = listener;
 		}
 		break;
 	}
@@ -1011,13 +1020,16 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		long marker_name = 0;
 		if (sound->marker != NONE) marker_name = function_b8c40(sound->owner, sound->marker);
 		s_object_marker marker;
-		function_b8d30(sound->owner, marker_name, &marker, 1, false);
+		long owner = sound->owner;
+		long const &kept_owner = owner;
+		function_b8d30(kept_owner, marker_name, &marker, 1, false);
 		location->spatial.position = marker.matrix.position;
 		location->spatial.compressed_forward = vector3d_compress(&marker.matrix.forward);
 		function_ba1d0(loop_location_object_index(sound), &location->spatial.velocity, NULL);
 		object_get_root_location(loop_location_object_index(sound), &location->spatial.location);
+		long audible_object_index = loop_location_object_index(sound);
 		char audible = 1;
-		function_18d4f0(loop_location_object_index(sound), &audible, NULL);
+		function_18d4f0(audible_object_index, &audible, NULL);
 		location->audible = audible;
 		if ((*definition & 8) && !location->audible)
 		{
