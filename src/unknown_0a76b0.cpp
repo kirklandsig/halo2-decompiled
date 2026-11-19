@@ -4334,6 +4334,14 @@ extern vector3f *g_4687bc;
 // through the array's operator[] 12 (both form the element address first, `lea eax, [ecx + edx]`); the havok-flag and
 // component-index tests as nested ifs 8 (same code); the rigid-body index as `short` (0xb67a0's return type) 25 (1099
 // B, word compare); the material copy-initialised from `c_type_47f957(g_54e898)` 8 (same code).
+// M3 lane 15 r102 (a /GL- compile-only screen of this file, both sites as the linked build has them): the default material
+// passed by value through a forceinline helper taking and returning the material type (a by-value argument of that type, which
+// other functions showed takes no rotation step) 8; built from a const reference to the global 8; copied from a named
+// default material 8 (all the same code); built before the effect tag test 228/214 aligned (the load stays in DX and
+// the store moves above the branch), before the effect tag read and before the definition re-lookup (the material in
+// CX there, but the pool's data then takes EAX and the component EAX/ESI order changes; both sites still differ).
+// Diagnostics: a probe copy between two globals at the function's top, before the definition re-lookup or before the
+// effect tag read leaves both sites as they are; after the tag read it reloads the component index (the store aliases).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

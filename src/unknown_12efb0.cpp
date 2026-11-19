@@ -744,6 +744,16 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // weight, index, kind 607 (store order only); the best-weight and best-index declarations swapped 609 (first difference
 // +0x2b); the palette arm's source-index store re-reading the +0x6f byte (retail re-reads it there) 703 (3831 B, aligned
 // 332); the record pointer declared NULL ahead of the palette test 607 (same code).
+// M3 lane 15 r102 (fast with 0x130f60; control 607): the palette byte read from the cluster at each use as a char
+// (`*(char *)(cluster + 0x6f)` at the test, the bounds, the index and the source-index store; retail re-reads it with
+// a fresh movsx for the store) 666 (3827 B); with the NULL record assigned in the else arm 666 (same code); with a
+// file-local forceinline lookup that assigns NULL, tests g_4e0350 and the bounds and returns the entry (retail's
+// `xor ebx, ebx` ahead of the global test and the `mov ebx, ecx` copy of the returned entry) 599 at 3818 B, the best
+// count seen here, NOT kept (a new one-caller helper; lead: retail's lookup is an inline returning the entry with the
+// global test inside); that lookup with the short palette local 604 (3822 B); the per-use char reads with 0x12eb00's
+// existing entry_at_index behind an outer `g_4e0350` test (a local copy, as a header move would give) 603 (3822 B),
+// the same as an if/else or a ternary around it 603/603; the short palette local with the ternary 667 (frame moves).
+// Under the per-use reads the cluster index leaves EDI (retail keeps it there for the arg_0 compare).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

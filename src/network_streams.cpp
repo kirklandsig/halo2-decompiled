@@ -840,6 +840,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 }
 
 // score 35 (was 35): earlier 60. The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
+// The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
 // Earlier: retail keeps the message in ECX and the flags in AX (ours EAX / CX) and ends the found path with
 // `or byte ptr [ecx + 0xe], 2` (ours `or ecx, 2` and a word store); m3 lane 3 r257's entry is the last one above the marker.
 // Earlier first line: Retail uses one sequence counter and reloads newest in the index helper.
@@ -1166,6 +1167,14 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // `message` declared above the loop 89; the message through the existing reliable_stream_get_message with the in-place
 // update 89; a no-code copy of the index between the lookup and the message zero 35 (same code); the update through the
 // existing word bit setter 0xbfe40 (inlined as the in-place OR) 89.
+// M3 lane 15 r104 (fast; control 35, all restored): the member update (`message->flags |= 2;`) with the three stores
+// through a shared inline report helper 89 (same code as the member form); `type = 4;` first in the found path 42 (217 B:
+// type is stored to its slot and reloaded, the stores may alias it); the member update with the message zero-initialised at
+// its declaration ahead of the index lookup 59 (222 B: the entry, the count, the loop registers, the message in ECX, the
+// flags in AX and `or byte ptr [ecx + 0xe], 2` are retail's; left: the zero is hoisted to the loop head where retail
+// sets the index's NONE (`or edx, -1`) there and zeroes ECX after the divide, and the found path's temporaries take
+// EAX/EDX where retail's take EDX/ESI with EAX untouched); that with `index` declared first 59 (same code); the member update
+// with the message declared and zeroed after the lookup 89.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

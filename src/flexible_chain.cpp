@@ -789,6 +789,11 @@ void __stdcall function_1160c0(real dt)
 // terminal-node identity 306, both node identities 305. Position-derived ordinal for root 300, terminal test 307,
 // full segment selection 292, and root plus segment selection 295. NOT kept: the address-based tests regress and
 // change the loop comparison.
+// M3 lane 15 r101 (fast with 0x116750, matched throughout; base 144): the node as `record->nodes + i` 144 (same code); the
+// last segment chosen as `i - 1` 145 (1369 B); the stiffness product written segment first 144; `++node->ticks` ahead of
+// the stiffness 148; `predicted` through vector3f_add(&position, &offset, &predicted) 204 (retail's 1368 B, but aligned 151
+// against the body's 109). Diagnostic (not counted): 1-8 dead initialised locals at the top 144/144/146/146/146/144/144/144,
+// so the homes and the rotation are no symbol-count tie on this body either. Body unchanged.
 // The segment still needs EDX and +0x14. Conditional attachment point by value/address/interior first
 // 304/304/304, segment reference with named ordinal 144, terminal-predicate subtraction 285,
 // conditional segment addresses against the interior bound 304, preceding-ordinal loop bound 294,

@@ -750,6 +750,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // tag through a by-value accessor bound to `long const &` 59; the two cache pointers zeroed as one chained assignment 10;
 // both definition lookups through a tag-bytes accessor returning `byte *const &` 8 (same lines); the stage-block base
 // bound as a const reference 8; the material index reference declared before the material lookup 113 (0x224d90 36).
+// M3 lane 15 r104 (fast with 0x2243c0 and 0x224d90, both matched each time; control 117, all restored): the tag local as
+// `dword` with the `& 0xffff` fallback 152 (the table hoists into ECX above `sub esp`, as the long form); the group test,
+// fallback and groups read in a forceinline lookup helper shaped as other files' private ones 117 (same code); lane 1
+// r59's score-8 chain rebuilt on this body 8 (first +0x9e: pass definition EDX, material index ECX, material definition
+// EDX, the zero after the definition's +8 read; re-measure, not a trial); main's body with the group test re-reading the
+// tag and the flags read just before 0x173ba0 (the chain's two non-reference parts) 145; the element helper as plain
+// `inline` 117 (still inlined, same code); the two nine-bit ordinals as `word` locals 117 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

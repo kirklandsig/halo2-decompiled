@@ -587,6 +587,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // The excess frame word pair and the actor/unit and priority/query homes remain.
 // Actor publication after unit lookup, confidence tests, self-unit test, and settings, each with opening then ordinary unit index: 902/877, 922/932, 902/935, 924/924 reduced.
 // NOT kept: 902 and 877 shorten the body to 3702 or 3708 against retail 3731, and the matched caller scores 1 in those previews.
+// M3 lane 15 r101 (plain unless marked; control 920 plain, 926 fast): `unit_index` without its volatile 936 (3708 B; fast 910
+// misleads again); the actor pointer without its volatile 969 fast (3671 B); the object type byte read at each of its seven
+// uses with no type local 936 (3740 B); the previous-direction dot as one expression 928 (3707 B); its products written
+// previous-direction first 920. Retail's entry keeps actor_index in EBX, the zero (self_unit's NULL) in EBP and unit_index in
+// EDI; ours keeps direction in EBX, settings in ESI and the zero in EDI. Body unchanged.
 // Settings after actor evaluation by index or selected actor 920/919, per-action optional
 // settings tests 920, complete priority or range defaults within the gate 931/916,
 // nullable settings after actor evaluation 927, immutable limits with ordinary/scoped query 960/960.
@@ -2029,6 +2034,10 @@ long function_1fa7f0(void);
 // pointer range 520, next as forward cursor 502, next sentinel across both
 // phases 461. NOT kept: 419 reaches retail length with the larger frame and
 // the selected edge still in a slot.
+// M3 lane 15 r101 (fast; control 400, aligned 275): the copied last step as `points[end - 1]` (one fewer count use, to free
+// BX) 545 (1811 B); `dword edge` 400 (same code); the trace location passed as `(long)&query->location` at both 0x26c4e0
+// calls with no local 400 (same code); the data lookup ahead of the two radius locals 491 (1768 B); `found` declared ahead of
+// `edge` 400 (same code). Body unchanged.
 // Named sector-trace output for the first, second or both traces 400 each;
 // second trace scoped to the unblocked arm 400. Typed source/target/both
 // trace endpoints 441/441/469. Shared candidate step for direction and sector 400.
