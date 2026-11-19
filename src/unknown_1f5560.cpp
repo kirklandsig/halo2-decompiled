@@ -1230,6 +1230,15 @@ real normalize2d(point2f *v);
 // One evolving attempt speed or reused query speed 135/135; with late chosen-speed default 207/204.
 // Direct request return on those four forms 182/182/208/205.
 // NOT kept: neither lifetime recovers DL, and direct returns shorten the body.
+// MiniMax G (11-18): no new form, no lower score (135): the first difference stays the trajectory result. Retail keeps the
+// call's bool in dl across the `force` test (`mov dl, al`, the `force` load, the test, then the store to the result slot),
+// while this build stores the bool to the slot before the test; the later rows then pair with the wrong row after that
+// two-byte shift, and what is left after it are register choices (the object pool in ecx against retail's edx, the result
+// in al against retail's dl, the request copy's fields in ecx and edx the other way round). The permuter (1200 s) wrote
+// nothing and its one-point form was under the keep bar. Three more forms this round: the test spelled `result != 0`,
+// the result declared before the other block locals with a separate assignment (both compile to the identical code),
+// and the request path returning the call's value directly (182, worse: the body shortens). The result held in a byte
+// instead of a bool is 186 (worse: the body shortens by nine bytes).
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1882,20 +1891,19 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
-// score 239 (was 238): The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
+// score 239 (was 238): The zero and radius have different XMM homes, and unsupported types use a separate return path.
+// The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
 // MiniMax D (11-16): no new form, no lower score (238): this round compared the two bodies side by side and the delta
 // is still the frame's slot map and the colouring of the vector block: this build keeps the two squared components at
 // +0x28/+0x2c, the normalizer's length at +0x14 and the flag byte at +0x54, where retail keeps the components at
 // +0x1c/+0x20, the length in the dead argument slot at +0x54 and the flag byte later; the products after that are
 // coloured xmm2/xmm5/xmm6/xmm7 against retail's xmm1/xmm3/xmm4/xmm6/xmm7, and the length is 1182 against retail's
 // 1173.
-// score 239 (was 238): the 0x3c frame and the direction, radius and magnitude slots agree.
+// The 0x3c frame and the direction, radius and magnitude slots agree.
 // Retail keeps the zero in XMM1, copies it to XMM0 for the unsupported type and holds radius in XMM5.
 // The build uses XMM2 and XMM7 and materializes the unsupported-type result separately.
 // Earlier default-flag form: direction at +0x28/+0x2c, radius at +0x20 and length at +0x14
 // instead of +0x1c/+0x20, +0x14 and +0x54. The direction's products also used the opposite order.
-// Earlier: no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
-// score 239 (was 238): retail keeps the direction at +0x1c/+0x20, the radius at
 // The 0x3c frame, entry argument roles and initial direction homes agree. The first
 // difference is XMM2 versus retail XMM1 for zero. The radius then occupies XMM7 versus XMM5, and the build
 // threads the type-zero center around the addition and side test that retail shares with type one.
@@ -2094,6 +2102,14 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // original score and extent. Returning the point or materializing a scaled direction lengthens the body and
 // increases the score. The native zero, radius and center-join allocation is unresolved. The opening
 // executable source is restored.
+// Tried reject the unsupported type before choosing its geometry 265, both supported types enclose the
+// geometric result 286, reject insufficient forward distance before calculating the arc 283, trace
+// rejection is assigned before the approved arc block 239, blocked trace returns the default arc
+// immediately 271, approved arc returns its signed selection directly 284, projection components also
+// supply the desired point and trace origin 284, native trace point also supplies the planar projection
+// 238.
+// NOT kept: The trace-origin point recovers retail length and gains one. It samples the height and stages
+// the planar input ahead of the retail trace.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

@@ -641,10 +641,23 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // 399; indexed count from inclusive span 413; endpoint in loop condition 395; short validator result for
 // pass 420; boolean validator result for pass 385; validator comparison for pass 420. NOT kept: all
 // forms scored above the opening body.
+// Nested accepted-direction limits 431; conditional endpoint comparison 380;
+// pass-owned cursor 453; selected endpoint limit 434; signed-step endpoint test
+// 396; signed-step loop guard 396; limit after cursor advance 418; distinct
+// forward and backward guards 382. NOT kept: the 380 form gains two and leaves
+// the selected-index homes unchanged. Original complete body restored.
 // Conditional visited-group rejection 382; nearest-point admission 415; grouped-link scan
 // 445; pass cutoff 399; point-walk admission 411; candidate-record admission 413;
 // distance before validation 417; selected output eligibility 394.
 // NOT kept: the three selected-index homes stay displaced, including in the tied group form.
+// M3 lane 6 r194 (fast with 0x29e730 and 0x29de20, both MATCH): round 64's recipe rebuilt on this body again 155 (aligned
+// 22, masked 11). Its remaining rows trace to one choice: the point parameter takes ESI at the third distance (the body
+// at 382 does the same) and the table is reloaded into ECX at the 0x29de20 call, where retail keeps the table in ESI from
+// the range test, loads the point into EDX and shuffles (`mov ecx, esi; mov esi, edx`); the arg setup, the found flag's AL
+// store (retail stores it last, from AL), local_29's EDX and the step's registers follow from it. On the recipe: the found
+// flag set first in the success block 152 (stored from AL but first, not last); the candidate sum with the first distance's
+// operands swapped 158; written `local_31 + second + first` 164; accumulated in three statements 426 (1612 B); both
+// distances' operands swapped 164.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
