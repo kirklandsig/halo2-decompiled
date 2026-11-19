@@ -1051,6 +1051,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
 // origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.
 // NOT kept: The frame and second-node home still differ, as does the classifier data reload sequence.
+// M3 lane 5 r210 (fast with the file's seven other functions; control 238, register-masked 89): the dead second root walk
+// ahead of the property get 341 (1243 B); the key read ahead of the kind-4 test 251; the key adjust as `(data - 1) * 8`
+// 238 (same code); friction and restitution declared at function scope 238 (same code); the material output declared at
+// function scope 230 (frame 0x44 as retail, first difference +0x1a: second/first homes +0x14/+0x18 for retail's
+// +0x10/+0x20; a declaration moved by score, not kept); the 1..16 pin as a non-inline static function taking its bounds
+// 238 (inlined at compile time, same code), with the material at function scope 230.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

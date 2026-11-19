@@ -900,6 +900,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // and the summary above the opening 32. Compile-only first pass (lane 5's round 175 harness): a 0-16 dead-local sweep on
 // the preset pair keeps ESI, and mask or 0x49c8 pointer locals named before the summary are propagated back (ESI), so
 // the preset pair's flip is a ranking change, not a symbol-count tie.
+// M3 lane 5 r210 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22, register-masked 2): the two buffers declared
+// at function scope 22 (same code); the NULL-preset stored pair in the state block re-measured 46 (masked 1, session ESI),
+// with a plain `for` copy 108; the plain `for` copy alone 100 (477 B: its copy loop is then retail's exactly with the
+// session in EBX; left one scratch step at the summary lea, at the player loop's mask/bit and argument temporaries and at
+// the final players lea, plus the folded mask read and the opening's second lea), with the mask read into a loop local
+// 100 (same code); a 600 s permuter run (context 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; without the callee
+// contexts its reduced image scores the body 137) 58 tries, best 22.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
