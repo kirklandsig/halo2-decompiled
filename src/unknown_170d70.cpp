@@ -1453,6 +1453,9 @@ struct s_point_pool_173520
 // before bounds 120, clipped count with classification 117, source and clip metadata before reservation
 // 120, bounds before source metadata 130, stride in loop update 96, explicit direction assignment 96.
 // NOT kept: the best forms tie and the pool publication, stride spill and x87 clamp remain.
+// score 45 in a full build with stand-in SDK headers (was 96): the four corners read result->bounds by name instead
+// of through the `bounds` reference the inflate writes through, so the inflated bounds are copied back out of memory
+// as retail does (0x173796 on).
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1523,14 +1526,14 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 						bounds.y0 -= 0.00390625f;
 						bounds.y1 += 0.00390625f;
 						point2f *corners = result->points;
-						corners[0].x = bounds.x0;
-						corners[0].y = bounds.y0;
-						corners[1].x = bounds.x1;
-						corners[1].y = bounds.y0;
-						corners[2].x = bounds.x1;
-						corners[2].y = bounds.y1;
-						corners[3].x = bounds.x0;
-						corners[3].y = bounds.y1;
+						corners[0].x = result->bounds.x0;
+						corners[0].y = result->bounds.y0;
+						corners[1].x = result->bounds.x1;
+						corners[1].y = result->bounds.y0;
+						corners[2].x = result->bounds.x1;
+						corners[2].y = result->bounds.y1;
+						corners[3].x = result->bounds.x0;
+						corners[3].y = result->bounds.y1;
 						result->count = 4;
 					}
 				}
