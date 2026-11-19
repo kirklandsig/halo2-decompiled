@@ -3,6 +3,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "vector_angles.h"
 #include <math.h>
 
 /* the structure's clusters (0xb0 bytes each), as this file reads them */
@@ -77,7 +78,7 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 #define CLUSTER_MASK_TEST(mask, index) ((mask)[(index) >> 5] & (1 << ((index) & 0x1f)))
 
 /* Starts and stops cluster effects when the active cluster masks change. */
-// score 16 (was 16): HELD (needs the owner's OK): matches with the patch build/r116/held-23aad0.patch. Frame and prefix agree;
+// score 16 (was 16): HELD (needs the owner's OK): matches with the patch build/r209/held-23aad0.patch (was build/r116/). Frame and prefix agree;
 // palette/entry register ownership differs from +0xba.
 // BLOCKED-BY 0x17e670: its body takes the effect source in edx and the point in ecx here,
 // retail passes the source in ecx and the point in edx (also at 0x17a8a0).
@@ -161,6 +162,11 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // tests as two separate ifs 79 (353 B); the palette globals pointer named ahead of the spawn loop 78 (359 B); the mask word
 // index and bit named once for the four tests 85; the direction declared first in the spawn loop's body 16 (same code).
 // Still BLOCKED-BY 0x17e670 (contributor code: its body decides the source/point register pair); held patch unchanged.
+// M3 lane 5 r209 (fast with 0x23aa70 and 0x17a8a0): kept, the direction rows through the existing direction_from_angles
+// (vector_angles.h, newly included) in place of its body written out, 16 (byte-identical code). The held patch, rebased onto
+// that as build/r209/held-23aad0.patch (0x17e670 declared (point, source, ...) at its definition, both declarations and
+// both calls; the entry declared before the tag), still gives MATCH (fast; 0x17a8a0 21, 0x17e670 421). Still BLOCKED-BY
+// 0x17e670 (contributor code).
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {
@@ -187,9 +193,7 @@ void __stdcall function_23aad0(long previous_address, long current_address, long
 						real yaw = entry->yaw * 0.02473695f;
 						real pitch = entry->pitch * 0.012368475f;
 						vector3f direction;
-						direction.i = (real)(cos(pitch) * cos(yaw));
-						direction.j = (real)(cos(pitch) * sin(yaw));
-						direction.k = (real)sin(pitch);
+						direction_from_angles(&direction, yaw, pitch);
 						function_17e670(0, &entry->position, tag_index, &direction, 1.0f, 1, NONE, 0);
 					}
 				}

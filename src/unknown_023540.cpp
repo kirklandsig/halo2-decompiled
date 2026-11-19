@@ -4018,6 +4018,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Left as before: retail copies the input to EAX and shifts it after the clear (ours shifts EBX in place before it),
 // and at both gain sites retail reloads the spilled inverse span into XMM3 before the 1.0f constant into XMM2. A
 // compile-only build of this file alone does not reproduce the shift (it lands after the clear there).
+// M3 lane 5 r207 (fast, base 9): the pinned gain product named in both gain sites (`real scaled_offset = gain * offset;`)
+// 80 (registers renamed through modes zero and one, the reloads still 1.0f first); `long const fixed` 9 (same code); the RGB
+// input word named from the shifted local 9 (same code); the exponent search as a do/while from -1 947; permuter (600 s,
+// 55 tries) best 9. Diagnostics: mode zero's pin dropped, or its span quotient dropped: the reloads after the depth-bias
+// write stay 1.0f first, so the pair order does not follow the number of 1.0f or span uses after the call.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

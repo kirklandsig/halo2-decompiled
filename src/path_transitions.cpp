@@ -474,8 +474,17 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 218 (was 218): r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// score 218 (was 218): r123, r125, r209 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
+// M3 lane 5 r209 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, aligned 70, register-masked 24). Diagnostics:
+// 8-32 dead initialised locals at the top 218-220 (the entry never moves); lane 11 r113's recipe (actor first in the
+// definition, path.cpp's declaration and call; corners a, b, c, d; case 5's position first) re-measured 283 at 1284 B,
+// aligned 42, register-masked 7: only case 1 differs, as first.j/first.k exchanging XMM3/XMM4, 1.0 and the scratch
+// exchanging XMM6/XMM7, and the margin's fresh radius load; on it 1-32 dead locals repeat with period 8
+// (283/291/279/284 x5, 279 at 1280 B only moves the origin dot's operand order, the margin never goes in place);
+// no-code reads of first.k, first.j, both, either order, or as dead locals 286-292 (masked 18-26). On the recipe:
+// the margin as `radius / first_length` 283, the fraction as a division by the first length 283, `real const
+// inverse` 283 (all the same code). On this body: case 1/6's corners as const references 218 (same code).
 // M3 lane 11 r123 (fast with 0x270d90/0x270400/0x30bf0): actor_index declared first alone 218 (same code); with corners
 // a, b, c, d 281 (1284 B, aligned 70 -> 59, register-masked 23 -> 15: entry exact). The 4 extra bytes are the margin:
 // retail multiplies the reciprocal in place by the radius in memory (`mulss xmm2, [eax]`), ours loads the radius

@@ -914,6 +914,10 @@ real function_30bf0(vector3f *vector);
 // kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
 // retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
 // the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
+// M3 lane 5 r210 (fast with 0x263740, 0x25c9d0, 0x26d370 and five neighbours; control 84, register-masked 46): both
+// seat-loop crosses through a trial copy of the textbook cross spelling (`a->j * b->k - a->k * b->j`, as several files keep
+// it locally) 84, the first cross only 84, the second only 84 (all the same code: the product operand order does not
+// follow the spelling); the seat array declared at function scope 84, beside the facing outputs 84 (same code).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2792,6 +2796,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 377 (2882 B, 99/75: retail's block order for the far-and-slow test). Left: the players table's register at the iterator
 // setup (the matched siblings' identical three statements load it into EAX) and the direction components, which retail
 // keeps in XMM1-3 from the relative dot to the facing dot.
+// M3 lane 5 r210 (fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740 and four neighbours; control 168, register-masked 41):
+// the actor lookup written out (diagnostic for the iterator head's operand order) 168 (same code); the contact iterator
+// declared first 168 (same code); best level and strongest declared after the iterator start 172; the players
+// iterator's index and datum index stored before its table 170; the players iterator declared at function scope 168
+// (same code).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

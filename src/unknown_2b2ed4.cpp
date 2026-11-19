@@ -85,7 +85,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // -0x8cc, display_name -0x6cc, suffix -0x4cc, layout -0x2cc against retail's display_name -0x8cc, title -0x6cc,
 // layout -0x4cc, suffix -0x458); writing the text arms as direct calls measures 425, moving the set_text into the
 // message block 502 and calling function_253b1a in each arm 540, so the one-call body with the text variable stands.
-// score 316 (was 316): Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// score 316 (was 316): r209 unchanged (lead below: the buffer homes follow reference counts). Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
 // Round 127 (m3 lane 10, fast): `inline` on 0x230134's definition (to change what callers assume it keeps) expands it
 // into its callers: 1211 here (2789 bytes) and nine matched callers lost, restored at once; the invitation count declared
 // after the bools 316 and the request at function scope 316 (same code each); display_name declared ahead of the child
@@ -338,6 +338,24 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // EAX and jumps to one `push eax` call, so retail keeps a text variable whose message paths bypass that call with no
 // NONE test. Diagnostic (reverted): the message arms calling set_text and jumping past an unconditional 0x253b1a
 // call 393 (2320 bytes).
+// M3 lane 5 r209 (fast with 0x230134, 0x22eeee, 0x2b0a14, 0x253b1a; control 316, aligned 49 = register-masked 49). LEAD: the
+// five buffer homes and the two child-pointer homes follow a reference ranking. Diagnostics (not keepable): two extra
+// code-emitting suffix uses (`suffix.text[1] = 0;` twice) put every buffer and both child pointers in retail's homes
+// (display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix -0x458, message -0x258), aligned 22 at 2356 B (one use: 50;
+// four: 24; six: 57); dropping the layout's value4 store does the same (aligned 23); one extra title use fixes only the
+// display_name/title pair (aligned 40); the layout clear dropped or three extra layout clears, and `(void)` reads or
+// `(void)&suffix`, change nothing (no-code uses do not count). Retail's extra suffix uses are its per-arm `lea esi,
+// [suffix]` in the value04/value08 switch arms: retail sets ESI before ECX at every suffix load, so cross-jumping keeps
+// the lea in each arm, where this build sets ECX first at suffix loads (ESI first at message loads) and merges it. Neither
+// the suffix's declaration place (after/before message, before title: 316, same code) nor the load member's parameter
+// order (`load(handle, screen)` at all 32 sites, 316, same code) changes that order. Trials: the online arm ahead of the
+// `!online` text (retail lays the 0x700024e block out just before the dispatch) 720 (2391 B: the zero register moves to
+// ESI from the entry); the closing layout locals in their own block 316 (same code); declared at the top 604; the
+// redundant layout flags clear dropped (the constructor clears it) 316 (same code); re-measured by mistake: both default
+// arms as one load with a `can_join ?` id 675 (2193 B, as round 138). Diagnostic: in the value04 == 0 arm, the suffix
+// load written before the message load gets retail's ESI-first order (and the message load keeps it), 484 (2354 B): a
+// suffix load right after a message load is the one that sets ECX first. The suffix loads as direct 0x230134 calls
+// re-measured 330 (2334 B, as round 242; the order is unchanged).
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

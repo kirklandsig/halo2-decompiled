@@ -837,6 +837,14 @@ extern point2f *g_468778;
 // actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
 // partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
 // partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
+// M3 lane 5 r210 (fast with the file's neighbours; control 375, register-masked 67): actor first 413; actor first with
+// `return !f14 && !f13 && !f2d;` in the arm and `return false;` last (B) 393; B with a `vector3f const *velocity` for the
+// magnitude call and every field_1c read 417 (1563 B); that with the planar pair copied whole 408 (1555 B); the velocity
+// pointer and the whole planar copy on the body 393 (1568 B); B with the velocity pointer and the first facing dot's k
+// and j read off the view 455 (1593 B); B with that facing read and the whole planar copy 411 (1531 B). Retail stores the
+// zero weight to arg_1's home before the 0x24590 call and reloads it after (0x1aa318, 0x1aa379), so it treats 0x24590 as
+// clobbering XMM where our link keeps the weight in XMM4: BLOCKED-BY 0x24590 (its register summary; `inline` on it
+// raised six callers in earlier rounds).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

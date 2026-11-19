@@ -360,6 +360,11 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // compiler's own helper call) 39: the link expands that loop too, with 0x215b40 matched. So the flag stands in for the
 // native helper and the one-object block; with both in place 0x215880 needs no flag and this function is free.
 // Re-measured: round 141's body under the present flags 52 (aligned 35; not kept, as round 141 says).
+// M3 lane 5 r207 (fast with 0x2157e0, 0x215880, 0x2163d0 and 0x1249f0, all MATCH; control 114): both scans storing the
+// handle and stepping the count as two statements 114; the unit step's no-controller cases as the switch's default (no
+// assumed default) 175 (580 B); the drive letter declared at the function top 114; `long const` unit count with the
+// cached scan's type test written type first 114; the unit scan's type test written type first 114 (all 114s the same
+// code). Masked, the rest is the entry cache/zero registers, the pass-latch cache reload and the packing chain.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {
