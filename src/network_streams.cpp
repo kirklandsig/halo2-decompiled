@@ -1155,6 +1155,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Qualifying cursor used for post-scan publication with an in-place or saved-word
 // update 98/82. NOT kept: single-bit type selection gives the retail cursor and
 // message pointer with a byte OR, but changes the flag read and return-value code.
+// Word flag setter on the message with saved/member/shifted/named bit tests 89/89/89/89.
+// Setter with separate unsent/pending rejection 89/89 or paired mask comparison 106.
+// Setter on saved word and assignment 35. NOT kept: the byte OR changes the entry and loop
+// allocation, and the saved word ties with the same full-word store.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

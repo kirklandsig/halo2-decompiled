@@ -1799,6 +1799,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: the 154 form restores the definition slot and preloads the walking settings as retail does,
 // but it uses one-use settings and rate locals without a byte match. Separate assignments to speed_scale
 // regress. The original body was restored.
+// Speed and material defaults after biped/tag lookup or before biped lookup 177/177/181.
+// Split across tag lookup in either order 177/177. Both after component lookup 176.
+// Split between component lookup and airborne test in either order 176/176.
+// NOT kept: no recovery of the native unity schedule or definition/material/point homes.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4517,7 +4521,6 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // score 336 (was 356): The 0x12c frame agrees. The origin and body matrix start at 0x44 and 0x60 here, and at 0x40 and 0x50 in retail. The travel test and later pivot homes still differ.
 // Earlier score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // MiniMax B (11-18): no new form, no lower score (336): the frame 0x12c and retail's 1937-byte length still agree, but the matrix home (0x60 against retail's 0x50), the origin (0x44/0x48/0x4c against 0x40/0x44/0x48) and the pivot select's register pair (EAX/ESI against ECX/EDI) are still ours; no new spelling of the homes was found this run.
-// score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
@@ -4849,6 +4852,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // after body matrix query 339; target copy initialized at travel test 336. NOT kept: one complete query
 // record grows the frame to 0x148, and two grow it to 0x164. Setter returns and initializer changes tie
 // or regress. The original body was restored.
+// Shared travel limit before component lookup, after component lookup or after origin pointer
+// 446/446/446, after origin copy 414, after matrix query 392, inside accepted placement 403.
+// Const limit inside accepted placement 403. Shared local initialized separately on each path 336.
+// NOT kept: common evaluation grows the frame to 0x130. Separate evaluations tie with unchanged matrix/origin homes.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

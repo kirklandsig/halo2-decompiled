@@ -2016,6 +2016,11 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Sweep/projection snapshot 406. Shared sweep address 325. View-axis memcpy 325.
 // Sign-extended cluster after the change check 295 (kept). Separate count-load guard 295.
 // The state still uses EBP and the collision point still uses EBX.
+// Horizontal position after both view copies, after all derivatives or between derivative y and z 440/410/440.
+// X and Z before view copies, Y after both 295. Vertical offset ahead of both horizontal sums 439.
+// X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
+// Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
+// The collision point still occupies EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

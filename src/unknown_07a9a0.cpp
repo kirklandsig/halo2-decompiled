@@ -1569,6 +1569,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 948; entry-sized library copy 936; paired ID cursors 968; ID snapshot 963; ID copy after
 // counter clears 950; workspace scoped through party counts 959. NOT kept: every form moves
 // the body farther from retail's 2828 bytes and scores higher. The opening lookup still expands.
+// Machine ID dwords split around group clears, after identity, or between the clears
+// 867/929/867/867. Whole-ID block copy before group statistics 978. Separate ID loop before
+// group statistics or before histogram 914/914. Split store with dword histogram 933.
+// NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
+// The opening variant lookup still expands and the frame still differs.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
