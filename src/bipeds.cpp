@@ -593,6 +593,11 @@ void function_e5930(long unit_index);
 // 121 (0xe5930 23), an explicit case 0 124 (27), the biped named at entry 110 (35). No spelling of its body keeps it out of line. Still BLOCKED-BY 0xe5930.
 // MiniMax R (11-11): no new form tried this round, no lower score (118): the body matches retail's first 0x10a bytes and is 70 bytes longer overall, the extra bytes all coming from the reset helper expanding at this call site.
 // MiniMax R (11-17): no new form, no lower score (118): the definition's flags read folds to a byte test where retail loads the dword and shifts it, retail's flag update is the memory form (or byte ptr [edi+0x348], 8) where this build does it in a register, and the reset dispatch expands here, making the body 413 bytes against retail's 343: BLOCKED-BY 0xe5930.
+// Shared byte setter with shifted/field-bit/mask/bit-vector source 121 each.
+// Shared word setter with bit-vector source 113. Bit-vector test in the original
+// byte branches 121. Explicit void return with byte setter/original branch 121/118.
+// Existing three-field reset helper 162. NOT kept: word setter gains five and the
+// reset dispatch still expands in every form.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -838,6 +843,11 @@ struct s_biped_flags_10a_view
 // epilogue of its own; the forms tried (the state pointer as a local, the early exit as one return, the parent's
 // field read directly) all score 222 or worse.
 // MiniMax R (11-17): no new form, no lower score (222): the stack slots sit four bytes off from the first difference (this build keeps the value at [esp+0x20] where retail has [esp+0x24]) and the body is 15 bytes shorter than retail's 1121.
+// Typed animation-state field at the read, direct/pointer 222/222. At unparented
+// entry, mutable/readonly 230/230. After the parent query, mutable/readonly
+// 322/322. Before the parent query 318. Early signed relative offset 279.
+// NOT kept: early pointers push EBX before the component guard. The signed
+// offset restores the pool-offset slot but spills the offset alone at +0x20.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -5554,7 +5564,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax S (11-15): no new form, no lower score (79): the first difference is still inside the shared rotation helper, whose body lives in src/unknown_1eb8a0.cpp and is not this lane's file, and the operand orders the earlier rounds measured still sit at or above the body, so the body stands.
 // MiniMax E (11-16): no new form, no lower score (79): the first rotation and the staged cross product load their operands in another order (retail copies the axis first).
 // MiniMax C (11-17): no new form, no lower score (79, was 79): the frame agrees (0x24) and the first difference is still at +0x107, inside the shared rotation helper (rotate_direction), whose own file this lane may not edit; retail keeps the first product in xmm1 alive across the block where this build spills it to [esp+0x10] and reloads it later, and the body is seven bytes longer than retail's.
-// score 79 (was 79): The first expanded rotation spills its cosine complement early, and the final cross reloads forward j.
+// Earlier score 79 (was 79): The first expanded rotation spills its cosine complement early, and the final cross reloads forward j.
 // Earlier: first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
 // MiniMax G (11-13): no new form, no lower score (79): the diff re-read this round finds the same first difference, inside the shared rotation helper whose own file this lane may not edit, and the operand orders listed above still measure at or above the body, so the body stands.
@@ -5861,6 +5871,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // NOT kept: every form regresses and no rotation operand is recovered.
 // Round 418: Default forward/up/both through memcpy 79/79/79, through the shared vector setter 87/83/94, both
 // full copies with a nonzero-length return 79/94. The first rotation and final cross stay unchanged.
+// Scalar workspace names in angle/sine/cosine, cosine/angle/sine, cosine/sine/angle,
+// sine/angle/cosine and sine/cosine/angle order: 79 each. Axis/rotated-up/side,
+// side/axis/rotated-up and rotated-up/axis/side names: 79 each. NOT kept: all ties.
+// The first cosine-complement spill and the final cross memory operands stay in place.
+// Rotated-up/side/axis lexical order: 79.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

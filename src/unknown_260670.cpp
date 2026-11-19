@@ -220,6 +220,10 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // scale products one instruction short). In the frame-0x8a0 forms the lockstep count is lost at two places: the unknown40
 // loop's `inv * i` product is one byte short of retail's `i * inv`, which turns the main loop's pad `jmp; lea ecx` into
 // one `lea ebx`, and the random path keeps its own epilogue where retail has `je exit; jmp shared test`.
+// Finite-distance OR/logical OR/conditional accumulation 585/610/440. Range OR
+// after/before invalidation 576/581. Both OR 556, logical finite with range OR 558,
+// logical range 791. NOT kept: smallest frame 0x8a4 still exceeds retail's 0x8a0
+// and every smaller-frame form raises the score. The call boundaries still differ.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
