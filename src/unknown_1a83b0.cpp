@@ -660,6 +660,13 @@ s_1a8a10 g_4453c0[] =
 // four facing reads in place 91. Re-measured: the copy's j after the left sum with retail's term orders and the identifier,
 // index, score order 15 (the j reload appears, but the copy's j load then waits for the left sum and the left product
 // multiplies a copy of i: retail multiplies i in place and copies it for the forward product).
+// M3 lane 10 r124 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH each time; control 17): the four products
+// named where they are computed (both sums from them) in the orders forward-x, forward-y, left-x, left-y / left-x, left-y,
+// forward-x, forward-y / forward-x, forward-y, left-y, left-x / forward-y, forward-x, left-x, left-y 17 each (same code: the
+// IL order is not the source's); the facing copied whole as a 3D vector 142 (564 bytes), that with the forward sum's terms
+// swapped 142. Diagnostic (an invented layout, not keepable): the rotated point as the first two reals of a six-real value
+// array (so its stores go to an address-taken local) 99 (frame 0x28; j is still loaded once, so the y store's aliasing is
+// not what reloads j in retail).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

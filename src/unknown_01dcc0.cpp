@@ -376,6 +376,17 @@ long g_55e6c0;
 // from the stored field 106 (495 bytes: a real load). On the in-place clamp with the header pointer: the height term first
 // 28; `count >= 0 ? (count > 4 ? 4 : count) : 0` 31; the clamp as three field stores 139 (495). The header word through
 // a cast of the header array to the platform's resource type 38/41 (same code as the leads).
+// M3 lane 10 r124 (fast with 0x1dc40/0x1db10/0x1d6f0/0x1d770/0x1db90/0x1de20; all on r122's lead: the signed pitch/packed
+// packing, the clamp in a `long levels` local stored after the packing, `long *header` for the header word and the register
+// call, re-measured 29 at 484 bytes, only the top block's height/count swap left): the packing through a forceinline helper
+// with dword parameters (0x1ddd0's types) 29; the select through the packed local (`packed = linear ? packed : 0;`, 0x1ddd0's
+// idiom) 29, that select ahead of the levels store 29; the packed local renamed 29 (all four the same code); the data pointer
+// stored first 31; the height stored after the data pointer 30, after the +0x8c clear 31; the offset declared after the
+// dimension stores 31; the kind stored after the width 31; the select from the stored flag field 146 (495 bytes), the
+// call's linear argument from it 163, both 143; the call's dimensions from the stored fields 169 (503 bytes, 0x1db10,
+// 0x1dc40 and 0x1d770 change too). A 1200 s permuter run on that lead (118 tries) found none below it.
+// Also on that lead: a trivial forceinline identity accessor for the height store, the kind store, the width store,
+// the data store or the offset's zero 29 each (same code: no scratch-rotation shift).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

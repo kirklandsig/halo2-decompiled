@@ -513,6 +513,12 @@ static inline real interpolate_linear(real a, real b, real t)
 // the same way 228 (670 bytes); a redundant `if (time >= next_time)` guard around the loop 1 (same code); the join test
 // through a `bool const &` bound to restart 1 (same code); the flags local as a `word const &` bound to the field 1 (same
 // code). Screen: all five keep the skip, as do the frame declared after the per-pass reset and the guard as `next_time <= time`.
+// M3 lane 10 r124 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
+// the high boundary as a separate `if` (not `else if`) 66 (658 bytes: the in-range miss then lands on the restart test, but
+// the low block falls into a second frame-count compare where retail jumps to the join); that with the flags read from the
+// field (no flags local) 208; the next index kept in its own `step` local with both boundaries testing it as separate
+// `if`s 160 (659 bytes, same second compare); the switches' common `frame = valuea` written once ahead of the low
+// block's switch 86 (659 bytes), ahead of both switches 219 (650 bytes). Screen: `else if` on the step local keeps the skip.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

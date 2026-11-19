@@ -1281,6 +1281,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // `&current->players[i].user_id` 40; `[count++]` with a player pointer named at the top of the loop body (before the
 // mask test) 40; the indexed copy with that player pointer 195; `long count = 0;` declared between `current` and
 // `joining` 11; the flag parameter read once through its address 9 (same code).
+// M3 lane 10 r124 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): all with the destination declared in the branch
+// (re-measured 195: the state in EBX for the whole function, `current` in ESI at the top and its spill slot above
+// `joining`'s, the count spilled): the tail's live test and mode call through `state->owner->session_a` 168 (725 B); the
+// call's session read through the owner instead of `joining` 210 (715 B); the session close after the identity clear
+// 201; no `current` local before the tail (the branch reading the session through the owner) 213; `current` declared
+// in the branch and again for the tail 213.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
