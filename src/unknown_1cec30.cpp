@@ -2522,6 +2522,31 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
+// with match-only forms, detail first, older rounds below. The velocity's fields are ranked by how the code first
+// reaches them (0x1d3fc0's note): a field named in this body is "old" (scaled as `inverse * [x]`, reloaded on the short
+// path), one reached only through inline helpers is "young" (loaded beside its x87 square, scaled in place). Retail has
+// i old and j, k young, and `speed` younger than i but older than j, k; the loop sum and the final `set` here name all
+// three. Forms (fast): the loop sum through vector3f_add(&velocity, &local_c7c2ff, &velocity) alone 139 (dot order i, j,
+// k); that with the result as vector3f_scale(&velocity, speed, &velocity) and havok_from_vector3d(result, &velocity) 128
+// at 1454 B (the velocity block is retail's but for speed*i); the speed expression passed straight to vector3f_scale (no
+// speed local) 252 at 1403 B (velocity block byte-exact; result goes to EBX and the two flag arms share one setter
+// body), with the setter building its word first 243; that with `hkVector4 *result` declared after the scale 385 at
+// 1438 B (the first contact loop's normal sums flip their operand sides), with the word-first setter 385. On the last:
+// one unused local (any name, 1 to 7 of them; diagnostic) 38 at 1454 B and with the word-first setter 13; a named weight
+// (`real weight = flag ? 1.0f : 2.5f;`) or the scale into a separate `scaled` vector in place of the unused local 13
+// each (both match-only); the flag as a bool local used by the scale and the tail test 106 (first difference +0x457,
+// the tail then tests the cached flag where retail reads the field again); a material local 116; an entity local 171
+// (1401 B); on the weight form the tail's flag test without the bool cast 103, as `!= 0` 103, both tests without the
+// cast 117. The permuter on the weight form (one run, stopped after its first ten minutes) found the sample's speed
+// summed as `speed_sum = speed_sum + component_surface_length(...)` for `+=`: 5, the unrolled-copy difference below
+// gone. Left at 13: in the second contact loop's second unrolled copy retail loads the contact's i and multiplies by
+// normal.i (ours copies normal.i and multiplies from memory; the compile-only build gives retail's form, the LTCG build
+// ours; only the cached-flag tail changed it), and retail computes and stores speed*i before the j and k products where
+// ours does it after the zero for w (the 5 left on the permuter's form). Not moved by: local renames, dead-local
+// counts, product order in the scale, any helper shape writing the result, normalize_inline, the normal block's
+// length+scale form, the result's position, the tail's arm order, the speed expression's spelling, the loops' counter
+// spellings, other_contacts' increment, the scheduler target flag (compile-only diagnostic).
 // MiniMax B (11-18): no new form, no lower score (91): the whole remaining difference is the surface length's
 // normalisation, where retail reloads the normal's j and k into xmm2/xmm3 around the x87 length chain and scales
 // them in registers, where this build folds the loads into the scaling multiplies and uses xmm1 for i*scale; the
@@ -2578,7 +2603,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // retail keeps it in xmm4, and the material loop's call to 0x181db0 takes its arguments in ecx and edx where retail
 // passes them in eax and ebx: BLOCKED-BY include/normalize3d.h and src/unknown_181e90.cpp, which this lane may not
 // edit.
-// score 91 (was 91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
+// Earlier (91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
 // aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all

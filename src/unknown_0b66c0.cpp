@@ -519,6 +519,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // aggregate in 0xb61d0's shape (`string = bytes`, `start += (long)string` after the clamp, both calls through the cast) 48
 // (93 bytes) [82]; a trivial forceinline identity around start or count in the sign test, or around the length in the
 // compare 21/21/21 [match] (all fold away: no rotation step).
+// Round 187 (m3 lane 8, fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the natural body with the
+// sum named where it is computed (`long end = start + count;`) 28 [6]; the clamped size in a `size` local with the early
+// source 28 [39]; the sign tests as nested ifs 21 [match] (same code); the source named before the length 37 [84]; the
+// scan on a `text` copy of the string with the source at the call 28 [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

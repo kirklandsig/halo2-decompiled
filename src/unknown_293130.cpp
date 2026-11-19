@@ -56,6 +56,14 @@ struct s_293134
 	byte field_b8[0xc];
 };
 
+struct s_295600_state
+{
+	short duration;
+	short elapsed;
+	vector3f current;
+	vector3f previous;
+};
+
 struct s_293135
 {
 	long field_0;
@@ -68,10 +76,7 @@ struct s_293135
 	short field_10;
 	short field_12;
 	long field_14;
-	short field_18;
-	short field_1a;
-	byte field_1c[0xc];
-	point3f field_28;
+	s_295600_state field_18;
 };
 
 struct s_effect_owner;
@@ -88,7 +93,8 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 	real vector_i = arg_2->i;
 	real vector_j = arg_2->j;
 	real vector_k = arg_2->k;
-	real local_2 = dot3f(arg_1, arg_2) * (1.0f - local_1);
+	real one_minus_cosine = 1.0f - local_1;
+	real local_2 = dot3f(arg_1, arg_2) * one_minus_cosine;
 	real local_3 = arg_1->k * vector_j - vector_k * arg_1->j;
 	real local_4 = vector_k * arg_1->i - arg_1->k * vector_i;
 	real local_5 = vector_i * arg_1->j - arg_1->i * vector_j;
@@ -109,310 +115,15 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 	arg_2->k = projected_term_k - cross_term_k;
 }
 
-// score 30 (was 30): frame 0xd4, length and range adds agree; the rotation's dot sums the j and k
-// products before i (retail i and k, then j) with v.j/v.k in each other's registers, and the +0x18
-// sentinel store with the argument reload is scheduled early.
-// Round 96: shared in-place cosine scaling 144; a shared-scale projection vector 168; separate const
-// input/output helper parameters 30 (identical); one flock-index local for lookup and linking 57;
-// the member vector copied with the library 60 or the existing point setter 101; the rotation input
-// through the existing vector setter 146; split input/output parameters swapped 30 (identical).
-// Original helper, copies and argument reads restored.
-// Earlier at 43: frame 0xd4, length and all range adds agree; rotation dot/register ranks and final sentinel scheduling remain.
-// This round's sentinel store orders (the +0x18 word before the bytes, after the
-// +0x1a word, the bytes swapped, the bytes written as numbers, the words cast to short) all compile
-// to the same 43, so the store order is the compiler's scheduling, not the source's.
-// This round ran the source permuter over the body; the rotation's xmm ranking
-// (retail's xmm1..xmm5 cycle against ours) and the final sentinel store order still differ.
-// Permuter round at 43 (from 43): the source permuter over the body; the rotation's xmm ranking
-// Earlier at 43 (from 43): frame 0xd4, length and all range adds agree; rotation dot/register ranks and final sentinel scheduling remain.
-// Earlier: y/z range-add order, rotation registers and final sentinel
-// three causes remain. The y/z point draws add the point component before the range
-// start (x is right); the rotation's xmm registers are retail's shifted by one (xmm1..xmm5 cycle) with
-// two products scheduled the other way; the arg_0 reload for 0x2936b0 and the +0x18 NONE store are
-// hoisted above the +0xc..+0x10 stores. Frame, result, conversion and sine homes agree. Kept (round
-// 253): separate total and threshold, 68 -> 52. Tried: random_index for both index draws 68 (identical
-// code); function_x82e52f for the weighted fraction 84; both 143; function_259d0 for the four range
-// draws 140, with random_index 137; all three helpers 78 (adds as retail, the rotation then ranks j
-// where retail ranks i); on that: dot3f(vector, axis) 78, the rotated vector in a local copy 193, the
-// angle passed straight 87, the angle read after the copy 87, cosine before sine 84; angle passed
-// straight 79 (80 on its own; function_x82e52f alone 145); fraction without its local 125; (1 - cos)
-// first 68; count inline 68; dot operands swapped 68; named 1 - cos 68; named dot 126; the z flag
-// inlined 325; the handler pointer through an if 111; the slot pointer as a sum 68; descriptive helper
-// names 68; result renamed 68; result declared first 69; result before the workspace 69; workspace
-// after the lookups 68; weight sum before the cumulative sum 70; cumulative sum only in the weighted
-// branch 361; one loop index for the three loops 273; result set on both validity paths 123; a
-// transient creation handle with range result, trig input and shared cross 357-364; coherent
-// selected-radius inputs 229-294. On the total/threshold form: word draw/long choice/both 470/248/463,
-// cumulative-scope counterparts 361/470/301/463; function_259d0 for the four draws 113, all shared
-// random helpers 53 (draws as retail, dot then j, k, i; with the rotation parameters reordered or
-// taking sine/cosine 53); function_259d0 for the three point draws 65; the rotation helper taking sine
-// and cosine 130, with them named before the call 123 (dot i, j, k); the point component first in the
-// sums 52; the rotation helper as plain static inline 52; its parameters as (vector, axis, angle) 52.
-// Diagnostic only: the range helper's result cast to real 48 (draws as retail, rotation unchanged).
-// y/z range-add order, rotation registers and final sentinel
-// scheduling differ. Result, conversion and sine stack homes now agree.
-// retail packs the random-to-float temp at frame +8 and the
-// result at +0xc (the sine shares +0 with the first sum); ours swaps those two
-// slots. Ours also adds the field before the range start in the three point
-// draws, colours the rotation's xmm registers differently and stores +0x18
-// ahead of the +0xc..+0x10 stores.
-// Tried: random_index for both index draws 68 (identical code); function_x82e52f
-// for the weighted fraction 84; both 143; function_259d0 for the four range
-// draws 140, with random_index 137; all three helpers 78 (adds as retail, the
-// rotation then ranks j where retail ranks i); on that: dot3f(vector, axis) 78,
-// the rotated vector in a local copy 193, the angle passed straight 87, the
-// angle read after the copy 87, cosine before sine 84.
-// four causes. Frame: retail packs the random-to-float temp at +8 and the
-// result, conversion and sine stack homes differ; rotation
-// registers also differ.
-// Transient creation handle with range result, trig input and shared cross boundaries:
-// 361/358/360/357/360/357/359/364. Result, conversion and sine homes plus rotation registers
-// remain.
-// The shared random helpers (function_259d0 for the four draws, function_x82e52f for the
-// fraction, random_index for both index draws) 68 at 1409 bytes: the three draw sums then
-// add as retail, but the rotation's dot turns j,i,k (retail i,k,j). On that form: angle
-// passed straight 79; fraction without its local 125 (dot as retail, fraction product
-// reassociated); (1 - cos) first 68; count inline 68; dot operands swapped 68; named
-// 1 - cos 68; named dot 126; the z flag inlined 325; the handler pointer through an if 111;
-// the slot pointer as a sum 68; descriptive helper names 68 (also on the old form, 68).
-// result at +0xc (the sine temp shares +0 with the first sum), ours the result at +8 (sharing it
-// with the sine temp) and the random temp at +0xc. Ours reassociates `range draw + base` (adds
-// the base first); the rotation's xmm colouring differs; the scheduler hoists the 0x18 NONE store.
-// Round 75: the existing random-range function (0x259d0) for the four draws 140 (fixes the three
-// fadd orders, reorders the rotation); result renamed object_index/result/zz_index/aa_index 68 each
-// (slot unchanged); result declared first 69; existing random real for the fraction 145; angle
-// field passed straight to the rotation 80.
-// Round 253: Separate total/threshold 52; with word draw/long choice/both 470/248/463;
-// cumulative-scope counterparts 361/470/301/463. On the recovered graph, shared range/all random
-// helpers 113/53. Keep ordinary-confirmed total/threshold split only: 68 to 52 at retail length,
-// scalar homes agree; remaining y/z adds, rotation ranks and sentinel scheduling.
-// Round 289: Coherent selected radius, radius/negative, two reused bounds, complete selected row; each with shared double trig input:
-// [247, 243, 242, 294, 250, 229, 229, 285]. All executable source and temporary types restored.
-// Round 186: Native member lookup and shared random APIs, with normalized raw-draw arithmetic at the
-// fraction producer; cosine/axis/cross products and the cosine-plus-axis sum named in all three rotation
-// rows: 43 from 52 at 1405 bytes. Shared/staged cross 55/55; named range return 65, with cross 71/71;
-// shared random/cross 69/69; full outputs 157. Native member getter via handler/header 57/57, byte flag 57;
-// with shared random 48. Complete-row parts 123/117/53/111/71/60/60/43; double trig/commuted dot/both/byte
-// flag 60/43/60/43. Fraction raw-draw/seed-step normalization 43/43; original raw draw without cast 60;
-// direct real-fraction operand 62. The direct fraction-call copy at 43 was dropped. Arithmetic grouping,
-// draw order and game-call tuples stay fixed.
-// Round 191: native sentinel/zero/both chains 47/44/48; complete helper axis/source/both
-// input captures 211/186/242; axis with sentinel chain 211; both with all chains 242.
-// All restored; rotation input/register ranking and final sentinel scheduling remain.
-// Round 82: projection factor first 43; projection declared before trig 43; angle declared before draws 43;
-// output-returning rotation 43; cosine first 55; output/axis/angle parameters 43; i projected sum axis-first 43;
-// named dot and cosine complement 60 (1409 bytes). All restored; the dot order and sentinel schedule remain.
-// Round 127 (lane 4): the dot written grouped j + (i + k) 42 (it then sums i, k, then j as retail, but
-// ours makes the k product the accumulator where retail makes the i product); on it: inner pair as
-// (k + i) or the products' operands swapped 42 (same code); the rows without named terms 42 (same
-// code); sine/cosine named in the caller and passed in 42; constant-first or named (1 - cos) 42/42;
-// point component first in the x draw 42; cross terms before the dot 63; a named radius for the
-// three point draws 254; the angle passed straight 54; the threshold drawn through function_x82e52f
-// 61. Groupings i + (j + k) 53 and k + (i + j) 114; on the flat dot: cross terms first 66, the helper
-// taking sine and cosine 55 (cosine evaluated first), the parameter read through its address for
-// 0x2936b0 43 (same code). Diagnostics only: extra no-op products cycle the flat dot through four
-// states with period 4 (43/60/53/111), none with i in the first pair; on the grouped dot one extra
-// product before the dot gives retail's i accumulator (59, with the extra code).
-// Round 47: dot written in 0x2922b0's i, k, j term order (vector-first/axis-first) 60/60 (1409
-// bytes; still k, j, i); +0x18 sentinel stored after +0x1a 43; the four flag/zero stores before
-// the NONE stores 43; the angle read after the vector copy 54; PRIVATE helper 43 (same code);
-// permuter 49 tries, best 43.
-// Round 31 (lane 10): the only structural rotation difference is the dot's sum order (retail
-// (a.i*v.i + a.k*v.k) + v.j*a.j, ours (a.k*v.k + a.j*v.j) + a.i*v.i); the xmm numbering follows from
-// it. Every dot spelling (12 term/operand orders, both dot3f orders, (1 - cos) first) and all 120
-// sine/cosine/projection/cross statement orders keep it (one-file LTCG harness and compile-only both
-// reproduce our block). It is a whole-function effect: compile-only, deleting the y and z draws,
-// the selection loops or the tail flips it (x draw alone gives retail's order), while declaration
-// orders, in-for indices, ++/+= forms, if/ternary/continue rewrites and draw spellings (point first,
-// named radius, copy then +=, inverted or ternary z) do not. Real trials: 0x194a10's helper body with
-// the copy between sine and cosine 53 (1409 bytes); v.i and v.j named in the helper 30 (only two of
-// three components: not keepable); all three named 43; a.i and v.j named 87; a.i and a.k named 149
-// (both give retail's dot order but keep a.i in a register); cross-file rotation helpers
-// (0x170d70's, rotate_direction, biped_rotate_about, 0x26db50's) keep our order (harness).
-// Compile-only, 300 random sets of 28 code-identical respellings (++/+=, a + i, != 0, -1 for NONE,
-// reversed compares, chained stores, g[0]) and seven tail forms (init order, random count inline,
-// else first) all keep it.
-// Round 10 (m3 lane 2): register-masked aligned difference 8: the dot's (i + k) + j schedule and
-// the +0x18 sentinel store with the argument reload, which ours schedules right after the last
-// NONE store where retail keeps source order. Member vector copied before the sentinels 91; the
-// true flag stored before the two false ones 42 (the +0x18 store then lands after the two false
-// ones, still ahead of the rest); the two false flags as one chained assignment 43; grouped dot
-// with the vector copied first 90; grouped dot with the true flag first 41 (masked difference 5).
-// Round 33 (lane 10): the rotated vector's three components named once in the helper (vector_i/j/k,
-// used by the cross and cosine terms; dot3f unchanged) 30 (kept) in the orders i,j,k / j,i,k /
-// j,k,i, 111 with k named before j (i,k,j / k,i,j / k,j,i). On the 30 form: dot3f(vector, axis) 30;
-// (1 - cos) first 30; the names declared before the sine 30, after the dot 111; cosine before
-// sine 50; the axis components named too 169 (1424 bytes). Caveat for review: the helper overwrites
-// the vector row by row, so the names snapshot its input, but dot3f still reads the same fields
-// through the pointer (writing dot3f out by hand is not allowed; a whole-vector copy scored 193).
-// Round 108 (lane 6): the helper's shape is the classic rotate-about-axis (dot(axis, vector) times
-// 1 - cos, the same three cross terms, rows cos*v + k*axis - sin*cross), so only colouring is left.
-// The cross terms before the dot 66 (dot then sums j, k, i); the dot grouped (i + k) + j 42 (retail's
-// sum order, but ours makes the k product the accumulator: v.k in XMM4 where retail has XMM1); on
-// it: the rows as one expression each 42 (same code), the helper returning the vector 42, a vector
-// pointer local in the caller for the copy and the call 118, (vector, axis, sine, cosine) parameters
-// with sine and cosine named in the caller 42, the grouped dot named before the product 42.
-// Lane 16 r50 (fast): the +0x18 NONE store written after the +0x14 one 30 (same code); the member
-// mask read once into a short for the gate and the three selection loops 406 (1368 B); the two
-// creation-record stores swapped 32; `random_fraction * total_weight` 30 (same code); the angle
-// passed straight after the vector copy 41. Permuter skipped (full-image build over 15 minutes).
-// Round 33 (m3 lane 11), fast: the rotation rows written k, j, i 52 and j, i, k 54; the cross
-// components computed 5, 4, 3 41 and 4, 5, 3 30 (same code); the cross components written inside
-// the rows (no local_3/4/5) 92 (1407 bytes). All restored.
-// Round 7 (m3 lane 18, fast, on the 30 form): the dot's first pair follows the vector names' order
-// (j before k: k, j; k before j: j, k) but the i product stays last in every naming order. cross3f(vector,
-// axis) for the three cross terms 67 (1409 bytes); rows written j, k, i 52; the dot named before the
-// projection factor 113; the angle field passed straight 41; memcpy for the vector copy 30 (same
-// code). Diagnostic only: the copy written field by field j, k, i 133 (SSE copies; the dot then sums
-// i first, i, j, k).
-// Round 69 (m3 lane 9, fast): the existing rotate_direction with sine and cosine from the caller 60
-// (1409 bytes; fast with 0x1ecf50); the existing rotate_vector_170d70 65 (1409 bytes); the two zero
-// word stores as one chained assignment with +0x18 after +0x14 31; the rotation rows as one expression
-// each 30 (same code); that with (1 - cos) first 30. Diagnostics only: one/two/three dead products after
-// the vector copy 30/57/57 and at entry 30/57/57, only the i and k components named 53; none of them
-// gives retail's (i + k) + j dot.
-// Round 51 (m3 lane 14, fast, on the 30 form): the axis components named once instead of the vector's
-// 181 (1431 bytes); the projection as `dot` then `*= 1 - cos` 30 (same code); the cross terms with the
-// vector operands first 30 (same code); `field_18 = NONE` then `field_10 = field_1a = 0` 31; the axis
-// pointer in a caller local before the vector copy 62. Retail's dot loads a.i, a.k and v.k first and
-// v.j last; ours loads v.j right after its copy store and the dot's a.i last.
-// Round 162 (lane 4, fast; aligned counts in brackets, the 30 form is [28]): a pointer to the +0x18/+0x1a pair stops
-// the +0x18 store hoisting past the flag stores (tail as retail) but flips every a.j product to load-first, 54 at
-// 1409 bytes [41]; with the second selection loop's counter shared with the first 24 [24]. LEAD, not kept: the pointer
-// and its two-short struct (same code) only steer the schedule. The shared counter alone 60 [45], local_17 shared 56 [49], with the pointer 113 [42],
-// all three loops sharing one 272 [70], with the pointer 276 [65]. On the old base: accumulated dot (i, k, j
-// statements) 65 [52], first pair grouped 55 [53]; unnamed vector reads 43 [48], with the accumulated dot 44 [25] at
-// 1409 bytes (retail's sum order and accumulator, a.j's products load-first), first pair grouped 42 [50], one grouped
-// expression 60 [45]; cross terms before the accumulated dot, unnamed 49 [55] or 71 [63], named 77 [61]; named
-// subsets i, j, k 60 [45], j,k 56 [49], k,j 53 [35]; tail orders by offset 30, last 18 33, flags first 30, e,c,d 29 [32],
-// 10 first 30 [30], 1a before 18 30, pair first 35, 14 before 12 32, 4 before 0 32, copy first 78, 18/1a after the copy
-// 80; a pointer to the three flags 57 [43]. With the pointer alone: one-expression rows 54, fraction inline 54, weight
-// inline 396, count inline 54, angle inline 65, unnamed rows 47 [31], grouped dot 52 [40], unnamed 118 [47].
-// On the 24 base: grouped dot 49 [49], unnamed 36 [46]; dot3f(vector, axis) 24; accumulated dot 59 [48], unnamed 38 [21]
-// at 1409 bytes, first pair grouped 49 [49]; unnamed reads 37 [44]; one-expression rows 24; named subsets j,k 50 [45],
-// k,j 47 [31], i,j 50 [45]; name orders j,i,k and j,k,i 24, k,i,j, k,j,i and i,k,j 111 [55]; cosine first 44 [29];
-// names after the sine or before it 24.
-// Round 144: the direction copy before the coordinate draws 112; read-only selected-entry, angle and vector snapshots
-// 30 each; vector-input, axis and output union array views 30 each; unsigned field_18 38 (1407 B). All original
-// declarations, input views, store order and complete helper/body restored.
-// Round 150 (m3 lane 6, fast): a scripted search of 90 combinations: dot3f either way, grouped j + (i + k), i, k, j in one
-// expression or accumulated, each with and without the vector names (i,j,k / j,i,k / j,k,i or none), cross terms first, one-
-// expression rows, cosine first, the angle read after the copy, the tail as written, a +0x18 pair pointer, a flags pointer,
-// the true flag first or the +0x18 pair first, loop counters shared. Best 29 (true flag first, one point, not kept), then 30;
-// the shared counters, the pair pointer and the accumulated dots range 40-120. A one-file harness with 0x259d0, 0xb7930,
-// 0x2936b0 and the ballast is not exact (508, 1268 bytes). Original body restored.
-// Round 139 (m3 lane 8, fast): sinf/cosf in the helper 60 (1409 bytes); the helper taking the axis and the
-// vector as references 30 (same code); the z flag read before the member pointer 315; the angle read right
-// after the member pointer 278 (1420 bytes); the random count passed straight instead of through its one-use
-// local 30 (same code, kept).
-// Round 99 (m3 lane 12, fast): the creation record declared where it is first used 35; the tag flag read after the
-// record setup call 282; the two record stores after the range draw 63; the member arms inverted (no member first) 77;
-// the two accumulators declared in the other order 32. Diagnostic: the 0xb7b40 stub letting the record escape (our stub
-// ignores it, retail's body uses it) 30, identical listing, so the record's escape does not order the rotation.
-// Round 140 (m3 lane 7, fast unless noted): new: the z flag as `(flags & 0x10) == 0` 30 (same code); the helper
-// taking the input vector by value (copied from the global at the call) with a separate output 88 (1408 bytes);
-// the three negated radii as `0.0f - radius` 30 (same code); the existing cross-file record_rotate_vector
-// (0x26d570's file) with sine and cosine from the caller 78 (plain, 1407 bytes); the selected entry indexed at
-// every use instead of its pointer local 412 (1459 bytes). Re-measured (listed): the z draw as a ternary 30 and
-// the z arms inverted 56 (round 31's compile-only screen); a vector pointer local for the copy and the call 60
-// (round 108's form, 118 then). Diagnostic: +0x1a stored from the +0x10 field just written 113 (not a source form).
-// Round 91 (m3 lane 11, fast): explicit parentheses are honoured by VC (they gave 0x297d30 its retail score and dot
-// order), but every grouping of this dot is listed above. Forms outside the rotation, as rank perturbations: the count
-// increment before the weight add 35; the +0xb6 record store before +0xb4 32; the set-entry count as long 290; the
-// block count held in a local for the gate and the three loops 405 (1386 bytes). Same code: the position counter
-// declared before the drawn index, the z flag through a named tag-flags dword, the helper as plain inline
-// (re-measure, listed at 52 on an older base).
-// Round 111 (m3 lane 16, fast; control 30): the three entry tests as nested ifs 30; `local_15 != NULL` 30; the weighted test as
-// `selection_weight <= local_5` 30; the count test as `else if (local_6)` 31; the last index draw without its braces 30; the
-// result declared bare and then set 30 (30 = same code). The member's stores through forced-inline helpers: the +0x18 pair
-// through a helper taking the member 30, the first eight stores through one 30, all ten through one 30 (same code: a helper
-// that takes the member itself changes nothing); the pair through a helper taking a pointer to the pair 54 (1409 bytes, the
-// round 162 pointer effect). Retail keeps the ten stores in source order and reloads the argument right after the +0x18
-// store; ours moves that store and the reload above the four flag and zero stores.
-// Round 162 (m3 lane 8, fast with 0x2936b0 0x259d0 0xb7930; control 30): the record's range test as `field_24 > 0 &&
-// field_20 > 0` 32 (the first difference moves to +0x234: forms ahead of the rotation break the matched entry code).
-// Round 122 (m3 lane 9, fast; control 30): 0-7 unused locals at the top 30/30/30/57/57/57/57/30 (the dot stays k, j, i at
-// every phase; phase 3 only moves the v.i load), the same with 0-5 dead float products in the helper. The dot written flat
-// i, k, j at phases 0-7 43-48; grouped j + (i + k) 55-63 (1409 bytes); the +0x18/+0x1a pair through a pointer 54-65
-// (1409 bytes); the pair as a two-short member written directly 30 (same code, still hoisted); a const entry pointer 30.
-// Round 164 (m3 lane 7, fast): the cross terms through the existing cross3f_staged(vector, axis) into a vector local with
-// the named components kept 152 (1414 bytes); the textbook rotate (cross product into a vector local through
-// cross3f(vector, axis), rows reading the vector in place, `v * cos + a * proj - cross * sin`) 53 at 1405 bytes (dot still
-// k, j, i), the same through cross3f_staged 53, cross3f(axis, vector) with the cross term added 55, the textbook rows
-// written scalar first 53.
-// Round 166 (m3 lane 7, fast with 0x2936b0 0x259d0 0xb7930; control 30): the grouped `j + (i + k)` dot re-measured 55
-// (1409 bytes; it now sums k and i first with k as the accumulator); the rotation helper in 0x2551c0's helper shape (only
-// k named, vector-first dot) 53 (1409 bytes); the +0x10/+0x1a zero stores as one chained assignment after +0x18 31; +0x18
-// ahead of +0x10 30 (same code); the 0x2936b0 call ahead of the member's vector copy 44; the creation record declared in
-// the selected-entry block 35.
-// Round 186 (m3 lane 6, fast with 0x2936b0 0x259d0 0xb7930): the rotation as a forceinline member of the creation record
-// turning its own forward vector 30 (same code); the member's ten stores as a forceinline member of the member view 60 (1409
-// bytes); the +0x18/+0x1a pair as a two-short member aggregate with a forceinline `reset()` 54 at 1409 bytes (the tail then
-// keeps retail's store order and argument reload, but the dot sums j and k first with a.j loaded first), with the member
-// rotation 54, with `dot3f(vector, axis)` 54, with the vector named j, k, i 54.
-// M3 lane 2 r90 (fast with 0x2936b0 0x259d0 0xb7930): the three vector names as `real const &` references to the components
-// 43; the rotation written out in the body with local axis and vector pointers (the forceinline helper is this file's own)
-// 44 (1409 bytes); the angle as a `real const &` to the entry's field 41; the selected entry as a const reference with dot
-// reads 30 (same code); the projection over the named components in 0xc7840's i, k, j order 43.
-// M3 lane 13 r101 (fast with 0x2936b0 0x259d0 0xb7930): the projection summed j, k, i over the named components 43 (it
-// sums k, j, then i: the i product stays last); summed i, k, j with retail's operand order in each product (a.i*v.i, a.k*v.k,
-// v.j*a.j) 43 (the same k, j, i code: the flat order is reassociated); grouped `(k + i) + j` 55 (1409 bytes; k the
-// accumulator, a.k loaded first); `(1.0f - cos) * dot3f(...)` 30 (same code); the rows built in a local vector then copied
-// to the output 184 (1431 bytes, frame 0xe0).
-// M3 lane 2 r95 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the projection accumulated i, k, j through a bound
-// `real &sum`, then `*= 1 - cos`, 65 (1409 B, the unbound accumulated form's count); only the vector's i named (j and k
-// read in place) 60 (1409 B); a redundant `0 < count` guard around the weighted selection loop 68 (1409 B); the
-// parameter read once through its address for 0x2936b0 (`long const *ref = &arg_0;`) 30 (identical listing: the +0x18
-// store and the reload still move up); the axis pointer named after the vector copy 44 (1409 B). Re-measured (listed):
-// the two accumulators declared in the other order 32. Retail's tail looks like the reload cannot pass the member stores
-// (an aliased home), which no plain parameter form gives.
-// M3 lane 15 r96 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the j cosine term read through the vector pointer 30 (same
-// code: CSE'd with the name); the two false flags as one chained store 30 (+0xd then stored before +0xc). Re-measured, round
-// 162's lead (the +0x18 pair through a two-short pointer and the weighted loop sharing the first loop's counter) 24: the tail
-// then matches and all 24 left are the rotation (dot j, k, i; retail i, k, j; v.j/v.k in each other's registers), the same
-// 24 as in the 30 form. On that lead: the cross terms before the dot 53; the angle passed straight 35; the true flag stored
-// before the two false ones 27. Restored.
-// Round 110 (m3 lane 14; "screen" = this file compiled alone under link-time code generation and linked with its callees'
-// real objects, whose control listing is the build's; screen counts are aligned rows against retail; "fast" = the fast
-// check): the last cause is the function's count of live local symbols, not any spelling of the rotation. Counted: named
-// locals with an initializer (dead ones too), the locals of inlined helpers, helper parameters bound to an expression.
-// Not counted: bare declarations, parameters bound to a variable, extra statements, empty blocks, where a local is declared.
-// Diagnostic, not keepable (dead locals): round 162's lead (the +0x18 pair as a two-short member with an inline reset and
-// loop 2 on loop 1's counter, 24 fast) plus 13, 14 or 15 dead initialised locals anywhere in the function is retail's code
-// byte for byte (fast MATCH with 13). On that lead by dead-local count (screen): 0-3 24, 4-7 54, 8-12 23, 13-15 0, 16-19 23,
-// 20-35 24, 36-44 54, 45-47 45 (not periodic). Without the pair member 13-15 dead locals leave only the four tail rows (4);
-// with the counters unshared, loops 1 and 3 shared, loops 2 and 3 shared or all three shared no count 0-31 matches (41/39/66/60
-// at best). One-use names add one each (a loop's element pointer, the creature definition pointer); a position pointer for
-// the x, y and z stores takes four away, the fraction folded into its product one, the rows as one expression each twelve.
-// So the rows as one expression each + a `point3f *` to the record's position for its four stores + the fraction folded
-// into the threshold product + the pair member + loop 2 on loop 1's counter needs 30 or 31 dead locals (fast MATCH with 30)
-// and 23 with none: one or two symbols too many, and no code-neutral removal was found. Tried on it (screen, none matching
-// with no dead locals): the pair through a pointer local or a two-short view pointer 23/23; the position as a reference, a
-// const pointer or declared after the record setup 23 each; x and y only through the pointer 23 (needs 28-30); the z arms
-// as one conditional store 54; the total scaled in place by the fraction 38-63; function_x82e52f or slot_random for the
-// fraction 49/49, with a named fraction 23/47; object_get() or a named object for the member lookup 23/23; the helper
-// turning about the global up axis itself 76, with an axis local 41; the axis or the vector by reference 23/23; the dot
-// written out 47; the rotation as a member of the creation record 45, with a vector pointer local 24; cross terms inside
-// the rows 90; the vector snapshot as one aggregate local 119; the cross terms in one aggregate local 71; the projection
-// written in each row 123; the dot before the names 42; sine and cosine declared after the names 23. On the lead with the
-// current helper: function_x84d9e8 (include/axis_rotation.h) with sine/cosine as caller locals or arguments 31-57 (no dead
-// count 0-69 matches); 0x1eb8a0's helper shape 49 (41 at best) and a helper through cross3f 69 (54 at best; none 0-69); __FILE__/__LINE__ at
-// the draws 54 (45 at 13-15); slot_random_range for the four draws 19 at best; a creature index local 111; a source
-// centre pointer 39; a perch count local 44; the angle passed straight 33 (10 at 13-15).
-// M3 lane 4 r211 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the existing basis_dot_xzy (vector_products.h, i then
-// k then j, staged) for the projection's dot, (axis, vector) 99 and (vector, axis) 99 (the same code, 1405 bytes): LEAD,
-// the dot then sums i, k, j with the i product as the accumulator and v.k/v.j in retail's XMM1/XMM2, but every a.k
-// product turns copy-first (`movaps x, v; mulss x, [a.k]`) where retail loads a.k first, so the positional count rises.
-// On it: the three cross terms ahead of the dot 74 (1409 bytes, then a.j loads first too); the components named
-// i, k, j 99 (same code); the cross terms through cross3f(vector, axis) into a local 162 (1420 bytes). Retail's sides:
-// a.i and a.k products load the axis field, a.j products read it from memory; dot3f gives that split, the staged dot
-// does not.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {
 	s_293134 local_13;
-	s_293130 *local_2 = &((s_293130 *)g_51ecb4->data)[arg_0 & 0xffff];
-	s_293132 *local_3 = &((s_293133 *)g_4e0350)->field_354[local_2->field_2];
+	long flock_absolute_index = arg_0 & 0xffff;
+	s_293130 *local_2 = &((s_293130 *)g_51ecb4->data)[flock_absolute_index];
+	s_293133 *definition = (s_293133 *)g_4e0350;
+	short source_index = local_2->field_2;
+	s_293132 *local_3 = &definition->field_354[source_index];
 	long local_0 = NONE;
 	if (local_3->field_2c != NONE && local_3->field_c > 0 && local_2->field_10 > 0)
 	{
@@ -420,14 +131,14 @@ long __stdcall function_293130(long arg_0)
 		real total_weight = 0.0f;
 		short local_6 = 0;
 		short local_7;
-		short local_16;
 		short local_17;
 		short local_8 = NONE;
 		for (local_7 = 0; local_7 < local_3->field_c; local_7++)
 		{
 			if (local_2->field_10 & (1 << local_7))
 			{
-				total_weight += local_3->field_10[local_7].field_18;
+				s_293131 *entry = &local_3->field_10[local_7];
+				total_weight += entry->field_18;
 				local_6++;
 			}
 		}
@@ -435,14 +146,15 @@ long __stdcall function_293130(long arg_0)
 		{
 			real random_fraction = _random(&g_4e7408->unknown0, NULL, 0) * (1.0f / 65535.0f);
 			real selection_weight = total_weight * random_fraction;
-			for (local_16 = 0; local_16 < local_3->field_c; local_16++)
+			for (local_7 = 0; local_7 < local_3->field_c; local_7++)
 			{
-				if (local_2->field_10 & (1 << local_16))
+				if (local_2->field_10 & (1 << local_7))
 				{
-					local_5 += local_3->field_10[local_16].field_18;
+					s_293131 *entry = &local_3->field_10[local_7];
+					local_5 += entry->field_18;
 					if (local_5 >= selection_weight)
 					{
-						local_8 = local_16;
+						local_8 = local_7;
 						break;
 					}
 				}
@@ -468,12 +180,18 @@ long __stdcall function_293130(long arg_0)
 		if (local_8 != NONE)
 		{
 			s_293131 *local_11 = &local_3->field_10[local_8];
-			bool local_12 = !((*(dword *)(g_4e3b44[local_3->field_2c & 0xffff].bytes + 0xd4) >> 4) & 1);
+			long tag_absolute_index = local_3->field_2c & 0xffff;
+			byte *tag = g_4e3b44[tag_absolute_index].bytes;
+			dword tag_flags = *(dword *)(tag + 0xd4);
+			bool local_12 = !((tag_flags >> 4) & 1);
 			function_b7930(&local_13, local_3->field_2c, NONE, NULL);
 			local_13.field_b4 = 1;
 			local_13.field_b6 = 0x34;
 			if (local_3->field_20 > 0.0f && local_3->field_24 > 0.0f)
-				local_13.field_58 = function_259d0(&g_4e7408->unknown0, NULL, 0, local_3->field_20, local_3->field_24);
+			{
+				real scale = function_259d0(&g_4e7408->unknown0, NULL, 0, local_3->field_20, local_3->field_24);
+				local_13.field_58 = scale;
+			}
 			local_13.field_1c.x = function_259d0(&g_4e7408->unknown0, NULL, 0, -local_11->field_14, local_11->field_14) + local_11->field_0.x;
 			local_13.field_1c.y = function_259d0(&g_4e7408->unknown0, NULL, 0, -local_11->field_14, local_11->field_14) + local_11->field_0.y;
 			if (local_12)
@@ -486,7 +204,10 @@ long __stdcall function_293130(long arg_0)
 			local_0 = function_b7b40(&local_13);
 			if (local_0 != NONE)
 			{
-				s_293135 *local_15 = (s_293135 *)flock_object_get_member(((s_flock_object_header *)g_4e0300->data)[local_0 & 0xffff].object);
+				long object_absolute_index = local_0 & 0xffff;
+				s_flock_object_header *header = &((s_flock_object_header *)g_4e0300->data)[object_absolute_index];
+				s_flock_object *object = header->object;
+				s_293135 *local_15 = (s_293135 *)flock_object_get_member(object);
 				if (local_15)
 				{
 					local_15->field_0 = NONE;
@@ -497,13 +218,15 @@ long __stdcall function_293130(long arg_0)
 					local_15->field_d = false;
 					local_15->field_e = true;
 					local_15->field_10 = 0;
-					local_15->field_18 = NONE;
-					local_15->field_1a = 0;
-					local_15->field_28 = *g_468788;
+					s_295600_state *state = &local_15->field_18;
+					state->duration = NONE;
+					state->elapsed = 0;
+					state->previous = *(vector3f *)g_468788;
 					function_2936b0(arg_0, local_0);
 					if (local_3->field_14 > 0)
 					{
-						local_15->field_4 = random_index(&g_4e7408->unknown0, (short)local_3->field_14);
+						short drawn_index = random_index(&g_4e7408->unknown0, (short)local_3->field_14);
+						local_15->field_4 = drawn_index;
 					}
 				}
 				else

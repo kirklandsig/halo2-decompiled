@@ -2416,6 +2416,12 @@ __forceinline char unit_action_round(real value)
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
 // score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below.
+// Round 189 (m3 lane 8, fast with 0xe9ed0/0xea090, both MATCH throughout; control 234): the unit lookups through one
+// header pointer local (UNIT_ACTION_HEADER_GET, used for the unit, the 0x1b test and the 0x399 test) 328 (1178 B); for
+// the unit and the 0x1b test only 300 (1184 B); the 0x399 test's lookup through UNIT_ACTION_HEADER_GET 234 (same code);
+// `current` as NONE plus an if 234 (same code); first_person_name declared right after actions 312 (1191 B), that with
+// the short-slot hand getter 314 (1195 B). Reading: retail keeps the result in its stack byte at every exit and merges
+// them into one, which is what a spilled phi of 0 and 1 gives; every goto-free spelling in these notes folds it.
 // MiniMax I (11-17, run 103): no new form, no lower score (234): retail still keeps the pool global in EBP with the unit
 // index in EDI and compares the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this
 // build keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
@@ -2430,7 +2436,7 @@ __forceinline char unit_action_round(real value)
 // reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
 // compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
 // stands.
-// score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
+// Earlier (234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
 // `goto done`s, which the rules drop. Body unchanged.

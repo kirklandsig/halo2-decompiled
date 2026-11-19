@@ -5890,6 +5890,12 @@ void __stdcall function_d6bc0(long object_index);
 // loop-top index local at function scope 172; the object pointer declared before the index 172; `entries` copied into a
 // function-scope local 172; the default arm first 172. On the label form: case 1's bit through a trivial forced-inline
 // accessor 7 (same code; CL stays).
+// M3 lane 8 r188 (fast): the flag recipe re-measured 7 (869 B; left the index test on the local and case 1 in CL); on it,
+// with the field test: the object pointer declared at function scope (assigned NULL at the loop top) 172 (858 B), no
+// loop-top index local at all (every read through the field, the object block too) 172 (858 B), the schedule test on
+// the object pointer (NULL when there is no entry) 204 (852 B); with the local test: case 1 as a direct assignment
+// `schedule = bit;` 129 (877 B), the flag initialised from the index test (`bool schedule = index == NONE; if
+// (!schedule) switch ...`) 130 (874 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -60,6 +60,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
 // score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// M3 lane 8 r189 (fast; control 489): local_8 renamed `position` 489, local_14 renamed `destination` 489, both 489
+// (same code: names do not order these 12-byte homes); local_9 filled through vector3f_assign 665 (3499 B), through a
+// brace initializer of the three fields 765 (3486 B). Compile-only reading: the squares follow local_9's field ranks;
+// the aggregate copy, vector3f_assign, the three field stores and the initializer all give k, j, i and
+// normalize_inline k, i, j, against retail's i, k, j.
 // Earlier score history (679 before m3 lane 4 r203).
 // M3 lane 10 r119 (fast; control 489): local_13/local_14 renamed to sort after local_8 489 (same code: names do not order
 // these homes); the input copy as `memcpy` 489 (same code); the input copy defined j, k, i (diagnostic) 767 (the squares then

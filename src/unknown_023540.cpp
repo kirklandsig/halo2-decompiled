@@ -3978,6 +3978,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // M3 lane 3 r265 (fast, base 9): the alpha word as the stored RGB word `| 0x8000` with the shifted local kept 948; the
 // clear right after `fixed` 955 (4844 B); the clear ahead of the two selectors 969 (4844 B); the fraction word stored
 // after the RGB input word 14; mode zero's pin as `offset * gain` 9 (same code). Body unchanged.
+// M3 lane 8 r188 (fast, at 9): the exponent loop testing `(real)(1 << exponent) < inverse_span` 9 (same code); the loop
+// as `for (exponent = 0; ...; exponent++) ;` 883 (4928 B); the shifted input as `long input_bits = input << 24` 9 (same
+// code); `input` as `dword` 9 (same code); the input selector computed after the clear, next to its shift 976 (4840 B).
+// Left as before: retail copies the input to EAX and shifts it after the clear (ours shifts EBX in place before it),
+// and at both gain sites retail reloads the spilled inverse span into XMM3 before the 1.0f constant into XMM2. A
+// compile-only build of this file alone does not reproduce the shift (it lands after the clear there).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

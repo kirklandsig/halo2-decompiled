@@ -2527,6 +2527,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // with field stores or a const aggregate: 567/567, 497/497, 497/497, 497/497.
 // NOT kept: all retain frame 0x90 and the shared direction/point home. The first
 // pair shortens to 2255 bytes and the other six regress at retail length.
+// Round 190 (m3 lane 8, fast; --fast agrees with the plain 492 here): the draw point declared with the outputs at function
+// scope 492; the selected colour declared at the top of the loop body 487; the sine/cosine and the draw call in their own
+// block 492; visibility declared after the tag 521; the outputs declared scalars first, then colour, direction, position
+// 492. Retail's 0x2e3f0 outputs sit at frame +0x24 (tag), +0x34 (position), +0x40 (colour), +0x7c (direction); ours at
+// +0x3c, +0x44, +0x24, +0x84.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4287,6 +4292,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // camera readback 530, moved point initialized from previous coordinates 551, both 523,
 // camera displacement with original/scalar element capture 500/489.
 // The shared previous-position home, frame and independent velocity reloads remain.
+// Round 190 (m3 lane 8, fast): the cycle bit read straight from the field after the flags local 485 (2035 B, still one
+// dword load); that read ahead of the flags local 490 (2039 B: it gives retail's separate byte load of the cycle bit), as
+// `(bool)(field & 1)` 490; the previous position, its deltas and the dot in their own block 486 (same 0x60 frame); that
+// block through a pointer to the stored camera position with the deltas read back from it 524 (1994 B).
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
