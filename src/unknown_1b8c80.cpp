@@ -363,6 +363,12 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // to the register the address was formed in, and from EAX the arguments load last to first; retail forms the address in
 // ECX (EAX holds the scaled index there) and still reloads it into EAX, as if the stored address and the reloaded
 // pointer were two values. Restored.
+// M3 lane 15 r101 (fast with 0x1b8eb0/0x11b0c0/0x11ade0, all matched each time): the vehicle reservation test through an
+// inline helper taking the object index 3 (same code); the hostile-team test through an inline (team, other team) helper
+// 54 (first difference +0x61); the 0xc8200 call through an inline helper taking (actor, object, seat) 33 (381 bytes: the
+// seat is widened); the whole seat definition as the loop-top pointer, tested as `definition->flags.bit11`, 3 (same code);
+// a `const &` to the seat in an else block for the 0x1b8d80 arguments and the 0xc8200 seat, the 0xc8200 object still
+// indexed, 99 (368 bytes). Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -871,6 +877,11 @@ extern "C" void _ReadWriteBarrier(void);
 // test stored as a bool, or a two-use memory load there keep the load in the entry block but move the base to ESI or
 // pull the 0x26c load into EDX. Reading: retail's entry needs a use of the slot pointer's own value in the entry block (a
 // dereference sinks to its use); no code-free form of such a use is known.
+// M3 lane 15 r101 (fast): the final 0x450 store written first, ahead of the busy test 52 (189 bytes, no tail copies); a
+// `point3f const *` to the point formed in the flags arm 6 (same code); the 0x86 arm storing 0x420 before 0x41c 8; no
+// barrier with the state declared at the head of the NONE block 44 (208 bytes); no barrier, actor first, the point bound
+// to a `const &` at the top and copied from it 44 (208 bytes). Diagnostic (not counted): 1-4 dead initialised locals at
+// the top, with the barrier 6 each, without it 44 each, so the slot load is no symbol-count tie. Restored.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
