@@ -86,6 +86,25 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // layout -0x4cc, suffix -0x458); writing the text arms as direct calls measures 425, moving the set_text into the
 // message block 502 and calling function_253b1a in each arm 540, so the one-call body with the text variable stands.
 // score 316 (was 316): r209 unchanged (lead below: the buffer homes follow reference counts). Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// m3 lane 8 r195 (fast = plain here): 43 at retail's 2345 bytes (plain check, 0x2b37fd and 0x2b3fca still match) with four
+// changes together: the received text as `if (in this title) text = 0x15000269; else text = 0x1a000268;`, each can_join
+// arm of both switch defaults written as its own load, append and terminator, the online block first with
+// `else text = 0x700024e;` as the chain's last arm, and the title and suffix clears as two statements, title first. Not
+// kept: the online-first order is an arm swap, so it stays only with a byte match. Without it 665; it alone 720; with the
+// received if/else only 396. Why: the five buffer homes follow reference density after dead-store removal and before
+// cross-jumping (one layout reference fewer, `|= 3` or no value4 store, or two suffix references more give retail's homes
+// exactly; extra dead suffix clears change nothing), and retail's three extra bytes are the two defaults not if-converted.
+// Steps: the full-sequence defaults alone 550/551 (one) and 598 (both, 2252 bytes: `known` leaves BL, tails over-merge),
+// a terminator once after each switch 549-605; with the received if/else 665 (2354 bytes: the invite pointer takes ESI);
+// that with the dispatch tested `text == NONE` first 396 (registers right, the call block laid out early); the clears
+// alone 316. Left at 43: the item loop's `>> 10` arm stays inline where retail parks it after the session player's jmp
+// (matched 0x18f62b and 0x24c461 park such a block when a repeated test is jump-threaded). On the 43 form, all 43 or worse:
+// `!friends ? >> 10 : >> 12` 44, nested ifs 43, the xuid test as an early `continue` 43, `== 0` and no-cast tests 43/43,
+// the original `!can_join` order 43, a file-local forced-inline test 43, `>> (friends ? 12 : 10)` 137, bool casts per arm
+// 609, the flag10/flag12 bitfields 610, the arms as nested ifs 55, a named bit set by an if/else 609/610, the word shifted
+// by 10 then overridden 612, `((friends ? flags >> 2 : flags) >> 10) & 1` 609. The permuter cannot search it (its reduced
+// image scores 109). Earlier this round on the 316 body: the clears split 316, the flag sets through bitfields 316/316.
 // Round 127 (m3 lane 10, fast): `inline` on 0x230134's definition (to change what callers assume it keeps) expands it
 // into its callers: 1211 here (2789 bytes) and nine matched callers lost, restored at once; the invitation count declared
 // after the bools 316 and the request at function scope 316 (same code each); display_name declared ahead of the child

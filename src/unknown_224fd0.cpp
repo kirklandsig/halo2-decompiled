@@ -389,6 +389,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Paired axis reads shared by squares and sine products, with separate mixed-product reads:
 // k/i/j 412/358/341; ki/kj/ij 409/412/477; all 385; all with earlier j square 476.
 // NOT kept: The paired reads change both expansions without recovering the early squared-k spill.
+// M3 lane 8 r194 (fast with 0x246cd0, 0x142eb0, 0x30bf0, 0x11d000 and 0x173ba0, all MATCH; control 219): the four basis crosses
+// through a file-private cross product in the textbook spelling 219 (byte-identical); the rotation helper taking the angle and
+// computing sine and cosine itself 447 (1780 B); the helper reading the axis through a `vector3f const &` binding 485
+// (1724 B); the orientation in a named local read at the top for both switches 501 (1732 B), read just before the rotation
+// switch 495 (1716 B). Body unchanged.
 // M3 lane 7 r185 (fast with 0x173ba0, 0x246cd0, 0x30bf0, 0x11d000 and 0x142eb0, all MATCH; control 219, aligned 225): the
 // rotation helper in the sibling spellings of this math elsewhere in the code base (all three hosts unmatched): named
 // complement, squares and a shared k*complement with the rows in matrix order and `j * complement * i` 394 (1824 B,

@@ -117,6 +117,14 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // the transform rows' operand sides never move, the field sums and the count slots do); the same on the short index
 // 177/178/178/178/178/222/225; k = 1..4 inside the transform helper 169/169/213/216; the transform helper taking and
 // returning the point by value 721 (2940 bytes).
+// m3 lane 8 r195 (fast, control 93): retail stores the luminance into the packed vector only after the vertex loop's
+// pretest (the preheader); the store moved into the loop body as its first statement 547, just before the pack call 509
+// (both 2695 bytes: kept in xmm6 and stored every pass, never hoisted, and not hoisted either with the clamp helper's
+// volatile reads removed, 680); the loop under `if (count > 0)` with the store inside 545 (the count is loaded into ax and
+// tested); under the loop's own test `if (counter < count)` 91 (retail's preheader exactly, but a repeated test, kept only
+// with a match); that with the luminance red, blue, green 89, with the short count index 100, all three 98; the x row
+// accumulating the left product first 94 (retail's emission order, accumulator register swapped); dead initialised locals
+// on the short index (k = 1..7) and inside the transform helper both change code, the rows never flip.
 // MiniMax H (11-18): no new form, no lower score (93): retail's transform rows compute the up product first and keep
 // each product's first operand in the destination register, where this build computes the left product first with the
 // two operands the other way round; spelling the three products in the opposite order compiles to the same bytes, and

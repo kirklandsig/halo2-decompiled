@@ -530,6 +530,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // (`index * sizeof`) 96 [0]; a model local declared first 21 [2] (the owner then arrives in EAX and the component on the
 // stack); the header pool read into a pool local first 24 [0] (same code); a model local in place before the rigid body 24 [0]
 // (same code); headers and the model ahead of the type with the rigid body last 124 at 276 B [189]. Body unchanged.
+// M3 lane 8 r194 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 [0]; on it 1..7 dead initialised locals 24
+// each [0] (diagnostic: the opening's colouring has no symbol-count phase); the kind-7 route as `return type == 1 ? 0xc : 1;`
+// 94 [0]; the rigid body as a reference binding 24 [0] (same code); the object index as a `long const &` binding to the
+// component's field 96 [208]; a word absolute index 98 [13]; re-measured, a long type 89 [0] (retail's one `movzx` at the load,
+// the headers/object-index/rigid-body colouring unchanged, everything one line off). Body unchanged.
 // M3 lane 7 r185 (fast with the file and the caller 0x1d5bf0, caller in brackets; control 96 [0]): round 60's 24 form
 // rebuilt 24 at 256 B [0]; every dependency-respecting order of its five locals (object index o, absolute index a, rigid
 // body r, header array h, type t), each with a byte and a long type: oarht 24/89 [0], oahrt 88/97 [0], ohart 83/91 [0],

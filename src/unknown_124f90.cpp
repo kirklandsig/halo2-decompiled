@@ -1772,6 +1772,11 @@ long function_2197f0(real gain);
 // attack gains with attack index read at the join 119; post-release gain bits supply both late outcomes 161; post-
 // release gain bits with attack index read at the join 161.
 // NOT kept: separate release and attack returns recover the 678-byte extent at 119 and split off the initial gain return. Every form raises the score.
+// M3 lane 8 r196 (fast with 0x221810; control 87): the fade-out time bound by const reference to the field for the test,
+// the sum and the product 87, with the product written `(elapsed - hold) * inverse * fade_out` 87 (same code: still
+// multiplied from memory); arm 1's clamp value divided by the fade-in copy 155 (687 B), the clamp test as `time /
+// copy` too 144 (680 B); `inverse * time` in the test 87 and `inverse * (elapsed - hold)` in the product 87 (same code).
+// Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3679,6 +3684,15 @@ static inline short sound_voice_find_available_channel(char type)
 // 96; positive free-channel guard nests the streaming guard 96; single rejection guard skips unavailable or
 // streaming channels 96.
 // NOT kept: all eight search forms tie at 96 and keep the twelve-byte frame, result spill and failure join.
+// M3 lane 8 r196 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): lane 5 r178's form rebuilt 15
+// (16 with the type byte passed unconverted: movzx). Matched siblings with retail's split result (true in AL, false in
+// BL across the failure calls) assign the result in every arm with no initializer (0x136c40, 0x21dda0); on the 15 form:
+// no initializer with `else result = true;` for the early path 134 (every path then gets its own epilogue: the commit's
+// tail is retail's, but the early path's own exit is placed straight after the entry tests); that with the commit arm
+// ending `return true;` 138 (`mov bl, 1` on the early path); the early path as the first arm 134; the commit placed after
+// the final return behind a label, ending `result = true; goto done;` 15 (same code) or `return true;` 125. Retail's
+// failure block falls into the exit it shares with the early path and the commit owns the duplicated epilogue; every
+// form here puts the commit ahead of the shared exit. Body unchanged.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4962,6 +4976,11 @@ struct s_128ca0
 // unclamped bits held through the pin 81, post-pin channel indices 81, nullable controller 130,
 // update-before-start dispatch 144, pinned decibel round-trip 81. NOT kept: the tied pin
 // forms retain the register exchange and the controller and dispatch forms regress.
+// M3 lane 8 r196 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 81): lane 2
+// r104's lead rebuilt 64 (diagnostic). The pin sums with the bits as the left operand, both 210 (1102 B), the first only
+// 182 (1079 B); the permutation gain through an inline accessor taking the permutation (both pins) 81, the started bit
+// (`flags >> 9`) through an inline accessor 81, the bits named as a decibel value before the first sum 81 (all three the
+// same code: the gain byte keeps EAX and the bits EDX). Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

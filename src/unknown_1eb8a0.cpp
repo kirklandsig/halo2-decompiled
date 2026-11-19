@@ -712,6 +712,22 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // of the clamp with `len3 = s->limited ? limit : len2` and the distance from len3 706 (2862 B); the position pointer dropped
 // (`out->position` at every use) 714 (2875 B, 0x1eb6f0 lost at 103); `bool fail = false;` declared just above the output
 // stage 655 (2885 B, the flag's slot moves).
+// m3 lane 8 r198 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 603; aligned = difflib count with addresses masked,
+// 658 at the control, masked = registers and stack offsets masked too, 281; the matched caller 0x1eb6f0 kept unless noted).
+// Re-measured on this base as one step of a whole rewrite: the 12/8 factor declared before t at all three clamps and the
+// impulse through the existing vector3f_scale, with the clamp as PIN(t, 0.001f, rate * k) 675 (2891 B, aligned 568, masked
+// 227), as the if form with the cap in its own local 677 (2878 B, aligned 605, masked 233), as the if form assigning the
+// cap to the step and then t 706 (2884 B, aligned 581, masked 237). With the factor first the fast byte read at the second
+// clamp stays in CL to the duration's `neg cl`, so the start copy takes EDI/EBX/EDX and the target goes through `lea eax`,
+// both as retail (ours re-reads the byte because its second read sits inside the clamp's branch). New on the PIN form:
+// `s->limit` read at each of its nine uses (no local) 729 (2892 B, aligned 565, masked 219); that with the time globals
+// read at each use 666 (2888 B, aligned 589, masked 206, but 0x1eb6f0 falls to 22); the globals at each use without the
+// limit change 714 (0x1eb6f0 22). What is left at the head of the PIN form: retail's step takes the 0.001 register itself
+// (no copy; its later `e > 0.001` compares against memory) where ours copies the constant and keeps it for that compare;
+// ours moves b from EDX to EDI at entry and gives EDX to the time globals (retail: b stays in EDX, the globals take EDI);
+// d still loads into EBX at entry. The positional score rises with each of these because the later stages shift; the
+// combined form (factor first, scale helper, limit at each use) is saved as build/r198/lead-0x1eb8a0-565aligned.diff in
+// the m3-lane8 worktree.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

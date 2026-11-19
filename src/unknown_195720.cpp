@@ -171,6 +171,10 @@ bool function_1946f0(s_bitstream *stream)
 // `saved / 4 / 2`, is index-first there but is then recomputed). Fast: both addresses as `data - -index` 2; an
 // `unsigned long` index 2; the bound test as `saved < size_in_bytes * 8` 54 (143 B); the clear's start from the buffer's
 // end (`&data[size_in_bytes] - count`) 45 (142 B); the masked byte as `((byte *)byte_index)[(long)stream->data]` 2.
+// M3 lane 8 r197 (fast with 0x1957d0, 0x195820): the clear's start as `1 + byte_index + stream->data` 2; the mask
+// as `(byte)(-1 + (1 << (saved % 8)))` 2 (both the same code); the position test as `stream->bit_position > saved`
+// 4; the index computed ahead of the unknown2c store 54; the size bound by `long const &` for the bound test and the
+// count 11. Both LEAs stay data-first in each (compile-only listing).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

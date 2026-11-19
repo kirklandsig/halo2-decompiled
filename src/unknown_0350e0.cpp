@@ -3291,6 +3291,10 @@ real magnitude3d(vector3f const *v);
 // include/axis_rotation.h on `first` 181 (1030 B; its projection sums i first, retail's dot k first); with a named float
 // copy of the dot for the arccosine 182 (1026 B, frame 0x34); `dot` or `first`/`second` declared at the top 170/170 (same
 // code); the fallback first under the negated test with its own return 170 (same code). Body unchanged.
+// M3 lane 8 r196 (fast with 0x24590/0x30bf0, control 170): the arccosine through a new inline helper taking the dot
+// as a real 170 (the double copy stays: inlining exposes the same conversion); the dot as `dot3f(&first, &second)` 170;
+// the arccosine of the pinned dot 292 (1091 B). Diagnostic: the two lengths, or the dot/angle/sine/cosine, under other
+// names 170/170/170 (no home moves: the raw current length still shares the clamped length's slot).
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -5417,6 +5421,12 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // multiplies by -1.0); radius renamed size 231 (same code); the four-channel colour read at the call 225 (1826 B,
 // re-measured), with `-radius` 226 (1822 B), with radius renamed extent or width 225/225 (radius still spills at +0xc,
 // so the slot does not follow the name). Body unchanged.
+// M3 lane 8 r196 (fast, control 231): the corner helper's x row in the matched 0x142570's order (up, left, forward) 231
+// (same code); that with 0x142570's pointer to the matrix parameter for the scale test 407 (1792 B); the row order with
+// the four-channel colour (alpha only) 225 (1826 B, as listed); `real const radius` 231; the offset as a vector3f (the
+// helper reading i/j/k) 231 (same code). The colour form gives retail's frame and aggregate order (matrix, corners,
+// colour, collision: by name, descending), but the spill cells stay y 4 / z 8 / radius 0xc / -radius 0x10 against
+// retail's y 4 / radius 8 / -radius 0xc / z 0x10, with z in XMM1 where retail's is XMM7. Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

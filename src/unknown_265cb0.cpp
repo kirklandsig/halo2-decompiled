@@ -904,6 +904,11 @@ real function_30bf0(vector3f *vector);
 // the clip block 84 (same code); the posture switch as an if/else-if chain 131 (1308 B); `use_facing && !actor->unknown007`
 // 86. Diagnostic, reverted: 1..7 dead initialised locals 84/86/138/138/82/82/82. Reading: retail shares one slot between the
 // clip amount and distance_squared ([esp+0x1c]) with the result lowest; ours gives the clip amount the lowest slot.
+// M3 lane 8 r194 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84): both seat-loop crosses through a
+// file-private cross product in the textbook spelling (`a->j * b->k - a->k * b->j`, as the other files' private copies) 84
+// (byte-identical: the products' operand sides do not follow the spelling); `real const range` 84; the vehicle index read as
+// `actor->unknown26c` 84; the not-facing secondary as `primary * 0.7f` 84 (all the same code); the seat count held in a long
+// 193 (1318 B). Body unchanged.
 // M3 lane 6 r200 (fast; control 84): distance_squared and everything after it in its own `{}` block 84; `vector3f delta`
 // declared ahead of the range 84; the endpoint test as two nested `if`s 84; the posture switch with a `default: break;`
 // 84; the range `real const` 84 (each the same score; homes and the two seat-loop products unchanged).
@@ -2777,6 +2782,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // of the short index for its NONE test, a long second counter) 378 (register-masked aligned 41 -> 39: both searches are then
 // retail's line for line, one line late because the iterator's table load takes ECX where retail's takes EAX); on that, the
 // NONE fields first 380, the iterator set up before the vehicle lookup 401 (2889 B), the NONE fields chained 380.
+// M3 lane 8 r194 (fast with the nine callees, all MATCH; control 168): the players iterator's NONE fields in one chained
+// assignment 170; the established decay as `score += 1.0f - MAX(distance - 2.5f, 0.0f);` 168 (same code); the positive arm's
+// decay through a `short &` binding to the 0x320 field 168 (same code: the reset arm still holds the shared 0x320 store); the
+// zero-distance `continue` ahead of the established and retain flags 182; the established flag computed after the visibility
+// lookup 618. Body unchanged.
 // M3 lane 6 r200 (fast; control 168): re-measured round 65's search recipe (both searches as the existing 0x1c8180 and
 // 0x1c8150 helpers 849 at 2642 B; `inline` on 0x1c8180's definition 795 at 2682 B, all its callers still matched, the
 // forward getter then drops out of line; plus a `__forceinline` declaration of that getter 383 at 2880 B with every search

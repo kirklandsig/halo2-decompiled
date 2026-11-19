@@ -1123,6 +1123,22 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // normal's i first; the k term is evaluated normal first and the j term coefficient first in both builds. In the clip
 // rows retail multiplies the y and z deltas by the ratio in place and copies the ratio only for x; ours copies it for
 // x and y, the scale helper's operand order.
+// m3 lane 8 r198 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115, difflib-aligned 73). Lane 12 r123's
+// match-only 18 form rebuilt 18 (aligned 22) and, with three unused locals after `culled` (diagnostic), 14 (aligned 18),
+// as lane 5 r203 found. Reading of the 14 that are left: retail computes the clip deltas x, z, y into XMM5, XMM3, XMM2,
+// multiplies the x and z deltas as a copy of the delta times the normal in memory and the y delta as the normal loaded
+// times the delta, and carries `total` through EAX with its store after the source pointer's move; the 14 form computes
+// y, z, x into the same three registers, with the x product normal-first and the y product delta-first, and carries
+// `total` through ECX. In this build a named delta always comes out normal-first, takes XMM5 and has its scaled row
+// built on a copy of t; an unnamed delta comes out delta-first with its row scaled in place: retail's x has the
+// register and row of a named delta and the product of an unnamed one, its y the reverse. New on the 14 form (three
+// unused locals kept for the comparison): the denominator x, z, y with only the x delta named 28; with all three named
+// in x, z, y order 253 (1830 B); with none named 240 (1835 B); with only the y delta named 27 (the product forms are
+// then retail's but y takes XMM5 and x XMM3), also 27 with that delta declared at its term, and 29/45/39 with zero, one
+// or two unused locals; the x delta named for its row with the denominator's x term written from the points 50 (54
+// without the unused locals), the same with the y delta named for the denominator only 50, declared at its term 50; the
+// x delta declared after the denominator 92. The named delta renamed (three names for x, three for y) 14/27, the same
+// code each: local names do not move the order. Nothing kept; body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
