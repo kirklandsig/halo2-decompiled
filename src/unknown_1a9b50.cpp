@@ -820,6 +820,23 @@ extern point2f *g_468778;
 // Typed actor row after/before settings 375/413; early row base with/without early slot 408/408;
 // early absolute actor slot 375. Settings declared in the admission test, then actor first and
 // typed actor first 409/413/413. NOT kept: ties or regressions, actor/settings/prop homes remain.
+// M3 lane 1 r126 (fast with 0x1aab50, 0x265d30, 0x1a9d80, 0x1a9e00, 0x25d740, 0x25d690; control 375, aligned 197): the facing
+// pointer as a two-definition local (NULL, then the view's address) in its block 375 (same code), declared NULL beside the
+// prop 374 [200] (the NULL is dropped: the pointer is still formed straight after the view call, not retail's late `add edi,
+// 0x2c`); re-measured actor first 413 (1555 B) and actor first with the early `return false` and the returned final
+// expression 393 [208] (arg_0 EBX, actor EDI spilled, settings ESI, slot EBP, prop in arg_1's home against retail's EDI,
+// EBP, memory, ESI, EBX); on that the two-definition facing pointer 393 (same code); the prop pointer left uninitialised and
+// set to NULL in the no-prop arm 399 (1558 B).
+// M3 lane 11 r122 (fast with the file, 0x265d30 and the callees; register-masked aligned count 102 at 375): on the
+// actor-first form with `return !f14 && !f13 && !f2d;` in the arm (393 re-measured, masked 104): the clock and the
+// default distance declared at the top 393 (same code), on the 375 body 375 (same code); the clock read at the top of
+// the settings arm 393; the prop lookup ahead of the clock 393 (same code); the field_12 arm moved after a prop arm
+// tested `!field_12 && prop` 414 (1531 B). Reading: retail gives EBX to the prop ahead of arg_0, which every form here
+// passes to its EBX-argument callees from EBX.
+// Facing k+j before forming the direction pointer 400; separate k and j products 402;
+// actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
+// partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
+// partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -994,6 +1011,12 @@ static __forceinline long real_to_long(real value);
 // what still differs is the false exit's place, the facing pointer that retail forms late through the view pointer
 // in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
+// Round 127 (m3 lane 10, fast with 0x25d740 and 0x25d690; control 382, aligned 83): the computed result as
+// `!(f13 || f14 || f2d)` with `if (local_2)` 508 (1921 bytes, aligned 122); that with the facing pointer formed after the
+// first dot (that dot read off the view) 566 (1966 bytes); the facing pointer after the first dot alone 494 (1918 bytes);
+// the result preset true and cleared by the three flags, then `if (local_2)` 522 (1904 bytes); the rejection as
+// an early `return false;` ahead of the unchanged body and result 508 (1904 bytes, aligned 95, frame 0x54, 0x25d740
+// expanded). Retail's shape is that early return: the site is then one test warmer and our link expands 0x25d740 there.
 // prop view through the existing prop_node_view wrapper 382 (same code); the computed entry result with that
 // wrapper 508 (1921 bytes, frame 0x54: 0x25d740 still expands under the computed result); the result preset
 // true with the false arm last 397 (the true store hoists above the entry tests); `return local_2 != false;`
@@ -1334,6 +1357,11 @@ static __forceinline long real_to_long(real value);
 // 0x1b7e40 91, restored); the facing read through the view at every use, no pointer local, 517 (1945 bytes); the pointer
 // declared where retail first forms it, ahead of the facing test on the predicted offset, 516 (1944 bytes). Still
 // BLOCKED-BY 0x25d740's expansion at this site.
+// M3 lane 4 r218 (fast with 0x1a9d80/0x1a9e00/0x25d740/0x25d690, all matched; control 382): retail forms the two position
+// addresses it passes to 0xfa1a0 ahead of the direction vector and reads x through them; a target-position pointer for the
+// direction and both calls 458 (1910 B, frame 0x54), an actor-position pointer 448, an AI object pointer with the target
+// pointer 487 (1927 B), with both pointers 460 (1929 B), both pointers declared at the top of the far arm 422 (1906 B).
+// Body unchanged; the computed entry result still puts 0x25d740 under three tests, where our link expands it.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

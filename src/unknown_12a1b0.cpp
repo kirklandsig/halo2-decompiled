@@ -1419,6 +1419,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // index parameter 24; the iterator's count as a short 41 (214 B; 0x21b870 8, 0x21bd00 18, restored); the loop index
 // declared at function scope with the iterator in the guard 24; the loop test as `NONE != (index = ...)` 24. Diagnostic
 // (0x126df0's fade-in half written out on a named element, not keepable without a match) re-measured 35 at 211 B.
+// M3 lane 14 r116 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870; `ret 8` and 210 B in both builds, so the
+// remaining 24 are still only the ESI/EDI tie): an early-return guard with the index declared ahead of the iterator, a
+// named element and `continue` on state != 2 24; the next step's ternary written `== first ? NONE : next` 24; the
+// iterator's count as a char 35 (211 B; 0x21b870 18, 0x21bd00 21); the element through a track-view local with the
+// state read through a playback cast 24; this function moved ahead of its two siblings in the file 24.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -2096,7 +2101,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax S (11-16): score 305 (was 305): no new form; the length 1923 agrees but this build's frame is 0x11c
 // against retail's 0x128, so every stack slot is off by 0xc from the first store on; the missing locals are what
 // keep the two apart.
-// score 305 (was 305): The 0x11c frame still differs from retail 0x128, as do the playback and range-loop homes.
+// score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // Earlier: the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
@@ -2122,7 +2127,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // itself, as every caller passed `0 - maximum, maximum` (0x1269f0 matched with it): the gain
 // step's call 307 -> 305 (plain).
 
-// score 305 (was 305): The 0x11c frame differs from retail’s 0x128, with the sound ordinal, pitch-range state
+// Earlier at 305 (was 305): The 0x11c frame differs from retail’s 0x128, with the sound ordinal, pitch-range state
 // and detail request at different stack offsets.
 // MiniMax H (11-12): no new form, no lower score (305); the sound-event block's gain sum and the two getter stores are unchanged.
 // MiniMax B (11-11): no new form, no lower score (305): retail folds the pair's +8 into the lea that forms its
@@ -2469,6 +2474,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 418: Shared long sound slot 305, with latch pool 418, with guarded successor and latch pool 413. Shared
 // word slot 449, with latch pool 336, with guarded successor and latch pool 348. Shared dword slot 305, with
 // latch pool 418. Every frame remains 0x11c.
+// M3 lane 5 r206 (plain): the 462 at 1939 bytes came from MiniMax B's shared pitch-range count local (scored on the
+// reduced image); each loop bounded by `playback->pitch_range_count` again 305 (kept; frame 0x120 with the 0x94 tail),
+// the 0x94 tail dropped as well 305 (frame 0x11c), the tail dropped alone 460 (1939 B). On 305: the mask bit tested at
+// each use in the second loop 415; with the sounds by memset(NONE) 423; with the gain sum through s_decibels operator+
+// 408 (1939 B); with a count in each pitch-range for-init too 351; with the pitch sum split (lower bound added after) 349.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2531,8 +2541,7 @@ void function_21b0e0(bool update)
 							if (entry->definition_index == definition_index && entry->state == 2)
 								sounds[entry->pitch_range_index] = current;
 						}
-						long pitch_range_count = playback->pitch_range_count;
-						for (long i = 0; i < pitch_range_count; ++i)
+						for (long i = 0; i < playback->pitch_range_count; ++i)
 						{
 							s_permutation_set *set = &g_51ebd4->sets[playback->pitch_range_base + i];
 							s_looping_pitch_bounds *bounds = &((s_looping_pitch_tables *)g_51ebd4)->bounds[*(short *)((byte *)set + 2)];
@@ -2542,7 +2551,7 @@ void function_21b0e0(bool update)
 							if (clamped == pitch)
 								active_mask |= 1 << i;
 						}
-						for (long i = 0; i < pitch_range_count; ++i)
+						for (long i = 0; i < playback->pitch_range_count; ++i)
 						{
 							dword active = active_mask & (1 << i);
 							if (!active && sounds[i] != NONE)
@@ -3527,6 +3536,11 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // EDX and its home (reloaded after each call) with NONE in ESI; old_end then takes EBX where retail has ESI and the
 // constant 1 in EBX; the start arm's shared tail (retail stores the zero and reloads it); i and track_definition
 // hold each other's homes (0x54/0x50, retail 0x50/0x54).
+// M3 lane 5 r206 (plain): in the track loop retail keeps the index in memory, the track in EBP and NONE in ESI (ours: index
+// ESI, track definition EBP, NONE EBX). The loop index as `short` 623 (2503 B); track_alternate as one direct `alternate &&
+// (... != NONE || ... || (flags & 0x14))` expression 614 (2519 B); the seed pointer chosen after track_alternate 629 (2508 B);
+// track_alternate computed after the created block 641; track_definition declared after the track and seed pointers 596
+// (a declaration move under the keep bar).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

@@ -1923,6 +1923,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // used is the same; ours has one unreferenced dword below the look pair (frame 0x30), and packs the weapon-active byte
 // with the unit/flags home (-0x18) and the zoom, indices pointer and idle globals with the spring_d home (-0x14), where
 // retail packs the active byte with spring_d (-0x14) and the zoom group with unit/flags (-0x1c), mode at -0x18.
+// M3 lane 14 r116 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the saved 40-point set (preset
+// active flag, `== 0 ? right : left` callback, channel byte in a long tested bit by bit, positive zoomed/scoped, per-arm
+// overlay play under `else if (zoomed)`) re-measured 40 at 2199 B on current main, still match-only and BLOCKED by the
+// stand-in (round 98). Its keepable part alone (positive zoomed/scoped with `scoped = zoomed && ...`, rate arms in the
+// positive order, the clear test without the implied zoom term, the overlay set read once, one shared overlay call) 386
+// (2189 B); positive zoomed/scoped alone 205 (2203 B); the set without the four match-only forms (per-arm play under a
+// plain `else`) 379 (2187 B); only the clear test's implied zoom term dropped 368 (2186 B).
 // M3 lane 15 r105 (fast, plain where marked; aligned/masked = difflib counts with addresses / also registers masked, 60/57
 // at 188): retail's zoom logic as positive bools (zoomed = speed > 0.1f, scoped = zoomed && the 0xc8a10 query, both cleared
 // on the 0xd03b0 query, scoped cleared when the overlay lookup fails; rate `if (zoomed) { scoped ? 1 : pin } else if

@@ -1429,6 +1429,12 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // MiniMax H (11-03): no new form, no lower score; ours puts item_count at ebp-8 and index_count at ebp-0xc where retail puts index_count at ebp-8 and item_count at ebp-0xc, and the permuter's best candidate (the mode-one call to 0x199dc9 with its two arguments the other way round) gives 79 in both images, under the keep bar.
 // MiniMax I (11-01): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score: the index_count/item_count homes stay swapped and the tail fill stays a pointer loop.
+// MiniMax A (11-19): no new form, no lower score (83): retail sends mode 3 into the second branch and keeps the
+// sort inside that branch's else arm (`cmp ebx,3` after `item_count = player_count`), so nesting the sort there
+// measures 131 (the mode moves from EBX to EDI and the scan counter takes EBX). Defining item_count at the top
+// of the function, before index_count, does move the two homes to retail's [ebp-8] and [ebp-0xc], but the frame
+// grows to 0x58, the mode is spilled to [ebp-0x10] and the player count to [ebp-0x18] (121 with the branch's
+// zeroing kept, 137 without it). This body stands.
 // score 83 (was 83): the fills are pointer loops (retail: guarded rep stosd from an index loop) and the
 // index_count/item_count slots are swapped; branch two gives EDI to the 0x199ef8 result and keeps
 // index_count in memory (`inc dword ptr`), where retail keeps index_count in EDI through both scans and
@@ -2758,6 +2764,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax B (11-19): no new form, no lower score (87): the frame agrees at 0x788 and the first difference is still
+// the shown count's home (ebp-8 against retail's ebp-0xc), with the first loop's element address at ebp-0x18 against
+// retail's ebp-8 and the player at ebp-0xc against retail's ebp-0x14, so the six spill slots stay one six-step
+// cycle off retail's; moving the homes needs the declarations reordered, which the rules bar. The voice query still
+// keeps the player across 0x53b40 where retail reloads it (a store through a pointer somewhere in that chain, in
+// src/network_voice.cpp, another lane's file), and the last loop still keeps the screen in ebx where retail gives ebx
+// to bitmap_a.
 // score 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
 // keeps it at ebp-0xc, the first loop's element address ebp-0x18 where retail keeps it at ebp-8 and the player ebp-0xc
 // where retail keeps it at ebp-0x14, so the six spill slots stay one six-step cycle off retail's; the voice query
@@ -3046,6 +3059,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // bitmap_a and EDI to text_b and loads the screen into ECX, then EDI; ours keeps the screen in EBX for all five calls
 // and false in EDI). On the 81 form: the helper's default arm chained (`*text_a = *text_b = NONE; *bitmap_b = *bitmap_a =
 // NONE;`) 86 (925 bytes, aligned 48); the last loop on its own counter 81 (same code); both 86.
+// M3 lane 12 r148 (fast with 0x24fd74/0x2507c3/0x22f042/0x250155/0x22ee47, all MATCH each time; control 87): the slot
+// helper's default arm as copies through the outputs (`*text_b = NONE; *text_a = *text_b; *bitmap_a = NONE; *bitmap_b =
+// *bitmap_a;`) 92 (925 B); its two case arms storing the bitmaps before the texts 194 (944 B); the team byte read into a
+// `long` in the second loop 94, in the first loop 259 (919 B), in both 259 (919 B). Body unchanged.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

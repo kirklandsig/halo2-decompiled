@@ -2254,6 +2254,24 @@ void function_2818e0(void)
 // 2, with per-pass counts read from the settings global 400 (1684 bytes), in three declaration orders each; the
 // inheritance through a `s_graph_inheritance const *const &` local with one count 62 (the translation pass's fold
 // order flips, the reload pair stays), with the count copies 2. All restored.
+// M3 lane 3 r266 (fast with 0x27dff0, 0x285750, 0x288570, 0x289580, 0x28aaa0): function_288572 applying through the
+// file's component_apply in place of its duplicate function_288573 2 (0x288570 3, 0x289580 78: the duplicate is part of
+// the tie); the group end as `index + 8 < count ? index + 8 : count` 53 (all six 9-53); the saved frame index typed long
+// as its field 2; the scale counter under `else if (component == 2)` 2; the output pointer chosen by if/else in place of
+// the ternary 2 (all three the same code). All restored.
+// M3 lane 4 r221 (fast with 0x27dff0 and the five matched walk users): in function_288572 the non-empty arm as
+// `else if (local_2 != 0)` 2 (every user unchanged); the channel counters as a switch on the component with a
+// `default: __assume(0)` 357 (1690 bytes, every walk user regresses); component_decompress as such a switch 352 (1686
+// bytes); the interpolation's output restore written as the top's `local_0 ? local_1 : &g_504430` 2 (0x288570 383,
+// 0x289580 78); the kind-2 clamp as `local_2 >= 2` 2 (same code); the group end as `arg_7 < arg_5 + 8 ? arg_7 :
+// arg_5 + 8` 8 (every walk user 6-8). Diagnostic: `__assume(local_2 != 0)` at the top of the non-empty arm 350. In a
+// compile-only build of the file any `__assume` in the walk (on the flags, on the count, or a switch default) puts
+// the pair in retail's order, but it also stops node_flags_test's bool from folding into the branch (setne/test),
+// and with node_flags_test returning its expression directly the pair stays reversed. Compile-only screens (exact
+// here, with 0x27dff0 and the matched walk users): all 216 orders of the interpolation's three saves, three swaps and
+// three restores best 2 (two save orders give the same code, every other order moves 0x285750 or 0x288570);
+// root_offset_scale's three conditions in all six orders, its product as `*=` or with the operands swapped 2 (same
+// code or only a branch order). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

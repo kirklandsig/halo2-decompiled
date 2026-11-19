@@ -523,6 +523,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // sum named where it is computed (`long end = start + count;`) 28 [6]; the clamped size in a `size` local with the early
 // source 28 [39]; the sign tests as nested ifs 21 [match] (same code); the source named before the length 37 [84]; the
 // scan on a `text` copy of the string with the source at the call 28 [6].
+// M3 lane 14 r115 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the function as a member of the
+// 512-byte text type with the destination as the object (volatile string parameter kept, natural body) 28 [9] (start EDX
+// for life, walk EDI, as the natural body), without the volatile 48 (93 bytes) [88]; the same with the count tested first
+// 40 [37]; a const member with the string as the object, count first, source at the copy 45 (103 bytes) [81]; the natural
+// body reading start once through its own address at the copy's sum 35 [25].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
