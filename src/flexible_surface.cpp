@@ -366,6 +366,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax C (11-19): no new form, no lower score (130): frame 0x1c against retail's 0x20, the seed pointer loaded after the surface lookup instead of in the prologue, and the random sample at [esp+0x14] against retail's [esp+0x18].
 // score 130 (was 130): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
 // M3 lane 2 r107 (fast with 0x118140, which stays MATCH; fast = plain 130): the convention is already retail's (index in EAX,
 // wind in EBX, plain ret). Retail loads the random-state pointer into ESI right after `push esi` and finishes the seed
