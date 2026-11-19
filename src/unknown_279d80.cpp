@@ -2272,6 +2272,17 @@ void function_2818e0(void)
 // three restores best 2 (two save orders give the same code, every other order moves 0x285750 or 0x288570);
 // root_offset_scale's three conditions in all six orders, its product as `*=` or with the operands swapped 2 (same
 // code or only a branch order). All restored.
+// M3 lane 8 r197 (fast with 0x27dff0 and the matched walk users; a compile-only screen of this file is exact here, 2):
+// the blend asm split into two blocks at the fraction load 2; the multiply asm split after its first operand load 2;
+// the interpolation's blend fraction named before the blend call 2; the blend asm's sign constant as a const SSE
+// vector initialised `{ -0.0f, 0, 0, 0 }` 2 (0x285750 33), non-const 2 (screen); the blend asm loading the source
+// before the destination 4 (screen). Diagnostics (screen): 1 to 8 dead locals at the top of function_288573,
+// of function_288572 or of the wrapper move every symbol number by up to 400 and never flip the pair (pass 0 count
+// first, pass 1 flags first throughout), so it is not a symbol-number tie; any float constant in emitted code
+// flips pass 0 (`* 2.0f` on the blend-2 scale 1, one extra instruction; 1, 2 or 3 distinct constants alike), a
+// double negation 6, while an extra product with a float global, an int store to a new global or a folded
+// `* 1.0f`, `+ 0.0f`, `- 0.0f`, `/ 1.0f` do not. With both blend-3 arms written as blend 2's, 0x285750 gets the
+// pair reversed too; either of its arms alone keeps retail's order. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
