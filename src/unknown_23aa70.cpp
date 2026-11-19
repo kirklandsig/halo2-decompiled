@@ -167,6 +167,9 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // that as build/r209/held-23aad0.patch (0x17e670 declared (point, source, ...) at its definition, both declarations and
 // both calls; the entry declared before the tag), still gives MATCH (fast; 0x17a8a0 21, 0x17e670 421). Still BLOCKED-BY
 // 0x17e670 (contributor code).
+// MiniMax D (2026-11-19): no new form, no lower score (16): the sixteen points are register allocation around the
+// palette lookup - the global and its data in EDX/EAX against our EAX/ECX, and the entry pointer in ECX against EDX.
+// Tried: computing the entry pointer before the tag index so the global load comes first (17, worse).
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

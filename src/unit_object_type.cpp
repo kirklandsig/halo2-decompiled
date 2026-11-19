@@ -5443,6 +5443,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // direction components read at each use instead of the three named copies 262 (682 bytes). Retail keeps
 // forward_scale on the x87 stack to the end (popped with cosine, `fld [m]; fmul st(n)` in all three rows) where
 // ours consumes it in the k row with an fxch. Not kept; original body restored.
+// MiniMax D (2026-11-19): no new form, no lower score (169): the first difference is inside the inlined cross-product
+// helper, which lives in a header this lane may not edit, and our build is one byte longer than retail's, which moves
+// the branch targets in the bit-test dispatch.
 // projection components have independent scalar destinations 187; projection destination declared outside the
 // basis phase 169; basis forward workspace reused as the projected direction 169; basis up workspace reused as the
 // projected direction 184; scalar horizontal projection consumed before the vertical projection 187; planar

@@ -5486,6 +5486,11 @@ struct s_damage_object_creation
 // P579: Scalar transfers at object tag/model tag/original component/section bound/node state,
 // paired metadata zero-byte memset, then creation-tag/created-component transfers: 144/149/146/146/146/144/161/146.
 // NOT kept: no exact native entry/bitmap/search recovery; original complete body and observations restored.
+// MiniMax D (2026-11-19): the detach count now starts at zero inside the section-mask branch, the section decision is
+// `detached > 0 && tag != NONE`, the node bit is unnamed and the search keeps the while/ternary shape: 167 fast (795 B)
+// from 178 (799 B). NOT kept: the for/break search (223, frame 0x13dc) and the guard order on its own (177).
+// Left: the section loop's count/mask/bit registers, the g_51e9b8 and datum reload registers, the attachment store
+// order and the register the search hands to the node lookup.
 // m3 lane 8 r176 (fast with 0xdb810 and 0xdbb40, control 146): the section loop's register choice (retail keeps the count in
 // EAX and mask_a in EDI and spills the datum offset; ours keeps the offset in EDI and spills the count into the mask's slot):
 // the count declared in the for-init 146 (same code); both mask parameters `word` 146 (same code); the bound read as
@@ -5549,7 +5554,6 @@ void __stdcall function_dbc80(long object_index, short section_mask_a, short sec
 	if (object_definition->model_tag_index != NONE && object->node_index != NONE)
 	{
 		s_havok_component *component = (s_havok_component *)(g_51e9b8->data + (object->node_index & 0xffff) * 0xa0);
-		long detached_nodes = 0;
 		s_havok_node_states states;
 
 		havok_component_node_states_get(component, &states);
@@ -5559,6 +5563,7 @@ void __stdcall function_dbc80(long object_index, short section_mask_a, short sec
 			long node_count;
 			long node_records;
 			long i;
+			long detached_nodes = 0;
 
 			function_ba690(object_index, &node_count, &node_states, NULL, &node_records);
 
@@ -5566,9 +5571,7 @@ void __stdcall function_dbc80(long object_index, short section_mask_a, short sec
 			{
 				if (node_states[i] != 0xff)
 				{
-					dword node_bit = 1 << i;
-
-					if (!(attached_nodes & node_bit))
+					if (!(attached_nodes & (1 << i)))
 					{
 						byte *node = (byte *)node_records + i * 8;
 
@@ -5577,11 +5580,11 @@ void __stdcall function_dbc80(long object_index, short section_mask_a, short sec
 						node[1] = 0;
 						node[2] = 0;
 						*(long *)(node + 4) = NONE;
-						detached_nodes |= node_bit;
+						detached_nodes |= 1 << i;
 					}
 				}
 			}
-			if (object_definition->crate_object.tag_index != NONE)
+			if (detached_nodes > 0 && object_definition->crate_object.tag_index != NONE)
 			{
 				while (detached_nodes != 0)
 				{
