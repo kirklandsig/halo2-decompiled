@@ -315,6 +315,11 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // 0x2170e0 still matched), also in the cached loop 170 (same code); packing from `iterator.index` before an increment at
 // the loop's end 170 (aligned 70); `type == location.type` 170 (same code).
 // (The first line read 114, was 110, before round 261.)
+// M3 lane 8 r189 (fast with 0x2157e0/0x215880/0x2163d0, all MATCH; control 114): the packing as retail's nested chain
+// ((((generation << 14 | index - 1) << 4 | unit) << 4) | type) 114 (same code); that with the generation read through
+// the getter inside it 177 (560 B); the plain packing with the generation read inside it 177 (560 B); the iterator's
+// table as `&(&cache->locations)[unit]` 114 (same code); the unit count computed ahead of the g_51ea14 test 171. The
+// /GL- object still names g_51ea14, so the entry load is not carried in EDX to the cached block.
 // M3 lane 3 r261 (fast with 0x2157e0, 0x215880, 0x2163d0, 0x1249f0, 0x13de30 and the five callers, all MATCH;
 // control 114; on the current body, not the iterator chain): the unit loop's test as `count < *capacity && pass <
 // units` 107 (the entry test then reads the capacity word first; retail tests the unit count first, so the gain is
