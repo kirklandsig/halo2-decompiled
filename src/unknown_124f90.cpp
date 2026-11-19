@@ -1352,7 +1352,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 87 (was 87): Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
+// score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
+// Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
 // and the first difference is the elapsed time's register (retail XMM3, this build XMM2) with the reciprocal one
 // lower to match (retail XMM2, this build XMM1); the copy of the fade-in time dropped so that the inverse is
@@ -1762,6 +1763,12 @@ long function_2197f0(real gain);
 // (52/54/17, the fade-out still from memory); elapsed declared const 87 (same code); the fade-out local with arm 1
 // written interpolation first (retail's `other` there is the gain copied into XMM1) 161 (688 B, the copy goes to a
 // new stack slot). No change kept.
+// independent transitions use their own gain accumulator 112; independent gain accumulator with attack index read
+// at the join 112; independent gain accumulator returned from its phase 126; independent gain return with attack
+// index read at the join 126; separate completed release gain and attack gain returns 119; separate release and
+// attack gains with attack index read at the join 119; post-release gain bits supply both late outcomes 161; post-
+// release gain bits with attack index read at the join 161.
+// NOT kept: separate release and attack returns recover the 678-byte extent at 119 and split off the initial gain return. Every form raises the score.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3244,7 +3251,8 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
-// score 96 (was 96): The result byte takes four extra frame bytes. The entry loads and failure tail still differ.
+// score 96 (was 96): The saved byte result takes four extra frame bytes. The entry load order and failure join still differ.
+// The result byte takes four extra frame bytes. The entry loads and failure tail still differ.
 // MiniMax B (11-18): no new form, no lower score (96): retail keeps the outcome in AL (set at the entry, cleared on the
 // failure path with xor bl, bl and moved back) while this build keeps it in a stack byte at [esp+0xf], so the frame
 // is 0xc against retail's 8; the closest form (15) needs a goto into an arm, a redundant store and a moved
@@ -3662,6 +3670,12 @@ static inline short sound_voice_find_available_channel(char type)
 // NOT kept: the Boolean paths recover the eight-byte frame but change entry and failure joins.
 // Entry channel result with plain/complemented status: bool has-channel 135/138,
 // bool needs-channel 182/185, byte has-channel 176/179, byte needs-channel 182/185.
+// counted while scan over cached inclusive bounds 96; cached inclusive bounds with return from the found channel
+// 96; inclusive last channel read once before the scan 96; both inclusive channel bounds read before the scan 96;
+// full-width selected index with both inclusive bounds 96; separate guards skip unavailable and streaming channels
+// 96; positive free-channel guard nests the streaming guard 96; single rejection guard skips unavailable or
+// streaming channels 96.
+// NOT kept: all eight search forms tie at 96 and keep the twelve-byte frame, result spill and failure join.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
