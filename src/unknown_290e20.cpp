@@ -393,6 +393,10 @@ struct s_ai_scene_assignment
 	short variant_indices[10];
 };
 
+// Matched in a full build with stand-in SDK headers (was 12): the `limit` copy of the maximum is gone (the
+// parameter is used in both compares and in the recursion) and the iterator is passed to ai_actor_iterator_new
+// through a reference-bound local; the maximum then takes esi and is loaded as a dword as in retail.
+// Before:
 // score 12 (was 12): the maximum count lives in esi through the loop as
 // retail has it, the role index is reloaded from its argument slot at each use
 // as retail does, the assignment copy reads the previous assignment by index
@@ -603,12 +607,13 @@ void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignm
 	}
 	if (local_3 == NONE)
 		return;
-	int limit = maximum_count;
 	s_ai_actor_iterator local_4;
-	ai_actor_iterator_new(local_3, &local_4);
+	s_ai_actor_iterator *iterator = &local_4;
+	s_ai_actor_iterator *const &kept = iterator;
+	ai_actor_iterator_new(local_3, kept);
 	while (ai_actor_iterator_next(&local_4))
 	{
-		if (*assignment_count >= (short)limit)
+		if (*assignment_count >= maximum_count)
 			break;
 		long local_5;
 		short local_6;
@@ -622,14 +627,14 @@ void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignm
 			if (local_2)
 			{
 				++*assignment_count;
-				if (*assignment_count >= (short)limit)
+				if (*assignment_count >= maximum_count)
 					break;
 				local_0 = &assignments[*assignment_count];
 				*local_0 = assignments[*assignment_count - 1];
 			}
 			else
 			{
-				function_2919e0(scene, assignments, assignment_count, limit, role_index + 1, role_count,
+				function_2919e0(scene, assignments, assignment_count, maximum_count, role_index + 1, role_count,
 					ai_index, ai_index2, ai_index3);
 				local_0 = &assignments[*assignment_count];
 			}
