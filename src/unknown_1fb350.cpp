@@ -662,6 +662,29 @@ extern "C" void _ReadWriteBarrier(void);
 // barrier, the 20 form's step): the release through `pool` 118 (475 B), with the file's getter 118, through the global
 // 120; the old step with a pool local for the step and the release 140; the 118 form mixes the global and the pool
 // local (match-only), so it is not kept either.
+// M3 lane 6 r204 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, 0x1fb360 and 0x7b430, all MATCH each run; control 122; lane 11
+// r115's 20 form re-applied, 20 at 473 bytes, register-masked aligned 0: saved whole as build/r204/lead-1fb510-20.full.cpp in
+// worktree m3-lane6; body here unchanged). What sets the 20 form's rotation, by diagnostics on it (each reverted): without
+// the first restore call, `recorded_animation_object_set_flag(object_index, 0, (flags & 4) != 0)`, the datum index takes
+// EDI and the header and the pool's data temporary EBP exactly as retail (the listing agrees from the entry down to the
+// restore arm, 78 leading rows); without the second flag call, the `flags & 8` block, the 0xcbf60 call or the tick arm's
+// body the datum index stays in EBP. So the one value that outranks the datum index here is that first call's object-pool
+// data temporary: with the object index, the flags byte and the pool pointer held in EAX, CL and EDX across it, it needs a
+// saved register, takes EDI ahead of the datum index, and pushes the datum index to EBP (retail gives it EBX, after the
+// datum index has EDI). In that diagnostic the second flag call's value takes EBP where retail's takes EBX, so retail also
+// has something alive in EBP through the restore arm. Forms tried on the 20 form to move that order, all 20 unless noted:
+// the step's three stores in the order datum, datum index, index, through a local datum pointer, or index first
+// (file-local copies of the step); the three stores written out in the body on the iterator's fields, in two orders, and
+// with the element pointer assigned first; the datum index stored again after the step; the iterator declared after the
+// other locals; the helper as an if/else (`*flags |= ` / `*flags &= ~`) or as a static forceinline; the helper on a named
+// object pointer 61; the helper with the object's flags written out at each use 188 (510 bytes); the old value named ahead
+// of the conditional 172 (495 bytes); the first call's flag as `(bool)((flags >> 2) & 1)` or held in a named bool; the
+// unit's index named once for both flag calls 65; the restore arm as three separately guarded parts (`if (unit)`, `if
+// (unit && (flags & 8))`, `if (unit && (flags & 0x10))`), with only the last part guarded apart, or as two `if (unit)`
+// blocks; diagnostics: the two flag calls swapped 172, the first one moved after the 0xcbf60 call 100 (the datum index
+// still EBP), a constant flag 152, the second flag call as a direct `&= ~FLAG(22)` 52. Next: a spelling of that first call
+// (or of the unit lookup before it) that leaves a scratch register for its pool data, or that ranks the datum index above
+// it; reference counts of the datum index do not (lane 15 r107).
 // @retail 0x1fb510
 void function_1fb510(void)
 {

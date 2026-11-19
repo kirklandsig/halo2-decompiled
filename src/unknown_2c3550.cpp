@@ -898,6 +898,35 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // loop head, and holds the flag pointer in EDI and NONE in EBX from the prologue on. `last` as `final_complete && step == count -
 // 1` 762 (2948 bytes, the frame changes); the out-count test as `!(*out_count < 4)` 675 (same code); `count - 1` named once as
 // a short for `last` and the failure path's test 733 (2976 bytes); `object_index != NULL` 675 and `actor != NULL` 675 (same code).
+// m3 lane 6 r204 (fast, plain agrees; 0x270930 and 0x2c4030 matched each time; difflib counts as [exact, stack offsets masked,
+// registers masked too], control 675 [418, 362, 276]; nothing kept, the whole form is build/r204/lead-2c41b0-shape.patch in
+// worktree m3-lane6). Lane 14 r77's shape re-applied 771 [357, 276, 158]. On it, each step read off retail's listing: `short
+// ignored`, the enabled bit as `(bool)((g_557c40[9 >> 5] >> (9 & 31)) & 1)`, an entry pointer in both transform loops (retail's
+// folded first read then `lea`), `!avoid` arm first, inserted count and truncation flag ahead of the value28 test, `short
+// node_index`, the copy-out loop on a local output count stored once after it, a short index in the ignored loop, the segment
+// direction as a three-float local normalised by the file's avoidance_normalize2d with `k = 0.0f` after it: 764 (3002 B)
+// [344, 279, 121]. Plus a named `point3f const *goal = &input->point.point` for the direction, both searches, the point copy
+// and the z reads (retail keeps it in ESI after the search call) 808 [283, 219, 95]; plus function_2c0d60's direction pointer
+// declared between `direction` and `unit_index` (retail computes that ECX argument right after the last two pushes, i.e. it is
+// the ninth parameter; definition, three declarations and three calls changed together, 0x29a190 stays matched, 0x29cbb0 378
+// unchanged, 0x2c0d60 920 -> 928 plain) 807 [286, 220, 88]; plus the search's flag as a byte parameter and field (retail pushes
+// the source record's byte zero-extended, no test/setne; 0x2c4030 and 0x2c3900 stay matched) 795 [279, 213, 81]; plus `actor =
+// NULL` declared ahead of the radius (retail zeroes EAX in the first block) 794 (3018 B, plain 794) [277, 210, 74]. Those last
+// two alone on main's body 715 (2960 B) [407, 347, 267]. On the 764 form: without the local output count 743 (2938 B) [294, 225,
+// 108] (that local alone moves the prologue's homes), `long ignored` 772, `long node_index` 757, without `k = 0.0f` 739 (2986
+// B), inserted count declared late 764 [355, 287, 138], the radius as an if 788, first_output declared before the loop 764. On
+// the 794 form: the start pair as two conditionals after or before the input pointer 818/813, the if/else arms' statements
+// swapped 815, the input pointer first 813, `last` after `ignored` 794, `last` first 795, search pointer first 794; the actor's
+// linked index through actor_get again, an array subscript, a named long read first, a typed view pointer or `data + 0x26c +
+// index * 0x888` 794/794/794/795/794 (none gives retail's data base in EBP with `[eax + ebp + 0x26c]`); the state-point add
+// through the existing obstacle_list_add 812 [315, 175, 84]; 0x2c0d00 with plain x/y/radius stores (diagnostic) loses its
+// match (18) and gives 774 [319, 172, 80]. Left on the 794 form: this build keeps a zero in EBP through the prologue and the
+// state in EBX (retail: state EDX, actor index ECX, actor and its zero EAX, NONE EBX, the pool data in EBP), which rotates with
+// unrelated edits (`long step` gives state EAX, actor index EDX, actor ECX: retail's three one step round); the two inlined
+// obstacle adds (retail loads the arguments ahead of the count test; 0x2c0d00's body reads radius and y through its own
+// steering forms, so it inlines with a spill); previous_node carried in ECX to one store after the value28 arms; the node
+// walk's parent read placed after the y copy. Positional counts only fall once every block has retail's row count, so the
+// next round should finish the alignment on that patch (the adds first), not on this body.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
