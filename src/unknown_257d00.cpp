@@ -2498,6 +2498,16 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // `return 1` / `return 0` exits and no result local 639 (2368 B, masked 75); with case 18's references in two named locals
 // checked one at a time and case 6's flag byte named for two stores 624 (masked 54; case 6 still folds to `or 0x69`); case
 // 18's named references alone 528 (2424 B, swapped); case 13 through the shared exit 478 (2400 B, masked 84).
+// M3 lane 6 r203 (fast with 0x110ab0/0x258b60/0x258a00; control 433, aligned 117/118): retail sends case 13 and the
+// default to one return-1 block that follows case 0 with the post-switch test, and cases 5 and 10 jump into case 0's
+// `sete`. That reads as the test and epilogue copied into each case and merged back into the first copy. Ours places
+// the test after case 20, whose else arm stores the flag and falls into the reload. Retail's short sibling 0x258cf0
+// returns through `xor ax, ax`, so the 32-bit `mov eax, 1` here comes from the merged result path, not the type.
+// Tried: a long return type (declaration, definition and the 0x258a00 call cast) with the result gotos 481 (2404 B:
+// case 13 merges into the end block), the same with plain returns 481; case 20's else arm as one assignment
+// `local_3 = unknownb0 == NONE || unknownd1` 527 (2432 B); local_2 declared ahead of local_0 433 (same code), and on
+// the case 2 aggregate copy + case 4 direct facing base 623 (same as that base, 623: actor EDI / state EBX; with the
+// two registers swapped back it is aligned 131 against the baseline's 117, so those forms are not retail's alone).
 // M3 lane 5 r204 (fast with 0x110ab0; control 433; all restored): case 6's second OR through a signed char view 433
 // (same code: still `or 0x69`); case 4 reading the state's facing at each use 611 (2400 B, re-measured on this base:
 // actor EDI, state EBX); on it one, two or three unused locals in the case 611 each (same code: the exchange is not a

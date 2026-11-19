@@ -1901,6 +1901,15 @@ real function_30bf0(vector3f *vector);
 // reflected color through RGB pin 449, reflected destination pinned in place 499, reflected pin with const bounds 449, in-place reflection pin and rotation 522.
 // primary color from secondary 489, type test before magnitude 405, tag table snapshot 395, branch-owned lookup 505.
 // NOT kept: the reflected clamps recover the frame at higher scores. Primary color reuse, early type classification and the table snapshot lose 0x3db00.
+// M3 lane 6 r202 (fast with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10; 0x3db00 matched in every row; control 378, aligned 202):
+// the block read through a `s_tag_instance const &` to the table element 379; the base limited through lighting_pin_color
+// with two const bound colours 580 (1742 B). Diagnostic, dead initialised longs at the top: K = 0, 1 and 32 keep this code
+// (frame 0x4c), K = 2 to 30 give frame 0x40 and 1870 B (445, aligned 219), so the frame size is a referenced-symbol-count
+// state, not a slot problem. On direction2 copied, negated and rotated in place (as 0xd37f0 writes it; retail evidence):
+// K = 0 460, K = 1, 2, 7, 8, 9, 16 377 (aligned 167, the closest shape: frame 0x40, 1877 B), K = 3, 4, 10, 11, 12 459,
+// K = 5, 6, 13, 14 463; plus the colour2 positive checks as select stores K = 0 450, K = 1, 2 445, K = 3 451. So the
+// in-place rotation wants one more referenced symbol (mod ~7) than this body has; no natural one-symbol form was found:
+// the in-place rotation through a named `vector3f *turned = &record->direction2;` used four times 482 (1892 B).
 // M3 lane 1 r125 (fast with 0xd37f0, 0x3db00, 0x3dfe0; control 378; ours already ends `ret 4` as retail): the final
 // pins' bounds as function-scope `static color3f const` tables 446 (1870 B and frame 0x40 as retail: the bound aggregates
 // leave the frame, but the pins still store before the next compare and the blocks move); the same with the two colours
@@ -2593,6 +2602,12 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // at +0x20 and the length and result after it. Retail's three scalings differ in form: the base normal load-multiply-store
 // three times, the dynamic normal in registers, the output load, copy, load (0xd26c8); see the 0xd4080 note for what
 // selects those forms.
+// M3 lane 6 r202 (fast; control 542, register-masked aligned 294): K = 1 to 6 and 8 dead initialised longs at the top 543
+// each (masked 295): the homes are no symbol-count state. Diagnostics: the second arm's 0x13da30 lookup under one more
+// test (a test the compiler folds 542; a real one 610, 3148 B) is still expanded (25 calls either way), so its expansion is
+// not the site's test depth alone; of the two magnitude3d sites (same depth) ours calls the base length's and expands the
+// dynamic length's, retail calls both. The second arm's `real u, v;` or `color3f sampled;` declared at the arm's top 542
+// each (same code). Retail also loads the 0x24490 definition into ECX and copies it to EDI for the call; ours loads EDI.
 // M3 lane 1 r125 (fast with 0xd4080 and 0x3db00, unchanged/MATCH; control 542; ours calls 0x30bf0 as retail does, the
 // call-boundary difference left is the second arm's 0x13da30 lookup, expanded here): the three per-component scale loops
 // written as explicit i/j/k statements 657 (3057 B), the two normalize loops only 606 (3108 B), the final length loop only

@@ -621,7 +621,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // MiniMax I (11-15): no new form, no lower score (34): the player count is tested in EDX here and in EAX in retail, and the copy, the fill, the call setup and the final clamp all follow from that one register, which retail's only caller fixes.
 // MiniMax G (11-18): no new form, no lower score (34): the player count is still tested in EDX here and in EAX in retail,
 // and that one register decides the copy, the fill, the call setup and the final clamp; retail's only caller fixes it.
-// score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
+// Earlier at 34 (was 34; this second score line is merged into the one above, m3 lane 6 r204): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the
 // player count. The body, not the parameter order or the caller, decides them.
@@ -985,6 +985,25 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // assignment 34. A `/Gd` first-pass compile of each (and of the copy guarded by `if (0 < player_count)`, the fill
 // guarded by `player_count < total` or `0 < extra_count`, and the file without `/arch:SSE`) still loads the extra count
 // into EAX and keeps the player count in EBX, where LTCG then gives it EDX.
+// M3 lane 6 r204 (fast with 0x91e30, MATCH each run, and 0x7e210 871; control 34, register-masked aligned 2). Nothing kept.
+// The count parameters reused: the fill stepping the player count itself, `for (; player_count < total; player_count++)`
+// 34 and as a `while` with `parties[player_count++]` 34 (same code); the total kept in the extra count (`extra_count +=
+// player_count;`) 27 at 190 bytes, but with `mov ebx, eax; add ebx, edx` for retail's `lea` and the roles unchanged
+// (register-masked aligned 5 against 2: a positional gain, not kept); that with the stepping fill 27 (same code); the
+// total kept in the player count with a `copied` local for the two loop bounds 51 (192 bytes); the fill counted down on
+// the extra count (`while (extra_count-- > 0) parties[player_count++] = next_party;`) 62. The three register parameters
+// in retail's call-site order (extra_count, party_indices, player_count) placed at each position among the seven stack
+// parameters (before team_count, after it, after maximum_team_size, after flag_parties, after flag_maximum, after
+// use_parties, last; definition, the caller's declaration and its call changed together each time): 35 in all seven
+// (`lea ebx, [eax + edx]`, the player count still in EDX; 0x7e210 871/880/880/880/873/873/884), so a stack parameter's
+// place does not move the arrival registers here. The maximum written through `long *largest = &next_party` 34, the
+// fill read through it 34, both 34 (same code; a pointer to a whole local in any case). Diagnostics, reverted: the
+// `(short)` fill re-measured 7 on this order and 6 on (extra_count, party_indices, player_count) (roles as retail, only
+// the `movsx` and the jump over it left); next_party's address stored in a volatile pointer (a true memory variable)
+// keeps the player count in EDX with the same fill code, so it is not next_party's storage that decides the roles: with
+// a plain fill value the load takes EAX at the top of the fill block and the player count cannot have it, and only a
+// fill value that is computed (the conversion) leaves EAX to the player count. No value-preserving natural form of
+// that was found.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
