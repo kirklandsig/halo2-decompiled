@@ -1642,13 +1642,17 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // of the owner and a member-wise copy all leave the same ten (the last one worse), and a permuter run over the body (13 tries)
 // found nothing below the ten.
 // MiniMax R (11-17): no new form, no lower score (10): the owner's three dwords still copy through ecx, edx and eax where retail uses eax, ecx and edx, and the flags store still sinks below the record's address; moving the owner copy after the 1.0f store scores 17 and a cast destination still gives 10.
+// Matched in a full build with stand-in SDK headers (was 10): the pointer at g_4e034c + 0x144 is held in a local that a
+// const reference names before the definition index is read from it.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
 	if (TEST_FIELD_BIT(DAMAGE_OBJECT(object_index)->damage_flags.body_depleted))
 		return;
 
-	long definition_index = *(long *)(*(byte **)((byte *)g_4e034c + 0x144) + 0x14);
+	byte *pointer = *(byte **)((byte *)g_4e034c + 0x144);
+	byte *const &kept = pointer;
+	long definition_index = *(long *)(kept + 0x14);
 	if (definition_index == NONE)
 		return;
 
