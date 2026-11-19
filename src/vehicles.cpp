@@ -3449,6 +3449,11 @@ real g_47ff30 = 2.5f;
 // shared setter for the final world-space force 679. NOT kept: the shared setter and both in-place weight
 // applications recover frame 0xfc and first difference +0x66, but shorten the body to 3216 or 3220 bytes and
 // raise the score. Acceleration and velocity homes still differ.
+// Existing target-limited rate helper alone, retained rates, named climb limit,
+// direct target argument, per-use mass, shared scales, three-phase mass, and
+// shared scales with retained rates 778/778/778/806/804/812/777/770.
+// Direct target and named climb limit with the inline approach 737/672.
+// NOT kept: the target-limited helper stays out of line and the body shortens.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6528,6 +6533,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // relative orientation and state rotation to their actual output phases 1051. NOT kept: the scoped relative
 // product reaches frame 0xdc but shortens the body by 44 bytes and raises the score. Moving the declarations
 // alone leaves code generation unchanged. The index is still in EDI rather than retail ESI.
+// Linear velocity through bank, acceleration through force, target through strafe,
+// the three paired scope forms, all three scopes, and all three with a scoped
+// angular query output each score 978. The 0xfc frame and swapped index and
+// displacement remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -2050,6 +2050,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // the modulo inline in the second reconstruction 600 (frame 0xb964 as retail, but aligned 423, masked 137);
 // radius_squared named in the prism loop 617 (2900 B); first/second declared at prism scope 601 (same code).
 // Lead: the 601 form is the closest structure yet; what is left is one frame temporary and the cursor/point EBX/EBP swap.
+// Separate count/clearance assignments in edge-first or face-first pairs 550/551,
+// edge-first with declarations before the copies or face declarations first 550/550,
+// paired initialization beside each sum or counts beside sums with clearances last 550/551,
+// prism index before the square or square in the admitted loop 551/548.
+// NOT kept: the count and clearance homes remain, and the three-point gain is below the threshold.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

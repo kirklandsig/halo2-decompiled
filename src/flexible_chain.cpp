@@ -794,6 +794,12 @@ void __stdcall function_1160c0(real dt)
 // the stiffness 148; `predicted` through vector3f_add(&position, &offset, &predicted) 204 (retail's 1368 B, but aligned 151
 // against the body's 109). Diagnostic (not counted): 1-8 dead initialised locals at the top 144/144/146/146/146/144/144/144,
 // so the homes and the rotation are no symbol-count tie on this body either. Body unchanged.
+// The segment address still uses EDI/ECX and spills at +0x20 rather than EDX and +0x14.
+// Direct displacement reused as the scaled-add target 162, scaled then added in place 238,
+// scaled into a separate vector before addition 238. Shared point difference followed by
+// those three target forms 273/270/223. Native vector target 144, with direction used for
+// the unclamped displacement 298. NOT kept: the separate vector target ties, and forms
+// that shorten the target workspace change the frame from retail's 0xa4.
 // The segment still needs EDX and +0x14. Conditional attachment point by value/address/interior first
 // 304/304/304, segment reference with named ordinal 144, terminal-predicate subtraction 285,
 // conditional segment addresses against the interior bound 304, preceding-ordinal loop bound 294,
@@ -809,6 +815,11 @@ void __stdcall function_1160c0(real dt)
 // product 144, and default attachment direction with separate physics point 312.
 // NOT kept: the separate physics point expands the frame or worsens the register schedule at retail length.
 // The scalar forms preserve the EDI/ECX segment and the displaced shared spill.
+// The segment still needs EDX and the +0x14 spill. Separate array and signed ordinal,
+// used directly for stiffness, length and rest offset. Ordinal first, terminal count,
+// terminal ordinal, interior first and terminal decrement 272/269/272/269.
+// Array first, same selectors 275/273/275/273. NOT kept: direct indexing
+// moves the stiffness read ahead of the address addition and raises the score.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

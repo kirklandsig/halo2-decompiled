@@ -4533,6 +4533,11 @@ bool __stdcall function_2b278e(long controller_index)
 // reference is still absent after the membership query.
 // The incoming controller reference and the two post-membership index reloads still differ.
 // Dispatch-scope controller index for the initial queries, then with name entry, message permission, both dialog masks, name and permission, name and masks, or all three groups each score 54. All uses with Boolean membership score 199.
+// Callback slot bound before identity, before membership with a fresh index, after
+// membership, or at each dialog: 54 with the existing membership storage in each form.
+// Early identity rejection with the slot and bool, then bool at the other three boundaries:
+// 199/199/199/199. NOT kept: none recovers the two post-membership reads through ESI.
+// The bool forms also shrink case 3 while retaining the initial index in ESI.
 // Named identity-query result 54, index assigned at the identity call 54, Boolean membership with
 // warning assigned on the eligible path 199 or cleared for the excluded kind 192, signed warning result 199,
 // conditional dialog invocation 199, function-scope identity 199, inherited dialog receiver 199.
@@ -5831,6 +5836,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // output-to-scalar transfers 89/89/89; roster transfers at first predicate 89; regular contact
 // before pending queries 384; regular-friend test at invitation 400. NOT kept: the first six
 // forms retain the displaced title-state byte and the invitation forms change the branch layout.
+// The query byte homes still differ in the 0x844 frame. Mode read once for all actions, roster,
+// membership, feedback/offer, cancellation/removal, and the final membership phase
+// 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
+// NOT kept: these forms shorten the body and move the first difference before the friend query.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

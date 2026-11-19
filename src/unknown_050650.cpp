@@ -1489,6 +1489,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // read once through its address; a local copy of the actor index for 0x1e1f20/0x1fc710; those two calls through a
 // forceinline helper returning the weapon index. The permuter cannot search this function (its reduced image reads
 // 310 on the 36 form).
+// Separate remembered input in cases 2/1/both: 309/308/343. Case-local in-place
+// remembered point in cases 2/1/both: 338/337/399. Case-local player point in
+// cases 2/1: 313/203 (preview control 258). NOT kept: the 203 form adds a one-use
+// point copy, enlarges the frame, and grows to 1464 bytes against retail's 1444.
+// The adjacent Boolean homes and shared direction tail still differ.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

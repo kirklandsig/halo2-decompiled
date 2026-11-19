@@ -725,6 +725,12 @@ struct s_text_line_measurement
 // place and copied back 77; the accumulated right edge started from the origin read between the offset and the advance
 // 30 (first difference +0xa8; the origin's early load takes the XMM4 slot where retail loads the width, and the advance
 // still has no copy; a one-use field read moved early, not retail's late origin read, not kept).
+// The advance copy and early width load still differ. Separate saved-break
+// selection, index before/after the width branch 68/76, width before/after
+// the index branch 117/124, both fields index/width first 124/117, shared
+// predicate index/width first 117/117. One-branch effective break index,
+// previous-index default and joined index publication 77/72/77.
+// NOT kept: 68 emits a second break test. The single-test 72 gains five.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

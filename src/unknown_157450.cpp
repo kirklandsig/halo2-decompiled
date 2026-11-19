@@ -838,6 +838,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // into EDI (globals rematerialised). New, on the word mask with plain present: present through a reference-bound name 63,
 // playing through one 63, a one-use team bit for present 63, both accumulators zeroed after the iterator setup 63; on the
 // word mask with the volatile present, the old mask through a reference-bound copy 77 (references fold away).
+// Added/removed playing sets tested separately or as a union, saved dword/word
+// 77/121 and 77/121. Pending word/dword mask seeded from the word snapshot
+// and changed by compound OR or assignment 77/133 and 77/133.
+// The word entry works, but the mask still reloads separately at the join.
 // @retail 0x158140
 void function_158140(void)
 {

@@ -973,6 +973,10 @@ static inline long team_score_195ed0(long team)
 // early unavailable score return 170, static score query 322, eligibility from the mask tests 151,
 // one receiver for the score table 204, signed rank bound retained at entry 100. The teams flag
 // still precedes the copy, and the in-range score call remains expanded.
+// Unsigned player/team ordinals 254/153, direct guarded team-table stores 246,
+// installed-team and active-team references 100/100, count-first rank comparison 100,
+// admitted clamp with a shared result 177, unsigned terminal player inequality 732.
+// The flag still leads the configuration copy and the final score call still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

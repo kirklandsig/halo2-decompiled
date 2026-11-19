@@ -450,6 +450,7 @@ void function_3dd10(long object_index, bool force);
 
 // score 97 (was 97): the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
 // spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
+// The late variant byte restores the output/delta registers and keeps retail length.
 // MiniMax I (11-17): the variant byte read before the blend value 123 (was 132): the byte is then held in BL across the fmod and the blend's store follows the call, so the compare moves behind it, but the colours pointer now takes EBX where retail uses EBP; the not-found exit still joins the clamp entry's 1.0 load and the first scan still leaves on inequality.
 // MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
 // still the order of the 1.0f load and the zero xorps before the first clamp; the blend still sits at [esp+0x38]
@@ -737,6 +738,9 @@ void function_3dd10(long object_index, bool force);
 // before; left are that store and the first scan's count/mask/weight homes); the index declared and zeroed ahead of
 // that guard 97 (the guard's effect goes with it); the outer loop as a while 97; the count computed ahead of the
 // output pointer 291 (1017 bytes).
+// The 0x54 frame and 1034-byte extent agree. The object and tint entry exchange EDI and ESI.
+// Lexical ranks for the object and tint entry before definition or after output score 97 each,
+// alone and in all four pairs. Neither saved register moved. The blend spill and signed scan still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
@@ -866,7 +870,10 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 
-// score 171 (was 91): retail saves EBX after the flag test and spills the input after the count test.
+// score 171 (was 91): the flag mask and success share BL, and the input spills early.
+// The earlier allocation was different.
+// retail keeps the destination pointer in EBX and the source pointer only in its stack
+// retail saves EBX after the flag test and spills the input after the count test.
 // Earlier at 89: retail keeps the destination pointer in EBX and the source pointer only in its stack
 // slot; ours keeps the destination in EDI (the 0x131c20 result register). Round 147's plain-loop forms are
 // at the end of this note.
@@ -1046,6 +1053,13 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // The source spill and destination register across the blend call still differ. The direct scale-name reads restore the guard span and length but raise the total.
 // Tried explicit blend latch 89, explicit scale latch 89, both explicit latches 89, unsigned ordinal 89,
 // read-only input and indexed output 100, blend value before colour operands 89, direct indexed scale name 110, admission result and remaining count 176.
+// The destination now stays in EBX. Retail tests the flag with an immediate and spills the
+// input after positive-count admission. Signed extent result with a guard 173, with late
+// input 183; eligibility refined by extent 176, with an explicit guard and late input 177.
+// Signed/nonzero extent as the final result 138/138. NOT kept: both move success to the
+// return and put the destination in EBP. Separate false exits 191; empty-bank shared exit
+// or positive-count-owned result 150/150; shared exit with late input 196. NOT kept: the
+// 150 forms recover the immediate test but still spill the input early and shrink to 576 bytes.
 // Both now carry the destination in EBX through the blend call. Retail delays saving EBX, tests the flag
 // with an immediate, and keeps the input only in a stack slot. Returned blend destination 211,
 // result from input cursor inequality/advance 166/166, result from final ordinal inequality/positivity 163/163,

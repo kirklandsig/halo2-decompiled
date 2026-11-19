@@ -403,6 +403,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // or staged row-dot stores 344/532, shared two-turn loop 379.
 // NOT kept: corresponding scalar stores keep the original register assignment.
 // The alternate publications change the frame or extent and raise the count.
+// Symmetric pairs seeded and corrected by pair, chained or mirrored, with direct
+// or named sine products 350/351/338/357. All pairs seeded before row corrections
+// in the same four forms 343/399/367/376. NOT kept: even the closest form
+// shrinks the frame, and the frame-preserving named-sine form grows to 1794 bytes.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5340,6 +5344,11 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // The same four with color4f: 225/225/225/225. NOT kept: color recovers frame
 // 0xe0 and the collision home, but the radius stays at +0xc and the six-point
 // gain grows to 1826 bytes against retail 1819.
+// Shared vector scale into a distinct offset, direct/cached scale, with scalar
+// alpha or color 507/516 and 507/516. Choosing the original or scaled offset
+// by assignment or conditional 616/622 and 628/634. NOT kept: the complete
+// vector recovers frame 0xe0 with scalar alpha but moves the radius to +0x1c
+// and grows to 1934 bytes. Color grows that frame to 0xe4.
 // Round 101 (m3 lane 2; control 231). A compile-only build of this file gives our frame and corner math (0xd0, the same
 // two shared helper homes, radius and negated radius), so 580 forms were screened there against retail's code ahead of
 // the draw call (aligned differences of 230 lines; control 139), then nine in the fast check. Compile-only: the four-

@@ -853,6 +853,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // count read after entry admission 129; next-volume count 129; group head from published
 // index 129; direct portal field 129; one resolved plane value 123. NOT kept: the resolved
 // plane gains six and still exchanges the entry EBX save with the volume-loop BP save.
+// The entry still saves EBP for the cluster slot and uses BX for the signed volume index.
+// Capacity-controlled for with success return and while with checked-index result 148/136. Direct
+// capacity loop with success return and capacity plus exhaustion controls 135/134. Capacity for
+// and while with result values 134/141. Capacity result in the existing do loop 127. Signed
+// successor tested before its widening 124. NOT kept: the last two gain two and five, respectively.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

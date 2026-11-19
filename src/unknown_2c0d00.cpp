@@ -592,6 +592,12 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // uses with no type local 936 (3740 B); the previous-direction dot as one expression 928 (3707 B); its products written
 // previous-direction first 920. Retail's entry keeps actor_index in EBX, the zero (self_unit's NULL) in EBP and unit_index in
 // EDI; ours keeps direction in EBX, settings in ESI and the zero in EDI. Body unchanged.
+// Typed object fields with a long/signed-byte category snapshot 920/949; category read
+// at each use 936, with switch dispatch 947, with the typed selected unit 936.
+// Direct category with ordinary actor/index/both 945/937/968; cached category with ordinary
+// actor 974; direct category with conditional ordinary actor initialization 944.
+// NOT kept: the 945, 968 and 944 forms recover frame 0x2cac but shorten the body and
+// still carry the incoming actor and unit in different registers.
 // Settings after actor evaluation by index or selected actor 920/919, per-action optional
 // settings tests 920, complete priority or range defaults within the gate 931/916,
 // nullable settings after actor evaluation 927, immutable limits with ordinary/scoped query 960/960.
@@ -611,6 +617,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // [index + data + 0x18]` then `add`); with only the unit field read through it 945; with the dot's products written
 // previous-first 923 (same code); with the home stored after the unit read 923 (same code); with the home not volatile 980
 // (3657 B, aligned 577). Not kept: a gain of 3.
+// Actor and unit registers and frame 0x2cac still differ. Typed actor datum for
+// unit alone or unit and state, pointer published before/after lookup:
+// existing pointer 945/923 and 919/923, ordinary pointer 980/980 and 987/987.
+// After lookup with ordinary incoming unit index, same pairs 879/880 and
+// 986/986. Reduced control 926. NOT kept: the delayed typed read recovers
+// the scaled unit-field access, but the 879 form retains frame 0x2cb4
+// and shortens the body to 3708 bytes against retail 3731.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

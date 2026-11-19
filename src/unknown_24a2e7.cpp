@@ -243,6 +243,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // its own address 84 (folded); an inline (entries, index) accessor for the arm's entry 84 nested / 90 combined (the multiply
 // is still shared); entry pointer at the found block's top with the aggregate 72 (192 B, aligned 6: loop as retail, but the
 // entry is formed ahead of the append test and shared by the terminator and plain arm), with plain locals 90. Body unchanged.
+// The 0x28 frame, EBP-8 base spill and indexed clear return with the item pointer/count
+// record. Common plain-name fallthrough 52, selected suffix 39; mismatch continue 52/39;
+// direct found exits 71; explicit cursor with indexed fallback 52, while cursor 52,
+// cursor and selected suffix 39; shared suffix source 39, final append's result 73.
+// NOT kept: the grouping form requires a match. At 39, ECX carries the ordinal in the
+// search, then EBX carries its scaled offset through the appends.
 // Remaining count with a separate ordinal 80, with indexed clear 78, with
 // a selected entry 95, and with both 69. Wide result with direct/indexed
 // clear 67/84. Shared entry lookup 131. Clamped signed range 74.
@@ -269,6 +275,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // and then `if (i < count)` 69 [5/5] (the cursor is copied to ESI each iteration and the count test is not
 // threaded); an indexed search then `if (i < count)` with the entry formed after it 87 (product shared again); a
 // found flag 90; `entry = NULL` then `if (entry)` 88. Body unchanged.
+// The base still needs EBP-8 and the successful ordinal needs to survive the appends.
+// Entry base named early/late, ordinal early/late, display result early, formatted
+// destination late, and adjacent base/count ranked early/late all score 67.
+// NOT kept: lexical order leaves the frame at 0x24 and the derived buffer live.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

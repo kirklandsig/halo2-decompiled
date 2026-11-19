@@ -546,6 +546,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // near continue 305, complete signed endpoint initializer 305.
 // NOT kept: the real radial bound restores the first unity load but shortens
 // the body by 15 bytes. Near cosine and candidate ordinal homes remain.
+// Signed candidate total with earlier projections (both, velocity, facing, facing between
+// endpoints, velocity between, both between, both before radius sign) 471/469/468/469/469/469/471.
+// Earlier projections with a cached positive radius 384. NOT kept: signed total shortens
+// the body and changes the caller convention. The unity register remains on the cached-radius form.
 // Unity still uses XMM1, and the near cosine still lacks the retail spill. Conditional radial cap 305, in-place
 // radial quotient 305, conditional tangent cap 305, separate tangent bound tests 330, branch-specific radial angle
 // call 331, shared signed endpoint writer 305, normalization before translated sum 359, unit score first 313.
