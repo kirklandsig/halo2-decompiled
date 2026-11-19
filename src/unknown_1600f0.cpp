@@ -1501,6 +1501,10 @@ PRIVATE inline long score_string_list_1608e0()
 // Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
 // reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
 // independent score visibility for name/caption 687, with explicit caption-width branches 687.
+// Joined zero cases with the original or one converted limit 690/709, with a retained
+// admitted scroll 709; nested lower-bound admission 685; default result with shared store
+// 742; conditional height selection 687; joined zero result with shared store 710;
+// admitted scroll adjusted before store 709. Frame and viewer register still differ.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

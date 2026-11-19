@@ -4133,6 +4133,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor with four named slot roles 164; forwarding mask comparison 181;
 // forwarding mask comparison with cursor 168; packet-kind clamp 182; packet-kind clamp with cursor 188.
 // NOT kept: the cursor with recipient-set comparison recovers EBP but drops the member slot and shortens the body.
+// One-based packet number with consumed offset, ordinal offset, separate cursor or
+// cursor-distance result: long 156/165/163/180; short 156/162/163/179. The channel
+// still needs EBP at entry and the member needs its own spill.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

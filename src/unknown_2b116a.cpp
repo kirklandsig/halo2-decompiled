@@ -4533,6 +4533,10 @@ bool __stdcall function_2b278e(long controller_index)
 // warning assigned on the eligible path 199 or cleared for the excluded kind 192, signed warning result 199,
 // conditional dialog invocation 199, function-scope identity 199, inherited dialog receiver 199.
 // The original controller reference and both index reloads still differ.
+// Separate leave before/after the other actions 215/210; separate name before/after
+// 211/199; message selection last/first 219/248; separate leave with Boolean membership
+// 196; group lower actions before leave 217. The original double pointer and index spill
+// still differ. Isolating leave grows the frame.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

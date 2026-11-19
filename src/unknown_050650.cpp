@@ -942,6 +942,11 @@ struct s_collision_result_buffer_1697c0
 // the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
 // The startup zero register and random/trig transfer word still differ.
 // Attempt- or function-scope candidate with the two draws and turns in one block, inner pitch block, pitch-only block, and pitch-only block with immutable draws all score 270 (eight forms).
+// Best fraction at the pitch-axis declaration or after fallback 267/292; result at those
+// two points 327/319; attempt initialized at the axis 302. Implicit trailing axis zero 384;
+// zero-initialized axis with component stores 404, also with later best fraction 404.
+// NOT kept: the 267 form gains three at the opening length and the 1423-byte result form
+// changes the matched caller. Zero register and later transfer still differ.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

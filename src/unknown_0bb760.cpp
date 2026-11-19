@@ -1033,6 +1033,10 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // result from input cursor inequality/advance 166/166, result from final ordinal inequality/positivity 163/163,
 // indexed blend/all phase fields 153/152, indexed blend with returned destination 174.
 // NOT kept: the 163 forms shorten past retail length, and the retail-length forms shrink the frame to 0x20.
+// Numeric result after each colour or from the nonempty count: byte 177/140,
+// signed byte 177/140, word 142/172, dword 143/171. NOT kept: the 140 forms shorten
+// to 562 bytes and use a memory flag test and SETNE. The 142/143 forms shorten
+// past retail and still save EBX early. The late input spill remains unresolved.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
