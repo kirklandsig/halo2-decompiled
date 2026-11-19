@@ -1599,6 +1599,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Workspace order for the three addressable 12-byte locals, all six name orders 529 each;
 // both orders of the two color declarations at the start of the selected block 529/529.
 // The entry still reserves 0x2c and spills the selection byte. Original body restored.
+// Last applicable ordinal through indexed block entries, a captured array, an
+// advancing cursor, or an exclusive end. Result before publication 591/571/601/577;
+// constant result on each exit 611/587/609/572. NOT kept: all grow past retail;
+// the 0x28 frame on the direct-index forms still leaves different entry roles.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

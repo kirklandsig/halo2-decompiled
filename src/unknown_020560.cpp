@@ -1212,6 +1212,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // First sample at the scan exit 439, after the second sample 418 (kept, plain), nearest position
 // reference 439, late first record reference 439, candidate position reference/pointer 439/439,
 // candidate reference with late first sample 460, with nearest position reference 439.
+// Opposite-scan record cursor for projection/distance/both with a count bound
+// 590/591/513, or an end bound 1234/1234/1187. A direct winning pointer with
+// a count-bounded projection or distance cursor 605/605. NOT kept: all regress;
+// the offset spill and independent induction addresses still differ.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

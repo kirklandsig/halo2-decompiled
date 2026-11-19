@@ -633,6 +633,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // NOT kept: the pointer and reference forms tie with the default copy and in-place scale.
 // A separate raw snapshot or branch-owned copy raises the score and grows past retail length.
 // The original 0x20 frame, raw displacement homes and coefficient schedule remain.
+// Paired indexed view rows with separate/common scale tests 329/297, with shared
+// coefficient values 465/448, direct paired rows 367/335, separate completed
+// view results 477/454. NOT kept: all enlarge the frame and score higher.
+// The second displacement spill and the live right-axis coefficient still differ.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

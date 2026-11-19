@@ -879,6 +879,11 @@ struct s_item_collision_bsp
 // 248, Separate scaled forward vector before the final sum 194. NOT kept: The forward-vector form reaches 1365
 // bytes at 194. The indexed field accumulator scores 192 at 1366 bytes. The transformed-plane and spin homes
 // still differ.
+// Left-axis products as a vector 192, all scalars 195, or row-local scalars 195;
+// output carrying left products into the row sums 196 or all sums before forward 194;
+// separate paired-product vector 193; separate left and up vectors 194; all three basis
+// vectors 246. NOT kept: all regress. The transformed plane's j input still misses its
+// retail XMM home through the three rows.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
