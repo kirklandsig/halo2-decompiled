@@ -516,6 +516,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 }
 
 // score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// MiniMax E (11-19): score 238 (was 238): no new form, no lower score. Read from the listing again: retail walks the
+// node chain with the next pointer already in a register and tests the last node's type and entity, then scans the
+// entity's property list for the key 0x2001; our body reads the root's type straight from the node and compares it
+// with one, so the type's home and the compare's width differ. The frame stays 0x40 against retail's 0x44, the second
+// node stays at frame+0x08 against retail's frame+0x14, and the shape's data pointer is still read twice where retail
+// reads it three times and ends its test in a setne and a test pair. This round split the node-type guard five ways (the
+// two tests apart, the type in a named local, the entity test first, and both named) and every one of them compiles to
+// the same 238, so the load before the compare is not reached from the guard's spelling.
 // frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // frame 0x40 versus 0x44. The second node and shape share the wrong stack slot.
 // Retail keeps origin y/z in reused slots and has two unused dwords below the plane.

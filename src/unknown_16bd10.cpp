@@ -728,6 +728,17 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 
 /* the camera director of scripted cameras: fills the observer's command */
 // score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// MiniMax E (11-19): score 126 (was 126): no new form, no lower score. Read from the listing again: the case-2 plane
+// length still preloads the camera point's left.k into XMM1 where retail preloads left.j, so the length's accumulator
+// stays in XMM0 against retail's XMM1 and the zero that follows stays in XMM1 against retail's XMM0; the plane distance
+// dot itself matches instruction for instruction, so the difference is in the hoisted load alone. The length dot written
+// out with the six term orders (394-397), the swapped dot arguments (394) and the swapped distance dot's arguments (126,
+// identical code) were measured and dropped. This round measured five more spellings of the same dot: the two dots in
+// the other order 399, the squared length of the camera point 478, the squared length of the plane 399, the swapped dot
+// arguments 394 and the dot against itself 177, all worse than 126, so the hoisted component is not reachable from the
+// dot's spelling. The distance dot's products still load the position's component first
+// where retail loads the forward's, the yaw block still keeps its zero in XMM1 and the pan arm's two lea still come
+// out the other way round.
 // M3 lane 15 r104 (fast with 0x142d10, which stays MATCH; control 126, all restored): 0x142d10's parameters in the order
 // retail's call setup implies (ECX up, EDX forward, EAX out set up in that order: `out, forward, up`; definition,
 // declaration and the one call) 124 (fixes the pan arm's two `lea`s; a gain under 4, so not kept: the lead for a
