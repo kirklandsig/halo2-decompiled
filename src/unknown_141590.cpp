@@ -1482,6 +1482,9 @@ void function_143250(
 // code); one exit with bands two and three nested under `order > 2` / `order > 3` 1902 (10607 B); unused initialised
 // locals after `matrix` (diagnostic only) 1-7: 1231 (10744 B)/1231/1095 (10777 B)/1226/1226/1415 (10756 B)/1226.
 // Band two's braces dropped (its names at function scope, band three's block shadowing them) 939 (same code).
+// First-band matrix carries r0/r1/r4 into the higher-band computations:
+// singles 1736/1739/1657, pairs 1770/1732/1750, all 1782 before or after
+// the order guard. NOT kept: the reloads regress and retail uses independent scalar homes.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

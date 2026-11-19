@@ -780,6 +780,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // declared once at function scope and reset per cluster 607 (same code); the weight clamp as two independent ifs 607 (same
 // code); the three per-cluster source resets ahead of the 0x130f60 call 713 (3836 B); the scenario lookup with the global
 // tested in its own `if` around the bounds test 607 (same code). All restored.
+// Palette upper before lower 607, signed byte 700. Positive table extent 755,
+// signed byte 724. Inclusive last entry 725, positive extent with inclusive last
+// entry 674. Lower bound before the scenario table 607, missing table as an
+// empty extent with signed byte 689. Provider, sentinel and palette homes still differ.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
