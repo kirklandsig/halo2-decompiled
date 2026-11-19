@@ -1360,6 +1360,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // y locals in the projection 479 (2814 B), storing y first 469 (2819 B); a named depth for the divide 537 (2809 B), y
 // first 533 (2812 B); the three rows as scalar locals 539 (2801 B), y first 567 (2775 B); scalar rows with x and y locals
 // 552 (2794 B), y first 578 (2769 B); the result built in a local point and copied 701 (2977 B).
+// M3 lane 1 r123 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0x31c80; base 290): the loop-top clear as
+// value-initialisation 648 (2840 B, a temporary and a new prologue), also in the cone arm 649 (2846 B); the bounds copied
+// with memcpy 290 (same code); the sphere arm's two flag clears swapped 292; the sphere depth after the flag clears 352.
+// A register-masked alignment puts the 10 missing bytes in operand folding (retail loads the matrix element and
+// multiplies by the point register) and in the cone arm's reciprocal, which retail divides after the centre projection,
+// reusing the projection's 1.0 in XMM6. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

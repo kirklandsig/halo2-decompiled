@@ -311,172 +311,21 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
-// score 2 (was 2): only the two loads' registers differ: ours loads the samples address into EDI (the data
-// pointer's dying register) and the entry's data offset into EDX, retail the samples into EDX and the offset into EDI.
-// MiniMax E (11-09): 2 (was 7): the samples pointer is copied into a dword and the scale is passed
-// sample-base/offset registers and final object setup remain;
-// MiniMax E (11-09): score 2 (was 7): the samples pointer is copied into a dword and the scale is passed
-// straight to the callee, so the scale is loaded early and the sum's first operand is the samples pointer,
-// which matches retail's load order and its call setup (the curves address by lea ecx and the object index
-// loaded after the pushes); what is left is the two loads' destination registers, ours putting the samples
-// pointer in EDI (the data pointer's own register) and the entry's data offset in EDX, where retail puts
-// the samples pointer in EDX and the offset in the dying EDI.
-// MiniMax I (11-08): no new form, no lower score (7); the sum spelled with the samples pointer first gives the same bytes.
-// MiniMax R (11-06/07): the samples' memcpy form (2; H 11-04, C 11-06) again, not kept; a memcpy copy of the entry's data offset 3
-// (also a field's bits read through its address), every plain spelling of the sum 8, the offset through the
-// array expression 23, a short cast of the offset 17.
-// MiniMax C (11-06): no new form, no lower score; copying the samples' address into a dword with memcpy
-// and passing the scale straight to the callee scores 2, and copying the entry's data offset instead scores 3,
-// but both read a field's bits through its address and are not kept; passing the scale straight to the callee
-// gives retail's lea ecx and its late object index but loads the scale last (8), and the sum still loads the
-// entry offset into EDX as the add's destination in every spelling (the source order, the offset cast to
-// unsigned, int or size_t, the samples as an integer, the offset as a pointer and both as dwords all give the
-// same bytes); keeping the scale's volatile read and passing the scale as well loads the scale twice; a union
-// overlay of the samples' pointer and its address, the index form (&samples[data_offset]) and the sum with
-// both operands cast to size_t all score 8, so the original body is restored.
-// MiniMax H (11-04): no new form, no lower score; the tail still loads the entry offset into EDX and the samples into ESI where retail loads the samples into EDX and the offset into the dying EDI, and the object index still loads into ECX before the pushes; every spelling of the sum gives the same bytes (7).
-// MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
-// samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
-// loads before the pushes, and the permuter's 1806 tries never beat 7.
-// Earlier 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
-// Earlier (7, was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
-// retail loads the samples into EDX and the offset into the dying EDI, and the object index is still loaded
-// into ECX before the pushes where retail loads it after them, with the curves address computed by lea eax
-// where retail uses lea ecx. This round: the front end canonicalises the sum, so every spelling gives the
-// same two loads with the offset first and as the add's destination: the pointer first, both operands as
-// dwords in either order, a dword-typed view of the promotion data, the offset cast to unsigned, int or
-// size_t, the sample pointer in a local before or inside the block and the offset hoisted before the block
-// all give the same bytes (7), as do the sum through an address local, the pointer local with += and the
-// index form; reading the scale's bits without the volatile pointer gives the same bytes
-// (7), and passing the scale itself gives retail's lea ecx and its late object index but loads the scale
-// last (8). A named local for the curve set's address gives the same bytes (7). The permuter ran past its
-// 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
-// MiniMax E (11-05): no new form, no lower score; the seven differences stay the sample base against the
-// entry's data offset, the object index load and the curve pointer setup; passing the scale directly gives 8.
-// MiniMax S (11-09): the 2-diff memcpy form still differs only in the two loads' registers (retail keeps the
-// sample base in EDX and the offset in EDI, ours the other way round); a round trip of the base through a dword
-// folds back to the pointer form at 7, and the index form, a pointer local and an unsigned index leave the offset
-// in the add's destination, at 7 or 8.
-// Earlier 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
-// Earlier (7, was 7): sample-base and offset registers plus object call setup remain; readonly data
-// Earlier (2, was 7): sample-base and offset registers plus object call setup remain; readonly data
-// input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
-// scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
-// output callee 7; final object address read 7; split construction around count 9; split
-// construction count last 7; actual descriptor type 7; nested query guard 7; object snapshot 7;
-// mutable permutation input 7; scalar scale copy 8; scalar copy interleaved 11; plain scale
-// pointer 7; scalar copy split count last 8; direct scale bits 7; union real assignment 8;
-// real assignment after stores 8; scalar copy declared first 8; late object snapshot 7.
-// native data/entry/both record copies 56/58/74; direct entry/data/both fields 22/23/65;
-// native admission predicate 7; nested availability predicate 7.
-// MiniMax H (11-04): the curve address built from the samples' address copied into a dword with memcpy, plus
-// the entry's data offset, with the scale passed straight to the callee: 7 -> 2. NOT kept: the memcpy reads the
-// field's bits through its address (kept only with a byte match); without it the same body is 8.
-// T80: Count-presence/missing results at the original comparison, bool/byte/short/long:
-// 7/7/7/7/7/7/7/7. Sample-base/offset register reuse and final object setup remain.
-// NOT kept: no byte equality or qualifying gain; original complete body restored.
-// MiniMax R (11-09): no new form, no lower score (7): the curve set's address is built from the
-// entry's data offset plus the samples' address with the operands in the other order here (ours adds
-// the samples to the offset, retail the offset to the samples), the curve pointer is computed in eax
-// here and in ecx in retail, and the scale is loaded before the pointer's push in retail and after it
-// here; the memcpy form that reads the field's bits through its address is the only one that reaches
-// 2 and it is kept out of this lane's changes.
-// Lane 9 r99 (fast): a file-local helper returning a tag data's address plus an offset, over the promotion data's head
-// read as that tag data (diagnostic cast), 8, with the count stored first 10, the helper indexing `&address[offset]` 8;
-// the count stored before the address 4; on the memcpy body the offset in a named local before or after the copy 2/2,
-// the sum as an integer sum either way round 2/2, the offset written first 2 (all the same code); `samples_address +=
-// offset` then the cast 8; the copy made straight into the curve set's address field, then `+=` 8.
-// Round 156 (m3 lane 8, fast): 1-16 unused initialised locals at the top, 1-8 between data and entry, 1-8
-// before the copy all 2 (no numbering tie: VC ranks the add's operands by tree depth); a promotion pointer
-// with `promotion->data->samples + offset` 22 (the samples become the add's destination, as retail, but
-// the plain-sum schedule returns), with the copy from that read 23; the samples through the full promotion
-// expression 25; the count stored first on this body 4, on the plain sum 10; an inline helper filling the
-// set through a pointer 8 (count first 10), returning it by value 10/10; both reads copied with memcpy 9/9.
-// Round 77 (m3 lane 15, fast with every function in this file): the copy into a `byte const *` local then `samples +
-// offset` 2, `&samples[offset]` 2, the dword indexed as `&((byte const *)samples_address)[offset]` 2, the entry as
-// `data->entries + entry_index` 2, no count local (the count read at the test and the store) 2, all the same code;
-// re-measured: the offset read into a local at the top 2 (same code), the offset through `data->entries[...]` at the
-// sum 23. The permuter on this memcpy body (600 s, anneal): 68 tries, best 2 on both images.
-// Round 160 (m3 lane 8, fast): in retail both reads are plain temporaries of one sum evaluated while the scale sits in
-// EAX: the samples go to EDX (the destination) and the offset to EDI, free once the samples are read. The curve set
-// built as a temporary object in the call's argument list 8 (the plain sum's code: the sum is still evaluated ahead
-// of the scale); the plain sum with 1-3 unused locals 8 each (no count effect); the entry's data offset copied with
-// memcpy instead of the samples 3 (the samples become the EDX destination as in retail, but the offset is read first,
-// into ESI in place), with a samples local before or after it 3/3, with the count read again from the entry 3; the
-// address field assigned the samples and then advanced by the offset 8, by the memcpy'd offset 3 (also with the samples
-// copied straight into the field); the set as an aggregate initializer 10 (the count stored first frees EBX for the
-// second read; with a samples local or the index form 10/10); the field assigned, the count stored, then the field
-// advanced 11, with the memcpy'd offset 10.
-// Round 195 (m3 lane 4, fast): the curve set as the existing two-field tag-data aggregate (size, address) 2; the object
-// test nested in its own if 2; the curve address through an inline helper taking the data pointer and the offset 8 (the
-// plain sum's schedule: the add ahead of the scale load); the curve set and the copy declared at function scope 2; the
-// guard as an early return 2 (all the 2s the same code).
-// Round 200 (m3 lane 4, fast): retail's tail is the samples plus the offset with the samples as the add's destination
-// (EDX) and the offset in the dying EDI; every form whose samples read is a leaf or as shallow as the offset's makes the
-// offset the destination. A deeper samples read gives retail's tail registers but rotates the head's: through a promotion
-// pointer 22, through the full promotion expression 25 (re-measured). On the plain sum: the offset in a local read before
-// the count store 10; a pointer to the offset field 8; entry declared bare first and assigned after data 8; data renamed
-// to sort after entry 8; no data local, the full promotion expression for the entries and the samples 25.
-// Round 184 (m3 lane 6, fast): every non-memcpy form below has the plain sum's schedule (samples into EAX ahead of the
-// scale, the offset the add's destination): an inline setter returning the set's address, called in the call's argument
-// list, 8 (with the memcpy'd samples 2, same code as this body); an inline tag-data address helper taking (tag data,
-// offset, size) over the data head 8; the set as the existing two-field tag-data aggregate with the plain sum 8; the
-// samples fetched through an inline out-parameter getter into an address-taken local 8 (only memcpy keeps the scale first);
-// the offset through an inline entry getter, plain samples 8, memcpy'd samples 2 (the getter's result propagates).
-// Round 91 (m3 lane 15, fast): the memcpy replaced by a conversion of the samples address: `(byte const *)(dword)
-// data->samples + offset` 8, a dword local initialised from that cast 8, `(byte const *)(data->samples + offset)` 8,
-// `(byte const *)((dword)data->samples + offset)` 8, through `(void const *)` 8 (all the plain sum's schedule).
-// M3 lane 11 r108 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10, all matched throughout): the set built and passed
-// in a forceinline helper taking (object, tag, samples, offset, count, scale) with the plain sum 8 (the add still runs
-// ahead of the scale load); the samples block read as a by-value copy of the existing two-field tag-data aggregate of
-// include/unknown_246cd0.h (address + offset) 28 (155 bytes: the dead size copy stays); the sum named where it is
-// computed with the count stored before the address 4 (registers unchanged, the stores follow source order); a
-// forceinline setter taking (set, count, offset, samples) and returning the set, called in 0x10e480's argument list with
-// the plain sum 8; `entry` declared before `data` and the copy local before the set 2 (same code). Reading of the
-// listings: in every plain-sum form the samples take EAX, so the scale load (EAX) waits for the add; retail's samples
-// and offset are both short temporaries (EDX, then EDI only because EAX holds the scale and ECX the set's address and
-// the object index across the add), which needs the add to come after the argument setup in the IR.
-// Round 91 (m3 lane 2, fast with 0x10e480): the plain sum with the scale first copied into a block local passed
-// to the call 8 (samples into EAX, the offset still the add's destination, the add ahead of the scale load); on
-// the copy body: const data, const entry and const sound pointers 2/2/2, a `long const` count 2 (same code). Restored.
-// Round 94 (m3 lane 2, fast with 0x10e480): the offset in a named local on the plain sum 8; the set's address field
-// bound by reference, assigned the samples, then `+= offset` 9 (the samples become the add's destination with the
-// offset in EDI as retail, but the offset loads first into EAX and the samples reuse EDI, ahead of the scale); the
-// same with the count stored first 11; the copied samples assigned to the field then `+= offset` 8 (the plain sum's
-// schedule returns); the samples copied with memcpy straight into the referenced field, then `+=` 9; the copied
-// samples assigned to the referenced field, then `+= offset` 9; a `dword &` bound to the copy, `+= offset`, then
-// stored 2 (same code). A compile-only screen (CL without /GL reproduces this body's tail) shows the add's first
-// operand is the more complex one and, for two field reads, the offset (pointer arithmetic puts the index first);
-// every plain spelling, rename (data after entry), declaration order or integer sum keeps the offset first; only a
-// non-forwardable offset (a copy of the entry, a memcpy, or a reference to the result) puts the samples first.
-// M3 lane 13 r106 (fast with 0x10e480, matched throughout): the entry as a `const &` to the array element 2; the samples'
-// memcpy moved to the function's top 57 (142 bytes); the offset bound to a `long const &` at the sum 2; the sum through a
-// file-local forceinline (base, offset) address helper 2; `samples_address += offset` then the cast 8. Re-measured the
-// memcpy'd offset with plain samples 3: the samples load into EDX as retail, but the offset loads first, into the entry's
-// ESI in place, where retail loads it second into the data pointer's dying EDI.
-// m3 lane 14 r109 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): both sum operands copied with memcpy into locals, the
-// pointer sum 9 (the scale moves to EDX, the offset loads into the entry's ESI in place and becomes the add's destination,
-// `add esi, edi`), as an integer sum 9, with the offset local declared ahead of the samples local 9 (same code: the
-// commutative add keeps the offset as its destination whatever the declaration order); the sum named before the set's
-// declaration 2; the scale copied into a local at the call 2 (both the same code).
-// M3 lane 3 r260 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): the sound, data, entry and count locals declared bare
-// and then assigned 2; no sound-tag local (its promotion index read inline) 2; the curve set as an aggregate initializer on
-// the copied samples address 4; the guard written `0 < count ... != 0` 2; the entry index in a named local 2.
+/* hands 0x10e480 the promotion data run of a sound permutation's entry */
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
 	s_sound_promotion_tag *sound = (s_sound_promotion_tag *)g_4e3b44[tag_index & 0xffff].bytes;
-	s_sound_promotion_data *data = ((s_sound_globals_promotion_view *)g_51ebd4)->promotions[sound->promotion_index].data;
-	s_sound_promotion_entry *entry = &data->entries[permutation->entry_index];
+	short promotion_index = sound->promotion_index;
+	s_sound_promotion_entry *entry = &((s_sound_globals_promotion_view *)g_51ebd4)->promotions[promotion_index].data->entries[permutation->entry_index];
+	s_sound_promotion_data *data = ((s_sound_globals_promotion_view *)g_51ebd4)->promotions[promotion_index].data;
 	long count = entry->data_count;
 
 	if (count > 0 && g_4ed28c->valid && function_badc0(object_index, 3))
 	{
 		s_sound_promotion_state curves;
-		dword samples_address;
 
-		memcpy(&samples_address, &data->samples, sizeof(samples_address));
-		curves.data = (byte const *)samples_address + entry->data_offset;
+		curves.data = data->samples + entry->data_offset;
 		curves.count = count;
 		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, scale);
 	}
