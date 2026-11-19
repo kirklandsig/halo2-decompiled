@@ -823,6 +823,11 @@ struct s_physical_block_iterator
 // where retail loads it into EAX); on it the clock read once into a `dword now` used by both ages 209, the comparison
 // written `candidate->pages * best_age < best.pages * age` 209, the products as `age * best.pages > best_age *
 // candidate->pages` 209; both ages as unclamped `dword` locals with MAX() inside the products 373 (first difference +0x11).
+// M3 lane 12 r149 (fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): the deletion walk's iterator
+// declared with the scan's locals 201 (same code); `oldest_time` initialised to 0 362 (1230 B); `best` declared ahead of the
+// ring 201 (same code). Lane 9 r109's lead rebuilt on this body 93 (1213 B; walk count/bit and the overlap sum's register
+// still swapped: retail sums into the pages register and keeps best.offset for the second test through a copy); on it
+// the iterator declared with the scan's locals 93 (same code), `oldest_time` initialised 357 (1223 B).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -763,6 +763,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the -1 in ecx; the record's three initial stores sit before the palette read here and after it in retail, and moving
 // them into the palette branch measures 725, the palette byte read before the stores 607, and a signed palette byte read
 // before the stores 700.
+// M3 lane 12 r149 (fast with 0x130f60/0x131030/0x1317a0/0x12e5e0, all MATCH; control 607): the two range clamps
+// through one shared inline taking the range by value 679 (3837 B), by pointer (read at each use in both arms)
+// 609 (3834 B), that with the char slot 702; the four source publications through one shared inline setter 607
+// (same code); the tag result and its out value declared outside the loop 607 (same code).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

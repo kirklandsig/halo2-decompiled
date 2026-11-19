@@ -623,7 +623,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return data_datum_index(data, function_16bc00(data, index == NONE ? 0 : (index & 0xffff) + 1));
 }
 
-// score 76 (was 165): the object flags load, the cluster table load, the definition, zoom and offset registers, the
+// score 76 (was 76; 165 before m3 lane 2 r104): the object flags load, the cluster table load, the definition, zoom and offset registers, the
 // atan2 reload order and the latch differ; the forms of this round are listed in M3 lane 2 r104 at the end of this note.
 // MiniMax D (11-17): no new form, no lower score (165): the body is retail's 895 bytes and the lower-scoring forms
 // other lanes found all rest on forms this round excludes (a 'visible' flag tested after the cluster loop, a (real)
@@ -944,6 +944,25 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // contributor's and takes a short), the second offset block's scratch rotation (ours ECX/EDX/EAX, retail
 // EAX/ECX/EDX), atan2's operands reloaded radius first (retail magnitude, radius, fxch) and the latch's global load
 // after the NONE test with the datum product in ECX (retail EDX).
+// M3 lane 12 r149 (fast with 0xbf2c0/0x268c90/0xb8a80/0xb8b20/0xcaf60/0xc8880/0x30bf0; control 76, aligned 21). LEAD at 2
+// (aligned 2, 895 B; build/r149/lead-bba80-2.patch in lane 12's worktree), all of these together: the root object pointer
+// for the two flag reads and the cluster bit table pointer ahead of the first query (r104's pair, 69); the zoom level
+// read into a `long` local for 0xc8880 (retail's `movsx ebx`; the second offset block and the latch step then take
+// retail's scratch rotation) 67; `(real)atan2` (fadd dword) 67; g_4e8c24 read at each use with no `players` copy
+// (the latch loads the global ahead of the NONE test as retail) 67, aligned 7; the normalise result in a named `real
+// distance` used in atan2 (the radius load is still hoisted above the call and spilled as a qword; the magnitude is then
+// loaded first, the radius reloaded and swapped, as retail) 2. Left: the object definition pointer in EDX where retail
+// reuses EAX (`mov eax, [eax+ecx+8]; mov eax, [eax+0x38]`). Not kept: the pointer, zoom local, cast and distance local
+// are match-only. Also tried: atan2 with one implicit conversion (compile error, ambiguous); `(double)(real)` on the
+// call 67; atan2l 262 (877 B); a double-returning inline around the normalise 262; named `double radius` with the
+// named distance 250 (EBP becomes a register, the frame stops self-aligning); an inline angle helper with a double,
+// inline-double or real radius parameter 67 each; no definition local 67; `byte *` definition 67. Screened on the
+// 2 form with a one-object LTCG link of the real callee objects (faithful but for 0xc8880's argument register), 512
+// combinations, none 0: the model index read through the definition at each use (or a mix) gives EAX for the
+// definition but the model lookup then takes ECX and four later blocks swap scratch registers (41 there, real fast
+// build 45); definition/model names, `const`, `register`, declaration order, a model pointer, a shared tag pointer,
+// range-zero default, swapped range arms, inline range/model-index helpers, dead locals 1..8 and the zoom block's
+// spellings leave EDX (2). Removing the zoom block altogether (diagnostic) gives EAX, so the choice is global.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -2317,6 +2336,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // with the byte activity bit `(header->flags & 4) != 0` 327; the ancestry walk alone through OBJECT_GET 328; the walk
 // through OBJECT_GET with the header through OBJECT_HEADER_GET and `index` not volatile 324 (1203 bytes); the node
 // copied into a long local 288 (1228 bytes). All restored.
+// M3 lane 12 r149 (fast with 0xb8ee0 and 0xb8bd0's matched callers; control 285): `inline` on 0xb8bd0's own definition
+// 348 (1272 B) and it loses 0xbcc20, 0x11b710 and 0x18c3b0 (reverted); the node matrix through this file's existing
+// node-matrix inline on a fresh parent lookup 348 (1272 B), on the early parent pointer 324 (1245 B); the ancestry walk
+// as a while loop 285 (same code); the `allowed` exit ahead of the walk 314 (1238 B).
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {
