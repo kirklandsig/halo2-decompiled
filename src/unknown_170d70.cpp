@@ -1887,6 +1887,12 @@ struct s_camera_reference_171830
 // shared direction workspace recovers frame 0xb8 but leaves the point in EBX, shortens the body to 1215 bytes and
 // raises the score to 275. Shared collision storage with separate directions and unsigned masks tie at 270. Both
 // checked controls retain their opening scores.
+// Long sample ordinal 296. Unsigned word sample ordinal 270. Byte sample ordinal 287. Independent long
+// displacement ordinal 269. Independent word displacement ordinal 270. Sample sign and axis from quotient and
+// remainder 298. Unsigned sample with second-pair comparison 295. Short refinement budget 270. NOT kept: The
+// long displacement ordinal gains one at retail length. The long and byte sample counts, quotient and
+// remainder, and pair comparison recover the 0xb8 frame while preserving the EBX point ingress and moving
+// away from retail length.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2122,6 +2128,12 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // X and Z before the forward copy, Y before up 295. X between copies and Y after both 410.
 // Horizontal sums after derivatives with aspect last 410. NOT kept: no gain, or frame shrinks to 0x1c.
 // The collision point still occupies EBX.
+// Addressed view for camera publication 415. Addressed view in the follow branch 330. Addressed view for
+// projection and clamps 314. Addressed view for projection and cluster lookup 379. View reference across
+// calibration and output 529. Indexed state by reference 295. Projection through the retained forward axis
+// 388. Addressed view for the cluster lookup only 357. NOT kept: The view reference restores the opening EBX
+// state base and delays the first difference to +0x2c, but shortens the body by 96 bytes and raises the
+// score. The indexed state reference ties. The other receiver scopes regress.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

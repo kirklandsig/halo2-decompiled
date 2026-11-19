@@ -1827,6 +1827,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Split across tag lookup in either order 177/177. Both after component lookup 176.
 // Split between component lookup and airborne test in either order 176/176.
 // NOT kept: no recovery of the native unity schedule or definition/material/point homes.
+// Shared object flags word 546. Byte animation flags receiver 175. Shared object word and byte animation
+// flags 546. Saved animation flags offset 645. Saved initial state offset 663. Saved state offset with byte
+// animation flags 663. Saved state and animation offsets 637. Linear velocity through the Havok vector
+// reference 640. NOT kept: The saved animation offset reproduces the unity-load schedule and moves the first
+// difference to +0x4e at retail length, but scores 645. The byte animation receiver ties. The other flag and
+// velocity receivers regress.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
