@@ -1501,6 +1501,12 @@ PRIVATE inline long score_string_list_1608e0()
 // Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
 // reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
 // independent score visibility for name/caption 687, with explicit caption-width branches 687.
+// MiniMax A (11-18): no new form, no lower score (679): the length agrees with retail's 2879 bytes, but the frame is
+// 0x798 against retail's 0x79c; retail scales the player index into ebx and adds the player base before the panel work,
+// while this build loads the panel into ebp first and scales the index into edi after the register saves, and the scores
+// pointer's home is +0x50 here against retail's +0x34. Retail also keeps the computed x and y in their own word slots at
+// +0x10 and +0x12 and copies the pair into +0x18 with one dword move; giving this build the same origin pair and a four
+// byte copy into the row position measures 681 at 2888 bytes.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

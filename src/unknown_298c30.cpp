@@ -1178,6 +1178,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // multiplies by the negated radius, with no shared tail; ours copies the radius and shares the tail), the sweep arms
 // (retail keeps the two arms whole, 32 instructions more), the pivot home (+0x94, ours +0xa0). Also: the offset helper's
 // products written component first 569 (same code); the reversed direction formed ahead of the pivot offset 784.
+// MiniMax A (11-18): no new form, no lower score (569): the radius is still promoted into xmm5 at the entry and kept for the
+// whole body, where retail loads it from its home in each block, and that follows from this build's link-time summary of
+// 0x2108a0 and 0x210770, whose definitions are in another lane's file; the frames agree at 0x114 and the two trace results
+// sit at the same homes (+0xd0 and +0xf4) but are taken in the opposite order, and the pivot's home is +0xa0 here against
+// retail's +0x94.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
