@@ -2042,6 +2042,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // zero-based edge loop (`points[edge_index]`, `points[(edge_index + 1) % point_count]`) 602 (2885 B); `bool inside = true;`
 // right after the plane distance 549; the nearest reset right after the plane distance 548 (masked 443; both moves under the
 // keep bar); the plane distance through dot3f 567 (2893 B); the squared radius ahead of the shape query 616 (2857 B).
+// M3 lane 5 r203 (fast with 0x16a440, 0x120790, 0xc2d00, 0x17a380 and 0x2469b0; control 551): both square roots (direction,
+// half) of the sum written `(i*i + k*k) + j*j` 551 (the x87 sums then run k, i, j; retail i, k, j at both sites); the sums
+// accumulated in a double i, k, j 634 (2902 B: retail's order, but the frame grows); the vertex clamp as `count =
+// point_count; if (count > 8) count = 8;` 552; the final averages written inverse first 551 (same code); the ray arms as
+// `if (use_normal) { normal } else { edge }` alone 547 (2868 B, an arm swap under the keep bar).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -965,6 +965,14 @@ static inline long team_score_195ed0(long team)
 // `*((byte *)&g_511000 - 0x225)` 373 (the flag after the copy, the address not folded). Third score read: the two
 // clamp tests through the file's inline copy and the value through the existing 0x1587f0 191 (1237 B: the link
 // inlines 0x1587f0 there and calls 0x161e60 and 0x162030 from it). build/r120/storage-lead holds the head-only header.
+// M3 lane 5 r203 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, matched throughout; control 100): the first loop's
+// team test through the file's inline copy 442 (1301 B: it expands there, so the inline budget is not spent before the
+// rank loop); the inline team test as one `return a && b && c && d` 151 (1210 B; the second clamp read then drops its team
+// test); the score helper with an early `return NONE` 170 (1225 B); the score helper `__forceinline` 100; the clamp as an
+// if / else if / else chain into a long 100 (the 100s the same code). Reading: the one extra byte is the rank loop's entry
+// test, where retail compares the team count's word in memory with BP (`cmp word ptr [esp + 0x82], bp`) and ours
+// sign-extends it first; retail's second clamp read repeats the range and mask test (only the mask load is shared), ours
+// reuses the first read's bool in BL.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

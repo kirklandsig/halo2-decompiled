@@ -180,6 +180,12 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // each time). Tried: `__assume(arg_2 != NULL)` at the top 19, `__assume(arg_3 != NULL)` 19 (same code each); the node
 // count initialised to 0 113 (453 B); the address local declared only in the else arm, the node arm reading the parameter
 // directly, 19 (same code); the else arm copying the forward before the position 68.
+// M3 lane 5 r203 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, matched throughout; control 19): the bounds test as
+// two separate `return false` tests after the lookup 83 (462 B); the helper's scale read once into a named local 58 (retail
+// reads [esi] at each product); the node pointer named as `&nodes[arg_1]` after the test 19; field2e typed `word` 19; the
+// scale test as `!(scale == 1.0f)` 19 (the 19s the same code). Diagnostics (reverted): 1-7 unused initialised locals at
+// the top 113 (k = 1, 453 B) then 19; on the body without the address local (33) one extra read of the transform in the
+// else arm, the node arm or at the top 127/77/137, the transform still arriving in ECX and kept in EBX each time.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
