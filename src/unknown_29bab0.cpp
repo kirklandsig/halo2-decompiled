@@ -701,6 +701,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // here) 874 (3398 B: stays a call); local_26 through the existing vector2d_from_points2d 665 (3499 B, frame moves);
 // local_25's components written y first (diagnostic: retail computes y in the select's arms) 708; the vector add's
 // operands as (arg_2, local_8) 489 (same code).
+// The frame still agrees with the position at +0x8c for retail's +0x80.
+// Point-typed target, query and shared query/target 489/489/489. Shared point
+// setter 487. Closing alignment products in j-k-i, k-i-j, j-i-k and i-k-j
+// order 741/750/747/747. NOT kept: the shared setter's gain is two. The named
+// products reach retail's length and one recovers the normalizer square
+// order, but the position slot stays different and the scores rise.
 // M3 lane 5 r204 (fast with 0x1f9e70 and 0x110ab0; control 489; all restored): the input normalised through a
 // file-local inline with the sum written j, k, i and the scale sides inverse * i, j * inverse, k * inverse 763 (3501 B:
 // the squares still run k, j, i, so the written order is not what sets them); LEAD: the closing dot written with the

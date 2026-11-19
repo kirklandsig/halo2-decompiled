@@ -1189,6 +1189,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 59/59/73. Separate flag rejection / scan-scoped cursor / selected record lvalue 59/59/59.
 // Scan-scope conditional 90; nested send and count guards 59. NOT kept: the byte OR and
 // message registers come with a displaced initialization and output setup.
+// Round 436. Pending-bit field assignment with saved word tests (word/byte/bool)
+// 89/86/86, both fields tested directly 89/84/84, word/byte bit-view copy 89/84.
+// NOT kept: setting the actual bit changes the entry and loop registers, even at
+// 225 bytes. The selection still differs from retail. Original body restored.
 // M3 lane 4 r220 (fast with 0x96510/0x94df0; control 35): the saved-word update ahead of the three output stores 39 (the
 // word store stays: VC does not fuse a register value back into a memory OR even with no store in between); the in-place
 // update ahead of the stores 90, with the tests on the member as well 90; the in-place update with `type = 4;` first in the

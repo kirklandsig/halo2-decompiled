@@ -1177,6 +1177,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Ratio computed before and stored after the capture 349. Shared forward address through both rotations 365.
 // NOT kept: the one-point gains leave unity in XMM3. Split captures and the shared forward address
 // change the matched initializer. The opening body is restored.
+// The two axis squares still spill before the tangent. Float sine/cosine/both
+// 362/362/372; float horizontal tangent 372; float vertical arctangent 337;
+// float half-angle tangent 371; float scale arctangents 346; float tangent
+// and arctangent in both scale paths 336. NOT kept: the float paths admit
+// different precision boundaries. The two lower scores still spill two
+// squares, and the 337 form adds a move while using XMM7 for unity.
 // Sine j/k before cosine and i after; double i sine intermediate; descriptive trig names
 // Axis reference, matrix output reference, immutable original forward, symmetric matrix
 // with signed corrections, and the builder returning its output pointer: 370/364/346/346/346/346/395/346.

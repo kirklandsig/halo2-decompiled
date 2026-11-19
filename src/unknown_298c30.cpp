@@ -598,6 +598,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Named wide distance components 316. Planar normalizer at entry / tangent 391/305.
 // NOT kept: entry normalization recovers unity in XMM2 through +0x9e, then schedules
 // the y projection ahead of x and shortens the body to 1722 bytes.
+// Round 436. Planar entry normalizer with named double or real projection products
+// 319/316; accumulated double or real projection 320/315; products before endpoints
+// 319/316; complete double or original predicate before endpoints 382/333.
+// NOT kept: the six product forms retain 1732 bytes but keep unity in XMM1. The
+// early predicates disrupt the entry. Original body restored.
 // Staged near-turn y rows previously lowered the score from 382 to 305.
 // Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
 // Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.
@@ -1282,6 +1287,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 0x2108a0 and 0x210770, whose definitions are in another lane's file; the frames agree at 0x114 and the two trace results
 // sit at the same homes (+0xd0 and +0xf4) but are taken in the opposite order, and the pivot's home is +0xa0 here against
 // retail's +0x94.
+// Round 436. Planar vector input in the offset helper 569. Native origin,
+// destination or direction templates 972 each; native origin/destination,
+// origin/direction, destination/direction or all three 972 each. NOT kept:
+// the templates delay radius acquisition but outline the first offsets and
+// shorten the body to 3194 bytes. Original helper and body restored.
 // M3 lane 6 r201 (fast with 0x2108a0, 0x29a190, 0x298d90, 0x298c30; the lead also plain-checked with 0x29cbb0, 0x210770,
 // 0x210d10; aligned = instructions equal after alignment out of retail's 810, base 595; all restored). LEAD, not kept:
 // three pieces together give retail's exact length and 490 (3372 B, aligned 625; plain check 490 with 0x2108a0,

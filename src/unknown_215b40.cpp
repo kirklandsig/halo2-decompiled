@@ -365,6 +365,16 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // assumed default) 175 (580 B); the drive letter declared at the function top 114; `long const` unit count with the
 // cached scan's type test written type first 114; the unit scan's type test written type first 114 (all 114s the same
 // code). Masked, the rest is the entry cache/zero registers, the pass-latch cache reload and the packing chain.
+// Round 438: Cache/zero registers and the disk iterator index still differ. Test the controller traversal with the original scans.
+// Put the two single-device cases first in the switch: 114.
+// List the numbered controller cases in descending order: 172.
+// Use NONE as the shared single-device selector for the limit and switch: 185.
+// Use 0xff as the shared single-device selector for the limit and switch: 209.
+// Choose the first controller card by switch and derive the current unit from its ordinal: 229.
+// Choose the first controller card by switch and advance through its paired slots: 229.
+// Select the current controller card by switch only on the two non-disk passes: 259.
+// Compute the current unit directly from the controller port and card ordinal: 276.
+// NOT kept: The sentinel-first switch ties at retail length. Changing the controller cursor or hoisting selector normalization raises the score and changes the extent. The cache still reloads after the built-in guard.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

@@ -865,6 +865,10 @@ void function_245400(s_source_245400 const *source, long index,
 // 214; cross dot running sum 227; cross dot named products 213.
 // NOT kept: reversing the material comparison ties. The scoped plane forms regress and disturb the caller in the
 // reduced image. The alternatives keep the frame short of 0x2c.
+// Round 436. Plane side by raw-code/ordinal inequality, lower bound, equality and bias
+// 207/207/207/212; late table with inequality or lower bound 209/209; with native short
+// inputs 207, and late-table complementary order 209. NOT kept: these leave the frame
+// at 0x24 or 0x28; the late table also disturbs 0x245aa0. Original body restored.
 // Separate scaled rotation input with an explicit unscaled arm 247, Separate rotation input with the unit-scale
 // arm first 251, Conditional rotation input from the scale helper result 240, Rotation input changes only on the
 // scaled branch 239, Explicit scaled input with one matrix scale observation 247, Conditional helper result with

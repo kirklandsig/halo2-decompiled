@@ -913,8 +913,9 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 100 (was 100; earlier 191): the teams flag is read before the configuration copy and address-index
+// score 100 (was 100): the teams flag is read before the configuration copy and address-index
 // store, and the third team-score read expands where retail calls 0x1587f0.
+// Earlier score 191.
 // Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
 // entry 314, combined team guard 333, team read before flag 309, record reference 191,
 // native counter field 191, and branch-local score stores 192.
@@ -1017,6 +1018,11 @@ static inline long team_score_195ed0(long team)
 // through the real 0x161e60 180 (1225 B); the team helper plain `static` 180 (1225 B, the same code: its copy folds into
 // 0x161e60); the score helper plain `static` 322 (1051 B: no read inlined, each calls the file's copy); a `0 <
 // ranking.team_count` guard around the rank loop 161 (1210 B; the count tested as a word, but twice).
+// Public score query at the lower bound, upper bound, both bounds, lower bound with
+// selected value, or upper bound with selected value gives 217/203/135/223/216.
+// Short return, short result local, or both gives 101/147/147.
+// NOT kept: the provider substitutions grow the body. Narrow result storage reaches
+// 1210 bytes but raises the score, and the teams flag still precedes the copy.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

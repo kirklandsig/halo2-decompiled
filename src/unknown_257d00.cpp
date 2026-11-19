@@ -2508,6 +2508,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // `local_3 = unknownb0 == NONE || unknownd1` 527 (2432 B); local_2 declared ahead of local_0 433 (same code), and on
 // the case 2 aggregate copy + case 4 direct facing base 623 (same as that base, 623: actor EDI / state EBX; with the
 // two registers swapped back it is aligned 131 against the baseline's 117, so those forms are not retail's alone).
+// The frame and entry ownership hold, with a longer dispatch branch and different
+// copy-carrier registers. Release-direction assignment 433; requested and settled
+// direction snapshots 519/433; release and delayed workspace names 433; inverted
+// turn decision 433; byte turn decision 433; fallback value selection 589; named
+// delay mode 518; staged turn-direction test 433.
+// NOT kept: the equal scores leave the copy schedule and dispatch span different;
+// the regressing forms disturb the entry register roles or lengthen the tail.
 // M3 lane 5 r204 (fast with 0x110ab0; control 433; all restored): case 6's second OR through a signed char view 433
 // (same code: still `or 0x69`); case 4 reading the state's facing at each use 611 (2400 B, re-measured on this base:
 // actor EDI, state EBX); on it one, two or three unused locals in the case 611 each (same code: the exchange is not a

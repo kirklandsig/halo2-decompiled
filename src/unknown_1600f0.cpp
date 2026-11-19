@@ -1210,9 +1210,9 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
-// score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
-// score 679 (P622: a one-use caption-phase local at the division gives 671, match-only, reverted): Frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
-// score 679 (was 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and origin slots,
+// scroll-limit conversion and initial divisor spill still differ. Earlier fast check 678.
+// One-use caption phase at the division 671 (requires a match, reverted).
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
@@ -1563,6 +1563,10 @@ PRIVATE inline long score_string_list_1608e0()
 // title's text call 685; right after the fade count 685; the row's top advanced in place (`y += 0x18; row_position[1]
 // = y;`) 679 (same code); the time width declared before the score width 692 (2888 B, 711 instructions); the title's
 // four edges from the row position 679 (same code); that with the in-place advance 679 (same code). Body unchanged.
+// Saved horizontal origin through first/remaining/all captions with advance from
+// origin or cursor 678/678, 700/700, 694/694. Copy origin after title, before caption
+// fade or at caption geometry 680/681. NOT kept: the one-point gain adds nine bytes
+// and leaves frame 0x798. Viewer and separate origin homes still differ.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

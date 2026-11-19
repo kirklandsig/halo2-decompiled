@@ -380,6 +380,16 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // through an `inline` or `__forceinline` declaration 437/437 (still called; aligned 170). The kind-3 arm clearing the flag
 // after the setter call 444 (1557 B). Leads: `inline` on 0x75890's definition (its file was on another lane's list this
 // round); 0x5b080's expansion here is the link's inline calibration (BLOCKED-BY 0x5b080 calibration).
+// Round 438: The secondary state still takes ESI and the data getter still expands. Existing record layouts and the roster and progress views were tried.
+// Read candidate count and identities through the actual roster record 376.
+// Use the matchmaking state storage members for the count and timer 376.
+// Read the timeout base through the existing hopper record 376.
+// Use the existing session owner view for both sessions and the progress pointer 376.
+// Use the actual progress record for the stage and attempt count 376.
+// Read both components of the final deadline through their declared records 376.
+// Use the actual owner and progress record layouts together 376.
+// Use the roster, owner, progress, hopper and state record forms together 376.
+// NOT kept: All eight record forms tie at 376 and 1,589 bytes. The reduced preview agrees with the full score and extent and reports six unresolved global references. The secondary state stays in ESI and the data getter still expands.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

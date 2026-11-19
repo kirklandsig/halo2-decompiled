@@ -879,6 +879,10 @@ struct s_item_collision_bsp
 // 248, Separate scaled forward vector before the final sum 194. NOT kept: The forward-vector form reaches 1365
 // bytes at 194. The indexed field accumulator scores 192 at 1366 bytes. The transformed-plane and spin homes
 // still differ.
+// Rotating into a separate normal vector and publishing it after/before the distance gives
+// 311/322 for compound or aggregate rows and 343/353 when copying the input normal first.
+// NOT kept: every form grows the body, and early publication also grows frame 0xa0 to 0xa4.
+// The transformed normal and contact position registers and pending x87 spin scale still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

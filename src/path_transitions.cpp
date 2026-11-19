@@ -1108,6 +1108,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // (aligned 36: the origin dot reorders, the margin's radius load goes) and the rest 283-291; no K moves the j/k roles
 // or the margin. On that form: no-code reads of first.k then first.j ahead of its fill 292, j then k 289 (diagnostics);
 // the second edge vector computed before the first is normalised 360.
+// Retail retains the root in EBX before the actor load at entry.
+// First, second or both end vertices read at their differences 355/336/339.
+// Direction scaled from the vertex directly or through one vertex base
+// 379/379, and with both end reads 354. Staged projection and origin
+// products 220, and with both end reads 339.
+// NOT kept: all scores rise. The current frame and input handoff remain.
 // M3 lane 10 r125 (fast with 0x270d90 at 286, 0x270400/0x30bf0 MATCH; control 218): lane 11 r113's actor-first recipe rebuilt
 // (actor_index first in the definition, path.cpp's declaration and call; corners a, b, c, d; case 5's position first) 283
 // (1284 B, +0x27, aligned 42). On it: the radius read through a `source` pointer to the state's source record for the test

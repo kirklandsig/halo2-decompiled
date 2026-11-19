@@ -897,6 +897,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // pointer, through a pointer to the byte, through a named `effects` table pointer indexed, and as byte arithmetic on the
 // table with `sizeof`: 334 each (same code: `[eax + edx + 2]` stays folded); an effect pointer with the flag from
 // `(effect->flags >> 3) & 1` (compile-only only: an extra reload of the flag). Body unchanged.
+// Native effect bitfield direct or through a record reference gives 344 in all four forms.
+// Native flags masked with either velocity selection gives 334/334. Word flags with a
+// bit-position test gives 417/417. NOT kept: the masks reproduce the folded address,
+// and the field and word forms regress. Effect address and gate/settings homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

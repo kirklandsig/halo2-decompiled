@@ -2629,6 +2629,16 @@ bool function_0b6760(s_index_pair const *pair);
 // references 61, position activity before refresh 384, named device tag fields 61.
 // NOT kept: the two-point definition-first gain is below threshold. The remaining
 // manual state register and channel-1 call lifetimes stay different on the tied forms.
+// Round 438: The definition/result stores and channel-1 register lifetimes still differ. Position-group lvalues and the typed definition receiver were tried.
+// Bind the position-group field reads and updates to position 61.
+// Bind the position-group field reads and updates to position velocity 314.
+// Bind the position-group field reads and updates to group target 64.
+// Bind the position-group field reads and updates to position and position velocity 314.
+// Bind the position-group field reads and updates to position and group target 64.
+// Bind the position-group field reads and updates to position velocity and group target 316.
+// Bind the position-group field reads and updates to position and position velocity and group target 316.
+// Use the existing device definition as the saved receiver in both motion paths 61.
+// NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

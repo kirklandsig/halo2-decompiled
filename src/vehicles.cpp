@@ -822,6 +822,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // magnitude after the copy 109, heading as a planar copy 113, dt or dt and the bound folded into the call 107 (same),
 // 1 unused local 107 and 2-24 (long or real) 217. Left on it: the 1.0 constant takes XMM2 where retail takes XMM3 (so
 // retail can load it right after the first add of the entry magnitude), and every normalize's registers follow.
+// Initial-only and independent two-site input snapshots: named component stores 133/135,
+// shared vector setter 137/139, library vector copy 303/333. Named field references at
+// the initial observation or both 221/320. The copy receivers and early unity still differ.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -5886,6 +5889,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Local rejection square, engine ratio, all five magnitude boundaries and separate clamp output 749 each.
 // Activity from the dispatched value before its clamp 748. NOT kept: a one-point gain with a different
 // activity operand from retail. The early zero/result registers, entry definition and unity loads still differ.
+// Separate motion flag calls with one shared word pointer, alternate-velocity default
+// and explicit speed branches, alone and together, 749 each. All three with an
+// entry definition for kind, spin and engine 1027. The entry definition collapses
+// the later tag lookups. Zero, unity and the flags/vector register homes still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

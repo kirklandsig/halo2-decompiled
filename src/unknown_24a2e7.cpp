@@ -292,6 +292,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Scan entry for suffix test 77, also for both input strings 67. Separate scan cursor 84.
 // NOT kept: the 205-byte form recovers frame 0x28 and ties but spills the moving cursor
 // at EBP-8, leaving the base in a register.
+// Round 436. Indexed returned array after/before cached clear 67/68; indexed
+// return and clear 84; destination array then indexed return 67; scan cursor
+// with indexed return 67 and cursor inputs with indexed clear/return 79.
+// Plain result as copy input 66; selected input reference with indexed
+// clear/return 90. NOT kept: 66 gains one and spills the result; the other
+// 0x28 frame form spills the cursor. Original body restored.
 // M3 lane 4 r219 (fast with 0x24a7bf; control 67). Reading: everything but the found entry's lifetime is retail's in
 // some form; retail forms the entry from i into ESI before the ascii call, keeps it across that call, drops it when ESI
 // takes the 0x31 count for the copy, and forms it again from i and the spilled base for the terminator, so the entry is
@@ -327,6 +333,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // two-member lead 39 (same code). Diagnostic (behaviour change, reverted): the two-member lead's append arm continuing
 // the loop 59 (211 B, re-measure: the calls then sit inside the loop and i goes to memory). Lane 10 r119's two-member
 // lead re-measured 39 (204 B, aligned 16/17: everything but the shared product).
+// Opening append returns result/destination with cached or indexed clear
+// 77/66, 72/75. Suffix append returns result/destination with cached or indexed
+// clear 83/73, 67/80. NOT kept: 66 regains the 0x28 frame and reaches 206 bytes
+// but spills the result and gains one point. The base and ordinal remain missing.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
