@@ -742,6 +742,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 152, with the model field used directly 152, with typed tag arrays 152,
 // and with both shader lookups shared 152. The full-width fallback moves
 // the table load ahead of the frame. The stage and pass addressing still fuses.
+// M3 lane 11 r119 (fast with 0x2243c0 and 0x224d90, both MATCH unless noted; main body 117 unchanged). Round 59's score-8
+// chain (reference-bound head/stage/pass elements and fallback/definition data, the material index as `long const &`
+// from a by-value accessor, the zeros grouped, the +0xd8 flags read just before 0x173ba0) rebuilt on this main 8, the
+// same lines: retail loads the pass definition into EAX over the dead pass-element `lea`, the material tag into EDX and
+// the material definition into EDI over the dying table base, where ours takes EDX, ECX and EDX in turn. On it: the pass
+// tag through a by-value accessor bound to `long const &` 59; the two cache pointers zeroed as one chained assignment 10;
+// both definition lookups through a tag-bytes accessor returning `byte *const &` 8 (same lines); the stage-block base
+// bound as a const reference 8; the material index reference declared before the material lookup 113 (0x224d90 36).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

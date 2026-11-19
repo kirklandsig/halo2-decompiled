@@ -834,7 +834,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
-// score 35 (was 60): The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
+// score 35 (was 35): earlier 60. The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
 // Earlier: retail keeps the message in ECX and the flags in AX (ours EAX / CX) and ends the found path with
 // `or byte ptr [ecx + 0xe], 2` (ours `or ecx, 2` and a word store); m3 lane 3 r257's entry is the last one above the marker.
 // Earlier first line: Retail uses one sequence counter and reloads newest in the index helper.
@@ -1155,6 +1155,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Qualifying cursor used for post-scan publication with an in-place or saved-word
 // update 98/82. NOT kept: single-bit type selection gives the retail cursor and
 // message pointer with a byte OR, but changes the flag read and return-value code.
+// M3 lane 11 r119 (fast; control 35). Every in-place form (89) frees ECX in the loop: `next` then takes ECX and the
+// window head EDX (retail: head ECX, next ESI, oldest EBX, message ECX, flags AX), and `time` moves to EBP, taking the
+// frame word. Tried: 1 to 7 dead initialised locals 35 each (no symbol-count effect); the in-place update with
+// `message` declared above the loop 89; the message through the existing reliable_stream_get_message with the in-place
+// update 89; a no-code copy of the index between the lookup and the message zero 35 (same code); the update through the
+// existing word bit setter 0xbfe40 (inlined as the in-place OR) 89.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

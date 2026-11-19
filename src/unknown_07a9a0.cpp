@@ -1043,7 +1043,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
 // MiniMax I (11-17): no new form, no lower score (964): re-measured the baseline; retail's session arrives in EAX
 // with a 0xb4 frame against our 0xd4, and that ingress is fixed by the callers in the other files, and the opening
@@ -1569,6 +1569,19 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 948; entry-sized library copy 936; paired ID cursors 968; ID snapshot 963; ID copy after
 // counter clears 950; workspace scoped through party counts 959. NOT kept: every form moves
 // the body farther from retail's 2828 bytes and scores higher. The opening lookup still expands.
+// M3 lane 11 r119 (fast with 0x73530 (MATCH throughout unless noted) and 0x71730 (387); masked = aligned count with
+// registers and stack offsets masked, base 416). Retail's long histogram shares the machine-id copy's storage (both at
+// +0x34 of the frame, cleared with `rep stosd` of 16 dwords), so retail's frame has no separate histogram. Diagnostic: the
+// top lookup guarded (`variant_index != NONE ? function_192e60(variant_index) : NULL`) 886 (2732 B, masked 370): one more
+// test ahead of the call keeps 0x192e60 out of line as retail (round 146's finding again). Tried: the first histogram
+// clear through memset 892 (2764 B); `long player_count` named for `available` and the output count 908 (0x73530 8).
+// Lead: retail's inline party-bound code zeroes the result first and compares the flag byte in memory (`xor edx, edx;
+// cmp ecx, 5; ...; cmp byte ptr [ebp + 0x604], 0`), the shape of the matched 0x1933d0/0x1933a0; the file's minimum,
+// maximum and spread selectors rewritten that way (`long result = 0; if (...) result = ...; else if (...) result =
+// ...; return result;`) give that code exactly, 894 (2728 B, masked 357); with the team-count and imbalance selectors
+// in 0x193440/0x193400's default-first form too 916 (2724 B, masked 348). Not kept (the body shrinks, so the score
+// rises), but it is retail's code: keep it once the inline choices (top lookup a call, capacity switch and 0x631f0
+// inline) give back the length.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

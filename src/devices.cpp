@@ -1284,6 +1284,13 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// score 127 (was 121): coordinator decision (round 119): the plan block in the order that makes both callers match
+// (0x108600 31 -> MATCH, 0x108670 13 -> MATCH; this body ret 0x14 with the initial velocity in XMM6 as retail), kept over
+// this body's 121: the cruise velocity through the motion field, velocity/deceleration/start/target stores first, the
+// half ramp-up, the acceleration zero, the half ramp-down, the denominator with the cruise time written out
+// (`duration - ramp_up_time - ramp_down_time`), then the position and cruise stores, distance declared at its fabs.
+// Still differs: the ramp-down time keeps a register through its clamps (retail compares its stack slot), 528 bytes
+// against 523.
 // MiniMax B (11-18, round 2): no new form, no lower score (121): retail takes the initial velocity in xmm6 and this
 // build passes it on the stack, and the six-float signature may not change, so the three float temporaries keep their
 // own registers (this build xmm7, xmm2 and xmm1 for the duration and the two ramp times, retail xmm5, xmm7 and xmm1);
@@ -1659,7 +1666,6 @@ void device_motion_start(s_device_motion *motion, real target, real duration, re
 	target = PIN(target, 0.0f, 1.0f);
 
 	real delta = target - position;
-	real distance = delta;
 
 	motion->position = target;
 	motion->start = target;
@@ -1671,39 +1677,34 @@ void device_motion_start(s_device_motion *motion, real target, real duration, re
 	motion->duration = duration;
 	if (!(0.0001f > (real)fabs(duration)))
 	{
-		distance = (real)fabs(distance);
+		real distance = (real)fabs(delta);
 		if (!(0.000001f > distance))
 		{
-			real cruise_time = remaining - ramp_down_time;
-			real half_ramp_down_time = ramp_down_time * 0.5f;
-			real half_ramp_up_time = ramp_up_time * 0.5f;
-			real denominator = cruise_time + half_ramp_down_time + half_ramp_up_time;
-			real velocity;
-
-			motion->target = target;
-			motion->position = position;
-			motion->start = position;
-			motion->acceleration_distance = 0.0f;
-			motion->deceleration_distance = distance;
 			motion->velocity = initial_velocity;
+			motion->deceleration_distance = distance;
+			motion->start = position;
+			motion->target = target;
+			real half_ramp_up_time = ramp_up_time * 0.5f;
+			motion->acceleration_distance = 0.0f;
+			real half_ramp_down_time = ramp_down_time * 0.5f;
+			real denominator = duration - ramp_up_time - ramp_down_time + half_ramp_down_time + half_ramp_up_time;
+			motion->position = position;
 			motion->cruise_velocity = 0.0f;
 			if (denominator != 0.0f)
 			{
-				velocity = (delta - half_ramp_up_time * initial_velocity - half_ramp_down_time * final_velocity) /
-					denominator;
+				motion->cruise_velocity = (delta - half_ramp_up_time * initial_velocity - half_ramp_down_time * final_velocity) / denominator;
 			}
 			else
 			{
-				velocity = delta / duration;
+				motion->cruise_velocity = delta / duration;
 			}
-			motion->cruise_velocity = velocity;
 			if (ramp_up_time > 0.0f)
 			{
-				real acceleration = (velocity - initial_velocity) / ramp_up_time;
+				real acceleration = (motion->cruise_velocity - initial_velocity) / ramp_up_time;
 
 				if (acceleration != 0.0f)
 				{
-					motion->acceleration_distance = (velocity * velocity - initial_velocity * initial_velocity) /
+					motion->acceleration_distance = (motion->cruise_velocity * motion->cruise_velocity - initial_velocity * initial_velocity) /
 						(acceleration * 2.0f);
 				}
 			}
