@@ -233,6 +233,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // x + half width * pulse;`, stored back and used by the corners) 89 (852 bytes), with the y in a `center_y` too 89; the
 // corners through a `point2f const &` bound to the running position after the step 14 (same code); the second x step
 // moved ahead of the draw call 97 (843 bytes); the corners in [2], [3], [0], [1] order 90 (852 bytes).
+// M3 lane 4 r221 (fast with 0x2008fc 0x200891, control 14): the advance bound by `real const &` to its product and
+// used by both x steps 55 (first difference +0x129), by the first step only (the second written out) 51 (850 bytes);
+// the half height built in place (`= y1 - y0; *= height; *= 0.5f;`) 14, the half width so 14, both 14 (all three the
+// same code: the advance product keeps XMM4 and the half-height copy XMM3).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

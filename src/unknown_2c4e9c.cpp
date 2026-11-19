@@ -3228,6 +3228,16 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // direct EBX load; retail has no out-of-line reader of the field to call); the guard written `NONE != map_id` 30; the
 // iterator at function scope with the selection after the loop on `iterator.datum` 28 (84 B); `return` in place of
 // `break` after the selection 30; `if (map_id == NONE) return;` with the walk unnested and the hit returning 30.
+// M3 lane 4 r221 (fast with 0x2c9a58, matched in each): the iterator's two NONE stores chained (`iterator.index =
+// iterator.datum_index = NONE;`) 29 (one store order swapped, the EBX load unchanged); on the id started NONE and set
+// when the field is valid (13): with the chained stores 13, with `if (map_id == NONE) return;` and the walk unnested
+// 13, with the field compared against the id (`!= map_id`, one NONE literal fewer) 13 (NONE still kept in EAX for the
+// compare and both iterator stores, the id loaded straight into EBX); the if/else two-definition id with the chained
+// stores 36 (87 B). Plain: an out-pointer getter beside the preferences file's other out-pointer getters (0x1210a0,
+// 0x121100), called with the id's address from here, 30 (inlined at link time to the same direct EBX
+// load; the file's 14 functions still matched). A retail byte scan finds a memory load into a scratch register,
+// compared with a constant and then copied to a callee-saved register, in no other function. Compile-only under /O2
+// (diagnostic): no frame and a rotated loop, so retail's body is an /O1 one. All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

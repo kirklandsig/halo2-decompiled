@@ -824,6 +824,11 @@ void __stdcall function_1160c0(real dt)
 // Separate physics point with fields, point setter or shared point difference 314/361/311.
 // Updating the physics point before publication, same forms 391/391/406. Early tag index
 // with separate or updated point 314/391. NOT kept: every split widens the frame and leaves the segment spill different.
+// M3 lane 4 r221 (fast with the file's ten matched functions): the axis renamed to sort after the segment and scale
+// (`turn_axis`) 144; the scale renamed `ratio` 144, `along` 144; the segment renamed `used_segment` 144; the axis declared
+// ahead of the vertical 144 (all five the same code: the segment/scale/sine cell stays at +0x20 above the axis, so the
+// cell's place follows neither names nor declaration order). A compile-only build lays this frame out differently from
+// the link-time build, so it cannot screen the homes.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
