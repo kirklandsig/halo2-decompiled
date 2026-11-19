@@ -117,6 +117,10 @@ __forceinline long portal_path_gain(real distance, real range)
 }
 
 // score 287 (was 296): Advancing the required index output restores gain-based output addressing.
+// Round 192 (m3 lane 8; one-file harness, see 0x18dc90's note): on the r111 held form 244 positional, 17 aligned at
+// 1364 B, the same cluster/portal-index EBX/EBP swap as the twin plus the padding it shifts; the twin's ten forms
+// applied to both bodies give 244 here each, except a long portal index 323 and the cluster through a reference 244
+// (aligned 21).
 // The 0x428 frame agrees. The starting-cluster register, table loads, validity words
 // and sort scratch offset differ.
 // Before the sort scope, the frame was 0x42c.
@@ -297,6 +301,15 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 }
 
 // score 315 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
+// positional/aligned; on main 304/232): lane 13's r111 held form re-applied (lane 2's rebuilt patch) 15/16 at 1363 B,
+// the twin 244/17. Only the cluster pointer (ours EBX, retail EBP) and the widened portal index (ours EBP, retail
+// EBX) differ in both. On that form: the nearest test nested 15; the nearest distance stored before the index 16; the
+// side bit named 19; the environment compare operands swapped 16; the seed's bit set through
+// `bsp->clusters[cluster_index]` 359; the travel call taking `cluster - bsp->clusters` 358; a const cluster pointer
+// 15; `bsp->portals + portal_index` 15; a long portal index 324 (the pair stays, the portal pointer moves); the
+// implicit short conversion 15; a short other index 15; a short encoded entry 15; the cluster through a reference
+// 19. Not kept (held form unchanged: needs a match).
 // Retail's 0x428 frame keeps the starting cluster in EBP, reloads both BSP table bases per path entry
 // and resolves the destination before testing flags. Both extra table-base spills persist.
 // Before the cursor change the frame was 0x430. Tried: const portal 354; const views 354; endpoint mask

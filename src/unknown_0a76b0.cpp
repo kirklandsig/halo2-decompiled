@@ -2280,6 +2280,13 @@ __forceinline char unit_action_round(real value)
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
 // score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below.
+// Round 192 (m3 lane 8, fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470;
+// control 234): goto-free single exit (switch default and mode-else leave the name NONE, `if (name != NONE)` round the
+// play block, `result = true` at the end of each arm with the animation failure skipping it, the tail under
+// `if (result)`) 328 (1224 B: the NONE test is threaded and the 0xe9780 call block is copied onto the mode-1
+// animation path); the 0xe9780 fallback as a switch whose combo cases fall into the 0xe000607 case 252 (1183 B);
+// TEST_FIELD_BIT on the 0x1b test 249 (1193 B); both 275 (1184 B); both with first_person_name = NONE declared first
+// 312 (1178 B).
 // Round 189 (m3 lane 8, fast with 0xe9ed0/0xea090, both MATCH throughout; control 234): the unit lookups through one
 // header pointer local (UNIT_ACTION_HEADER_GET, used for the unit, the 0x1b test and the 0x399 test) 328 (1178 B); for
 // the unit and the 0x1b test only 300 (1184 B); the 0x399 test's lookup through UNIT_ACTION_HEADER_GET 234 (same code);
