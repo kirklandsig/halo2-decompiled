@@ -708,6 +708,13 @@ struct s_1f9762
 // Writing the test the other way round (`index + 1 >= count`, `count <= index + 1`, the same test negated and
 // the same test with both sides widened) all measure 4: the increment moves to EDX with the index and the count
 // takes EAX, so the compare and the load order change as well. The body stands.
+// MiniMax A (11-19): score 1 (unchanged): the entry test reads the count through a function-scope path pointer at
+// actor+0x50c (`actor->unknown53a + 1 >= path->field_2d`) and then reproduces retail's `inc eax`/`cmp eax, edx`/
+// `setge al` byte for byte, leaving only the second dot product's i term taking the direction as multiplicand
+// where retail takes the point (score 2). That multiply's operand order does not move under the helper's
+// argument order, a subtract-assignment form, a named local for the input pointer, the current point read
+// through the path or through the actor's own field, or the first dot's argument order; reading the index
+// through the path instead rotates the whole float block (score 10). The committed body (score 1) stands.
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
