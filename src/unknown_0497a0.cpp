@@ -503,6 +503,11 @@
 // helper taking the camera point with a real phase and three named double factors 535 (aligned 594); the two wave values
 // as a `real wave[2]` 634 (2670 B, frame 0x60, as the point pair of round 202); the two scaled amounts named before the
 // adds 650 (2594 B). None keeps sin x, cos 7.8y and cos 7.75y on the x87 stack past the mixed wave as retail does.
+// The 0x54 frame, separate rounded wave slots and the origin home still differ. Component
+// origin aggregate 710, selected-coordinate point setter 745, setter on regular/special/
+// both arms 699/708/709, named origin coordinates 745, setter on both outputs 707,
+// selected-coordinate and output setters 690. NOT kept: all regress. The last reaches
+// frame 0x5c at 2587 bytes. The regular-arm setter raises the reduced caller to 344.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

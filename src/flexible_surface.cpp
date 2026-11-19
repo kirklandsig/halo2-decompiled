@@ -847,6 +847,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 130/130/152/130. With the shared vector sampler for both table draws, 126 each.
 // NOT kept: the sampler's four-point gain misses the eight-point bar and leaves the 0x1c frame.
 // The named short factor reaches 880 bytes but raises the score.
+// The 0x1c frame and seed load still differ. Shared rotation cross names, original-k name,
+// both, and reordered crosses with both names 130 each. Named cosine complement 152.
+// Named left/right cross products 154/154. Named unscaled alignment 152.
+// NOT kept: the complement, product and alignment forms reach 880 bytes but keep frame 0x1c and raise
+// the score. Both product forms lose 0x2551f0 and 0x1ff360. The alignment form loses 0x1ff360.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

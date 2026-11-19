@@ -1544,6 +1544,10 @@ void function_150820(dword *bits, bool local_only)
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
+// ESI player, EDX unit index and EDI hand still differ. Canonical object header table,
+// canonical player displacement/indexed table/read-only displacement with either header
+// lookup, and canonical displacement with a direct header read all score 43 at 210 bytes.
+// The types and lookup source were restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

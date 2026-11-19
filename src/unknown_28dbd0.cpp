@@ -582,6 +582,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // last 234 (1200 B, back to 0x114); row j or k regrouped 161/213/215; cross k ahead of cross j 214; the crosses after
 // the projection 229 (1227 B), ahead of the cosine 160; sine after the projection 231 (1228 B). NOT kept: every one is
 // the helper's shared-call body written out, with no match.
+// The 0x11c frame and cross/sine homes still differ. Shared add at the axis/cross/both
+// stages 221/233/233. Shared scaled add at the axis/cross stages 242/233. Axis scaled
+// add plus cross add 204, axis add plus cross scaled add 233, both scaled adds 254.
+// NOT kept: all regress and move away from retail length. The 204 form keeps frame 0x11c.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
