@@ -1610,6 +1610,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // Retail masks the index in place in the render arm (0xbd24c, where it dies) and copies it first in the no-model
 // arm, so there the index is still live after the mask when registers are chosen; what reads it afterwards with no
 // instruction is still open.
+// M3 lane 4 r217 (fast with 0xb8bd0/0xbdc40/0xbc820/0xbd020/0xbee60/0xbfa40/0xbdb60, all MATCH; control 20): a pool local
+// at the top of the no-model branch with one parent-object local 44 (1390 B, data from EDI), with the matrix and flag lookups
+// both spelled through it 20 (same code: the local is forwarded into the lookup); the index copied into a local masked in
+// place, one parent-object local 44; parent and mirrored flag as two conditionals on `parent_index != NONE` 45 (1391 B); a
+// `byte *const *` to the data field declared at the branch top, one parent-object local 44 (forwarded). Diagnostic,
+// reverted: that pointer volatile 20 (same code: even with the data re-read forced, the pool is re-read too, so the pool
+// in ECX needs a value the allocator keeps live from the current lookup, not a different data-field base).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

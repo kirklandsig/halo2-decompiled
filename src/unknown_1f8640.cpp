@@ -897,6 +897,12 @@ struct s_1f8a70_actor
 // 012 with an explicit unsupported fallback 448; route 2 then nonzero then zero 323. NOT kept: every
 // form regresses. The dispatch still needs to follow mode five, and the failure result still lacks the
 // native stack reload.
+// M3 lane 4 r217 (fast with the file and 0xe70b0, all MATCH; control 182, aligned 31, masked 26: the rest is layout). The
+// route test as `route != 0 ? (range) : (zero check)` 182 (aligned 39: retail's `je` to an out-of-line zero check with the
+// range test inline, but the failure block follows inline and the dispatch still follows case 7); case 6 as
+// `{ route_mode = 1; break; }` inside its 0x20 test 182 (same code: case 6's store still does not share case 5's tail as
+// retail's does); `result = route_found;` once after the found/failed if/else 326; one route_found variable for the whole
+// function (first exit sets it false, no separate result) 339. Diagnostic, reverted: case 5 moved after case 7 372.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

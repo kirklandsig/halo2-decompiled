@@ -223,6 +223,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // written in both arms of the animation test 23; a separate widget local per loop declared at the pane block's top 23;
 // `long i = 0;` above the pane lookup with the first loop also `for (i = 0;` 66, and the first loop `for (i = 0;` under
 // main's `long i = 0;` 66 (both give one zero register, EBX, for the whole function; the model reset becomes `mov`).
+// M3 lane 4 r214 (fast, with the file's 10 matched functions; aligned 4 / masked 3: the text and model resets
+// swapped and the model loop's EAX copy of the screen): the flag as `char` 23; a `const` pane pointer 23; the text
+// test as `text != NULL && animating` 23; the text loop's tests as `if (!text || !animating) continue;` 23; the text
+// loop's counter reset as `i = 0;` ahead of `for (; ...)` 23; the same for the model loop 23 (all the same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

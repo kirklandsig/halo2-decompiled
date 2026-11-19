@@ -2103,6 +2103,11 @@ bool function_17afd0(long effect_index, long value);
 // M3 lane 7 r180 (fast with 0x174420 and 0x1751d0; control 12; P = the plain `owner != NONE && g == owner && available`
 // conjunction, re-measured 138 at 510 B): the owner typed dword on P 138, on this body 12 (same code), on P NONE-defaulted
 // 138 (508 B); a redundant `if (index != NONE)` guard around the walk 12 on this body, 138 on P (same code each).
+// M3 lane 4 r216 (fast; control 12, P re-measured 138 at 510 B): the clearing test split into two consecutive ifs
+// (owner/view, then `!available`) 115 (507 B); same_view false after the availability and set by a nested
+// `if (owner != NONE && g == owner) { if (available) same_view = true; }` 141 (513 B); P with every local of the arm
+// declared bare at the arm's top and assigned in retail's order 138 (P's code); `long owner = NONE;` at the loop body's
+// top, set only for a valid effect index, on this body 12 (same code), on P 171 (510 B).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
