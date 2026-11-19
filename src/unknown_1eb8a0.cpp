@@ -676,6 +676,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // carry the upper-bound value in activation step and activation distance and active output 693;
 // all upper-bound carriers with the lower bound initialized first 691.
 // NOT kept: All scores rise. The first-activation forms also disturb the matched caller's convention.
+// M3 lane 11 r118 (fast with 0x1eb6f0 and 0x1ed4a0, MATCH throughout; control 603): the counter conversion without its
+// volatile 702 (2857 B), that with the 0.866 test as dot3f(&s->direction, d) 702; the 0.866 test and the output stage's
+// w both as dot3f 679 (2877 B); the sample copy as one aggregate `qr = *q` 665 (2880 B); no count local, `(real)counter`
+// at its three uses 706 (2853 B); the count tests in integers (`counter < 5`, `(real)(3 - counter)`) 687 (2845 B).
+// Retail loads q into EBX at entry, uses EBX and EDI as scratch for the activation's target copy and reloads q after
+// the 0x30bf0 call; d is read from its stack slot at five sites (the alignment dot, the two fallback copies, the 0.866
+// test with its copy, the settle dot).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

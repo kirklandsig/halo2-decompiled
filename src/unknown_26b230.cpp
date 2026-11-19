@@ -2190,6 +2190,10 @@ void function_269250(long clump_index, long actor_index);
 // result actor latch and the same three variants 87/335/126/339. NOT kept: the actor latch ties, the
 // team-scoped score restores x87 at higher cost, and the clump latch emits two copies of the step.
 // Pool EBX and the memory-only selection remain.
+// M3 lane 11 r118 (fast, control 89 on the reduced image, 87 plain): re-measured the in-arm compare 126 and that with
+// the selection from the walk's datum index 128; the selected arm's join (`if (clump != old) {...}`) through an inline
+// helper taking the clump index: on the datum-index form 128, on the in-arm form 126, on this body 89 (each the same
+// code as without it: a parameter bound to a variable adds no reference, so the selection keeps its register).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

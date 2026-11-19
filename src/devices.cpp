@@ -526,6 +526,12 @@ PRIVATE inline bool device_channel_valid(c_animation_channel const *channel)
 	return channel->graph_tag_index != NONE && channel->animation_id.index != NONE;
 }
 
+/* the length of one game tick in seconds */
+PRIVATE inline real device_tick_length()
+{
+	return g_510c54->rate;
+}
+
 /* samples a device's two channels */
 PRIVATE __forceinline void device_channels_sample(s_device *device, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms)
@@ -1072,7 +1078,7 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	{
 	case 0x5000561:
 		if (definition->delay_time > 0.0f)
-			function_value = g_510c54->rate / definition->delay_time * (real)device->delay_ticks;
+			function_value = device_tick_length() / definition->delay_time * (real)device->delay_ticks;
 		break;
 	case 0x5000081:
 		function_value = device->position;
@@ -1612,6 +1618,26 @@ bool function_108530(long device_index, long name)
 // `duration - ramp_up_time - ramp_down_time` 123; remaining/position/delta/distance declared at the function top 121;
 // the ramp-down minimum as `ramp_down_time < remaining ? ...` 121. Diagnostic (reverted at once): `(void)&ramp_down_time;`
 // 121 (same code: the dead address folds away).
+// M3 lane 11 r118 (fast with 0x108600/0x108670, base 31/13; "screen" = a compile-only pass of this body, which the LTCG
+// build follows exactly): LTCG compiles this body once and makes a stack float a register parameter when its single
+// load lands in an XMM register nothing wrote before it (the load is then dropped). Ours writes all eight before the
+// velocity's one late load. Diagnostic, reverted at once: `real initial_square = initial_velocity * initial_velocity;`
+// after the pins 153 (539 B, ret 0x14, both callers MATCH; its LTCG code is the plain compile minus that load). The
+// cruise velocity through the motion field with the plan block as velocity, start and target stores, the half ramp-up,
+// the acceleration zero, a denominator `remaining - ramp_down_time + half down + half up`, then the position,
+// deceleration and cruise stores, and distance declared at its fabs 133 (527 B; its tail and plan block are retail's
+// with the velocity in XMM6, but the ramp-down still holds a register through its clamps; callers 31/13); the same with
+// the deceleration store second and `remaining` written out for the cruise time 127 (528 B, ret 0x14, both callers
+// MATCH; a statement order found by search, not kept: build/r118/lead-0x107ab0-callers.patch); the cruise velocity
+// through the field alone (re-measured) 134 (524 B). Screen only (about 14,000 bodies: the eleven plan statements in
+// 960 block orders and 6,400 random orders; the denominator, cruise time, half times, remaining, delta, acceleration
+// and deceleration each named or written out; distance declared at the top or at its fabs; the two store runs
+// through one inline setter in 5,760 combinations; the five clamps as inline min/max helpers or ifs in all 32 mixes;
+// the velocity parameter in every declared position; 1 to 40 dead locals): the plan block's order and which sums are
+// named decide which values get whole-function registers. 31 bodies leave a register untouched for the velocity (the
+// nearest 75 aligned lines from retail), about 480 leave the ramp-down uncached as retail does (the nearest 53), none
+// does both with retail's body. A diagnostic with the cruise time's ramp-down term dropped gives retail's exact
+// uncached clamp pair, so the ramp-down sits one reference from losing its register.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1908,7 +1934,7 @@ bool __stdcall function_107ed0(long device_index, long name, real seconds)
 								function_142a60(&adjusted, &relative, &adjusted);
 							}
 							had_animation = true;
-							real step = g_510c54->rate;
+							real step = device_tick_length();
 							if (step > 0.0f && time - step > 0.0f)
 							{
 								state->animation_matrix_get(animation, time - step, render_model, &start);
@@ -2018,7 +2044,7 @@ bool function_107cc0(long device_index, s_device_motion *motion, c_animation_cha
 		real absolute_remaining = (real)fabs(remaining);
 		if (!(absolute_remaining < 0.000001f))
 		{
-			real step = g_510c54->rate;
+			real step = device_tick_length();
 			if (distance < motion->acceleration_distance)
 			{
 				distance = motion->acceleration_distance - distance;
@@ -2105,7 +2131,11 @@ bool function_0b6760(s_index_pair const *pair);
 // MiniMax G (11-18): no new form, no lower score (250): the frame 0x20 and the state test are retail's; the index and index * 12 sit in
 // EDI/ESI where retail has ESI/EBX, the result byte is returned in DL where retail keeps it on the stack, and the definition pointer is
 // re-read; the one-use tick-rate local that reaches retail's block order (58) stays match-only, so the body stands.
-// score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
+// score 61 (was 250): retail's length (1495 bytes) and registers up to the position arms. Left: retail stores the definition
+// slot before the result byte (ours after), the manual position arm loads the state for its push into ECX (ours EAX), the
+// unit byte test is `ja` (ours `jne`), and at the two channel-1 0xb6760 calls retail keeps the channel pointer in ESI and
+// nothing in ECX/EDX across the call (ours keeps it in ECX and copies it to ESI): BLOCKED-BY 0xb6760 (see r118 below).
+// Earlier (250, was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.
 // MiniMax G (11-12): no new form, no lower score (250): nothing new this round; frame 0x20 and the state test are retail's; the
@@ -2503,12 +2533,29 @@ bool function_0b6760(s_index_pair const *pair);
 // the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off and the body is
 // sixteen bytes short of retail's 1495; the only form under 250 needs a one-use rate local (58/60), a form the coordinator
 // ruled out without a byte match, and dropping the volatile on the definition alone measures 386.
+// M3 lane 11 r118 (fast, confirmed plain; the file's other 29 functions unchanged): kept 61: the definition pointer's
+// volatile dropped and the tick length read through `device_tick_length()` (a file accessor returning the rate by value,
+// also used by 0x106d70, 0x107ed0 and 0x107cc0 with their code unchanged). The accessor's returned value is the named
+// float that retail stores to a stack home before the power 0x11eed0 call, so the listed one-use `rate` local is not
+// needed. With the accessor: the result declared after the definition, the acceleration and speed as running sums and
+// the unit byte as `<= 0` (the listed 58 lead) 58; the accessor at the power call only 58, at both 0x11eed0 calls 58;
+// the accessor returning `real const &` 380; the result left before the definition 60, that with the named
+// acceleration products as now 60, that without `<= 0` 61 (the kept form); the volatile kept 350. Not kept as
+// match-only: the result after the definition (2 points) and `<= 0` (1 point; matched 0x1cd8a0 tests the same byte as
+// `> 0`). The rest sits at the channel-1 0xb6760 calls. `inline` on 0xb6760's definition (so its callers assume it
+// clobbers ECX and EDX) on the 58 form 111 (1504 B: the linker then expands it at the first channel-1 site, one test
+// level shallower than the second, where the call stays) and takes 0x1cd070 210 -> 269 (its one call expanded), so it
+// is not kept; with 0xb6760 at the two channel-0 tests as well 111 (same code). Diagnostic (one compiler setting,
+// reverted at once): src/unknown_0b66c0.cpp built without link-time code generation gives 4 here on the 58 form (the
+// two calls then differ only in the argument register), but 0xb6760 2, 0xb6780 5, 0xb66c0 20, 0x1cd8a0 1 and 0x1cdb00 1
+// stop matching. So the body is retail's once callers treat 0xb6760 as clobbering ECX/EDX while it stays out of line
+// at both channel-1 sites: BLOCKED-BY 0xb6760 (the link-time expansion threshold, not a source form here).
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
 	s_device *device = DEVICE_GET(device_index);
 	bool result = false;
-	byte const *volatile saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
+	byte const *saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
 	s_animation_state *state = NULL;
 	if (device_has_animation_state(device_index))
 		state = device_get_animation_state(device);
@@ -2522,7 +2569,7 @@ bool __stdcall function_106790(long device_index)
 			bool finished = function_107cc0(device_index, &device->motion_14c,
 				&device->channels[0], state, previous, &position);
 			device->power = position;
-			device->power_velocity = (position - previous) / g_510c54->rate;
+			device->power_velocity = (position - previous) / device_tick_length();
 			if (finished)
 				device->flags |= 0x20;
 			else
@@ -2550,7 +2597,7 @@ bool __stdcall function_106790(long device_index)
 			bool increasing = device->power_velocity > 0.0f;
 			device->flags = acceleration > 0.0f && speed > 0.0f ?
 				device->flags | 0x100 : device->flags & ~0x100;
-			if (!((real)device->delay_ticks * g_510c54->rate >= *(real const *)(saved_definition + 0x10c)) &&
+			if (!((real)device->delay_ticks * device_tick_length() >= *(real const *)(saved_definition + 0x10c)) &&
 				device->power == 0.0f && !(device->power > group->value))
 			{
 				++device->delay_ticks;
@@ -2564,7 +2611,7 @@ bool __stdcall function_106790(long device_index)
 				if (fabs(local_c01284_2) > speed)
 					device->power_velocity = increasing ? speed : 0.0f - speed;
 				bool reached = function_11eed0(&device->power, &device->power_velocity,
-					group->value, g_510c54->rate, speed, acceleration,
+					group->value, device_tick_length(), speed, acceleration,
 					(*(byte const *)(saved_definition + 0xbc) & 1) != 0, 0.0f, 1.0f);
 				if (reached)
 					function_107980(device_index, increasing ? *(long const *)(saved_definition + 0xf0) : *(long const *)(saved_definition + 0xf8));
@@ -2604,7 +2651,7 @@ bool __stdcall function_106790(long device_index)
 			if (state && function_0b6760((s_index_pair const *)&device->channels[1]))
 				device->channels[1].set_frame_ratio(device->position);
 			real previous = device->position;
-			function_11eed0(&device->position, &device->position_velocity, group->value, g_510c54->rate,
+			function_11eed0(&device->position, &device->position_velocity, group->value, device_tick_length(),
 				*(real const *)(saved_definition + 0xc0), *(real const *)(saved_definition + 0xc4), false, 0.0f, 1.0f);
 			if (previous != device->position)
 			{
