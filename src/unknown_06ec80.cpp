@@ -170,6 +170,12 @@ union s_6ec80
 // returning 0 early on a null pointer 225 / 226. So the scoped form's shift does not come from the two zeros sharing
 // a block. Retail has this 0xe4-stride loop only here (it is not an expanded out-of-line function), and it unrolls
 // the sibling 16-trip `for` loops (0x696f0) four times, so this loop was not a counted `for`.
+// M3 lane 1 r123 (fast, base 5): the mask scoped re-measured 225: NONE's web stays in EDI through the 0x49c8 and second_id
+// compares (retail compares 0x49c8 with an immediate and re-forms NONE in ECX) and the machines pointer gets no register.
+// Diagnostics on the scoped mask (semantics changed, removed): the loop counter starting at 1 246 (985 B, entry still NONE
+// EDI); without the second_id test 241; without the 0x49c8 NONE test 195 (entry registers retail's, first difference
+// +0x101: the two block pointers' EBX/EDI swapped); one more read of the machines block after the loop 172 (979 B, the
+// same picture). So retail's machines pointer outweighs NONE's extended web, and players outweighs the machines pointer.
 // Round 181 (m3 lane 7, fast with 0x6ec10/0x5b120; base 5): the mask declared and zeroed between the two pointer tests
 // (nested ifs, no flag) 226 (NONE moves to EDI as soon as the mask's zero no longer precedes the first pointer test); the
 // scoped mask re-measured 225; with the mask zeroed before the guard as now: the guard as two nested ifs 5, the do loop

@@ -311,6 +311,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+/* hands 0x10e480 the promotion data run of a sound permutation's entry */
 // score 2 (was 2): only the two loads' registers differ: ours loads the samples address into EDI (the data
 // pointer's dying register) and the entry's data offset into EDX, retail the samples into EDX and the offset into EDI.
 // MiniMax E (11-09): 2 (was 7): the samples pointer is copied into a dword and the scale is passed
@@ -470,17 +471,16 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
 	s_sound_promotion_tag *sound = (s_sound_promotion_tag *)g_4e3b44[tag_index & 0xffff].bytes;
-	s_sound_promotion_data *data = ((s_sound_globals_promotion_view *)g_51ebd4)->promotions[sound->promotion_index].data;
-	s_sound_promotion_entry *entry = &data->entries[permutation->entry_index];
+	short promotion_index = sound->promotion_index;
+	s_sound_promotion_entry *entry = &((s_sound_globals_promotion_view *)g_51ebd4)->promotions[promotion_index].data->entries[permutation->entry_index];
+	s_sound_promotion_data *data = ((s_sound_globals_promotion_view *)g_51ebd4)->promotions[promotion_index].data;
 	long count = entry->data_count;
 
 	if (count > 0 && g_4ed28c->valid && function_badc0(object_index, 3))
 	{
 		s_sound_promotion_state curves;
-		dword samples_address;
 
-		memcpy(&samples_address, &data->samples, sizeof(samples_address));
-		curves.data = (byte const *)samples_address + entry->data_offset;
+		curves.data = data->samples + entry->data_offset;
 		curves.count = count;
 		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, scale);
 	}

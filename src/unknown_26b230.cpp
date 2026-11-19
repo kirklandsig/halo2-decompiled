@@ -2196,6 +2196,15 @@ void function_269250(long clump_index, long actor_index);
 // with retail's split reload, the selection memory-only, but the not-found step threads to the exit and the selection, best
 // and score homes rotate to +0x1c/+0x18/+0x14); on that form the selection renamed to sort first 128, best declared before
 // the selection 128, the score declared at actor scope 128 (each the same code). Body unchanged.
+// M3 lane 11 r118 (fast, control 89 on the reduced image, 87 plain): re-measured the in-arm compare 126 and that with
+// the selection from the walk's datum index 128; the selected arm's join (`if (clump != old) {...}`) through an inline
+// helper taking the clump index: on the datum-index form 128, on the in-arm form 126, on this body 89 (each the same
+// code as without it: a parameter bound to a variable adds no reference, so the selection keeps its register).
+// M3 lane 16 r139 (fast with 0x268bb0; this body reads 89 there against 87 in the full check, CAVEAT): the score
+// started at 0.0f instead of the best (the same values, as the best never drops below zero) 92 (480 B, retail's length);
+// the created arm assigning the loop's `group` instead of declaring a second one 89; the clump walk record declared at
+// function scope 89; the selection and best score declared at function scope and set at the top of each actor 89; the
+// score set by an if/else (`else score = best;`) 128 (484 B).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

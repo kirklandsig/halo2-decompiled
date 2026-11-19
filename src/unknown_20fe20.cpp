@@ -1249,6 +1249,28 @@ void function_2118c0(void)
 // M3 lane 16 r135 (fast with 0x212100): the knot indices `word const` 10; the three knot-row pointers to const 10;
 // the band loop closed `while (++b < 3)` 10; `long const row` 10; the knot indices assigned without the `(word)` casts 10
 // (all the same code).
+// M3 lane 11 r118 (fast with 0x212100 and 0x211fd0, which stay matched; a compile-only screen of this body, exact
+// here, for the rest): an inline row accessor `(short band, word index)` returning `noise[band * 8 + index]` for the
+// knot rows 150 (band and index typed short/long/word in all nine pairs, the knot indices passed as locals or written
+// in place: every row reduced); a function-scope `long row = b * 8` shared by both passes 150; the band loop over a
+// `short` row stepped by 8 to 24 with a named `long` copy for the knot rows 150; one reused `word` index assigned
+// before each knot row with `b * 8` 180 (755 B, the word conversions fold away); `long row = (b * 4) << 1` 150; the
+// 0x212100 inline call with the wraps written in its arguments 180 (755 B). Diagnostic: a `long` row beside b updated
+// `row = (row + 8) & 0x1f` 37 (780 B: retail's `add reg, 8` row and unreduced knot rows, plus the `and`). Screen only:
+// thirty spellings of the named row (`(b << 1) * 4`, `b * 4 + b * 4`, `(b + b) << 2`, `-(b * -8)`, `b * 9 - b`,
+// `(b * 8 + k) - k`, `24 - (3 - b) * 8`, `b * 8L`, casts through dword or char) reduce every row unless they leave a
+// mask, shift or extension instruction behind; a `long` or `dword` row stepped beside b (before or after `b++`, in two
+// half steps, as `row += 9; row--`) reduces every row; the flat-element forms `&noise[0][(row + w) << 3]` and byte
+// offsets from the table reduce every row; knot indices in an array passed to an external function (diagnostic) are
+// forwarded and reduce. One compiler-setting sweep as the diagnostic (/G5, /G6, /G7, /Oa, /Ow, /Ox, /Oy-, /Op, /O1,
+// /Os on this body and on the `b * 8` body) never gives the stepped row with unreduced knot rows. What the screen
+// shows: the knot rows stay unreduced only when the optimizer cannot see the row as an affine function of the band
+// counter (a named shift as now, a mask, a 16-bit home); every affine spelling reduces all five rows.
+// M3 lane 11 r120 (compile-only screen of this file, exact here: base 27 aligned with only retail's four row instructions differing;
+// counts are the screen's): the wraps written in place in the knot subscripts with the `b << 3` row (no index locals) 115
+// (180 instructions); the knot indices as `long` at the k level 142; a `vector3f (*)[8]` local for the table used by the
+// knot rows 27 (same code); named per-knot sums `long index3 = row + w3;` 27 (same code); per-knot base pointers taken at
+// the k level (`noise[w3]`) plus `row << 3` elements in the band loop 171.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

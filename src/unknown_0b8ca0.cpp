@@ -620,12 +620,11 @@ real function_c8880(long unit_index, short field_240);
 
 static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 {
-    long absolute = function_16bc00(data, index == NONE ? 0 : (index & 0xffff) + 1);
-    if (absolute == NONE)
-        return NONE;
-    return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
+    return data_datum_index(data, function_16bc00(data, index == NONE ? 0 : (index & 0xffff) + 1));
 }
 
+// score 76 (was 165): the object flags load, the cluster table load, the definition, zoom and offset registers, the
+// atan2 reload order and the latch differ; the forms of this round are listed in M3 lane 2 r104 at the end of this note.
 // MiniMax D (11-17): no new form, no lower score (165): the body is retail's 895 bytes and the lower-scoring forms
 // other lanes found all rest on forms this round excludes (a 'visible' flag tested after the cluster loop, a (real)
 // cast on the atan2 result, a comparison written the other way round, a goto and the 38-point restructure of the
@@ -670,7 +669,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // the loop and hoists the flags before the test (splitting the condition measures 232, worse), and the frame is
 // still ours at 0xac where retail realigns to 0xb4, so the result byte stays at [esp+0xf] against [esp+0x13].
 // MiniMax E (11-17): no new form, no lower score (165): the result byte still lands at +0xf where retail uses +0x13, retail loads the options global before the call to 0xb8a80 where this build loads it after, and retail's tail computes the angle in x87 (fpatan) where this build calls the CRT atan2.
-// score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
+// Earlier at 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
 // retail keeps it at [esp+0x40], so the first difference is at +0x1a and every later offset shifts with the
@@ -913,6 +912,38 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // through a root_object pointer instead of the flags local, and g_4e6948 through a one-use options pointer.
 // Without those three forms the restructure measures 309 (fast); with the helper's single exit alone 278. Each is
 // kept only with a match.
+// M3 lane 2 r104 (fast with both callers and the callees, all matched; plain confirmed; the three counts are aligned
+// exact / stack-masked / register-masked differing instructions, 122/97/66 at 165). Kept, 165 -> 76 at 895 bytes
+// (21/21/10), four changes together: (1) the player step helper returns the existing data_datum_index of the next used
+// slot in place of its hand-written two-exit copy (the player index then lives in memory and the latch keeps retail's
+// NONE test); (2) the range's zero assigned in the model-NONE else arm; (3) the angle computed into `real angle =
+// atan2(...) + pi/4` before the dot product: 0x30bf0 normalises the offset in place, and retail's dot reads the
+// normalised offset after the call (the single expression made our build read it first); written without a cast
+// (`(real)atan2(...) + pi/4` gives retail's `fadd dword` float sum at the same 76, 20 aligned; a cast an earlier
+// review listed as match-only here); (4) the player scan written inside the cluster loop's found branch, which leaves it with `break` (retail
+// has no NONE re-test after that loop; one `goto done` fewer). Each alone measured on the others: without (1) 190 (870 B),
+// without (2) 104, without (3) 95 (898 B), without (4) 211 (910 B, the re-test stays); (3) as `(real)(atan2(...) +
+// pi/4)` or with no cast 76 (`fadd qword`, 21 aligned); atan2 without the (double) argument casts 267 (873 B: the
+// radius is no longer spilled as a qword and the frame stops self-aligning); `cos(angle)` (the float overload) 239.
+// On the way, before (4): (1) alone 214 (913 B), with (2) 216, with the flags read at each use 238 (914 B), with (3)
+// 233 (911 B, 40/40/15: frame 0xb4 recovered), with the root object pointer for the two flag reads 210 (910 B, 57/49/24,
+// retail's head exactly); the NONE exit and `while (!visible) { next; if NONE exit }` 302 (841 B); a `visible` flag set
+// in the cluster loop (match-only, diagnostic) 74 (895 B, 18/18/7); the offsets through vector3d_from_points3d and
+// length_sq3f 208. On the kept stack: the cluster bit table through a pointer read ahead of the first query (retail's
+// `mov edi` placement; a one-use pointer, match-only) 74 with the root pointer, 69 with both (16/16/5); the root object
+// pointer alone 74; the flags read at each use 215 (the object pointer load no longer precedes the first branch);
+// g_4e8c24 read at each use in place of the `players` copy 75 (one point, not kept); same code: the definition typed
+// const, the model index read with no definition local, the forward pointer before the offset statements, the step's
+// start index in a named local, the step written in place at both sites.
+// Then on the kept 76: the player's unit index local at the zoom call and the unit lookup 129 (899 B); a named
+// radius for the square 76, the model index through TAG_DATA with no definition local 76, the cluster test on the
+// typed visible_clusters field 76 (same code each); the first offset through vector3d_from_points3d 82.
+// Left at 76: the object flags dword loaded before the header test's branch (retail loads only the object pointer
+// there; the root pointer form gives retail's head), the cluster table load after the first query (retail before
+// it), the definition pointer in EDX (retail EAX), the zoom argument's `movsx bx` (retail `movsx ebx`; 0xc8880 is a
+// contributor's and takes a short), the second offset block's scratch rotation (ours ECX/EDX/EAX, retail
+// EAX/ECX/EDX), atan2's operands reloaded radius first (retail magnitude, radius, fxch) and the latch's global load
+// after the NONE test with the datum product in ECX (retail EDX).
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -934,69 +965,70 @@ bool function_bba80(long object_index)
         while (cluster != NONE)
         {
             if (bit_vector_test((dword const *)((byte *)g_4e6948 + 0x1138), cluster))
-                break;
-            cluster = function_b8b20(&links);
-        }
-        if (cluster == NONE)
-            goto done;
-
-        byte *object = (byte *)OBJECT_GET(object_index);
-        s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
-        long model_index = definition->model_tag_index;
-        real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
-        real range_squared = 0.0f;
-        if (model_index != NONE)
-        {
-            real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
-            if (range > 0.0f)
             {
-                range *= 1.2f;
-                range_squared = range * range;
-            }
-            else
-                range_squared = 1600.0f;
-        }
-        s_record_pool *players = g_4e8c24;
-        long player_index = object_query_next_ab(players, NONE);
-        while (player_index != NONE)
-        {
-            byte *player = players->data + (player_index & 0xffff) * 0x21c;
-            long unit_index = *(long *)(player + 0x2c);
-            if (unit_index != NONE)
-            {
-                point3f position;
-                function_caf60(unit_index, &position);
-                point3f *centre = (point3f *)(object + 0x30);
-                vector3f offset;
-                offset.i = centre->x - position.x;
-                offset.j = centre->y - position.y;
-                offset.k = centre->z - position.z;
-                real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
-                byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
-                real zoom = function_c8880(*(long *)(player + 0x2c), *(signed char *)(unit + 0x240));
-                if (zoom > 0.0001f)
-                    distance_squared /= zoom * zoom;
-                if (distance_squared < radius_squared)
+                byte *object = (byte *)OBJECT_GET(object_index);
+                s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
+                long model_index = definition->model_tag_index;
+                real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
+                real range_squared;
+                if (model_index != NONE)
                 {
-                    result = true;
-                    goto done;
-                }
-                if (distance_squared < range_squared)
-                {
-                    offset.i = centre->x - position.x;
-                    offset.j = centre->y - position.y;
-                    offset.k = centre->z - position.z;
-                    vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
-                    if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
-                        cos(atan2((double)*(real *)(object + 0x3c), (double)function_30bf0(&offset)) + 0.7853981852531433f))
+                    real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
+                    if (range > 0.0f)
                     {
-                        result = true;
-                        goto done;
+                        range *= 1.2f;
+                        range_squared = range * range;
                     }
+                    else
+                        range_squared = 1600.0f;
                 }
+                else
+                    range_squared = 0.0f;
+                s_record_pool *players = g_4e8c24;
+                long player_index = object_query_next_ab(players, NONE);
+                while (player_index != NONE)
+                {
+                    byte *player = players->data + (player_index & 0xffff) * 0x21c;
+                    long unit_index = *(long *)(player + 0x2c);
+                    if (unit_index != NONE)
+                    {
+                        point3f position;
+                        function_caf60(unit_index, &position);
+                        point3f *centre = (point3f *)(object + 0x30);
+                        vector3f offset;
+                        offset.i = centre->x - position.x;
+                        offset.j = centre->y - position.y;
+                        offset.k = centre->z - position.z;
+                        real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
+                        byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
+                        real zoom = function_c8880(*(long *)(player + 0x2c), *(signed char *)(unit + 0x240));
+                        if (zoom > 0.0001f)
+                            distance_squared /= zoom * zoom;
+                        if (distance_squared < radius_squared)
+                        {
+                            result = true;
+                            goto done;
+                        }
+                        if (distance_squared < range_squared)
+                        {
+                            offset.i = centre->x - position.x;
+                            offset.j = centre->y - position.y;
+                            offset.k = centre->z - position.z;
+                            vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
+                            real angle = atan2((double)*(real *)(object + 0x3c), (double)function_30bf0(&offset)) + 0.7853981852531433f;
+                            if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i > cos((double)angle))
+                            {
+                                result = true;
+                                goto done;
+                            }
+                        }
+                    }
+                    players = g_4e8c24;
+                    player_index = object_query_next_ab(players, player_index);
+                }
+                break;
             }
-            players = g_4e8c24;
-            player_index = object_query_next_ab(players, player_index);
+            cluster = function_b8b20(&links);
         }
     }
 done:
@@ -1852,6 +1884,12 @@ done:
 // stays in EAX and the size is read last, so no copy; type EDX, scenario ECX, index SI), with `size * index` 33, with the
 // call adding `datum + placements` 33; the datum named before the placement offset read 30 (placements become the add's
 // destination); the palette pointer named after the datum 30.
+// M3 lane 12 r145 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x29fd80/0x2a12f0/0x2a1340; the 27 form re-measured 27):
+// on the 27 form the table indexed by the name field with the type local declared after the three reads 27 (same code);
+// `if (placement_index == NONE) return result;` before the call block 81 (244 B); reads in the order palette, placement
+// offset, size 27; the definition and its reads in an inner block assigning outer palette offset and datum 27; a short
+// type local 27; on main's body a short type local 115 (267 B). Retail's load, use, copy (`mov esi, eax`) shape occurs
+// nowhere else in the image, and no out-of-line getter of the type table exists to inline.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

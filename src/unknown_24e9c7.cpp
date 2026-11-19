@@ -584,13 +584,27 @@ struct s_24e9c7_points
 // half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
 // 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
 // with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// M3 lane 2 r102 (fast; control 125). Reading: retail's -0xc/-8 pair is the side point (x kept in XMM6, y spilled: first
+// the across-j product, then the scaled side.y in the same slot), so the side is filled with the across products and
+// scaled in place; the plain form of that (no other move) 144 (746 B: across products early as retail, result still at
+// -8); with the half width converted before the result 148; with the side declared ahead of the size 144; with
+// `size * (0.0f - forward_j)` 139 (742 B); zero to seven dead initialised locals on the control 125 each (diagnostic).
+// Body unchanged.
+// M3 lane 5 r201 (fast, 0x22a664 matched; control 125): the across products written through references bound to the side
+// values and then scaled in place by the half width (keeps them early, as retail: size * (0 - forward_j) and size * forward_i
+// right after size), side as two scalars 148 (746 B) / with `0.0f -` 143 (742 B), side as a point 144 / with `0.0f -` 139
+// (742 B); on the scalar `0.0f -` form back as scalars, and up too, 143/143 (same code); the first corner's base copy right
+// after the half width 146 (739 B) / unary 132; result assigned after the half width, scalar/point 150/146 (`0.0f -`),
+// 152/148 (unary). The early products then spill elsewhere and the result home moves to -0xc, not retail's -0x10.
 // M3 lane 7 r183 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125). Reading: retail's [ebp-8] is the side
 // point's y home (written with the across j product, then with the half-width product, read back three times) and its
 // x home [ebp-0xc] is never used, so retail's side point owns the two slots above result. Tried, the corner copies left in
 // place: the side point set straight to the across products with no across locals and scaled later by the half width 144
 // (746 B), with compound scaling 144 (same code), with `size * (0.0f - forward_j)` 139 (742 B), with the side point
 // declared before the size 144 (same code); on main the side point declared at the drawing block's top 125 (same code).
-// Body unchanged.
+// Quad aggregate from one shared origin before size, after across, after height or after half width:
+// 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
+// NOT kept: The across-y spill and the returned-height home remain different at retail length.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

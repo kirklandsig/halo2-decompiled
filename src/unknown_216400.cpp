@@ -547,6 +547,18 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // continues the rotation from the format call before it), and its count and index are two webs joined by a copy
 // (`mov eax, esi`), which puts the flag ahead of the count; here the copy is always propagated, so the count outranks
 // the flag and takes EAX. Open: a form in which the index stays a copy of the count.
+// Round 103 (m3 lane 2, fast with 0x216400/0x216d70/0x216e50, all MATCH each time; control 20), bool `add` helpers with
+// `if (!add(list, &entry)) break;`: re-measured `result = count != 4096` with memcpy into `entries[count++]` 32 (setne CL,
+// count EAX copied to ECX for the shift, list EDX); a count local with the new count `count + 1` named ahead of the room
+// test 51; a `long const` index read ahead of a room test on the field (the second read merges) 51; the index read from
+// the field inside the arm with the copy to `entries + index` 51; the new count named in the arm (`long const count =
+// index + 1`) 51; the slot pointer taken from `&entries[count]`, then `count = count + 1` and the copy 32 (same code as
+// the first). Pointer helper restored.
+// M3 lane 6 r198 (fast with 0x216400/0x216d70/0x216e50): reference-bound locals (which keep two steps apart and matched
+// 0x1a9760) do not keep the index a copy either: the pointer helper with a count local and the index a reference-bound
+// copy 49 (the NULL test stays); a bool helper copying the entry with a count local and a reference-bound index 51; with
+// the result bool reference-bound too 51; the count reference-bound and the index a plain copy 51; the room tested on
+// the field and the reference-bound index set from a second read 51 (all setne CL, count EAX, list EDX).
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

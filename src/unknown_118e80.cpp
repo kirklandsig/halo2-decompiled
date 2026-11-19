@@ -187,7 +187,7 @@ real function_30bf0(vector3f *vector);
 void function_118e80(long object_index, vector3f *forward);
 bool function_1faf80(long object_index, void const *settings_pointer, vector3f const *control,
 	real threshold, vector3f *facing, real *turn);
-void function_11f0d0(vector3f *position, vector3f *forward, vector3f const *target, real rate, real max_angle, real scale);
+void function_11f0d0(vector3f *forward, vector3f const *target, real rate, vector3f *position, real max_angle, real scale);
 void function_11d180(vector3f const *in, vector3f const *up, vector3f *forward, vector3f *left, vector3f *out);
 real function_11ce20(vector3f const *a, vector3f const *b);
 void object_dispatch_moved(long object_index, long a, long b, long c);
@@ -466,7 +466,7 @@ void function_1197b0(long object_index)
 	{
 		function_118e80(object_index, &forward);
 		turn_velocity = object->turn_velocity;
-		function_11f0d0(&turn_velocity, &forward, &object->requested_forward, g_510c54->rate, max_angle, acceleration);
+		function_11f0d0(&forward, &object->requested_forward, g_510c54->rate, &turn_velocity, max_angle, acceleration);
 	}
 	vector3f up;
 	world_up_1197b0(object_index, &up);
@@ -476,7 +476,7 @@ void function_1197b0(long object_index)
 	function_11d180(&forward, &up, &forward2, &left, &up);
 	if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
 	{
-		function_11f0d0(&temporary_velocity, &up, &target_up, g_510c54->rate, max_angle, acceleration * 2.0f);
+		function_11f0d0(&up, &target_up, g_510c54->rate, &temporary_velocity, max_angle, acceleration * 2.0f);
 		function_11d180(&forward, &up, &forward2, &left, &up);
 	}
 	else
@@ -1177,17 +1177,27 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
-// MiniMax A (11-18): the 0x119bc0 result now has its own named bool, which is stored into the move output's byte
-// member and passed to 0x1c4b00 from that local: 14 (was 43). The force argument's own zero extension and the member's
-// slot are what still differ; retail still spills the result to a stack byte of its own and reloads the containing dword.
-// Dropping that member store measures 90, so the store stays.
 // score 14 (was 14; 43 before): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
 // and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still
 // spills the result to a stack byte of its own and reloads the containing dword where this build keeps it in al.
+// M3 lane 14 r112 (fast; control 14): the member store after the 0x1c4b00 call 96 (1041 B); after the velocity copy,
+// before the call 11 (three points, the force still widened by `movzx edx, al`; not kept); that with the member passed as
+// the force 11; the object looked up before the member store 40; a named pointer to the move output's velocity for the
+// copy and the call, member store after the copy, 11. The member store is never read afterwards (a dead store that only
+// moves the scratch rotation). Still BLOCKED-BY 0x1c4b00 (its bool formal; declarations in other lanes' files this round).
+// M3 lane 14 r114 (fast; control 14, aligned 14): the 0x1c4b00 linear argument as the object's own +0x88 copy 29 (aligned
+// 18); the re-fetched object held as a byte pointer for the copy 14 (same code); the member and the local set by one chained
+// assignment 14 (same code); the member set from the call and the force read back from the member after the lookup 97
+// (1039 B); a named pointer to the move output's velocity for the copy and the call 14 (same code). Three of 0x1c4b00's
+// declaration files (src/unknown_1eb8a0.cpp, src/unknown_0b7740.cpp, src/unknown_1e67a0.cpp) are other lanes' this round.
+// MiniMax A (11-18): the 0x119bc0 result now has its own named bool, which is stored into the move output's byte
+// member and passed to 0x1c4b00 from that local: 14 (was 43). The force argument's own zero extension and the member's
+// slot are what still differ; retail still spills the result to a stack byte of its own and reloads the containing dword.
+// Dropping that member store measures 90, so the store stays.
 // Before, 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
 // MiniMax A (11-18): no new form, no lower score (43): the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al, and that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its 14 declarations, which live in other files: BLOCKED-BY 0x1c4b00.
-// score 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
+// Earlier at 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
 // from the 0x119bc0 result on: retail keeps it in its own stack cell [esp+0x14] (shared with the rounding temporary),
 // pushes that dword, and every later scratch register follows; ours stores it in the move output's byte member and
 // zero-extends it, one scratch step ahead from there on. A bool local for it (long force) 90 (1034 bytes: the tail

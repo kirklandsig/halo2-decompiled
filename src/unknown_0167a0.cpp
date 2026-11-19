@@ -336,6 +336,12 @@ PRIVATE inline byte const *material_parameters(long tag)
 // 5 (+0x1a7). Reading (direct form, re-measured 5): the field reload is already retail's there; `second` reloads into ESI
 // as soon as the entry lea frees it, where retail (and the reference form) load it after the two table loads, as if the
 // entry store sat on the chain's critical path in retail but not in our direct form.
+// M3 lane 10 r122 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the chain and pass bases read through a `byte *const &` bound to the tables field right after its store, on the
+// direct entry store 6 (the reload then waits for the word load and `second` still loads early: the worst of both), on
+// the reference form 5 (same code); both bases from the `tables` local, direct store 210 (974 bytes), reference form 279.
+// Diagnostic, not keepable (an invented layout aggregate): the tables and entry fields through a two-field view of the
+// state 176 (first +0x148; `second` still loads right after the entry lea).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

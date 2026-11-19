@@ -506,6 +506,18 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // [13], the first with a long type 97 [13]; headers declared ahead of the rigid body, both through `& 0xffff` 128 [213]
 // at 224 bytes, case 0 through `(word)` 36 [13] (the listed 36 form). Every twice-used form moves the component and the
 // index between EAX and ECX and loses the caller, so none is kept. Body unchanged.
+// M3 lane 3 r262 (fast, caller 0x1d5bf0 matched in every run): round 118's one-read form rebuilt with main's shift
+// spelling for case 0 (object_index, absolute_index, rigid body, headers, byte type) 28 at 256 B; long type 89 (the movzx
+// load then sits after `cmp edi, 7`). New on the 28 form: the body array as a named local 96 (256 B: the owner chain moves to
+// ESI and EBP is not pushed); a named model local 28 (same code); the absolute index read from the component with the
+// object-index local declared last and used only by case 0 28 (same code); both flag selections as ternaries 71 (260 B); a
+// `byte const` type 28 (same code). Left as before: headers ESI, object index EDX, rigid body ECX where retail has EDX, ECX,
+// ESI, and `mov al` + `movzx` for retail's one movzx. Body unchanged.
+// M3 lane 5 r201 (fast with the caller 0x1d5bf0, matched in every trial; control 96): round 118's form rebuilt (object_index,
+// absolute_index, rigid body, headers, byte type; case 0 through `headers[component->object_index & 0xffff]`) 28 at 256 B; on
+// it, each a true pointer `__assume` (a code-free block boundary): on the rigid body after its definition 28, on headers 28, on
+// component at the top 28, on owner ahead of the rigid body 28 (all the same code: the entry colouring, object index EDX /
+// headers ESI / rigid body ECX in place, does not move); the kind-7 route as `switch (kind) { case 7: ... }` 95 (256 B).
 // M3 lane 7 r183 (fast, caller 0x1d5bf0 in brackets; control 96 [0]): round 60's 24 form rebuilt 24 at 256 B [0] (left: object
 // index EDX, headers ESI, rigid body in place in ECX, `mov al` + `movzx` type). On it: the rigid body from a named byte offset
 // (`index * sizeof`) 96 [0]; a model local declared first 21 [2] (the owner then arrives in EAX and the component on the

@@ -655,6 +655,48 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
+// MiniMax B (11-18): later still, ~170 spellings tried in total: VC7 gives EDX to whichever operand of the
+// entry test carries the plus or minus one, so every spelling that increments the index (`index + 1 >=
+// count`, the same with the index or the count in an int, long, short or char local, the increment folded
+// into the local's initialiser, the test negated, both sides widened, either side cast to char or short,
+// and the same test with an addend on each side) puts the index+1 in EDX and the count in EAX and so
+// changes the load order as well (4 to 6). The one spelling that reproduces retail's entry test exactly
+// (`inc eax; cmp eax, edx; setge al`, the count in EDX and the index+1 in EAX) reads the count through a
+// function-scope path pointer at actor+0x50c: `actor->unknown53a + 1 >= path->field_2d` scores 2, because
+// the second dot product's i term then takes the direction as multiplicand where retail takes the point;
+// with the index read through the path as well (`path->field_2e + 1 >= path->field_2d`) the whole float
+// block re-rotates (the j and k terms swap, score 10), and the path declared before the definition line
+// scores 10 too. That i term does not move under the helper's argument order, under a named local for
+// either pointer or under the two dot products in locals (2, 4), so the committed body (score 1) stands.
+// MiniMax B (11-18): later still, ~140 spellings tried in total: the path-pointer entry test and the two
+// dot products cannot both be right at once. With the path-pointer test `path->field_2e + 1 >=
+// path->field_2d` and the current point still read through the actor (`unknown53c[unknown53a]`), retail's
+// `inc eax` comes out but the whole float block re-rotates (the j and k terms swap, score 10); with the
+// current point read through the path the float block keeps retail's shape and only the second dot
+// product's i term flips (score 2). The second dot product's i term is invariant under the helper's
+// argument order (`dot3f(point, direction)` and `dot3f(direction, point)` compile the same), under a
+// named local for the input pointer and under `&point->n[0]`, so it is an allocator tie; the committed
+// body (score 1) stands.
+// MiniMax B (11-18): later, ~80 more spellings tried: a function-scope `s_1f9762 *path` (count, index and
+// entries all read through actor+0x50c) with the entry test written `path->field_2e + 1 >= path->field_2d`
+// reproduces retail's `inc eax`/`cmp eax, edx`/`setge al` exactly, but the second dot product's i term then
+// takes the direction as multiplicand where retail takes the point (score 2, worse than the committed 1).
+// A 16-way grid over arm/previous/approach/projection read through the path or the actor's own fields
+// (`unknown53c`, `unknown539`, `unknown53a`) scores 2 at best and always differs in the same two
+// instructions (`movss xmm2, [eax]`/`mulss xmm2, [ecx]` against retail's `movss xmm2, [ecx]`/
+// `mulss xmm2, [eax]`); the `arm=actor` rows score 17-39 because retail folds the path base into
+// `esi + 0x50c` (`lea eax, [ecx + esi + 0x50c]`) and the actor form loses that base. The i-term operand
+// choice is an allocator tie that source-level reordering, named pointer locals and helper argument
+// swaps do not move, so the body stands.
+// MiniMax B (11-18): score 1 (unchanged): the entry test is the only difference (`dec edx` where retail has
+// `inc eax`; every other byte agrees). Tried here (~30 spellings of that one test): `count <= index + 1` (4)
+// and `count - 1 <= index` (3) put the count in EDX and the index in EAX exactly as retail does, but the
+// adjustment then lands on the EDX side and the condition comes out setle; `index + 1 >= count` (4) and the same
+// with the index or the count held in int/long/short/char locals, the increment folded into the local's
+// initialiser, a pre-increment local and `index++` (6 each) hoist the index load ahead of the definition chain
+// and fuse the increment into EDX (`inc edx; cmp edx, eax`), so the load order changes as well; the baseline
+// (`index >= count - 1`) keeps retail's load order but decrements the count instead of incrementing the index.
+// No spelling found puts the incremented index in EAX against the count in EDX, so the body stands.
 // MiniMax A (11-18): score 1 (was 4): the entry test is written `index >= count - 1` (the same test as
 // `index + 1 >= count`), which loads the count into EDX and the index into EAX as retail does; left: the
 // test ends in `dec edx` where retail has `inc eax` (the count is decremented, the index is not).
@@ -1140,6 +1182,30 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// score 120 (was 120; 137 before): Frame 0x1c agrees. Retail scales the actor index before the pool load and
+// holds the actor in EDI and the object in ESI. This build exchanges those homes.
+// M3 lane 14 r112 (fast; control 120): the closing term as `dot_product2d((vector2f const *)&object->velocity,
+// path_direction) - dot_product2d(path_direction, (vector2f const *)&other->velocity)` 114 (that block then has retail's
+// loads and operand sides exactly, only the ESI/EDI names differ; six points, under the bar, not kept); on it the velocity
+// dot and the facing dot through dot_product2d 114/114 (same code); the actor through the existing actor_datum_get 120
+// (same code); one to seven dead initialised locals (diagnostic) 120 each with identical listings (no symbol-count effect
+// here); the normalize written with `i = inv * i; j = j * inv` 122, in the normalize3d shape (`if (!(fabs(m) < eps))`
+// scale helper, else m = 0) 114; a named velocity j or i after the normalize 115/115; the turn clamp spelled `1.0 <
+// cosine` or as an if/else on a named double 115/115 (the `fld 1.0; fld st(1)` stays where retail has `fld st(0); fld
+// 1.0; fxch`). Diagnostic: with nearly every actor read removed (approach blocks and the following test) the actor still
+// takes ESI, so the exchange is not a use-count tie: the actor's web takes the scaled index's register (`add esi, edi`)
+// where retail forms it with `lea edi, [edx + esi]` from a scratch index.
+// M3 lane 14 r114 (fast; control 120, aligned 47 raw / 38 register-masked): the in/out planar scale helper pair
+// (as src/unknown_1ff010.cpp has it) for the velocity normalize, with the closing term through dot_product2d, the
+// velocity copied as `*(vector2f const *)&object->velocity` and its dot as `dot_product2d(desired, &velocity)` 263 at
+// retail's 1324 B (masked aligned 22-25: the normalize block is then retail's exactly; left are the actor/object
+// exchange, the two 1.0 entry stores, the velocity dot loading desired's j first, the clamp's `fld st(1)` and the
+// final product's slot); the same without the velocity dot helper 114 (masked 26), without the copy 306 (1324 B); the
+// closing term alone 114, with the copy 114. Diagnostics (one-object link screen, restored): the actor offset stays
+// coalesced with the actor (`add esi, edi`) with any one of the four blocks deleted, with two extra object reads, an
+// extra actor read, one fewer actor read, the actor read through actor_get at every use, and with one or two extra
+// long-lived integer values; retail's lea form is in 26 matched functions (0x1c1d50 the closest: offset in EDX, pool
+// in ESI, `lea ebx, [edx + esi]`), with no source difference found in their actor lookups.
 // MiniMax R run 92 (11-17): no new form, no lower score (120): retail still holds the actor in edi and the object in
 // esi and scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the
 // pool first and keeps the actor in esi; the two 1.0f entry stores still come out in the opposite order and the
@@ -1156,8 +1222,6 @@ real function_50650(real cosine);
 // and keeps the actor in esi and the object in edi; the two 1.0f entry stores still come out in the opposite order, the
 // velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, and the callee declaration
 // order (object index first) is fixed by four other files.
-// score 120 (was 137): Frame 0x1c agrees. Retail scales the actor index before the pool load and
-// holds the actor in EDI and the object in ESI. This build exchanges those homes.
 // Earlier score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
 // named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
 // callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before
@@ -1559,6 +1623,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 
 // score 239 (was 239): The zero and radius have different XMM homes, and unsupported types use a separate return path.
 // The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
+// M3 lane 14 r112 (fast; control 239, aligned 198, register-masked 85): retail keeps the result in XMM0 from its zero
+// (`movaps xmm0, xmm1`, then the spill to +0x10) up to the type exit, which jumps past the final reload with XMM0 still
+// live; this build folds that exit's value to the zero register in an exit of its own. Tried: `else goto done;` for the
+// unsupported type 260 at 1173 B (aligned 191, masked 72: the zero becomes XMM1 as in retail, but the result is stored
+// straight from it and every later row is one off); the result declared first 262, both 284 (the zero then comes before
+// the call); one to eight dead initialised locals (diagnostic) 239/239/239/239/274/274/237/239 (five and six give
+// 1173 B but masked 152; the zero stays XMM2 in all).
 // MiniMax D (11-16): no new form, no lower score (238): this round compared the two bodies side by side and the delta
 // is still the frame's slot map and the colouring of the vector block: this build keeps the two squared components at
 // +0x28/+0x2c, the normalizer's length at +0x14 and the flag byte at +0x54, where retail keeps the components at

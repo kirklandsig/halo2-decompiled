@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 920 (was 920): frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// score 920 (was 920): r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
 // MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
 // from both listings.  Retail's function-scope homes are the raised point at F+0x24, the range_min short at F+0x30,
@@ -587,6 +587,17 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // The excess frame word pair and the actor/unit and priority/query homes remain.
 // Actor publication after unit lookup, confidence tests, self-unit test, and settings, each with opening then ordinary unit index: 902/877, 922/932, 902/935, 924/924 reduced.
 // NOT kept: 902 and 877 shorten the body to 3702 or 3708 against retail 3731, and the matched caller scores 1 in those previews.
+// M3 lane 15 r101 (plain unless marked; control 920 plain, 926 fast): `unit_index` without its volatile 936 (3708 B; fast 910
+// misleads again); the actor pointer without its volatile 969 fast (3671 B); the object type byte read at each of its seven
+// uses with no type local 936 (3740 B); the previous-direction dot as one expression 928 (3707 B); its products written
+// previous-direction first 920. Retail's entry keeps actor_index in EBX, the zero (self_unit's NULL) in EBP and unit_index in
+// EDI; ours keeps direction in EBX, settings in ESI and the zero in EDI. Body unchanged.
+// Typed object fields with a long/signed-byte category snapshot 920/949; category read
+// at each use 936, with switch dispatch 947, with the typed selected unit 936.
+// Direct category with ordinary actor/index/both 945/937/968; cached category with ordinary
+// actor 974; direct category with conditional ordinary actor initialization 944.
+// NOT kept: the 945, 968 and 944 forms recover frame 0x2cac but shorten the body and
+// still carry the incoming actor and unit in different registers.
 // Settings after actor evaluation by index or selected actor 920/919, per-action optional
 // settings tests 920, complete priority or range defaults within the gate 931/916,
 // nullable settings after actor evaluation 927, immutable limits with ordinary/scoped query 960/960.
@@ -599,6 +610,20 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // NOT kept: the reduced 910 and 913 forms retain the larger frame and shorten the body away from retail.
 // The type reference closes four frame bytes and regresses in score and length. Reduced control 926.
 // Opening body restored.
+// M3 lane 10 r123 (fast with 0x2c2060 at 400 and 0x2c3030 MATCH; fast control 926, aligned 655): retail forms the actor
+// address once and reads its unit field from that address before storing the pointer to the actor home; ours stores
+// into the volatile home and reads it back. The actor fetched into a plain local that the head reads (unit field and the
+// target field) and that is stored into the volatile home 923 (3702 B, aligned 612: retail's address fold, `mov reg,
+// [index + data + 0x18]` then `add`); with only the unit field read through it 945; with the dot's products written
+// previous-first 923 (same code); with the home stored after the unit read 923 (same code); with the home not volatile 980
+// (3657 B, aligned 577). Not kept: a gain of 3.
+// Actor and unit registers and frame 0x2cac still differ. Typed actor datum for
+// unit alone or unit and state, pointer published before/after lookup:
+// existing pointer 945/923 and 919/923, ordinary pointer 980/980 and 987/987.
+// After lookup with ordinary incoming unit index, same pairs 879/880 and
+// 986/986. Reduced control 926. NOT kept: the delayed typed read recovers
+// the scaled unit-field access, but the 879 form retains frame 0x2cb4
+// and shortens the body to 3708 bytes against retail 3731.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1464,7 +1489,7 @@ long function_1fa7f0(void);
 // MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
 // MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
 // and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
-// score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// score 400 (was 400): r123 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
 // m3 lane 3 r250 (fast with 0x2c3030/0x26ccb0, control 400): the step's fields read through points[index] with no
@@ -2022,6 +2047,10 @@ long function_1fa7f0(void);
 // pointer range 520, next as forward cursor 502, next sentinel across both
 // phases 461. NOT kept: 419 reaches retail length with the larger frame and
 // the selected edge still in a slot.
+// M3 lane 15 r101 (fast; control 400, aligned 275): the copied last step as `points[end - 1]` (one fewer count use, to free
+// BX) 545 (1811 B); `dword edge` 400 (same code); the trace location passed as `(long)&query->location` at both 0x26c4e0
+// calls with no local 400 (same code); the data lookup ahead of the two radius locals 491 (1768 B); `found` declared ahead of
+// `edge` 400 (same code). Body unchanged.
 // Named sector-trace output for the first, second or both traces 400 each;
 // second trace scoped to the unblocked arm 400. Typed source/target/both
 // trace endpoints 441/441/469. Shared candidate step for direction and sector 400.
@@ -2035,6 +2064,14 @@ long function_1fa7f0(void);
 // Native point pointer/reference 400/400; native source record with point pointer/reference 400/400.
 // Shared source/emitted/both coordinate indices 400/488/488; stored type at emission 403;
 // shared terminal input ordinal 469. The 0x10c frame and selected edge register still differ.
+// M3 lane 10 r123 (fast with 0x2c3030 and 0x26ccb0, MATCH throughout; control 400, aligned 350): retail keeps the count
+// argument in a register only at the head and compares the loops against its stack home, and keeps the edge in EBX; ours
+// keeps the count in BX through the scan loops and the edge in a slot. A `short last = count - 1;` local for the candidate
+// test and the copied last point 469 (1765 B); the forward scan as a `for (end = index; end < count; ++end)` loop 636
+// (1911 B); the edge declared in the scan arm 481 (1769 B); the found flag declared there 481 (1769 B); both there 478.
+// Aligned frame 0x114 and the count in BX remain. Short/long exclusive reverse bound 457/436.
+// With a candidate step address 457/436. Reused short/long forward ordinal 470/481,
+// with a candidate step address 470/481. The selected edge still spills.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
