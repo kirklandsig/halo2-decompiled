@@ -506,6 +506,7 @@ struct s_1af5c6
 	point3f field_10;
 };
 
+// MiniMax H (11-19): no new form, no lower score (5): the hit product still loads the hit fraction first where retail loads the distance, and the ignore index still loads after the first ray difference where retail loads it before; the product's order needs a one-use field copy and the early load needs the two-point probe inlined, so neither is kept.
 // score 5 (was 20): retail loads the 0x1697c0 ignore-index argument (`mov ecx, [esp + 0x14]`) ahead of the first ray
 // difference, ours after it, and retail's hit product loads the distance first (ours the hit fraction). Round 137
 // fixed the other sites (see its entry at the end of this note).

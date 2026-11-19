@@ -1117,6 +1117,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax H (11-19): no new form, no lower score (210): the two id slots are still the other way round (retail keeps the transition id at frame+0x14 and the animation id at frame+0x18) and the blend-query byte is still computed after the 0xe6800 call where retail computes it before; the forms that align more instructions all raise the positional score.
 // MiniMax H (11-18): no new form, no lower score (210): the two id slots are still the other way round (retail keeps
 // the transition id at frame+0x14/0x16 with its stores in the block and the animation id at frame+0x18/0x1a with its
 // stores at the entry), the blend-query byte is still computed after the 0xe6800 call where retail computes it before,

@@ -2831,6 +2831,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax H (11-19): no new form, no lower score (17): the sound set index is still sign-extended (`movsx ebp, ax`) where retail copies the dword, and 0x219070 is still called with two arguments where retail passes one; both are that callee's declaration in another file.
 // score 17 (was 17): MiniMax I (11-16, round 2): no new form, no lower score: the first difference is still
 // 0x219070's call shape, whose declaration lives in another file, and the delayed start still stores the flag byte
 // before the start time; MSVC does not hoist stores, so both follow from that callee's declaration. Body unchanged.
@@ -5147,6 +5148,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax H (11-19): no new form, no lower score (535): the frame stays 0x134 against retail's 0xe8 because the fallback reverb is copied to the stack here while retail reads the existing const, and 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line.
 // score 535 (was 535): MiniMax I (11-16, round 2): no new form, no lower score: our frame is 0x134 against retail's
 // 0xe8, so 0x4c bytes of locals are ours alone, and our null test of the global comes before the register saves where
 // retail's comes after; the rest of the rows follow from that frame. Body unchanged.
