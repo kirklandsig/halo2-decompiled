@@ -948,6 +948,7 @@ void swarm_leader_detach(long actor_index);
 // 0x1e1a00 -> 0xcbf60 -> 0xcc810 -> 0x1bbdf0 -> 0x1e1a00; with 0x1fb510 emptied, diagnostic, still 297, so 0x1fb360's
 // path decides it); 0x1e1a00's definition moved to the end of its file 297.
 // Permuter on the 4 (600 s): no better variant. Alone on the original body, `value` as bool 288.
+// MiniMax C (11-19): no gain (236, baseline; body restored). The known 216 form holds the definition bit in a byte flag set by the tests and read by the next test, which is kept only with a byte match. What is left is the head: ours loads the pool global and the slot table into other registers than retail (the pool into EAX against retail ECX) and keeps the actor index in EBX against retail EAX.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

@@ -778,6 +778,7 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // reloads in the 412 body) because the prop index holds EBX; retail holds the actor index in EBX for the whole body
 // (the three callees that take it in EBX get it without a load) and the prop index in EDI with a stack home. The
 // argument register follows from that allocation, not from an inner function. Body unchanged.
+// MiniMax C (11-19): no gain (412, baseline; body restored). Retail holds the actor index in EBX for the whole body and gives the prop index EDI with a stack home; ours keeps the argument in its stack home and reloads it, and the prop index takes EBX, which also leaves the frame at 0xa4 against retail 0xa0. The inlined 0x2641c0 inline decision belongs to another lane file.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

@@ -300,6 +300,7 @@ static __forceinline long real_to_long(real value);
 // the state local declared before the 0x1fe410 test 428; the 0x210850 call with all three draws through
 // function_259d0 on the state local 452. Next lead: what makes retail's 0x2104b0 call clobber the random-state
 // global (its callees 0x210d60 and 0x142570 are matched leaves).
+// MiniMax C (11-19): no gain (373, baseline; body restored). The head differs in the pool load (retail reloads the random-state global after the calls to 0x2104b0 and 0x1fe410, ours keeps the pointer in ESI across them, an LTCG modref decision in another file compilation) and in the transport of the 0x7a argument (ECX against EDX), which the caller in another file decides. Binding the second parameter to one settings local for its five uses measures 415.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

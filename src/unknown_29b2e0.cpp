@@ -648,6 +648,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // current-vector copy or XY copy 408/402/420. Early failure test 387; test after
 // current normalization with component copies 279. NOT kept: early heading
 // and failure tests recover unity in XMM4 but still spill the root at +0x10.
+// MiniMax C (11-19): no gain (176, baseline; body restored). The single-exit normalizer with the XY vector before the second copy is the known 169, a gain of seven and under the bar; on it the roots and the inlined 0x11cc90 arc-cosine result sit at +0x10 where retail packs them at +0xc with the clamp input and the yaw. Re-measured here: the single-exit normalizer written with a result local and a length store 404, with a bool and ternaries 270, and the XY vector before the second copy 174.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
