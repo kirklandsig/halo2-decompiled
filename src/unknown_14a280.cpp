@@ -371,8 +371,9 @@ real function_14b240(s_14b240_owner const *owner, s_bsp3d_disk const *disk, poin
 	return result;
 }
 
-// score 18 (was 44): the range test is evaluated into a bool first (`in_range`), which keeps the two
-// compares apart as in retail. Before, 44:
+// Tried (stand-in image, full build): the range test evaluated into a bool first
+// (`bool in_range = false; if (index >= 0) in_range = index < scenario->sky_count; if (in_range)`) 18: it keeps the
+// two compares apart as in retail; not kept, a test-and-set flag stays only in a byte match.
 // score 44 (was 44): retail loads the sky count into ebp for the range test
 // (cmp edx, ebp) where ours compares with [esi + 8]; retail's ebp then stays
 // saved up to the tag-index test, so its NONE preset (or ecx, -1) and that
@@ -401,10 +402,7 @@ bool cluster_get_sky(long cluster_index, long *sky_index, vector3f *vector, bool
 		short index = (short)*sky_index;
 		long tag_index = NONE;
 
-		bool in_range = false;
-		if (index >= 0)
-			in_range = index < scenario->sky_count;
-		if (in_range)
+		if (index >= 0 && index < scenario->sky_count)
 		{
 			tag_index = scenario->skies[index].sky_index;
 		}
