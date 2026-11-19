@@ -1424,6 +1424,22 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // named element and `continue` on state != 2 24; the next step's ternary written `== first ? NONE : next` 24; the
 // iterator's count as a char 35 (211 B; 0x21b870 18, 0x21bd00 21); the element through a track-view local with the
 // state read through a playback cast 24; this function moved ahead of its two siblings in the file 24.
+// M3 lane 2 r111 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched unless noted; `ret 8` and 210 B in both
+// builds): with an element-taking forceinline fade-in helper (0x126df0's first half written out, match-only), a named
+// absolute index used by two lookups 39 (208 B, index still ESI), a named data pointer with two `&sounds[index & 0xffff]`
+// lookups 34 (index still ESI), a named absolute index plus a named element 35 (211 B, retail's pair, state load folded).
+// In 0x126df0: the fading bit set through the conditional-expression flag macro form 25 (0x126df0 5: the `or` moves ahead
+// of the conversion, as with `|=` and the bitfield store, re-measured 25 / 5 each); the two fade-time stores through a
+// two-caller inline setter taking the element 24 (same code); the fading bit through an inline setter taking the element
+// 69 (225 B; 0x126df0 90, 0x0bfe40 is then called out of line); the curve store and the time stores through two such
+// setters, or the three stores through one, 24 / 24 (same code: a parameter copy adds no weight). Diagnostics (probe reads of the element in that helper,
+// removed): the pair becomes retail's, with every other instruction retail's, after two extra reads placed after the
+// gain's if/else join or at the helper's end (even two reads of one field, which merge into one load), after one read
+// ahead of the fading test plus one after the join, or after three reads of different fields ahead of the fading test;
+// one read anywhere, two ahead of the fading test or two inside either gain arm leave it; with two reads after the join,
+// one read of the index there keeps retail's pair and two undo it. So the pair follows a weighted reference count taken
+// before local CSE, in which a read in the block that defines the inlined element counts about half of one after the
+// join; retail's element carries about two post-join references more than ours.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
