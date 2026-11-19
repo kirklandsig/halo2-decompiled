@@ -774,6 +774,14 @@ static inline bool teams_enabled_19e1c0()
 // team names, local scores and timers, or all tokens. Existing count storage scores
 // 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
 // ordinary count gives frame 0x204 but still merges the name producers.
+// M3 lane 6 r199 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691): the four
+// name/team clamps written into `remaining` itself (`if (remaining > length) remaining = length;`, then the copy and
+// `result = remaining;`) plain 692 (1170 B), volatile 618 (1235 B); that with the token fallback clamped the same way
+// plain 686 (1176 B), volatile 626 (1226 B); the clear-and-name calls through two two-caller inline helpers (`buffer[0] = 0;`
+// then 0x19ea60 / 0x19eae0) plain 691, volatile 390 (same code each). Compile-only (no /GL) diagnostic: a store of
+// `remaining` to a probe global after the if/else chain gives retail's shape there (token re-read for every compare,
+// `remaining` in EBP, four wcslen and two calls to each name function); a store of `token` there keeps token in memory but
+// EBP then holds a constant zero. The LTCG build does not follow that screen (lane 4 r167's probe before the return 687).
 // Round 140 (m3 lane 9, fast with 0x19e0f0/0x19ea60/0x19eae0, matched each time; control 390): retail's frame cell past
 // the buffer is the teams-enabled predicate byte (ours spills it too, one cell higher, under the volatile result). On
 // the plain result the fourth callee-saved register goes to `token` (retail: `remaining`), and the compile-only
@@ -798,6 +806,19 @@ static inline bool teams_enabled_19e1c0()
 // length published after the clamp 438/692; missing-index sentinel in dispatch 454/736
 // (existing result and ordinary result, respectively). The ordinary count recovers the
 // 0x204 frame while merging the name-copy paths. Token preload and capacity home still differ.
+// M3 lane 1 r125 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
+// `remaining` copied into a named `long capacity` used for every clamp, format and the fallback, on the plain result 691,
+// on the volatile result 390 (both the same code: the copy propagates); on the plain result the token parameter declared
+// `word const *const` 691, `long const remaining` 691, `__forceinline` on teams_enabled_19e1c0 691 (all the same code).
+// Reading (plain result): ours ranks result ESI, token EDI, token_length EBX, event EBP and leaves `remaining` in its home;
+// retail ranks result ESI, token_length EDI, event EBX, `remaining` EBP and reloads the token for each compare, whose
+// rotating reload temps are what keep its name/team tails from cross-jumping.
+// M3 lane 14 r117 (fast with 0x19e0f0, 0x19ea60, 0x19eae0, matched throughout; control 390, plain result 691 at 1170 B:
+// result ESI, token EDI, token_length EBX, event EBP, `remaining` on the stack, where retail has event EBX, token_length
+// EDI, remaining EBP and token on the stack). New: the plain result with an entry `__assume(remaining >= 0)`
+// (diagnostic, not keepable) 691 (same code: the assumption adds no weight); `token` declared `word const *const` 691 (same
+// code); the fallback's clamp as `remaining <= token_length ? remaining : token_length` 693 plain (1168 B), 395 on the
+// volatile result (1432 B). Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

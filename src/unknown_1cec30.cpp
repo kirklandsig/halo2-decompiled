@@ -806,6 +806,9 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 	}
 }
 
+// Matched in a full build with stand-in SDK headers (was 29): the body slot and its fixed flag are read through
+// reference-bound locals.
+// Before:
 // score 29 (was 29): retail keeps the slot address in eax, tests the fixed flag through edx/dl and reads the
 // rigid body again after the vector's stores; ours reads it once into esi. Tried: the Havok vector declared
 // at the top, in the outer block, with the body read at its use, with every local at the top, or with the
@@ -852,6 +855,12 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // own-parameter read 32 (component in EDX, callers lose), with the vector at function scope 47 (139 B: the byte still
 // goes to BL with the component in EDX, so BL does not follow the component's range). Diagnostic: a non-const
 // `hkRigidBody **` slot with the body read after the conversion 29 (same code as this body).
+// M3 lane 2 r106 (fast, and a one-file LTCG harness that gives 28 for this body): the slot as an element pointer
+// (`slot->rigid_body` at the test and after the conversion) 31 (a dead `add eax, edx`, the load still shared). Harness:
+// early returns for flag1 and m_fixed with the slot pointer and the body read after the conversion 46 (141 B: retail's
+// reload with no volatile, the byte in BL), with 0-9 dead initialised locals 46 each (no symbol-count tie); the fixed
+// test read directly or through the getter with the slot pointer formed after it 46/46; nested blocks with the test
+// read directly 34 (135 B); the body for the test in its own const local, or the byte in a named bool, 46/46.
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -860,13 +869,16 @@ void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_ha
 	if (!TEST_FIELD_BIT(component->flag1))
 	{
 		hkRigidBody *const *local_1 = &component->rigid_bodies.data[rigid_body_index].rigid_body;
-		if (!(*local_1)->m_fixed)
+		hkRigidBody *const *const &kept_slot = local_1;
+		bool fixed = (*kept_slot)->m_fixed;
+		bool const &kept_fixed = fixed;
+		if (!kept_fixed)
 		{
 			hkVector4 havok_velocity;
 			hkRigidBody *rigid_body;
 
 			havok_from_vector3d(&havok_velocity, velocity);
-			rigid_body = *local_1;
+			rigid_body = *kept_slot;
 			havok_rigid_body_activate(rigid_body);
 			rigid_body->m_motion->setAngularVelocity(havok_velocity);
 		}
@@ -950,6 +962,7 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// MiniMax A (11-19): no new form, no lower score (65): the component still arrives on the stack, so the frame is still 0x84 against retail's 0x88 and the copy of the transform is still a block copy against retail's four aligned moves; the argument registers are still chosen by LTCG over the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files.
 // MiniMax B (11-18): no new form, no lower score (65): the transform copy is still a block copy here where retail
 // stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX;
 // the memberwise set form measures 90 (worse), and the component's home is decided across the
@@ -1211,6 +1224,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// MiniMax A (11-19): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX; that is 0x1d0cf0's convention and is decided with the bodies of its call cycle, which are in other files. BLOCKED-BY 0x1d0cf0.
 // MiniMax B (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
 // component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided
 // across a call cycle whose other bodies are in other files: BLOCKED-BY 0x1d0cf0.
@@ -1832,6 +1846,18 @@ PRIVATE __forceinline real const &component_time_step()
 // xmm0`, and the global load hoists above the mass test; the rate's address handed back through a helper's out parameter
 // 17/14 (same); the reference accessor, or a pointer accessor, called again at each product 17/14 (same). Each with the
 // stop-first test 36/36 (462 B forms 133/41, ternary 115/35). Every spelling folds `base + 4` at both reads.
+// M3 lane 2 r106 (the same harness, positional/aligned): the scale helper with the acceleration as its default and the
+// power arm assigning over it 131/16 (468 B); the helper as two ternaries 107/11 (473 B, head retail's but the step
+// loaded first after `movaps xmm1, xmm0`); its result through a one-member aggregate return 116/16 (492 B); `result =
+// result / mass`, and the step through a pointer to the accessor's reference 17/14 (same code); the mass ternary alone
+// 107/11, with the field read directly 107/11, with the time-step reference bound first 131/38. Diagnostic (not kept):
+// with 3, 11 or 19 extra dead locals (symbol count 3 mod 8; main's helper or the mass ternary) the head and the first
+// product are retail's (`mulss xmm0, [eax + 4]` in place) at 465 B, 104/6; only `add eax, 4` with the second product
+// from `[eax]` is missing, and the stop-first test then swaps the zero and stop registers (105/29; other counts 36/36).
+// On that dead-3 base: the step through a pointer local at both products 104/6, the pointer then the reference 104/6
+// (still `[eax + 4]` twice); the first product read directly or through the accessor with the reference bound after it
+// 17/14 (the head reverts). So the head is a symbol-count tie: a natural +3 names is worth trying once `add eax, 4` has
+// a cause.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2860,6 +2886,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // bindings 8; property word by const reference 8; const property value 8; nonzero contact arm first 161;
 // zero contact arm returns directly 8; scaled velocity and destination role names 8.
 // The i product and store and both zero-property registers still differ.
+// Round 431: indexed velocity/sample/both material inputs 91/377/377; indexed output
+// alone or with material inputs 91/91; lateral axes through array 377; bound output array 99;
+// shared material addition with indexed output 139. Early j/k loads and property zero still differ.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -3456,6 +3485,10 @@ byte *__fastcall function_30c170(hkWorld *world);
 // them 15, with that temp declared first in the arm 15, with it at function scope 15; the equal arm through a
 // `transform4x3f const &` to pair->frame_a 15 (all the same code: after inlining the arm's block is identical); the
 // equal arm converted into a local hkTransform and copied with hkTransform::set 351 (1325 B).
+// M3 lane 2 r106 (one-file LTCG harness with src/unknown_1d77d0.cpp, 15 as the check): both halves through one
+// forceinline helper (search, relative frame, conversion) 309 (1228 B); the converter's translation through an inline
+// helper returning the Havok vector by value (an aggregate-return scheduler boundary) 15 (same code); all four parts by
+// value 354 (1456 B, copied through a temp); the three columns by value 354; column 0 only by value 355 (1389 B).
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3594,7 +3627,9 @@ struct s_1cf531
  word field_2 : 4;
 };
 
-// score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
+// score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
+// uses the saved impulse slot at 0x30.
+// Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
 // folds its reload into the final `mulps`, ours stores it to 0x40. (Earlier first lines: the friction magnitude in
 // another dead slot, the element formed offset-first in retail, retail's y loaded early and stored after z; the
 // round 139 forms below fixed the first and the last.)
@@ -3658,6 +3693,14 @@ struct s_1cf531
 // Impulse snapshot aggregate 2; separate final aggregate 94; read-only snapshot and final aggregates 94;
 // immutable correction 2; immutable square, projection and correction 2; correction declared before
 // the length test 2; impulse and velocity declarations with the surface 7; named scaled SIMD product 2.
+// Projected velocity vector named before subtraction 2, Intrinsic broadcast of the final scale 7, Intrinsic
+// broadcasts of projection and final scale 16, Intrinsic broadcasts of all three scalar scales 87, Initialize
+// corrected register from the saved impulse before subtracting 2, Velocity and normalization workspace ends at
+// correction 2, Newton product named separately from the reciprocal-length correction 2, Final scale splatted in
+// its own statement 2, Corrected vector and final scale in one intrinsic expression 7, Corrected vector formed at
+// the final product with the original scale splat 50. NOT kept: The projection names, velocity scope and split
+// splat leave both spill operands unchanged. The intrinsic broadcasts preserve the extent at higher scores.
+// Forming the correction at the final product extends the body to 915 bytes.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

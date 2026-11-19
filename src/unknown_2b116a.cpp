@@ -4476,7 +4476,7 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56): retail keeps the controller reference and reloads its index after the membership call.
+// score 54 (was 56): Retail keeps the controller slot and reloads both pointer levels before the two dialog masks.
 // Earlier: only case 3 differs. Retail keeps controller in esi, spills controller_index
 // only case 3 differs. Retail keeps controller in esi, spills controller_index
 // to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
@@ -4546,10 +4546,28 @@ bool __stdcall function_2b278e(long controller_index)
 // 211/199; message selection last/first 219/248; separate leave with Boolean membership
 // 196; group lower actions before leave 217. The original double pointer and index spill
 // still differ. Isolating leave grows the frame.
+// Library copies at the two dialog reads: slot 181/205, index 54/199,
+// both levels 181/205, or both levels at initial and dialog reads 181/205
+// with the opening and Boolean membership locals, respectively. The slot copy
+// keeps the controller object in ESI, and the index copy still folds the reload.
 // Copy the dialog controller pointer, index or both 181/54/181; with Boolean membership 205/199/205.
 // Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
 // NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
 // and the index-only copy folds into the original read.
+// Guarded membership using a conjunction or an if 212/199; separate warning
+// and confirmation 242; three-way dialog result from the identity branch,
+// conditional admission, qualified membership or scoped identity 199/212/54/199;
+// explicit dialog-present guard 199. NOT kept: the qualified form ties and
+// still reuses the initial controller index. The other forms regress.
+// Shared message parameters, iterator or both 54/54/54; source-scoped iterator
+// and distinct message workspace names 54/54; descending, ascending and
+// message-first if chains 206/207/196. NOT kept: the dialog index still folds
+// into the initial read, and the conditional dispatch regresses.
+// The initial index still takes ESI and the dialog masks still reuse it. Dispatch-wide const slot or
+// slot reference 54/54, with Boolean membership 199/199; recipient counts initialized at case entry
+// 76; fresh index at membership 54; unsigned mask bits throughout 54; signed short membership in the
+// existing qualified local 55. NOT kept: slot forms preserve numeric-index reuse, and the Boolean
+// width shortens case 3 without restoring the reloads.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5791,7 +5809,9 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
-// score 89 (was 97): The friend-query output and later action predicates still use different byte slots.
+// score 89 (was 97): The 0x844 frame agrees. The title-state address and later eligibility byte reuse still differ.
+// Earlier observation: The retail frame agrees, but the friend-query outputs and later
+// The friend-query output and later action predicates still use different byte slots.
 // Earlier score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
 // boolean predicates use different byte slots.
 // origin predicate scoped through join eligibility 97; request result scoped through
@@ -5843,6 +5863,9 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // output-to-scalar transfers 89/89/89; roster transfers at first predicate 89; regular contact
 // before pending queries 384; regular-friend test at invitation 400. NOT kept: the first six
 // forms retain the displaced title-state byte and the invitation forms change the branch layout.
+// Boolean value pairs for join title, join exclusions, invitation, listed friend,
+// regular player, member admission, mute and unmute: 422/421/371/388/379/313/284/289.
+// NOT kept: each regresses; title-state byte and its later reuse still differ.
 // The query byte homes still differ in the 0x844 frame. Mode read once for all actions, roster,
 // membership, feedback/offer, cancellation/removal, and the final membership phase
 // 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
@@ -5851,6 +5874,14 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // addressed byte declarations after the dwords, pending false default, invalid-selection
 // guard with common completion, and immutable mute decisions: 89/89/89/89/89/353/89/89.
 // NOT kept: The session output and later membership results still use different byte slots.
+// Round 640: friend-request mask 394; incoming, outgoing, or both request bits
+// 313/314/450; membership mask or separate bits 391/409; both masks 410;
+// both pairs of request bits 462. All grow and shift the first difference ahead
+// of the friend query. Original predicates and byte homes restored.
+// promotion decision at emission 307; add-friend decision at emission 427; player-removal decision at
+// emission 345; other-title join decision at emission 406; unmute decision at emission 328; both mute
+// decisions at their emissions 321; join, removal and promotion decisions at emission 420; all six
+// captured-input decisions at emission 454.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

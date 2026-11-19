@@ -1039,6 +1039,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // data member: four at 238. Each with the short material output beside the input
 // snapshots reaches 230 and frame 0x44. NOT kept: the declaration moves the first
 // node out of its retail slot and does not recover the second-node and origin reuse.
+// M3 lane 10 r126 (fast with the file's seven matched functions, all MATCH; control 238, aligned 180). Compile-only
+// frame screen (the asm lists each local's home): ours puts origin (9 references) below hit (6), retail hit below a
+// 12-byte home that keeps only origin x, with y and z in shared 4-byte cells; origin by components (x, y, z or z, y, x),
+// with the hit by components and published by assignment, three real snapshots, a setter, and the hit declared first
+// all leave origin whole. Tried: origin from a forceinline accessor returning the point by value 355 (1284 B); both
+// plane-side tests through a forceinline helper taking the point by value 391 (1298 B); the snapshot distance as
+// radius + distance 238 (same code); the property scan on `root->type == 1 ? root->entity : NULL` 238 (same code);
+// `valid` declared after the indices 238 (aligned 182).
 // Classifier outside result from successive tests, positive inline-index result, upper test on
 // the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
 // origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.

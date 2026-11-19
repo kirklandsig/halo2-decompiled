@@ -1053,7 +1053,10 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
-// MiniMax G (11-18): score 175 (was 257): the player test of cases 1 and 6 is written with the == NONE arm
+// score 72 (was 72): retail stores false into the returned flag at the two trailing case exits (cases 1 and 2,
+// sharing the normalise-failure tail), its two flag homes are the other way round, and its weapon block keeps the
+// direction in EDI and reloads the actor index; the forms tried follow.
+// MiniMax G (11-18), at 175 (was 257): the player test of cases 1 and 6 is written with the == NONE arm
 // first, which restores retail's case-1 block layout; the body is 1424 B against retail's 1444. Left: the two
 // flags' byte homes are still swapped against retail's (the returned flag at +0x0a, the presence byte at +0x13),
 // the two 0xcafc0 calls still sit side by side where retail keeps them apart, and the jump table sits 20 B early.
@@ -1498,6 +1501,14 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // cases 2/1: 313/203 (preview control 258). NOT kept: the 203 form adds a one-use
 // point copy, enlarges the frame, and grows to 1464 bytes against retail's 1444.
 // The adjacent Boolean homes and shared direction tail still differ.
+// M3 lane 16 r142 (fast with 0x297660/0x297a50/0x2980d0 and the callees 0x1ffe00/0x1e1f20, all MATCH; control 73, full 72):
+// diagnostic, round 264's redundant `result = false;` before the two trailing case `goto done`s re-measured 38 (1440 B: the
+// flag homes become retail's, only the init store order and the weapon block's EBX/EDI are left); the remembered-point test
+// held in `result` (`result = state->unknown00 != NONE; if (result)`, case 1 with its `state >= 1 &&`) 259 (1456 B); every
+// `goto done` as `return result;` with no label 383 (1428 B); only the two trailing case exits as `return result;` 166 (1448
+// B); the two flags initialised at their declarations 75. In retail's weapon block the actor index rides in EDI for 0x1e1f20
+// and 0x1fc710 only, then EDI takes the direction and the actor index is reloaded from its home between the pushes for
+// 0x1ffbd0 (EBX unused there); ours keeps the actor index in EDI and gives the direction EBX.
 // Direct failure and success returns 394; common switch exit 73; shared weapon normalization 107;
 // positive normalize branch 91; named normalized length 73; shared weapon normalization with separate
 // flag defaults 109; nested point-publication guards 77; common switch exit and combined normalize guards 73.
@@ -2137,6 +2148,11 @@ struct s_actor_looking_structure_view
 // helper taking the vector and the axis by reference 23 (same code); the axis by value 210 (0x297660 fast 4); the helper
 // returning the vector pointer 23 (same code); each cross term scaled by the sine where it is computed 153 (925 B), which
 // lowers 0x296e60 to 199 fast (a lead for that function; not kept, it raises this one).
+// M3 lane 5 r203 (fast with 0x296e60/0x2980d0/0x297660; control 23, 0x296e60 270): the shared helper's dot grouped
+// `(j + i) + k` with the score `(i + k) + j` re-measured 13, but 0x296e60 270 -> 339 (1442 B): not kept; forward built by
+// the aggregate initializer `{ forward.i, forward.j, 0 }` 199 (927 B); the direction array declared at the function top
+// 23; the counter declared ahead of its loop 23; the angle as `0.785398185f * i` 23; forward declared, then assigned 23
+// (the 23s the same code).
 // M3 lane 12 r143 (fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x2967b0; control 23): round 91's lead re-measured
 // on today's 0x296e60 (helper dot `((j + i) + k)`, score `(i + k) + j`) 13 with 0x296e60 270 -> 339; the score alone
 // parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's

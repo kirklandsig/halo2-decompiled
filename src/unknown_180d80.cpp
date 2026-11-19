@@ -108,6 +108,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 // score 93 (was 93): BLOCKED-BY 0x17cfa0 (contributor, unmatched: ours passes the NONE first index in ECX and the
+// Round 127 (m3 lane 10, fast): dead initialised locals at the top for K = 8/10/12 216/216/261 and K = 14..32 (even)
+// 93 each, the transform rows never flip (diagnostic, removed); the count sum as a `short` without its two casts 93
+// (same code); with the short count-loop index as well 102 (aligned 36 against 38); the luminance in red, green, blue
+// order 93 (same code), with the short index 102; the strip loop's vertex cursor as a `long` 367 (2659 bytes).
 // definition in EAX, retail the other way round). Round 199 (m3 lane 5, fast): the short count-loop index re-measured 102
 // (aligned 81, register-masked 36); dead initialised locals at the top, k = 1..7, 168/169/169/169/169/213/216 (diagnostic:
 // the transform rows' operand sides never move, the field sums and the count slots do); the same on the short index
@@ -217,6 +221,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // homes agree, so this is the allocator's choice, not the parameter order); the guard split into three
 // separate returns gives 650 and the negated guard compiles identically, so both were reverted.
 // MiniMax S (11-06): no new form, no lower score.
+// M3 lane 9 r144 (fast with 0x180b60/0xd47d0/0x131c20/0x30bf0, control 93): the short count-loop index again gives
+// retail's prologue (the guard's record in EAX before the saves) and count loop, 102 (first difference +0x29); on it the
+// three centre sums written lower field first 102 (same code), the luminance written red, blue, green 100, both 100.
+// The count sum and the vertex index renamed (quad_count/vertex_index, strip_quads/point_index: both name orders) 93
+// each: their swapped frame homes do not follow the names.
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // MiniMax R (11-01): no new form, no lower score (the permuter's 56 tries left it at 94; the
 // prologue differs only in the eax/ecx swap of the input pointer, and two 4-byte slots are swapped).

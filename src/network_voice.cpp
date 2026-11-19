@@ -1936,6 +1936,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // packed-word memcpy 60, selected prefix length 157, sender advance with recipient-local
 // zero test 174. NOT kept: the single-store form shortens to 445 bytes but drops the native
 // initial recipient store and regresses. The shared zero exit and register roles still differ.
+// Complete-entry capacity with the byte gate: written bound 157; remaining count 177;
+// end on final write 185; positive remaining count 177. Quotient as the gate, same
+// scan forms: 168/185/168/185. All add division and change the matched caller.
 // m3 lane 5 r202 (fast with 0x56380, 0x564c0, 0x53b00 and 0x56000, all matched; control 60): the entry size as
 // `11 + (include_mask ? 2 : 0)` 145 (a neg/sbb/and select, the size still in EBP), as `(include_mask ? 2 : 0) + 11` 145
 // (same code), as `2 * (include_mask ? 1 : 0) + 11` 146, as `include_mask ? 11 + 2 : 11` 147 (461 B); include_mask
@@ -1952,6 +1955,18 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Single membership/index transfer to the final return 60/60; accepted membership/index first 74/60;
 // direct membership/index failure return 172/173. NOT kept: direct returns change the matched caller,
 // while the other forms leave the capacity exit and player-bit allocation unresolved.
+// M3 lane 5 r204 (fast with 0x56380, 0x564c0, 0x53b00 and 0x56000; control 60): retail's call in 0x56380 sets EAX
+// (player) before EDX (cursor), which fits the declared queue, cursor, player order. With the bool flag and
+// `include_mask ? 13 : 11`: the order kept, written, capacity, size 137 (445 B; the player goes on the stack, `ret
+// 0x10`, the cursor in EAX, 0x56380 13); the same with `11 + 2 * include_mask` 153 (434 B); kept, capacity, written,
+// size 137; written, kept, capacity, size 137; capacity, kept, written, size 154 (432 B). Every kept-first order
+// moves the player to the stack.
+// m3 lane 15 r107 (fast with 0x56380/0x564c0/0x53b00/0x56000; control 60): the bool flag kept with retail's order kept,
+// written, capacity, size and `11 + 2 * (include_mask != 0)` 137 (445 B, `ret 0x10`, 0x56380 13: the EAX zero is live as
+// retail's, but the kept mask then stays in EBP over the loop and the player arrives on the stack); on it the player bit
+// declared after the clamp 137 and no bit local (the loop test as `& (1 << player)`) 137 (same code each); 0-7 unused
+// locals at the top 137 each and 60 each on the kept body (no symbol-count state on either); the header stores through
+// a named header pointer 60 and `if ((capacity -= 2) >= entry_size)` 60 (same code each).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2165,7 +2180,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // lazily where retail loads both before the muted test and keeps the remote mask in esi. The second query's helper is
 // in this file, but marking it inline takes the matches of 0x54890 and 0x53a20 with it, and the session getters
 // 0x59670/0x596a0 live in another file: BLOCKED-BY 0x53bb0 and 0x59670/0x596a0.
-// score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
+// Earlier 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
 // word outer/target induction 118/106; word active 97; mask names 94; skip cleared inactive entries 110.
@@ -2311,6 +2326,14 @@ static inline dword voice_get_player_mask_inlined(void);
 // form), with both plain 74 (427 B); no `inline` on 0x53b90 122 (393 B), with `inline` 0x53bb0 84 (427 B). Every form
 // with `inline` on 0x53bb0 loses 0x54890 and 0x53a20 (83/84, 72/72 with both plain, 21/28 without `inline` on 0x53b90),
 // and every form without `inline` on 0x53b90 loses 0x53b40 (59) as well; no form expands 0x53bb0 here alone. Body unchanged.
+// M3 lane 9 r144: this file is built /Ob1, so the non-inline 0x53bb0 is expanded nowhere; with `inline` on it, a
+// one-object /GL screen of this file alone (retail's test order) gives the smallest inline threshold that expands
+// each site: 0x53bb0 here about 22, 0x53bb0 in 0x54890 about 24, 0x53b90 in 0x53a20 about 27, 0x53bb0 in 0x53a20
+// about 45. Retail expands 0x53b90 in 0x53a20 and 0x53bb0 here but calls 0x53bb0 in 0x54890, which no single
+// threshold gives with these callers, so the site frequencies of the matched callers (or the calibration) block it.
+// Fast trials (control 64): retail's test order muted word, first flag, second flag 85 (427 bytes); with a named
+// target bit 85; with the flag tests nested under the mask test 85; with `local & active & bit` 82 (415 bytes); with
+// an early return on !enabled 85.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -4181,11 +4204,24 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the member fetch with the NONE test after it 145 (EBP still the member); the entry order size, consumed, cursor,
 // stride 164; the cursor advanced ahead of the size and consumed updates 167. No form moved the channel into EBP.
 // Body unchanged.
+// Pre-dispatch budget debit, consumed increase after guard, both updates, and consumed
+// increase before guard: indexed 159/163/176/172; independent cursor 169/166/173/168.
 // Round 140 (m3 lane 9, fast with 0x564c0, matched each time): retail's ten extra bytes are a fourth exit on the loop's
 // zero-trip edge, `mov eax, ecx` returning consumed's initial 2 from ECX (a tail copy of `return consumed;`). On the
 // packet-cursor form (re-measured 164): the arms swapped with the test negated 157 (488 B, EBP then `packet + 3`); the
 // cursor advanced in the for header 166; the counter declared before the loop 164; `members` declared before the loop
 // 164; the advances ordered cursor, size, consumed 167. The compile-only harness keeps the cursor in ESI here (no help).
+// M3 lane 5 r204 (fast with 0x564c0, matched each time; control 139): the stride as `11 + 2 * relay` (0x55c40's
+// spelling) 178 (469 B); on the packet-cursor form (`data + 2` beside the count): the member's NONE test split ahead of
+// the kind test 164, the member test as a nonzero `word` 168 (471 B), the stride as `11 + 2 * relay` 165, the tail
+// advances ordered consumed, size, cursor 164. The member still takes EBP in every cursor form.
+// m3 lane 15 r107 (fast with 0x564c0, matched each time; control 139): on the packet-cursor form (re-measured 164, 478 B:
+// data in EDI from entry and `add edi, ecx`, the member in EBP, the channel in no register): the head ordered size,
+// consumed, cursor, stride 164 (same code); the cursor declared before the clamp (`byte *packet = data + 2;`, or `byte
+// *packet = data;` with `packet += 2;` after the stride, the clamp reading data[1] or packet[1]) 141 each (478 B: the
+// member is then spilled to a frame slot as retail's, but the cursor is folded back into `data + consumed` with consumed
+// in EBP, so the channel still has no register); consumed declared above the clamp 154 (479 B). 0-7 unused locals at the
+// top 139 each on this body and 164 each on the cursor form (no symbol-count state).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

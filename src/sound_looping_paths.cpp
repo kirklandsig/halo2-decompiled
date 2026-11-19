@@ -698,6 +698,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `&choices[choice_count++]` 972 (3287 B: the pointer becomes an induction variable), that with the stores in retail's order
 // (tag, source, decibels, cluster) and the three 1.0f defaults as statements 972; on main's body the four stores in retail's
 // order 846 (code changes, score ties).
+// M3 lane 10 r126 (fast with 0x18bb80, MATCH throughout; control 846, aligned 1004): g_44a0b4 as `real const` at its
+// definition and both extern lines 846 (same code) and it loses matched 0x2197b0 (the read folds to an immediate, 15)
+// and raises 0x18d730/0x18dc90 287/315 -> 400/452; re-measured lane 15 r92's long counts 965, with
+// `&choices[choice_count++]` 972, the pointer alone 967 (all as listed); new: the short count incremented first and
+// each choice filled through `&choices[choice_count - 1]` 965 (3271 B, aligned 1047).
 // Accepted ordinal captured at increment, after the header, or from the incremented count;
 // post-increment choice reference; full-width choice count with captured ordinal; full-width counts
 // with header increment; target count as conversion ordinal; target count published after conversion: 932/932/950/967/954/941/914/951.
