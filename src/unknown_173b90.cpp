@@ -919,6 +919,16 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // bitfields 229, shared mutable update mask 209, input block copies 42,
 // linked latch with empty-emitter continue 212. NOT kept: the indexed
 // loop advances the first difference but the rotation rows grow the body.
+// M3 lane 1 r123 (compile-only build of the file, which reproduces both rotations; rows judged by the order the matrix
+// elements are read: retail l.i f.i u.i / f.j u.j l.j / u.k f.k l.k, ours l.i u.i f.i / the same j and k): explicit
+// parentheses (a reassociation barrier) always evaluate forward before up before left inside a pair, so retail's
+// left-then-forward pair is not reachable that way (row i parenthesised in all 6 term orders with matrix- or vector-first
+// products, all rows parenthesised: float ops aligned 20-57 against 18); the vector read into component locals in all 6
+// definition orders x 6 row-i term orders best 29; the helper's row statements in all 6 orders with the copy taken only
+// when aliased, always, or bound to a const reference (the first row computed gets left, up, forward when it is row i
+// and left, forward, up when it is row j or k); the translation's statements in all 6 component orders 18-25 (row i
+// unchanged); dead reads of the matrix elements before the rotation (no change). Reading: row i pairs the first two
+// components the in-place copy makes available (ours y, z; retail y, x).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

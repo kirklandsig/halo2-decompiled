@@ -2073,6 +2073,16 @@ void function_27dd10(void)
 // no-code forceinline accessor at the group clamp 2 (0x281b60 2, 0x288570 120), at the outer loop bound 2 (0x288570 120);
 // the bit test through the accessor 2; the group end declared in the inner for's init 2; the blend frame state copied in
 // reverse order before the second decode 11 (0x281b60 11, 0x285750 9, 0x288570 9; the pair unchanged). All restored.
+// M3 lane 1 r123 (a compile-only build of the file is exact here: this function 2, 0x281b60 2, 0x285750 0; agreed with
+// --fast): all 243 placements of the walk's node index, bit-flags pointer, flags, group end and destination index as
+// walk-local, one wrapper local by reference or one per pass (apply in each arm) best 2 (the current one); a variant walk
+// for this function and 0x281b60 only, 600 random combinations of those placements with the clamp operands reversed, the
+// counters as a switch, the empty-group step after the pointer advance, the in-place flag declared after the output
+// pointer, the saves or the restores fraction first: best 2. The interpolation's output restore between the frame
+// restores 8 (--fast; 0x281b60 8, 0x285750 6), before them 13; the output store to the second frame ahead of the frame
+// swaps 14; the frame restores reversed 12; the output saved and restored through a local 337; the frame state as one
+// 12-byte aggregate copy (integer copies, frame 0x34). Diagnostic: without the `= &g_504430` restore 0x281b60's pair is
+// in retail's order. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
