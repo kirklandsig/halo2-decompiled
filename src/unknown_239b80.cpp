@@ -788,6 +788,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // one hull counter and no flag our build already splits the count as retail does (EBX for the call, EDX for the first scan,
 // its home afterwards); with the flag it gives retail's points ESI, current EDI and indices EBP but keeps the count in EBX. No
 // form gives both.
+// M3 lane 14 r114 (fast with 0x239d50 and 0x239b80; control 144; one-object link screen first, 32 forms): retail's hull loop
+// is not inverted (the `(short)hull count < count` test sits at the loop head, reached by a jmp over the alignment pad, and
+// every back edge from the closure goes to it), the hull count is the only pass counter (reloaded into EBX from +0x10 at
+// the head and after the candidate scan), and the departure flag is a byte in the indices home. On the one-counter
+// `while` body: short counter, bool flag, heading and flag declared before the lowest scan, gotos 265 (759 B; screen best,
+// frame 0x14 as retail, but the loop is inverted); the same with a long counter 264; the declarations after the lowest scan
+// 266; the three exits as returns 265 (749 B); short counter with a long flag 242 (759 B). The loop's end written as
+// `if (!left_start || points2d_differ(...)) continue; goto finished;` on that body (screen only) loses 25 rows.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -1174,6 +1174,11 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // the force 11; the object looked up before the member store 40; a named pointer to the move output's velocity for the
 // copy and the call, member store after the copy, 11. The member store is never read afterwards (a dead store that only
 // moves the scratch rotation). Still BLOCKED-BY 0x1c4b00 (its bool formal; declarations in other lanes' files this round).
+// M3 lane 14 r114 (fast; control 14, aligned 14): the 0x1c4b00 linear argument as the object's own +0x88 copy 29 (aligned
+// 18); the re-fetched object held as a byte pointer for the copy 14 (same code); the member and the local set by one chained
+// assignment 14 (same code); the member set from the call and the force read back from the member after the lookup 97
+// (1039 B); a named pointer to the move output's velocity for the copy and the call 14 (same code). Three of 0x1c4b00's
+// declaration files (src/unknown_1eb8a0.cpp, src/unknown_0b7740.cpp, src/unknown_1e67a0.cpp) are other lanes' this round.
 // MiniMax A (11-18): the 0x119bc0 result now has its own named bool, which is stored into the move output's byte
 // member and passed to 0x1c4b00 from that local: 14 (was 43). The force argument's own zero extension and the member's
 // slot are what still differ; retail still spills the result to a stack byte of its own and reloads the containing dword.

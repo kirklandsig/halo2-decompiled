@@ -1482,7 +1482,7 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
-// score 120 (was 137): Frame 0x1c agrees. Retail scales the actor index before the pool load and
+// score 120 (was 120; 137 before): Frame 0x1c agrees. Retail scales the actor index before the pool load and
 // holds the actor in EDI and the object in ESI. This build exchanges those homes.
 // M3 lane 14 r112 (fast; control 120): the closing term as `dot_product2d((vector2f const *)&object->velocity,
 // path_direction) - dot_product2d(path_direction, (vector2f const *)&other->velocity)` 114 (that block then has retail's
@@ -1495,6 +1495,17 @@ real function_50650(real cosine);
 // 1.0; fxch`). Diagnostic: with nearly every actor read removed (approach blocks and the following test) the actor still
 // takes ESI, so the exchange is not a use-count tie: the actor's web takes the scaled index's register (`add esi, edi`)
 // where retail forms it with `lea edi, [edx + esi]` from a scratch index.
+// M3 lane 14 r114 (fast; control 120, aligned 47 raw / 38 register-masked): the in/out planar scale helper pair
+// (as src/unknown_1ff010.cpp has it) for the velocity normalize, with the closing term through dot_product2d, the
+// velocity copied as `*(vector2f const *)&object->velocity` and its dot as `dot_product2d(desired, &velocity)` 263 at
+// retail's 1324 B (masked aligned 22-25: the normalize block is then retail's exactly; left are the actor/object
+// exchange, the two 1.0 entry stores, the velocity dot loading desired's j first, the clamp's `fld st(1)` and the
+// final product's slot); the same without the velocity dot helper 114 (masked 26), without the copy 306 (1324 B); the
+// closing term alone 114, with the copy 114. Diagnostics (one-object link screen, restored): the actor offset stays
+// coalesced with the actor (`add esi, edi`) with any one of the four blocks deleted, with two extra object reads, an
+// extra actor read, one fewer actor read, the actor read through actor_get at every use, and with one or two extra
+// long-lived integer values; retail's lea form is in 26 matched functions (0x1c1d50 the closest: offset in EDX, pool
+// in ESI, `lea ebx, [edx + esi]`), with no source difference found in their actor lookups.
 // MiniMax R run 92 (11-17): no new form, no lower score (120): retail still holds the actor in edi and the object in
 // esi and scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the
 // pool first and keeps the actor in esi; the two 1.0f entry stores still come out in the opposite order and the

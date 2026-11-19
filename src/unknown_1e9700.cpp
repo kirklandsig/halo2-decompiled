@@ -337,6 +337,14 @@ struct s_object_damage_view
 };
 
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
+// after the selected block), ours in EBP through the killer block, which is what turns the three homes round. Both
+// flags in retail's shape (consideration true by default and cleared by the same-team test; friendly false by default
+// and set by its test) 344 (aligned 172; flags set inside a test, and the direct forms are main's 353, so not kept); the
+// friendly flag alone 353; the consideration flag alone 344; the selected record through a record pointer with the
+// consideration flag 449 (1583 B, frame 0x54); both flags with the assist loop reading the record's player index at each
+// use 386 (1564 B). Diagnostic (one-object link screen): renaming the three locals (each alone, and all three in either
+// alphabetical order) leaves their homes and the code unchanged.
 // MiniMax D (11-16): no new form kept, no lower score (353): the permuter refuses this function (the reduced image scores
 // 446, the full image 341), so the round was run by hand; the consideration flag as a true default cleared by the
 // same-team test reproduces retail's store pair and gives 344, but that is a test-set flag (match only, as the 11-05 note
