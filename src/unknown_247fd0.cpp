@@ -860,6 +860,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Word index for particle 406, child 333, gate with particle 419, gate with child 363,
 // particle with child 422, velocity with particle 428, velocity with particle and child 428,
 // and all four slots 428. NOT kept: child alone gains one at retail length and leaves the gate unchanged.
+// Named flags low byte 334; separate pool base and slot 338; narrow named flags word 338;
+// gate storage scoped to the effect arm 338; separate velocity record 338; both effect addresses 334;
+// both with a short motion-mode read 334 or one prior-position weight 334.
+// NOT kept: the effect address still folds and the gate and settings slots do not move to retail's homes.
 // M3 lane 4 r215 (fast, control 334): the field_50 test as the matched sibling 0x247fd0 writes it (`if (local_2 !=
 // arg_0->field_50) { field_50 = local_2; field_44 &= ~0xf80f; }`) 346 (that block is then exactly retail's, the count rises
 // from realignment); on it: the effect datum through an inline getter function at the gate and the velocity 346 (same

@@ -1279,6 +1279,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // matrix3x3 local in place of the transform 394 (1700 B); the basis matrix at case scope without its block 219 (1708 B);
 // the pan fraction after the camera reload 126 (same code); `command->distance` stored before offset.i 127; offset.k
 // computed and stored before offset.j 125 (one point, not kept).
+// Direct squared-length condition, field-of-view fallback arm, mutable target through blend,
+// ordered fraction clamp, staged angle accumulation, named angular delta, branch-local command
+// field stores, and a role-named projection scale: 126/141/390/126/126/395/154/126.
+// NOT kept: The direction-k preload and length/zero register split remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

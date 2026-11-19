@@ -1226,6 +1226,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // (up, old) * (new, up) 112 (1393 B), on the single-store exit 112, with the preset flag too 109 (1391 B); (new, up) *
 // (old, up) with the staged old cross, single-store exit and preset flag 109, on this body 112; the staged old cross alone
 // 112 (1389 B); staged old cross, (up, old) * (new, up) and the preset flag 109. Body unchanged.
+// Named side projections before moved-away 170, with one direction store 171, or after
+// moved-away with one direction store 133. Shared axis rotate with projections after each cross 216,
+// before moved-away 170, after moved-away 150, with one direction store 111, or with named projections
+// and one direction store 133. NOT kept: the 111 form gains three and grows to 1393 bytes.
+// The axis-memory products and side/exit schedules still differ.
 // Round 187 (m3 lane 8, fast with 0x1ecf50, MATCH each time; control 114): a dead-local count scan extended past round
 // 178's 0-7 (diagnostic): 8-30 dead locals give 112 (8), 116, 139, 139, 150, 163, 139 (1393 B), 145 (1397 B), 112 (16), 194,
 // 150, 139, 150, 166, 140, 145, 114 (24), 139 (26), 150 (28), 140 (30): period 8, never below 112, and the first difference

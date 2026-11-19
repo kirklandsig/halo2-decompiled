@@ -2542,11 +2542,11 @@ PRIVATE __forceinline real component_surface_length(vector3f const *v)
     return (real)sqrt(v->i * v->i + v->j * v->j + v->k * v->k);
 }
 
-PRIVATE __forceinline void component_surface_property_set(hkEntity *entity, long value)
+PRIVATE __forceinline void component_surface_property_set(hkEntity *entity, s_havok_property_word property)
 {
     if (havok_entity_property_exists(entity, HAVOK_PROPERTY_2003))
         entity->entity_property_erase(HAVOK_PROPERTY_2003);
-    entity->entity_property_put(HAVOK_PROPERTY_2003, s_havok_property_word(value));
+    entity->entity_property_put(HAVOK_PROPERTY_2003, property);
 }
 
 /* clears a vector; function_1d87b0 stores through this inline function:
@@ -2556,7 +2556,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
-// score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
+// score 8 (was 91): The frame and extent agree. The first scaled velocity store is late,
+// and the zero property value uses EBX where retail uses EDI.
+// Earlier score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
 // with match-only forms, detail first, older rounds below. The velocity's fields are ranked by how the code first
 // reaches them (0x1d3fc0's note): a field named in this body is "old" (scaled as `inverse * [x]`, reloaded on the short
 // path), one reached only through inline helpers is "young" (loaded beside its x87 square, scaled in place). Retail has
@@ -2637,6 +2639,8 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // retail keeps it in xmm4, and the material loop's call to 0x181db0 takes its arguments in ecx and edx where retail
 // passes them in eax and ebx: BLOCKED-BY include/normalize3d.h and src/unknown_181e90.cpp, which this lane may not
 // edit.
+// Earlier at 91: The aligned frame and contact/normal prefix agreed. The velocity j/k
+// loads were late and the zero property value did not stay live through erase.
 // Earlier (91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
 // aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
@@ -2861,6 +2865,19 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
 // NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
 // Early velocity j/k loads, speed-product residence and property-zero EDI remain.
+// Scale result passed straight to the Havok conversion 8, scalar stores 160, returned-vector
+// scalar stores 8, direct scale into output 76 or with named speed 130, separate scaled vector 8,
+// indexed setter 161, and vector constructor plus zero lane 206.
+// Scale before destination 5 with the conversion or scalar stores. Inline weighted speed 243,
+// or before destination and scalar stores 5. Direct indexed products 109 with or without weight,
+// scalar SSE products 185, and named speed then conversion 122. Indexed and named setter and
+// Havok conversion after completed scale 5 each, scalar SSE transfers 248, opening speed sum 5.
+// Typed private property argument with the shared scale and named-component setter 8, plain 8.
+// NOT kept: the 5 forms move the one-use property temporary before the erase call.
+// Shared component setter plus fourth-lane clear 8; direct named speed products 371; immutable output
+// bindings 8; property word by const reference 8; const property value 8; nonzero contact arm first 161;
+// zero contact arm returns directly 8; scaled velocity and destination role names 8.
+// The i product and store and both zero-property registers still differ.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -2919,27 +2936,27 @@ void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_ind
         vector3f local_c7c2ff;
         if (!function_181db0(materials[i], &local_c7c2ff))
             local_c7c2ff = *g_4687a4;
-        velocity.i = velocity.i + local_c7c2ff.i;
-        velocity.j = velocity.j + local_c7c2ff.j;
-        velocity.k = velocity.k + local_c7c2ff.k;
+        vector3f_add(&velocity, &local_c7c2ff, &velocity);
         speed_sum += component_surface_length(&local_c7c2ff);
     }
     normalize3d(&velocity);
-    real speed = ((bool)((component->unknown04 >> 18) & 1) ? 1.0f : 2.5f) * speed_sum / material_count;
+    vector3f const *scaled = vector3f_scale(&velocity,
+        ((bool)((component->unknown04 >> 18) & 1) ? 1.0f : 2.5f) * speed_sum / material_count,
+        &velocity);
     hkVector4 *result = &body->unknown30;
-    result->set(speed * velocity.i, velocity.j * speed, velocity.k * speed);
+    result->set(scaled->i, scaled->j, scaled->k);
     if (other_contacts == 0)
     {
         body->unknown44 = 1;
         if ((bool)((component->unknown04 >> 18) & 1))
-            component_surface_property_set((hkEntity *)body->rigid_body, 0);
+            component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word(0));
         else
-            component_surface_property_set((hkEntity *)body->rigid_body, (long)result);
+            component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word((long)result));
     }
     else
     {
         body->unknown44 = 2;
-        component_surface_property_set((hkEntity *)body->rigid_body, 0);
+        component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word(0));
     }
 }
 
@@ -3660,6 +3677,9 @@ struct s_1cf531
 // `hkVector4 &` 23, the final scale alone through mul4 23 (all the in-place code); corrected as a named hkVector4 2
 // (same code); local_13 by `local_13 = local_7;` 2, copy-initialised from local_7 124/124 (932 B); a 1500 s
 // permuter run (608 tries) none below 2.
+// Impulse snapshot aggregate 2; separate final aggregate 94; read-only snapshot and final aggregates 94;
+// immutable correction 2; immutable square, projection and correction 2; correction declared before
+// the length test 2; impulse and velocity declarations with the surface 7; named scaled SIMD product 2.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

@@ -1047,6 +1047,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // plane-side tests through a forceinline helper taking the point by value 391 (1298 B); the snapshot distance as
 // radius + distance 238 (same code); the property scan on `root->type == 1 ? root->entity : NULL` 238 (same code);
 // `valid` declared after the indices 238 (aligned 182).
+// Classifier outside result from successive tests, positive inline-index result, upper test on
+// the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
+// origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.
+// NOT kept: The frame and second-node home still differ, as does the classifier data reload sequence.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

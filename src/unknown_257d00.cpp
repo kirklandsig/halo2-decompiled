@@ -2501,6 +2501,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI, state EBX); on it one, two or three unused locals in the case 611 each (same code: the exchange is not a
 // symbol-count tie), the case 2 vector written as three member copies from the actor 611; `default:` joined to case
 // 13's `return 1` 613 (2416 B).
+// score 433 (was 433):
+// Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
+// busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
+// fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
+// The dispatch and timer paths still reach the late completion block.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

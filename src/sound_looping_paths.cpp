@@ -703,6 +703,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // and raises 0x18d730/0x18dc90 287/315 -> 400/452; re-measured lane 15 r92's long counts 965, with
 // `&choices[choice_count++]` 972, the pointer alone 967 (all as listed); new: the short count incremented first and
 // each choice filled through `&choices[choice_count - 1]` 965 (3271 B, aligned 1047).
+// Accepted ordinal captured at increment, after the header, or from the incremented count;
+// post-increment choice reference; full-width choice count with captured ordinal; full-width counts
+// with header increment; target count as conversion ordinal; target count published after conversion: 932/932/950/967/954/941/914/951.
+// NOT kept: The entry zero, accepted count register and the separate count and buffer homes remain displaced.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

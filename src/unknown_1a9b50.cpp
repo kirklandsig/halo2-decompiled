@@ -833,6 +833,10 @@ extern point2f *g_468778;
 // the settings arm 393; the prop lookup ahead of the clock 393 (same code); the field_12 arm moved after a prop arm
 // tested `!field_12 && prop` 414 (1531 B). Reading: retail gives EBX to the prop ahead of arg_0, which every form here
 // passes to its EBX-argument callees from EBX.
+// Facing k+j before forming the direction pointer 400; separate k and j products 402;
+// actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
+// partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
+// partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

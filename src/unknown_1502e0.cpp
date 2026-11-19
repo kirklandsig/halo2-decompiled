@@ -1558,6 +1558,11 @@ void function_150820(dword *bits, bool local_only)
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
+// Shared post-query unit-index refresh, with mode first, with an index reused from before the
+// query (with or without mode first), with two const snapshots, and with the mode test first:
+// six at 49. Separate lookup with shared refresh 75, also read through the getter at the
+// query 40. NOT kept: the latter gains three, combines the player add and move into LEA,
+// and mixes player lookups. The 210-byte starting body and its saved-register exchange remain.
 // Round 264 (m3 lane 3, fast with 0x151b80 17, 0x14f820, 0x151940 and the callees; control 43): the cd4e0 arm as
 // `else if (function_cd4e0(...)) result = true;` 47; `result = true;` ahead of the a8f80 call 71 (215 bytes); the mode
 // test inverted with the cd4e0 arm first 72 (219 bytes); the hand as `bool` 89 (197 bytes); the hand set to 0 and then
