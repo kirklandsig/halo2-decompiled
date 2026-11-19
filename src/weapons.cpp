@@ -3796,6 +3796,12 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // magazine tag resolved at notification 601, indexed barrel tag fields 836, named replacement
 // barrel field 643. Reduced control 643. NOT kept: late magazine lookup reaches retail length
 // with frame 0x1c58 and delays an early retail lookup. The ordinary holder forms shorten the body.
+// MiniMax B (11-19): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in EBX and
+// the barrel's offset in EDI, spills the definition to [esp+0x14] and the unit index to [esp+0x24], where this build
+// gives EBX the barrel's offset, EDI the definition, [esp+0x14] the unit index and [esp+0x28] the definition, and
+// the full build still uses a 0x1c64 frame against retail's 0x1c60; a local copy of the weapon index, a computed
+// barrel offset, the definition declared after the barrel pointers and a non-volatile unit index all score the same
+// or more, and the fast check warns that this function builds differently in the reduced image.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
