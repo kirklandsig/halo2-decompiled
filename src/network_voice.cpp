@@ -1927,6 +1927,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the block's end 155 [137] at 462 bytes; the length local with `return length;` ending the block 216 [73] at 494 bytes;
 // the length local with the statements before the capacity test in retail's order (kept, written, capacity, size) 153
 // [13] at 434 bytes. Body unchanged.
+// Sender advance before the optional mask 174, shared payload position 131, recipient-local
+// zero test 60, fallback selected before one store 132 or in distinct store arms 180.
+// packed-word memcpy 60, selected prefix length 157, sender advance with recipient-local
+// zero test 174. NOT kept: the single-store form shortens to 445 bytes but drops the native
+// initial recipient store and regresses. The shared zero exit and register roles still differ.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

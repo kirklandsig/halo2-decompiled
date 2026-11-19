@@ -2508,11 +2508,11 @@ PRIVATE __forceinline real component_surface_length(vector3f const *v)
     return (real)sqrt(v->i * v->i + v->j * v->j + v->k * v->k);
 }
 
-PRIVATE __forceinline void component_surface_property_set(hkEntity *entity, long value)
+PRIVATE __forceinline void component_surface_property_set(hkEntity *entity, s_havok_property_word property)
 {
     if (havok_entity_property_exists(entity, HAVOK_PROPERTY_2003))
         entity->entity_property_erase(HAVOK_PROPERTY_2003);
-    entity->entity_property_put(HAVOK_PROPERTY_2003, s_havok_property_word(value));
+    entity->entity_property_put(HAVOK_PROPERTY_2003, property);
 }
 
 /* clears a vector; function_1d87b0 stores through this inline function:
@@ -2578,7 +2578,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // retail keeps it in xmm4, and the material loop's call to 0x181db0 takes its arguments in ecx and edx where retail
 // passes them in eax and ebx: BLOCKED-BY include/normalize3d.h and src/unknown_181e90.cpp, which this lane may not
 // edit.
-// score 91 (was 91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
+// score 8 (was 91): The frame and extent agree. The first scaled velocity store is late,
+// and the zero property value uses EBX where retail uses EDI.
+// Earlier at 91: The aligned frame and contact/normal prefix agreed. The velocity j/k
+// loads were late and the zero property value did not stay live through erase.
 // aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
@@ -2802,6 +2805,15 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
 // NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
 // Early velocity j/k loads, speed-product residence and property-zero EDI remain.
+// Scale result passed straight to the Havok conversion 8, scalar stores 160, returned-vector
+// scalar stores 8, direct scale into output 76 or with named speed 130, separate scaled vector 8,
+// indexed setter 161, and vector constructor plus zero lane 206.
+// Scale before destination 5 with the conversion or scalar stores. Inline weighted speed 243,
+// or before destination and scalar stores 5. Direct indexed products 109 with or without weight,
+// scalar SSE products 185, and named speed then conversion 122. Indexed and named setter and
+// Havok conversion after completed scale 5 each, scalar SSE transfers 248, opening speed sum 5.
+// Typed private property argument with the shared scale and named-component setter 8, plain 8.
+// NOT kept: the 5 forms move the one-use property temporary before the erase call.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -2860,27 +2872,27 @@ void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_ind
         vector3f local_c7c2ff;
         if (!function_181db0(materials[i], &local_c7c2ff))
             local_c7c2ff = *g_4687a4;
-        velocity.i = velocity.i + local_c7c2ff.i;
-        velocity.j = velocity.j + local_c7c2ff.j;
-        velocity.k = velocity.k + local_c7c2ff.k;
+        vector3f_add(&velocity, &local_c7c2ff, &velocity);
         speed_sum += component_surface_length(&local_c7c2ff);
     }
     normalize3d(&velocity);
-    real speed = ((bool)((component->unknown04 >> 18) & 1) ? 1.0f : 2.5f) * speed_sum / material_count;
+    vector3f const *scaled = vector3f_scale(&velocity,
+        ((bool)((component->unknown04 >> 18) & 1) ? 1.0f : 2.5f) * speed_sum / material_count,
+        &velocity);
     hkVector4 *result = &body->unknown30;
-    result->set(speed * velocity.i, velocity.j * speed, velocity.k * speed);
+    result->set(scaled->i, scaled->j, scaled->k);
     if (other_contacts == 0)
     {
         body->unknown44 = 1;
         if ((bool)((component->unknown04 >> 18) & 1))
-            component_surface_property_set((hkEntity *)body->rigid_body, 0);
+            component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word(0));
         else
-            component_surface_property_set((hkEntity *)body->rigid_body, (long)result);
+            component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word((long)result));
     }
     else
     {
         body->unknown44 = 2;
-        component_surface_property_set((hkEntity *)body->rigid_body, 0);
+        component_surface_property_set((hkEntity *)body->rigid_body, s_havok_property_word(0));
     }
 }
 

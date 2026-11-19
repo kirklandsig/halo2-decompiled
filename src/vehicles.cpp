@@ -5738,6 +5738,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // shared spin limit 762. NOT kept: the grouped turn cases reach 734 at retail length, but add a selector re-
 // test and merge conversions that retail performs separately. The engine pair gains three, below the keep
 // threshold. The entry definition and SSE homes still differ.
+// Final saturation with double lower / upper / both 945/694/959, blend with double bounds 756.
+// forward and reverse speed floors with double comparisons 756. Gated channel and activity with
+// double zero 776, final double bounds and activity 980, branched double upper bound 694.
+// NOT kept: the 694 forms use a 0x1c frame, grow to 3003 bytes and still hoist unity.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

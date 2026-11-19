@@ -658,6 +658,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // flag set first in the success block 152 (stored from AL but first, not last); the candidate sum with the first distance's
 // operands swapped 158; written `local_31 + second + first` 164; accumulated in three statements 426 (1612 B); both
 // distances' operands swapped 164.
+// Route-table reference, record-array reference, read-only record base, candidate reference,
+// candidate state local, and separate sign guard 382 each. Record-array reference or route-table
+// reference with a short selected terminal 383 each. The selected default slots stay displaced.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
