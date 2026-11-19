@@ -389,6 +389,7 @@ PRIVATE inline long polygon_round_19f(real value)
    at 0x47ff94; only 0x19f680 reads it) */
 real g_47ff94 = 1.5f;
 
+// MiniMax A (11-19): no new form, no lower score (322): the body is unchanged; the differences are still 0x4b2d0's calling convention and the expansion of 0x1ccb0/0x1cd90 that retail keeps out of line. BLOCKED-BY 0x4b2d0 and the /Ob1 file of 0x1ccb0/0x1cd90.
 // score 322 (was 322): frame 0x34 against retail 0x30; retail expands 0x1ccb0(59) and 0x1cd90 in place and passes 0x4b2d0 two stack arguments; rounds below. BLOCKED-BY 0x4b2d0.
 // MiniMax H (11-18): no new form, no lower score (322): the frame is still 0x34 against retail's 0x30 because the
 // step counter has a stack home where retail keeps the step, and the 0x4b2d0 call still takes the variant on the

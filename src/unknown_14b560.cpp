@@ -2539,6 +2539,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax A (11-19): no new form, no lower score (701): retail still calls 0x151b80 where this build inlines it, the frame is still 0x4c against retail's 0x74, and the loop's index scratch is still in EBX where retail keeps it in ESI; the body is unchanged. BLOCKED-BY 0x151b80's inlining decision in src/unknown_1502e0.cpp.
 // MiniMax R run 92 (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
 // this build still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees
 // live in files this lane may not edit.
@@ -3126,6 +3127,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax A (11-19): no new form, no lower score (103): the players globals are still kept in one web across both loops in EDI, where retail reloads g_4e8c20 into ESI, ECX and EAX; the body is unchanged. BLOCKED-BY the 0xb8540/0xb7b40 drafts in other files.
 // MiniMax R run 92 (11-17): no new form, no lower score (103): the players-globals pointer still stays in edi where
 // retail keeps it in esi, and the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may
 // not edit.

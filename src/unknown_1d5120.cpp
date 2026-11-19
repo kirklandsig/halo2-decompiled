@@ -87,6 +87,7 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax A (11-19): no new form, no lower score (77): the rigid-body lookup still reads [eax + edx + 0x40] where retail reads [edx + eax + 0x40], and the tail still passes the component and the index to 0x1d0cf0 on the stack where retail passes them in EBX and ECX; the body is unchanged. BLOCKED-BY 0x1d0cf0.
 // MiniMax B (11-18): no new form, no lower score (77, was 77): the prologue is instruction for instruction
 // retail's, with the two registers holding the same two values in the same order, and the one difference is
 // the rigid-body lookup's address: ours reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
