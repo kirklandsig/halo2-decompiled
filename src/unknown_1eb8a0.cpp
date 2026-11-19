@@ -702,6 +702,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // indexed impulse with displacement update 741, settling length before the copy 603,
 // shared activation and normalization motion 676, shared scaled-reference displacement 673,
 // staged target point 717. NOT kept: these forms leave or worsen the sample register and coefficient schedule.
+// M3 lane 15 r107 (fast with 0x1eb6f0 and 0x1ed4a0; control 603, both matched): the output stage's w as `dot3f(&s->direction,
+// q)` 678 (2880 B, an xorps moves to the entry, d still in EBX); `s->distance = len3;` 683 (2890 B); `s->limited` set ahead
+// of the clamp with `len3 = s->limited ? limit : len2` and the distance from len3 706 (2862 B); the position pointer dropped
+// (`out->position` at every use) 714 (2875 B, 0x1eb6f0 lost at 103); `bool fail = false;` declared just above the output
+// stage 655 (2885 B, the flag's slot moves).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -2031,6 +2031,12 @@ void function_1f86a0(long actor_index);
 // 223; the selection's root called first 134 (same code). The FORMS slot data-block form is round 39's 134 (same code).
 // Nothing kept. Open as before: retail gives EBX to the loop entry (saved after the early return), spills the mask
 // byte and frames 0x14.
+// M3 lane 15 r107 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all MATCH; control 134): the mask declared ahead of the
+// loop and assigned in it 134; the iterator declared above the early return 134; the accept arm as a bare `break` with
+// `if (entry) joint_index = entry->unknown4;` after the loop 134 (threaded back into the accept arm); the decline test
+// negated with the accept call first and the decline in the else 134 (all the same code); the decline as `u && (!bit40 ||
+// !same) || !u && specified && !same` 240 (866 B); re-measured: the element's root named inside `if (specified)` 241.
+// Retail lays the decline block and the iterator step right after the bit-0x40 test; ours keeps the tests together.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

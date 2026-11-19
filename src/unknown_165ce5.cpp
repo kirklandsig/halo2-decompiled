@@ -1939,6 +1939,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // all match-only, and the function stays BLOCKED by the stand-in (ESI/EDI saved at entry). Left on the lead: those saves,
 // frame 0x30 against 0x2c, the weapon reload into EDI one statement late, the overlay set loaded ahead of the scoped test
 // and the +0xb8 channel pointer in ECX (retail ESI).
+// M3 lane 15 r107 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188), declarations joined to their first
+// assignment: the +0xb8 channel pointer initialised where declared 188, `real zoom = magnitude3d(...)` 188, `point2f *look
+// = ...` 188, the weapon index declared in the for header 188, `bool active = ...` 188 (same code each). The lead's steps
+// stay match-only and the stand-in block stands.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
