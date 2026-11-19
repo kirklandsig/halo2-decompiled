@@ -360,6 +360,22 @@ long g_55e6c0;
 // of it 133; six random orders of the seven statements from the +0x7c clear to the select 49-143; a named header
 // pointer used for every header access (main's order or the lead's) 162 (471 bytes); the call's height read once
 // through the parameter's address, on the select-first lead 38, on the plain lead 29 (both the same code: the address folds).
+// M3 lane 10 r122 (fast with 0x1dc40/0x1db10/0x1d6f0/0x1d770/0x1db90/0x1de20, all MATCH each time). LEAD: retail's header word
+// is stored through a register holding the header address (`lea ebx, [esi + 4]` ahead of `mov [ebx], 0x40001`), so the
+// header is a named pointer there. On the round-51 signed pitch/packed lead: `long *header = entry->sub_header;` used for the
+// header word and the register call 28 (484 bytes: from the packing on, the select in EAX, the header in EBX, the call's
+// height reloaded from the stack, all retail's); with the clamp in a `long levels` local stored after the packing as well 29
+// (484: everything from the clamp's store on is retail's; only the top block's height/count swap is left). Diagnostic, not
+// retail's code: on that levels form one more read of `height` anywhere before the packing (a byte store of it) gives
+// retail's whole listing apart from that store (the height then outranks the merged clamp for EAX); after the call it
+// does not. So retail's source reads the height once more than ours ahead of the packing. On the levels form: the header
+// pointer also for the loop's element pointer and increment 36 (the loop's +0x7c load then waits for the increment's
+// store), with the select ahead of the header word 45; the pointer for the header word only 31; the select ahead of the
+// header word 38; levels declared at the block top 29; the clamp as `count <= 4 ? count : 4` 29; the packing's height
+// from the stored field 29; the packing through a forceinline size helper taking width and height 29; the call's height
+// from the stored field 106 (495 bytes: a real load). On the in-place clamp with the header pointer: the height term first
+// 28; `count >= 0 ? (count > 4 ? 4 : count) : 0` 31; the clamp as three field stores 139 (495). The header word through
+// a cast of the header array to the platform's resource type 38/41 (same code as the leads).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

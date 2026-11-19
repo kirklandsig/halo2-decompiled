@@ -1554,6 +1554,19 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Indexed rejection by combined/nested tests 529/529, with a single flags read 530/530.
 // Counted entry cursor with either rejection test 541/541, with a single flags read 578/578.
 // The cursor forms reach frame 0x28 but leave the result spill and shorten the body.
+// m3 lane 10 r121 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned / stack-masked 527 / 503 by
+// this round's counter). Both builds end `ret 0xc`; the convention difference is only block EDX / query EAX against retail's
+// EAX / EDX. Re-measured as a base: (type, query, block) with `if (0 < count)` 570 (523 / 500; 0xd4080 380): retail's incoming
+// registers. On it: `bool result = false;` first with `return true;` closing the found block 571 (508 / 497): frame 0x28, first
+// difference +0x9, where retail keeps the count in EDX and the mask in EAX and clears AL for the result ahead of the count test
+// (ours count EAX, mask EDX, one false at the shared exit); the result declared after the pointer and set true at the end of
+// the block with one return 570 (559 / 540): the false is then cleared at entry and the count sits in EDX as in retail, but in
+// CL, with the query arriving in ECX and the type from the stack (0x3db00 lost, 8; 0xd4080 504); that with the count read
+// declared first 565 (2193 B; same losses, the result spilled); `if (!parameters) return false;` with `return true;` at the end
+// on the reordered parameters 575 (2166 B; 516 / 498); lane 5 r182's order (length, whole lightmap and normal copies, bias local,
+// square after the negate, lightmap pin first, result set true at the end) without its helper changes 599 (2222 B; 0x3db00
+// lost). So the form that hoists the false as retail does is the one that moves the incoming registers: what keeps the type in
+// ECX and the query in EDX while the result is live from the top is not found.
 // MiniMax G (11-18): no new form, no lower score (529): this build's frame is 0x2c against retail's 0x28 and the
 // selected result still spills; retail's own parameter order is (type, query, block), with the block in EAX and the
 // query in EDX, and this lane may not change the parameter order, so the lead that needs it stays blocked.
