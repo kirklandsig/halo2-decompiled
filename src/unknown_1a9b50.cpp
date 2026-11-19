@@ -994,6 +994,12 @@ static __forceinline long real_to_long(real value);
 // what still differs is the false exit's place, the facing pointer that retail forms late through the view pointer
 // in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
+// Round 127 (m3 lane 10, fast with 0x25d740 and 0x25d690; control 382, aligned 83): the computed result as
+// `!(f13 || f14 || f2d)` with `if (local_2)` 508 (1921 bytes, aligned 122); that with the facing pointer formed after the
+// first dot (that dot read off the view) 566 (1966 bytes); the facing pointer after the first dot alone 494 (1918 bytes);
+// the result preset true and cleared by the three flags, then `if (local_2)` 522 (1904 bytes); the rejection as
+// an early `return false;` ahead of the unchanged body and result 508 (1904 bytes, aligned 95, frame 0x54, 0x25d740
+// expanded). Retail's shape is that early return: the site is then one test warmer and our link expands 0x25d740 there.
 // prop view through the existing prop_node_view wrapper 382 (same code); the computed entry result with that
 // wrapper 508 (1921 bytes, frame 0x54: 0x25d740 still expands under the computed result); the result preset
 // true with the false arm last 397 (the true store hoists above the entry tests); `return local_2 != false;`

@@ -748,6 +748,11 @@ void function_3dd10(long object_index, bool force);
 // fields 97; native tint block, position and variant fields 97; complete native tint object with shared datum
 // lookup 97. All eight previews retain 1034 bytes and the same initial register mismatch. The native tag-
 // index form adds spill differences. Opening executable source restored.
+// Round 127 (m3 lane 10, fast with 0x131c20's file listed): the found block as a call to the existing 0x131c20
+// (result, lower, upper, 1, blend) stays a call, 398 (838 bytes); with `inline` on 0x131c20's definition still a call
+// 404 (0xd1a30 149, 0x131d60 52, 0xc0c80 319 lost); with a forceinline declaration of it in this file still a call 398;
+// the choices read through an inline element accessor with a signed `<` first scan 638 (unrolled, 1309 bytes); the
+// three clamps through a by-reference pin helper 197.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

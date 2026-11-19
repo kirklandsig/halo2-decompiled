@@ -79,6 +79,11 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // a near block); wrapping the whole body in `if (datum)` compiles to the same code, so the null test stays as it is,
 // and the five string buffers' homes and the child and layout homes still differ.
 // score 316 (was 316): Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// Round 127 (m3 lane 10, fast): `inline` on 0x230134's definition (to change what callers assume it keeps) expands it
+// into its callers: 1211 here (2789 bytes) and nine matched callers lost, restored at once; the invitation count declared
+// after the bools 316 and the request at function scope 316 (same code each); display_name declared ahead of the child
+// lookups 341; the buffer loader taking the string id first, at all 32 loads, 316 (same code). Retail sets the buffer
+// (`lea esi`) before the id in each arm after the screen lookup, so the lea is not tail-merged there; ours merges it.
 // Round 199 (m3 lane 5, fast; aligned 49): the string-buffer record given a constructor clearing its first word in place of
 // the explicit display_name/message/suffix clears 316 (same code); with the title as the same record 316 (same code); without
 // the layout's explicit flags clear 316 (same code); the final player/layout/values in their own block 316 (same code);
