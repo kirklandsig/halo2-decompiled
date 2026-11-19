@@ -1277,6 +1277,10 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // indexed by the zero count 195, the pointer step before the count 216 (728 B); the current form with the destination
 // indexed by the zero count 9 (same code). Retail places the destination's lea in the loop preheader after the mask
 // store; every form that defines it inside the branch flips the colouring.
+// M3 lane 16 r137 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): `[count++]` with the source as
+// `&current->players[i].user_id` 40; `[count++]` with a player pointer named at the top of the loop body (before the
+// mask test) 40; the indexed copy with that player pointer 195; `long count = 0;` declared between `current` and
+// `joining` 11; the flag parameter read once through its address 9 (same code).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

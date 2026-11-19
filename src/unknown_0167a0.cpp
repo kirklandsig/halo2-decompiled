@@ -325,6 +325,14 @@ PRIVATE inline byte const *material_parameters(long tag)
 // through it, 5 (+0x1a7, the direct form's code); a named `entry_offset = first * 10` shared by both blocks 5 (+0x19e), with
 // the direct store 5 (+0x1a7); the restore block's definition looked up through the just-published parameters field and the
 // tables published straight from the definition 5 (+0x19e), with the direct store 5 (+0x1a7) (all the same code).
+// M3 lane 1 r121 (fast with the file's 30 functions; 0x1b2c0 stays at its baseline 2): the restore block's tables re-reads
+// for the chain and pass bases through a dword view of the field (`(byte *)*(dword *)(state + 0x10)`), on the reference
+// form 5 (+0x19e) and on the direct entry store 5 (+0x1a7) (both the same code as their bases); on the direct store the
+// entry word read from a fresh `tables` lookup instead of the stored field 289 (978 bytes); the entry computed into the
+// `entry` local, its word read, then stored 184 (976 bytes); the direct store and its read back through `((byte **)state)[5]`
+// 5 (+0x1a7). Reading (direct form, re-measured 5): the field reload is already retail's there; `second` reloads into ESI
+// as soon as the entry lea frees it, where retail (and the reference form) load it after the two table loads, as if the
+// entry store sat on the chain's critical path in retail but not in our direct form.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

@@ -2090,6 +2090,9 @@ bool function_17afd0(long effect_index, long value);
 // the declaration order does not decide who gets BL). In all six NONE takes EBX from the loop top, so the availability
 // (set before the query) finds EBX taken and spills, the owner goes to EDI and same_view is cached in BL after NONE's last
 // use; only the early true default keeps EBX free of NONE until the availability claims it.
+// M3 lane 7 r180 (fast with 0x174420 and 0x1751d0; control 12; P = the plain `owner != NONE && g == owner && available`
+// conjunction, re-measured 138 at 510 B): the owner typed dword on P 138, on this body 12 (same code), on P NONE-defaulted
+// 138 (508 B); a redundant `if (index != NONE)` guard around the walk 12 on this body, 138 on P (same code each).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

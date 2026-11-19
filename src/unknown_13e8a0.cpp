@@ -710,6 +710,10 @@ struct s_text_line_measurement
 // Conditional overflow count 80; separate wrap first 77 or accepted glyph first 77;
 // conditional width 77, count 77, or both 77; wrap before the separate width or count
 // update 77/77. NOT kept: the ties still lack the independent advance register and early width load.
+// M3 lane 6 r194 (fast with 0x13f0e0, MATCH in each; control 77): the break-point block (`if (iterator->can_break)`)
+// placed ahead of the kerning call, the offset and the advance 85; between the kerning and the offset 111; between the
+// offset and the advance 111; the metrics in offset, kerning, advance order ahead of the break block 82; offset, advance,
+// kerning 133 (393 B). Retail's early width load does not come from the width's first use moving up.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

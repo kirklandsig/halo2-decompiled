@@ -237,6 +237,16 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // cursor and selected suffix 39; shared suffix source 39, final append's result 73.
 // NOT kept: the grouping form requires a match. At 39, ECX carries the ordinal in the
 // search, then EBX carries its scaled offset through the appends.
+// Remaining count with a separate ordinal 80, with indexed clear 78, with
+// a selected entry 95, and with both 69. Wide result with direct/indexed
+// clear 67/84. Shared entry lookup 131. Clamped signed range 74.
+// The countdown and clamped range can reserve 0x28 but the added slot
+// still does not carry the entry base across the string calls.
+// Indexed/cached library terminator 68/74, whole conversion buffer clear with indexed/cached store 94/95,
+// wide destination and indexed/cached library terminator 68/74, library clear for both areas with
+// indexed/cached terminator 79/92. With the indexed clear, form the destination before conversion 67
+// or publish the result before the clear 80. NOT kept: the closest 208-byte forms still use frame 0x24
+// and keep the list base in a register instead of reloading it after concatenation.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

@@ -4527,6 +4527,10 @@ bool __stdcall function_2b278e(long controller_index)
 // The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
 // Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
 // native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
+// Shared unsigned/short dialog mask 208/208, with the first or both virtual
+// queries 210/210. Conditional dialog calls with Boolean/existing membership
+// 199/54. Early confirmation with direct/short masks 201/202. The controller
+// reference is still absent after the membership query.
 // The incoming controller reference and the two post-membership index reloads still differ.
 // Dispatch-scope controller index for the initial queries, then with name entry, message permission, both dialog masks, name and permission, name and masks, or all three groups each score 54. All uses with Boolean membership score 199.
 // Callback slot bound before identity, before membership with a fresh index, after
@@ -4534,6 +4538,10 @@ bool __stdcall function_2b278e(long controller_index)
 // Early identity rejection with the slot and bool, then bool at the other three boundaries:
 // 199/199/199/199. NOT kept: none recovers the two post-membership reads through ESI.
 // The bool forms also shrink case 3 while retaining the initial index in ESI.
+// Named identity-query result 54, index assigned at the identity call 54, Boolean membership with
+// warning assigned on the eligible path 199 or cleared for the excluded kind 192, signed warning result 199,
+// conditional dialog invocation 199, function-scope identity 199, inherited dialog receiver 199.
+// The original controller reference and both index reloads still differ.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5809,6 +5817,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // guards 392 or selections 396, roster actions under other-user gate 349 or by
 // player status 402, paired modification actions under rank gate 360 or
 // regular-player gate 365. NOT kept: title output byte remains displaced.
+// Outer title-output scope 89; query outputs before list reset 89; title, player and friend
+// output-to-scalar transfers 89/89/89; roster transfers at first predicate 89; regular contact
+// before pending queries 384; regular-friend test at invitation 400. NOT kept: the first six
+// forms retain the displaced title-state byte and the invitation forms change the branch layout.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
