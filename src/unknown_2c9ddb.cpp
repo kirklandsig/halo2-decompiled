@@ -364,6 +364,26 @@ extern long g_55c154;
 // `saved` and the storage address follow it there and `this` is left in ESI or EDI with a spill round each copy, which
 // also costs the biased frame; retail hoists neither constant because `this` holds EBX from the first instruction, as
 // this one-call body does.
+// M3 lane 7 r189 (fast with 0x13fac0/0x212bc0/0x238c69/0x238c21/0x2ca244/0x2ba9f4, all MATCH in every trial; control 61,
+// nothing kept). What fixes each remaining piece is now known but for one register fight. (1) Retail's argument order
+// for 0x238c69, controller first (definition, both declarations, three calls): alone 76 (574 B, re-measured), and on two load
+// arms it gives retail's `push 0x20` ahead of the selected arm's copy and the whole controller read in the shared call tail,
+// 167 (590 B). (2) The name copy stays out of line as retail's ESI/ECX/EDI call when its source is not a foldable local
+// address: the second half as one inlined helper taking the caller's variant by pointer 179 (580 B), the same helper with its
+// own variant and name locals 174 (595 B, copy expanded again); two arms with the copy made inside the name argument of the
+// selected arm's request (an inlined helper returning the name) 174 (same code as plain two arms: the early `push 0x20` is
+// push scheduling, as the first half's `push 0x2baae7` ahead of its copy, not an argument-order effect). (3) Two arms +
+// controller-first order + a count named once for the copy and the request 183 (575 B): every row is then retail's but for
+// `this` (ours ESI and spilled, retail EBX), `saved` (ours EBX, retail EDI) and the g_54e4a0 address held in EBX where retail
+// uses immediates. Diagnostics on plain two arms: without the selected arm's variant copy `this` takes EBX, entry ESI and
+// saved EDI as retail (87, 580 B, unbiased frame); without the default arm's copy `this` takes ESI (117): the hoisted
+// g_54e4a0 address outranks `this` for EBX once it has a sixth use (first half 1, default arm 3, selected arm 2), and retail
+// hoists it nowhere, not even into EAX between the default arm's copy and the builder's push. On form (3): the game type
+// read into a local ahead of the default arm's copy 183 (569 B: `this` ESI unspilled, frame 0x250, address still in EBX);
+// 0x1489b5's parameters the other way round (retail loads its EAX argument before it pushes the address) 61 on main's body
+// and 167 on two arms with the 0x238c69 order (the same code each, not kept); the permuter on form (3) (600 s, annealed,
+// one job) 175 -> 171 only through a volatile store and swapped 0x148aa3 arguments (not applied). Next: a natural form that
+// takes one use of the g_54e4a0 address away or adds one `this` use in the second half; then forms (1) to (3) apply.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
