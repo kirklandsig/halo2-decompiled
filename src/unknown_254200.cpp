@@ -588,6 +588,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // two-coordinate wrapper 263 (first difference +0x83: the texture-stage block inlines differently); every depth
 // constant through a forceinline accessor returning it 340 (2197 bytes, same cause); the two lookup helpers plain
 // `inline` in place of forceinline 2. The two reloads after the second texture reservation stay swapped.
+// Round 264 (m3 lane 3, fast with 0x254490 4 and 0x254200 matched; control 2): the last quad's four edges named
+// (left/right/top/bottom, each used twice, no point pointers) 164 (2179 bytes: the sums are shared); the two bitmap
+// lookups moved inside the flag test 152 (first +0x0); the alpha as `long` 133; the texture tests as `!= NULL` 2 (same
+// code); the alpha product named before the byte conversion 2 (same code); the colour's three components read into
+// named `real const` locals ahead of 0x1cf50 377. The reload pair after the second texture reservation stays swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

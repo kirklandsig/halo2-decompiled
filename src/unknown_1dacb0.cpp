@@ -1907,6 +1907,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // direct result and default written by fields 990;
 // default-first result branches with the success test in the named branch 995.
 // NOT kept: All scores rise. The forms at retail length change the frame, and the conditional loop still misplaces the result.
+// Round 264 (m3 lane 3, fast with 0x1db170, 0x1dc790, 0x1dc8c0 (both matched throughout), 0x2963f0, 0x1dd560, 0x1236f0;
+// control 828, aligned 580, register/offset-masked 74): 0, 2, 4 or 6 dead initialised long locals 828 each (same code: no
+// symbol-count window); the second request keyed by `iterator.graph` in place of `this` 962 (2791 bytes); the per-pass
+// candidate dropped (`if (named) result = named->animation_id;`, the result being NONE whenever the lookup runs) 1020
+// (2791 bytes); the loop as `while ((entry = iterate(...)) != NULL)` with that direct result and a found break 1015 (2839
+// bytes); the iterator set up by an aggregate initializer 826 (aligned 581, masked 76; two points, not kept). Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -1075,6 +1075,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // offsets 152. Offset before normal copy 444, with shared dot 446,
 // separate classification stores 747. NOT kept: copied-normal-first
 // retains the extent but exchanges the first coefficient registers.
+// Round 264 (m3 lane 3, fast with 0x1648d0 and 0x320b0, both matched each time; control 115, aligned 73, masked 30): plane
+// 0's d accumulated in the plane (`d = j term; d += k term; d += i term`) 287 (1867 bytes), the same with each term
+// normal-first 287, accumulated k, j, i 287; accumulated j, k, i in a local `distance` then stored 251 (1867 bytes, aligned
+// 69, masked 29: the head unchanged, the tail's projection rows differ); the j and k terms named as `distance` and the i
+// term added at the store 172 (first +0xaf). The camera i coefficient still loads after the normal copy. Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
