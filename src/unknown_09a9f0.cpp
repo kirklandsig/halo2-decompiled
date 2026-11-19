@@ -1340,6 +1340,11 @@ bool c_projectile_type::v8(long a, long b)
 // group power through a pointer declared after the flags or inside the 0x800 block; a `real const *` to the group's power
 // in place of the entry pointer; `b` throughout or the flags local. Every form without the state-power and group-power
 // pointers 12 (same code); the group-power pointer 15; the state-power pointer 16; both 19. The object/flags pair never moved.
+// M3 lane 13 r113 (fast with 0xa5e70, matched each time; mask control 12: the group data then reuses ESI after the flags,
+// retail after the object), all with the full-width mask: a `long` group offset local `(index & 0xffff) * 12` added to
+// the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the
+// matched 0xa1f70 offset form with that group offset 12, on it the call's mask from `b` and the flags local declared
+// after the call 12; the 0x400 arm's result bit set before its store 14. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

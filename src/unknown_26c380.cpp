@@ -696,6 +696,16 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 386/386/386. Separate accepted edge with while or for 389/389. Separate scan
 // and prior-crossing edges with while, for, or early rejection 382/382/382.
 // NOT kept: the return and first-edge homes remain exchanged, and the bodies shrink.
+// M3 lane 5 r200 (fast with 0x26c380 and 0x270600, both MATCH; control 244): `success = false;` before each cutoff's
+// `next_sector_index = NONE; break;` 229 at retail's 1605 B (not kept: success is already false there, a redundant store; but
+// retail stores it too: `mov byte ptr [esp + 0xe], 0` at 0x26cb08 is reached only from the two cutoffs, so retail's cutoff
+// source assigns success; ours emits the store but returns to the loop tests rather than jumping into the tail); each cutoff
+// writing the clear-result tail with `success = false; goto done;` 696 (1302 B); the up cross through cross3f_staged 244 (same
+// code); a `stop` flag tested after the edge loop 374 (1613 B); the redundant store with the post-loop test as `!edge` 437.
+// Trace success and first edge or either order 305/305. Per-sector first edge and crossing or
+// either order 305/305. Trace success and crossing or either order 305/305. All three with
+// success or first edge first 363/363. NOT kept: the paired records move the result byte outside
+// its retail slot. Grouping all three shrinks the frame. The opening body is restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

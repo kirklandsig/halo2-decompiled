@@ -1218,6 +1218,27 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // (up, old) * (new, up) 112 (1393 B), on the single-store exit 112, with the preset flag too 109 (1391 B); (new, up) *
 // (old, up) with the staged old cross, single-store exit and preset flag 109, on this body 112; the staged old cross alone
 // 112 (1389 B); staged old cross, (up, old) * (new, up) and the preset flag 109. Body unchanged.
+// Round 187 (m3 lane 8, fast with 0x1ecf50, MATCH each time; control 114): a dead-local count scan extended past round
+// 178's 0-7 (diagnostic): 8-30 dead locals give 112 (8), 116, 139, 139, 150, 163, 139 (1393 B), 145 (1397 B), 112 (16), 194,
+// 150, 139, 150, 166, 140, 145, 114 (24), 139 (26), 150 (28), 140 (30): period 8, never below 112, and the first difference
+// stays at the rotation's first product in every state, so the rotation is not a symbol-count state here. Forms: the
+// rotated copy from the `forward` parameter 194 (1395 B); the snap exit copying the stored goal (`state->facing_goal`)
+// 172 (1399 B); the side dots over the `up` parameter 201 (1369 B); the alignment dot and the old cross over the
+// `forward` parameter 257 (1395 B); the velocity scale read from `speed_scale` 366 (1365 B).
+// M3 lane 15 r102 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114): the velocity rows as `scale * movement.x`
+// 114 (same code); the rotation angle computed before the forward copy 125 (1388 B); the angle product written into both
+// trig calls 144 (1382 B: every rotation product turns load-first); the snap exit with `flags |= 32` ahead of the goal
+// copy 107 (1384 B: the gain is the shorter `or [mem], 0x20`, not retail's register update; an order picked by score, not
+// kept); the goal copied through a named local first 140 (1382 B: the copy folds back to the interleaved form, but the
+// extra local turns the rotation). Retail's exits load all three dwords (ESI/EDX/EAX) and the flags (EBX) before storing,
+// in both exits; no spelling here gives the three-register copy.
+// M3 lane 16 r140 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114). Dead-local scans (diagnostic, removed),
+// K unused `long` locals at the top, K = 0..31: 114 140 150 150 139 163 166 144 | 112 116 139 139 150 163 139 145 | 112 194 150
+// 139 150 166 140 145 | 114 114 139 150 150 166 140 145 (period 8; the first difference stays at +0x1f3 for every K but 17);
+// with the rotation through include/axis_rotation.h's helper (111 at K = 0, as listed), K = 1..15: 151 150 150 150 163 166
+// 147 112 113 150 139 150 163 139 145. No symbol count gives retail's copy-the-vector, axis-from-memory products, so they are
+// not a numbering state here. The axis passed as the `up` parameter instead of the state's copy: rotate_direction 277
+// (1396 B), the header helper 292 (1398 B). Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

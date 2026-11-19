@@ -612,6 +612,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Shared 2-D normalization of the XY prefix with depth scaling and common length, early zero,
 // separate length arms, or length before depth: 423/441/441/423. With the first magnitude returned:
 // 420/429/430/420. NOT kept: root and yaw homes still differ and the shared normalizer raises 0x29b990 to 31.
+// M3 lane 6 r195 (fast with 0x29b990, MATCH each time; control 176): the yaw through a `real &` binding for its computation
+// and scale 272 (1726 B); the pitch through `real &pitch = local_9; pitch = local_11; pitch -= local_12;` 290 (1723 B); the
+// rotated vector through a `vector3f &` binding for the copy and the first rotation 181; the normalizer's squared length named
+// before the root 176, on the single-exit normalizer 171 (both the same code as without the name).
 // M3 lane 10 r123 (one-object /GL harness with src/unknown_11cc90.cpp and src/character_tag_accessors.cpp linked, byte-exact
 // against the fast build; aligned counts against retail in brackets, base [229]): renames do not move the 4-byte homes here:
 // local_8 as two names on either side of the others [229], the normaliser's root local as two such names [229], local_9 as
@@ -623,6 +627,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // harness homes onto retail's: retail shares the root locals' home with the yaw (+0xc) and keeps the first pitch component
 // alone at +0x10, then the first rotation's sine at +0x10 and its cosine in the first stack argument's home, and the final
 // pitch in the scale's home; ours shares the roots with the first pitch and the final pitch (+0x10).
+// Unity remains in XMM5 and the root still shares the pitch slot. Separate desired/bounded/difference
+// angle pairs 269/269/244. Desired plus bounded, desired plus difference, bounded plus difference,
+// or all three 269/265/265/265. One lower bound for both angular clamps 284.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

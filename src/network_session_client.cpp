@@ -877,6 +877,15 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // argument) all fold; the variant accessor after the summary, before the count or between the loops gives ESI. So
 // retail's unfolded read after its own copy registers needs one more scratch temporary between the copy loop and the
 // mask test than any of these forms creates.
+// Round 200 (m3 lane 5, fast with both callers; control 22): the 0x49c8 value named before the player loop on this body
+// 130 (493 bytes); a named player pointer for the test and the call 25 (the loop step moves to ECX); the copy counters
+// declared count first 22, a const reference to the copy source 22, the variant at the top of the state block 22 (all
+// the same code).
+// Round 202 (m3 lane 5, fast with 0x6e500, 0x72700, 0x5b080, 0x6d380, 0x5c5c0 and 0x6e910; control 22): the inlined
+// summary getter 0x5b080 with its state read once into a local 22, with its two tests merged into one `&&` 22 (both the
+// same code, the getter still matching); the tail's live and 0x5dd0 tests through a forceinline copy of the existing
+// 0x5dd0 getter (0x63e00's form) 127 (451 bytes: the limit helper's live test merges; both callers lost); the two
+// buffer clears swapped 26; the player buffer declared and cleared first 26.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1287,6 +1296,10 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // call's session read through the owner instead of `joining` 210 (715 B); the session close after the identity clear
 // 201; no `current` local before the tail (the branch reading the session through the owner) 213; `current` declared
 // in the branch and again for the tail 213.
+// M3 lane 16 r139 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): a single-exit `bool result` (assigned true on the
+// call's success, the live test and the store in the else arm) 9 (same code); with it the indexed copy 195, the
+// `[count++]` copy 40, the destination declared in the branch 195; identities without the align(8) attribute 9 (same
+// code: the marker still self-aligns the frame).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
