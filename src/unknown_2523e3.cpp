@@ -107,6 +107,11 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // without the declaration move 246. Diagnostic, restored: with an array-construction probe appended to a speed-built file
 // that links ahead of the size-built supplier, the recipe MATCHES and without the declaration move scores 7 (the controller's
 // zero store then sits ahead of the iterator call), so both parts are needed. Still BLOCKED-BY 0x20670 (build-level).
+// Coordinator trial (Fable, 2026-11-19, full checks): linking unknown_0815e0.obj and then team_balancing.obj first (both
+// speed-built, both use the iterator; either alone loses 0x54590) gives retail's iterator call, and with the accessor above
+// 0x252554 matches (also 0x41640, 0 lost). Nine in-place forms of the two slot reads under that link order do not match.
+// HELD: the accessor is a new steering helper (one caller, a struct copied by value), which is not kept even with a
+// match, so the link-order change is not kept either. Needed: a form without a helper that loads the slot flags twice.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {
