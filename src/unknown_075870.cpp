@@ -757,6 +757,12 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // Native state or connection-index local 170; conditional connection pointer 293; two separately named snapshots 134.
 // Unqualified argument with owner cursors 176 (caller losses); entry connection initialization 137;
 // one observer snapshot with a registration reload and indexed owners 134 (retail length, plain confirmed).
+// Round 140 (m3 lane 9, fast with 0x78880, 0x76a40, 0x75da0, 0x785d0): with the volatile dropped (177) ours homes the
+// index in EDI and observer in EBX, retail homes observer in EDI (split by the owner cursor and the memset, then re-read
+// from its stack home) and the index in EBX. Volatile dropped and observer read once through `s_network_observer *const
+// *` to itself 245 (833 B, both arguments on the stack, callers lost); the same with the parameters (index, observer)
+// everywhere 245; the two owner-notify loops as one two-caller inline helper 333 (705 B), the same without the volatile
+// 359 (701 B); volatile dropped with one function-scope loop counter 177 (callers lost).
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {
@@ -2322,7 +2328,7 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
     return observer_round(local_0);
 }
 
-// score 2 (was 89; the text up to the round 135 paragraph describes the older 205 layout): no behaviour difference found. Still differs: (1) the stack
+// score 2 (was 2; the text up to the round 135 paragraph describes the older 205 layout): no behaviour difference found. Still differs: (1) the stack
 // slots of rate/j and count/float temp are swapped (retail rate+j at esp+0xc,
 // count at esp+0x10; moving rate's or count's declaration did not change it);
 // (2) retail rereads the refresh word g_485ac0 (movsx) in each of the three
@@ -2349,6 +2355,15 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
 // Branch additions 211; chosen base before adjustment 212; increment and base locals 146; inverted selector 142;
 // default prior budget 285; clear-flag base with adjustment 212; shared configuration view 211.
 // NOT kept: the reduced variants do not recover the full-image frame slots and flag register.
+// Round 140 (m3 lane 9, plain with 0x78090, 0x78190, 0x75da0): retail's 0x140 load between `test al, al` and `je` reads
+// as a head merge, both arms of a two-arm sum starting with `mov eax, [ecx+0x140]` (the 4e28 arm then loads EDX and
+// falls into the shared add). The two-arm forms give the flag AL, but the 4e28 arm always loads 4e28 into EAX and 0x140
+// into EDX, so nothing merges: `flag ? 4e28 + c140 : rate + c140` 245, c140 written first in both arms 245, if/else
+// arms each `budget = c140; budget += x;` 245, a `long const *` to the 0x140 field used in both arms 246; the ternary
+// alone then `budget += c140` 251. Compile-only (the stream matches the real build here): the arm's operand order
+// follows the base, not the spelling (observer fields and globals load before configuration fields; two configuration
+// fields, a diagnostic, give retail's exact merged shape); a pointer or reference to 4e28, a `this` member body, a
+// configuration local and an earlier mention of c140 all leave it.
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {

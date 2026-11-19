@@ -308,11 +308,11 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // MiniMax B (11-18, round 2): no new form, no lower score (390): the frame is still 0x208 against retail's 0x204 and
 // the token preload still differs; the permuter over the body (one job, --fast, 300 s) tried 24 forms and its best is
 // 384 differing instructions against the 385 baseline - one instruction, which the eight-point gate leaves out - and
 // with an ordinary result the four name and team copy tails still merge (691 at 1170 bytes), so the body stands.
-// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
@@ -774,6 +774,14 @@ static inline bool teams_enabled_19e1c0()
 // team names, local scores and timers, or all tokens. Existing count storage scores
 // 453/443/489/579. Ordinary count scores 695/684/689/688. NOT kept: the
 // ordinary count gives frame 0x204 but still merges the name producers.
+// Round 140 (m3 lane 9, fast with 0x19e0f0/0x19ea60/0x19eae0, matched each time; control 390): retail's frame cell past
+// the buffer is the teams-enabled predicate byte (ours spills it too, one cell higher, under the volatile result). On
+// the plain result the fourth callee-saved register goes to `token` (retail: `remaining`), and the compile-only
+// harness reproduces that exactly; 32 combinations of five spellings (teams read at each use, `best_score <=
+// function_1587f0(team)`, a `long` team, the first clamp as `remaining < result`, the switch-side failure as `result =
+// remaining`) never move it. Real: volatile result with the teams read at each use and the reversed compare 388 (1437
+// B); the compare with a `long` team 421; teams at use, compare, `long` team and the single switch-side exit 461; teams
+// at use with the first clamp `remaining < result` 466; the plain result with all five 652 (1211 B, tails merged).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
