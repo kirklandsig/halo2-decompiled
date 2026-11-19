@@ -59,6 +59,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
+// MiniMax C (11-19): no new form, no lower score (489): the position and the sum still take each other's homes (the
+// position at +0x8c where retail has +0x80); neither declaring the position ahead of the sum nor hoisting the sum's
+// declaration to the top of the body moves that slot, and the normaliser still squares k, j, i where retail squares i, k, j.
 // score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 8 r189 (fast; control 489): local_8 renamed `position` 489, local_14 renamed `destination` 489, both 489
 // (same code: names do not order these 12-byte homes); local_9 filled through vector3f_assign 665 (3499 B), through a

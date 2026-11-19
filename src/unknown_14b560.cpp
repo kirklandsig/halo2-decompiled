@@ -784,6 +784,9 @@ bool function_e4050(long object_index);
 // score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
 // walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
 // place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
+// MiniMax C (11-19): no new form, no lower score (43): every difference is the one carrier swap (the datum pointer in
+// EBX for EDI, the unit index in EDI for EBX); the root walk's shape is what decides it and that walk is the out-of-line
+// 0xbaf80 in another file, which this lane may not edit.
 // MiniMax H (11-18): no new form, no lower score (43): the player datum is still computed in EBX where retail has
 // EDI and the unit index in EDI where retail has EBX; writing retail's walk (the root NONE, the entry test before
 // the loop, the step object recomputed in the loop) makes the compiler peel the first iteration (109), and the same
@@ -2577,6 +2580,9 @@ static __forceinline long player_round_ticks(real value)
     return result;
 }
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
+// MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
+// still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
+// files this lane may not edit, so the body stands.
 // MiniMax A (11-19): no new form, no lower score (701): retail still calls 0x151b80 where this build inlines it, the frame is still 0x4c against retail's 0x74, and the loop's index scratch is still in EBX where retail keeps it in ESI; the body is unchanged. BLOCKED-BY 0x151b80's inlining decision in src/unknown_1502e0.cpp.
 // MiniMax R run 92 (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and
 // this build still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees
@@ -3457,6 +3463,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // (the countdown becomes a memory decrement); the last unit through a `long const &` for its test and the 0x14e970 call
 // 103, the busy flag through a `bool const &` 103, loop 1's player pointer through a `s_player *const &` 103 (each the
 // same code); a second globals pointer taken at entry for the busy store and the final store 182 (606 B).
+// MiniMax C (11-19): no new form, no lower score (103): retail's loop 1 steps the pool itself, with the pool in EBX, the
+// index in EBP and no store of the iterator's data field before it, while ours keeps the shared iterator; writing that
+// step into the loop does not reach retail's shape either (the reduced image 214 against 193, the plain check 103).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

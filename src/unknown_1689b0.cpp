@@ -1555,6 +1555,9 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
+// either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
+// loop guard still differ.
 // score 551 (was 551; earlier 580): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
 // Earlier at 551 (was 580; a second score line, merged in round 211): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
 // score 551 (was 551): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.

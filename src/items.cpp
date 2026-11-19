@@ -588,6 +588,9 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// MiniMax C (11-19): no new form, no lower score (190): retail keeps the spin scale in the x87 stack across the branch
+// merge where this build gives it a stack home, and the plane distance written as one expression scores 203 against the
+// four accumulating statements; the body stands.
 // MiniMax E (11-05): no new form, no lower score; the four-term plane-distance accumulator written as one
 // expression gives 211, the same sum without the redundant parentheses 205 and the contact point written as
 // three products followed by three adds 207 - all worse. Reverted.
