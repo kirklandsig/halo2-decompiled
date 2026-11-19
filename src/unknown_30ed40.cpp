@@ -50,7 +50,7 @@ inline bool pair_less_30ed40(pair_30ed40 const *a, pair_30ed40 const *b)
 	{
 		return true;
 	}
-	if (a->first->id == b->first->id)
+	if (a->first->id == id)
 	{
 		return a->second->id < b->second->id;
 	}
@@ -74,16 +74,19 @@ inline long size_30ed40(pairs_30ed40 const &pairs)
 // the pairs of `destination` and `source` merged in order into
 // `destination`; a pair both hold is kept once, and its agent in `source`
 // told through its slots
-// score 58 (was 151): the ordering helper names the first body's id (the
-// compiler then keeps it in ebx, which leaves the read cursors only ebp, so
-// the source pointer and the cursors are split at their first uses as in
-// retail), the read cursor and the shared count start before the destination
-// is resized, the copy cursor and the write index after it, and the second
-// tail loop runs on its own index (the copy cursor then stays in memory in
-// the merge loop). The merge loop, the first loop, both resizes and the first
-// tail loop are retail's. Left: retail stores the three zeros after the
+// score 69 (was 151): the ordering helper names the first body's id and uses
+// it for both tests (the compiler then keeps it in ebx, which leaves the read
+// cursor only ebp, so the source pointer and the cursors are split at their
+// first uses as in retail), the read cursor and the shared count start before
+// the destination is resized, the copy cursor and the write index after it,
+// and the second tail loop runs on its own index (the copy cursor then stays
+// in memory in the merge loop). Left: retail stores the three zeros after the
 // resize from ebp (ours stores the shared count before it and the others from
 // ecx), and in the second tail loop retail loads the copy cursor twice.
+// Tried: the id read once, with the equality test re-reading both ids
+// (`a->first->id == b->first->id`): 58, and then the first loop, both resizes,
+// the merge loop and the first tail loop are retail's; not kept, the local
+// would be read only once.
 // Before, 151 (was 170): every array size is read through a const-reference
 // accessor (as through a size getter), which gives retail's register compares
 // at the loop bounds and the copy's count in edx; the ordering helper reads
