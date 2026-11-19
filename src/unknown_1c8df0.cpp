@@ -318,6 +318,15 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // interleaved plus/minus per axis on this body 68; the side vector from named dx/dy differences 260 (1183 bytes). Retail's
 // 0x1b0400 evaluates the arg_7 compare while EBX still holds the actor and moves arg_0 into EBX after it, which needs
 // arg_0 declared before arg_7's group, so the folding orders (arg_4 after arg_8) still lose that caller.
+// M3 lane 11 r127 (fast with 0x1e55d0; control 20): the quarter written as a divide by 4.0f in all six rows 20; the x row
+// as `local_9.x = arg_1->x;` then `+=` the product 20; the spacing as a one-element const array 20 (all three the same
+// code); the centre copied by value into a local point for the rows 329 (1191 bytes, the copy goes through the stack);
+// the three scaled side components named before the rows 35. Compile-only position map (diagnostic, the other parameters
+// in the current order): the mode-1 x row folds with the centre parameter at index 0, 1, 2 or 6..9 and loads at 3, 4, 5
+// (now 4), whatever parameters stand around it (arg_2/arg_3 swapped, arg_0 swapped with arg_5 or arg_9, arg_6 moved
+// first: all load); the mode-2 x row likewise folds with the target parameter at index 0..2 or 7..9. The y row folds at
+// every index. No body form reaches the row: it follows the centre parameter's index, and 0x1b0400's retail call
+// (compare on the actor in EBX before `mov ebx, eax`) needs the target and arg_0 ahead of arg_7.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

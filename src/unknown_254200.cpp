@@ -622,6 +622,14 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // dropped (function_14390 is a call either way) 2 (same code; kept, one pragma pair fewer); the closing `inline_depth(255)`
 // dropped 2, as `inline_depth()` 2 (same code); the colour pointer declared `const` 2. In retail every call after the first
 // quad's second vertex stays out of line except the border-colour stage call, the shape of an inline budget spent there.
+// M3 lane 11 r127 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant of the first quad written
+// `(real)0xffffff` 2; through a file-scope `static real const` 2 (both the same code); the depth-0 inline start moved one
+// call earlier (before the second vertex) 356 (2190 bytes). Diagnostics, restored: an unused local holding the lower
+// coordinate ahead of the colour fetch or of the first texture call 2/2 (same code: creating the lower value's common
+// subexpression first does not reorder the pair); the first vertex's two depth constants made different 25 (the
+// constant is then no longer carried into the third vertex, so the pair disappears). Retail's skip branch lands after
+// both reloads (0x254d0c), so the pair is call-path compensation code; other functions with an adjacent reload swap
+// (0x3a5c0, 0x185be0, 0x217c40, 0x4e260) show retail in both register orders, so it is not a fixed register order.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
