@@ -2964,6 +2964,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // counted in place of shown_count 288 (917 bytes); with it the four widget indices declared once at function
 // scope 84 (gain three, not kept; the slots stay one six-cycle off), plus the chained default arm 91.
 // Re-measured: the chained default arm alone 92.
+// MiniMax G (11-18): no new form, no lower score (87): the frame agrees at 0x788; the first difference is the retained
+// count's home (-8 against retail's -0xc) and the first loop's player and element-address homes are permuted, so every
+// later row pairs with the wrong row, and the reload of the player after the voice query still needs a store through a
+// pointer somewhere in the 0x53b40 chain, whose source lives in another file. Moving the homes by reordering the
+// declarations is a frame-shaping form the rules bar.
 // b10B (11-17) walk against retail, fast build on r841: the logic is retail's statement by statement, no behaviour
 // difference: 0x250451-0x250458 list init, 0x25048d value7e into EDI for 0x2b01a2, 0x2504a2 the 16-byte copy to +0x48,
 // 0x2504c4-0x2504f5 team test (jl/jge senses, NONE arm), 0x25050a-0x250518 four-slot search, 0x25054e switch dispatch

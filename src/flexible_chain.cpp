@@ -777,6 +777,11 @@ void __stdcall function_1160c0(real dt)
 // (1373 B); the rows written `position + offset` 144 (same code); the angle call and the rotation in their own `{}` block
 // 144 (same code); the scale written into the vector3f_add_scaled call 144 (same code); the rest-offset copy after the angle
 // call 180 (1375 B).
+// Conditional segment pointers from one base 291; ordinal minus terminal test 285;
+// terminal pointer relative to block end 304; segment/axis/offset names 144;
+// recurring point and rotation names 144; shared in-place displacement add 214;
+// conditional default axis pointer 304; default axis pointer assigned after normalization 294.
+// The segment still uses EDI/ECX and +0x20 against EDX and +0x14.
 // The widened addressing ordinal leaves the segment spill at +0x20 and the low rotation slots differ.
 // Shared node ordinal with direct count, captured count, terminal decrement, captured count plus pointer advance, and decrement plus advance 144/146/147/146/147.
 // Using the widened ordinal at the anchor test as well, with direct count, captured count plus advance, and decrement plus advance 283/283/170.
@@ -784,6 +789,11 @@ void __stdcall function_1160c0(real dt)
 // terminal-node identity 306, both node identities 305. Position-derived ordinal for root 300, terminal test 307,
 // full segment selection 292, and root plus segment selection 295. NOT kept: the address-based tests regress and
 // change the loop comparison.
+// The segment still needs EDX and +0x14. Conditional attachment point by value/address/interior first
+// 304/304/304, segment reference with named ordinal 144, terminal-predicate subtraction 285,
+// conditional segment addresses against the interior bound 304, preceding-ordinal loop bound 294,
+// shared prediction add 204, predicted z after the node update 157.
+// NOT kept: the retail-length forms still raise the score and leave the segment and rotation homes different.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
