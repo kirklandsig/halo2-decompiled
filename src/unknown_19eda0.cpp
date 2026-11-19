@@ -677,7 +677,7 @@ void function_19f680(long tag, long group, long variant, long pass, void *contex
         real maximum_distance = inner_radius + spread;
         function_1bd50(0);
         function_1cdd0(0, 0);
-        function_4b2d0(tag, group, variant, ((byte *)context)[4], pass);
+        function_4b2d0(tag, group, ((byte *)context)[4], variant, pass);
         long material = tag == NONE ? *(long *)(g_485a80 + 0xd0) : tag;
         byte *reference;
         dword kind = *(dword *)&g_4e3b44[(short)material];

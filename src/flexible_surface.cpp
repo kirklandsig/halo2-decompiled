@@ -1178,7 +1178,7 @@ void __stdcall function_116b00(long tag_index, long unused, long group, long var
 	void *lighting = lighting_index == NONE ? NULL : g_509434->data + (lighting_index & 0xffff)*0x100 + 0x44;
 	function_1bd50(lighting);
 	function_1cdd0(0, 0);
-	function_4b2d0(tag_index, group, variant, ((byte *)context)[4], pass);
+	function_4b2d0(tag_index, group, ((byte *)context)[4], variant, pass);
 	long material_index = tag_index == NONE ? *(long *)(g_485a80 + 0xd0) : tag_index;
 	byte *reference;
 	dword kind = *(dword *)&g_4e3b44[(short)material_index];
