@@ -4018,6 +4018,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Left as before: retail copies the input to EAX and shifts it after the clear (ours shifts EBX in place before it),
 // and at both gain sites retail reloads the spilled inverse span into XMM3 before the 1.0f constant into XMM2. A
 // compile-only build of this file alone does not reproduce the shift (it lands after the clear there).
+// M3 lane 10 r130 (fast, control 9): 9-40 dead initialised locals after `small` 9 each (aligned 6; rounds 171 and 201
+// covered 1-8); the depth-bias write in its own skip test after the blending block at modes zero and one 9 (the tests thread
+// into one, same code); `input` typed byte with the shifted local 945 (4844 bytes), typed short 934; `low /= g_48565c;
+// high /= g_48565c;` in place of the explicit reciprocal 9 (same code: the compiler forms the reciprocal, pairs unchanged).
+// On the no-shifted-local form (939, shift retail's): 0-40 dead initialised locals after `small` 939 each (aligned 15).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
