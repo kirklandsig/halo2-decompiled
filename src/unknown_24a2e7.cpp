@@ -279,6 +279,14 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Entry base named early/late, ordinal early/late, display result early, formatted
 // destination late, and adjacent base/count ranked early/late all score 67.
 // NOT kept: lexical order leaves the frame at 0x24 and the derived buffer live.
+// M3 lane 12 r148 (fast with 0x24a64d/0x24a763/0x24a52b, all matched; main 67), on lane 10 r119's 39 form (re-measured 39:
+// it differs from retail only in that the found index's product i*0x248 is shared by the entry pointer and the terminator,
+// so EBX holds the product and i lives in ECX, where retail keeps i in EBX and multiplies again after the library calls):
+// a `use_suffix` flag set under the append test and tested after it 68 (211 B: threaded on the append path, product still
+// shared); the terminator's offset written size-first as a byte offset 39 (same code: the product is canonicalised); the
+// terminator indexed through `long const &found = i;` 39 (same code); the buffer named before the suffix conversion with the
+// suffix declared in the arm 44. Diagnostic (behaviour change, reverted): the append arm continuing the loop 59 (211 B).
+// Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

@@ -3046,6 +3046,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // bitmap_a and EDI to text_b and loads the screen into ECX, then EDI; ours keeps the screen in EBX for all five calls
 // and false in EDI). On the 81 form: the helper's default arm chained (`*text_a = *text_b = NONE; *bitmap_b = *bitmap_a =
 // NONE;`) 86 (925 bytes, aligned 48); the last loop on its own counter 81 (same code); both 86.
+// M3 lane 12 r148 (fast with 0x24fd74/0x2507c3/0x22f042/0x250155/0x22ee47, all MATCH each time; control 87): the slot
+// helper's default arm as copies through the outputs (`*text_b = NONE; *text_a = *text_b; *bitmap_a = NONE; *bitmap_b =
+// *bitmap_a;`) 92 (925 B); its two case arms storing the bitmaps before the texts 194 (944 B); the team byte read into a
+// `long` in the second loop 94, in the first loop 259 (919 B), in both 259 (919 B). Body unchanged.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

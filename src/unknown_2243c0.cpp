@@ -765,6 +765,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Word fallback lvalue with shader/pass/material lvalues singly or all 117/117/117/117;
 // all with masked fallback 152. NOT kept: The dword mask hoists the table, and the word
 // forms leave the EAX zero-extension and fused element loads.
+// M3 lane 12 r148 (fast with 0x2243c0/0x224d90/0x173ba0, all MATCH each time; main 117): lane 1 r59's reference chain
+// rebuilt on this main (the type-14 search through vertex_input_index) 8 at +0x9e, the same eight lines (pass definition
+// EDX where retail reuses EAX, material tag ECX for EDX, material definition EDX for EDI, the zero's `xor` after the
+// definition's +8 read where retail has it between the tag's `and` and `shl`). On the chain: the first cache zero between
+// the pass and material definitions 23; all four zeros ahead of the pass definition 60; all four between the two
+// definitions 13; the material definition named in a plain local before its +8 read 8 (same code); that definition bound
+// as `void const *const &` from the tag-data accessor 92 (552 B). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

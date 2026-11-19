@@ -1263,6 +1263,13 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // with 1 to 7 unused locals at the top 544/548/548/547/543/543/543 (diagnostic: not a symbol-count phase); declared at the
 // loop top instead of in their arm: the plane point 290, the centre 290, the sphere radius 290, the cone scale 290 (same
 // code each).
+// M3 lane 12 r148 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): in the projection
+// helper the rows computed forward, up, left 491 (2809 B) and left, forward, up 295 (2832 B); the sphere arm as a forced-inline
+// helper taking (shape, entry, i, bounds) 479 (2814 B); the cone arm as a forced-inline helper taking (frame, shape, entry,
+// bounds) 485 (2812 B); the two arms swapped with the kind test negated 630 (2810 B). Reading: the cone arm's projection rows
+// already sum in retail's order (forward (k, j), i; left (k, j), i; up (k, j), i); only the sphere arm's differ, and the
+// left normalize there is 0x30bf0's code inlined by the linker, which its noinline declaration in src/unknown_030290.cpp
+// (another lane's file this round) prevents: BLOCKED-BY 0x30bf0's noinline. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
