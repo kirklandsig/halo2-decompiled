@@ -1362,6 +1362,16 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax B (11-18): no new form, no lower score (83): retail's branch two is reproducible instruction for
+// instruction with an index tail fill (`for (long empty = index_count; empty < 16; empty++) indices[empty] =
+// NONE;`), which gives the guarded `rep stosd` and the reload of the count after it (107, 437 bytes), but the
+// allocation still differs: retail keeps the mode in EBX and the player count in its stack slot (`mov
+// [ebp-0x10], eax`), while ours copies the player count into a callee-saved register (EDI with the pointer
+// fill, EBX with the index fill) and pushes the mode to the stack. The copy exists because 0x199dc9 takes its
+// two out-parameters as `long` values, so the compiler cannot see that the address of player_count escapes;
+// taking that address into a pointer local (the idiom of 0x199e3c) or writing through it does not stop the
+// copy (83 with the pointer fill, 107 with the index fill), and neither does a `(long *)&player_count` cast
+// (83, the same code). Both fills as index loops give 172.
 // MiniMax G (11-18): no new form, no lower score (83): the tail fill is still a pointer loop where retail's is a
 // counted store, and every fill form that reproduces retail's counted store moves the index count into EBX and
 // pushes the mode to the stack (95 to 172 across this round's forms); the two count homes stay swapped (ours
@@ -1655,6 +1665,18 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // 159, index fills 167; `maximum = 0; if (call) maximum = item_count;` 51 (437 bytes, a test/je retail lacks: steering);
 // the separate value in one branch only 167/167, at function scope 141; with the sort at top level 175/175/125/175, with
 // pointer fills 153/154. Not kept: the callers' edit raises this body to 118 and no form here beats 83; all restored.
+// MiniMax B (11-18): no new form, no lower score (83): retail's frame map is player_count [ebp-0x10],
+// item_count [ebp-0xc], index_count [ebp-8] with the mode in EBX, and its tail fill is the `rep stosd`
+// idiom (push 0x10 / pop ecx / cmp edi,ecx / mov [home],edi / jge / sub ecx,[home] / lea edi,[ebp+edi*4-0x54] /
+// or eax,-1 / rep stosd), which only an index fill produces. With the index fill in branch two only
+// (107, 437 bytes) that branch's fill is retail's instruction for instruction, but ours spills the mode
+// to [ebp-0x10] and gives EBX to the forwarded player count where retail keeps the mode in EBX. Forms
+// tried: four declaration orders of the four locals 83/121/83/83 (the item_count and index_count homes
+// do not move); index_count's initialisation moved into the two branches 141, and that with the index
+// fill in branch two 166; index_count reset in both branches 141, and that with the index fill 166; the
+// player count through a pointer local 83, and with the index fill in branch two 107 (same code as the
+// index fill alone). The homes follow how often each value is read from memory, not its name, its
+// declaration order, its initialisation place or its pointer form.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {

@@ -655,6 +655,48 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
+// MiniMax B (11-18): later still, ~170 spellings tried in total: VC7 gives EDX to whichever operand of the
+// entry test carries the plus or minus one, so every spelling that increments the index (`index + 1 >=
+// count`, the same with the index or the count in an int, long, short or char local, the increment folded
+// into the local's initialiser, the test negated, both sides widened, either side cast to char or short,
+// and the same test with an addend on each side) puts the index+1 in EDX and the count in EAX and so
+// changes the load order as well (4 to 6). The one spelling that reproduces retail's entry test exactly
+// (`inc eax; cmp eax, edx; setge al`, the count in EDX and the index+1 in EAX) reads the count through a
+// function-scope path pointer at actor+0x50c: `actor->unknown53a + 1 >= path->field_2d` scores 2, because
+// the second dot product's i term then takes the direction as multiplicand where retail takes the point;
+// with the index read through the path as well (`path->field_2e + 1 >= path->field_2d`) the whole float
+// block re-rotates (the j and k terms swap, score 10), and the path declared before the definition line
+// scores 10 too. That i term does not move under the helper's argument order, under a named local for
+// either pointer or under the two dot products in locals (2, 4), so the committed body (score 1) stands.
+// MiniMax B (11-18): later still, ~140 spellings tried in total: the path-pointer entry test and the two
+// dot products cannot both be right at once. With the path-pointer test `path->field_2e + 1 >=
+// path->field_2d` and the current point still read through the actor (`unknown53c[unknown53a]`), retail's
+// `inc eax` comes out but the whole float block re-rotates (the j and k terms swap, score 10); with the
+// current point read through the path the float block keeps retail's shape and only the second dot
+// product's i term flips (score 2). The second dot product's i term is invariant under the helper's
+// argument order (`dot3f(point, direction)` and `dot3f(direction, point)` compile the same), under a
+// named local for the input pointer and under `&point->n[0]`, so it is an allocator tie; the committed
+// body (score 1) stands.
+// MiniMax B (11-18): later, ~80 more spellings tried: a function-scope `s_1f9762 *path` (count, index and
+// entries all read through actor+0x50c) with the entry test written `path->field_2e + 1 >= path->field_2d`
+// reproduces retail's `inc eax`/`cmp eax, edx`/`setge al` exactly, but the second dot product's i term then
+// takes the direction as multiplicand where retail takes the point (score 2, worse than the committed 1).
+// A 16-way grid over arm/previous/approach/projection read through the path or the actor's own fields
+// (`unknown53c`, `unknown539`, `unknown53a`) scores 2 at best and always differs in the same two
+// instructions (`movss xmm2, [eax]`/`mulss xmm2, [ecx]` against retail's `movss xmm2, [ecx]`/
+// `mulss xmm2, [eax]`); the `arm=actor` rows score 17-39 because retail folds the path base into
+// `esi + 0x50c` (`lea eax, [ecx + esi + 0x50c]`) and the actor form loses that base. The i-term operand
+// choice is an allocator tie that source-level reordering, named pointer locals and helper argument
+// swaps do not move, so the body stands.
+// MiniMax B (11-18): score 1 (unchanged): the entry test is the only difference (`dec edx` where retail has
+// `inc eax`; every other byte agrees). Tried here (~30 spellings of that one test): `count <= index + 1` (4)
+// and `count - 1 <= index` (3) put the count in EDX and the index in EAX exactly as retail does, but the
+// adjustment then lands on the EDX side and the condition comes out setle; `index + 1 >= count` (4) and the same
+// with the index or the count held in int/long/short/char locals, the increment folded into the local's
+// initialiser, a pre-increment local and `index++` (6 each) hoist the index load ahead of the definition chain
+// and fuse the increment into EDX (`inc edx; cmp edx, eax`), so the load order changes as well; the baseline
+// (`index >= count - 1`) keeps retail's load order but decrements the count instead of incrementing the index.
+// No spelling found puts the incremented index in EAX against the count in EDX, so the body stands.
 // MiniMax A (11-18): score 1 (was 4): the entry test is written `index >= count - 1` (the same test as
 // `index + 1 >= count`), which loads the count into EDX and the index into EAX as retail does; left: the
 // test ends in `dec edx` where retail has `inc eax` (the count is decremented, the index is not).

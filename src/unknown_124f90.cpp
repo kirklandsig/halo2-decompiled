@@ -2894,6 +2894,16 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // MiniMax R (11-15): no new form, no lower score (17): the sound set index is still sign-extended where
 // retail copies the dword and 0x219070 is still called with two arguments where retail passes one; both are
 // fixed by that callee's declaration in another file, so this one stays BLOCKED-BY 0x219070 and 0x218f50.
+// MiniMax B (11-18): no lower score kept (17): a byte-level comparison of the reduced image shows our function
+// is one byte longer than retail's, and all of it is the sign extension of the set index (`movsx ebp, ax`, three
+// bytes) where retail copies the dword (`mov ebp, eax`, two bytes). Retail's copy needs the callee's return type
+// to be an unsigned short, and the caller's declaration has to match the callee's mangled name exactly: declaring
+// 0x218f50 as int or as unsigned short in this file breaks the binding (the call turns into a stack-passed float
+// call to an unresolved address, and the score goes to 80 and 81), so that return type lives in
+// src/unknown_218ac0.cpp, outside this lane. The second difference, the chunk index pushed before the 0x219070
+// call where retail pushes it after, is fixed by evaluating the permutation in its own statement (score 15), but
+// that needs a one-use local; the third, the flag byte stored before the start time where retail stores it after,
+// is a statement order. BLOCKED-BY 0x218f50.
 // MiniMax A (11-18): no new form kept, no lower score (17): the sound set index is still sign-extended
 // (`movsx ebp, ax`) where retail copies the dword (`mov ebp, eax`), and 0x219070 is still called with two
 // arguments where retail passes one and returns a word shorter. Calling 0x218f50 through a __fastcall function
