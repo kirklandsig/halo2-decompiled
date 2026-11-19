@@ -5851,6 +5851,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // membership, feedback/offer, cancellation/removal, and the final membership phase
 // 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
 // NOT kept: these forms shorten the body and move the first difference before the friend query.
+// Round 640: friend-request mask 394; incoming, outgoing, or both request bits
+// 313/314/450; membership mask or separate bits 391/409; both masks 410;
+// both pairs of request bits 462. All grow and shift the first difference ahead
+// of the friend query. Original predicates and byte homes restored.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

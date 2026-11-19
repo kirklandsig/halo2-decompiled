@@ -858,6 +858,10 @@ struct s_item_collision_bsp
 // Spin k finished in each branch, carried to the join, published with angular velocity, or finished with a
 // shared factor. Real factors 233/233/233/197; double factors 238/250/250/238. NOT kept: the shared real
 // factor recovers spin, axis and speed homes and the x87 scale at 197, but raises the score overall.
+// Round 640: contact point accumulates normal displacement 199; updates a marker copy 267;
+// shared scale and point setter 199; indexed projection 190; two coordinate passes 492;
+// complete point initializer 190; named displacement components 194; scaled vector plus
+// indexed marker sum 199. Transformed plane and contact point homes still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

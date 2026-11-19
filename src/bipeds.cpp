@@ -4302,6 +4302,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // 620/620/643/643. Test at the consumer with the same base choices: 626/626/627/627.
 // Reduced control 612, full 548. NOT kept: The two 2712-byte forms change the entry schedule,
 // and none of the forms improves the reduced score or recovers the full result and flight homes.
+// Round 640: typed animation fields and named key fields 602/602; key-record reference
+// or pointer 610/610; state or key record confined to walking 624/626; saved mode or
+// previous turn 643/623; keys before tag 621; whole-state reference 602. Reduced
+// control 602, full 537. The key-record forms recover the reduced frame and flight
+// threshold slot but lengthen the body and leave the return byte at +0x12.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

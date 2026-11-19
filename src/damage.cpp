@@ -2990,6 +2990,9 @@ struct s_unit_event
 // Round 636: region and permutation receivers remain exchanged. Pool retained through drops 460, through
 // effects 460, through vehicle 481; retained from entry 451, from region update 513; pool and 16-bit
 // slot through drops and vehicle 555 or from entry 566; pool retained for both early notifications 420.
+// Round 640: region lvalue, permutation lvalue, both, or both read-only 420/420/420/420.
+// Region word mask/lvalue/shared setter 533/420/420. Typed seat label cursor and
+// index 419/420. NOT kept: the cursor gains one and the register assignments still differ.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
