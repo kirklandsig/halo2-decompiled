@@ -2040,6 +2040,12 @@ void function_1f86a0(long actor_index);
 // M3 lane 4 r218 (fast with 0x1b8c80/0x1ba990/0x1b9e70, all matched; control 134): the state and selection pointers
 // formed after the parent test 233, the selection alone after it 233; joint_index declared at the top 134 and ahead of the
 // iterator 134 (same code); the +0xc slot flag read through the state view's byte 134 (same code). Body unchanged.
+// M3 lane 15 r107 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all MATCH; control 134): the mask declared ahead of the
+// loop and assigned in it 134; the iterator declared above the early return 134; the accept arm as a bare `break` with
+// `if (entry) joint_index = entry->unknown4;` after the loop 134 (threaded back into the accept arm); the decline test
+// negated with the accept call first and the decline in the else 134 (all the same code); the decline as `u && (!bit40 ||
+// !same) || !u && specified && !same` 240 (866 B); re-measured: the element's root named inside `if (specified)` 241.
+// Retail lays the decline block and the iterator step right after the bit-0x40 test; ours keeps the tests together.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

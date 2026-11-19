@@ -772,6 +772,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the -1 in ecx; the record's three initial stores sit before the palette read here and after it in retail, and moving
 // them into the palette branch measures 725, the palette byte read before the stores 607, and a signed palette byte read
 // before the stores 700.
+// M3 lane 15 r106 (fast with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607, aligned 487, register-
+// and stack-masked 220): the cluster entry indexed at each use instead of the entry pointer 609; the palette index out value
+// declared once at function scope and reset per cluster 607 (same code); the weight clamp as two independent ifs 607 (same
+// code); the three per-cluster source resets ahead of the 0x130f60 call 713 (3836 B); the scenario lookup with the global
+// tested in its own `if` around the bounds test 607 (same code). All restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

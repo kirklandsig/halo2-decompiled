@@ -642,6 +642,18 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // appears. Orders xzy 217, yxz 218, yzx 213, zxy 216, zyx 213; the defaulted origin in a new local `a ? a : g_468788`
 // 195 (only the x sum turns d-first); that with order y, x, z 218 (retail's x/y sums and XMM7/XMM6, z still a-first).
 // A two-argument inline point-plus-vector helper, ternary defaults and the default statement order change nothing.
+// M3 lane 15 r106 (fast with 0x142570/0x30bf0/0x30710; control 195, aligned 95, stack- and register-masked 49): the existing
+// transform4x3f_apply_point (0x142570) marked `inline` and called for the three transforms (camera viewed as the
+// transform4x3f it begins with) 234 (971 B, frame 0x2c); the factor copies dropped, the inverses set to 1 in the
+// orthographic arm and tested and used directly, 207 (974 B, aligned 68, masked 32); both together 175 at retail's 955 B
+// (frame 0x2c, defaults at +4/+8 as retail; left: the displaced sums' operand order and the transforms' x/y registers),
+// but `inline` on 0x142570 loses 0x1396c7 and 0x24e59f and takes 0x2907d0 19 -> 333 in the full check: not kept. The
+// same 175 comes from transform_point reading the scale through a `s_camera const *const *` to its own parameter (with
+// one or three coordinate declarations, either row text order: same code), a parameter-address read, match-only;
+// 0x142570's rows written forward, left, up: it still matches and 0x30830 stays 175.
+// An `inline` or `__forceinline` declaration of 0x142570 in this file only leaves it a call: 724 (469 B). 0x142570 is unchanged.
+// On the 175 parameter-address form: the displaced sums written d-first for x and z, a-first for y (retail's load
+// sides) 175 (same code: ours loads the other side in all three); the origin transform ahead of the displaced point 236 (944 B).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

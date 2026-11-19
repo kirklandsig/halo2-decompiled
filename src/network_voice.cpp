@@ -1953,6 +1953,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // 0x10`, the cursor in EAX, 0x56380 13); the same with `11 + 2 * include_mask` 153 (434 B); kept, capacity, written,
 // size 137; written, kept, capacity, size 137; capacity, kept, written, size 154 (432 B). Every kept-first order
 // moves the player to the stack.
+// m3 lane 15 r107 (fast with 0x56380/0x564c0/0x53b00/0x56000; control 60): the bool flag kept with retail's order kept,
+// written, capacity, size and `11 + 2 * (include_mask != 0)` 137 (445 B, `ret 0x10`, 0x56380 13: the EAX zero is live as
+// retail's, but the kept mask then stays in EBP over the loop and the player arrives on the stack); on it the player bit
+// declared after the clamp 137 and no bit local (the loop test as `& (1 << player)`) 137 (same code each); 0-7 unused
+// locals at the top 137 each and 60 each on the kept body (no symbol-count state on either); the header stores through
+// a named header pointer 60 and `if ((capacity -= 2) >= entry_size)` 60 (same code each).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4199,6 +4205,13 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // spelling) 178 (469 B); on the packet-cursor form (`data + 2` beside the count): the member's NONE test split ahead of
 // the kind test 164, the member test as a nonzero `word` 168 (471 B), the stride as `11 + 2 * relay` 165, the tail
 // advances ordered consumed, size, cursor 164. The member still takes EBP in every cursor form.
+// m3 lane 15 r107 (fast with 0x564c0, matched each time; control 139): on the packet-cursor form (re-measured 164, 478 B:
+// data in EDI from entry and `add edi, ecx`, the member in EBP, the channel in no register): the head ordered size,
+// consumed, cursor, stride 164 (same code); the cursor declared before the clamp (`byte *packet = data + 2;`, or `byte
+// *packet = data;` with `packet += 2;` after the stride, the clamp reading data[1] or packet[1]) 141 each (478 B: the
+// member is then spilled to a frame slot as retail's, but the cursor is folded back into `data + consumed` with consumed
+// in EBP, so the channel still has no register); consumed declared above the clamp 154 (479 B). 0-7 unused locals at the
+// top 139 each on this body and 164 each on the cursor form (no symbol-count state).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
