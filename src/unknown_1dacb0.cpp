@@ -1462,6 +1462,30 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // compile alike) nor the callee's write order (graph_weapon_type_iterate, in src/unknown_2963f0.cpp, writes mode, class
 // and type in that order); the first difference is still the NONE compare, where retail keeps the compared argument in
 // EDX and the computed -1 in ECX and ours the reverse.
+// Lane 13 r112 (fast, control 828, aligned 580, registers masked 74): the search, outputs and requests in one
+// `while (true)` whose found pass ends in `return result;` 828 (same code); the outputs and requests inside the found
+// pass with their own `return` and the outputs repeated after the loop 1024 (2887 B); a named copy of the result taken
+// after the loop for the 0x1dd9d0 argument 828, for the test and the argument 828 (same code); 0x1dd9d0 and the
+// requests under two separate result tests 828 (same code); a `return result;` closing the found block 1012 (2839 B,
+// the listed early-return code). Re-measured: the siblings' flag loop 755 (2825 B, aligned 297, registers masked 55:
+// only the EBP zero, the second request's `this`/mode registers and the pads they move are left; match-only as before).
+// Diagnostics, restored: the second request keyed by the `mode` parameter 829 (aligned 588), on the siblings' form 758;
+// the inheritance loop's kinds keyed by a constant mode 707 (no EBP zero: the first request's mode staying live is not
+// what keeps EBP from the zero). Read from retail: the zero starts at the fifth kind's first test and not at the fourth
+// kind's later tests, which stay `test` although EBP is already free there, and it ends at the inheritance loop's two
+// stores; retail's inheritance loop tops (0x1db4c3, 0x1db9b3) carry no alignment pad where ours pads them (the pad
+// before the count load is the removed second resource loop's label in both builds). On the siblings' form our second
+// request makes its own zero in ECX for the count test and the two stores only.
+// More diagnostics (r112, restored): one extra dword zero store beside the inheritance counter's `i = 0` (same block
+// as the count test) gives retail's `xor ebp, ebp` at the first request's fifth kind with its four `cmp reg, ebp`
+// tests and the counter store from EBP, 801 (aligned 510; the stride store after the branch stays an immediate); two
+// extra stores the same; on the siblings' form that store gives only a scratch zero, 758. So our build forms the zero
+// when two zero stores share the count-test block, and retail forms it from the counter store before the zero-trip
+// branch and the stride store after it. Retail's zero-trip `jle` of the first inheritance loop lands behind the
+// `mov ebx, [this]` reload (0x1db757): `this` stays in EBX from the first request's root kinds into the second's, with
+// a reload only on the loop's exit; ours ends that EBX range at the loop and gives `this` EBP in the second request
+// (the +0x34 table pointer takes EBX from its second kind), also when the second request is keyed by the `mode`
+// parameter (829), so the found mode being address-taken is not what keeps it out of EBP.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1908,6 +1932,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // direct result and default written by fields 990;
 // default-first result branches with the success test in the named branch 995.
 // NOT kept: All scores rise. The forms at retail length change the frame, and the conditional loop still misplaces the result.
+// Round 264 (m3 lane 3, fast with 0x1db170, 0x1dc790, 0x1dc8c0 (both matched throughout), 0x2963f0, 0x1dd560, 0x1236f0;
+// control 828, aligned 580, register/offset-masked 74): 0, 2, 4 or 6 dead initialised long locals 828 each (same code: no
+// symbol-count window); the second request keyed by `iterator.graph` in place of `this` 962 (2791 bytes); the per-pass
+// candidate dropped (`if (named) result = named->animation_id;`, the result being NONE whenever the lookup runs) 1020
+// (2791 bytes); the loop as `while ((entry = iterate(...)) != NULL)` with that direct result and a found break 1015 (2839
+// bytes); the iterator set up by an aggregate initializer 826 (aligned 581, masked 76; two points, not kept). Body unchanged.
 // Mode supplied by the initialized iterator 826; late chained defaults for all or for class/type 826/826.
 // Conditional complete candidate copy 951; default then overwrite at hit 989; head-tested branch copies 840.
 // Implicit cursor zero initialization 828; zero or graph initializer before key stores 996/996;

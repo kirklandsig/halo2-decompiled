@@ -2276,6 +2276,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // called after the colour reads 190. The type query through a two-caller inline helper with a named definition local
 // (the form that takes 0x177040 to 54) leaves this body at 128 (same code); that helper was not kept at review (see
 // 0x177040's note).
+// The first colour still needs its own spill and the system still needs ESI.
+// Carry the initial spawn location across the type lookup, tint, multiply and
+// colour update, assembling the spawn record after each boundary in turn.
+// Colours at the update 188/186/188/188, early colours 210/210/208/208.
+// NOT kept: the tint boundary supplies a 0x44 frame at 572 bytes, but it
+// spills the traversal cursor and retains the system in EDI.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3199,6 +3205,9 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // register arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order (0xbf600's
 // call line). Checked this round: retail never takes 0x17e670's address (no immediate or table entry holds it), and
 // its two retail callers pass its first two parameters in ECX and EDX, so its convention comes from its own body.
+// M3 lane 2 r102 (fast): baseline 23 at 1328 bytes, first difference +0x24f (0x17e670's EDX/ECX register arguments,
+// BLOCKED-BY 0x17e670). The attached sound node index passed straight in the call 23 (same code); the detached record
+// filled compression, position, velocity, location 43. Body unchanged.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {

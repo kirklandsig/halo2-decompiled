@@ -793,10 +793,30 @@ extern point2f *g_468778;
 // calls that take it in EBX (0x1e4f90, 0x1a9d80, 0x1a9e00) 392 (all four pushes at entry and the prop in EBX as retail,
 // but the actor EDI and spilled, settings ESI, slot EBP; masked 114); both of those together 404 (1562 bytes: arg_0
 // ESI). Neither the settings' register nor arg_0's EBX preference alone is what separates the two colourings.
+// Lane 13 r112 (fast, control 375, aligned 263, registers masked 124): re-measured the actor-first form with `if (!settings
+// || f13 || f14 || f2d) return false;` and the final expression returned 393 (aligned 266, masked 126). On it: the final
+// result as `!(f14 || f13 || f2d)` 393 (same code); the entry test as `!(settings && !f13 && !f14 && !f2d)` 393 (same code);
+// the end as `if (f14 || f13 || f2d) return false; return true;` 413 (1523 B, masked 108); the slot pointer declared between
+// the actor and the settings call 393 (same code). On the kept body: the result as `!(f14 || f13 || f2d)` 375 (same code);
+// the entry test as an early `return result;` 440 (1517 B, frame 0x3c). Diagnostics, restored: three, eight and sixteen
+// extra byte reads through the prop pointer in the facing arm on the actor-first form 436/481/546: the prop then takes ESI
+// (with a copy kept in arg_1's home), arg_0 moves to EBP and the actor stays in EDI, never retail's slot ESI / arg_0 EDI /
+// prop EBX / actor EBP. Read from the listing again: retail evicts arg_0 from EDI for the view pointer in the facing block
+// and reloads it from its parameter home at the tail, where ours evicts the settings from ESI for the facing pointer.
 // MiniMax G (11-18): no new form, no lower score (375): computing the actor block before the settings call, as
 // retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
 // pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the
 // query in EDX, and this lane may not change the parameter order.
+// M3 lane 16 r140 (fast; control 375, register-masked aligned 102): the result declared after the three lookups, actor
+// first, 426 (1525 B: the result then sits in AL through the entry tests); in the original order 409 (1519 B); the
+// planar test pair as an aggregate copy (`point2f local_16 = *(point2f *)&local_9;`) alone 384 (the copy becomes retail's
+// integer moves but the request's word store and the facing products move); a `vector3f const *` to the object's
+// velocity (field_1c) for the length, the dot and both prediction rows 397 (1576 B, frame 0x44, masked 90: the
+// prediction block then reads the velocity through EBX as retail); that with actor first and the listed early `return
+// false` / returned final expression 417 (1563 B, masked 82: the settings pointer then lives only in its frame home as in
+// retail; arg_0 ESI, the actor EDI with a spill at +0x24, the slot EBP); plus `local_13` declared at the dot test
+// instead of the block's top 423 (masked 79: retail's fresh `xorps xmm0` zero at that compare). Left: the actor spill
+// and frame 0x44 (retail keeps it in EBP), the facing pointer formed late (fold-then-form) and the shared copy tails.
 // Typed actor row after/before settings 375/413; early row base with/without early slot 408/408;
 // early absolute actor slot 375. Settings declared in the admission test, then actor first and
 // typed actor first 409/413/413. NOT kept: ties or regressions, actor/settings/prop homes remain.

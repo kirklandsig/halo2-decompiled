@@ -2498,6 +2498,15 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // `test al, 1`); the definition flag through it 188 (874); the area-damage flag through it 3 (same code); that with the entry read
 // into a local after the inverse 228 (the flip); the vitality test as `function_d5d20(object_index, false)` times the fresh body
 // vitality 165 (821 bytes: called out of line, not inlined here).
+// M3 lane 8 r188 (fast): lane 16 r114's inline guard taking (info, entry) with 0xdb090's first argument read through
+// `accumulator->field_4_2` 23 (871 B; aligned, only that argument differs: retail `mov ecx, ebx`, ours `mov ecx, [edi + 4]`;
+// the entry load, the flags address and every register are then retail's; build/r188/lead-d8cb0-v4.patch); the same
+// guard with the later `info->flags` test through the field instead 228; the guard, the region kill and the 0xdb090 call
+// in one forceinline helper taking (info, entry, ...) 229, with 0xdb090 given a fresh `accumulator->unknown00` 228
+// (plain `inline` stays out of line here, 717/721 B); a range-checked region lookup returning the region or NULL, in
+// place 190 (873 B), inside an (info, accumulator) guard 190, inside an (info, entry) guard 225 (878 B); the 23 form with
+// the flags test through the field as well 178 (860 B). So with the entry read in the info test's block, the flip follows
+// `info` being 0xdb090's register argument, not the use count.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2982,6 +2991,9 @@ struct s_unit_event
 // one datum per drop/effect 479; unsigned 16-bit slot for datum reads 549; shared weapon-slot
 // lookup 420; one attachment index per notification 420; one flags read per drop 420.
 // NOT kept: no gain and the region/permutation register assignments still differ.
+// Round 636: region and permutation receivers remain exchanged. Pool retained through drops 460, through
+// effects 460, through vehicle 481; retained from entry 451, from region update 513; pool and 16-bit
+// slot through drops and vehicle 555 or from entry 566; pool retained for both early notifications 420.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5278,7 +5290,10 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
-// score 178 (was 146): m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
+// score 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
+// the scan) gives 166 with retail's EAX/EDI section-loop registers; a one-use local is match-only, so not kept. With it
+// the first mask still extends before the count guard, and the late detached-mask zero, piece search and final lookups
+// still differ. Earlier: m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
 // arguments, `ret 0xc` at 0xdbfa5): the callee order that matches 0x1c4040, 0x146bf0 and 0x1c51c0 builds 0xd7b80 ahead of
 // this function, which without the keyword hands it ECX/EDX (243) and loses 0xd6800 and 0xd8a40. The positional count
 // rises at the same 799 bytes, but the top is now retail's (pool and tag loads ahead of the register saves, the datum
@@ -5514,6 +5529,13 @@ struct s_damage_object_creation
 // same code (the address folds away once inlined); `~piece_nodes` named once for the update and the node mask 146 (same
 // code). Diagnostic: one to three dead initialised locals on the for/break lead 221/222 each, so the flip is not a
 // symbol-count phase. Every search with retail's for/break shape hands the mask a register (frame 0x13dc).
+// Nullable bound, assigned bound and nullable while 178/183/178; scoped unsigned first mask 166 (one-use local, match-only: not kept);
+// mask shared through detachment 155; nullable bound/shared bit 221; shifted mask tests 180;
+// scoped damage record with first mask 166; first mask inside scan or with shared test bit 178/178;
+// reversed first mask expression 166; first mask with late scan zero 217.
+// NOT kept: sharing the first mask through detachment loses the retail EAX/EDI roles and word admission;
+// moving the bitmap zero on the scoped-mask form changes the frame allocation and grows to 811 bytes.
+// Plain confirmation of the scoped first mask changes only this function among 65 checked markers.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
