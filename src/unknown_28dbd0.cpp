@@ -598,6 +598,13 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // stages 221/233/233. Shared scaled add at the axis/cross stages 242/233. Axis scaled
 // add plus cross add 204, axis add plus cross scaled add 233, both scaled adds 254.
 // NOT kept: all regress and move away from retail length. The 204 form keeps frame 0x11c.
+// The creation request sits four bytes late. The third rotation cross component still has a stack home. cross in
+// axis with direct sums 241, axis with two shared sums 234, axis with scalar finish 231, axis with scaled add
+// 231, cross in heading with direct sums 209, heading with two shared sums 215, heading with scalar finish 211,
+// heading with scaled adds 164, heading cross with sine first 226, sine/dot/cosine 226, dot/sine/cosine 226. NOT
+// kept: The heading cross with two scaled adds restores the frame, request and transform homes at 164 and 1209
+// bytes, first +0xa9. Its gain depends on three scaled-heading stores where retail has two cross spills with the
+// sine between them. Sine-first and dot-first follow-ups restore the extra frame word and regress to 226.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -1486,6 +1486,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // a reload only on the loop's exit; ours ends that EBX range at the loop and gives `this` EBP in the second request
 // (the +0x34 table pointer takes EBX from its second kind), also when the second request is keyed by the `mode`
 // parameter (829), so the found mode being address-taken is not what keeps it out of EBP.
+// The class and NONE registers are exchanged. A resolved output takes the candidate's argument home. resolved
+// default paired with the mode key 828, class key 828, mode/class keys 828, type key 828, mode/type keys 828,
+// class/type keys 828, all keys 828, all paired defaults declared at their keys 828. NOT kept: All eight
+// initializer pairings tie at 828 and leave the same early register allocation, shifted stack homes and missing
+// later EBP zero.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

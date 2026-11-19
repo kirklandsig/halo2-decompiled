@@ -796,6 +796,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // frame 0x14 as retail, but the loop is inverted); the same with a long counter 264; the declarations after the lowest scan
 // 266; the three exits as returns 265 (749 B); short counter with a long flag 242 (759 B). The loop's end written as
 // `if (!left_start || points2d_differ(...)) continue; goto finished;` on that body (screen only) loses 25 rows.
+// The pass bound still occupies a separate word. The result and departure homes differ. shared short ordinal for
+// lowest/candidate 144, lowest/duplicate row 144, lowest/duplicate search 144, candidate/duplicate row 144,
+// candidate/duplicate search 144, lowest/candidate/duplicate row 144, lowest/candidate/duplicate search 144,
+// shared long lowest/candidate ordinal 651. NOT kept: The seven shared short scan ordinals tie without moving any
+// stack home. The shared long ordinal lengthens the function to 1095 bytes.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

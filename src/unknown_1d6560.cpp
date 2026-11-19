@@ -523,6 +523,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // (`index * sizeof`) 96 [0]; a model local declared first 21 [2] (the owner then arrives in EAX and the component on the
 // stack); the header pool read into a pool local first 24 [0] (same code); a model local in place before the rigid body 24 [0]
 // (same code); headers and the model ahead of the type with the rigid body last 124 at 276 B [189]. Body unchanged.
+// The model chain is acquired first and the header type is still read on separate kind routes. unsigned slot
+// remainder at special type 96, ordinary type 96, both types 96, shared byte type after body 94, shared byte type
+// before body 106, shared byte type from captured headers 25, separate types and case-zero object from one base
+// 111, shared byte type and case-zero object from one base 25. NOT kept: Both shared-header single-type forms
+// reach 25 at 256 bytes and change the matched caller 0x1d5bf0 to 13 by exchanging the component and rigid-index
+// registers. The caller-compatible forms tie or regress.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
