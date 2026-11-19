@@ -609,6 +609,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // the three roots and the inlined angle helper's arc-cosine result into the slot its clamp input and the yaw share (+0xc);
 // ours gives the clamp input and the yaw +0xc but packs the roots and the arc-cosine result with the first pitch angle at
 // +0x10, so the yaw's first value is a copy of the helper's result where retail's is the result itself.
+// Shared 2-D normalization of the XY prefix with depth scaling and common length, early zero,
+// separate length arms, or length before depth: 423/441/441/423. With the first magnitude returned:
+// 420/429/430/420. NOT kept: root and yaw homes still differ and the shared normalizer raises 0x29b990 to 31.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

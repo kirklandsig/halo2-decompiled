@@ -172,6 +172,20 @@ __forceinline long portal_path_gain(real distance, real range)
 // assignments 377 (aligned 89, a shared zero register appears); one helper with the first pin in the normal arm 243;
 // macro pins in one helper 254; the exponent as one expression 262 (1352 B). With main's 0x14b240: the test helper
 // alone 317; the long-bits decibel helper alone 323; the path entry types alone 357; all three 359 (none kept).
+// M3 lane 13 r111 (body unchanged; see 0x18dc90's note): the twin has the same two leftovers. On
+// build/r111/held-0x18dc90.patch (the r110 patch with the aggregate-returning pin helper) the fmul schedule is retail's
+// at both sites: harness 244 positional / 17 aligned at 1364 B, fast 250 (the r110 patch 249, aligned 23). Left: the
+// cluster pointer in EBX and the widened portal index in EBP, and the padding that follows from it.
+// Keep the table reloads and starting cluster in EBP together on the 0x428 frame.
+// Path-list ordinal before seed 357; separate seed and search lookup 365; seed
+// validation before bitmap clear 296; walk count snapshot 364; link cursor 355;
+// sound comparison before portal flags 322; nearest distance after path-list
+// lookup 293; signed admission index through range and bitmap 317.
+// NOT kept: 293 gains three and moves the first difference earlier.
+// Portal-table, destination-table, both, or seed-through-destination table references 296 each;
+// packed link base or address 296; path ordinal advanced at the link read 367;
+// starting-cluster and decoded portal names 296. NOT kept: the starting cluster and both
+// live BSP table bases retain their opening allocations.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -327,6 +341,31 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // packed cursor with live count 354, explicit range cases 354, initial maximum range 365,
 // shared fill and sort count 354, available-first output cap 363. NOT kept: early flags skip retail's
 // pretest endpoint decode and the frame remains larger.
+// M3 lane 13 r111 (one-file harness with the callee files, exact; counts positional/aligned, `--fast` where marked; body
+// unchanged, the full diff is HELD as build/r111/held-0x18dc90.patch): on the r110 patch the fmul schedule is solved.
+// Every retail copy of the decibel-to-gain code (here, 0x18d730, 0x18ae80, 0x21fa80) has `fld; fmul 0.05; <others>;
+// fmul ln10`, a block boundary inside the helper; the pin helper returning the level as an aggregate (a real and its
+// bits sharing storage) instead of a long gives it at both sites: 23/22 -> 15/16, fast 21 (the r110 patch 29), 0x18d730
+// fast 250; the existing s_decibels as that aggregate 19/20 (it also swaps base and index in the output loop's stores).
+// Not it: early returns in the pin helper 195/70; an out pointer or reference for the pinned value 23/22; a named real
+// for the load 93/96; a double scaled 24/24; (double) casts 24-25; an exponent helper 119/22 (one multiply); ln10 as a
+// global or const 23-25; exp(y * log(10)) 125/28; pow 232/219; an empty inline call, an early-return helper, a constant
+// ternary or a bare scope between the multiplies 23/22; the real chain copied with a real parameter 154/92, with the
+// curve switch 154/92, three levels 190/106.
+// Left: only the cluster pointer in EBX and the widened portal index in EBP (retail the other way), 1363 B. Measured:
+// callee-saved registers go ESI, EDI, EBP, EBX by priority and the two tie; one more read through the cluster pointer
+// before the loop or in its guarded block (diagnostic stores) gives retail's pair, a read after the loop does not. No
+// natural form adds that reference: accessor helpers for cluster/portal/other/environment (alone, pairs, all) 15/16;
+// reference-typed cluster/portal/other/paths (15 combinations) 15/16; a bit-vector type for the valid words 19/20; 80
+// first-loop shapes (guard x nearest x bit test x limit x nesting) 15-17 or worse, the two-continue guard with the other
+// cluster resolved after the flag test flips the pair at 1347 B; 15 decodes of the packed reference 15-16, the 16-bit
+// shift forms flip the pair but emit movzx + shr (aligned 15); a named side bit 19/20; declaration orders and scopes (9)
+// 15/16; the valid words as an initializer or assignments flip the pair but share a zero register (1339 B, 348/34); the
+// 24 orders of the deep block's statements 15 or worse; a separate stored-index copy (9 forms) 19/20; an index local in
+// the nearest block 19/20; the nearest test with the NONE test first flips the pair but changes the block order (322/30).
+// Shared bitmap setters at the seed, destination or both 354/354/354. Shared tests for distance,
+// sort fill or output 333/354/354, all three 333, complete bitmap API 333.
+// NOT kept: the distance test shortens the function to 1347 bytes and leaves both BSP table spills.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

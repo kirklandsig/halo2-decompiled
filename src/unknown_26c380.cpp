@@ -673,6 +673,12 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // endpoint 660, common entering and departing endpoints 648. The after-scan
 // edge reaches retail length with the same byte-slot difference. The original
 // body retains the first-edge and success bytes in the exchanged homes.
+// First-edge clear after the pair or at the endpoint 254/473; preserve the
+// first state across surface edges 450; positive carried-endpoint state
+// 245, set after the pair 254; combined acceptance with rejection arm 407;
+// cap and increment with a common break 208; ordinary edge count 354;
+// hit initialized after the first fetch 244. NOT kept: the 208 form leaves
+// the swapped byte homes and widens the length gap to 17 bytes.
 // Traversal-local distance history alone or with edge history, crossing count, or both:
 // inside the admitted path 261/410/384/431; inside the projected line 289/289/290/424.
 // NOT kept: each changes allocation before the return-byte initialization. Moving both
@@ -683,6 +689,13 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // common clear-distance tail with the result local 335; common clear-distance tail with direct returns 480;
 // terminal blocked branch returns true directly 387; terminal blocked branches return the field directly 386.
 // NOT kept: The merged tail shortens the body and leaves its flag placements. The direct returns move the opening zero register.
+// M3 lane 16 r137 (fast with 0x26c380; control 244): the up-vector global read into a named pointer at entry 430
+// (1616 B); the magnitude test as `1e-5 < magnitude3d(...)` 244, the line distance's dot with its operands swapped 244,
+// `normal` declared at function scope 244, `line_distance` declared ahead of the planar normal 244 (all the same code).
+// Edge exhaustion as the crossing outcome with while, for, or early rejection
+// 386/386/386. Separate accepted edge with while or for 389/389. Separate scan
+// and prior-crossing edges with while, for, or early rejection 382/382/382.
+// NOT kept: the return and first-edge homes remain exchanged, and the bodies shrink.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

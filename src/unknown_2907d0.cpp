@@ -173,6 +173,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // when its count is at most 1, and 0x256bd0 fills a local record with the same position, NONE, facing, 4 and 1 sequence;
 // in retail both exits set AL at the same place in the pop sequence (after `pop ebp`), ours moves the true exit's load
 // ahead of `pop ebp` because it is the shared 32-bit 1.
+// M3 lane 6 r194 (fast with 0x142570 and 0x200e60, both MATCH; control 19, aligned 17, masked 5). Diagnostics (reverted at
+// once): field2e = 2 gives 18 (the separate `mov al, 1` then matches; the EBX/EBP swap stays), no field2e store 44, field1c
+// = 5 20, field10 = 7 20, so the shared constant 1 is not what decides the swap; one more read of the transform through
+// the address local in the else arm 55, in the node arm 108, at the top 128, in both arms 116 (the transform stays in EBX
+// each time). Tried: `__assume(arg_2 != NULL)` at the top 19, `__assume(arg_3 != NULL)` 19 (same code each); the node
+// count initialised to 0 113 (453 B); the address local declared only in the else arm, the node arm reading the parameter
+// directly, 19 (same code); the else arm copying the forward before the position 68.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
