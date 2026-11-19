@@ -856,6 +856,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // the eight-byte homes at the top of the frame, and the first-edge Y, the half-width, the cursor and the colour
 // homes differ with them. The helper this body calls at 0x131e50 has its declaration fixed in another file, which
 // this lane may not change: BLOCKED-BY 0x131e50.
+// MiniMax D (11-19): no new form, no lower score (351): the colour packer retail uses here is the link-time inlined
+// 0x131e50 and its own asm homes come with it (the alpha at +0x84, the red at +0x94, the green at +0x9c, the blue at
+// +0xa0, the scale at +0x98 and the colour pointer at +0x88, stored and reloaded), which this file's front-end inlined
+// ribbon_pixel copy does not reproduce, so the frame stays four bytes short at 0xa8 against retail's 0xac.
 // score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
 // declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:

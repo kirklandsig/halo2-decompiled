@@ -1499,6 +1499,13 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax D (11-19): no new form, no lower score (400): every block's own arithmetic agrees with retail (the x87 chain of
+// the candidate loop, the corner calls, the attempt loop and the emit block are the same code, only their stack homes
+// differ), and what is left is MSVC's own allocation of the loop's locals: retail keeps the zero in EBX at the head, puts
+// the count in SI and reads it back from its parameter home in the scan loops and holds the edge in EBX, while this build
+// keeps the zero in EDX, the count in BX and the edge, the next and the step in stack homes, with the frame at 0x114
+// against retail's 0x10c; the declaration orders of the loop's locals (the step pointer last, the edge after the link and
+// the edge first) all compile to the same code.
 // score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).

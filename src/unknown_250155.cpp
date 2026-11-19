@@ -1435,6 +1435,14 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // of the function, before index_count, does move the two homes to retail's [ebp-8] and [ebp-0xc], but the frame
 // grows to 0x58, the mode is spilled to [ebp-0x10] and the player count to [ebp-0x18] (121 with the branch's
 // zeroing kept, 137 without it). This body stands.
+// MiniMax D (11-19): no new form, no lower score (83): the pointer fill with `empty < indices + 16` gives
+// 154 (a byte-count rep stosd with `shr ecx,2`), the index fill in both branches 172 and in branch two
+// alone 107 (that branch is retail's instruction for instruction), so the kept pointer walk stands. The
+// allocation difference is the whole gap: retail keeps index_count in EDI through both scans (so its
+// tail fill can clobber EDI and the count is saved to [ebp-8]) and the mode in EBX, ours keeps the
+// 0x199ef8 result in EDI in branch two (so index_count lives in [ebp-0xc] and the qsort pushes the
+// count from memory), and that follows from retail's player count escaping into 0x199dc9 as a pointer
+// while ours passes it as a `long` value. This body stands.
 // score 83 (was 83): the fills are pointer loops (retail: guarded rep stosd from an index loop) and the
 // index_count/item_count slots are swapped; branch two gives EDI to the 0x199ef8 result and keeps
 // index_count in memory (`inc dword ptr`), where retail keeps index_count in EDI through both scans and

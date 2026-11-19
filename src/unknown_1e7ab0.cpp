@@ -183,6 +183,12 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // null result, both measure the same 117), and case 4's parent still sits in ECX where retail holds it in ESI:
 // BLOCKED-BY 0xd0590's parameter order (src/unit_object_type.cpp). An annealed permutation search over this
 // body (300 s, seed 98) lowered nothing: best 117 against a baseline of 117.
+// MiniMax D (11-19): no new form, no lower score (117): the gap is still the register rotation at +0x31, where this build
+// loads the table global into EAX and retail into ECX, and seven more getter spellings (the second read of the global, a
+// const table, the count in a local, the entries pointer added to the index, the global read at each use, the count test
+// first and the entries read through the global) all compile to the same code, as do three forms around the call (the
+// lookup before the 0x14de70 call 585, the entry test before the player test 366 and both 274); the rotation is the
+// allocation around the lookup, not the lookup's shape.
 // score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
 // into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
 // 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter
