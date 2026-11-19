@@ -1043,11 +1043,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
-// score 871 (was 871; 964 before): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
-// The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
-// Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
-// selector remains a call.
+// score 871 (was 871): the frame is 0xd0 versus 0xb4, the opening variant lookup expands,
+// and the upper-capacity selector stays a call. An earlier body scored 964.
 // M3 lane 14 r114 (fast with 0x73530, which matches throughout; control 871): the convention already agrees (session in
 // EAX, `ret 4` in both). Retail calls 0x192e60 at the top, 0x1932c0, 0x1931a0 and 0x193250, and expands 0x193300, the
 // player loop's variant lookup and 0x631f0; ours expands the top lookup and calls 0x193300 and 0x631f0. Tried: the loop's
@@ -1607,6 +1604,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // group statistics or before histogram 914/914. Split store with dword histogram 933.
 // NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
 // The opening variant lookup still expands and the frame still differs.
+// Typed shared machine-ID and histogram storage (long/word cells): one shared histogram 936/892,
+// separate overlapping histograms 936/892, first histogram overlapping 931/894, and second
+// histogram overlapping 911/871. NOT kept: the full overlap reserves 0xb0 instead of 0xb4,
+// the first variant lookup still expands, and no form matches.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

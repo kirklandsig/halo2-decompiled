@@ -490,6 +490,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // cache_index) return result;`) 77 (same code), on the 83 merge 83 (same code: still folded); the exit returning
 // cache_index on that merge 83 (same code); diagnostic, reverted: the walk as a forced-inline function returning its pick,
 // on the merge, 169 (524 B); the merge as `initialize ? result != NONE : true` 81 (522 B). Body unchanged.
+// The cache hit still enters the shared NONE test, and the exhausted scan folds its return.
+// Typed optional owner record via a conditional value 158/157 or an assignment guard 150/151.
+// Missing-handle arm with a hit decision 145/146 or a miss decision 145/146
+// (original merge / hit bypass). The opening body is restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

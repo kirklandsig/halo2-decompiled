@@ -2275,6 +2275,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // array 251; header array after grenade metadata 301; shared header accessor 251; primary
 // weapon result inside the flag/delay gate 251. The late pool and header forms still give the
 // actor and options different registers.
+// Pool, actor and options registers still differ. Phase-local random receiver sharing:
+// probability and delay 327, grenade and fraction 251, both 327, per weapon 251,
+// probability and per weapon 327, all equipment draws 251, with probability 324,
+// and one receiver through fraction with a fresh round receiver 332.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

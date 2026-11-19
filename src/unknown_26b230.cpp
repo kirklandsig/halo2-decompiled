@@ -2205,6 +2205,9 @@ void function_269250(long clump_index, long actor_index);
 // the created arm assigning the loop's `group` instead of declaring a second one 89; the clump walk record declared at
 // function scope 89; the selection and best score declared at function scope and set at the top of each actor 89; the
 // score set by an if/else (`else score = best;`) 128 (484 B).
+// The pool still spills and the selected handle is kept in EDI. Handle lookup at each win 141/141,
+// at the join from the clump pool 131/136, from the guarded walk pool 125/130, and by restoring the
+// iterator's current datum 130/114 (common/team-local comparison). The opening body is restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -1305,7 +1305,7 @@ bool function_108530(long device_index, long name)
 // the body is retail's length and the ramp-down minimum written as an if-statement measures 121 in every arrangement
 // tried, so the clamp's XMM homes stand.
 // MiniMax B (11-18): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6; an early use of it (squared 142, copied 121) does not promote it, and the ramp-down minimum written as an if-statement measures 121 in every arrangement tried, so the clamp's XMM homes stand.
-// score 121 (was 121): Frameless at retail length. Retail keeps ramp-down in memory and takes
+// Earlier score 121 (was 121): Frameless at retail length. Retail keeps ramp-down in memory and takes
 // initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.
 // MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
 // but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
@@ -1658,6 +1658,11 @@ bool function_108530(long device_index, long name)
 // nearest 75 aligned lines from retail), about 480 leave the ramp-down uncached as retail does (the nearest 53), none
 // does both with retail's body. A diagnostic with the cruise time's ramp-down term dropped gives retail's exact
 // uncached clamp pair, so the ramp-down sits one reference from losing its register.
+// On the caller-matching body, separate positive time with parameter limit 136, separate final
+// limit 138, separate clamp results 138, explicit branches in either or both clamps 138/138/138,
+// one named time through both clamps 141, and first conditional write with named final limit 138.
+// NOT kept: every form demotes both callers. The ramp-down comparison still needs its stack slot
+// while preserving the incoming initial velocity in XMM6.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
