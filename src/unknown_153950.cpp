@@ -841,6 +841,26 @@ struct s_player_axes_153d10
 // unchanged); the forward dot's i leaf through the axes view 24 (every product loads up first but this one); one leaf
 // through the axes view: the forward dot's k 26, its j 13, the up dot's j 19, its i 10 (each flips forward.k's two
 // products or all six; up.k against forward.i never moves alone).
+// Round 142 (m3 lane 12, fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2). Diagnostics with K dead
+// initialised locals (`long unused_k = 0;`): at the function top K = 0..26 gives 2 except K = 3/4/5, 11/12, 19/20
+// (101/102/16, 101/16, 101/16), period 8, and in every state the six cross products stay as they are (only the i terms
+// of the forward/up dots flip); the same pattern with the locals after the target fetch, after the axes view or between
+// the two axis pointers; after the `up` pointer or after delta nothing moves. So the hand-written cross does not follow
+// the symbol count. Forms, each scanned over K = 0..7 at the top: cross3f(&axes->forward, &axes->up, &cross)
+// 8/6/8/105/106/24/10/6 (the cross products now move with K; the first two stay up-first in every state); a file-local
+// textbook-order cross helper called the same way, the same eight states; with dot3f for the three dots in either
+// argument order 10/10/10/105/104/22/6..10. LEAD: cross3f(forward, up, &cross) through the two axis pointer locals
+// 105/104/104/106/107/100/101/103, and at K = 5 all six cross products are retail's (fj*uk fk*uj fk*ui fj*ui uk*fi
+// fi*uj), the first form that separates up.k's two products; there the delta components take other registers (xmm1,
+// xmm5, xmm4 for retail's xmm4, xmm5, xmm3) and two dot terms flip. On that form: dot3f dots in either argument order
+// the same eight states; cross3f_staged the same eight states; 1-7 dead locals between delta and the cross call 105
+// each (no effect: only symbols ahead of the axis pointers count); the axis pointers declared after delta the same
+// eight states; delta through vector3d_from_points3d 115/116/116/109/102/112/113/113 (1294-1299 bytes). Untried: other
+// ways to bring the delta registers back on the pointer-helper form at K = 5 (mod 8), then natural symbols for the K.
+// Same-role locals merged (round 142, after one shared loop index matched 0x12eb00): one unit-index variable for both
+// lookups 2, one player-index variable for both 2, both 2 (all the same code); the owner's position fetched into the
+// vector that later holds the relative direction (no separate target point) 2 (same code); delta and the relative
+// vector as one vector through three named dots 112 (1302 bytes).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

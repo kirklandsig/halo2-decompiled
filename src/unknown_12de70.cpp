@@ -670,6 +670,20 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // `cache_block_index` (0x12de70's apply spelling, a second use of the block in the arm) 71 (the arm forms its own index
 // product, EBP unused); the one-use physical block local dropped (time pointer straight from the lookup) 27 and a named
 // `linked` flag in the real build 27 (both the same code).
+// Round 142 (m3 lane 12, fast with every function of this file listed, all 15 others stay matched; control 27): the
+// arm's address through a new inline accessor that takes the block table as a parameter 27; the physical object, its
+// block table and its page shift named in the arm ahead of the call 27; the address through a new inline
+// `physical_block_address(index)` helper 27 (all three the same code: how the base is spelled never moves the pool or
+// shift loads). Same-role locals merged or split (after one shared loop index matched 0x12eb00): the loop read at each
+// use with a tail block local, re-measured 51, with the physical block local dropped 51, with the time pointer dropped
+// (the field written through the block local) 65; ONE block variable declared at the top of the guard and assigned in
+// the loop and again before the tail 51, with the physical block local dropped 51, with the time pointer dropped 65;
+// the loop read at each use with that shared variable for the tail only 51; the base body with the time pointer
+// dropped 45 (17 aligned against the control's 18: the tail's copy goes, the time test reorders). Grid on the
+// each-use loop: arm base as accessor-with-table / three named locals / the shift named first, tail block local or
+// direct, time pointer kept or dropped: 51/65/51/65/51/65 and 27/45/27/45/27/45 (the arm spelling never matters).
+// Diagnostic: 1-6, 8, 10 and 12 dead initialised locals at the top, on the base body 27 each and on the each-use loop
+// with a tail block local 51 each (the register ties do not follow the symbol count).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
