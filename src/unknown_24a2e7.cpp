@@ -279,6 +279,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Entry base named early/late, ordinal early/late, display result early, formatted
 // destination late, and adjacent base/count ranked early/late all score 67.
 // NOT kept: lexical order leaves the frame at 0x24 and the derived buffer live.
+// Round 436. Indexed returned array after/before cached clear 67/68; indexed
+// return and clear 84; destination array then indexed return 67; scan cursor
+// with indexed return 67 and cursor inputs with indexed clear/return 79.
+// Plain result as copy input 66; selected input reference with indexed
+// clear/return 90. NOT kept: 66 gains one and spills the result; the other
+// 0x28 frame form spills the cursor. Original body restored.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

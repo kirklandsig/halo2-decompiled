@@ -1183,6 +1183,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Setter with separate unsent/pending rejection 89/89 or paired mask comparison 106.
 // Setter on saved word and assignment 35. NOT kept: the byte OR changes the entry and loop
 // allocation, and the saved word ties with the same full-word store.
+// Round 436. Pending-bit field assignment with saved word tests (word/byte/bool)
+// 89/86/86, both fields tested directly 89/84/84, word/byte bit-view copy 89/84.
+// NOT kept: setting the actual bit changes the entry and loop registers, even at
+// 225 bytes. The selection still differs from retail. Original body restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -593,6 +593,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // counter `long` 483 (1675 B, `ret 0x18`); one shared inline rotation of the facing direction (cos x - sin y, cos y + sin x)
 // for both near-arm emissions and the far arm 382 (1692 B); the existing normalize2d_fast for both normalizations (their
 // results are unused) 305 (same code).
+// Round 436. Planar entry normalizer with named double or real projection products
+// 319/316; accumulated double or real projection 320/315; products before endpoints
+// 319/316; complete double or original predicate before endpoints 382/333.
+// NOT kept: the six product forms retain 1732 bytes but keep unity in XMM1. The
+// early predicates disrupt the entry. Original body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1240,6 +1245,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 0x2108a0 and 0x210770, whose definitions are in another lane's file; the frames agree at 0x114 and the two trace results
 // sit at the same homes (+0xd0 and +0xf4) but are taken in the opposite order, and the pivot's home is +0xa0 here against
 // retail's +0x94.
+// Round 436. Planar vector input in the offset helper 569. Native origin,
+// destination or direction templates 972 each; native origin/destination,
+// origin/direction, destination/direction or all three 972 each. NOT kept:
+// the templates delay radius acquisition but outline the first offsets and
+// shorten the body to 3194 bytes. Original helper and body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
