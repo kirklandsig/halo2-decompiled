@@ -2760,6 +2760,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // diagnostic for a scheduler boundary, not kept); the two NONE stores chained 170; the players iterator declared at function
 // scope 168 (same code); the actor looked up as the byte pointer first with the typed actor derived from it 168 (same code: the
 // iterator start keeps `[eax + ecx + 0x58]`); the byte alias dropped, the raw offsets through `(byte *)actor` 168 (same code).
+// Shared actor displacement with pool pointer, pool reference, refreshed data or field reads:
+// 167 each, first +0x1a7. Typed indexing across the same reads: 168 each.
+// NOT kept: the one-point SIB gain is below the retention threshold.
 // M3 lane 5 r200 (fast with the eight callees, all MATCH; control 168; on lane 3 r261's 163 form unless noted): `visible` as
 // `reference == NONE || prop_ref_get(reference)->unknown27 >= 1` 423 (the frame changes); the iterator's NONE fields chained
 // 165; the player as a ternary on the found index 367; both searches in ai_player_get's shape (player NULL first, a long copy

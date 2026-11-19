@@ -2994,6 +2994,9 @@ struct s_unit_event
 // Round 636: region and permutation receivers remain exchanged. Pool retained through drops 460, through
 // effects 460, through vehicle 481; retained from entry 451, from region update 513; pool and 16-bit
 // slot through drops and vehicle 555 or from entry 566; pool retained for both early notifications 420.
+// Round 640: region lvalue, permutation lvalue, both, or both read-only 420/420/420/420.
+// Region word mask/lvalue/shared setter 533/420/420. Typed seat label cursor and
+// index 419/420. NOT kept: the cursor gains one and the register assignments still differ.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5290,6 +5293,8 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
+// score 178 (was 146): The section bound and primary mask exchange registers, and the bitmap zero precedes node-scan admission.
+// m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
 // score 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // the scan) gives 166 with retail's EAX/EDI section-loop registers; a one-use local is match-only, so not kept. With it
 // the first mask still extends before the count guard, and the late detached-mask zero, piece search and final lookups
@@ -5529,6 +5534,12 @@ struct s_damage_object_creation
 // same code (the address folds away once inlined); `~piece_nodes` named once for the update and the node mask 146 (same
 // code). Diagnostic: one to three dead initialised locals on the for/break lead 221/222 each, so the flip is not a
 // symbol-count phase. Every search with retail's for/break shape hands the mask a register (frame 0x13dc).
+// Scan-local primary mask and signed/unsigned bitmap: zero after capture 164/164,
+// at scan admission 217/217, separate zero after the lookup 217/217, or
+// combined with marking-loop initialization 217/217. Positive node count owns
+// marking and creation 171 with direct masks, 158 with the scan-local primary.
+// NOT kept: the 164 form clears the bitmap before the section-mask branch;
+// the 158 form moves the datum spill and adds a second node-count test.
 // Nullable bound, assigned bound and nullable while 178/183/178; scoped unsigned first mask 166 (one-use local, match-only: not kept);
 // mask shared through detachment 155; nullable bound/shared bit 221; shifted mask tests 180;
 // scoped damage record with first mask 166; first mask inside scan or with shared test bit 178/178;

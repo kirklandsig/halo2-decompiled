@@ -1936,6 +1936,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // packed-word memcpy 60, selected prefix length 157, sender advance with recipient-local
 // zero test 174. NOT kept: the single-store form shortens to 445 bytes but drops the native
 // initial recipient store and regresses. The shared zero exit and register roles still differ.
+// Complete-entry capacity with the byte gate: written bound 157; remaining count 177;
+// end on final write 185; positive remaining count 177. Quotient as the gate, same
+// scan forms: 168/185/168/185. All add division and change the matched caller.
 // m3 lane 5 r202 (fast with 0x56380, 0x564c0, 0x53b00 and 0x56000, all matched; control 60): the entry size as
 // `11 + (include_mask ? 2 : 0)` 145 (a neg/sbb/and select, the size still in EBP), as `(include_mask ? 2 : 0) + 11` 145
 // (same code), as `2 * (include_mask ? 1 : 0) + 11` 146, as `include_mask ? 11 + 2 : 11` 147 (461 B); include_mask
@@ -4201,6 +4204,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the member fetch with the NONE test after it 145 (EBP still the member); the entry order size, consumed, cursor,
 // stride 164; the cursor advanced ahead of the size and consumed updates 167. No form moved the channel into EBP.
 // Body unchanged.
+// Pre-dispatch budget debit, consumed increase after guard, both updates, and consumed
+// increase before guard: indexed 159/163/176/172; independent cursor 169/166/173/168.
 // Round 140 (m3 lane 9, fast with 0x564c0, matched each time): retail's ten extra bytes are a fourth exit on the loop's
 // zero-trip edge, `mov eax, ecx` returning consumed's initial 2 from ECX (a tail copy of `return consumed;`). On the
 // packet-cursor form (re-measured 164): the arms swapped with the test negated 157 (488 B, EBP then `packet + 3`); the

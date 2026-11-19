@@ -621,6 +621,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // its definition (cross-file, diagnostic) 234 (same code as the helper) and 0x1396c7 48, 0x24e59f 42 lost; 1..16 dead
 // locals on the 234 form 234-235 (symbol count moves nothing); parameters (d, a, camera, ...) with every
 // declaration and call (callers are contributor code, so held) 193, with the 234 form 232.
+// Origin reciprocal before the displaced transform, before displaced-point creation,
+// before the perspective block, or before fallback: zero default 246/228/211/211;
+// direct factor 240/253/232/232. The native extent alone leaves the larger frame.
 // M3 lane 2 r102 (fast; control 195 at 985 B): the point helper given 0x142570's own parameter-address read (a named
 // `s_camera const *const *` to the camera, the scale tested through it) 234 at 971 B: the frame becomes retail's 0x2c and
 // the second transform spills one value into the scale parameter's home as retail does, but the first transform's x, y, z

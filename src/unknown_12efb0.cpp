@@ -741,6 +741,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // then weight and remaining 693 (3823 B, masked 105); that getter form with each clear followed by its unit default 683
 // (same code). Left on the getter form: NONE in EDX with the 0x130f60 result kept in EAX (retail moves the result to
 // EDX and keeps NONE in EAX down to the 0xd4 tag test), zero in XMM5 (retail XMM7) and the accumulator schedules.
+// Select table and ordinal, table and byte offset, conditional scenario table and ordinal,
+// or nested scenario table with late byte offset: short 719/720/724/724; signed byte
+// 619/696/619/619. The best measured forms disturb the matching clear prefix.
 // M3 lane 2 r102 (fast; control 607). Reading: retail's NONE stays in EAX from the loop head through the palette arm to
 // the +0xd4 tag test (`cmp edi, eax`), so it outranks the 0x130f60 result, which moves to EDX; ours stops using the NONE
 // register before the tag test (`cmp edi, -1`, the field_f0 store's scratch registers take ECX/EDX), so the result keeps

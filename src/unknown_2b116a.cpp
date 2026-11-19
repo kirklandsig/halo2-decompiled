@@ -4476,7 +4476,7 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56): retail keeps the controller reference and reloads its index after the membership call.
+// score 54 (was 56): Retail keeps the controller slot and reloads both pointer levels before the two dialog masks.
 // Earlier: only case 3 differs. Retail keeps controller in esi, spills controller_index
 // only case 3 differs. Retail keeps controller in esi, spills controller_index
 // to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
@@ -4546,6 +4546,10 @@ bool __stdcall function_2b278e(long controller_index)
 // 211/199; message selection last/first 219/248; separate leave with Boolean membership
 // 196; group lower actions before leave 217. The original double pointer and index spill
 // still differ. Isolating leave grows the frame.
+// Library copies at the two dialog reads: slot 181/205, index 54/199,
+// both levels 181/205, or both levels at initial and dialog reads 181/205
+// with the opening and Boolean membership locals, respectively. The slot copy
+// keeps the controller object in ESI, and the index copy still folds the reload.
 // Copy the dialog controller pointer, index or both 181/54/181; with Boolean membership 205/199/205.
 // Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
 // NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
@@ -5851,6 +5855,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // addressed byte declarations after the dwords, pending false default, invalid-selection
 // guard with common completion, and immutable mute decisions: 89/89/89/89/89/353/89/89.
 // NOT kept: The session output and later membership results still use different byte slots.
+// Round 640: friend-request mask 394; incoming, outgoing, or both request bits
+// 313/314/450; membership mask or separate bits 391/409; both masks 410;
+// both pairs of request bits 462. All grow and shift the first difference ahead
+// of the friend query. Original predicates and byte homes restored.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

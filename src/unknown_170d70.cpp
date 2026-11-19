@@ -301,6 +301,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // advances 88/74, paired corrected-up stores 70, rejecting orientation disjunction 64.
 // NOT kept: the explicit cursor grows the orientation tail, and the in-place subtraction grows
 // the body. The time and group stack slots still trade places in the opening form.
+// Round 639 forms: target before current or scratch, derivative before target, and scratch cursor after target 64 each.
+// Earlier or later group name 64/64, deadline array bound 65, derivative advance before scratch 78,
+// named copy decision 142, existing placement cross for left 68 or with explicit deadline cursor 125.
+// NOT kept: the explicit cursor restores the traversal at 1413 bytes, and the other forms leave the
+// deadline and group homes exchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -875,6 +880,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // New cluster counts/heads/both with fill 124/123/145 or fill_n 125/123/135. Complete initialization 187,
 // record clear with index/head stores 128. NOT kept: best gains six and reaches retail length but grows to
 // an eight-byte frame. The complete initializer changes the matched caller.
+// Round 639 forms: fixed cluster array 151, shared volume or cluster count field 129/129,
+// signed volume array extent or fixed volume array 129/129, projected slot from selected cluster 132,
+// both count field bindings 129, reserved volume name 129, named projection result 129.
+// NOT kept: the cluster array changes extent, and the projected slot changes the prologue.
+// The other forms leave the opening register exchange.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1431,6 +1441,10 @@ struct s_point_pool_173520
 // before entry lookup 147, arena reference 115, real cap result 117, named expanded edges 96,
 // edge values shared with corners 103. NOT kept: the word reference shrinks the frame and the
 // other forms leave or worsen the reservation, cap reload and edge-store gaps.
+// Round 639 forms: native count field 96, direct increment after pointer publication 177, source flags
+// before bounds 120, clipped count with classification 117, source and clip metadata before reservation
+// 120, bounds before source metadata 130, stride in loop update 96, explicit direction assignment 96.
+// NOT kept: the best forms tie and the pool publication, stride spill and x87 clamp remain.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {

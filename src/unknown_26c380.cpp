@@ -696,6 +696,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 386/386/386. Separate accepted edge with while or for 389/389. Separate scan
 // and prior-crossing edges with while, for, or early rejection 382/382/382.
 // NOT kept: the return and first-edge homes remain exchanged, and the bodies shrink.
+// Nested node or marker gate 244/244; marker first 310; predecessor before node 315;
+// predecessor veto after node admission 297, early predecessor eligibility 392;
+// first-edge or first-edge/hit initialization after the target test 265/265.
+// The two byte homes stay exchanged. Nested transition guards reproduce the opening code.
 // M3 lane 5 r200 (fast with 0x26c380 and 0x270600, both MATCH; control 244): `success = false;` before each cutoff's
 // `next_sector_index = NONE; break;` 229 at retail's 1605 B (not kept: success is already false there, a redundant store; but
 // retail stores it too: `mov byte ptr [esp + 0xe], 0` at 0x26cb08 is reached only from the two cutoffs, so retail's cutoff

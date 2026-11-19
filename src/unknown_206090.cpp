@@ -717,6 +717,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Descriptive workspace names 1375. Query and ray scopes 1374.
 // Velocity scope with typed query 1394, with workspace names 1394.
 // NOT kept: ray scope gains one point and all forms retain the larger frame.
+// Live point or contact count field references 1394/1394; live point or contact
+// definition-table field references 1375/1375; count and table references together
+// in either phase 1394/1394; shared motion-origin field reference 1449, with all
+// count and table references 1449. The frame and original contact induction remain.
 // Lane 13 r112 (plain checks: a `--fast` run of this function alone or with its eleven callees, 0x24590 and 0x30bf0 builds
 // it differently, 1392 at 6211 B with frame 0x5cc, so fast counts for it need a wider list). Retail's first loop and
 // contact loop keep their counters in one home (0x1c, read with `fild` in the first loop and passed to 0x2079f0 in the
