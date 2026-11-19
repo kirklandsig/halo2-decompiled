@@ -431,6 +431,11 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax B (11-19): no new form, no lower score (412): the maximum as a long instead of a word gives 416 and the prior
+// state as a short instead of a word gives 413, so both were reverted and the body stands. What still differs is the
+// frame, 0xa4 against retail's 0xa0, and the actor index, which retail takes in EAX because it inlines 0x2641c0 at its
+// caller, so this body's own signature cannot change: BLOCKED-BY 0x2641c0 (its noinline declaration is in
+// src/unknown_265cb0.cpp, another lane's file).
 // MiniMax H (11-18): no new form, no lower score (412): the frame stays 0xa4 against retail's 0xa0 and the early
 // homes keep their order (ours the actor base at 0x18, the flag byte at 0x17 and the constant 1 at 0x1c, where retail
 // has the index at 0x28, the actor base at 0x20, the constant 1 at 0x1c and the flag byte at 0x13, since retail saves

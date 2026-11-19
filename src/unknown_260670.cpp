@@ -40,6 +40,11 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// MiniMax B (11-19): score 440 (tried 416, NOT kept: a 510-entry sort array gives retail's 0x8a0 frame, but callers pass up to
+// 0x200 entries, so it can overflow and only steers the frame): with 510 the first
+// difference moves to +0x3b; the early homes still differ (the reference at 0x18 against retail's 0xc, the two flag bytes
+// eight apart at 0xb and 0x13 against retail's adjacent pair at 0xe and 0xf) and the sorted loop still calls 0x2600a0
+// where retail inlines 0x262a30's owner lookup.
 // MiniMax G (11-18): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and the two
 // flag bytes still take homes eight bytes apart (ours 0xb and 0x13, retail 0x6 and 0x7), so every home above
 // them moves with the frame; the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup

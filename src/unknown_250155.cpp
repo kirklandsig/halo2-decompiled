@@ -2764,6 +2764,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax B (11-19): no new form, no lower score (87): the frame agrees at 0x788 and the first difference is still
+// the shown count's home (ebp-8 against retail's ebp-0xc), with the first loop's element address at ebp-0x18 against
+// retail's ebp-8 and the player at ebp-0xc against retail's ebp-0x14, so the six spill slots stay one six-step
+// cycle off retail's; moving the homes needs the declarations reordered, which the rules bar. The voice query still
+// keeps the player across 0x53b40 where retail reloads it (a store through a pointer somewhere in that chain, in
+// src/network_voice.cpp, another lane's file), and the last loop still keeps the screen in ebx where retail gives ebx
+// to bitmap_a.
 // score 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
 // keeps it at ebp-0xc, the first loop's element address ebp-0x18 where retail keeps it at ebp-8 and the player ebp-0xc
 // where retail keeps it at ebp-0x14, so the six spill slots stay one six-step cycle off retail's; the voice query
