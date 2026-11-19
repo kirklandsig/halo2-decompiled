@@ -2835,6 +2835,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // (927 B); the first loop under a redundant `if (0 < count)` 90; the first loop's players[i] through a `long const &` 87
 // (same code). The players[i] reload after 0x53b40 stays BLOCKED-BY src/network_voice.cpp (another lane's file this
 // round; r113's optional-output membership helper there gives it).
+// MiniMax S (11-19): no new form, no lower score (87): the frame agrees at 0x788 and the statements are retail's, but
+// the retained count still takes ebp-8 where retail keeps it at ebp-0xc and the first loop's element address and
+// player are one step round, the voice query still keeps the player across 0x53b40 where retail reloads it (that
+// needs a store through a pointer in the 0x53b40 chain, whose source lives in src/network_voice.cpp, another lane's
+// file), and the last loop still spills both bitmaps where retail keeps the bitmap_a in EBX and spills only the
+// bitmap_b at ebp+0x1c.
 // score 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
 // Earlier 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
 // keeps it at ebp-0xc, the first loop's element address ebp-0x18 where retail keeps it at ebp-8 and the player ebp-0xc
