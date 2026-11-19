@@ -262,6 +262,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // returns (`if (kind != 1) return 1; if (!available) return 1;`) 36 (104 B); the changed flag declared first 29 (91 B);
 // the availability as one returned expression with a `short const` kind 32 (95 B). Diagnostic: K = 9 to 31 (odd) dead
 // initialised longs at the top, with the existing read, 4 at every K (the request/kind pair is not a symbol-count tie).
+// M3 lane 16 r148 (fast with 0x8c5b0/0x8c660, both MATCH each time): the availability as an inline helper returning the
+// payload pointer (NULL when unavailable) with the setting seeded 1, plain read, 30 (94 B, folded compare); the store and
+// change test as an inline setter returning `changed`, with the volatile read 4 (same code), with a plain read 32 (95 B).
+// Re-measured: the index read first with the volatile read 5 (request EAX, kind AX: the request dies before the kind
+// loads), with a plain read 32.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

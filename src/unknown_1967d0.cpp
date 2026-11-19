@@ -1012,6 +1012,11 @@ static inline long team_score_195ed0(long team)
 // Diagnostic on that object: 0x196470's second player loop indexing its player array as a real array member (not the
 // cast entry pointer) 158 (751 B, the NONE test on the pointer again): the compiler forms `players - 0xa4` whenever it
 // lies inside the symbol, array member or not, so one object for both functions does not reproduce retail.
+// M3 lane 16 r147 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the clamp over the real
+// 0x1587f0 re-measured 192 (1241 B: all three reads inlined, their nested calls kept); the score helper's team test
+// through the real 0x161e60 180 (1225 B); the team helper plain `static` 180 (1225 B, the same code: its copy folds into
+// 0x161e60); the score helper plain `static` 322 (1051 B: no read inlined, each calls the file's copy); a `0 <
+// ranking.team_count` guard around the rank loop 161 (1210 B; the count tested as a word, but twice).
 // @retail 0x195ed0
 void function_195ed0(void)
 {

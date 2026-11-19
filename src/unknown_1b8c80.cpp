@@ -903,6 +903,10 @@ extern "C" void _ReadWriteBarrier(void);
 // moves the data base to ESI; a real slot read after the outer if, with or without the barrier, loads the slot just
 // before the jne (after the compare: an allocator load is not hoisted); `#pragma optimize` g off, s on, y off are all
 // further off. Retail's entry needs the state as a real, unpropagated definition made after the data-base load.
+// M3 lane 16 r148 (fast with 0x1ba3f0/0x1ba5c0, both MATCH each time; control 6): the flags byte bound to a `byte const &`
+// at the top, without/with the barrier 44 (208 B)/6 (same code); a discarded `(void)state->flags;` read at the top, no
+// barrier, 44 (removed); the point copied through a block-local `point3f` in the flags arm, no barrier, 50 (212 B). The
+// slot load still sinks to the NONE block in each.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

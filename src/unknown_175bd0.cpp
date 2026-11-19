@@ -3242,6 +3242,12 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // velocity, location) re-measured 40 (the arm is a byte shorter, so ten branch targets move); the record renamed `sound` 23;
 // the node index passed straight in the call 23 (r102's form again); the compressed field bound as a `dword &` with retail's
 // order 40; the velocity field bound as a `vector3f &` with retail's order 40.
+// M3 lane 16 r146 (fast with 0x189060, 0x1895f0, 0xc0350, 0x177d10, 0x17a380, all matched each time): baseline 23 at 1328
+// bytes, first difference +0x24f (0x17e670's register arguments, contributor); 0x189060's file is on this round's avoid
+// list, so the held order could not be applied. Detached record with a compress local: declared first, retail's record
+// order 29; after the point copy, velocity, then the compressed store, location 14 (round 117's form: point copy and
+// store order left; a one-use local, not kept without a match); after the point copy, location, compressed store,
+// velocity 37; retail's order re-measured 40. Body unchanged.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {

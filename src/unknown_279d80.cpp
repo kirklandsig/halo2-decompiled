@@ -2100,6 +2100,13 @@ void function_27dd10(void)
 // user regresses); the bit-flags pointer stepped in the outer for's increment 414 (1751 bytes); in function_288572 the
 // bit-flags selection ahead of the output-cursor store 2 (0x288570 3, 0x289580 78); the blend's sign mask with external
 // linkage 2. All restored.
+// M3 lane 16 r146 (compile-only build of the file, exact here: this function 2, 0x281b60 2, 0x285750 0): only pass 0's
+// pair is reversed (count, flags); pass 1's (EDX flags, ECX count) is already retail's. The flip from a float operation in
+// the scale arm (`+ 1.0f`, `+ 2.5f`, `* 2.5f`, a negate; diagnostics) does not need a new constant (1.0f is already used
+// earlier in the file), so it follows the float work in the function, not a new symbol. Same pair, no change: the scale
+// blend's fraction by value 2; the vector blend's fraction by value 138 (pair unchanged); both 138; the interpolation's
+// translation fraction read once into a local 2; interpolate_real's fraction by const reference 2; all three of its
+// parameters by const reference 2. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

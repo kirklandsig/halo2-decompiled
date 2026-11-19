@@ -988,6 +988,11 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // `forward`) 235 (same code; kept). Unused initialised locals at the top (diagnostic only) 1-7: 236/285 (1229 B: the
 // rotation dot's fold goes, the first cross recolours)/232 (1240 B)/235/235/235/235. The settings alias dropped 235;
 // the old-forward alias dropped 235; both 235; the rotation and acceptance dots unparenthesized i, j, k 248 (1243 B).
+// M3 lane 16 r146 (fast, 0x1e5af0 and 0x30bf0 matched in each): `limited` declared ahead of `axis` and assigned in the
+// rotation block 235; `limited` copied from `state->up` 235; `axis` declared ahead of `up` 235; one cross vector for the
+// rotation block and the outer crosses 235; `limited` ahead of `axis` with the shared cross 235 (all the same code).
+// Diagnostic, unused initialised locals at the top, K = 0-3 and 8-16: 235/236/285 (1229 B)/232 (1240 B), then
+// 235/236/285/232/235/235/235/235/235: the pattern repeats every eight, so no symbol count reaches below 232.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
