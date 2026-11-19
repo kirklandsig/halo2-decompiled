@@ -889,6 +889,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // spills it at +0x50, writes the result as a dword at +0x64, and keeps the actor pointer at +0x54, the radius at +0x24 and
 // the completion flag at +0x22; the frame agrees at 0x1f88. The out parameter's short type stays BLOCKED by its
 // declaration and the caller in path.cpp.
+// M3 lane 4 r218 (fast with 0x270930/0x2c4030, both matched; control 675, aligned 418, masked 276): lane 14 r77's shape body
+// re-applied to this file 771 (2938 B, aligned 357, masked 158); on it the enabled bit as `(bool)((g_557c40[9 >> 5] >> (9 &
+// 31)) & 1)` 760 (masked 153), `last` as a byte 788 (2922 B). On this body: maximum_height declared ahead of the radius
+// 676; `last` computed after the obstacle/search pointers 675 (masked 273); that with the (bool) bit 719. Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

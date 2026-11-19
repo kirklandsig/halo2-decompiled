@@ -1310,6 +1310,11 @@ static __forceinline long real_to_long(real value);
 // 0x1b7e40 91, restored); the facing read through the view at every use, no pointer local, 517 (1945 bytes); the pointer
 // declared where retail first forms it, ahead of the facing test on the predicted offset, 516 (1944 bytes). Still
 // BLOCKED-BY 0x25d740's expansion at this site.
+// M3 lane 4 r218 (fast with 0x1a9d80/0x1a9e00/0x25d740/0x25d690, all matched; control 382): retail forms the two position
+// addresses it passes to 0xfa1a0 ahead of the direction vector and reads x through them; a target-position pointer for the
+// direction and both calls 458 (1910 B, frame 0x54), an actor-position pointer 448, an AI object pointer with the target
+// pointer 487 (1927 B), with both pointers 460 (1929 B), both pointers declared at the top of the far arm 422 (1906 B).
+// Body unchanged; the computed entry result still puts 0x25d740 under three tests, where our link expands it.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

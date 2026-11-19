@@ -2014,6 +2014,9 @@ void function_1f86a0(long actor_index);
 // 223; the selection's root called first 134 (same code). The FORMS slot data-block form is round 39's 134 (same code).
 // Nothing kept. Open as before: retail gives EBX to the loop entry (saved after the early return), spills the mask
 // byte and frames 0x14.
+// M3 lane 4 r218 (fast with 0x1b8c80/0x1ba990/0x1b9e70, all matched; control 134): the state and selection pointers
+// formed after the parent test 233, the selection alone after it 233; joint_index declared at the top 134 and ahead of the
+// iterator 134 (same code); the +0xc slot flag read through the state view's byte 134 (same code). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
