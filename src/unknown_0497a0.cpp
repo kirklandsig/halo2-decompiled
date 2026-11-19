@@ -534,6 +534,11 @@
 // both add-scaled products 536 (same code); the two wave values as the members of one point2f 634 (2672 B, retail's
 // 0x60 frame, stored and reloaded into XMM as retail but the body grows); the mixed wave halved as `/ 2` 536; the two
 // wave values declared at function scope 536; the plain sine's sum written `x * 5.6f + (double)y` 536 (all same code).
+// m3 lane 8 r198 (fast with 0x4a1e0; control 536 at 2622 B, both builds end `ret 0x20`; difflib-aligned 593): the two
+// shape pointers declared ahead of the inverse 536 (same code: retail stores the NULL shape before the inverse, ours
+// after it either way); the inverse declared after the shape selection 549; declared just ahead of its switch 676 (2626
+// B, frame 0x50); v4 declared ahead of v3 (retail's homes run v1, v2, w, v3, v4) 554; w declared ahead of v3 and v4 536
+// (same code); w first and v4 ahead of v3 554. The frame stays 0x54 against 0x60 in all of them.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
