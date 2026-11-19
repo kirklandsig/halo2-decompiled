@@ -314,6 +314,12 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // against this body's 90). No form found for the record/sum pair (diagnostic: one extra read of the sum puts the record at 0x84
 // and adds code). Compile-only synthetic functions: equal-count spill homes are laid out in order of first load, address-taken
 // locals in order of last use, and neither declaration nor first-assignment order moves them.
+// M3 lane 16 r144 (fast, control 280 at 3717 B; 0x293d30 reads DIFF in every fast image here, control included):
+// unused initialised locals at the top (diagnostic only) 1-7: 301 (3718 B)/300/543/535/270/466/462, the 270 with one
+// more aligned difference than the control. The separation radius squared named for the test and the reciprocal 685
+// (3708 B); the neighbour's position summed before the alignment and separation terms 630 (3712 B); the neighbour view
+// alias dropped (cast at its two uses) 462; the alignment weight written reciprocal-first 280 (same code); the
+// alignment total accumulated before its weighted forward 682 (3720 B). Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

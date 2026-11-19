@@ -1352,6 +1352,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
+// Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
 // and the first difference is the elapsed time's register (retail XMM3, this build XMM2) with the reciprocal one
 // lower to match (retail XMM2, this build XMM1); the copy of the fade-in time dropped so that the inverse is
@@ -1362,7 +1364,6 @@ long function_2197f0(real gain);
 // register, this build reloads the field from memory); the clamp with the division made eager (`real t = time /
 // ducking->fade_in_time; if (!(1.0f > time * inverse)) t = 1.0f;`) measures 143, a fade-out local 92 and the inverse
 // taken from the field 94, so the body stands.
-// score 87 (was 87): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
 // MiniMax G (11-18): no new form, no lower score (87): the elapsed time and its reciprocal still take different registers
 // (XMM2 against retail's XMM3), the first gain load is still separate, and the release-to-attack join still differs.
 // Earlier at 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
@@ -1752,6 +1753,10 @@ long function_2197f0(real gain);
 // Round 431: composite remainder before reciprocal 87; common remainder after attack or hold
 // admission 160/160; same-ambience fade/hold/both snapshots 160/162/116; existing scalar sum for
 // the composite gain (bit copy or native construction) 87/87. The original body is restored.
+// composite duration named attack duration 87; composite duration named transition duration 87;
+// composite time named overlap time 87; composite time named adjusted attack time 87; composite
+// fraction named transition fraction 87; composite fraction named attack fraction 87; attack duration
+// and fraction with adjusted attack time 87; transition duration and fraction with overlap time 87.
 // M3 lane 2 r104 (fast with 0x1251e0/0x221810, both matched; aligned exact/stack-masked/register-masked 54/56/20 at
 // 87): retail keeps arm 1's fade-out test load in XMM1 for the product (`mulss xmm0, xmm1`), which pushes the
 // reciprocal to XMM2 and elapsed to XMM3; ours reloads it from memory. A fade-out local for the test, the sum and the
@@ -1761,6 +1766,12 @@ long function_2197f0(real gain);
 // (52/54/17, the fade-out still from memory); elapsed declared const 87 (same code); the fade-out local with arm 1
 // written interpolation first (retail's `other` there is the gain copied into XMM1) 161 (688 B, the copy goes to a
 // new stack slot). No change kept.
+// independent transitions use their own gain accumulator 112; independent gain accumulator with attack index read
+// at the join 112; independent gain accumulator returned from its phase 126; independent gain return with attack
+// index read at the join 126; separate completed release gain and attack gain returns 119; separate release and
+// attack gains with attack index read at the join 119; post-release gain bits supply both late outcomes 161; post-
+// release gain bits with attack index read at the join 161.
+// NOT kept: separate release and attack returns recover the 678-byte extent at 119 and split off the initial gain return. Every form raises the score.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3243,11 +3254,13 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// score 96 (was 96): The saved byte result takes four extra frame bytes. The entry load order and failure join still differ.
+// The result byte takes four extra frame bytes. The entry loads and failure tail still differ.
 // MiniMax B (11-18): no new form, no lower score (96): retail keeps the outcome in AL (set at the entry, cleared on the
 // failure path with xor bl, bl and moved back) while this build keeps it in a stack byte at [esp+0xf], so the frame
 // is 0xc against retail's 8; the closest form (15) needs a goto into an arm, a redundant store and a moved
 // declaration, and the file-local search helper taking `long type` on its own regresses to 127, so the body stands.
-// score 96 (was 96): MiniMax I (11-16, round 2): no new form, no lower score: our prologue still sets the frame up
+// Earlier observation: MiniMax I (11-16, round 2): no new form, no lower score: our prologue still sets the frame up
 // before reading the voice index and loads two globals ahead of it, where retail reads the index first and keeps the
 // outcome in AL; our frame is 0xc against retail's 8, both with the saved ebx, so one local is spilled that retail
 // keeps in a register. Body unchanged.
@@ -3658,6 +3671,14 @@ static inline short sound_voice_find_available_channel(char type)
 // the search 129/132; provisional byte 151; assigned outcome in each admission arm 135;
 // existing-channel outcome first 135.
 // NOT kept: the Boolean paths recover the eight-byte frame but change entry and failure joins.
+// Entry channel result with plain/complemented status: bool has-channel 135/138,
+// bool needs-channel 182/185, byte has-channel 176/179, byte needs-channel 182/185.
+// counted while scan over cached inclusive bounds 96; cached inclusive bounds with return from the found channel
+// 96; inclusive last channel read once before the scan 96; both inclusive channel bounds read before the scan 96;
+// full-width selected index with both inclusive bounds 96; separate guards skip unavailable and streaming channels
+// 96; positive free-channel guard nests the streaming guard 96; single rejection guard skips unavailable or
+// streaming channels 96.
+// NOT kept: all eight search forms tie at 96 and keep the twelve-byte frame, result spill and failure join.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4030,7 +4051,9 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
+// score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
+// advance differs at +0x6b.
+// Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
 // `case 1: continue;` arm and an unreachable `default: __assume(0);`, and the pitch range is computed inside case 0
 // where retail computes it: every register, the `sub eax, 0` dispatch and case 0 are retail's. Left: the loop end's
 // pool reload is scheduled ahead of the `cmp ebx, -1` where retail loads it after the next-index ternary's join (the
@@ -4253,6 +4276,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // range gates 8; while with zero mode admission 92.
 // NOT kept: separate class and range tests tie. The bottom-advance loops lose the native mode comparison and leave
 // the pool reload early.
+// Shared pool step after initial lookup 183, Shared pool step for entry and advance 293, Shared pool step in the
+// while test 293, Shared absolute-to-datum conversion at entry 183, Shared absolute-to-datum conversion at
+// advance 77, Shared absolute search at advance 91, Native word slot for both playback observations 168, Advance
+// the admitted datum directly from its low word 91. NOT kept: The shared calls remain out of line and shorten the
+// body. A native word slot retains 558 bytes at 168. Advancing the admitted slot directly removes the retail
+// sentinel branch and shortens the body.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

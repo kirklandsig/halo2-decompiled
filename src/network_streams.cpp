@@ -839,7 +839,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
-// score 35 (was 35): earlier 60. The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
+// score 35 (was 35): The message and saved flags use EAX and CX. Retail uses ECX and AX and updates the low byte
+// in place.
+// Earlier score 35 (was 35): earlier 60. The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
 // The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
 // Earlier: retail keeps the message in ECX and the flags in AX (ours EAX / CX) and ends the found path with
 // `or byte ptr [ecx + 0xe], 2` (ours `or ecx, 2` and a word store); m3 lane 3 r257's entry is the last one above the marker.
@@ -1187,6 +1189,20 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 89/86/86, both fields tested directly 89/84/84, word/byte bit-view copy 89/84.
 // NOT kept: setting the actual bit changes the entry and loop registers, even at
 // 225 bytes. The selection still differs from retail. Original body restored.
+// M3 lane 4 r220 (fast with 0x96510/0x94df0; control 35): the saved-word update ahead of the three output stores 39 (the
+// word store stays: VC does not fuse a register value back into a memory OR even with no store in between); the in-place
+// update ahead of the stores 90, with the tests on the member as well 90; the in-place update with `type = 4;` first in the
+// found path 104 (209 bytes); the test inverted with `continue` and the found code after it 35 (same code), with the
+// in-place update 89. Diagnostics, reverted: on the in-place form with the message zeroed at its declaration (59), a probe
+// store of the flags word after the update keeps it live in AX and the found path then takes retail's EDX/ESI temporaries
+// exactly (46, the probe's store aside): retail's flags word is live through its found path while the update is the memory
+// OR. The source that keeps it live without code is still unknown.
+// Word pending bit with saved word tests 89, Word pending bit with two native bit tests 88, Word pending bit with
+// selected low bit pair 106, Word pending bit with separate sent and pending admissions 89, Byte pending bit with
+// saved word tests 86, Byte pending bit with two native bit tests 84, Byte pending bit with selected low bit pair
+// 88, Byte pending bit with separate sent and pending admissions 86. NOT kept: The bitfield update emits the byte
+// OR, including at 225 bytes, but changes the opening register allocation and raises the score. The original
+// message layout and body are restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

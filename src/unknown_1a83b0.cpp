@@ -660,6 +660,23 @@ s_1a8a10 g_4453c0[] =
 // four facing reads in place 91. Re-measured: the copy's j after the left sum with retail's term orders and the identifier,
 // index, score order 15 (the j reload appears, but the copy's j load then waits for the left sum and the left product
 // multiplies a copy of i: retail multiplies i in place and copies it for the forward product).
+// M3 lane 8 r193 (compile-only screen of the float block, which reproduces this body's block exactly; then fast with
+// 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH): 0-40 initialised dead locals ahead of the block leave it unchanged (no
+// symbol-count tie); both sums in retail's term orders re-measured (same code). The forward sum first with both sums read
+// from the copy (negated copy j) 89; the forward sum first with the copy as a const 2D vector with a brace initializer 31
+// (screen: the forward j still loads at its use and its result moves out of XMM0); the left sum's i read from the actor
+// with the forward first (screen: i loaded twice). On round 115's frame-transform lead (copy plus perpendicular, sums
+// `copy.i * y + perpendicular.i * x` and `copy.j * y + perpendicular.j * x`, stores [2], [3], [0], [1], identifier/index/score
+// order; screen: every instruction retail's but the xmm numbering): all 24 orders of the four component assignments give
+// the zero XMM3 (or XMM2) and x/y XMM5/XMM6 (retail zero XMM1, x XMM4, y XMM5, copy XMM6); 0-16 dead locals inside the
+// block or 0-14 ahead of it only permute i/j/copy among XMM1/XMM2/XMM4.
+// M3 lane 10 r124 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH each time; control 17): the four products
+// named where they are computed (both sums from them) in the orders forward-x, forward-y, left-x, left-y / left-x, left-y,
+// forward-x, forward-y / forward-x, forward-y, left-y, left-x / forward-y, forward-x, left-x, left-y 17 each (same code: the
+// IL order is not the source's); the facing copied whole as a 3D vector 142 (564 bytes), that with the forward sum's terms
+// swapped 142. Diagnostic (an invented layout, not keepable): the rotated point as the first two reals of a six-real value
+// array (so its stores go to an address-taken local) 99 (frame 0x28; j is still loaded once, so the y store's aliasing is
+// not what reloads j in retail).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

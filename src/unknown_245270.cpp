@@ -280,7 +280,9 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// score 164 (was 206): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
+// and independently decoded side homes differ.
+// Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail's 0x2c; the source now arrives in ECX as in retail (earlier note: 206, was 206).
 // Earlier 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix;
 // m3 lane 16 r130 and r132 at the end.
@@ -843,6 +845,15 @@ void function_245400(s_source_245400 const *source, long index,
 // XMM4-6 against XMM3-5); that with the edge as three member differences 211 at 783 B [97/53]; the side bits through
 // a forceinline helper taking the long code by const reference 232 (752 B, folds as the shifted sides); select,
 // member differences and `(local_2 >> 15) & 1` sides together 237 (746 B). Body unchanged.
+// M3 lane 1 r126 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH each time; control 164, aligned 134): on the single
+// condition, sides as `(code & 0x8000) != 0` 232 (752 B) and as `((dword)code >> 15) & 1` 232 (752 B: the two tests merge
+// into one jump). The edge rotation through an inline vector form of this file's point transform (copy the components,
+// `x = matrix->scale * x` under the scale test, rows `up * z + left * y + forward * x`, the edge passed in and out) 163 at
+// 783 B [124]: retail's select shape (`movaps` copies, `jnp`, the scaled copies) but the rows' sums reorder; its rows as
+// forward, left, up 163 [124]; i/k forward-first with j as up, forward, left 163 [124]; j as two statements 164 (785 B).
+// Diagnostic, restored: on that helper form, the second vertex pointer stored to a scratch global inside the plane test
+// 207 (786 B, [114]): the first vertex pointer is then formed before its loads and the edge lands at retail's offsets.
+// Not kept: a new one-caller helper for one point.
 // Round 433. The frame, independent decoded material homes and late matrix load still differ.
 // decoded plane indices word 224; second material comparison first 164; geometry scoped plane receivers 206;
 // geometry scoped plane table and receivers 200; ordered thresholds before sides 201; paired rejected orientations
@@ -853,6 +864,13 @@ void function_245400(s_source_245400 const *source, long index,
 // 207/207/207/212; late table with inequality or lower bound 209/209; with native short
 // inputs 207, and late-table complementary order 209. NOT kept: these leave the frame
 // at 0x24 or 0x28; the late table also disturbs 0x245aa0. Original body restored.
+// Separate scaled rotation input with an explicit unscaled arm 247, Separate rotation input with the unit-scale
+// arm first 251, Conditional rotation input from the scale helper result 240, Rotation input changes only on the
+// scaled branch 239, Explicit scaled input with one matrix scale observation 247, Conditional helper result with
+// one matrix scale observation 240, Branch-selected rotation input with one matrix scale observation 239,
+// Rotation reads a copied edge scaled in place 231. NOT kept: The pointer-selected rotation inputs recover frame
+// 0x2c but grow the body to 820 or 822 bytes and raise the matched caller 0x245aa0 to 6 in the reduced image. All
+// other forms keep frame 0x24 and lengthen the body. The original caller and transform shape are restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
