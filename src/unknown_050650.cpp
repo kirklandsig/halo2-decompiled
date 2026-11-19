@@ -2092,6 +2092,11 @@ struct s_actor_looking_structure_view
 // helper taking the vector and the axis by reference 23 (same code); the axis by value 210 (0x297660 fast 4); the helper
 // returning the vector pointer 23 (same code); each cross term scaled by the sine where it is computed 153 (925 B), which
 // lowers 0x296e60 to 199 fast (a lead for that function; not kept, it raises this one).
+// M3 lane 12 r143 (fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x2967b0; control 23): round 91's lead re-measured
+// on today's 0x296e60 (helper dot `((j + i) + k)`, score `(i + k) + j`) 13 with 0x296e60 270 -> 339; the score alone
+// parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's
+// projection staged (`projection = dot; projection *= 1 - cos;`) 141 (927 B; 0x296e60 282); the helper's product written
+// `(1 - cos) * dot` 23 (same code); the fraction as a ternary after the trace 144 (re-measure of round 27's form).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

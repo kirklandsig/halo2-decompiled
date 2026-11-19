@@ -1581,6 +1581,25 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // with disabled/direct first 614/650; three-way motion selection 628; general before direct 612;
 // enabled-input dispatch 635; gravity retained from bounded-step admission 453. NOT kept: all
 // scores rise and the original damping extraction and vector-home differences remain.
+// M3 lane 12 r143 (fast with 0x1f0450 and 0x24590, both MATCH; control 234). Retail's tail structure: the first arm clears
+// gravity and cross-jumps into the general arm's `movss [edi + 0x14], xmm0`; the direct arm stores i, j, then k from XMM1
+// and jumps past it; the general arm stores each row as formed (XMM3, XMM0, XMM0, current loaded first). The cross-jump
+// needs the general k row in XMM0; ours commutes it into the dying limited.k (`addss xmm2, [eax + 8]`) whenever both arms
+// are row statements. Forms: a `vector3f const *up` for the first arm's cross and last add-scaled 429 (3052 B); a facing
+// pointer for its cross and scale 429 (3052 B); one `vector3f *velocity` for its three helper calls 591 (3027 B); the
+// general arm as three row statements 559 (3037 B: its tail is retail's, but the direct arm's k store merges as well);
+// both arms as row statements 347 (3052 B; 1-8 unused locals on it 347/478/579/575/490/479/474/474, the k row commutes at
+// every K); output-form grid, direct rows / vector3f_assign / real_point3d_set by general rows / vector3f_assign /
+// vector3f_add either order / real_point3d_set: 234-559, retail's merge pattern only with direct rows and general
+// vector3f_assign or real_point3d_set (543 each, general rows not interleaved). LEAD: both arms as row statements and the
+// direct arm's speed read at each use (no `speed` local) 437 (3053 B), with the speed-scaled point named `desired` and the
+// delta through the existing vector2d_from_points2d 398 (3049 B): first arm merged, direct not, general rows retail's, and
+// the direct arm after the normalize call retail's but for the delta/limited homes; left is speed loaded twice (retail
+// loads it once into XMM3 and copies it), two bytes that shift the rest. Every `speed` local brings the commuting k row
+// back: declared first 347, after rotated 456, assigned late 456, function scope assigned in the arm 456, const 347,
+// renamed 347, scoped around the two products 569, with the 2-D helper 445, products written rotated-first 347; with the
+// one-use `maximum` passed straight 442 (347 on the plain both-statements form). Also: step before delta 560, limited
+// declared before delta 347, the rotation's second row written the other way 347.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

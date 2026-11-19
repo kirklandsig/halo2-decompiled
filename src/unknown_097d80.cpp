@@ -589,6 +589,10 @@ struct c_aggregate : c_child
 // Stop collection on callback error by break/loop test 83/37; with null-child skip 83/48.
 // With the final boundary set in the dispatch block 83/139/83/140.
 // The frame stays 0x8024 and the produced count still has a separate home.
+// M3 lane 12 r143 (fast with the six file-mates, all still matched): both child loops through one reference to the member
+// array (`c_child *const (&list)[3]`) 126; the call's result named `status` and stored to error at once 31; the room as
+// `0x100 - total` 31; the destination as `blocks + starts[i]` 31 (re-measure); the dispatch gate as `!(error != 0 ||
+// request->type == 4)` 31 (all 31s the same code). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
