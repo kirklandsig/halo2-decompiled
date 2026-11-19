@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 920 (was 920): r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// score 920 (was 920): r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // r118 (lane 14) unchanged; r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
 // MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
@@ -642,6 +642,26 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // the fetch both after that test 926 [673]. Retail's layout puts the join (distance test, definition bit, classification
 // start up to its first `jmp`) right after the type-0 other-actor branch, with the type-0 `else if` branch and the type
 // 1/7/11 arms after it jumping back; every form here keeps source order.
+// M3 lane 13 r121 (fast with the three callers 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, 0x2c3030, 0x2c2060, 0x2c3550,
+// 0x29c860; this set's control is 920 = plain; [difflib-aligned] in brackets, control [680]): retail's call in 0x2c41b0
+// computes the previous-direction argument right after it pushes the ignore and unit indices and before the direction,
+// so the declared order is (actor_index, flags, settings, obstacles, blocking_obstacles, position, radius, direction,
+// previous_direction, unit_index, ignore_index). With that order at the definition, the four declarations and the three
+// calls, 0x2c41b0 goes 675 -> 661 and the two matched callers stay matched, but this body reads 928 [678] (3707 B), so
+// it is not kept: build/r121/lead-2c0d60-param-order.patch. On the present order: both qualifiers dropped 972 [541]
+// (3671 B, frame 0x2cb0); the type byte read at each use 936 [667]; both 968 [502] (3676 B, frame 0x2cac, 925
+// instructions against retail's 921). What is left on that base is the entry's registers (ours settings EBX, the object
+// table ESI, zero EDI; retail actor_index EBX, self_unit and its zero EBP, unit_index EDI, held up to the loop head and
+// re-read on its back edge), the skip flag's home (ours BL; retail's byte at +0x12, packed with blocking, aligned and
+// straight) and the moved join block. On that base: the skip flag forced into memory with a qualifier (diagnostic) 889
+// [489] (3708 B; the four bools then pack as retail's, but its stores go through a register where retail has `sete byte
+// ptr`); the entry dot through dot3f in either order 975 [500]; the two type-0 inflation tails as one forceinline helper
+// with the inflation and the skip flag passed by address 968 (same code as written out; the first tail only 947 [496]);
+// the settings block as a forceinline helper with the four priorities by address 991 [487]; the new order 975 [493]. A
+// switch over the type local 926 [697], over the type byte 947 [683]; with the new order 889 [696] (3732 B: position
+// only, the aligned count is worse) and 937 [678]. Retail reads the type byte four times in the loop: once sign-extended
+// for the four arm compares (`movsx eax`, then `cmp eax, 1`, `7`, `0xb`), and as a byte at the range test, at the
+// `1 << type` and in the sphere loop.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

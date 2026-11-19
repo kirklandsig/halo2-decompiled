@@ -372,6 +372,14 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (1589 bytes, aligned 215); the two missing-input tests as one `||` 412; the second and third exits as an else-if chain
 // around the body 387 (same code); the +0x3c pointer read before the clock 377 (1589 bytes but aligned 214, and retail
 // reads it after the clock: a positional gain only).
+// M3 lane 13 r119 (fast with 0x706f0, 0x5b080 and 0x75890; control 376, aligned 190): retail expands 0x75890 for both
+// elapsed times (the field is loaded before the clock: `mov esi, [ebp + 0xa68]` ahead of the time read, as a call
+// argument is); its file is /Ob1, so it stays a call: through an `inline` or `__forceinline` declaration in this file 474
+// each (1551 B, still called). Diagnostic only, a file-local copy of 0x75890 expanded at both sites 413 (aligned 181, retail's
+// load order; a hand copy of an existing function, not kept). The existing kind-4 setter (0x59ab0, a contributor's /Ob1 file)
+// through an `inline` or `__forceinline` declaration 437/437 (still called; aligned 170). The kind-3 arm clearing the flag
+// after the setter call 444 (1557 B). Leads: `inline` on 0x75890's definition (its file was on another lane's list this
+// round); 0x5b080's expansion here is the link's inline calibration (BLOCKED-BY 0x5b080 calibration).
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

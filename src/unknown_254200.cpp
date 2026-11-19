@@ -637,6 +637,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // constant is then no longer carried into the third vertex, so the pair disappears). Retail's skip branch lands after
 // both reloads (0x254d0c), so the pair is call-path compensation code; other functions with an adjacent reload swap
 // (0x3a5c0, 0x185be0, 0x217c40, 0x4e260) show retail in both register orders, so it is not a fixed register order.
+// M3 lane 13 r119 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant written `(real)0xffffff`
+// 2 (same code); file-local forceinline accessors returning the lower and upper texture coordinates from the scale, in
+// all four texture calls 324 (2275 B), the lower one only 298, the upper one only 338, both in the first two calls only 2,
+// the lower one in the first two calls only 2 (the accessors spend the inline budget once they reach the third call).
+// Diagnostic: 1, 3, 5, 6 or 7 stores of one integer global to a probe array at the success block's top leave the pair
+// in our order (aligned). Restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
