@@ -605,6 +605,12 @@ struct c_aggregate : c_child
 // slots and puts the callback output in the terminal cell instead of ESP+0x10.
 // Convert typed child elements at collection/dispatch/both 31/31/31; named typed slot table 146/100/126;
 // advancing typed slot cursor 64/108. None recovers the shared output and cursor home.
+// M3 lane 14 r117 (fast with 0x97f60, 0x97fe0, 0x980d0, matched throughout; control 31): the produced count declared in
+// the collection loop's for-init and zeroed in the test arm 42; declared and zeroed at the loop body's top with the add
+// after the test arm 144 (389 B); the collection step (zero, call, add) as a forceinline helper taking the total by
+// pointer 146 (389 B); the capacity named where it is computed 31 (same code). Diagnostic (not natural, reverted): the
+// count written into the next boundary cell `starts[i + 1]` gives retail's 0x8020 frame but 139 at 389 B, so the frame
+// cell is the separate count slot alone. Body unchanged.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

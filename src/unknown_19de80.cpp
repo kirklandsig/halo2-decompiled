@@ -794,6 +794,12 @@ static inline bool teams_enabled_19e1c0()
 // names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
 // with an ordinary result. NOT kept: the minimum stays out of line and needs
 // a larger frame. The 415 form restores the opening extent, with the preload still missing.
+// M3 lane 14 r117 (fast with 0x19e0f0, 0x19ea60, 0x19eae0, matched throughout; control 390, plain result 691 at 1170 B:
+// result ESI, token EDI, token_length EBX, event EBP, `remaining` on the stack, where retail has event EBX, token_length
+// EDI, remaining EBP and token on the stack). New: the plain result with an entry `__assume(remaining >= 0)`
+// (diagnostic, not keepable) 691 (same code: the assumption adds no weight); `token` declared `word const *const` 691 (same
+// code); the fallback's clamp as `remaining <= token_length ? remaining : token_length` 693 plain (1168 B), 395 on the
+// volatile result (1432 B). Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

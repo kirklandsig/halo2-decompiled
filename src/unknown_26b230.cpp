@@ -2205,6 +2205,15 @@ void function_269250(long clump_index, long actor_index);
 // the created arm assigning the loop's `group` instead of declaring a second one 89; the clump walk record declared at
 // function scope 89; the selection and best score declared at function scope and set at the top of each actor 89; the
 // score set by an if/else (`else score = best;`) 128 (484 B).
+// M3 lane 14 r117 (fast with 0x268bb0, 0x269580, 0x269250, 0x2694d0, 0x269040, 0x1e46c0 and 0x268840 in the image,
+// which reproduces the plain 87 and 0x269580's argument registers): the in-arm compare 126 and the in-arm compare with
+// the iterator's datum index 128 re-measured (that form promotes the pool into EDI, not retail's EBX, puts the
+// selection/best/score at 0x1c/0x18/0x14 for retail's 0x14/0x1c/0x18, drops the found path's null test and threads the
+// not-found path). New: the selected arm's post-loop work (compare with the actor's clump, leave, join) as a forceinline
+// helper taking the actor, actor index and clump index 87 on this body and 126 on the in-arm form (same code each: the
+// parameter is copy-propagated, so the selection keeps EDI); on the in-arm form the actor index read into a local at the
+// top of the actor body 126 or after the walk 126 (same code), the actor's previous clump in a local for the post-loop
+// compare 126. Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

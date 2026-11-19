@@ -384,6 +384,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Paired axis reads shared by squares and sine products, with separate mixed-product reads:
 // k/i/j 412/358/341; ki/kj/ij 409/412/477; all 385; all with earlier j square 476.
 // NOT kept: The paired reads change both expansions without recovering the early squared-k spill.
+// M3 lane 14 r117 (fast; control 219): each rotation call given its axis through a block-scoped `vector3f const *axis`
+// local 485 (1724 B, the frame and prologue move); the second axis's case group written first in the rotation switch 491
+// (1720 B); in the rotation helper the i-j cross term as `(1.0f-cosine)*axis->i*axis->j` 219 and the i sine product as
+// `axis->i*sine` 219 (same code each); in the basis switch the third/fourth cases crossing straight from the second axis
+// global before copying it into `basis.up` 364 (1844 B). Body unchanged.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
