@@ -696,6 +696,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 386/386/386. Separate accepted edge with while or for 389/389. Separate scan
 // and prior-crossing edges with while, for, or early rejection 382/382/382.
 // NOT kept: the return and first-edge homes remain exchanged, and the bodies shrink.
+// Return default after sector clear, both index clears, requested distance,
+// transition distance, all output defaults or both distance defaults:
+// 386/387/388/388/389/390. False result before/after unobstructed finalization
+// 385/386. NOT kept: the two byte homes and shared cutoff tail remain different.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

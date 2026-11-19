@@ -729,6 +729,10 @@ void function_3dd10(long object_index, bool force);
 // unsigned late variant byte 97.
 // Kept the late unsigned byte with signed decoding at the index calculation. The byte compare gates the
 // lookup and the index sign-extends at use as in retail. The 0x54 frame and 1034-byte length agree.
+// Last ordinal, eligibility mask or weight initialized at scan entry 199/191/286;
+// mask and weight 275; all three 312; all three with signed bound 562.
+// Last ordinal gates selection 232; one choice-name read 106.
+// NOT kept: regressions in the scan and saved-register layout.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

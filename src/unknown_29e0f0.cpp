@@ -658,6 +658,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // flag set first in the success block 152 (stored from AL but first, not last); the candidate sum with the first distance's
 // operands swapped 158; written `local_31 + second + first` 164; accumulated in three statements 426 (1612 B); both
 // distances' operands swapped 164.
+// Group-end publication of group, point or anchor 397/433/422; group and point
+// 414; point and anchor 409; all three indexes 421; group-local best distance
+// 453; group-local distance and all three indexes 427. NOT kept: each regresses;
+// selected defaults keep different homes.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
