@@ -1865,6 +1865,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `*handle` argument takes the step that leaves the close call its `mov ecx, eax`; retail has the write call's
 // handle loaded first as such an unnamed argument (EAX, the flags zero then ECX) and one more step before the
 // checksum compare.
+// M3 lane 5 r201 (fast; control 33), on the 6 form (resize and write handle locals, the write success set by its own
+// test, the header-read `else if`; reproduces at 6: the resize handle in EAX for retail's ECX, the write's header
+// address in ECX and its handle copy in EDX for retail's EDX/ECX): a named `s_file_write_flags write_flags(0);` ahead of
+// the write handle local 120 (917 B), after it 6 (same code), with the write through `*handle` 122; the resize through
+// `*handle` with a close handle local 114 (917 B); the write handle local ahead of the header 6 (same code). Probes
+// (diagnostic, one dword load and store): in the write block they give the write retail's registers (header EDX, the
+// handle pushed from EAX) but the close's `mov ecx, eax` copy then drops, as round 195's write-local form.
 // M3 lane 6 r195 (fast, round 117's generator; control 33, the 7 / 6 / write-local forms re-measured 7 / 6 / 114): with the
 // write handle local, the not-resized arm storing a zero count 105 (932 B), `written = bytes_written == 0x800;` 107, the plain
 // header-read arm 119 (914 B). On the write-local form (write exact, only the close call's `mov ecx, eax` copy missing): the
@@ -1878,6 +1885,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // retail's, the close call loses its `mov ecx, eax` copy and a loop pad), after the header strings 114, at the top of the
 // resized block 114 (same code each); the flags as a `s_file_write_flags const` object at the function's top 5; `written`
 // declared at the loop body's top beside `valid` 5 (same code each). Body unchanged.
+// M3 lane 7 r183 (fast with 0x213800, matched throughout; control 33): the listed 7 form rebuilt 7 (left: the write call's
+// handle loaded after the flags zero, the zero in EAX, and the checksum load in EDX; the range bound already sits in ESI
+// as retail's). On it: the write flags from a forced-inline function returning the zero flags (diagnostic, one caller) 7;
+// the write-success bool declared before the resize 7; the checksum compare with the read header's word first 7 (each the
+// same code); the header check and checksum as one `valid = function_213800(...) && stored == read;` 78; that on main 98.
+// Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

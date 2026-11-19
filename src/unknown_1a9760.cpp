@@ -11,6 +11,284 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 #pragma inline_depth(0)
 /* chooses and stores an actor's movement direction from a stored vector, a perpendicular side test and a
    path trace; the length's sum of squares is staged around the flag store, as retail schedules it */
+// score 4 (was 4): only the x87 faddp/fsqrt schedule against the first two subss rows remains (retail subss, faddp; ours faddp, subss). Earlier summary: frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
+// the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
+// Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
+// Earlier (104, was 104): the frame 0x3c still agrees; the half and offset XMM allocation
+// and the x87/SSE projection scheduling are unchanged, and that round's trials in
+// this file found no lower form of them
+// Earlier (104): the frame 0x3c agrees; the half and offset XMM allocation and
+// the x87/SSE projection scheduling remain, and that round's trials in this file
+// found no lower form of them
+// Earlier: frame 0x3c agrees; half/offset XMM allocation and x87/SSE projection scheduling differ;
+// tried position base 105; origin base 105; displacement base 105; geometry bases 105; unsigned component 104;
+// degenerate normal first 104; squared magnitude value 104; rejected direction loop 104.
+// Scale/add operand orders 104 each; split squared magnitude 105; inner += 117; earlier magnitude declaration 104;
+// component counter scope 104; mode stores before scaled output 104. Original body restored.
+// the rotated vector's XMM allocation differs - retail
+// keeps the two dot products in xmm1 and xmm0 where ours uses xmm5 and xmm3 -
+// and the second subtraction and the x87 sum are swapped.
+// Earlier: the negated component in its own local keeps 0.0 in xmm7 for the
+// > 0.0f test as retail does, but 177 (aligned 63 against 64; all six term orders of the
+// projection give the same code); that with the components written out 188; components
+// written out k first 193; the flag store before the copy 104; the copy after the loop 104.
+// Round 196: uniform original-direction reads 163; retained scalar inputs 197; double square 105;
+// live/scalar inputs with double square 164/197; normalized-vector setter on original/live/scalar inputs
+// 217/255/243. All restored; half/offset allocation and x87/SSE schedule remain.
+// Round 412: complete normalization scale loop/shared scalar scale/direct division/shared double scale 105/177/105/184; with nonpositive projection first 105/184/105/184. Original body and precision restored.
+// Round 288: shared affine/difference producers with in-place/distinct output, ordinary/forced
+// difference declaration and original/earlier magnitude 262, 251, 262, 251, 262, 234, 262, 234. Original restored.
+// Round 194: Advancing position/scale-input/origin component pointers and complete subsets 105/105/104/105/105/104/105/105; complete second-projection differences/products/both 105/105/104; per-component named half-step 105. All preserve the original grouping but give no gain; original body and inherited inline boundary restored.
+// Round 9 (lane 2, fast): the existing prop-level getter 0x2684f0 for the opening test 230 (979 bytes; the
+// inline-depth window keeps it out of line), without the window 320 (1072 bytes; the body alone without it
+// 383); unary minus for both negations 176 (986 bytes); the half step as `0.5f * v + position` 104; the
+// length's squares in i, j, k order 108; the projection straight into its own local (no store to the
+// vector first) 104.
+// Round 126: without this file's inline_depth(0) pair LTCG inlines 0x25d700 and 0x1e4290 (retail calls
+// both): 383 (1119 bytes); and with the header normalize3d for the first normalization 424 (1152), with
+// dot3f for the final test 424, with `-x` for `0.0f - x` 424; normalize3d with the pragma kept (then
+// called, not inlined) 273 (927 bytes).
+// Round 46 (lane 9): local_6 and the final test's dot are each one term rotated against retail ((y, x, z)
+// and (k, i, j) where retail sums (z, y, x) and (j, k, i)), the function-wide reassociation order; retail also
+// keeps one SSE zero (xmm7) for `0 - j`, both compares and the k store, loads -1.0 at each use, and reads
+// unknown290 only after the unknown424 copy. Tried: local_5 computed directly with `0 - j` written twice 104
+// (identical); a named negated component used twice with local_5 direct 177 (989 bytes; one xorps zero as
+// retail), with the terms k, j, i 177; the reciprocal written at each use 105; fabs on the float 219 (1020
+// bytes); the unknown456 store after the offset loop 108; a short component counter 247. Under
+// inline_depth(0) even a __forceinline helper is called, so no header helper can take part.
+// Diagnostic lead (not kept): `/Ob1` in place of the pragma pair still inlines 0x25d700 and 0x1e4290, 383
+// (1119 bytes), with normalize3d and dot3f 424 (1152).
+// Round 53: the short-vector arm first (`if (fabs < eps) local_4 = 0; else ...`) 104; `local_8 * k` 104;
+// the dot with the negated component first in each product 104; `0.5f * v` 104; the unknown456 store just
+// before the magnitude 108. Harness: all but the last compile byte-identically.
+// Round 40 (lane 11, fast): the first difference (+0x6f) is register numbering: retail gives the half
+// constant xmm3 and the three offset components xmm1/xmm2/xmm0, kept live into the projection, and the
+// length xmm7; ours 0.5 in xmm0, the components in xmm5/xmm2/xmm3, the length in xmm1. local_3 declared
+// before local_2 / at the top 104/104; the trace result, local_5 with local_6, and local_8 declared at the
+// top 104/104/104 (all the same code).
+// Round 251: Native direction input/selection/output memcpy, seven subsets, 104 each; complete memmove 233.
+// Original body and include restored; half/offset XMM allocation and x87/SSE projection scheduling remain.
+// Round 64 (lane 12; one-link LTCG env with the slot table's object, equal to the full listing; env positional
+// 86 for the old body): each of the three float sums grouped in the order retail evaluates it (projection
+// (k + j) + i, local_6 (z + y) + x, final test (j + k) + i) 96 (kept); the projection alone 97 (k-first sum, k in
+// XMM0, one kept zero as retail). Left: the half/reciprocal/negation chain in XMM1 and local_3.i in XMM4 (retail
+// XMM3/XMM1), local_5 kept in XMM0 (retail copies it to XMM6) so -1.0 is hoisted into a register, the inner pairs
+// of local_6 and the final test swapped, and the unknown290 reads scheduled above the target stores. Env, on the
+// grouped projection: half step's operand orders, dword counter, local_3 declared first or at the top, local_4/
+// local_8 declared at the top 79 each (no change); the rotated stores in the five other orders 77-78; local_6 and
+// the final test in each grouped/ungrouped term order 78-79; short counter 205; the component loop written out
+// 184. Env, without it: the component loop written out 185; the normalization's three stores in the five other
+// orders 97/103/98/169/171; a rotated-vector local copied back 179 (1015 bytes), stored per component 167.
+// Round 67 (lane 12; env positional in brackets): retail keeps the tail in source order because unknown290 is read
+// and unknown458 written through pointers; `facing` (unknown290, declared with local_2/local_3, before the
+// half-step loop) and `scaled_direction` (unknown458) give retail's tail order: 96 -> 85 (kept; env 78 -> 66). `facing`
+// declared just before the test or after the loop folds unknown290.i into the product (988 bytes, 112 [91]);
+// `facing` alone 102; `scaled_direction` alone 96. On the kept form: the dot's six term orders grouped or not [66-70] (the
+// k term stays first, retail j); normalization stores in the five other orders [78-87]; local_5 assigned
+// directly, local_8 declared first, `0.5f * v`, `local_8 * k` [66 each]. Left: the 0.5/reciprocal/negation
+// chain in XMM1 with local_3.i in XMM4 and the normalized i in XMM3 (retail XMM3/XMM1/XMM4), and the dot's
+// k-before-j product.
+// Round 36 (lane 13; compile-only screens of the block up to the first 0x30bf0 call reproduce ours, then fast):
+// the side dot's terms come out in descending first-mention order of the direction's fields (the length's text
+// order moves the j/k-term pair), but the term with the fresh `0 - j` always comes first where retail has it
+// last (k, j, i). The direction scaled i, k, j 178 (989 bytes); the length written k, i, j 106; a separate
+// perpendicular vector for the dot (then copied over the offset) 201 (1015 bytes), declared at the top 201,
+// with the i, k, j scaling 206; the offset computed after the normalization 216 (1013 bytes).
+// Round 33 (lane 14, fast; aligned counts from a difflib alignment, original 86): the final test accumulated
+// j, k, i in a named local 105 (aligned 84; retail's dot instructions, still scheduled above the unknown424
+// copy); half-step components written out 192; negated j named and used for the projection and the store
+// 177 (aligned 85); the projection accumulated k, j, i (`local_5 = k-term; += j-term; += i-term`) 97
+// (aligned 87: z/y/magnitude/j/k registers and the xmm7 zero become retail's, half/x and inverse/i stay
+// swapped); that with the negated j named first 176 (989 bytes, aligned 80), plus the side projection
+// accumulated z, y, x 176 (aligned 93); the k, j, i projection with the j, k, i final test 98. Retail does not
+// hoist the -1.0 load (else branch and memory operand), so it copies the projection into xmm6.
+// Round 69 (lane 12; env positional, 66 for this body): the else arm's constant first, local_6's negation as an
+// assignment or constant first, the sign test's operands swapped, the else arm as copies then `*=` [66 each, same
+// code]; the arms swapped (`if (!(local_5 > 0.0f))`) [66]. Diagnostic: without local_6's negation the -1.0 is loaded
+// in the else arm as retail [59], so the hoist pairs those two uses. local_6 as the dot of a named offset vector
+// (position - unknown370, any component order, declared at the top or in the block) gives retail's shape there (all
+// three differences before the products, -1.0 loaded in the else arm, memory-operand negation) but copies local_3.i/j
+// to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
+// [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
+// alone [66].
+// Round 335: Native offset passes position/scale/scaled-input/affine 197/237/199/181;
+// affine-pass normalization orders ikj/jik/jki/kij/kji 180/180/180/179/181.
+// The affine graph reaches 996 bytes and first +0xa9, but regresses; original
+// offset producer, normalization and complete body restored at 85.
+// Round 117 (m3 lane 8, fast): `local_6 *= -1.0` (a double) 75 at 996 bytes, but the negation becomes x87
+// `fmul qword` where retail multiplies by -1.0f in SSE, so it cannot match; it shows the else arm then loads -1.0
+// itself as retail does. `local_6 = 0.0f - local_6` 171; `local_6 = -local_6` 171; `*= -1` 85 (same code); the sign
+// test as `local_5 * local_6 < 0.0f` 85 (same code); /Op around the function (diagnostic) 241 (1024 bytes).
+// Round 71 (lane 12; env positional in brackets, 66 for this body): the perpendicular's j and k stores ahead of
+// local_5's copy gives retail's copy of the projection (`movaps`) but stores j, k, i [173, 995 bytes, aligned 57];
+// the local_6 sign test as `local_5 * local_6`, `local_5 = local_3.i = ...` chained, the unknown456 store first
+// [66 each]; the projection with the negated term first, grouped or not [66/66/74]. A separate `perpendicular`
+// vector (0 - j, i, k) for the projection, the else arm and local_6 shares local_3's slot and gives retail's
+// projection (0 - j first, i product in place) but no copy of local_5 and the -1.0 still hoisted: [165], --fast
+// 169 at 996 bytes; with local_5 declared first [165]; perpendicular filled j, k, i [166, 996 bytes]; the
+// projection i, j, k [166]; local_6 through a named offset vector, grouped or i, j, k [164/164], with the i, j, k
+// projection [171]. Diagnostic (not kept): normalize3d/dot3f/vector3d_from_points3d expanded under a scoped inline
+// window 211 (1015 bytes).
+// Round 231: unconditional direction copy with scalar/loop negative correction 168/168;
+// component if/conditional selections 204/220; reused side predicate 204; existing negative
+// scaler 178; negative/positive arm copy loops 85/213. Original producer and body restored.
+// Round 444: Double magnitude/inverse/both signed-projection domains, subsets 1/2/4/3/5/6/7,
+// then all with untruncated sqrt: 194/196/228/199/237/241/243/243. Original scalar precision, complete body and inline boundary restored.
+// Round 237: complete immutable normalization input with eager/branch-owned output, original/shared scale,
+// original/earlier magnitude 233/237/239/245/85/183/199/210
+// Original executable body and helpers restored.
+// Round 452: Common normalizer/default-vector boundary with retested/stored lateral classification, in-
+// place/separate requested distance and call/entry trace storage: 206/210/206/210/206/210/206/210. All
+// source, precision and inherited inline boundary restored; half/reciprocal/negation allocation remains.
+// Round 454: Complete repeated position/reference inputs, native copies of first/second/both
+// 226/219/273; complete field initializers 203/217/247; both through memcpy/memmove 273/261.
+// Native copies grow frame 0x3c to 0x48 or 0x54. Original field observations, scalar precision,
+// body and inherited inline boundary restored; half/reciprocal/projection allocation remains.
+// Round 499: Complete squared-magnitude products in ijk/ikj/jik/jki/kij/kji order
+// 91/85/91/101/95/95; native inner-pair/completed-sum values 91/91. Original root producer and
+// body restored; half/reciprocal/projection scheduling remains.
+// Round 223: Native two-component perpendicular value with aggregate/field
+// construction, direct/stored projection and i/j publication order, all eight
+// combinations: 175/175/175/175/176/176/176/176. Original body and depth restored.
+// Round 27 (m3 lane 18, fast, plain-confirmed): retail never stores the normalized vector: it goes into a separate `unit` vector
+// (local_2 keeps the raw copy), with named perpendicular and delta vectors: 85 -> 21 (996 bytes); projection grouped (j + k) + i 21 -> 10;
+// final test accumulated j, k, i in a named local 10 -> 4. On 4: in-place normalization with the same vectors 168; perpendicular defined
+// i,k,j or k,i,j 85-176; delta in each order 165-176; field pointers in the half-step loop 4 (seven subsets); half step written out 192
+// (1001 bytes; retail's subss-before-faddp schedule, but the flag store moves down and registers change); literal array spellings 192 (16 forms);
+// flag store after the loop 18 (exact x87/SSE schedule, only the flag store out of place); flag store first 4; two loops 4/4, loop then written
+// out 191, step loop 200, body in-place 195; pointer stepping 4 (three forms); accumulated sum in the loop 4; casts in the square sum 5/5/14/14/4/214/266;
+// accumulated squares 4/12/216; double root 5, fabs on the double 5/226, named fabs 4, degenerate bool 4, >= test 176; half-step constant named 4;
+// pointer to the flag 4; `do` loop 238; pointer to the direction source 196. A 600 s permuter run: none below 4.
+// M293: Second-projection displacement component loop: signed/unsigned, use/branch declaration,
+// vector-mediated/direct first projection:
+// 187/187/187/187/187/187/187/187. Original complete executable source restored.
+// Round 40 (m3 lane 2, fast; all restored): the magnitude before the flag and rows 181 (1000 bytes), between them 181, with the
+// flag after the loop 195; flag after the magnitude 195; rows counted down 21; `facing` after the loop 42 (992 bytes), at the tail, after
+// the flag, before the copy, at entry or after the magnitude 4 each; flag at entry 26, before the copy 4; a second pointer to the record for
+// the flag, the rows, the velocity alone, position and offset alone or the copy 4 each; memcpy for the first copy 4, with the flag first 4;
+// the copy declared apart 4; square-sum trees ijk 10, jik 13, jki 10, kij 10, kji 13. Diagnostics: an extra byte store after, before or
+// ahead of the flag 197/198/198, two 241, after the rows 184, after the magnitude 190 (none flips the swaps). Without the flag in this block
+// (at entry, or late) the x87/SSE order is retail's, so retail's flag store takes no issue slot from the rows where ours does.
+// Round 40, continued: dword counter 4, counter declared ahead of the flag 4, `<= 2` 4, `!= 3` 238 (962 bytes, not unrolled), `do` loop 238 (962). Two loops with the flag
+// between them: position+half-step then offset 14 (the flag moves just before the offset loads), half-step then the rest 202 (1004); the flag before both 4, after both 18/202.
+// Round 120: flag after magnitude/normalization 195/200; outer/inner square-sum operand swaps 4/10;
+// named length_squared 4; flag between squared length and root 18; flag in the component loop 240;
+// root before the offset loop 181. Original body restored at 4.
+// Round 32 (lane 17, fast): sqrtf for the length 261 (1042 bytes, called); the half step as `/ 2.0f` 4; no `facing` pointer
+// (unknown290 read at each use) 21; `unit` declared just before the degenerate test 4; local_3 declared before the copy 4.
+// M330: Existing normalized/side/displacement vector role names, seven subsets then
+// all with the offset role: eight 4s at 996 bytes. Original identities and body restored;
+// the two x87/SSE scheduling swaps remain.
+// Round 99: integer Boolean constant, store after the direction copy, store in loop initialization
+// 4/4/4; magnitude declared before the loop or at entry 4/4; read-modify-write flag 201;
+// reversed half-scale/addition operands 4/4; `+= 1` and plain `while` component loops 4/4.
+// NOT kept: no exact or eligible gain; original flag store, arithmetic and loop restored.
+// Round 146 (fast): the flag through a byte or char cast 4/4; half-step row accumulated in a local 4, in local_3 198 (1004 bytes);
+// half product named per row 4.
+// Round 151 (fast 182, the rest a harness whose head block is the real build's): flag and rows after a named `i*i + k*k` partial, then
+// `sqrt(j*j + partial)`, 182 (1002 bytes): the whole x87/SSE schedule is retail's with the flag early, but a named partial stays on the x87 stack
+// (`fadd st(1)` for `faddp`, then `fstp; fstp st(0); fld`). Same stack with the flag first, as double, `+=`, `= j*j + partial`, `= partial + j*j`, on the
+// length local itself, const, register, in a block, through a second named total. Partial with rows then flag 200 (harness), rows, partial, flag 102;
+// `k*k` named alone 188, `k*k` then `+= i*i` 193; an unused partial 88 (same code); the flag as memset of one byte, or a one-byte struct copy, 88 (same code);
+// 107 cast shapes of the square sum: best 88 (same code as the base). The open question is a temporary, not a named local, split around the flag.
+// Round 93 (m3 lane 16, fast): the scaled-direction pointer declared beside `facing` 4; a short component counter
+// 243 (960 bytes, not unrolled); local_3 and unit declared after the flag store 4; the degenerate arm first 4;
+// the scaled output written through the field without the pointer 21.
+// Round 69 (m3 lane 13, fast): each row as a sum then `-=` the offset in the loop 195 (1001 bytes); the rows before the
+// copy and the flag 56 (992 bytes); the rows read through real arrays over the three vectors 4; the copy after the flag 4;
+// the loop as `component <= 2` with the increment in the body 4; the rows written out by field 192 (1001 bytes: the
+// subss/faddp interleave is retail's, but the flag store sinks below the rows and the half and rows take other XMM
+// registers), with the scale first, 0.5f on the left, the flag after the rows or the rows k, j, i 192 each. Reading:
+// with the loop the flag store stays ahead of the rows' loads (an ordering edge that delays them a slot), with the rows
+// written out it has none and sinks; retail keeps it early without the delay. Also: each row written through a pointer
+// to its component 4; position read through a const reference declared before the loop 4.
+// Round 157 (m3 lane 6; LTCG harness of this file with its four callees' files, equal to the full listing for the first
+// 143 instructions): without the flag store the block's x87/SSE order is retail's; retail keeps the store at slot 31 and
+// still issues the second faddp after the first row's subss, so some other node differs. Square sum through
+// `local_2.n[]` 4; the flag through the record's lookup written again 142 (harness head; fast 237, 1006 bytes); a named half step per row 4;
+// the direction copy as a component loop 122 (harness head); squares accumulated in a component loop 44 (999 bytes,
+// fast); the flag ahead of the copy 4; rows through a per-row element pointer 4.
+// Lane 9 r99 (fast): the length declared at the top and assigned later 4; the reciprocal declared at the top 4; each
+// square sum term cast `(double)(real)(...)` 4; the half-step row without its parentheses 4; the component counter
+// declared at function scope 4 (all the same code).
+// Round 171 (m3 lane 6, fast): the flag store ahead of the facing pointer 4; each row's half-stepped position
+// named in the loop body 4; the length as `sqrt` of the float sum (float overload) 266 (1045 bytes, sqrtf called);
+// the component counter at function scope 4; the rows as a `while` loop 4.
+// Round 153 (m3 lane 7, fast): the degenerate test as `fabs(local_4) < 0.0001f` without casts 226 (1025 bytes, the float
+// overload is called), with the root's `(double)` cast dropped too 274 (1053 bytes); a separate `magnitude` for the root
+// and the test with the returned length assigned from it in the non-degenerate arm 4 (same code); the rows written out
+// through three `real const *` component pointers declared ahead of the flag store 191 (1001 bytes: the flag store stays
+// at retail's slot, with the written-out rows' registers and our faddp-before-subss order); a second identical flag store
+// after the rows (diagnostic) 184 (1003 bytes: both emitted, the two swaps unchanged), so nothing later in the block moves
+// the swaps: both x87 results are due in the same issue slot as a two-step SSE row operation, and retail issues the row
+// operation first where ours issues the x87 one first whenever the flag store sits ahead of the rows.
+// Round 176 (m3 lane 6, fast; all restored at 4). Compiler-setting diagnostics (inline-depth windows, not source forms): the
+// existing getter 0x2684f0 for the opening test under a statement-level inline_depth(255) window 4 (it inlines, the head is
+// retail's, same code); the unit vector through the header's vector3f_scale in such a window 4; the whole normalization
+// through the header's normalize3d on a copy 257 (1036 bytes); the file's depth-0 pair replaced by depth-0 windows around
+// only the 0x30bf0/0x1f5110/0x1e4290 calls, with actor_get and the getter inlined 4 (same code: the pair does not shape the
+// schedule); on that, the flag store ahead of the copy 4. Source forms: `facing` as a value copy of unknown290 227 (1016
+// bytes); unit as `local_2.x / local_4` per component 4; each row as `(position - offset) + half step` 204 (1007 bytes);
+// the prop record typed with its short unknown00 field 4; the half step as the double `0.5` 219 (985 bytes).
+// Round 101 (m3 lane 11, fast): the else arm's `local_2 = local_3` as memcpy (local_3 address-taken) 4 (same code);
+// the degenerate test in double without the float cast 5 (the constant becomes a qword); the direction copy after
+// the rows 4 (same code); an `unsigned long` component counter on this base 4 (same code); a 600 s annealing
+// permuter run (seed 101): 57 tries, none below 4. Restored.
+// M3 lane 16 r121 (fast): the copy of unknown37c in its own `direction` local, with local_2 declared only for the output
+// (they share the stack slot, as retail's) 4 (same code); velocity and offset through `const` vector pointers 4, the
+// position through one 4 (same code); the flag store after the row loop 18 (996 bytes: interleave and registers are
+// retail's, the store sinks below the row stores); after the length statement 195 (1000 bytes); rows written out with the
+// flag first 192 (1001 bytes, the store sinks, rows in XMM2/3/7); the rows through a forceinline component-loop helper
+// 280 (927 bytes: called under this file's inline_depth(0)). Diagnostic, no flag store: 197 (989 bytes), and the block is
+// retail's instruction for instruction once the store is added back at slot 31, so retail's store has no ordering edge
+// with the row loads, where ours (indexed loop accesses) has one that delays the row loads a slot.
+// Round 108 (m3 lane 1, fast): the record pointer `s_actor_view *const` 4; the loop bound as `sizeof(local_3.n) /
+// sizeof(local_3.n[0])` 4; the rows indexed from each vector's first component, `(&local_0->position.x)[component]`, 4;
+// the flag through a `bool *const` to its field 4 (re-measured); a `byte` component counter 243 (960 bytes, not unrolled).
+// Round 107 (m3 lane 11, fast): the flag through a `bool *const` taken at entry, with the rows written out by field 191
+// (1001 bytes: the flag stays early but the interleave is ours; written-out rows also renumber the later projection's
+// XMM registers, so retail's rows are loop-shaped); the copy as memcpy with the rows written out 192 (1001 bytes, the
+// flag sinks: exposing the copy's address early gives the store no edge); the entry flag pointer with the store in place
+// 4 (same code); the rows counted down with the flag after them 22; the entry flag pointer with the store after the rows 18.
+// Round 187 (m3 lane 6, fast): the direction copied field by field 196 (1001 bytes); the flag stored through a raw byte
+// offset 4; the rows read through `real *` casts of each vector 4; `position`/`velocity`/`origin` field pointers taken
+// at entry and used in the row loop 4, with the flag store after the loop 18 (the store still sinks below the rows).
+// M3 lane 5 r190 (fast with 0x30bf0, 0x1f5110, 0x1e4290 and 0x25d700): a 600 s annealing permuter run (seed 1190, 56
+// tries, reduced image equal at 4) none below 4; the row loop, then the flag, then the direction copy 18 (retail's x87/SSE
+// interleave, the flag store sinks below the row stores as in the flag-after-loop form); the same with the rows written out
+// by field 192 (1001 B); the flag, the rows, then the copy 4 (same code: the copy's place does not matter, only the flag's
+// against the rows); the flag written at the end of both arms of the prop test 4 (tail-merged back, same code).
+// M3 lane 10 r114 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): `#pragma optimize("a", on)` around
+// the function (diagnostic, no-aliasing) 4 (same code: the store/load ordering is not an alias edge); the row as
+// `position + 0.5f * velocity - origin` without parentheses 4; unit.k as `local_8 * local_2.k` 4; the flag store inside the
+// row loop body 240 (1012 B); the length, then the flag, then the rows 181 (1000 B).
+// M3 lane 14 r107 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): the square sum spelled
+// `(k*k + i*i) + j*j` 10, `j*j + (k*k + i*i)` 10 (the x87 order changes), `(i*i + k*k) + j*j` 4 (same code); the row
+// loop tested `component != 3` 238 (962 B, not unrolled); a short component counter 243 (960 B, not unrolled).
+// M3 lane 11 r114 (fast): each row bound by reference (`real &row = local_3.n[component]`, the sum then `-=` the offset)
+// 195 (1001 bytes); an `unsigned char` component counter 243 (960 bytes, not unrolled); the flag through a `bool &` bound
+// to its field 4; the half step as `0.5f * velocity` in the loop 4; a `register` component counter 4 (the 4s the same code).
+// M3 lane 11 r116 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): a `real const half = 0.5f`
+// named ahead of the flag store and used in the row loop 4; the origin component read into a const local at the top of
+// the loop body 4; the origin through a `point3f const *` named after the flag store 4 (all the same code); each row in
+// two statements (the half-stepped position stored, then `-=` the origin) 195 (1001 bytes); the square sum with each
+// product in double (`(double)j * j + ((double)i * i + (double)k * k)`) 214 (1006 bytes); the direction copied through a
+// named `vector3f const *` to its field 196 (1001 bytes). Reading of the listing: in retail every dependent x87 pair
+// (fmul -> faddp, faddp -> faddp, faddp -> fsqrt) has three other instructions between its two halves, the flag store
+// being one of the three in the first pair; ours has three, two, three, and the build without the flag store two, three,
+// three. So the store is counted as a filler for the first pair in both builds, and ours then issues the second faddp a
+// slot early: the store's slot is charged to the row stream only.
+// M3 lane 15 r100 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): the root's argument without
+// the `(double)` cast 266 (1045 B, the float overload is called); the direction copy through memcpy with the row loop 4
+// (same code); the row loop counted down with the flag store still ahead of it 21; each row written velocity-term first
+// 4 (same code); no facing pointer (the final dot reads the field at each use) 21.
+// Round 103 (m3 lane 2, fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time; control 4): round 151's
+// lead re-measured, `real partial = i*i + k*k;` named ahead of the flag store and the root on `j*j + partial`, 182 (1002
+// B): retail's whole x87/SSE interleave (the second add after the first row's subss, the root after the second's), but the
+// named partial stays on the x87 stack (`fadd st(1)`, then `fstp; fstp st(0); fld` around the fabs test); the square sum
+// staged as `length_squared = i*i + k*k; length_squared += j*j;` ahead of the flag store 4, at the root 4 (same code: the
+// staged sum is folded back), split with the first part ahead of the flag store and the `+=` at the root 182 (1002 B, the
+// partial's code); the root computed ahead of the row loop 181 (1000 B).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

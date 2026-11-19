@@ -508,6 +508,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // after dispose with its initialiser 1; the loop frame declared ahead of the loop 1. Screen diagnostics (not kept): the
 // thread stays with the flag-8 store dropped, with the timing updates dropped, with the store unconditional and with
 // no per-pass disposal reset, so nothing in the latch's own statements decides it.
+// M3 lane 10 r122 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
+// restart as a reference bound to a value local 186 (the two restart stores merge into one byte store from DL); dispose
+// the same way 228 (670 bytes); a redundant `if (time >= next_time)` guard around the loop 1 (same code); the join test
+// through a `bool const &` bound to restart 1 (same code); the flags local as a `word const &` bound to the field 1 (same
+// code). Screen: all five keep the skip, as do the frame declared after the per-pass reset and the guard as `next_time <= time`.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

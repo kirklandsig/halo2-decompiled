@@ -2196,6 +2196,21 @@ void function_269250(long clump_index, long actor_index);
 // New: the walk record declared at function scope, ahead of the actor loop, on the in-arm form 126 and on the datum-index
 // form 128 (same code each); the selection and best score declared ahead of the walk record on the in-arm form 129, on
 // the datum-index form 154 (457 B); the score declared beside the best score and assigned in the arm 126 (same code).
+// M3 lane 7 r183 (fast; control 87, in-arm compare re-measured 126 at 480 B): on the in-arm form, the walk's clump index
+// bound by `long const &` before the walk loop 126 (same code); the loop testing the step's result with the group read from
+// the walk's datum field (`group = (s_clump_activity_view *)groups.iterator.datum;`) 128 (480 B: the pool hoisted into EDI
+// with retail's split reload, the selection memory-only, but the not-found step threads to the exit and the selection, best
+// and score homes rotate to +0x1c/+0x18/+0x14); on that form the selection renamed to sort first 128, best declared before
+// the selection 128, the score declared at actor scope 128 (each the same code). Body unchanged.
+// M3 lane 11 r118 (fast, control 89 on the reduced image, 87 plain): re-measured the in-arm compare 126 and that with
+// the selection from the walk's datum index 128; the selected arm's join (`if (clump != old) {...}`) through an inline
+// helper taking the clump index: on the datum-index form 128, on the in-arm form 126, on this body 89 (each the same
+// code as without it: a parameter bound to a variable adds no reference, so the selection keeps its register).
+// M3 lane 16 r139 (fast with 0x268bb0; this body reads 89 there against 87 in the full check, CAVEAT): the score
+// started at 0.0f instead of the best (the same values, as the best never drops below zero) 92 (480 B, retail's length);
+// the created arm assigning the loop's `group` instead of declaring a second one 89; the clump walk record declared at
+// function scope 89; the selection and best score declared at function scope and set at the top of each actor 89; the
+// score set by an if/else (`else score = best;`) 128 (484 B).
 // @retail 0x2689d0
 void function_2689d0(void)
 {
