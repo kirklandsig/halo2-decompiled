@@ -1489,6 +1489,12 @@ PRIVATE inline long score_string_list_1608e0()
 // placements and the increments back in main's order 733, those with the widths twice 721, with only the screen
 // height first 741. Left on the lead: frame 0x7a0 against 0x79c, the whole-point copy, scratch and XMM rotation,
 // the stack homes.
+// m3 lane 4 r214 (fast, with 0x161420): the lead in retail's block order with one score-width test, 679 control,
+// lead with the test twice 610: score and time widths then the name width 721 (2852 bytes, aligned 361 / 89); time
+// width first 721; the name width as `0xec - time_width - score_width` (the sibling row builders' order) 721; as
+// `0xec - (score_width + time_width)` 721; the score width set by an `if` 721; a bool for the score columns used for
+// both widths 716. Retail tests the score columns twice and keeps one time-width value (the branchless test is
+// shared, the branching one is not), so with one test the code is 27 bytes short. Not kept.
 // Team gap shared with row advance 706, branch-selected 713, with guarded advance 706;
 // shared team presence 706, with height accumulation 711; shared displayed count and gap
 // 704; separate section heights 699, with shared gap 706. The presence forms recover

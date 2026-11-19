@@ -247,6 +247,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // the slot block's scope 116; spatialization assigned in an if/else and positioned after it 154 (541 bytes); positioned
 // held in a char 116. In the plain listing the request arm stores the object's EBP for its NONE field and the dispatch
 // reloads the tag from its home (EDI goes to 0x189340's source); retail never enregisters the object index.
+// M3 lane 4 r214 (plain, with the five matched callers and seven matched callees; every form with no reference,
+// all object reads plain): control 116 (531 bytes, frame 0xa4, aligned 67 / masked 14); the started test nested 116;
+// positioned as `spatialization ? (spatialization->flags & 1) != 0 : false` 137 (530 bytes); the return test on the
+// stored slot field 116; the request test as `!(object_index != NONE || positioned)` 116; `sound_index = NONE` at its
+// declaration 116 (all but the ternary the same code). The kept body's one difference (the started test reading the
+// parameter's home) comes from its volatile read; a match has to come from a plain form.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

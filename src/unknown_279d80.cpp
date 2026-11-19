@@ -2073,6 +2073,11 @@ void function_27dd10(void)
 // no-code forceinline accessor at the group clamp 2 (0x281b60 2, 0x288570 120), at the outer loop bound 2 (0x288570 120);
 // the bit test through the accessor 2; the group end declared in the inner for's init 2; the blend frame state copied in
 // reverse order before the second decode 11 (0x281b60 11, 0x285750 9, 0x288570 9; the pair unchanged). All restored.
+// M3 lane 4 r214 (fast with 0x281b60 and the five matched walk users): in function_288571 the inheritance read once
+// into a local passed to the three passes (compute_orientations_inheritance_mapping's form), declared after or before
+// the count, 417/417 (1749 bytes; 0x281b60 397, 0x285750 420, 0x28aaa0 165); the count declared, then assigned after
+// the declarations 2; the node index and the cursor initialised (0, NULL) 2; in function_288572 the empty group's
+// index step after the output advance 2 (0x288570 10, 0x289580 9). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2224,6 +2229,9 @@ void function_2818e0(void)
 // function_288573 2 (diagnostic). All restored.
 // M3 lane 8 r183 (the shared-walk trials listed above 0x27dff0): count accessor at the clamp 2, at the loop bound 2;
 // bit test through the accessor 2; group end in the inner for's init 2; frame state copied in reverse order 11. All restored.
+// M3 lane 4 r214 (the shared-walk trials listed above 0x27dff0): inheritance local in function_288571 397 (1682
+// bytes); count assigned after the declarations 2; node index and cursor initialised 2; empty group's step after
+// the output advance 2 (0x288570 10, 0x289580 9). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
