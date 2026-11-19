@@ -16,6 +16,7 @@
 #include <math.h>
 #include <float.h>
 #include "unknown_26c380.h"
+#include "vector2f_products.h"
 
 struct s_slot_entry_list;
 struct s_collision_bsp_test_vector_result
@@ -1182,7 +1183,7 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
-// score 120 (was 120; 137 before): Frame 0x1c agrees. Retail scales the actor index before the pool load and
+// score 112 (was 120; 137 before): Frame 0x1c agrees. Retail scales the actor index before the pool load and
 // holds the actor in EDI and the object in ESI. This build exchanges those homes.
 // M3 lane 14 r112 (fast; control 120): the closing term as `dot_product2d((vector2f const *)&object->velocity,
 // path_direction) - dot_product2d(path_direction, (vector2f const *)&other->velocity)` 114 (that block then has retail's
@@ -1359,6 +1360,21 @@ real function_50650(real cosine);
 // typed actor and point differences in each branch 133; typed actor and shared point difference 297;
 // one override-speed read 122; typed actor and point difference with magnitude in each branch 117.
 // NOT kept: separate approach paths with the shared magnitude gain only three points and leave the receiver split.
+// M3 lane 5 r205 (fast, then plain): kept 112: the closing term through dot_product2d (round 112's form, 114 alone) and the
+// final product in two steps, `scale = MIN(scale, following_scale) * velocity_scale; return scale * speed_scale;`, which
+// gives retail's velocity-then-speed multiply (every one-expression product of the three, in any operand order, compiles
+// speed first: `MIN(...) * velocity_scale * speed_scale`, `* speed_scale * velocity_scale`, `velocity_scale * MIN(...) *
+// speed_scale` and a running `scale` minimum 114 each with the helper; grouped `speed_scale * (MIN(...) *
+// velocity_scale)` 112). Not kept (statement order picked by score): the four 1.0 initialisers as one chained assignment
+// `following_scale = velocity_scale = turning_scale = facing_scale = 1.0f;` gives retail's entry store order (+0x1c,
+// +0x10, +0x20, +0x14), 118 alone, 110 with both kept forms; the chain the other way round 122. Same code: speed_scale
+// declared after velocity_scale; the velocity dot as dot_product2d(&velocity, desired), with each product's operands
+// swapped, or with the j term first; the velocity as an aggregate copy of the object's planar velocity with
+// normalize2d_fast. Diagnostic: round 114's planar normalize (in/out scale helper, aggregate velocity copy, its dot through
+// dot_product2d) on the 110 body gives retail's normalize block exactly at retail's 1324 B but 262: the prologue's `add
+// esi, edi` is a byte shorter than retail's `lea edi, [edx + esi]`, so every later address sits off by one; the prologue
+// has to be solved first. Still differing: the actor/object exchange, the normalize block (velocity j preload, `scale *
+// i`), the velocity dot's i term first, the turn clamp's `fld st(0); fld 1.0; fxch`, the entry store order.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
@@ -1431,8 +1447,8 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
             gap = 0.0f;
         if (*(real *)(settings + 0x1c) > gap)
         {
-            real closing = object->velocity.j * path_direction->j + path_direction->i * object->velocity.i -
-                (path_direction->i * other->velocity.i + other->velocity.j * path_direction->j);
+            real closing = dot_product2d((vector2f const *)&object->velocity, path_direction) -
+                dot_product2d(path_direction, (vector2f const *)&other->velocity);
             if (closing > 0.0f)
             {
                 real fraction = (*(real *)(settings + 0x1c) - gap) / *(real *)(settings + 0x1c);
@@ -1448,7 +1464,8 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
         }
     }
     real scale = MIN(facing_scale, MIN(turning_scale, approach_scale));
-    return MIN(scale, following_scale) * velocity_scale * speed_scale;
+    scale = MIN(scale, following_scale) * velocity_scale;
+    return scale * speed_scale;
 }
 
 

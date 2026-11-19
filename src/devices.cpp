@@ -1074,6 +1074,13 @@ struct s_device_machine_view
 // after the machine test, but its load rises above the group lookup: 16 (654 B); the same local declared bare and assigned
 // before the power test, or declared just before it, keeps the pushed ESI; declared ahead of the group pointer 32 (screen).
 // So a float live across the group tests moves the pointer to EAX, while retail's power load stays below them.
+// M3 lane 5 r205 (fast): the group pointer before the machine flags with the word flags read after the machine test under a
+// re-test of the group index (threaded away) 122 (pushed ESI); that pointer with the lane S bits read from it after the
+// machine test, `(byte)(group->flags & 3)`, 115 (655 B): retail's `lea eax, [eax + edx*4]` before the machine flags and the
+// load after the machine arm with the pointer in EAX, left only `mov al, [eax + 2]; and al, 3` for retail's `mov ax,
+// [eax + 2]` (the masked byte is a one-use temporary, so the pointer wins EAX); the same with a word local and an unmasked
+// byte copy 121 (byte load, pushed ESI); a `word` bits local `group->flags & 3` 117 (657 B, `movzx eax, byte; and eax,
+// 3`); the machine flags read before that pointer 129 (658 B). Body unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1908,6 +1915,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // model) 328, fstp unmoved; the three tag lookups through the shared TAG_GET macro 131 (same code). Diagnostic only (the
 // harness links the callee's old object, so its convention moved): the render model as a one-member aggregate argument.
 // Compile-only (no /GL) hoists the render model's load into EDI above the flag branch, so there the block starts at the fld.
+// M3 lane 5 r205 (fast): the render model through a file-local forceinline accessor taking the model 2; `__assume(render_model
+// != 0)` at the top of the flag block 2 (no block boundary, unlike the real test); the render model zero-initialised at
+// function scope and assigned at its lookup 2; had_animation set at the end of the flag block 270 (fstp unmoved); a const
+// channel reference with the time read before the animation 2. Diagnostic (reverted at once): any real branch between the
+// two flag-block sample calls (an integer parameter test) moves the time to SSE (`movss; mulss`, its store after all four
+// pushes), so retail's x87 time needs both calls in one block.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
