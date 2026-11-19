@@ -1537,6 +1537,13 @@ PRIVATE inline long score_string_list_1608e0()
 // to the global's element for the clamp, the store and y 740 (2840 bytes); x as `left + width / 2 - g_4b9dd2 - 0x86` 679,
 // as `left + width / 2 - (g_4b9dd2 + 0x86)` 679, the width as `long` 679 (all the same code: retail reads the window's
 // left edge twice, ours once into CX). Re-measured: height not volatile 723, fade count not volatile 707, both 755.
+// Round 118 (m3 lane 13, fast with 0x161420 and 0x1600f0, both MATCH): retail reloads its x/y point (+0x10/+0x12) after
+// the title-text call for the title's far edges and the row advance (the point's slot is later the header rectangle,
+// passed by address), where ours keeps x and y in registers. Title far edges read from row_position 679, the advance as
+// `row_position[1] += 0x18` 679, both 679, all four title edges from row_position 679 (all the same code); row_position
+// initialised `{ x, (short)y }` 679, with far edges / far edges and += / all edges / += only 679 each; initialised with
+// all four title edges from row_position and += 698 (2888 B: the player index then loads into EBX first as retail and
+// row_position[1] is reloaded after the call, but the panel takes EBX and the frame stays 0x798).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
