@@ -1558,6 +1558,11 @@ struct s_pool_view_172840
 // Clipped end pointer 124. Shared clipped count 115. Shared clipped points 54. Parent bitset base 203.
 // Signed allocated entry index 55. NOT kept: shared count removes a retail reload, while the shared point
 // base and the 55 forms grow the body. The sentinel producer and publication schedule still differ.
+// Completion or all capacity names 134/134. Count committed from the checked index 55,
+// scoped storage receiver 55, native pool fields 254, rollback from allocation 249,
+// shared point index 60, explicit cluster selection arms 55.
+// NOT kept: the 55 forms recover the four flag homes but add two bytes and still
+// schedule the cluster store and sentinel differently. The body stays at retail length.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

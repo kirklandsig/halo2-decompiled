@@ -5261,6 +5261,11 @@ void function_e4300(long arg_159e6d)
 // against 61); the callee's file is not mine, so the boundary cannot be recovered here:
 // BLOCKED-BY 0xe5930.
 // MiniMax R (11-17): no new form, no lower score (91): the reset dispatch expands at this call site, so the body is 113 bytes against retail's 61, and the helper's own file (src/unknown_0e57e0.cpp) is not this lane's: BLOCKED-BY 0xe5930.
+// Reset through a function reference, mutable pointer or constant pointer 11/11/11,
+// or direct address expression 91. Boolean field extraction with reference, pointer
+// or constant pointer 1/1/1. Reference and shared object getter 11.
+// NOT kept: the one-point forms change the reset argument from EAX to ECX.
+// Scoped inline depth with the Boolean field test matched as a diagnostic.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {
