@@ -47,6 +47,7 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// score 298 (was 298): earlier rounds' entries follow in order, m3 lane 9 r142's last.
 // MiniMax G (11-18): no new form, no lower score (298): the first difference is still at +0x21 and 0x11bed0 is
 // still expanded here where retail calls it out of line; that expansion boundary is settled in
 // src/unknown_11bed0.cpp, which this lane may not edit, so the optional-state homes (ours [esp+0x2c]/[esp+0x3c]
@@ -58,7 +59,7 @@ const dword g_455978[81] = {
 // src/unknown_11bed0.cpp, which this lane may not edit, so the optional-state homes and the colouring behind it
 // stay as they are. The permuter found no better form: an annealed search over this body (300 s) lowered nothing,
 // best 268 against a baseline of 268.
-// score 298 (was 298): m3 lane 9 r134 (fast unless noted; the score line below moved to the top of this one note):
+// m3 lane 9 r134 (fast unless noted; the score line below moved to the top of this one note):
 // `inline` on 0x279740's own definition (src/unknown_279740.cpp) 418 plain and fast (2215 bytes: both releases then
 // expand the range check and 0x11bed0 still expands, so the expansion is not a per-caller budget); the loop counter
 // renamed to sort after the exclusion index (diagnostic for the name-ordered cells) 298 (same code); the upper bound
@@ -370,6 +371,14 @@ const dword g_455978[81] = {
 // 295). One compiler-setting diagnostic: without the inline restriction on src/unknown_279740.cpp both releases expand the
 // range check (418 at 2215 bytes, as `inline` on its definition did), so that file's flags are not the lever either.
 // Still BLOCKED-BY 0x11bed0: the original has slightly more in it than ours when the expansion is decided.
+// M3 lane 9 r142 (fast with 0x11bed0, 0x14a280 and all 42 functions that call 0x11bed0): the same 278 (2049 B) comes from
+// the call site alone: an always-true `if (arg_11)` around the 0x11bed0 call emits no code but keeps 0x11bed0 out of line
+// with retail's setup (location in ESI, point in EDX, then `mov edx, esi; cmp word [edx+4], -1`); 0x11bed0, 0x14a280 and
+// every caller unchanged. A guard, so match-only and not kept. With 0x11bed0 called that way, `inline` on 0x279740's
+// definition expands both releases 306 (2141 B), and so does 0x279740's file built without its inline restriction
+// (diagnostic, restored) 306: the nested second release still expands. Guards that emit code: `if (arg_5)` 310 (2063 B,
+// 0x11bed0 called), `if (!local_0)` 309 (2061 B). The point copy through real_point3d_set 320 (2133 B); 0x11bed0's else
+// arm through the existing 0x11be90 298 (re-measured, 0x11bed0 still matches).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
