@@ -514,6 +514,11 @@
 // then overwritten by the second (retail keeps the first cross's i in w's slot) 533 (2622 B; three under the bar, and
 // `w` would hold a value its name does not fit); the wave terms read through a `point3f const *` to the camera point 537.
 // Retail's late x87 pops and stored wave cells still point at the removed third wave term (a dead store).
+// The 0x54 frame, separate rounded wave slots and the origin home still differ. Component
+// origin aggregate 710, selected-coordinate point setter 745, setter on regular/special/
+// both arms 699/708/709, named origin coordinates 745, setter on both outputs 707,
+// selected-coordinate and output setters 690. NOT kept: all regress. The last reaches
+// frame 0x5c at 2587 bytes. The regular-arm setter raises the reduced caller to 344.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

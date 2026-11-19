@@ -381,6 +381,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // 393 (frame 0x60); diagnostic, reverted: the second-axis arm through a one-caller copy of the helper with its two vectors
 // declared sine first 219 (retail's second copy has them the other way round in the frame; the declaration does not move
 // them). Body unchanged.
+// Paired axis reads shared by squares and sine products, with separate mixed-product reads:
+// k/i/j 412/358/341; ki/kj/ij 409/412/477; all 385; all with earlier j square 476.
+// NOT kept: The paired reads change both expansions without recovering the early squared-k spill.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

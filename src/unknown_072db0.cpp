@@ -2116,6 +2116,11 @@ bool function_1900a5(long index);
 // named space 714, with `failed = true` 706; the request loop's identity select the same way 733, with the completion one
 // 735, with the space 723, all four pieces 704 (2862 B).
 // Body unchanged; the slot test's cmovne still needs the SSE flag.
+// The user-base home and slot conditional move still differ with the 0xc0 frame.
+// SDK guest predicate for identity/both masks 703/703. Typed slot base through the
+// selector 828, via the record reference 821, direct base reference 806.
+// With the SDK identity predicate these score 828/821/806. NOT kept: the typed forms
+// add sixteen bytes and retain the opening frame and exit-span mismatch.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -627,6 +627,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // harness homes onto retail's: retail shares the root locals' home with the yaw (+0xc) and keeps the first pitch component
 // alone at +0x10, then the first rotation's sine at +0x10 and its cosine in the first stack argument's home, and the final
 // pitch in the scale's home; ours shares the roots with the first pitch and the final pitch (+0x10).
+// Unity remains in XMM5 and the root still shares the pitch slot. Separate desired/bounded/difference
+// angle pairs 269/269/244. Desired plus bounded, desired plus difference, bounded plus difference,
+// or all three 269/265/265/265. One lower bound for both angular clamps 284.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -1554,6 +1554,10 @@ void function_150820(dword *bits, bool local_only)
 // `else if (function_cd4e0(...)) result = true;` 47; `result = true;` ahead of the a8f80 call 71 (215 bytes); the mode
 // test inverted with the cd4e0 arm first 72 (219 bytes); the hand as `bool` 89 (197 bytes); the hand set to 0 and then
 // to 1 under `if (!primary)` 45 (211 bytes). Body unchanged.
+// ESI player, EDX unit index and EDI hand still differ. Canonical object header table,
+// canonical player displacement/indexed table/read-only displacement with either header
+// lookup, and canonical displacement with a direct header read all score 43 at 210 bytes.
+// The types and lookup source were restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

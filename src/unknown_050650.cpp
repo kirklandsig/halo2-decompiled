@@ -960,6 +960,11 @@ struct s_collision_result_buffer_1697c0
 // assigned in the loop 270 (same code). Reading: register-masked, what is left is the rotations' operand ranks
 // (retail's dot adds the i term last, ours the j term), the clear-path magnitude order (retail k, j, i; ours k, i, j)
 // and the two transfer slots holding {magnitude, draws, first sine, second cosine} in retail, the cosine set in ours.
+// The pitch-axis j product still takes a reciprocal copy instead of preloading j.
+// Paired horizontal components 270, with the axis setter 296; copied-then-negated lateral component 361.
+// Magnitude supplied to the scaling stage directly, named for the axis, named for both outputs,
+// all named, or immutable 333/333/335/335/333. NOT kept: the split magnitude enlarges the frame
+// and leaves the initial zero register and later random/trigonometric transfer different.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

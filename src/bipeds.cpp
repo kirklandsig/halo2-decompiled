@@ -4284,6 +4284,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Conditional/branched/tag-first/default-override 609/609/651/666 in both scopes
 // against reduced 612 (full 548). NOT kept: the best gain is three, with the same
 // reduced 0x7c frame and the threshold still separate from the saved tag home.
+// Saved animation key, signed/unsigned, tested after orientation with entry or walking-only state base:
+// 620/620/643/643. Test at the consumer with the same base choices: 626/626/627/627.
+// Reduced control 612, full 548. NOT kept: The two 2712-byte forms change the entry schedule,
+// and none of the forms improves the reduced score or recovers the full result and flight homes.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

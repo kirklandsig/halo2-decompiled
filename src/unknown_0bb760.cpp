@@ -1064,6 +1064,10 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // input cursor in the loop initializer 173, object header reference 171. NOT kept: the block
 // reference reaches retail length but gains four. The unsigned quotient omits retail’s signed
 // halving step. The EBX save and input spill still occur early.
+// The byte-mask test still saves EBX early, and the input spills before count admission.
+// Size first through short or long 171/171, signed displacement local 171, both native words 171,
+// stored-colour count before halving 171, named flags with mask equality 171, unsigned size read
+// first 171, base address between the two divisions 171. All reproduce the opening allocation.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

@@ -1079,6 +1079,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // code); case 5's test held in a bool computed ahead of the direction 218 (same code); case 5 first in the switch 329; case 2
 // ahead of case 5 353 (1284 B). Retail's case 5 compares the entry-loaded EAX before the direction is formed, while case 2
 // reads the actor from its stack home again, so the entry value is not a whole-function register home for the parameter.
+// Early root and actor allocation still differ. Second-edge start/end/both addresses after the
+// first normalization 311/335/229, or inside the positive-length arm 334/336/361.
+// Both addresses with the second vector scoped there 229/361. All forms regress.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

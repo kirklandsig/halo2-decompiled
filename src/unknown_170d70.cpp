@@ -1126,6 +1126,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // sine-axis scale 374; double diagonals 397.
 // NOT kept: the 330 vector form reaches 1464 bytes but uses frame 0x4c and still spills two
 // squares. The double-angle form also demotes the matched initializer.
+// Named square inputs together 381 or paired with products 379. Sine products before or after
+// complement products 354/343. Row aggregate 492; symmetric coefficients then aggregate 469.
+// Early horizontal axis 381; named double vertical tangent 368.
+// NOT kept: the 343 form gains three at 1465 bytes with frame 0x54, and unity moves to XMM6.
+// Both aggregate forms also demote the matched view initializer. The original square spills remain.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2073,6 +2078,9 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // indexed state address 295; basis pointers bound after both copies 405; initial/final coordinate
 // clamp loops 434/456. NOT kept: the late basis pointers shorten the body and the clamp loops
 // grow it. The state base remains in EBP and collision point in EBX.
+// The collision point in EBX still displaces the state from its retail register.
+// Point/vector/both row accumulators 382/297/382. Full point/vector/both setters 295/465/463.
+// Row accumulators with a single point/vector setter 382/461. The point setter alone ties at retail length.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

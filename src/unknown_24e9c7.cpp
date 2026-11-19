@@ -602,6 +602,9 @@ struct s_24e9c7_points
 // place: the side point set straight to the across products with no across locals and scaled later by the half width 144
 // (746 B), with compound scaling 144 (same code), with `size * (0.0f - forward_j)` 139 (742 B), with the side point
 // declared before the size 144 (same code); on main the side point declared at the drawing block's top 125 (same code).
+// Quad aggregate from one shared origin before size, after across, after height or after half width:
+// 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
+// NOT kept: The across-y spill and the returned-height home remain different at retail length.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

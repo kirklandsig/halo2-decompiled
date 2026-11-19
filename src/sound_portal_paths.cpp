@@ -369,6 +369,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // The two table spills still enlarge the frame by eight bytes. Common index store 390; index and
 // gain 372; cluster 376; portal and cluster 375; all optional stores 369; index and cluster 371;
 // all stores with a branch-selected gain 374; index, portal and cluster 370.
+// Low-byte portal flags 354; destination before low-byte flags 368. Portal array header 354,
+// cluster array header 354, both 354. Packed link record 354; index and endpoint bitfields 371;
+// path count and link pointer through the array header 354.
+// The bitfield and earlier destination forms shorten to 1347 bytes. The 0x428 frame and table reloads remain open.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

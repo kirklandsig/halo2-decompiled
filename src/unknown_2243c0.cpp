@@ -757,6 +757,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // EDX, the zero after the definition's +8 read; re-measure, not a trial); main's body with the group test re-reading the
 // tag and the flags read just before 0x173ba0 (the chain's two non-reference parts) 145; the element helper as plain
 // `inline` 117 (still inlined, same code); the two nine-bit ordinals as `word` locals 117 (same code).
+// Existing tag-array header in the accessor 117; typed block pointer 117; block lvalue 117;
+// three named block fields by pointer or lvalue 117/117; pass and material block headers 117;
+// all tag-array headers 117, with full-width fallback mask 152.
+// The full-width mask still hoists the tag table, and the stage/pass addresses still fuse.
+// Fallback entry lvalue with word or dword ordinal 117/152; masked entry pointer 152.
+// Word fallback lvalue with shader/pass/material lvalues singly or all 117/117/117/117;
+// all with masked fallback 152. NOT kept: The dword mask hoists the table, and the word
+// forms leave the EAX zero-extension and fused element loads.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

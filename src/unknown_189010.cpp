@@ -486,6 +486,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // Round 636: the merged tail test remains. Reduced control 41, caller-context control 32. Single-exit
 // rejection with split masks or direct fields 41/41, Boolean fields 50, nested bit 8 or audible 65/50,
 // audible first 58; bit 8 then audible then bit 11 56; direct return on rejection 82.
+// Direct flag-8 field with boolean flag-11 conversion 60, with word extraction 32;
+// those tests with the flag-11 field store 60/32. Eligibility before the primary maximum 42;
+// audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
+// NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
+// keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

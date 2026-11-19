@@ -1942,6 +1942,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // coalesced setne sequence and the live EAX zero are retail's, but the size takes EDX, the cursor EDI and the player
 // goes on the stack); that with `include_mask ? 13 : 11` 137; the other five orders of kept/written/capacity ahead of
 // the size 137/137/154/154/154 (0x56380 13 each); the size declared at the block top and assigned last 137.
+// The opening zero still drops out of EAX before the capacity gate.
+// Separate payload and header size 60, with header addition after the count byte 164.
+// Single membership/index transfer to the final return 60/60; accepted membership/index first 74/60;
+// direct membership/index failure return 172/173. NOT kept: direct returns change the matched caller,
+// while the other forms leave the capacity exit and player-bit allocation unresolved.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

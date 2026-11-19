@@ -4541,6 +4541,10 @@ bool __stdcall function_2b278e(long controller_index)
 // 211/199; message selection last/first 219/248; separate leave with Boolean membership
 // 196; group lower actions before leave 217. The original double pointer and index spill
 // still differ. Isolating leave grows the frame.
+// Copy the dialog controller pointer, index or both 181/54/181; with Boolean membership 205/199/205.
+// Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
+// NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
+// and the index-only copy folds into the original read.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

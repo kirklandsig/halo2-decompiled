@@ -594,6 +594,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // itself through XMM0 between the second draw and the x/y adds): through the existing real_point3d_set with z passed
 // back 173 (same code: the z store is dropped); `z += 0.0f` 173 (diagnostic: folded away entirely); a point local built
 // from the three values and copied back 257 (1246 B). Body unchanged.
+// The 0x11c frame and cross/sine homes still differ. Shared add at the axis/cross/both
+// stages 221/233/233. Shared scaled add at the axis/cross stages 242/233. Axis scaled
+// add plus cross add 204, axis add plus cross scaled add 233, both scaled adds 254.
+// NOT kept: all regress and move away from retail length. The 204 form keeps frame 0x11c.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -2056,6 +2056,9 @@ long function_1fa7f0(void);
 // keeps the count in BX through the scan loops and the edge in a slot. A `short last = count - 1;` local for the candidate
 // test and the copied last point 469 (1765 B); the forward scan as a `for (end = index; end < count; ++end)` loop 636
 // (1911 B); the edge declared in the scan arm 481 (1769 B); the found flag declared there 481 (1769 B); both there 478.
+// Aligned frame 0x114 and the count in BX remain. Short/long exclusive reverse bound 457/436.
+// With a candidate step address 457/436. Reused short/long forward ordinal 470/481,
+// with a candidate step address 470/481. The selected edge still spills.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
