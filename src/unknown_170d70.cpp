@@ -1823,7 +1823,9 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 270 (was 284): the winning displacement spills before the side offsets are stored
+// score 270 (was 284): The 0xbc frame and point in EBX differ from the 0xb8 frame and stack-passed point in
+// retail. The center trace stays matched.
+// Earlier score 270 (was 284): the winning displacement spills before the side offsets are stored
 // and reloads for refinement. The frame and point convention still differ.
 // Earlier logic walk against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
@@ -1878,6 +1880,13 @@ struct s_camera_reference_171830
 // conditional ray masks 302, distinct names for center and winning fractions 270.
 // NOT kept: the pair boundary restores the frame at 1211 bytes. Conditional masks shorten
 // the resolver to 1200 bytes and leave the point ingress unresolved.
+// One collision result for sampling and refinement 270, Shared collision result declared at center trace return
+// 270, Shared collision result declared in the entry phase 270, One direction workspace for both collision loops
+// 275, Shared result and direction across the two loops 275, Unsigned ray masks in both phases 270, Shared
+// collision result with unsigned ray masks 270, Both shared workspaces with unsigned ray masks 275. NOT kept: A
+// shared direction workspace recovers frame 0xb8 but leaves the point in EBX, shortens the body to 1215 bytes and
+// raises the score to 275. Shared collision storage with separate directions and unsigned masks tie at 270. Both
+// checked controls retain their opening scores.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

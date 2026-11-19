@@ -3577,7 +3577,9 @@ struct s_1cf531
  word field_2 : 4;
 };
 
-// score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
+// score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
+// uses the saved impulse slot at 0x30.
+// Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
 // folds its reload into the final `mulps`, ours stores it to 0x40. (Earlier first lines: the friction magnitude in
 // another dead slot, the element formed offset-first in retail, retail's y loaded early and stored after z; the
 // round 139 forms below fixed the first and the last.)
@@ -3638,6 +3640,14 @@ struct s_1cf531
 // `hkVector4 &` 23, the final scale alone through mul4 23 (all the in-place code); corrected as a named hkVector4 2
 // (same code); local_13 by `local_13 = local_7;` 2, copy-initialised from local_7 124/124 (932 B); a 1500 s
 // permuter run (608 tries) none below 2.
+// Projected velocity vector named before subtraction 2, Intrinsic broadcast of the final scale 7, Intrinsic
+// broadcasts of projection and final scale 16, Intrinsic broadcasts of all three scalar scales 87, Initialize
+// corrected register from the saved impulse before subtracting 2, Velocity and normalization workspace ends at
+// correction 2, Newton product named separately from the reciprocal-length correction 2, Final scale splatted in
+// its own statement 2, Corrected vector and final scale in one intrinsic expression 7, Corrected vector formed at
+// the final product with the original scale splat 50. NOT kept: The projection names, velocity scope and split
+// splat leave both spill operands unchanged. The intrinsic broadcasts preserve the extent at higher scores.
+// Forming the correction at the final product extends the body to 915 bytes.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

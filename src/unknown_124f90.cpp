@@ -4027,7 +4027,9 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
+// score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
+// advance differs at +0x6b.
+// Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
 // `case 1: continue;` arm and an unreachable `default: __assume(0);`, and the pitch range is computed inside case 0
 // where retail computes it: every register, the `sub eax, 0` dispatch and case 0 are retail's. Left: the loop end's
 // pool reload is scheduled ahead of the `cmp ebx, -1` where retail loads it after the next-index ternary's join (the
@@ -4244,6 +4246,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // shaped like 0x16bbc0 (start/index/result, the pool global passed so its load follows the ternary) 78. Retail's loop
 // end reads as 0x16bbc0 inlined, but that function sits in an /Ob1 file our LTCG does not inline from. The range as a
 // const reference bound to the pointer temporary in case 0 78.
+// Shared pool step after initial lookup 183, Shared pool step for entry and advance 293, Shared pool step in the
+// while test 293, Shared absolute-to-datum conversion at entry 183, Shared absolute-to-datum conversion at
+// advance 77, Shared absolute search at advance 91, Native word slot for both playback observations 168, Advance
+// the admitted datum directly from its low word 91. NOT kept: The shared calls remain out of line and shorten the
+// body. A native word slot retains 558 bytes at 168. Advancing the admitted slot directly removes the retail
+// sentinel branch and shortens the body.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
