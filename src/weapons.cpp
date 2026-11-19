@@ -3660,7 +3660,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // MiniMax H (11-18): score 643 (was 643): no new form, no lower score; the frame stays 0x1c64 against retail's
 // 0x1c60 and the weapon, barrel, definition and holder still live in other homes, so the prologue and the
 // barrel walk's register allocation differ; the plain image reads 607 for the kept body.
-// score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
+// Earlier score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
 // below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus
 // 0x1c60; weapon/barrel and scalar homes remain.
@@ -3769,6 +3769,11 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // everywhere, so the positional count comes from drift: retail keeps the weapon index in EBX up to the first
 // fire call, the magazine definition in EBX across the 0x106030/0xd1210 calls and the barrel offset in EDI.
 // Not kept: no count below 607. Original body restored.
+// Typed unit player fields 643, ordinary holder query 640, inventory-selected holder with
+// typed player fields 640, typed header table base 643, magazine record references 643,
+// magazine tag resolved at notification 601, indexed barrel tag fields 836, named replacement
+// barrel field 643. Reduced control 643. NOT kept: late magazine lookup reaches retail length
+// with frame 0x1c58 and delays an early retail lookup. The ordinary holder forms shorten the body.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

@@ -4635,9 +4635,9 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 81 (F432: the second pending test through a one-use byte view of flags gives 50, a steering alias, match-only, reverted): with it, the second pending test reads a byte; pin scratch registers and controller compares differ.
 // score 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
+// The second pending test through a one-use low-byte view scores 50. That alias was reverted.
 // Earlier at 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store. The countdown now uses byte operations.
 // Earlier at 122: the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
@@ -4929,6 +4929,10 @@ struct s_128ca0
 // the word load is shared again), `long count = NONE` with a byte-cast load 122. Left: the pins' EAX/EDX, the field_c store's slot, the
 // controller compares' immediates (retail EDX = NONE), the inner chunk push order, the chunk-set call's argument
 // loads, and the flag6 / stream stores' forms swapped (ours load/or/store then memory or, retail the reverse).
+// Signed permutation gain parts 81, named gain operands 81, separate pinned result 81,
+// unclamped bits held through the pin 81, post-pin channel indices 81, nullable controller 130,
+// update-before-start dispatch 144, pinned decibel round-trip 81. NOT kept: the tied pin
+// forms retain the register exchange and the controller and dispatch forms regress.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

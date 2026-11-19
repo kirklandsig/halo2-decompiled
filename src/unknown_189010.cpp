@@ -491,6 +491,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
 // NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
 // keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
+// Bit-8 and bit-11 conditional admission 45/75, accumulated and default admission 45/77,
+// prior secondary maximum and selected maximum 45/46, variant flag after both stores 43,
+// marker copy using the published size 150. NOT kept: split-test forms move the request
+// onto the stack and lose callers, or change the matching prefix. The merged mask remains.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

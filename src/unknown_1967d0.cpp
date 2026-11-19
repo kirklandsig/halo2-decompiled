@@ -977,6 +977,11 @@ static inline long team_score_195ed0(long team)
 // installed-team and active-team references 100/100, count-first rank comparison 100,
 // admitted clamp with a shared result 177, unsigned terminal player inequality 732.
 // The flag still leads the configuration copy and the final score call still expands.
+// Indexed configuration records 181, indexed configuration and player ranks 156,
+// combined copied-team admission 301, rank division before team entry 100,
+// rank and score through indexed team 105, short team rank ordinal 205,
+// named player rank and slot 100, native in-range score with short selection 191.
+// NOT kept: the early flag load remains and the native score call still inlines.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
