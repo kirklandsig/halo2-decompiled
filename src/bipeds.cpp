@@ -3756,6 +3756,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // MiniMax C (11-15): no new form, no lower score (324): the frame is 0x48 against retail's 0x4c, and the byte at
 // +0x34b is read with movzx where retail reads it with movsx - a signedness difference worth one point on its own.
 // MiniMax R (11-17): no new form, no lower score (324): retail sign-extends the +0x34b state byte (movsx) where this build zero-extends it - the signed field measures 323, under the keep bar - and the frame is 0x48 against retail's 0x4c.
+// Zero-first/one-first if dispatch 511/500; guarded nonzero/early settle dispatch
+// 522/502, with the same scores for signed and unsigned state. NOT kept: the
+// one-first dispatch reaches 0x4c but takes the index in EAX and changes the caller.
+// The state compares stay byte-wide and the pre-call flag slot is still missing.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

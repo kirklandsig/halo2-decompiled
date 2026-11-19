@@ -4157,6 +4157,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor with four named slot roles 164; forwarding mask comparison 181;
 // forwarding mask comparison with cursor 168; packet-kind clamp 182; packet-kind clamp with cursor 188.
 // NOT kept: the cursor with recipient-set comparison recovers EBP but drops the member slot and shortens the body.
+// One-based packet number with consumed offset, ordinal offset, separate cursor or
+// cursor-distance result: long 156/165/163/180; short 156/162/163/179. The channel
+// still needs EBP at entry and the member needs its own spill.
 // m3 lane 8 r186 (fast with the matched caller 0x564c0, matched throughout; control 139): on the packet-cursor form
 // (`byte *packet = data + 2;` beside the count, advanced at the loop's end; re-measured 164 at 478 bytes, the member in
 // EBP): the relay arm's talker result in a named bool 164; both arms' talker results named 164; the member's NONE test

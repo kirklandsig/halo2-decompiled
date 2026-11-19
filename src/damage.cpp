@@ -2987,6 +2987,9 @@ struct s_unit_event
 // the region argument's dead home), ours holds object_index in ESI and leaves EDI free, so our constant 1 goes to EDI
 // from the 0x20000 test on (`push edi`, `or [x + 0x30], edi`) where retail uses immediates there and ESI = 1 only from
 // the vehicle block to the state compare.
+// Round 636: region and permutation receivers remain exchanged. Pool retained through drops 460, through
+// effects 460, through vehicle 481; retained from entry 451, from region update 513; pool and 16-bit
+// slot through drops and vehicle 555 or from entry 566; pool retained for both early notifications 420.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

@@ -965,6 +965,10 @@ static inline long team_score_195ed0(long team)
 // `*((byte *)&g_511000 - 0x225)` 373 (the flag after the copy, the address not folded). Third score read: the two
 // clamp tests through the file's inline copy and the value through the existing 0x1587f0 191 (1237 B: the link
 // inlines 0x1587f0 there and calls 0x161e60 and 0x162030 from it). build/r120/storage-lead holds the head-only header.
+// One sampled score 225; lower sample reused 190; upper sample reused 175; local bound tests
+// with native final score and separate stores 192, or admitted-arm selection 191; paired team/player
+// rank cursors 186/165 with indices or 186/174 with remaining counts. The final query still expands
+// on the native-call forms, and the post-copy flag order remains.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

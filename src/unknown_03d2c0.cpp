@@ -455,6 +455,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // MiniMax A (11-18): no new form, no lower score (77); the merge test moved out of the walk block (79), into the flag block (78), the merge test alone (152) and the record pointer in the flag block (176) all score worse, so the body stands; what still differs is that our compiler folds the redundant compare retail kept and the join copies the index in a register where retail reloads it from its stack slot.
 // Eviction scan with separate first/absolute/next slots and all pairings 77 each;
 // all three together, also with a named next-search start, 77 each. Cache-hit and return edges remain.
+// One pool pointer 77; one data base 150; both 150. Exhaustion tested against the terminal cursor 79,
+// with one pool pointer 79, with one data base 130, with both 130; cursor test to the common return 87.
+// The cache hit still enters the shared test and the exhausted walk still lacks retail's trailing ESI return.
 // First-candidate exhaustion returning allocation result or stamped handle 142/142,
 // sole exit from first candidate 109, split initialization with first-candidate exit 143,
 // initialize before allocation 148, raw slot exit with early return or sole exit 156/171,

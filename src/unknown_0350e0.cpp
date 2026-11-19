@@ -3250,6 +3250,9 @@ real magnitude3d(vector3f const *v);
 // Refresh the raw length at the upper bound, current/target: reuse it 170/228,
 // use a fresh in-range magnitude 170/170, floor default 262/246, ceiling default 170/233.
 // The raw current length and promoted-dot homes remain. Original clamps restored.
+// Ordered signed dot bounds, lower/upper first 191/192; lengths first 191/191;
+// fallback-first for the same four forms 191/192/191/191. NOT kept: the two
+// comparisons replace the x87 absolute test and change the frame.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4322,6 +4325,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Stored bitfield cycle/size/reset, cycle+size/cycle+reset/size+reset:
 // 490/486/489, 490/491/489. All direct bitfields 491; one bitfield snapshot 486.
 // The 0x60 frame, velocity inputs and projection homes remain. Original flag word restored.
+// Cycle-local camera displacement 485; range after time reset 491; local phase wrap 492,
+// conditional publication 506, per-arm publication 492; separate phase advance/accumulator/
+// fraction 500; radius in size arm 495; optional size update 486. NOT kept: cycle-local
+// displacement gains one at retail length and still reserves 0x60 bytes.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6090,6 +6097,10 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // in EAX at five bytes where retail uses ECX and EDX at six) and the first real divergence is the float temp for the radius
 // argument of function_1650a0 (ours in EDX, retail in EAX); seven source forms (the group through a pointer, the statements
 // reordered, the flags in a local, the restore through a local) move neither the length nor the register choice.
+// Combined projection rejection/admission 47/47; radius value/reference 132/47;
+// count sampled before flag reset 47; flags and count sampled together 47; clip
+// view before group setup or between save and reset 47/47. The radius value adds
+// a frame word and the four short accumulator encodings for the group flags remain.
 // @retail 0x30ed0
 void function_30ed0()
 {

@@ -483,6 +483,9 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // empty arm all put the request in EBP; so do, on the bitfield test, the first maximum as an if, a const sound pointer, an
 // early `return result` when 0x21d110 fails, a const pointer to the flags the second
 // 0x221810 call returns, and `game_time + 10 + ticks`.
+// Round 636: the merged tail test remains. Reduced control 41, caller-context control 32. Single-exit
+// rejection with split masks or direct fields 41/41, Boolean fields 50, nested bit 8 or audible 65/50,
+// audible first 58; bit 8 then audible then bit 11 56; direct return on rejection 82.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

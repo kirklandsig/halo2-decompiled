@@ -1513,6 +1513,10 @@ PRIVATE inline long score_string_list_1608e0()
 // remain); that with `real limit` named in the second arm 682 (2879 B: one conversion, but ahead of the zero test); the
 // named limit alone 720 (2856 B); the per-arm index with height not volatile 723 (2856 B: PIN takes retail's shape, the
 // index load is hoisted again and height stays in ESI); the screen width as `long` 679 (same code).
+// Joined zero cases with the original or one converted limit 690/709, with a retained
+// admitted scroll 709; nested lower-bound admission 685; default result with shared store
+// 742; conditional height selection 687; joined zero result with shared store 710;
+// admitted scroll adjusted before store 709. Frame and viewer register still differ.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
