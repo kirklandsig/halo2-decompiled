@@ -1197,6 +1197,15 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still
 // spills the result to a stack byte of its own and reloads the containing dword where this build keeps it in al.
+// M3 lane 3 r272 (fast with 0x1c4b00 and its callers; control 14, aligned 14, masked 6): the result read through a
+// `bool const &` for the member store and the force 14 (same code); that reference without the member store 90; a `const &`
+// to the re-fetched object pointer for the copy 41; a `vector3f const &` to the move output's velocity for the copy and the
+// call 14 (same code). Diagnostic, HELD (build/r272/held-0x118700.patch, code back to main): the r258 held form (0x1c4b00's
+// last parameter `bool` in its definition and all 13 declarations, the inline write helper, +0x88 typed as a vector)
+// re-measured on this body 6 (aligned 3; contributor 0xe24f0 579 -> 601, 0x10b010 19 in the reduced image only); that form
+// with the member store kept 91. Still BLOCKED-BY 0x1c4b00 (six of its declaration files are other lanes' this round),
+// 0x1ec690 (its draft sits disabled in another lane's file) and 0x1eb6f0: the copy's j/k loads wait on the move output's
+// escape through 0x1e55d0.
 // M3 lane 14 r112 (fast; control 14): the member store after the 0x1c4b00 call 96 (1041 B); after the velocity copy,
 // before the call 11 (three points, the force still widened by `movzx edx, al`; not kept); that with the member passed as
 // the force 11; the object looked up before the member store 40; a named pointer to the move output's velocity for the
