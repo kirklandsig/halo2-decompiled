@@ -1278,6 +1278,9 @@ void function_2118c0(void)
 // band-of-64 idiom (`&noise[row][w * 8]`, p1 `[row][k * 8]`, out `[row][k * 8 + m]`) 175 (745 B); a `long row` started at
 // zero above the band loop and stepped by 8 at its foot with the knot rows read in place 150. Screen only: the band-of-64
 // idiom from `b * 8` or `b << 3` and `(k + 7) & 7` for the first index (same code as now) reduce every row or change nothing.
+// M3 lane 13 r119 (fast with 0x212100 and 0x211fd0, both MATCH): `word k` 10 (same code); `long row = b; row *= 8;` 150;
+// `unsigned long` knot indices `(k + n) & 7` with `long row = b * 8` 185 (751 B); `long row = b * 8` with the knot subscripts
+// `(dword)(row + w)` 150, with `(dword)row + w` 150 (unsigned sums still reduce every row).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

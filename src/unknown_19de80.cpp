@@ -815,6 +815,10 @@ static inline bool teams_enabled_19e1c0()
 // (diagnostic, not keepable) 691 (same code: the assumption adds no weight); `token` declared `word const *const` 691 (same
 // code); the fallback's clamp as `remaining <= token_length ? remaining : token_length` 693 plain (1168 B), 395 on the
 // volatile result (1432 B). Body unchanged.
+// M3 lane 13 r119 (fast with 0x19e0f0; control 390): the plain result with `remaining` renamed through a `long const &`
+// local 691, through a local copy 691, `token` through a local copy 691, both copies 691 (1170 B each, same code as the
+// plain result); the volatile result with the `remaining` copy 390 (same code). Copies of a parameter fold away before
+// the allocator weighs token against remaining.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

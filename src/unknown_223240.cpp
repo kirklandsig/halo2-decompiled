@@ -401,6 +401,11 @@ void function_2232a0(void)
 // the record pointer is formed (`lea`) only for the type store and the two copy pointers; the integer and x87 streams
 // interleave the same way in both builds, so the difference is in address selection, not scheduling. Still BLOCKED-BY
 // 0x2b5d0 (its blockers 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 are all unmatched today).
+// M3 lane 13 r119 (fast with 0x223240, 0x2232a0 and 0x223080; control 47, aligned 20): the terminal record as
+// `(s_223080 *)(g_47f0f8 + view_count)` 47, through a typed table-element local 47, through a `(void *)` cast 47, the
+// view count `long const` 47 (all the same code); the terminal record indexed `[local_2 + 1]` with the view count kept for
+// the stub call 183 (583 B). Diagnostic: the stub call removed still adds the table base into the register before the
+// terminal stores, so the base fold is not the stub's register need. Still BLOCKED-BY 0x2b5d0 for the tail.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

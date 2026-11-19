@@ -622,6 +622,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // dropped (function_14390 is a call either way) 2 (same code; kept, one pragma pair fewer); the closing `inline_depth(255)`
 // dropped 2, as `inline_depth()` 2 (same code); the colour pointer declared `const` 2. In retail every call after the first
 // quad's second vertex stays out of line except the border-colour stage call, the shape of an inline budget spent there.
+// M3 lane 13 r119 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant written `(real)0xffffff`
+// 2 (same code); file-local forceinline accessors returning the lower and upper texture coordinates from the scale, in
+// all four texture calls 324 (2275 B), the lower one only 298, the upper one only 338, both in the first two calls only 2,
+// the lower one in the first two calls only 2 (the accessors spend the inline budget once they reach the third call).
+// Diagnostic: 1, 3, 5, 6 or 7 stores of one integer global to a probe array at the success block's top leave the pair
+// in our order (aligned). Restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
