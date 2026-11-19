@@ -2200,6 +2200,11 @@ void function_269250(long clump_index, long actor_index);
 // the selection from the walk's datum index 128; the selected arm's join (`if (clump != old) {...}`) through an inline
 // helper taking the clump index: on the datum-index form 128, on the in-arm form 126, on this body 89 (each the same
 // code as without it: a parameter bound to a variable adds no reference, so the selection keeps its register).
+// M3 lane 16 r139 (fast with 0x268bb0; this body reads 89 there against 87 in the full check, CAVEAT): the score
+// started at 0.0f instead of the best (the same values, as the best never drops below zero) 92 (480 B, retail's length);
+// the created arm assigning the loop's `group` instead of declaring a second one 89; the clump walk record declared at
+// function scope 89; the selection and best score declared at function scope and set at the top of each actor 89; the
+// score set by an if/else (`else score = best;`) 128 (484 B).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

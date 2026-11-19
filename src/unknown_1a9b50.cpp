@@ -806,6 +806,16 @@ extern point2f *g_468778;
 // retail does (four pushes at entry and the block in EBP), gives 413 here because this build then spills the actor
 // pointer instead of keeping it in EBP; retail's own order is (type, query, block), with the block in EAX and the
 // query in EDX, and this lane may not change the parameter order.
+// M3 lane 16 r140 (fast; control 375, register-masked aligned 102): the result declared after the three lookups, actor
+// first, 426 (1525 B: the result then sits in AL through the entry tests); in the original order 409 (1519 B); the
+// planar test pair as an aggregate copy (`point2f local_16 = *(point2f *)&local_9;`) alone 384 (the copy becomes retail's
+// integer moves but the request's word store and the facing products move); a `vector3f const *` to the object's
+// velocity (field_1c) for the length, the dot and both prediction rows 397 (1576 B, frame 0x44, masked 90: the
+// prediction block then reads the velocity through EBX as retail); that with actor first and the listed early `return
+// false` / returned final expression 417 (1563 B, masked 82: the settings pointer then lives only in its frame home as in
+// retail; arg_0 ESI, the actor EDI with a spill at +0x24, the slot EBP); plus `local_13` declared at the dot test
+// instead of the block's top 423 (masked 79: retail's fresh `xorps xmm0` zero at that compare). Left: the actor spill
+// and frame 0x44 (retail keeps it in EBP), the facing pointer formed late (fold-then-form) and the shared copy tails.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

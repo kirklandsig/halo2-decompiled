@@ -1236,6 +1236,12 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // stays a separate load until after allocation); `(word)` and `(short)` conversions 38/38 (same code); full-width reads as
 // `(long)*(void *const *)&`, `*(unsigned long const *)&`, `*(int const *)&`, `*(&player->previous_unit_index - 1)` and
 // `(&player->unit_index)[0]` 17 each (merged early); `(word)tail_player_get(player_index)->unit_index` 43.
+// M3 lane 16 r138 (fast; control 17): the weapon test as `(slot == NONE ? NONE : unit->weapons[slot]) != NONE` 17; the
+// unit through the shared unit_weapon_view_get with unit_weapon_in_slot(unit, (&unit->current_weapon_index)[hand]) 17;
+// the mode test through the existing function_138880() 17 (inlined here, same code); the e68c0 code from the hand
+// (`hand ? 0x13 : 9`) 60 (148 B); a forceinline hand-weapon helper taking the unit index and hand (lookup, slot and
+// NONE-default weapon inside) 17 (all the same code). Re-measured: the getter-reload lead 5 (player address still
+// `mov edx, [edx + 0x44] ... add edx, eax`).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

@@ -1372,6 +1372,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // point3f table filled through the existing real_point3d_set 566 (2807 B); the vertex table as `real [8][3]` 290 (same
 // code). Diagnostic: dead initialised locals at the top of the cone arm, k = 1..8: 479/480/480/484/483/483/479/479
 // (2809-2814 B): no phase, every extra local costs ~190. Body unchanged.
+// M3 lane 16 r139 (fast with 0xc1a80; control 290): a `plane3f *plane = &entry->plane;` for the cone plane's normal copy,
+// dot argument and distance store (retail's `[ecx + 0xc]` store) 543 (2810 B; the sphere arm's constant setup moves too),
+// with 1 to 7 unused locals at the top 544/548/548/547/543/543/543 (diagnostic: not a symbol-count phase); declared at the
+// loop top instead of in their arm: the plane point 290, the centre 290, the sphere radius 290, the cone scale 290 (same
+// code each).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

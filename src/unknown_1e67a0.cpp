@@ -1232,6 +1232,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // kept); the goal copied through a named local first 140 (1382 B: the copy folds back to the interleaved form, but the
 // extra local turns the rotation). Retail's exits load all three dwords (ESI/EDX/EAX) and the flags (EBX) before storing,
 // in both exits; no spelling here gives the three-register copy.
+// M3 lane 16 r140 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114). Dead-local scans (diagnostic, removed),
+// K unused `long` locals at the top, K = 0..31: 114 140 150 150 139 163 166 144 | 112 116 139 139 150 163 139 145 | 112 194 150
+// 139 150 166 140 145 | 114 114 139 150 150 166 140 145 (period 8; the first difference stays at +0x1f3 for every K but 17);
+// with the rotation through include/axis_rotation.h's helper (111 at K = 0, as listed), K = 1..15: 151 150 150 150 163 166
+// 147 112 113 150 139 150 163 139 145. No symbol count gives retail's copy-the-vector, axis-from-memory products, so they are
+// not a numbering state here. The axis passed as the `up` parameter instead of the state's copy: rotate_direction 277
+// (1396 B), the header helper 292 (1398 B). Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

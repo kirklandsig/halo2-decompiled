@@ -817,6 +817,12 @@ struct s_physical_block_iterator
 // retail keeps the count in EDI and the bit in EBX in the walk and then EDI for best.offset and the result, EBX for the
 // data, the page sum, the handle and NONE; the sum goes into the pages register and best.offset's copy feeds the second
 // test (`mov edx, edi; cmp eax, edx`), which is what a best.offset with two readers gives and ours never keeps.
+// M3 lane 16 r139 (fast with 0x13d320, MATCH each run; control 201): the second age clamped as `MAX(physical->time -
+// best.time, 0)` re-measured 209 (1228 B: the default arm is then retail's but for the scratch rotation, the candidate's
+// time in EAX and the difference in ECX where retail has ECX then EAX, and best.pages folded into `imul eax, [esp + 0x44]`
+// where retail loads it into EAX); on it the clock read once into a `dword now` used by both ages 209, the comparison
+// written `candidate->pages * best_age < best.pages * age` 209, the products as `age * best.pages > best_age *
+// candidate->pages` 209; both ages as unclamped `dword` locals with MAX() inside the products 373 (first difference +0x11).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
