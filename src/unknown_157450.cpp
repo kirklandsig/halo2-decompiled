@@ -1891,6 +1891,14 @@ short function_15cca0(long player_index, byte code)
 // the p27 arguments written inline 25; team and other_team swapped 24; `!= 0` tests 24; early-return guards 24;
 // pointer-increment countdown loop 24; other player pointer as a named local before or after `team` 24; the
 // other player pointer hoisted above the lookup 74 (the parameter does move to EAX there, but so does the lookup).
+// M3 lane 9 r142 (fast): the parameter takes whatever scratch register the lookup's temporaries leave: with the
+// player lookup replaced by the unchecked array read (diagnostic) it arrives in EAX and the temps take ECX/EDX as
+// in retail, so retail's lookup leaves EAX free from entry. New, none below 24: the teams as char locals 67 (236 B);
+// the player's team passed as `player->team` with only other_team named 24; the p27 test merged into the outer
+// condition 25; the engine test after the player's team read (early return) 24; other_team read from the typed
+// player array of g_4e8c24 24. Diagnostics (24 each): 1 to 8 dead initialised locals; the parameter copied into a
+// local; `+ (other - other)` on the other team; a private lookup copy without the index local 24, without the
+// datum local 71, with early returns 81.
 // Round 636: other-player EDX versus retail EAX still rotates the lookup. Shared player pool 24, pool
 // reference 24, typed roster 24 or word slot 68; other team lvalue 52, both team lvalues 82, shared
 // pool with virtual receiver 24, other team field address 52.
@@ -2085,6 +2093,16 @@ void function_15e460(long object_index, long value)
 // nested ternary return 31; three early returns 30; a local engine pointer with true-first 30; a `long one = 1`
 // local compared against 30, and a long result reused as the comparand (103 bytes) 39: no form makes the early
 // `mov edx, 1` appear ahead of the first branch.
+// M3 lane 9 r142 (fast; a one-file compile-only screen of this body reproduces the fast build's code line for line,
+// ~500 forms screened): matched 0x15b2f0 (src/unknown_15b2f0.cpp) is the only other retail body with `mov edx, 1` ...
+// `mov al, dl`: a false-started result and three uses of 1 after its first test. Here retail's four uses (the
+// entry-path true, the special-case true, the shift base and the compare) share EDX from the entry block, with the
+// options record in EAX; every true-first form instead substitutes the result variable itself (EAX) for the shift
+// base and the compare, with the options in EDX. New: an uninitialised result set in an if / else-if / else chain 33;
+// `result = special || compare` under the guard with true in the else 33; one `||` guard for both trues with the
+// compare in the else 33; true-first with `return result` for the guard and the special case and the compare
+// returned 30; the options pointer declared first (re-measured) 29. Compile-only grid (no fit): five options
+// spellings x eight arm shapes x two compare spellings x bool/char/byte/long result x declaration order.
 // Round 636: EDX one and ESI/EDI saves still differ. Option first in the existing branch chain 27,
 // as the gate for the role result 29, as a short-circuit return 30, as a restriction conjunction 40;
 // flag before role 30, with role result 30, with the option gate 36; option-first assignment 31.
@@ -5840,6 +5858,16 @@ void __stdcall function_d6bc0(long object_index);
 // loop-top index local at function scope 172; the object pointer declared before the index 172; `entries` copied into a
 // function-scope local 172; the default arm first 172. On the label form: case 1's bit through a trivial forced-inline
 // accessor 7 (same code; CL stays).
+// M3 lane 9 r142 (fast; base 29, label form re-measured 7, label + field test 172 at 858 B): on the label + field-test
+// form the 0x15aad0 call given another pointer (diagnostic) 12 (871 B): every line but that argument is then retail's
+// (switch test on the field, case 1 in AL, the timer in EDI, `entries` never in a register), so the whole 172 gap is
+// `entries` crossing the allocator's promotion point. Other single uses removed (diagnostics): the reset block's
+// `value04 = 1` store 25 (874 B); `++value06` 169; 0x158ff0 given the loop-top index 207; the countdown's `= 1` store
+// 186; 0xd6bc0 given the loop-top index 192. New forms: the reset counter in an inline helper taking `&entries[i]`
+// 287 (810 B); the schedule decision as an inline bool predicate in the zero test's condition (returns, or a result
+// set per case) 367 (724 B: not inlined, called), with the loop-top index test 349; the predicate `__forceinline`
+// with returns 139 (869 B: `entries` in EDI, the delay block laid out before the case code, `and al, 1` for the
+// returned bit), with a result set per case 172 (858 B).
 // M3 lane 8 r188 (fast): the flag recipe re-measured 7 (869 B; left the index test on the local and case 1 in CL); on it,
 // with the field test: the object pointer declared at function scope (assigned NULL at the loop top) 172 (858 B), no
 // loop-top index local at all (every read through the field, the object block too) 172 (858 B), the schedule test on

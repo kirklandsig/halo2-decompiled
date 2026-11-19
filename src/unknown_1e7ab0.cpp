@@ -539,6 +539,13 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // child test's `test cl, 1` is the byte that moves the jump table); on that: the child's unit compared before its seat
 // 168; the child seat's flags through `(seats + index)->flags` 165, through TEST_FIELD_BIT 165; the parent seat as a
 // reference in place of the seat pointer 165 (same code each). BLOCKED-BY 0xd0590's parameter order (contributor).
+// m3 lane 9 r145 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all matched each time; control 117): the entry getter's table register
+// (ours EAX, retail ECX, the one byte that starts the displacement drift) through zero-code respellings of entry_420_get: the table
+// through a one-line inline accessor 117, the table declared before the result 117, `table->entries + index` 117, the entries
+// pointer named before the index 117, the global read at each use 117 (same code each). The table passed to the getter by the
+// caller 165 (2312 bytes): the getter is then retail's byte for byte, and the 4 extra bytes are case 4's child test (`test cl, 1`
+// against retail's `test al, 1`, one byte) moving the jump table's alignment pad (three bytes); what is left there is case 4's
+// parent and definition registers and per-case scratch rotations. BLOCKED-BY 0xd0590 stands.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

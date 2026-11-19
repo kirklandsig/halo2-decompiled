@@ -982,6 +982,12 @@ bool function_e4050(long object_index);
 // the field ahead of the unit local 171 (same code), the dword unit with 0xe4050 passed the field 171 (same code);
 // the unsigned continue test on the kept parent-first walk 43 (same code). Any signed/unsigned mismatch between the
 // continue test and the walk keeps the entry test and gives that one 405-byte allocation. Body unchanged.
+// M3 lane 9 r142 (fast; 0xbaf80's file is off limits this round): in the 405-byte family the unit keeps EAX because
+// no call falls in its range and the walk's step object takes ECX; retail's step object takes EAX, which pushes the
+// unit to EBX. New: object_get_unchecked returning through a named result local, on the kept body 44 (same code),
+// on the `dword current` walk 171, on the long NONE-root walk 109; the `dword current` walk in its own `{}` block
+// 171; re-measured the `dword current` walk 171 (405 B). Diagnostic: 1 to 7 dead initialised locals on the kept
+// body 44 each (the EBX/EDI swap of the player datum and the unit is not a symbol-count tie).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
