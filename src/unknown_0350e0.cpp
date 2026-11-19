@@ -2537,6 +2537,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // block 492; visibility declared after the tag 521; the outputs declared scalars first, then colour, direction, position
 // 492. Retail's 0x2e3f0 outputs sit at frame +0x24 (tag), +0x34 (position), +0x40 (colour), +0x7c (direction); ours at
 // +0x3c, +0x44, +0x24, +0x84.
+// Shared sampled/draw color 487, with sampled field transfers 524, with an animated-color copy
+// 549, with both transfers 567. Early animated copy or channel initialization 571/557.
+// Shared color beside angles 487, or beside animated tint with both transfers 596.
+// NOT kept: 487 gains five at retail length and the 0x90 frame remains. Other forms regress.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3243,6 +3247,9 @@ real magnitude3d(vector3f const *v);
 // three-argument clamp (its value parameter names the raw length) 251 (1037 B, as round 221's named raw length: the raw
 // length stays on the x87 stack and is stored straight to `a`); both lengths through it 320 (977 B: the target's three
 // expansions fold into one). Body unchanged.
+// Refresh the raw length at the upper bound, current/target: reuse it 170/228,
+// use a fresh in-range magnitude 170/170, floor default 262/246, ceiling default 170/233.
+// The raw current length and promoted-dot homes remain. Original clamps restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4312,6 +4319,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // dword load); that read ahead of the flags local 490 (2039 B: it gives retail's separate byte load of the cycle bit), as
 // `(bool)(field & 1)` 490; the previous position, its deltas and the dot in their own block 486 (same 0x60 frame); that
 // block through a pointer to the stored camera position with the deltas read back from it 524 (1994 B).
+// Stored bitfield cycle/size/reset, cycle+size/cycle+reset/size+reset:
+// 490/486/489, 490/491/489. All direct bitfields 491; one bitfield snapshot 486.
+// The 0x60 frame, velocity inputs and projection homes remain. Original flag word restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

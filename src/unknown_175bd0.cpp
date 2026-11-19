@@ -3417,7 +3417,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
 // MiniMax G (11-18): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, the system and the
 // next index still take EDI and ESI the other way round, and the definition still has no spill for the per-call mode reads.
-// score 53 (was 93): m3 lane 8 r186. Frame 0x54, the system in ESI, the next index and then colour B in EDI, the type
+// score 93 (was 93): The frame is 0x4c against 0x54, system/successor use exchanged registers and the definition is unspilled.
+// Earlier score 53 (was 93): m3 lane 8 r186. Frame 0x54, the system in ESI, the next index and then colour B in EDI, the type
 // object in EBX, the tint in the effect index's home and colour A in a frame slot now agree with retail; left: the mode
 // is cached in the slot where retail spills the definition and reads the mode at each call (that form makes LTCG pass
 // both indices in registers and loses the matched caller 0x176f60). Before, 93: the frame was 0x4c versus retail 0x54,
@@ -3847,6 +3848,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Not kept at review: the inline type accessor only gives the 0x1751d0 result a name (a steering helper,
 // kept only with a match); without it the spawn record and the in-argument queries give 120 [25] (fast), so main's body
 // stays at 93. The 53 form is saved as build/r186/lead-0x177040-53-accessor.patch in lane 8's worktree.
+// System lookup at color 117, location update 112, both 127, both and type query 148, all descriptor
+// and update uses 145; location update through the held pool 124, with live mode 135, with a word
+// slot 95. The held-pool and live-mode forms recover 0x54. Every relookup changes the caller.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

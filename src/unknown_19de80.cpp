@@ -790,6 +790,10 @@ static inline bool teams_enabled_19e1c0()
 // extra uses of `remaining` inside the name cases leave token in EDI; dropping the fallback's two token uses leaves it in
 // EDI; only an entry test of `remaining` gives it EBP. So uses inside the cases weigh far less than the thirteen
 // compares on the dispatch path, and retail's token in memory needs fewer or lighter token uses on that path.
+// Standard signed minimum after a single name-length call. Player/team/all names/all
+// names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
+// with an ordinary result. NOT kept: the minimum stays out of line and needs
+// a larger frame. The 415 form restores the opening extent, with the preload still missing.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

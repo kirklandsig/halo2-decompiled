@@ -726,6 +726,13 @@ struct s_object_damage_view
 // cursor); on that the killer tests as `if (killer != NONE) { if (killer == reported_player) ... } else if (datum...)`
 // 354 (1532 B, masked 45: retail's fallback block order); on that a record pointer for the selected entry 433 (1567 B).
 // The two flags and the arm order are match-only forms; together they are the closest structure so far.
+// The fallback still keeps the credited player in EBP and the history cursor stays biased by four.
+// Historical candidate from entry or selection, credited player before fallback 378/396;
+// candidate through fallback from entry or selection 324/366; shared candidate for validation
+// and assignment 396; reported provider result 353; selected provider result 446; credited player
+// through the primary award 353.
+// NOT kept: the 324 form splits one credited-player value into two locals. It recovers the
+// damage-code slot but still exchanges the credited-player and victim-team slots.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

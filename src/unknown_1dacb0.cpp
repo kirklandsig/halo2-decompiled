@@ -1565,9 +1565,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
 // frame homes still differ from retail's.
 
+// score 828 (was 828): Frame 0x2c agrees. The candidate and resolved mode use the wrong stack homes.
+// Earlier: Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // NOT kept (coordinator review, MiniMax G 11-13): 828 -> 807 came from grouping the three resolved outputs into one
 // `long resolved[3]` array (an aggregate grouping locals: kept only with a byte match); the three named locals stay.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
@@ -1937,6 +1938,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // candidate dropped (`if (named) result = named->animation_id;`, the result being NONE whenever the lookup runs) 1020
 // (2791 bytes); the loop as `while ((entry = iterate(...)) != NULL)` with that direct result and a found break 1015 (2839
 // bytes); the iterator set up by an aggregate initializer 826 (aligned 581, masked 76; two points, not kept). Body unchanged.
+// Mode supplied by the initialized iterator 826; late chained defaults for all or for class/type 826/826.
+// Conditional complete candidate copy 951; default then overwrite at hit 989; head-tested branch copies 840.
+// Implicit cursor zero initialization 828; zero or graph initializer before key stores 996/996;
+// candidate initialized from lookup outcome 978. NOT kept: best gain 2, candidate and mode homes remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

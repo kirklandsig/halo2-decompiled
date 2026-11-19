@@ -1107,6 +1107,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // with shared sine contributions 516. Rescaled original forward 349, with shared point difference 395.
 // NOT kept: cosine-complement scaling holds the axis components live where retail reads them again.
 // The retail second rotation scales j before multiplying by i. Preserving that grouping still differs.
+// The first-axis squares still spill and unity still starts in XMM3. Squares passed as a vector before
+// vertical calculation 343, before the half-angle 333, between angles 330; scalar square inputs
+// before the half-angle 392, between angles 389; double angles 348; shared double-factor
+// sine-axis scale 374; double diagonals 397.
+// NOT kept: the 330 vector form reaches 1464 bytes but uses frame 0x4c and still spills two
+// squares. The double-angle form also demotes the matched initializer.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

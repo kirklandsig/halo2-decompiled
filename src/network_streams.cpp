@@ -1175,6 +1175,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // sets the index's NONE (`or edx, -1`) there and zeroes ECX after the divide, and the found path's temporaries take
 // EAX/EDX where retail's take EDX/ESI with EAX untouched); that with `index` declared first 59 (same code); the member update
 // with the message declared and zeroed after the lookup 89.
+// Shared word flag setter with original, Boolean, named and split sent tests 89/89/89/89;
+// Boolean and named bits with the saved update 64/64, separate sent rejection 35;
+// setter after pending rejection 89. NOT kept: the setter gives the byte OR,
+// but moves the entry/output allocation. Separate sent rejection retains the full-word store.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -1035,6 +1035,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the kind test and used for the material call 327 (the shape then takes EBX and its spill like retail's, but the second
 // node moves to ESI where retail keeps both in EBX and one slot); that with the non-24 arm written first 330; the root's
 // entity named once (`root->type == 1 ? root->entity : 0`) 238 (same code).
+// Shared clamp with direct field reads, named or direct result and unsigned or signed
+// data member: four at 238. Each with the short material output beside the input
+// snapshots reaches 230 and frame 0x44. NOT kept: the declaration moves the first
+// node out of its retail slot and does not recover the second-node and origin reuse.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -1805,6 +1805,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // homes still differ: retail animation flags +0x60, position +0x64, facing +0x70, boost +0x88, material +0x8c, the two
 // argument bytes +0x90/+0x94, gravity +0x9c; ours material +0x60, flags +0x64, facing +0x68, position +0x80, a byte
 // +0x8c, boost +0x90, gravity +0x94, a byte +0x9c.
+// Separate animated position 175, animated velocity 200, both 200, grab velocity 215;
+// grab velocity with animated position 217, with animated velocity 168, with both 186,
+// and with both declared at case entry 186. NOT kept: the 168 form gains seven at
+// retail length, below the keep threshold. The entry constant and frame homes still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3992,6 +3996,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Earlier: round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax B (11-18): no new form, no lower score (612 measured, main's note says 548): the prologue's pool offset is still computed in EBX where retail keeps it in EBP, the flag byte still sits at [esp+0x12] against retail's [esp+0x11], and the body is 2743 bytes against retail's 2712, so the cold exits land elsewhere; the frame 0x78 and the flight-call homes are unchanged.
 // Earlier first line, 548 (was 548): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// Earlier score 548 (was 548): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax B (11-14): no new form, no lower score (548); the prologue already differs - retail computes the pool offset in EBP
 // (pushing EBP before the shift) and keeps it there, while ours computes it in EBX and pushes EBP later, so the first field load
@@ -4267,6 +4272,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // cross3f_staged(&facing, &forward) dotted with up, cross first / up first, 646/650. Diagnostic: K unused initialised
 // locals at the top, K = 1/2/3/5/8: 640/575/577/543/578. Then, with vector2f_products.h included: the 0.98 test as
 // dot_product2d(forward, turned) 592 (2728 B), the planar cosine as dot_product2d(forward, facing) 641, both 607.
+// Shared flight/stationary threshold beside the result or inside the turning modes.
+// Conditional/branched/tag-first/default-override 609/609/651/666 in both scopes
+// against reduced 612 (full 548). NOT kept: the best gain is three, with the same
+// reduced 0x7c frame and the threshold still separate from the saved tag home.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4535,7 +4544,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // score 336 (was 356): The 0x12c frame agrees. The origin and body matrix start at 0x44 and 0x60 here, and at 0x40 and 0x50 in retail. The travel test and later pivot homes still differ.
 // Earlier score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // MiniMax B (11-18): no new form, no lower score (336): the frame 0x12c and retail's 1937-byte length still agree, but the matrix home (0x60 against retail's 0x50), the origin (0x44/0x48/0x4c against 0x40/0x44/0x48) and the pivot select's register pair (EAX/ESI against ECX/EDI) are still ours; no new spelling of the homes was found this run.
-// score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
+// Earlier score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
@@ -4867,6 +4876,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // after body matrix query 339; target copy initialized at travel test 336. NOT kept: one complete query
 // record grows the frame to 0x148, and two grow it to 0x164. Setter returns and initializer changes tie
 // or regress. The original body was restored.
+// Unused-property scope 336, paired property scope through selection 336. Scoped first-pivot
+// decision with default/conditional/if-else assignments 336/368/364, second-pivot decision
+// 336/368/356. First/second decisions outside only the unused-property scope 336/336.
+// NOT kept: none recovers the matrix, origin or property slots. Complete arms move the call setup.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5559,8 +5572,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// score 79 (was 79): Frame 0x24 agrees. The first rotation spills its cosine complement too early and the final cross reloads forward j.
 // MiniMax A (11-18): no new form, no lower score (79): the frame is 0x20 against retail's 0x24 and this build pushes ebx before it masks the character index where retail masks it first; the first rotation spill and the final cross reload still differ.
-// score 79 (was 79): The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
+// Earlier: The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
 // before the axis copy; the final cross has the same memory-operand difference for forward y.
 // MiniMax I (11-16): no new form, no lower score (79): the first difference is at +0x107, inside the inlined rotation helper,
 // whose file this lane may not edit; retail keeps the first product alive in xmm1 across the block where
@@ -5572,7 +5586,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax S (11-15): no new form, no lower score (79): the first difference is still inside the shared rotation helper, whose body lives in src/unknown_1eb8a0.cpp and is not this lane's file, and the operand orders the earlier rounds measured still sit at or above the body, so the body stands.
 // MiniMax E (11-16): no new form, no lower score (79): the first rotation and the staged cross product load their operands in another order (retail copies the axis first).
 // MiniMax C (11-17): no new form, no lower score (79, was 79): the frame agrees (0x24) and the first difference is still at +0x107, inside the shared rotation helper (rotate_direction), whose own file this lane may not edit; retail keeps the first product in xmm1 alive across the block where this build spills it to [esp+0x10] and reloads it later, and the body is seven bytes longer than retail's.
-// score 79 (was 79): The first expanded rotation spills its cosine complement early, and the final cross reloads forward j.
+// Earlier: The first expanded rotation spills its cosine complement early, and the final cross reloads forward j.
 // Earlier: first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
 // MiniMax G (11-13): no new form, no lower score (79): the diff re-read this round finds the same first difference, inside the shared rotation helper whose own file this lane may not edit, and the operand orders listed above still measure at or above the body, so the body stands.
@@ -5884,6 +5898,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 225 (913 B); the side cross on the forward field with the pointer elsewhere 79 (same code); the final cross on the
 // forward field with the pointer elsewhere 83 at 887 B (retail's length; the extra 7 bytes are the final cross's
 // load-first products, retail copies the side component and multiplies by forward in memory).
+// Final cross and normalization in up storage, staged/ordinary 264/297; staged in
+// consumed side 267; new up storage staged/ordinary 264/297. Up workspace with
+// success-arm, shared or early publication 264/264/264. NOT kept: all grow
+// and regress, the original field normalizer and rotation schedule stay.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

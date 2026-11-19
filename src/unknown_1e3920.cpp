@@ -2263,6 +2263,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // existing element_502420_get 251 (one `mov` fewer, the index in the actor's register as retail; no gain), with `+=
 // 1` 251; a per-iteration `long weapon = weapons[i];` 251 (same code); `long weapons[2]` at function scope 251; the
 // `long` index with the rounds pair at function scope 278 (1191 B, as the `long` index alone). Body unchanged.
+// The actor, options and pool still miss ESI, EBP and EDI. First-phase pool 251; second-phase
+// pool 251; separate phase pools 251; pool after grenade metadata 302; first-phase header
+// array 251; header array after grenade metadata 301; shared header accessor 251; primary
+// weapon result inside the flag/delay gate 251. The late pool and header forms still give the
+// actor and options different registers.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
