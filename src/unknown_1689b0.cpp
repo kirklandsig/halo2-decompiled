@@ -2084,6 +2084,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // named projection products 565, early nearest reset and common projection scale 564,
 // prism ordinal before the query 553. NOT kept: grouping moves the sum slots, and cached
 // plane components eliminate retail coefficient reloads and move the prism cursor.
+// M3 lane 15 r109 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380, the four matched ones stay matched; control 551).
+// Lane 6 r179's lead re-measured on this body (it predates r184's 0x120790 tail): the second vertex's pointer named ahead of
+// the first reconstruction, `real const *second_vertex = (real const *)&prism->points[next_vertex % prism->point_count];`,
+// 536 (2867 B); with a zero-based edge loop (`points[vertex]`, `(vertex + 1) % point_count`) 591 (2855 B); with `radius *
+// radius` at its one use 540 (2876 B); with the square declared at the top of the prism loop 530; with the nearest reset and
+// `bool inside = true;` right after the plane distance 530; both moves together 524 (2867 B). All match-only (a one-use pointer
+// and moved declarations), restored. Left on the 524 form: the side-test cross products and the in-plane projection run
+// in other registers and order (retail spills side.i to 0x124 and side.k's operand to 0xec), and 15 bytes short.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

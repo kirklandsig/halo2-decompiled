@@ -212,6 +212,13 @@ __forceinline long portal_path_gain(real distance, real range)
 // Separate output bounds, available first 287 and cap first 288; in-place cap 287;
 // row ordinal or limit as sort scratch 357/319. NOT kept: the separate bounds reach retail length
 // without a score gain. Starting-cluster register and BSP table reloads still differ.
+// M3 lane 15 r109 (fast with 0x14b240; main 287): 0x14b240's projection through the existing vector3f_scale 287 (same
+// code: an expanded helper's out-pointer gives no may-write summary). On lane 2's rebuilt r111 held form re-applied to
+// this file (fast 250 at 1364 B; only the cluster pointer EBX / widened portal index EBP pair differs at the head): the
+// seed's path lookup through `bsp->clusters[cluster_index]` 382 (1380 B); the cluster pointer declared ahead of the
+// arrays 373 (1348 B); the seed through its own `start` pointer with the loop's pointer declared after it 382; a short
+// other index 250; the nearest distance declared ahead of the cluster pointer 250; the portal looked up before the
+// short index is named 334. Restored to main.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

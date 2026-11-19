@@ -125,8 +125,7 @@ struct s_sound_class_play_flags
 
 struct s_sound_play_tag
 {
-	byte unknown00;
-	byte flags;
+	word flags;
 	char class_index;
 	byte unknown03[0x10 - 3];
 	long duration;
@@ -150,369 +149,8 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
-// score 32 (was 32; earlier 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
-// score 32 (was 32): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
-// flags as a byte (`test byte [esp+0x21], 1`) and bit 11 by a dword load and shift, ours merges both into `test ch, 9`.
-// Every spelling that gives retail's test moves the request from EBX to EBP and onto the stack (45 at 476 B, callers lost).
-// MiniMax H (11-18), then at 106 (from 150): the priority is read from the request's audible byte, then the location is
-// copied, then the flag word is built, which is retail's order, and the source size's zero default is stored before the
-// marker's own assignment instead of in an else arm; what still differs: retail keeps the sound pointer in a frame
-// slot and reloads it, this build keeps it in EBP and pushes EBP at the start; retail loads the source before the tag lookup and builds
-// the flag word in EAX, this build builds it in EDX afterwards; retail's object and platform bits use the or/and
-// complement form; retail's end test takes bit 8 as a byte and bit 11 by a shift where this build merges both into one
-// word test; the first 0x221810 lookup is still expanded here where retail calls it out of line (that helper's
-// inline-ness is set in src/unknown_221490.cpp) and the 0x21d110 call still takes the play state by pointer on the
-// stack where retail passes it in a register (that callee's declaration is in another file).
-// BLOCKED-BY 0x221810 and 0x21d110.
-// Earlier at 150 (from 110): The 0xa8 frame agrees. The first class lookup still expands, and playback state still passes on the stack.
-// Native short priority and padding by separate stores, chain first, after flags, or before location 162/162/163/163.
-// Native priority and padding published before or after flags 152/152. Complete priority copy at the original store 150.
-// NOT kept: complete priority copy before flags 139 requires a one-use priority temporary.
-// MiniMax E (11-17): no new form, no lower score (110): the first 0x221810 lookup is still expanded in this body where retail calls it out of line, and the 0x21d110 call still takes the play state by pointer on the stack where retail passes it in a register; both are decided outside this file. BLOCKED-BY 0x221810 and 0x21d110.
-// MiniMax H (11-14): no new form, no lower score (110): retail passes the class index to the first
-// lookup as a sign-extended byte, and whether that lookup is a call or an expansion is settled in
-// src/unknown_221490.cpp, which is not one of this lane's seven files; the body is unchanged.
-// MiniMax E (11-14): no new form, no lower score (110, was 110): the first 0x221810 lookup is still expanded in this
-// body where retail calls it out of line, and the 0x21d110 call still takes the play state by pointer on the stack
-// where retail passes it in a register; both are decided outside this file. The request is still copied field by field
-// where retail copies the whole request and patches the flags after.
-// MiniMax D (11-14): no new form, no lower score (110): our build still expands the first 0x221810 lookup inline where
-// retail calls it out of line (that helper's inline-ness is set in src/unknown_221490.cpp), and the 0x21d110 call still
-// takes the play state by pointer on the stack where retail passes the state in a register (that callee's declaration is
-// in another file); the request is still copied field by field where retail copies the whole request and patches the
-// flags after. BLOCKED-BY 0x221810 and 0x21d110.
-// MiniMax E (11-11): no new form, no lower score (110): the request is still copied field by field
-// into the play state, where retail copies the whole request and patches the flags after.
-// MiniMax B (11-12): no new form, no lower score (110); our build still expands the first 0x221810 lookup inline where retail calls it out of line (that helper's inline-ness is set in src/unknown_221490.cpp, a file this lane may not edit), and the 0x21d110 call still takes the state by pointer on the stack where retail passes the state in a register (that callee's declaration is in another file); the header order, the flag word and the end-time publication were measured again and left as they are.
-// MiniMax A (11-13): no new form, no lower score (110); what still differs: the first 0x221810 class lookup is
-// expanded in the body here and called out of line in retail, so the flags and the request are forwarded across that
-// call where retail reloads them, and the 0x21d110 call passes the state by pointer on the stack where retail passes
-// it in a register; the lookup's inline-ness (src/unknown_221490.cpp) and 0x21d110's declaration
-// (include/sound_records.h) are outside this file: BLOCKED-BY 0x221810 and 0x21d110.
-// MiniMax R (11-15): no new form, no lower score (110): the first 0x221810 lookup is still expanded here where retail calls it out of line, and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a register; a 300-second permuter run over this body (33 tries) found nothing better than its 107-instruction baseline on either image. BLOCKED-BY 0x221810 and 0x21d110.
-// MiniMax R (11-15, second pass): no new form, no lower score (110): retail's end test tests the flag 8 byte bit,
-// then shifts flag 11 out of the word and then tests the audible nibble (test byte ptr [x], 0xf), while this build
-// merges the two flag bits into one byte test; the first 0x221810 lookup is still expanded here where retail calls
-// it out of line and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a
-// register. BLOCKED-BY 0x221810 and 0x21d110.
-// MiniMax I (11-17): no new form, no lower score (150): still BLOCKED-BY 0x221810 and 0x21d110, whose definitions
-// are in other files: LTCG expands the first 0x221810 lookup here where retail calls it out of line, and 0x21d110
-// takes the tag in EAX and the state on the stack where retail passes the state in a register; the forms that give
-// 0x21d110 retail's convention move this function's request to EDX and cost its eight matched callers.
-// Earlier 150 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
-// 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
-// tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
-// retail's convention move this function's request to EDX and cost its eight matched callers. Round 71:
-// the end test as `((flags >> 8) & 1) || ((flags >> 11) & 1)` 110 (VC merges both into `test ch, 9`; retail
-// tests the byte bit 8, then shifts out bit 11). In the current header order (plain checks): set-or-clear
-// object and platform bits 148 (486 bytes), object only 131 (478), platform only 134 (481), both with the
-// priority from the request's audible field 147 (485). Retail's full header order
-// (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
-// MiniMax D (11-10): the priority read from the request and stored before the location copy scores
-// 106, the same form with the flags computed before the copy 139, with the source in a local after the
-// sound lookup 134, with the object index in a local 136 and with the object and platform bits as
-// or/and complement selects 163; none of the gains is enough to keep, so the body stands. The fast
-// permuter found nothing better than 103 differing instructions against its 104 baseline, and the
-// variant it preferred spells the state fields with volatile casts and one-use temporaries.
-// MiniMax E (11-10): no new form, no lower score (110); the first difference is at +0x15, where retail reloads the state flags after the call that our link still expands, so the flags are still forwarded across it.
-// MiniMax E (11-09): no new form, no lower score (110); the priority and the flag word are
-// still formed after the location copy, and the first 0x221810 call is still expanded by our link.
-// MiniMax I (11-08): no new form, no lower score (110).
-// MiniMax B (11-06): no new form, no lower score; retail reads the audible byte from the request and
-// builds the priority and the flag word before it copies the request, this build copies the request first
-// and takes the byte from the copy, and retail still calls 0x221810 where this link expands it.
-// MiniMax C (11-06): no new form, no lower score; this link still inlines 0x221810 so the state flags are forwarded across the call where retail reloads them (0x221810 lives in src/unknown_221490.cpp).
-// MiniMax E (11-06): score 110 (was 110): no new form lowered it. The location copy after the flags
-// (retail's header order) with the priority before or after the flags gives 140/150 and the flags as
-// ternaries 160; the priority read from the request alone is 109 at 472 bytes, a gain of one, dropped
-// by the review rule, so the original body stays. Still different: retail builds the flag word in EAX
-// with the source loaded before the tag lookup and ours in EDX, retail's object and platform bits use
-// the or/and complement form and ours only or, retail homes the sound pointer at [esp+4] where ours
-// keeps it in EBP, and retail copies the location after the flags where ours copies it first.
-// MiniMax D (11-04): no lower score. With the source in a local declared before the sound lookup our
-// load order is retail's (the tag table's base, the source, then the lookup) and the priority comes from
-// the request byte, but the link still gives EAX to the source and EDX to the tag table's base where retail
-// gives EAX to the base and EDX to the source, so the flag word is built in EDX; that form scores 135 at
-// 486 bytes, and 149 at 499 bytes with retail's set-or-clear object and platform bits. With the sound
-// lookup written first the base keeps EAX, but then the source's load lands after the lookup. The priority
-// read from the request alone is 109 at 472 bytes, and the permuter's best form (the 0x400 bit set after
-// the variant stores) is 109 as well; both gains are too small to keep. Body restored to the original.
-// MiniMax G (11-04): the priority read from the request and stored before the location copy 106 (a gain of
-// four, dropped by the review rule); the end test split into the 0x100 and the 0x800 masks, or written as a
-// shift, 106; the class test as nested ifs 106; the class lookup nested under the sound-flag test 160 (446
-// bytes: both lookups stay out of line, but the tag parameter is then copied into the frame); an always-true
-// test around the first class lookup 157. Body restored to the original.
-// MiniMax A (11-03): no new form, no lower score: the priority and the flags are still formed after the
-// location copy, and our link still expands the first 0x221810 call.
-// MiniMax S (11-01): no new form, no lower score; the priority and the flags are still formed after the location copy, and our link still expands the first 0x221810 call, so the state flags are forwarded across it where retail reloads them.
-// MiniMax S (11-09): no new form, no lower score (110); the priority and the flags still form after the location
-// copy, and the first 0x221810 call is still expanded by our link.
-// Earlier score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
-// frame 0xa8 and request EAX agree; first query expansion, header/result homes and playback convention differ.
-// Earlier 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
-// and no new form was tried; the difference is still blocked by 0x221810, which retail calls twice
-// and our link inlines, in src/unknown_221490.cpp.
-// Earlier 110 (was 110): this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
-// retail homes the request in EBX and reloads the state flags after the first 0x221810 call,
-// ours forwards them across it and builds the flag word in EDX where retail builds it in EAX.
-// Earlier 110 (was 110): Frame 0xa8 and incoming request agree; class-query expansion and state/flag/result homes remain.
-// Earlier: this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
-// Earlier: Frame 0xa8 and incoming request agree; class-query expansion and state/flag/result homes remain.
-// Frame 0xa8 and request EAX agree; first class-query expansion and header homes differ.
-// BLOCKED-BY 0x21d110 and 0x221810 (their tag/state registers): retail homes the request in EBX and
-// reloads the state flags after the first 0x221810 call, ours forwards them in a callee-saved
-// register across it, and retail builds the flag word in eax where ours builds it in edx.
-// frame 0xa8 and the request in EAX agree; the first class lookup expands
-// where retail calls it (and 0x21d110 takes the tag in EAX where retail passes the state there), so
-// the flag/priority/result homes, push placement and the end-test spill differ. Round 54: the
-// seconds-to-ticks rounding helper with the looping-sound global read at each use 110 kept
-// (helper alone 115); bitfield end tests 137 and on the kept form 122 (each loses eight callers);
-// mask bit 8 with bitfield bit 11 132; renamed rounding temporary 110; priority from the request's
-// audible field 109; that with the location copy after the flags 140. Earlier: word flags 158;
-// index-order variant guards 134; flag11 field store 134; combined location mask 118 kept;
-// original priority observation 133; priority arms 182; nested variant tests 182; shared exit 182;
-// marker memcpy 182; base-first flags 178 (caller losses); role names 182; source snapshot 178;
-// object snapshot 183; priority after flags 192; conditional flags then priority 187; deferred
-// flags publication 176; location first with copied audible priority 167 kept; location memcpy
-// 182; conditional end-time publications 175; outer state scope 167; early optional-size default
-// 164; size before marker copy 167; nested class tests 167; platform-flags block first 167;
-// platform index snapshot 167; redundant object/platform clears omitted 149 kept; scoped header on
-// clean flags 149; native flag8 conversion 157 (eight caller losses); repeated class index on
-// clean flags 159; location/priority phase after flags/header 188/194; first/shared class
-// receiver 167/167; seconds/ticks terms 167/167; phase with seconds 188; shared receiver with
-// seconds 167; late tag receiver 184; branch-assigned result 193; shared marker observation 167;
-// absent-marker-first 165; native short priority and padding memset 176; whole source flags 149;
-// clean state flags 169 (eight caller losses); variant fields before flag 149; audible-first
-// admission 149; post-query marker default 134 kept; size conditional 147; looping global reads
-// 130 fast/135 plain; time-global reads 134; size override before copy 134; whole
-// request/tag/class records and combinations 181/196/228/146/197/215/247 (request/tag copies lose
-// eight callers); first class record 165; consistent variant-pointer field reads 118; disjoint
-// source mask OR 118; conditional optional flags 161 and full flag expression 162 (eight caller
-// losses each); nested class admission 118; real class-word mask with direct query 135;
-// state/result/flags/both names 118/118/118/118; early object/source/platform/all stores
-// 118/135/118/133; swapped object-source/source-platform stores 118/118.
-// Round 187 named duration/source expression parts and both 110/110/110; complete fresh
-// tag lookup alone and with those parts 158 each; all plus signed native flags 158. Restored.
-// Round 93: with 0x21d110 starting its sounds inline (state in EAX; 0x21d110 204 -> 52) the request
-// moves to EDX: 135 at 470 bytes, each caller one line off. A noinline declaration of 0x221810 in
-// this file leaves the first lookup expanded; one ahead of its definition calls both lookups
-// (0x129aa0 101 -> 4) but this function then takes both arguments on the stack (156, 450 bytes;
-// with set-or-clear object/platform flags, the priority read from the request and flag8/flag11
-// end tests 132 at 470 bytes). Those body forms with the inline start alone 153, alone 163.
-// Round 95 (plain checks; --fast builds this function differently): the marker size set in an
-// if/else 135 (475 bytes, aligned 94 from 97); that with the priority and flags formed from the request
-// before the location copy 150 (487 bytes, aligned 74); that with a noinline declaration ahead of
-// 0x221810 149, stack arguments, eight callers lost; with set-or-clear object/platform flags 166 (500
-// bytes, aligned 73); that with flag8/flag11 bitfield end tests 191, stack arguments, eight callers
-// lost. Whenever the body homes the request in EBP, LTCG passes both arguments on the stack; homed
-// in EBX it arrives in EAX (retail). Retail reloads the state flags after the first 0x221810 call (its
-// compiler treats that call as opaque); ours forwards them in a callee-saved register across it,
-// which pushes the request into EBP. BLOCKED-BY 0x21d110 (its tag/state registers) and 0x221810.
-// Round 410: Joint source/object, source/platform, object/platform and all-three two-use header
-// snapshots 110/110/110/110; each with priority from the request 109/109/109/109 (472 bytes).
-// Reduced-image context differs; all one-point gains are rejected. All restored; first class-query
-// expansion, header homes and playback convention remain.
-// Round 419: existing rounding helper with explicit short/long/real rate inputs, each
-// rate first/last, and native millisecond input in both orders 110/110/110/110/110/110/110/110.
-// All tie; original helper and body restored. Query expansion, state/flags/result homes and
-// clock-conversion spill remain.
-// Round 194: native source-location mutable/const with source/copied priority 181/181/110/110;
-// the same four with library publication 181/181/110/110. Original location-first
-// body restored; input ownership regresses, and single-consumer copies only tie.
-// Round 85: retail-order header with conditional object/platform clears 163 (498 bytes);
-// separate location masks 110; the high-byte flag8 view 128 (486); an ordinary inline query
-// declaration 110; state/tag declarations swapped 110; tag pointer renamed 110; immutable tag
-// pointer 110; early uninitialized flags 110; split tag declaration/assignment 110. All restored;
-// first query expansion, initial tag spill and playback convention remain.
-// Earlier 110 (was 110): this round: no new form. The first class lookup is still expanded here and
-// Earlier: this round: no new form. The first class lookup is still expanded here and
-// called in retail: our link inlines 0x221810 (src/unknown_221490.cpp, matched) into it, so our
-// compiler forwards the state flags across that call, while retail treats the call as opaque and
-// reloads them. Suppressing the inline (inline depth zero) costs six matched callers of this
-// function. Still BLOCKED-BY 0x221810 and by 0x21d110 (src/unknown_221490.cpp), whose tag and
-// state registers decide where the request is homed.
-// MiniMax R (10-31): no new form, no lower score.
-// MiniMax I (11-01): no new form, no lower score; the priority and the flags are still formed after the location
-// copy, and our compiler still forwards the state flags across the 0x221810 call where retail reloads them.
-// MiniMax I (11-01, second pass): no lower score. Forming the priority and the flags before the location copy,
-// with retail's set/clear branches for the two flag bits and the priority read from the request, reproduces
-// retail's shape (140-149 against 110, 485-499 bytes against retail's 470): our link then inlines the first
-// 0x221810 call, so the body grows past retail's, and the flags still land in EDX where retail builds them in
-// EAX. The original order stays.
-// Round 446: native 64-bit result/optional-flags/end-tick transport, seven subsets
-// 157/137/166/207/248/234/256; all with unsigned result 256. Original domains, helpers and body restored.
-// DL218: Complete query/playback/both inline contracts 110/110/110; query and combined contracts
-// lose matched control 0x129790. Playback contract with first/shared query receivers 110/110,
-// complete marker-size arms 135, request priority 109 and combined marker/priority 134. One-point
-// gain rejected; all declarations, helpers and original body restored. Frame 0xa8, first query
-// expansion, state/flags/result homes and playback convention remain.
-// Round 300: completed-time destination captured after/before rounding with
-// ternary/first/second/both conditional publications 115/113/113/119 and
-// 121/119/119/125; original per-use destination with first/second/both
-// conditional stores 113/108/119. Two-point 108 rejected; original body restored.
-// Round 122 (fast): the link-time inliner weighs the call site, not this body's size. 40 extra statements after
-// the second lookup 133 (476 bytes), before the first 139 (486), first still expanded; second lookup removed 143
-// (456), first still expanded; first lookup under one more conditional (diagnostic, a redundant test) 140 (476):
-// both lookups become calls as in retail, arguments on the stack, request in EBP; first lookup after the variant
-// block 154 (491); `sound->flags` test dropped 129; receiver local 110; second lookup written like the first 136;
-// first test in a static inline helper 173 (433), forceinline 110; class flag alone in a helper 163; class getter
-// helper 110; the lookup's header helper as if/else with named locals 131 (0x221810 17, 0x129aa0 96), as nested
-// inline getters 110. Restored: retail's first lookup would need conditional depth two or a costlier callee.
-// Lane 14 r55 (fast): an early return for a NONE tag 152 (483 B); the tag's flag tested ahead of the class lookup
-// 160 (446 B; both 0x221810 calls then stay out of line as in retail, but in the wrong test order); one sound_class
-// local for both lookups 110 (same code); the flags built in state.flags 150 (484 B); the flags as one OR of three
-// conditional terms 160 (490 B).
-// Round 35 (m3 lane 18, fast with the matched callers): the variant pointer read from the request at
-// each use 110 (same code); the flag word kept in its local through the variant test and stored just
-// before the playback call 130 (470 bytes); that with the priority from the request's audible field 130
-// (470 bytes); the object/source/platform stores before the flag word 134 (0x1895f0 4, 0x189a50 3);
-// an early `return NONE` for a NONE tag 152 (483 bytes). All restored.
-// M3 lane 14 r59 (plain checks): the end test as `(flags & 0x100) || (bool)((flags >> 11) & 1) || !audible` 132
-// (486 bytes; the flags stay in ESI); the first class flag named in a bool before its test 110 (same code); the
-// +0xa class bits as word bitfields (`word unknown0a : 7; word flag23 : 1; word : 8;`) 132 (478 bytes). Retail's
-// header order (priority from the request, set-or-clear object/platform bits, location copy after the flags) with
-// the first lookup under a repeated tag test (diagnostic only) 132 at retail's 470 bytes: both 0x221810 calls stay
-// out of line and the body takes retail's shape, but the request then arrives on the stack and is homed in EBP;
-// that with the word bitfields 135 (471 bytes), whose class test becomes retail's `shr al, 7; test al, 1` (the
-// byte bitfield gives `test cl, cl; jns`), so retail's +0xa bits are word bitfields like flag1/flag2.
-// Round 106 (plain): nested class condition, bool/long end-update results, previous value20/value24/both and
-// disjoint source mask 110 each; word +0xa 132 (478), marker-size local 131 (470), location-flags local 111 (474).
-// Original body restored.
-// Round 154 (m3 lane 6, fast with its 8 matched callers): the class lookup as a shared header helper (if/else,
-// named locals, both) 110 (same code); header = NULL then if 131; tag test as == NONE 152; class test through a
-// named bool / inverted / nested 110; flag as a ternary OR 136; retail's header order alone 163. The lookup's inline
-// cost is not lexical (named locals change nothing) and the file already has /Ob1; retail inlines 0x221810 at hot
-// sites (0x20b660's loop), so here it needs a colder site than one `if`. Body unchanged.
-// M399: Existing post-playback class input read-only, immutable variant binding/completed-time producer,
-// seven nonempty subsets 110 each; all with immutable tag-index formal 110. NOT kept: every form ties.
-// Original whole body restored; early source/header work, first query expansion and playback register homes remain.
-// M401: Playback definition/declaration/sole call reordered together to (tag, state), default/stdcall/cdecl/fastcall,
-// then the same four with inline metadata: 110/110/134/110/110/110/134/110.
-// NOT kept: native EAX state/stack tag setup is not recovered; all interface, provider and caller changes restored.
-// Frame 0xa8 agrees; early header work, first class-query expansion and playback homes remain.
-// M3 lane 11 r81 (plain, with the eight matched callers): flag base as `5 + (source ? 0x20 : 0)` 110, as `source ? 0x25 : 5` 110,
-// as `long` 110, end time as `game_time + 10 + ticks` 110 (all same code); the end test reading the audible byte from the request
-// 135 at retail's 470 bytes, but the request stays live and all eight matched callers are lost.
-// Round 82 (m3 lane 1, fast with the eight matched callers, 0x221810 and 0x21d110; the fast image reads 110 for this body):
-// retail's whole header at once, the priority from the request's audible byte, the flag word started at 5 with three
-// set-or-clear steps (source bit 5, object bit 3, platform bit 8, the file-local macro other files use), the location copied
-// after the flag store and the marker size set in an if/else: 166 (500 bytes; the first 0x221810 call is still expanded);
-// that with the +0xa flag bits as word bitfields 173 (505); the three steps applied to state.flags itself 170 (499; the
-// request then arrives in another register and all eight callers differ by 1 to 4); the local form with word bitfields and
-// the end test split into bit 8, bit 11 and the audible test 190 (518); the state.flags form with both 193 (516, callers
-// differ). Retail calls 0x221810 out of line at every site (see its comment in src/unknown_221490.cpp); giving it a file of
-// its own is a build-flag decision this lane does not make. Body unchanged.
-// Round 93 (m3 lane 1, plain with the eight matched callers; --fast builds this body differently): an early return
-// when the start fails 143 (478 bytes); the start result assigned inside its test 110 (same code); the result declared
-// at the start call, returned inside the tag block with `return NONE` after it, 134 (488 bytes); the object bit as
-// `(dword)(object_index != NONE) << 3` 141 (476 bytes, all eight callers lost: the request convention moves); the
-// priority as `(audible ? 2 : 0) + 1` 110 (same code). Re-measured, not new: the variant pointer read from the
-// request at each use 110. Still BLOCKED-BY 0x221810 (inlined at the first site here, called in retail) and
-// 0x21d110 (whose note names this function as its blocker: the two conventions have to move together).
-// MiniMax A (11-11, second pass): no new form, no lower score (110); what still differs is unchanged: the request is still copied field
-// by field where retail reloads the state flags after the call, because our build expands the first 0x221810 lookup inline (that helper's
-// inline-ness is set in src/unknown_221490.cpp, a file this lane may not edit) and the 0x21d110 call still takes the state by pointer on the
-// stack where retail passes it in a register (that callee's declaration is in another file).
-// MiniMax A (11-11): no new form, no lower score (110); our build still expands the first 0x221810 lookup inline where retail calls it out of line (that helpers inline-ness is set in another file and was ruled off limits), and the 0x21d110 call still takes the state by pointer on the stack and the tag index in the register where retail passes the state in the register and the tag index on the stack (that callees declaration is in another file).
-// M3 lane 13 r92 (fast with the ten matched callers, 0x221810 and 0x21d110; control 110): the priority read from the request
-// and stored before the location copy 106 (472 bytes, as MiniMax D/G found); on it, the end test as `(flags & 0x100) ||
-// ((flags >> 11) & 1) || !audible` 106 (same code: still `test ch, 9`), the variant read from the request at each use 106,
-// the object/source/platform stores ahead of the flag store 106, the marker size in an if/else 131 (474 bytes). The gains do
-// not stack; no caller lost in any form. Retail's 0x221810 has a stack argument (`ret 4`) and is called at every site, so it
-// behaves like a function LTCG never expands; ours is expanded at the first site here only.
-// MiniMax I (11-16): no new form, no lower score (110): this build still expands the first 0x221810 lookup inline where retail calls it out of line - that helper's inline-ness is set in src/unknown_221490.cpp - and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a register, so the request copy's field order still differs; the priority read ahead of the copy reaches 106, a gain of 4 that is below the keep bar. BLOCKED-BY 0x221810 and 0x21d110.
-// b9G (11-17) walk against retail, fast build on r839: fields, offsets, test senses, the 0x221810/0x21d110 arguments,
-// the 0.001f rate (0x45dc70) and the sum order (duration * 0.001f) * rate agree; no behaviour difference found. Body now
-// takes retail's order: the priority is read from the request byte before the copy (0x18a012), the flag word is stored
-// (0x18a055) and the location copied after it (0x18a067), and the marker size is one if/else (0x28 arm 0x18a0ae, 0 arm
-// 0x18a0ba) where it was a store overridden by the arm. Fast build 150 at 487 bytes (was 110 at 473): header and marker
-// line up with retail and the rate/ticks temps now share its frame slots; the excess is the inlined first 0x221810 and
-// the 0x21d110 convention. Alone: priority from the request 106 (old order), if/else marker 135, both with the old
-// location-first order 134; retail's order with set-or-clear bits `? (flags |= 8) : (flags &= ~8)` (retail 0x18a035-
-// 0x18a04b) 166 (500 bytes). Still differing: retail reloads the flags from the state at 0x18a0da (its 0x221810 call
-// clobbers the address-taken state, ours forwards them), and tests bit 8 as a byte, bit 11 by shift (0x18a183-0x18a191).
-// m3 lane 7 r178 (fast with the ten matched callers; worked as 0x21d110's blocker): body unchanged (150); HELD with 0x21d110 in
-// build/r178/held-21d110.patch (full check of that configuration: nothing lost, 0x21d110 gained, this function 32). With 0x21d110 in
-// its matching form (state in EAX) and the first 0x221810 lookup out of line (inline depth 0 as a diagnostic; 0x221810 in a file of its
-// own built /Ob1 gives the same code): this body 149 (456 B), both arguments on the stack and the request in EBP, because the flags
-// local is forwarded in EBX across the lookup; the flags local with set-or-clear steps 124 at retail's 470 B, same registers; the
-// flags built in state.flags itself by three set-or-clear steps 129 (457 B) with `push ebx; mov ebx, eax`, the ten callers and 0x21d110
-// MATCH. On that: source in a local 126; with the object index in a local 126; source, object index and an early priority local
-// stored after the steps 98; object index and priority locals 108; the priority assigned after the steps 136, with the two other
-// locals 136; the 98 form with the +0xa bits as word bitfields 32 (460 B: 18 real lines, all in the end test), the same without the
-// object index local 32 (the held form). End test on it: `(flags & 0x100) || (bool)((flags >> 11) & 1) || !audible` 79 at 470 B
-// without the word bitfields and 60 (473 B) with them; the flag8 bitfield with a dword read, with the word read, the mask with a dword
-// read and two bitfield tests 60 each (the two reads share one load in ESI and the result moves to EDI). A byte read of the second
-// flags byte with a dword read, by casts or by byte and dword views added to the location's type in its header, gives retail's end
-// test line for line but swaps EBX and EBP: the request is then loaded from the stack into EBP, 45 at 476 B, callers lost; the same
-// with or without the source local and with the object index declared first 45 each; state declared first, source first, priority
-// ahead of the source 45 each; source and priority ahead of the tag pointer 88. Without the out-of-line lookup (matching 0x21d110,
-// request in EDX, callers lost): source in a local 137, with the object index local 137, source ahead of the tag pointer 137,
-// set-or-clear steps on the flags local 156, the flags in state.flags 161 (499 B). The setup as an inline helper taking the state, the
-// request and the tag: `static inline` by pointer or by reference is not expanded (211 B, 396); forceinline expands the lookup again
-// (161). On the byte-read end test: the marker pointer in a local 45, the lookup's record through a reference 45, the priority
-// stored first with no local 115, the variant bytes read through the local pointer only 88 (470 B); the request stays in EBP.
-// Left: the end test (retail tests bit 8 as a byte, then loads the dword for bit 11) without EBX going to the object index.
-// Coordinator (11-18): with 0x221810 called out of line from its own /Ob1 file (0x21d110's match) and the flags set bit by bit
-// on state.flags (the source read once), 89 at 458 B (was 106 at 472 B).
-// M3 lane 3 r261 (fast with the ten matched callers, 0x221810 and 0x21d110, all MATCH; control 89): the marker size as
-// an if/else (0x28 in the marker arm, 0 in the else, retail 0x18a0ae/0x18a0ba) 32 at 460 B, plain 32 with every caller
-// matched: kept. On the 89 body the end test through the location's word bitfields `flag8 || flag11 || !audible` 89 and as
-// `(flags & 0x100) || (flags & 0x800) || !audible` 89 (same code). On the 32 body: an inline location-flag test taking the
-// bit index, used for bits 8 and 11, 45 (476 B; retail's end test line for line, but the request arrives on the stack
-// and lives in EBP, the object index and the sound pointer in EBX, and all ten callers differ by 1 byte); a word-flags
-// test helper `(*flags & (1 << bit)) != 0` 45 (same code); `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible`
-// (the file's own idiom for the class-flag bits) 45 (same code); `(flags & 0x100) || TEST_FIELD_BIT(flag11) || !audible` 60
-// (473 B: one dword load tested twice); that 45 form with the 0x800 store as `flag11 = true` 45. Compile-only screens
-// (CL /c of the file; they reproduce both the EBX and the EBP homes) find the rule: whenever the end test starts with a
-// byte test from memory, the request takes EBP; one dword load first keeps EBX. None of 76 declaration orders of the tag
-// pointer, the source, the state and the priority (with or without the source, variant and priority locals), 72 helper
-// combinations (pointer/reference/word helpers, the 0x800 set through word_flags_set, the variant copies through the
-// local, `state.source = request->source`, the object index through `state.object_index` or a local, a const class-flag
-// pointer), unused locals 0..7, extra temporaries before the test or the 0x21d110 call, extra end-test blocks, a
-// `globals` local for g_4ed288, a named ticks local, a bool for the test, nested class-flag tests, flag-setting helpers or
-// the marker size as a ternary moves the request back to EBX with retail's end test.
-// M3 lane 9 r142 (plain; the fast build differs from the full one here; compile-only of this file reproduces the
-// homes): the flip is set by any bit test that narrows to `test byte ptr [mem], 1` (flag0 or flag8 of the location
-// word), wherever it sits in the end test or after it; flag7, flag9 or flag11 tests (dword load and shift) and a
-// byte compare of unknown02 first keep the request in EBX. Retail's end test with: the object index in a local 45;
-// the marker pointer in a local 45; `audible == 0` 45; the platform playback in a local 137 (478 B); the priority as
-// `1` then `if (audible) 3` 141 (478 B). Compile-only, all EBP with retail's end test: the second 0x221810 lookup through
-// a const pointer, no source local, the variant read through the request at each use, priority or source declared
-// ahead of the state or the sound pointer, `real seconds` and the max stores as ifs, singly and in pairs (56 forms);
-// 1 to 12 dead initialised locals at the top or after the 0x21d110 call. Diagnostic: the end test without bit 8
-// 29 at 463 B (request in EBX).
-// M3 lane 6 r196 (fast with the ten matched callers, 0x221810 and 0x21d110; base 32 with all twelve matched): re-measured,
-// `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` 45 (476 B, the request goes to EBP and onto the stack, ten
-// of the twelve lost). On that form: the variant pointer read from the request at each use 45; the variant bytes stored
-// through the local 88 (470 B); the source read from the request at each use 45; both 45; the sound tag's byte at +2 in a local used
-// by both 0x221810 calls 98 (on the base 90, 456 B, all matched). Compile-only screens (the request home only; the base
-// keeps EBX): the end test as `((flags >> 8) & 1) || ((flags >> 11) & 1) || !audible`, `flag8 || (flags & 0x800) ||
-// !audible`, `(flags & 0x100) || ((flags >> 11) & 1) || !audible` and `flag8 || flag11 || audible == 0` all fold back to
-// `test ch, 9`; the byte-first spellings `TEST_FIELD_BIT((flags >> 8) & 1) || TEST_FIELD_BIT((flags >> 11) & 1)`, the
-// flag8 test with a plain `(flags >> 11) & 1`, `audible == 0`, the audible test first, and the whole test inverted with an
-// empty arm all put the request in EBP; so do, on the bitfield test, the first maximum as an if, a const sound pointer, an
-// early `return result` when 0x21d110 fails, a const pointer to the flags the second
-// 0x221810 call returns, and `game_time + 10 + ticks`.
-// Round 636: the merged tail test remains. Reduced control 41, caller-context control 32. Single-exit
-// rejection with split masks or direct fields 41/41, Boolean fields 50, nested bit 8 or audible 65/50,
-// audible first 58; bit 8 then audible then bit 11 56; direct return on rejection 82.
-// Direct flag-8 field with boolean flag-11 conversion 60, with word extraction 32;
-// those tests with the flag-11 field store 60/32. Eligibility before the primary maximum 42;
-// audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
-// NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
-// keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
-// M3 lane 4 r219 (fast with 0x1895f0 and 0x189650; fast reads main as 41, plain 32). Screen base: the end test as
-// `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` 50 fast (476 B), whose last 30 lines are retail's line for
-// line, with only the request/variant chain (EBX in retail) and the object-index/sound chain (EBP in retail) swapped and
-// the request passed on the stack (0x1895f0 and 0x189650 13 each), so any flip of that pair would match. On it: the
-// object index read once into a named local for the flag step and the state copy 50; the variant tests through
-// `request->variant` with no local 50; the sound pointer const 50; the second lookup's result const 50; the three
-// set-or-clear steps as if/else statements 50; none flips the pair. Main's body with if/else steps 41 fast (same code).
-// Bit-8 and bit-11 conditional admission 45/75, accumulated and default admission 45/77,
-// prior secondary maximum and selected maximum 45/46, variant flag after both stores 43,
-// marker copy using the published size 150. NOT kept: split-test forms move the request
-// onto the stack and lose callers, or change the matching prefix. The merged mask remains.
+// starts a sound from a request: builds the play state and starts it, then, when both of the sound's category
+// flags are set, moves the looping-sound globals' end times out to when this sound ends
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -535,7 +173,7 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 		state.source = source;
 		state.platform_playback = request->platform_playback;
 
-		if (TEST_FIELD_BIT(((s_sound_class_play_flags *)function_221810(sound->class_index))->flag23) && !(sound->flags & 1))
+		if (TEST_FIELD_BIT(((s_sound_class_play_flags *)function_221810(sound->class_index))->flag23) && !(sound->flags & 0x100))
 		{
 			state.location.flags |= 0x800;
 		}
@@ -567,7 +205,7 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 				long end_time = g_510c54->game_time + game_seconds_to_ticks_round((real)sound->duration * 0.001f) + 10;
 
 				g_4ed288->value20 = end_time > g_4ed288->value20 ? end_time : g_4ed288->value20;
-				if ((state.location.flags & 0x900) || !state.location.audible)
+				if (TEST_FIELD_BIT(state.location.flag8) || TEST_FIELD_BIT(state.location.flag11) || !state.location.audible)
 				{
 					g_4ed288->value24 = end_time > g_4ed288->value24 ? end_time : g_4ed288->value24;
 				}
@@ -758,7 +396,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 	if (object_index != NONE)
 	{
 		char audible = 1;
-		if (!(((s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes)->unknown00 & 4))
+		if (!(((s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes)->flags & 4))
 		{
 			function_18d4f0(object_index, &audible, &local_player_index);
 		}

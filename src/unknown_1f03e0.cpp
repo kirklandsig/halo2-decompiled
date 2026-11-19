@@ -1647,6 +1647,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `dword flags` local 614; both lengths through magnitude3d (`&state->input`, `&change`) re-measured 485 (3047 B, masked 186);
 // only the history maximum 509 (3057 B, masked 125); only the input length, through `input`, 297 (3036 B, masked 144).
 // Diagnostic: 1-16 initialised dead locals on the both-magnitude3d form 594-617 (2994-3013 B), none near. All restored.
+// M3 lane 15 r109 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; control 234): retail's low-normal arm loads the
+// basis side first in four of the cross's six products (state->basis.k read as [esi + 0x120], the rest through the lea),
+// ours the up side; the input length is magnitude3d's inlined block. The low arm's cross through the shared cross3f 234
+// (same code: helper text order does not reach the products); the low arm's cross on the `forward` copy 380 (3053 B); the
+// basis copied after the cross 348 (3070 B); the input pointer declared after the four flags 250; no input pointer, every
+// read through state->input, 543. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

@@ -1482,6 +1482,11 @@ void function_143250(
 // code); one exit with bands two and three nested under `order > 2` / `order > 3` 1902 (10607 B); unused initialised
 // locals after `matrix` (diagnostic only) 1-7: 1231 (10744 B)/1231/1095 (10777 B)/1226/1226/1415 (10756 B)/1226.
 // Band two's braces dropped (its names at function scope, band three's block shadowing them) 939 (same code).
+// M3 lane 15 r109 (fast with 0x143250 matched; control 939): retail reads s21's home eight times (0x4c: s105_s2_s21 multiplies
+// from memory, then band two's eight copies, then s21_s2 loads it again), ours seven (one load in XMM6 serves s105_s2_s21 and
+// s21_s2, and the copies move behind it). s21_s2 declared after s7_s2_s21 1104 (10780 B); right after s105_s2_s21 1021
+// (10775 B); beside s21_s35 1299 (10774 B); band three's r6_r3/r6_r0 as `r3 * r6`/`r0 * r6` 939 (same code); band two's r6_r3
+// and r6_r0 written into their four uses 1718 (10752 B). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
