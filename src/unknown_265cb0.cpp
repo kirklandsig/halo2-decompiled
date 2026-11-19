@@ -929,6 +929,8 @@ real function_30bf0(vector3f *vector);
 // selected point pointer with shared delta and late range 344.
 // NOT kept: Calculating delta after clip selection shortens the function below retail length and raises the score on
 // all eight forms. The earlier range reads also change the matched caller 0x25c9d0 in the reduced image.
+// Empty seat list when the actor has no vehicle. Conditional then default count, each with indexed
+// then pointer traversal, scores 186/204/102/204 with short counts and 202/206/199/206 with long counts.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2817,6 +2819,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // declared first 168 (same code); best level and strongest declared after the iterator start 172; the players
 // iterator's index and datum index stored before its table 170; the players iterator declared at function scope 168
 // (same code).
+// Contact step results declared in the while condition or advanced in the for loop score 168/168
+// and 753/753 as a node view and prop datum, respectively. Keeping the other object across both
+// actor-index reads scores 163/163 and 753/753. NOT kept: five-point gain at 163.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

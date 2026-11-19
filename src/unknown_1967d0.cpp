@@ -987,6 +987,10 @@ static inline long team_score_195ed0(long team)
 // installed-team and active-team references 100/100, count-first rank comparison 100,
 // admitted clamp with a shared result 177, unsigned terminal player inequality 732.
 // The flag still leads the configuration copy and the final score call still expands.
+// Clamp failures with rank continues and native or inline final score 192/128.
+// Team ordinal read at each use 216; signed count snapshots 100; rank before the
+// ranking query 104; team/rank cursors 337; signed rank sample at the store or
+// before the entry lookup 100/100. The early flag read and expanded final score remain.
 // M3 lane 4 r219 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH each time; control 100): the score
 // helper reading its result through a private inline copy of the statistics getter, as 0x1587f0's own source does, 100;
 // the score helper `__forceinline` 100 (the third read still calls 0x161e60 from inside it); the team test with an early
@@ -1030,6 +1034,10 @@ static inline long team_score_195ed0(long team)
 // inclusive upper selection with local or native interior query 100/191.
 // The tied forms still load the teams flag before the copy, and the native
 // interior query still inlines.
+// Machine-player configuration byte span 100, typed source member 100, typed assignment or memcpy
+// into the results record 100/100, returned typed copy destination 204, and shared device-view
+// copies from the byte or typed member or through assignment 100/100/100. NOT kept: the
+// copy and address-index write still follow the teams-flag read in the tied forms.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

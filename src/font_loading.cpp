@@ -934,6 +934,10 @@ static inline long font_character_pixel(long alpha, long color)
 // with byte parity 163, wide parity 181, or short offset and wide parity 226.
 // Parity still narrows in the opening packed stores, and the two-byte
 // literal assembly and EBX run are unresolved.
+// Packed input class 59/203, packed upper and lower opacity fields with the fresh header observation
+// retained 157/201, both views 157/201, both views and the ordinary six-bit count 157/201, using the
+// existing byte parity and then dword parity. NOT kept: the parity width still differs on the tied form,
+// and dword parity moves the run out of EBX and shortens the two fills.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

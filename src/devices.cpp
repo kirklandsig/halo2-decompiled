@@ -1299,14 +1299,19 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
-// score 127 (was 127; 121 before the coordinator decision): coordinator decision (round 119): the plan block in the order that makes both callers match
+// score 116 (was 127): Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
+// Previously noted: Both denominator arms compute the cruise speed, then a shared
+// store publishes it at the join. The body is 523 bytes and both callers still match.
+// Duration and position use different XMM registers. The ramp-down clamp caches its value,
+// and deceleration keeps the cruise result in a register where retail reloads the field.
+// Earlier at 127 (was 127; 121 before the coordinator decision): the plan block in the order that makes both callers match
 // (0x108600 31 -> MATCH, 0x108670 13 -> MATCH; this body ret 0x14 with the initial velocity in XMM6 as retail), kept over
 // this body's 121: the cruise velocity through the motion field, velocity/deceleration/start/target stores first, the
 // half ramp-up, the acceleration zero, the half ramp-down, the denominator with the cruise time written out
 // (`duration - ramp_up_time - ramp_down_time`), then the position and cruise stores, distance declared at its fabs.
 // Still differs: the ramp-down time keeps a register through its clamps (retail compares its stack slot), 528 bytes
 // against 523.
-// score 127 (was 121): the initial velocity now arrives in XMM6 with `ret 0x14` as retail's (both callers match); the
+// Earlier at 127 (was 121): the initial velocity now arrives in XMM6 with `ret 0x14` as retail's (both callers match); the
 // duration/position registers are exchanged and the ramp-down is still cached in a register through its clamps.
 // MiniMax B (11-18, round 2): no new form, no lower score (121): retail takes the initial velocity in xmm6 and this
 // build passes it on the stack, and the six-float signature may not change, so the three float temporaries keep their
@@ -1691,7 +1696,17 @@ bool function_108530(long device_index, long name)
 // ramp-down, target, denominator, deceleration 75 at 523 B (retail's uncached clamp pair and tail, but the duration takes
 // XMM6, so the target becomes the register parameter instead; callers 26/28; a statement order, not kept); velocity,
 // position, cruise zero, target, halves, acceleration zero, start, denominator, deceleration 132 (527 B, `ret 0x18`).
-// Body unchanged.
+// Early cruise span 139; early span with staged additions 127; select distance and divisor
+// before one division 127 at 525 bytes; reuse cruise result for acceleration 116; duration
+// test, fallback or both from the stored field 127 each; cruise calculation scope 127.
+// Shared cruise store 116 (plain confirmed) with both phases reading the field. Scope the
+// result through acceleration, name both square differences, or select the result with a
+// conditional 116 each. The early span loses both callers. The retained source uses the
+// common store and preserves both formulations of the later field calculation.
+// Separate ramp-down floor 129, upper-limit default 122, scoped floor with explicit alternatives 129, both limit
+// intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
+// trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
+// form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1732,14 +1747,16 @@ void device_motion_start(s_device_motion *motion, real target, real duration, re
 			real denominator = duration - ramp_up_time - ramp_down_time + half_ramp_down_time + half_ramp_up_time;
 			motion->position = position;
 			motion->cruise_velocity = 0.0f;
+			real cruise_speed;
 			if (denominator != 0.0f)
 			{
-				motion->cruise_velocity = (delta - half_ramp_up_time * initial_velocity - half_ramp_down_time * final_velocity) / denominator;
+				cruise_speed = (delta - half_ramp_up_time * initial_velocity - half_ramp_down_time * final_velocity) / denominator;
 			}
 			else
 			{
-				motion->cruise_velocity = delta / duration;
+				cruise_speed = delta / duration;
 			}
+			motion->cruise_velocity = cruise_speed;
 			if (ramp_up_time > 0.0f)
 			{
 				real acceleration = (motion->cruise_velocity - initial_velocity) / ramp_up_time;

@@ -502,6 +502,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
 // NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
 // keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
+// Separate Boolean fields with location memcpy, marker memcpy, both prior timer values,
+// one platform value, nested variant validity or a scoped marker pointer 45 each.
+// Separate Boolean fields with early tag rejection or result by tag arm 151/155.
+// NOT kept: the split tail moves the request onto the stack and breaks matched callers.
 // M3 lane 4 r219 (fast with 0x1895f0 and 0x189650; fast reads main as 41, plain 32). Screen base: the end test as
 // `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` 50 fast (476 B), whose last 30 lines are retail's line for
 // line, with only the request/variant chain (EBX in retail) and the object-index/sound chain (EBP in retail) swapped and

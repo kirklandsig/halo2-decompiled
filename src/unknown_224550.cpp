@@ -751,6 +751,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Horizontal scale reused at width calculation, secondary-aspect join,
 // after inverse spans, or after encodes 162/170/173/423.
 // Scoped size workspace 162. Blend still spills at the bitmap join.
+// In-place geometry encode after/before the UV encodes with named corners 512/499, direct corner
+// stores 512/499, complete bounds assignment 519/571, or a projected center point 512/499.
+// NOT kept: the geometry-encoder forms change the frame or incoming register schedule and do not
+// recover the bitmap blend register.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

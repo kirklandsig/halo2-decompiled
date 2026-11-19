@@ -3576,6 +3576,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // NOT kept: Carrying the stored byte ties 597 while shortening the body by eight bytes. The guard-scoped forms
 // recover the saved-register prefix through +0x1c but raise the score. The other publication forms shorten the body
 // and raise the score.
+// Transition walk with prior phase read first 597, candidate tag read once 678,
+// impulse phase handled first 597, and signed short transition phase 657.
+// With alternate read after the definition guard, the same forms score 615/701/615/632.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

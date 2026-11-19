@@ -377,6 +377,8 @@ struct s_1f8a70_actor
 };
 // score 182 (was 182): Frame 0x80 and entry agree. The route join follows mode seven and the cleanup path folds the result reload.
 // Earlier score 182 (was 182): earlier scores 182 and 188. Frame 0x80, prologue, first exit and the unit-mode slot agree.
+// The entry and 0x80 frame agree. The route dispatch follows case 7 instead of the common case 5 tail.
+// Previously noted: earlier scores 182 and 188. Frame 0x80, prologue, first exit and the unit-mode slot agree.
 // The route test layout, case 7 stores and result home still differ.
 // MiniMax C (11-15): no new form, no lower score (182): the route dispatch still lands after the mode cases where
 // retail puts it between case 5 and case 6, and the result still comes back through BL where retail loads the
@@ -960,6 +962,11 @@ struct s_1f8a70_actor
 // Pairs 4+5/4+6/5+6: 404/405/405. All three 411, with missing movement 411.
 // NOT kept: all score higher. The 0x80 frame and branch condition agree. The
 // first branch displacement, route dispatch and failure result still differ.
+// Shared point cases 2 and 3 372, shared reference cases 4 and 5 383, both shared case pairs 408, shared
+// forced-route tail for 3 and 5 244, selected source and shared forced-route stores 390, shared node tail for 2
+// and 4 386, shared reference for 5 and 6 with conditional movement 398, shared forced-route tail through frame
+// reference 451. NOT kept: Sharing the forced-route tail scores 244 and still leaves the dispatch after case 7.
+// The other case pairs and the frame reference raise the score further.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

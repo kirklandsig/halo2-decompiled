@@ -872,6 +872,12 @@ struct s_physical_block_iterator
 // AC597: Independent head retirement and policy result with admission/rejection flags, unequal-first and
 // equal-first tie breaks in both forms, and later/earlier timestamp gates:
 // 223/228/228/210/228/210/244/223.
+// Best-present set at eligible join 201; carry acceptance into best-present 281;
+// replacement pointer selected in the cases 182, assigned in explicit arms 253 or created
+// at the copy 201; replacement ring index 256; loop increment from saved successor 201;
+// insufficient candidate continues to that increment 201. NOT kept: the 182 form brings the
+// cases inside the loop, but uses pointer masks instead of retail's shared AL test,
+// moves the first difference earlier and shortens to 1193 bytes.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

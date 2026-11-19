@@ -2072,6 +2072,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // paired initialization beside each sum or counts beside sums with clearances last 550/551,
 // prism index before the square or square in the admitted loop 551/548.
 // NOT kept: the count and clearance homes remain, and the three-point gain is below the threshold.
+// Squared radius at prism admission 553; nearest measure scoped to the prism 551;
+// one separation for the edge search and interior path 557. Carried wrapped successor
+// with live or retained point count 601/601; first-endpoint cursor 581.
+// Existing point setter for both accumulated sums or both output means 552/551.
+// The count and clearance homes and signed remainder schedule still differ.
 // M3 lane 4 r219 (fast with 0x120790 and 0x2469b0, both MATCH each time; control 551): the edge loop from 0 with
 // `long next_vertex = (vertex + 1) % prism->point_count;` at its top 619 (2904 B, frame 0xb968; re-measure), with
 // `radius * radius` in the test 601 (2888 B), plus the nearest reset after the plane distance 601, plus `inside` there 600.
