@@ -1300,7 +1300,8 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
-// score 43 (was 43): The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
+// score 43 (was 43): The four-byte frame and 210-byte extent agree. Player and hand occupy the opposite saved registers.
+// Earlier score 43 (was 43): The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
 // the first unit-index load uses ECX instead of EDX.
 // Earlier score 43 (was 43): The 210-byte extent still agrees. Retail uses ESI for the player, EDI for the hand and EDX for the unit index. This build assigns those values to EDI, ESI and ECX.
 // Earlier score 43 (was 43): a one-step scratch rotation (ours ECX/EAX/EDX where retail has EDX/ECX/EAX) and the player/hand
@@ -1591,6 +1592,12 @@ void function_150820(dword *bits, bool local_only)
 // Integer player address and separate unit-index lookup 73, Integer player and unit-header addresses 43. NOT
 // kept: The separated player lookup recovers the saved registers but folds the player address into LEA and raises
 // the score. The other seven address forms preserve the original allocation and tie.
+// conditional hand enumerator 43; paired hand enumerator assignments 43; primary hand enumerator default 45;
+// secondary hand enumerator default 45; conditional hand enumerator with captured eligibility unit 43; paired
+// hand enumerator assignments with captured eligibility unit 43; primary hand enumerator default with captured
+// eligibility unit 45; secondary hand enumerator default with captured eligibility unit 45.
+// NOT kept: The conditional and paired assignments tie at 43. The explicit defaults add one byte and score 45.
+// Sharing the eligibility unit index leaves both results unchanged. The original body is restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

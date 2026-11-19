@@ -4981,6 +4981,10 @@ struct s_128ca0
 // 182 (1079 B); the permutation gain through an inline accessor taking the permutation (both pins) 81, the started bit
 // (`flags >> 9`) through an inline accessor 81, the bits named as a decibel value before the first sum 81 (all three the
 // same code: the gain byte keeps EAX and the bits EDX). Body unchanged.
+// Clamp selects bits through conditionals 114; separate lower/upper or upper/lower selections 160/162;
+// existing real clamp 169; two bound assignments 150; decibel result with typed bounds 192;
+// in-place bit or decibel clamp 177/163. NOT kept: all raise the count, and all but the
+// conditional selection also raise the matched fade user. Both pin register exchanges remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

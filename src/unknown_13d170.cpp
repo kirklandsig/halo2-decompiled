@@ -869,6 +869,9 @@ struct s_physical_block_iterator
 // deletion walk: best.offset read into two locals with one initialiser, one per overlap test, 40; the same with
 // `pages + start` 40; best.offset in a local read through a `long const &` for both tests 40 (each 40 the same code:
 // best.offset is still re-read for the second test, where retail keeps it in EDI and compares a `mov edx, edi` copy).
+// AC597: Independent head retirement and policy result with admission/rejection flags, unequal-first and
+// equal-first tie breaks in both forms, and later/earlier timestamp gates:
+// 223/228/228/210/228/210/244/223.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -1139,6 +1139,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // without the unused locals), the same with the y delta named for the denominator only 50, declared at its term 50; the
 // x delta declared after the denominator 92. The named delta renamed (three names for x, three for y) 14/27, the same
 // code each: local names do not move the order. Nothing kept; body unchanged.
+// Separate source and oriented planes: near/far/both aggregate stores 491/361/508,
+// orient in place then copy 530, near/far/both field stores 394/135/395,
+// immutable source and oriented aggregates 571. NOT kept: the far field stores keep
+// the late coefficient load, and the other forms move the frame away from retail.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

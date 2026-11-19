@@ -431,6 +431,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // XMM0/XMM7/XMM3, the squares are copies squared (XMM1/XMM4/XMM6), the sine products destroy the axis registers in
 // place (i and k; j through a copy) and the cross terms read the axis from memory again as (complement * j) * i,
 // (complement * k) * i, (complement * k) * j with the complement * k product formed twice. Body unchanged.
+// Separate symmetric matrix, with final aggregate, in-place correction, field transfers or row setters:
+// direct sine products 429/374/358/348; sine-axis vector 379/377/353/353.
+// NOT kept: all change the 0x90 frame and raise the score. The axis-square spills remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2629,6 +2632,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // displacement), and the loop's numbering (retail size XMM1, amount XMM2, angle XMM4; ours amount 1, angle 3, size 4).
 // Diagnostics, reverted: forward in a one-element array 564 (2305 B: 1.0 then takes XMM7 for the whole function);
 // the camera forward as its own symbol on the lead 444 (same code).
+// Clamp results through pointer/reference with a joined store 492/492;
+// complete bound-arm stores 512/512; input-first stores 537/537; in-place clamps 535/535.
+// NOT kept: each retains frame 0x90 and the direction/draw-point overlap.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

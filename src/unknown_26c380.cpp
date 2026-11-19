@@ -714,6 +714,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // either order 305/305. Trace success and crossing or either order 305/305. All three with
 // success or first edge first 363/363. NOT kept: the paired records move the result byte outside
 // its retail slot. Grouping all three shrinks the frame. The opening body is restored.
+// Inverted clear-path result 412; result initialized after trace fields 389; paired obstruction
+// publication 419; hit-conditioned scan 451; first flag after target check 265; combined crossing
+// result 413; per-edge vertex base 608; nested pathfinding guard 244. The nested guard preserves
+// the opening code. The two byte homes and shared cutoff exit still differ.
 // M3 lane 9 r143 (a reduced-link LTCG screen of this file, faithful to the fast build: 1 row; aligned rows against retail,
 // this body 109, the held goto form 43 = positional 34): on the goto form, the up cross written out member by member
 // (diagnostic only: a helper body by hand) 41, the cross's row j and the magnitude's sum order then retail's but row i's

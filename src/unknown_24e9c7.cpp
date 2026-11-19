@@ -634,6 +634,8 @@ struct s_24e9c7_points
 // 53 / 95), with the in-place side point 150 (735 B, 54 / 96), with unary minus 56 / 93; the in-place side point
 // with `0.0f - forward_j` re-screened 54 / 99, with compound `*=` 54 / 99, with the across operands written the other
 // way round 54 / 99 (same code); both forward locals on main's form 57 / 100. Body unchanged.
+// AC597: Both lateral components start from size in scalar, per-component scalar, aggregate point or
+// field-written point forms, with dimension scale before or after: 125/125/125/125/144/144/143/143.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

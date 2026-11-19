@@ -802,6 +802,10 @@ static inline bool teams_enabled_19e1c0()
 // names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
 // with an ordinary result. NOT kept: the minimum stays out of line and needs
 // a larger frame. The 415 form restores the opening extent, with the preload still missing.
+// First comparison before both locals 390/691; native comparison count 390/691; signed name
+// length published after the clamp 438/692; missing-index sentinel in dispatch 454/736
+// (existing result and ordinary result, respectively). The ordinary count recovers the
+// 0x204 frame while merging the name-copy paths. Token preload and capacity home still differ.
 // M3 lane 1 r125 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
 // `remaining` copied into a named `long capacity` used for every clamp, format and the fallback, on the plain result 691,
 // on the volatile result 390 (both the same code: the copy propagates); on the plain result the token parameter declared

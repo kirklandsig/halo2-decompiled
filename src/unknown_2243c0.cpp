@@ -797,6 +797,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // tag bound as `long const &` just ahead of its lookup 36; the material tag read into a long ahead of the four zeros
 // with the lookup after them 41, masked at that read 41, with that long also passed to 0x1c590 81, the reference form
 // of that 81; the four zeros between the two definitions re-measured 13. Body unchanged.
+// AC597: Tag table refreshed after virtual dispatch, with direct word/mask, named word/mask, masked
+// handle in place, typed word/mask and a shared signed/unsigned slot: 165/152/165/152/152/165/152/155.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -407,6 +407,8 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // (1720 B); in the rotation helper the i-j cross term as `(1.0f-cosine)*axis->i*axis->j` 219 and the i sine product as
 // `axis->i*sine` 219 (same code each); in the basis switch the third/fourth cases crossing straight from the second axis
 // global before copying it into `basis.up` 364 (1844 B). Body unchanged.
+// AC597: Paired sine/cosine storage passed as scalars, by value, by reference, or by pointer, each with
+// aggregate or field initialization: 252/252/366/366/252/252/252/252.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

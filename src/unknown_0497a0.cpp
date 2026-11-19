@@ -555,6 +555,10 @@
 // after it either way); the inverse declared after the shape selection 549; declared just ahead of its switch 676 (2626
 // B, frame 0x50); v4 declared ahead of v3 (retail's homes run v1, v2, w, v3, v4) 554; w declared ahead of v3 and v4 536
 // (same code); w first and v4 ahead of v3 554. The frame stays 0x54 against 0x60 in all of them.
+// Secondary shape selected before projection, after projection, after the side basis or after the special path:
+// short discriminator 703/707/703/690; primary shape test 700/698/688/607.
+// NOT kept: the earlier placements reach frame 0x58 and the late placements keep 0x54.
+// The primary shape slot, rounded wave storage and x87 factor lifetimes still differ.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
