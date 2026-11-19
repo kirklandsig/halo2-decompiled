@@ -206,6 +206,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // stepped by the size the same five; with a size local and no result local (`frame->size = offset + size; return
 // data + offset`) 92/92/83/92/92 (264, 264, 272, 264, 264 bytes); with no frame local (the frame read at each use)
 // 112/112/106/103/112 (248-256 bytes). No form spills the pointer: the allocator's locals do not decide it.
+// Round 116 (m3 lane 13, fast with 0x2099f0; volatile-free forms, control re-measured 95 at 266 bytes): a `long *const *`
+// to the pointer with the element read through it 95; the result filled by `memcpy(&result, &arguments, sizeof(result))`
+// 95; `(void)frame;` ahead of the initialisation test 95; the pointer declared `long *const` 95; the size as
+// `(long)parameter_count * sizeof(long)` 95 (12 with the volatile, the same code). All promoted into one register.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {
