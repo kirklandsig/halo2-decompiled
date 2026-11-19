@@ -8130,6 +8130,11 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // at both definition reads (retail keeps the pool pointer in edi and reads its data pointer twice, 0xc5b35..0xc5b6e).
 // Left: the address operand order of two loads in the hand loop (retail [data + index*12 + 8] at 0xc5c75 and 0xc5cbb,
 // ours the same address with base and index exchanged).
+// Matched in a full build with stand-in SDK headers (was 2): the cleared arm of each of the fifteen flag updates is
+// written `(word)(flags.bits & (word)~N)`. The casts change no instruction; they add to the function's count of
+// internal expression nodes, and the id of the `(unit_index & 0xffff) * 12` common subexpression depends on that
+// count. Past a wrap point its rank drops below the data pointer's, which gives the two hand-loop loads retail's
+// [data + index*12 + 8] operand order (0xc5c75, 0xc5cbb).
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -8320,26 +8325,26 @@ bool __stdcall function_c58f0(long unit_index)
 			if (first)
 			{
 				flags.bits = 0;
-				flags.bits = TEST_FIELD_BIT((control >> 16) & 1) ? flags.bits | 2 : flags.bits & ~2;
-				flags.bits = TEST_FIELD_BIT((control >> 17) & 1) ? flags.bits | 4 : flags.bits & ~4;
-				flags.bits = TEST_FIELD_BIT((control >> 18) & 1) ? flags.bits | 8 : flags.bits & ~8;
-				flags.bits = TEST_FIELD_BIT((control >> 19) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
-				flags.bits = TEST_FIELD_BIT((control >> 20) & 1) ? flags.bits | 1 : flags.bits & ~1;
-				flags.bits = TEST_FIELD_BIT((control >> 30) & 1) ? flags.bits | 0x80 : flags.bits & ~0x80;
+				flags.bits = TEST_FIELD_BIT((control >> 16) & 1) ? flags.bits | 2 : (word)(flags.bits & (word)~2);
+				flags.bits = TEST_FIELD_BIT((control >> 17) & 1) ? flags.bits | 4 : (word)(flags.bits & (word)~4);
+				flags.bits = TEST_FIELD_BIT((control >> 18) & 1) ? flags.bits | 8 : (word)(flags.bits & (word)~8);
+				flags.bits = TEST_FIELD_BIT((control >> 19) & 1) ? flags.bits | 0x10 : (word)(flags.bits & (word)~0x10);
+				flags.bits = TEST_FIELD_BIT((control >> 20) & 1) ? flags.bits | 1 : (word)(flags.bits & (word)~1);
+				flags.bits = TEST_FIELD_BIT((control >> 30) & 1) ? flags.bits | 0x80 : (word)(flags.bits & (word)~0x80);
 			}
 			else
 			{
 				flags.bits = 0;
-				flags.bits = TEST_FIELD_BIT((control >> 21) & 1) ? flags.bits | 2 : flags.bits & ~2;
-				flags.bits = TEST_FIELD_BIT((control >> 22) & 1) ? flags.bits | 4 : flags.bits & ~4;
-				flags.bits = TEST_FIELD_BIT((control >> 23) & 1) ? flags.bits | 8 : flags.bits & ~8;
-				flags.bits = TEST_FIELD_BIT((control >> 24) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
-				flags.bits = TEST_FIELD_BIT((control >> 25) & 1) ? flags.bits | 1 : flags.bits & ~1;
-				flags.bits = TEST_FIELD_BIT((control >> 31) & 1) ? flags.bits | 0x80 : flags.bits & ~0x80;
+				flags.bits = TEST_FIELD_BIT((control >> 21) & 1) ? flags.bits | 2 : (word)(flags.bits & (word)~2);
+				flags.bits = TEST_FIELD_BIT((control >> 22) & 1) ? flags.bits | 4 : (word)(flags.bits & (word)~4);
+				flags.bits = TEST_FIELD_BIT((control >> 23) & 1) ? flags.bits | 8 : (word)(flags.bits & (word)~8);
+				flags.bits = TEST_FIELD_BIT((control >> 24) & 1) ? flags.bits | 0x10 : (word)(flags.bits & (word)~0x10);
+				flags.bits = TEST_FIELD_BIT((control >> 25) & 1) ? flags.bits | 1 : (word)(flags.bits & (word)~1);
+				flags.bits = TEST_FIELD_BIT((control >> 31) & 1) ? flags.bits | 0x80 : (word)(flags.bits & (word)~0x80);
 			}
-			flags.bits = TEST_FIELD_BIT((control >> 29) & 1) ? flags.bits | 0x100 : flags.bits & ~0x100;
-			flags.bits = held ? flags.bits | 0x20 : flags.bits & ~0x20;
-			flags.bits = unit->unknown240 != NONE ? flags.bits | 0x40 : flags.bits & ~0x40;
+			flags.bits = TEST_FIELD_BIT((control >> 29) & 1) ? flags.bits | 0x100 : (word)(flags.bits & (word)~0x100);
+			flags.bits = held ? flags.bits | 0x20 : (word)(flags.bits & (word)~0x20);
+			flags.bits = unit->unknown240 != NONE ? flags.bits | 0x40 : (word)(flags.bits & (word)~0x40);
 			real rate = first ? *(real *)&unit->unknown1c0 : *(real *)&unit->unknown1c4;
 			function_100430(weapon_index, flags, rate);
 		}
