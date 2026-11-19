@@ -357,6 +357,8 @@ bool function_2461a0(
 // swaps registers to the end. Tried: any subset of the four parenthesized sums (151-214), w computed
 // k, j, i by hand (211), a or uu parenthesized (180, 206), uv unparenthesized in any order (214),
 // uv as += statements (182), a/uv/uu statement orders (104-217), den = a * uu (104).
+// score 73 in a full build with stand-in SDK headers (was 104): the capsule's vector is read through the capsule
+// at each use instead of through a `v` pointer local, and the first product is dot3f.
 // @retail 0x246360
 bool function_246360(
 	vector3f const *direction,
@@ -366,9 +368,8 @@ bool function_246360(
 	plane3f *plane)
 {
 	vector3f const *u = direction;
-	vector3f const *v = &capsule->vector;
-	real a = length_sq3f(v);
-	real uv = (v->k * u->k + v->j * u->j) + v->i * u->i;
+	real a = length_sq3f(&capsule->vector);
+	real uv = dot3f(&capsule->vector, u);
 	real uu = length_sq3f(u);
 	real den = uu * a - uv * uv;
 	if (den == g_45dbd8)
@@ -378,7 +379,7 @@ bool function_246360(
 	vector3f w;
 	vector3d_from_points3d(&capsule->origin, start, &w);
 	real uw = (u->j * w.j + u->i * w.i) + u->k * w.k;
-	real vw = (v->k * w.k + v->j * w.j) + v->i * w.i;
+	real vw = (capsule->vector.k * w.k + capsule->vector.j * w.j) + capsule->vector.i * w.i;
 	real b = vw * uv - uw * a;
 	real c = ((w.k * w.k + w.j * w.j) + w.i * w.i - capsule->radius * capsule->radius) * a - vw * vw;
 	real disc = b * b - c * den;
@@ -446,11 +447,11 @@ bool function_246360(
 	q.i = u->i * t_enter + w.i;
 	q.j = u->j * t_enter + w.j;
 	q.k = u->k * t_enter + w.k;
-	real along = ((v->k * q.k + v->j * q.j) + q.i * v->i) / a;
+	real along = ((capsule->vector.k * q.k + capsule->vector.j * q.j) + q.i * capsule->vector.i) / a;
 	real back = 0.f - along;
-	plane->i = v->i * back + q.i;
-	plane->j = v->j * back + q.j;
-	plane->k = v->k * back + q.k;
+	plane->i = capsule->vector.i * back + q.i;
+	plane->j = capsule->vector.j * back + q.j;
+	plane->k = capsule->vector.k * back + q.k;
 	if (function_30bf0(&plane->n) == 0.f)
 	{
 		plane->i = 1.f;
