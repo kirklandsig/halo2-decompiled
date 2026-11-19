@@ -757,6 +757,17 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // Native state or connection-index local 170; conditional connection pointer 293; two separately named snapshots 134.
 // Unqualified argument with owner cursors 176 (caller losses); entry connection initialization 137;
 // one observer snapshot with a registration reload and indexed owners 134 (retail length, plain confirmed).
+// m3 lane 5 r202 (fast with 0x75da0, 0x76a40, 0x785d0, 0x78880, 0x78900, 0x784a0, 0x77330; control 170, aligned 55):
+// the plain parameter read once through its address into an observer local 245 (833 B, ret 8: both parameters on the
+// stack, observer EBX, channel index EDI; callers lost), with the parameters swapped 245, with the address read only at
+// the channel lookup 245, with a second read through the address before the registration loop 245 (propagated);
+// `(void)&observer;` without the volatile 177 (aligned 36: observer passed in EBX, channel index on the stack); the
+// plain parameters swapped 177 (same code). Lead re-measured, not kept (a copy plus parameter reads): the volatile
+// parameter copied once for the dispatch and the invalidation loop and read again in the registration loop 124 at
+// 821 B with every caller matching (masked 13): left the copy in ESI and the zero/loop counter in EDI (retail EDI/ESI),
+// the load ahead of `push edi` and the 64-bit subtraction's high dword in ESI. On it: the copy assigned again before the
+// registration loop 134, the connection local declared at the top 126, one owner index for both loops 124; one or two
+// set-state calls given the parameter (fewer copy uses) 176/221 without flipping ESI/EDI.
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {

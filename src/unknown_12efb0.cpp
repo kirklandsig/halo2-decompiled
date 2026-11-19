@@ -739,6 +739,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // byte 666 (retail's CL slot and EBX record; NONE in EDX); the byte at each use with the +0x88 pointer declared ahead of
 // the tag test 678; that with the tag in a named local used for the test and the best-tag store 679 (no NONE register at
 // all); the byte at each use with the handled flag declared before the 0x130f60 call 669. Body unchanged.
+// m3 lane 5 r202 (fast with 0x131030, 0x1317a0 and 0x130f60, all matched; control 607, aligned 354, masked 146): the
+// touched flag declared ahead of the out value and the 0x130f60 call 609; the three per-cluster source resets stored
+// weight, index, kind 607 (store order only); the best-weight and best-index declarations swapped 609 (first difference
+// +0x2b); the palette arm's source-index store re-reading the +0x6f byte (retail re-reads it there) 703 (3831 B, aligned
+// 332); the record pointer declared NULL ahead of the palette test 607 (same code).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

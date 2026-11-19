@@ -676,6 +676,17 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Full-width choice count before target storage, before the cluster gate, at cluster-arm entry,
 // or after the query output clear: 979/979/964/963. With the full query result: 979/979/965/965.
 // NOT kept: ESI becomes the entry zero, but target count and primary remain displaced and the extent drops to 3264 bytes.
+// M3 lane 5 r200 (fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, frame-blind aligned 282 of 941/928
+// lines with registers and stack offsets masked): long query and choice counts, `&choices[choice_count++]` in retail's store
+// order with the 1.0f defaults as statements, and the first pool scan in the fade scan's while form with the salted index
+// named before its test 1020 (3231 B, fb 277); with loop_path_start allocating through looping_sound_new_attached(tag, NONE,
+// NONE, 0) and 0x18a5a0's second half 1000 (3238 B, fb 251: the four query arrays take retail's order, frame 0x4dc); plus
+// the choice/target/existing lists as {count, items} records 971 (3250 B, fb 238: the choice cursor is no longer
+// strength-reduced, but the zero is EDI and frame 0x4e8); without the existing record 984 (0x4e4), without the target
+// record 978; the indexed choice stores on that base 1013. Lead: the override's `+=` through the shared decibel value type
+// (include/unknown_21e230.h) gives retail's `movss xmm0, [eax]; mov [slot], edx; addss xmm0, [slot]` (984, fb 236, cast
+// diagnostic): retail's integer decibel constants and slot-copied right operands are that type's signature, so the
+// decibel fields here may be that type.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

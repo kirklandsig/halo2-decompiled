@@ -466,6 +466,15 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // elements 113; typed sixteen-byte destination cursor and remaining-copy count 77.
 // NOT kept: end-pointer loops change the entry or increase the score. The counted and typed indexed
 // destinations tie the reduced control at 77. Opening body restored.
+// M3 lane 5 r201 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77): no walk return (the miss arm ending
+// `initialize = true;`) 161 (488 B: the flag folds into the arm), with the init block closed by its own return 161; the
+// miss arm closed by `initialize = true; if (result == NONE) return result;` with the record block unguarded 138 at
+// retail's 518 B: every block is then retail's (the hit path reaches the record block without a test, the redundant
+// second `cmp esi, -1` and the `mov esi, [esp + 0x10]` reload appear), but the hit arm falls into the record block
+// and the miss arm is placed after it, because both NONE exits fold to one `or eax, -1` epilogue at its end where
+// retail returns ESI (`mov eax, esi`) at the walk and the frame copy at the miss arm's close; the same with the walk's
+// own return dropped 145 (508 B); with the miss arm written first (negated hit test) 138 (same code). A pointer to
+// result written in the walk (diagnostic) 138 (same code).
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

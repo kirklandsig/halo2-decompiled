@@ -613,6 +613,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // declarations, returning the output) 234; the scale read through a cast of the parameter's address instead 195 (same
 // code: no new symbol); on the named-pointer form, zero to seven dead initialised long locals and zero to three real ones
 // at the top 234 each (diagnostic: the rotation is not a symbol-count state). Body unchanged.
+// m3 lane 5 r202 (fast with 0x30bf0 and the callers 0x4f7e0/0x4ff50, unchanged at 325/43; control 195, aligned 80): the point
+// helper testing the scale through a const pointer to its camera parameter (0x142570's shape) 234 (971 B: the frame becomes
+// 0x2c, but the defaults land at +8 and in an argument slot); the helper's x row summed term by term (forward*z, up*y,
+// right*x, then position) with the y/z rows in that order 228 (972 B, frame 0x2c); both 216 (966 B); that product order as
+// single expressions 195 (same code); the existing out-of-line 0x142570 called for the three transforms 718 (475 B: a call
+// from this /Ob1 file).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

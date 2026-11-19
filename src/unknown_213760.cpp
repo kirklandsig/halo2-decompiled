@@ -1865,6 +1865,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `*handle` argument takes the step that leaves the close call its `mov ecx, eax`; retail has the write call's
 // handle loaded first as such an unnamed argument (EAX, the flags zero then ECX) and one more step before the
 // checksum compare.
+// M3 lane 5 r201 (fast; control 33), on the 6 form (resize and write handle locals, the write success set by its own
+// test, the header-read `else if`; reproduces at 6: the resize handle in EAX for retail's ECX, the write's header
+// address in ECX and its handle copy in EDX for retail's EDX/ECX): a named `s_file_write_flags write_flags(0);` ahead of
+// the write handle local 120 (917 B), after it 6 (same code), with the write through `*handle` 122; the resize through
+// `*handle` with a close handle local 114 (917 B); the write handle local ahead of the header 6 (same code). Probes
+// (diagnostic, one dword load and store): in the write block they give the write retail's registers (header EDX, the
+// handle pushed from EAX) but the close's `mov ecx, eax` copy then drops, as round 195's write-local form.
 // @retail 0x213970
 void function_213970(void)
 {
