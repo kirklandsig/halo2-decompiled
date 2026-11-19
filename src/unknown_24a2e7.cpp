@@ -315,6 +315,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // terminator indexed through `long const &found = i;` 39 (same code); the buffer named before the suffix conversion with the
 // suffix declared in the arm 44. Diagnostic (behaviour change, reverted): the append arm continuing the loop 59 (211 B).
 // Body unchanged.
+// Opening append returns result/destination with cached or indexed clear
+// 77/66, 72/75. Suffix append returns result/destination with cached or indexed
+// clear 83/73, 67/80. NOT kept: 66 regains the 0x28 frame and reaches 206 bytes
+// but spills the result and gains one point. The base and ordinal remain missing.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

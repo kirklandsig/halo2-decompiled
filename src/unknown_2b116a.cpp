@@ -4568,6 +4568,10 @@ bool __stdcall function_2b278e(long controller_index)
 // 76; fresh index at membership 54; unsigned mask bits throughout 54; signed short membership in the
 // existing qualified local 55. NOT kept: slot forms preserve numeric-index reuse, and the Boolean
 // width shortens case 3 without restoring the reloads.
+// Object copy in only one dialog arm 53, or 191 with Boolean membership, for
+// either arm. One-arm short mask 195, or 197 with Boolean membership. NOT kept:
+// the 53 forms spill the index but retain the controller object instead of its
+// slot, grow to 658 bytes and gain one.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
