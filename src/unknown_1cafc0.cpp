@@ -1407,7 +1407,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {
-	byte result = false;
+	bool result = false;
 	s_animation_names names;
 	s_animation_names found;
 	c_type_709360 animation_id;
@@ -1439,14 +1439,10 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			transition_id = transition_find(names.mode, names.set, &blend);
 			blend &= !(flags & 1);
 			blend &= (((dword)state_flags >> 10) & (channel_valid(&channels[0]) && !function_0e6800(&channels[0]))) & 1;
-			if (blend)
-			{
-				unknown6e |= 1;
-			}
-			else
-			{
-				unknown6e &= ~1;
-			}
+		}
+		if (blend)
+		{
+			unknown6e |= 1;
 		}
 		else
 		{
@@ -1458,10 +1454,12 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			if (((state_flags & 0x20) || (state_flags & 0x40)) && channel_valid(&channels[0]))
 			{
 				real frame_count = (real)channels[0].function_1c6440()->frame_count - 0.0001f;
+				real frame_position = channels[0].frame_position;
 
 				if (frame_count > 0.0f)
 				{
-					fraction = PIN(channels[0].frame_position, 0.0f, frame_count) / frame_count;
+					frame_position = PIN(frame_position, 0.0f, frame_count);
+					fraction = frame_position / frame_count;
 					if (state_flags & 0x40)
 					{
 						fraction = 1.0f - fraction;
@@ -1480,12 +1478,12 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			{
 				bool unflagged;
 
+				result = true;
 				unflagged = channels[0].is_unflagged0() & loops;
-				if (transition_id.index != NONE && graph_tag_index != NONE)
+				if (transition_id.index != NONE)
 				{
-					if (channels[2].set(graph_tag_index, 0x15, variant_get(transition_id), names.set, NONE, NONE, 3))
+					if (channel_start(&channels[2], transition_id, names.set, NONE, NONE, 3, 0x15))
 					{
-						channels[2].set_frame_position(0.0f);
 						if (channels[0].flags & 1)
 						{
 							channels[0].unknown11 |= 1;
@@ -1512,36 +1510,39 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 				{
 					flags &= ~0x10;
 				}
-				if (blend_id.index != NONE && graph_tag_index != NONE)
+				if (blend_id.index != NONE)
 				{
-					if (channels[1].set(graph_tag_index, 0x3c0, blend_id, transition_set, NONE, NONE, 0))
+					if (channel_start(&channels[1], blend_id, transition_set, NONE, NONE, 0, 0x3c0))
 					{
 						unknown80 = 0.0f;
 					}
 				}
-				flags &= ~1;
-				result = true;
-				goto names_store;
 			}
 		}
 	}
-	if (!(state_flags & 4))
+	if (!result)
 	{
-		goto animation_done;
+		if (state_flags & 4)
+		{
+			result = true;
+		}
 	}
-	result = true;
-
-names_store:
+	else
 	{
-		s_animation_names *names_out = &stored_names;
-		bool changed = (names_out->mode != names.mode) | (names_out->weapon_class != names.weapon_class) | (names_out->weapon_type != names.weapon_type);
+		flags &= ~1;
+	}
+	if (result)
+	{
+		bool mode_changed = stored_names.mode != names.mode;
+		bool class_changed = stored_names.weapon_class != names.weapon_class;
+		bool type_changed = stored_names.weapon_type != names.weapon_type;
 
-		*names_out = names;
-		if (changed)
+		stored_names = names;
+		if (mode_changed || class_changed || type_changed)
 		{
 			if (graph_tag_index != NONE && !(flags & 1))
 			{
-				resources_request(names_out->mode, names_out->weapon_class, names_out->weapon_type, true, true);
+				resources_request(stored_names.mode, stored_names.weapon_class, stored_names.weapon_type, true, true);
 			}
 			if (!channel_valid(&channels[2]))
 			{
@@ -1554,7 +1555,6 @@ names_store:
 			}
 		}
 	}
-animation_done:
 	return result;
 }
 
