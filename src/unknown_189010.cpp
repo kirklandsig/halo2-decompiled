@@ -150,7 +150,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
-// score 32 (was 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
+// score 32 (was 32; earlier 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
 // flags as a byte (`test byte [esp+0x21], 1`) and bit 11 by a dword load and shift, ours merges both into `test ch, 9`.
 // Every spelling that gives retail's test moves the request from EBX to EBP and onto the stack (45 at 476 B, callers lost).
 // MiniMax H (11-18), then at 106 (from 150): the priority is read from the request's audible byte, then the location is
@@ -491,6 +491,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
 // NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
 // keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
+// M3 lane 4 r219 (fast with 0x1895f0 and 0x189650; fast reads main as 41, plain 32). Screen base: the end test as
+// `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` 50 fast (476 B), whose last 30 lines are retail's line for
+// line, with only the request/variant chain (EBX in retail) and the object-index/sound chain (EBP in retail) swapped and
+// the request passed on the stack (0x1895f0 and 0x189650 13 each), so any flip of that pair would match. On it: the
+// object index read once into a named local for the flag step and the state copy 50; the variant tests through
+// `request->variant` with no local 50; the sound pointer const 50; the second lookup's result const 50; the three
+// set-or-clear steps as if/else statements 50; none flips the pair. Main's body with if/else steps 41 fast (same code).
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
