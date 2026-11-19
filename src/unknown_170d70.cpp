@@ -1459,6 +1459,9 @@ struct s_point_pool_173520
 // forward index 172, nonnegative count 184, guarded postdecrement 96, ascending counter with
 // separate source cursor 968. NOT kept: the postdecrement ties, the ascending counter unrolls,
 // and the reservation forms do not recover retail's count and state-test order.
+// score 45 in a full build with stand-in SDK headers (was 96): the four corners read result->bounds by name instead
+// of through the `bounds` reference the inflate writes through, so the inflated bounds are copied back out of memory
+// as retail does (0x173796 on).
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1529,14 +1532,14 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 						bounds.y0 -= 0.00390625f;
 						bounds.y1 += 0.00390625f;
 						point2f *corners = result->points;
-						corners[0].x = bounds.x0;
-						corners[0].y = bounds.y0;
-						corners[1].x = bounds.x1;
-						corners[1].y = bounds.y0;
-						corners[2].x = bounds.x1;
-						corners[2].y = bounds.y1;
-						corners[3].x = bounds.x0;
-						corners[3].y = bounds.y1;
+						corners[0].x = result->bounds.x0;
+						corners[0].y = result->bounds.y0;
+						corners[1].x = result->bounds.x1;
+						corners[1].y = result->bounds.y0;
+						corners[2].x = result->bounds.x1;
+						corners[2].y = result->bounds.y1;
+						corners[3].x = result->bounds.x0;
+						corners[3].y = result->bounds.y1;
 						result->count = 4;
 					}
 				}
