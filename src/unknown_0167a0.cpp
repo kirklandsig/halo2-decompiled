@@ -74,6 +74,9 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
+// score 51 in a full build with stand-in SDK headers (was 124 there; 273 recorded with the SDK): the test of the
+// old entry and its data pointer is evaluated into a bool first (`has_data`), as retail's separate tests suggest.
+// Before:
 // score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
 // MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
@@ -386,7 +389,10 @@ void __stdcall function_16b90(byte *state, long tag, long first, long second,
         if (changed)
         {
             byte *old = *(byte **)(state + 0x24);
-            if (old && *(byte **)(state + 0x20))
+            bool has_data = false;
+            if (old)
+                has_data = *(byte **)(state + 0x20);
+            if (has_data)
                 function_18900((s_render_state_source *)state, (word const *)(old + 0x11c));
             *(byte **)(state + 0x24) = record;
             *(byte **)(state + 0x20) = records;

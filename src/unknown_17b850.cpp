@@ -564,6 +564,8 @@ static inline real contrail_scale_if_17c0e0(word flags, word mask, real scale, r
 	return value;
 }
 
+// score 28 in a full build with stand-in SDK headers (was 54 there; 96 recorded with the SDK): the test that the
+// marker has not moved is evaluated into a bool first (`same_place`).
 // @retail 0x17c0e0
 void function_17c0e0(long contrail_index, short count, bool force)
 {
@@ -598,7 +600,10 @@ void function_17c0e0(long contrail_index, short count, bool force)
 					previous = 0;
 					point_count = 1;
 				}
-				if (previous && !memcmp(&marker->matrix.position, &previous->position, sizeof(point3f)) && !force)
+				bool same_place = false;
+				if (previous)
+					same_place = !memcmp(&marker->matrix.position, &previous->position, sizeof(point3f)) && !force;
+				if (same_place)
 					continue;
 
 				for (short j = 1; j <= point_count; j++)
