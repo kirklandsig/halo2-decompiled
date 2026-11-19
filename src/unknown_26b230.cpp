@@ -2190,6 +2190,11 @@ void function_269250(long clump_index, long actor_index);
 // result actor latch and the same three variants 87/335/126/339. NOT kept: the actor latch ties, the
 // team-scoped score restores x87 at higher cost, and the clump latch emits two copies of the step.
 // Pool EBX and the memory-only selection remain.
+// M3 lane 16 r139 (fast with 0x268bb0; this body reads 89 there against 87 in the full check, CAVEAT): the score
+// started at 0.0f instead of the best (the same values, as the best never drops below zero) 92 (480 B, retail's length);
+// the created arm assigning the loop's `group` instead of declaring a second one 89; the clump walk record declared at
+// function scope 89; the selection and best score declared at function scope and set at the top of each actor 89; the
+// score set by an if/else (`else score = best;`) 128 (484 B).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

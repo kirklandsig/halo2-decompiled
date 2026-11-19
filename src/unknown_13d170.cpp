@@ -800,6 +800,12 @@ struct s_physical_block_iterator
 // M421: Sufficient-pages take/refinement 262; exhaustive take/retention 253/262; nested eligibility 253;
 // first-candidate take with direct/shared eligibility 261/300; refined take with earlier-or-tied/equality result 270/270.
 // NOT kept: the complete admission results shift the prefix and do not recover the retail policy join.
+// M3 lane 16 r139 (fast with 0x13d320, MATCH each run; control 201): the second age clamped as `MAX(physical->time -
+// best.time, 0)` re-measured 209 (1228 B: the default arm is then retail's but for the scratch rotation, the candidate's
+// time in EAX and the difference in ECX where retail has ECX then EAX, and best.pages folded into `imul eax, [esp + 0x44]`
+// where retail loads it into EAX); on it the clock read once into a `dword now` used by both ages 209, the comparison
+// written `candidate->pages * best_age < best.pages * age` 209, the products as `age * best.pages > best_age *
+// candidate->pages` 209; both ages as unclamped `dword` locals with MAX() inside the products 373 (first difference +0x11).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

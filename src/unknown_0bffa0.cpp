@@ -1360,6 +1360,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // y locals in the projection 479 (2814 B), storing y first 469 (2819 B); a named depth for the divide 537 (2809 B), y
 // first 533 (2812 B); the three rows as scalar locals 539 (2801 B), y first 567 (2775 B); scalar rows with x and y locals
 // 552 (2794 B), y first 578 (2769 B); the result built in a local point and copied 701 (2977 B).
+// M3 lane 16 r139 (fast with 0xc1a80; control 290): a `plane3f *plane = &entry->plane;` for the cone plane's normal copy,
+// dot argument and distance store (retail's `[ecx + 0xc]` store) 543 (2810 B; the sphere arm's constant setup moves too),
+// with 1 to 7 unused locals at the top 544/548/548/547/543/543/543 (diagnostic: not a symbol-count phase); declared at the
+// loop top instead of in their arm: the plane point 290, the centre 290, the sphere radius 290, the cone scale 290 (same
+// code each).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

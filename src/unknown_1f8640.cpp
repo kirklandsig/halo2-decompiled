@@ -897,6 +897,13 @@ struct s_1f8a70_actor
 // 012 with an explicit unsupported fallback 448; route 2 then nonzero then zero 323. NOT kept: every
 // form regresses. The dispatch still needs to follow mode five, and the failure result still lacks the
 // native stack reload.
+// M3 lane 16 r139 (fast with 0x1f86a0 and 0x1f8750, MATCH each run; control 182). Retail evaluates the zero-route test's
+// radius half as a branch straight to the route dispatch and materialises only its node half (`cmp; setne al; test al,
+// al; jne`), the shape of `radius != 0 || node != NONE` evaluated as a value with its constant path threaded. The route
+// test held in a `bool valid` (the ternary assigned, then `if (valid)`) 182 (same code: flag-folded); the radius/node
+// half held in a bool ahead of the ternary 302 (1644 B: the whole bool is materialised, `xor al, al` / `mov al, 1` /
+// `movzx`); the bool preset false, set from the radius/node half when the route is zero and true for routes 1-2, 182 (same
+// code); the ternary's arms swapped (`route != 0 ? range : radius/node`) 182; `long route = route_mode;` 182 (same code).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
