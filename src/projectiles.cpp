@@ -837,6 +837,27 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
 // MiniMax A (11-11): matches; the six selector outputs follow retail's order (effect 0, effect 1, effect 2,
 // sound 0, sound 1, sound 2) in the parameters and in the NONE stores, and both call sites pass them in that
 // order; retail reads them in eax, ecx, edx, esi, edi and ebp and null-tests them in that order.
+PRIVATE inline void projectile_effect_parameters_reset_fd0e0(s_effect_parameters *parameters)
+{
+	memset(parameters, 0, sizeof(*parameters));
+	parameters->tag_index = NONE;
+	parameters->unknown18 = NONE;
+	parameters->object_index = NONE;
+	parameters->unknown34 = 0;
+	parameters->unknown38 = 0;
+	parameters->unknown3c = 0;
+	parameters->owner.unknown4 = NONE;
+	parameters->owner.unknown0 = NONE;
+	parameters->owner.unknown8 = NONE;
+	parameters->scale_a = 1.0f;
+	parameters->scale_b = 1.0f;
+	parameters->unknown30 = 0;
+	parameters->color_a = 0xff808080;
+	parameters->color_b = 0xff808080;
+	parameters->source = 0;
+	parameters->flags = 0;
+}
+
 /* the effects and sounds of an effects block's effect (+0x58), three of
    each, NONE without one:
    0x1883e0 gives sounds as its "first" values and effects as its "second"
@@ -1713,12 +1734,14 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // (point in EDI, zero in EBX), so it stays BLOCKED-BY 0xfd740, which this lane does not touch. No new form tried.
 // Permuter (25 min on #1061, about 340 variants): 111 only with the flag set through an int temporary and the
 // sound index declared apart; the plain forms in it (tag before flag, unsigned index, declaration order) stay 115.
+// Matched in a full build with stand-in SDK headers (was 11): the definition pointer is read after the six NONE
+// stores, the effect parameters are reset by a file-local copy of the initialiser whose stores are in retail's
+// order, and the three loops are bounded by NUMBEROF of their arrays.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,
 	long node_index, bool alternate)
 {
-	byte *definition = g_4e3b44[definition_index & 0xffff].bytes;
 	long sounds[3];
 	long effect_indices[3];
 	s_location location;
@@ -1730,13 +1753,14 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 	sounds[0] = NONE;
 	sounds[1] = NONE;
 	sounds[2] = NONE;
+	byte *definition = g_4e3b44[definition_index & 0xffff].bytes;
 	function_11bed0(&location, point);
 	{
 		s_effect_marker markers[6];
 		s_effect_parameters parameters;
 
 		function_1763a0(point, direction, markers, normal);
-		projectile_effect_parameters_initialize(&parameters);
+		projectile_effect_parameters_reset_fd0e0(&parameters);
 		if (attached)
 		{
 			parameters.flags = 1;
@@ -1756,7 +1780,7 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 			effect_new_from_parameters(&parameters);
 			return;
 		}
-		for (i = 0; i < 3; i++)
+		for (i = 0; i < NUMBEROF(effect_indices); i++)
 		{
 			if (effect_indices[i] != NONE)
 			{
@@ -1771,7 +1795,7 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 			effect_new_from_parameters(&parameters);
 		}
 	}
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < NUMBEROF(sounds); i++)
 	{
 		long sound_index = sounds[i];
 
