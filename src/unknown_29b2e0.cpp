@@ -648,6 +648,14 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // current-vector copy or XY copy 408/402/420. Early failure test 387; test after
 // current normalization with component copies 279. NOT kept: early heading
 // and failure tests recover unity in XMM4 but still spill the root at +0x10.
+// M3 lane 7 r188 (fast with 0x29b990; control 176, aligned 229, register-masked 179): the private normalizer as `k = 0;
+// m = normalize3d(v);` (include/normalize3d.h) 245 at 1719 B: the XMM numbering of all three normalizers is then retail's
+// (the first 155 rows differ only by the root cell, +0x10 against +0xc), but the yaw scale multiplies into a copy and the
+// matched sibling 0x29b990 drops to 10; the 2-D root written out with vector3f_scale and one exit 245 (same code), with the
+// early return 255; the two angles declared in the turning block with their two stores written in both arms 251 (1743 B),
+// with the normalize3d form 300. Reading: retail stores everything that comes off the x87 stack (the three roots, the
+// arc-cosine result) into the cell the yaw then lives in (+0xc); ours gives those +0x10 (shared with the first pitch angle)
+// and keeps +0xc for the clamped cosine and the yaw in every one of these forms, block scope included.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
