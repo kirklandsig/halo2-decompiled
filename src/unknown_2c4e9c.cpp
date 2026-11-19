@@ -1749,6 +1749,15 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 // false` 6. Diagnostics, restored: a member store from the event's controller index after the switch gives retail's
 // registers and order with one call (3 extra rows); the same store ahead of the type test 18, inside the type test 9,
 // inside the case 11; a dead result store ahead of the case's call 2.
+// m3 lane 14 r111 (compile-only screen of this file, exact: body 2, one-call if/switch 12). With two different callees
+// (diagnostic) both call blocks have retail's push-then-receiver order; only the two identical calls, joined, set ECX
+// first. One-call forms, 12 each: inline accessors for the type, the button, both, `changed`, all three, the event
+// passed through an identity accessor; `__assume(event != 0)` / `(this != 0)` / both at the top, in the type block, in
+// the case, after the copy or before the call; `__assume` on the type or on the button pair; the button read into a
+// long ahead of the type test; the button switched as dword; a pointer copy of the event; an outer type switch with
+// `default: break;`; a self-assignment of `changed` after the copy. `changed` read into a bool first 11 (it takes BL).
+// The flat `event->type == 5 && (event->param == 1 || event->param == 13)` with one call and a bool result 2: retail's
+// registers, order and tail; only `cmp ecx, 1` / `cmp ecx, 13` where retail has the switch's `dec` / `sub 0xc`.
 // @retail 0x2c87fe
 bool c_screen_45d2b8::v10(s_widget_event *event)
 {
@@ -3185,6 +3194,16 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // inline assembly 32 (85 bytes, `this` then arrives in ECX and the caller 0x2c9a58 stops matching). Also the same code
 // (30): the id held in the map_id member of a local map entry, of a local map definition, of a local two-long
 // aggregate (assigned alone, or both members initialised), or in the second element of a two-long array.
+// m3 lane 14 r111 (fast with 0x2c9a58, which matched in each): the id as a value with two definitions gives retail's
+// opening: `if (field != NONE) map_id = field; else map_id = NONE;` 36 (87 B: `this` to EDI, the field loaded into EAX
+// and copied to EBX as retail, but NONE kept in ECX and the else arm not threaded), the same through an inline
+// getter with an if/else result 36, as a ternary on the field or on a local copy 36/36; started NONE and set when the
+// field is valid, directly 13 (80 B, NOT kept: a conditionally set value, match-only), through an inline getter 13,
+// with the arms swapped (`if (field == NONE) map_id = NONE; else ...`) 13: the else path threads, the id is loaded
+// straight into EBX again and NONE is kept in EAX for the compare and both iterator stores. The field read once into a
+// local and then conditionally copied 30; `if (field == NONE) return;` then the read 30; the id cleared on the hit as
+// the loop's exit 35 (the caller 0x2c9a58 stops matching); an inline getter through an out-pointer 30; two returns in
+// an inline getter 30; the pool read into a local ahead of the id 30.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

@@ -582,6 +582,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // (first at +0x14 with the material and every other instruction retail's; only the cursor's two start instructions sit
 // above the loop guard). No address-taken or aggregate-member form of first had been tried before; the inlined
 // out-parameter does not keep it in memory.
+// M3 lane 15 r100 (fast with 0x404b0): the copy's operands as `&g_4ba138[current]` and `&entries[0]` 2; first assigned
+// through a bound `long &` 2; the two cleared draw records as a plain `pass = 1..2` loop 2 (unrolled); the block's entry
+// array bound by reference (`(&entries)[32]`) for the copy source and `&entries[n]` 2; `register` on first 2 (all the
+// same code: first keeps the mode parameter's home).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

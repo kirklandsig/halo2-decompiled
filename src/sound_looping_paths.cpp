@@ -677,6 +677,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // original-source repair/neighbor level/both 913/846/913. All definition bits
 // 938; one initial flag snapshot with live repair bits 910. Entry zero,
 // query/count homes and the accepted-choice register remain.
+// Full-width choice count before target storage, before the cluster gate, at cluster-arm entry,
+// or after the query output clear: 979/979/964/963. With the full query result: 979/979/965/965.
+// NOT kept: ESI becomes the entry zero, but target count and primary remain displaced and the extent drops to 3264 bytes.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

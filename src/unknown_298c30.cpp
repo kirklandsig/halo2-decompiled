@@ -531,6 +531,15 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // inline rotation (either parameter order, four row orders, with none, one or both trig locals): none starts the y row
 // before the sine's branch. Left as before: the short count (blocked by the EBX convention above), the constant's
 // XMM1/XMM2 and the near arm's order.
+// The cosine and unity still use different homes, and the candidate ordinal and far cursor keep their
+// opening widths.
+// Tried fixed turns retain their y input between both products 413, fixed turns snapshot their headings
+// after angle publication 386, fixed turns name the wide cosine contribution to x 349, fixed turns select
+// the sine result after the staged y product 405, distant arm first with a complementary distance test
+// 354, distant arm exits the endpoint before fixed turns 354, distant arm first with retail candidate
+// width 480, orientation tests reuse the shared endpoint side 364.
+// NOT kept: The wide cosine term grows the body and leaves the first unity load different. The distant-
+// first form with a signed candidate also changes the matched caller convention.
 // Real radial upper bound 365, tangent upper/lower 366/361, lower-first
 // tangent clamp 342. One real quarter turn 360, separate y products 305,
 // near continue 305, complete signed endpoint initializer 305.
@@ -540,6 +549,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // radial quotient 305, conditional tangent cap 305, separate tangent bound tests 330, branch-specific radial angle
 // call 331, shared signed endpoint writer 305, normalization before translated sum 359, unit score first 313.
 // NOT kept: the clamp and normalization forms leave the unity allocation unresolved.
+// Shared signed sine argument at admission or first use 329/323. Shared turn sign 316.
+// Endpoint-address sine choice 332. Byte slots consumed separately or reserved together 355/370.
+// Signed consumed slots 313. Shared sine argument with separately consumed byte slots 420.
+// Unity, cosine spill and persistent candidate ordinal still differ.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
