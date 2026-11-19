@@ -4950,8 +4950,8 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
     {
         bool active = false;
         real fade = 0.0f;
-        real *fade_out = &fade;
-        real *const &kept_fade = fade_out;
+        real *fade_target = &fade;
+        real *const &kept_fade = fade_target;
         bool *active_out = &active;
         bool *const &kept_active = active_out;
         function_c6b90(object_index, 0x11000088, kept_fade, kept_active);
