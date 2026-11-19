@@ -54,121 +54,8 @@ PRIVATE __forceinline long texture_floor(real value)
     }
 }
 
-// score 4 (was 4): Frame agrees; the final slot-bit clear uses EDX instead of EAX. Tried unsigned slot bit 4;
-// signed traversal mask 4; unsigned slot index 4; toggle selected bit 14; subtract selected bit 16; assign
-// remaining mask 4; pending slots name 4; for mask traversal 4; named slot bit 4; bias declaration first 4;
-// slot index name 4; texture frame name 4; lowest-bit clear 19;
-// early clear 111; entry lifetime 4; scan-index lifetime 4; level lifetime 4; integral
-// level clamp 86; short bitmap 4; typed texture entry 4; guarded do continuation 4; reversed mask
-// assignment 4; complement by -1 xor 4; masked xor clear 4; short stage 4; entry tag local 4;
-// existing bit setter 132; callee inline declarations 4; ternary bitmap 104; one-expression level
-// 202; one conditional bias 115; bitmap set on both arms 90; named frame time 108. Compile-only
-// screens: only removing the whole bitmap block gives EAX; ~450 forms of that block keep EDX.
-// Round 206: update noinline contract 4; level clamp arms 4; adjusted clamp arms 4; both clamps 4;
-// real remainder 4; double remainder 4; integral bias floor 4; both floor boundaries 4.
-// Explicit floor result 85; native SSE floor helper 124. Original helper restored.
-// Round 69: bitmap/bias at function scope 4/4; reversed level compare 4; `>=` magnitude test 90;
-// tag local for the NONE test 4. Harness: EAX only when the bitmap is a constant zero; a constant
-// bitmap in the arm, an unconditional bitmap or a call without it keep EDX.
-// Round 123: bit scan in an inline index helper 4; bit scan split into two asm statements 4;
-// bias assigned in the arm without its zero default 65; ignored call result named 4; bitmap
-// narrowed to short at the floor 16. Harness: the second floor's asm decides it (an asm copy
-// that clobbers EDX in place of ECX gives EAX here).
-// Round 10: integer level index before its float 4; const floor parameter 4; named bit before the
-// clear 4; element address as &state[...] 4; definition count read inline in the floor call 4.
-// Round 71: the entry body in a helper keeping (state, entry, index) 415 (90 bytes, out of line), (state, index)
-// 431, the part after the NONE test 409; the same three forceinline 4/4/4; forceinline bitmap getter 114 (379
-// bytes), bias getter 114 (379), level helper 4, bitmap and bias getters 114, all three 114.
-// Inline call-and-store helper with evaluated arguments 4; mask-without-bit helper 4; single-bit helper 4; both 4.
-// Round 85: scan index initialized 53; masked shift index 18; const entry pointer 4; count declared outside
-// its arm 4; adjusted value declared outside its arm 8; implicit floor conversion 4; split level initialization 4;
-// named truncated level 4; ordinary inline floor helper 166. Opening body and helper declaration restored.
-// Round 138: the bit-scan asm through EAX or EDX 6/6 (clear still EDX); index declared before the loop 4;
-// `while (remaining != 0)` 4; remaining declared, then assigned 4.
-// Round 67: bitmap declared at loop-body scope ahead of the NONE test 14, with the bias too 18, both at the top
-// of the body 21; a loop-scope copy of a pending mask 38; a for loop clearing the bit in its increment with
-// the NONE test as `continue` 4. Diagnostic: one to eight unused locals at entry leave EDX (symbol count not it).
-// Round 132 (m3 lane 7, fast): the call's short arguments without casts 4; the level truncated in the
-// clamp statement 4; an explicit return after the loop 4; the level test as `level < entry level` 4;
-// bitmap's zero as the else arm of the magnitude test 90 (399 bytes). Lead: lane 8 r114 found VC's
-// scratch choice a round robin (one extra early temp rotates every later block, 0x5c720); the EDX here
-// may be one hidden allocation off retail rather than a property of the clear.
-// Round 155 (m3 lane 5, fast): the floor's asm split after cvttss2si 4; floor parameter `real const` 4; one-line asm
-// statements 4; adjusted bias as a ternary 65 (399 bytes). Permuter (600 s, 41 variants) found nothing below 4.
-// Round 141 (m3 lane 8, fast with 0x143c0 and caller 0x16b90): the call cast to void 4; the remainder in a named
-// local 4; the bias arm as one combined test without `adjusted` 65 (400 bytes); the entry as `&state[0x1320] +
-// index * 0x40` 4; the frame value named for the magnitude test and the remainder 108 (406 bytes); a pointer to
-// the entry's level used for the test and the store 4. Caution: the compile-only harness is not faithful here
-// (non-LTCG /Gr passes the bitmap to 0x143c0 in EDX, so EDX is natural there; LTCG passes it in ECX), so its
-// screens of the bitmap block say nothing; retail 0x143c0 itself clobbers EDX.
-// Round 79 (m3 lane 11, fast): the NONE test as an early clear plus `continue` 107; the global bias at +0x2c read
-// into a local before the loop 126 (414 bytes); 0x143c0's two size stores through a short pointer (callee form;
-// 0x143c0 still matches) 4; the bit computed at the loop top and cleared at the end 108 (398 bytes); bitmap as dword 4. Diagnostic
-// (reverted): a probe load stored to a global in the latch takes ECX and the clear keeps EDX, so EAX is held off
-// at the latch rather than one rotation step behind. A one-file LTCG link with 0x143c0's file reproduces EDX but
-// not 0x143c0's register convention.
-// Round 165 (m3 lane 5, fast with 0x143c0 and 0x16b90): `fabsf` for the magnitude test 4; `fmodf(frame, (real)count)`
-// for the frame 4 (same code). Diagnostics on the LTCG image (reverted): the clear keeps EDX with the bitmap block
-// removed, the second floor removed, the call removed, a zero bitmap in the call, a void callee in place of 0x143c0,
-// and with the loop body cut to one 0x143c0 call (the cut-down bodies also changed this function's frame or homes:
-// `state` moved into a register, `remaining` into EBP, so they do not isolate the latch); matched 0x18e80's latch takes EAX after a call that leaves EAX
-// unused. No untried natural form of the latch or the frame block is left in this note.
-// Round 189 (m3 lane 4, fast with 0x16b90 and 0x16b10): the shift count as `(byte)index` 111; the render reset state
-// typed (slot fields, +0x2c bias, +0x1420 slot mask) with per-use slot indexing 51 (419 bytes), with a slot pointer 4;
-// an inline pin function for both clamps 4; a short stage local at the loop top 4; the floor result named as an
-// integral before the clamp 4. Diagnostics: a cut-down loop (bsf, NONE test, a call, the clear) keeps EDX with an LTCG
-// or XDK callee, called conditionally or not; a second use of the mask (0x18e80's state clear) gives EAX, `mov ecx` first.
-// Round 78 (m3 lane 15, fast with 0x143c0, 0x16b90 and 0x16b10): `__assume(state != NULL)` at the top 4; `__assume(index
-// >= 0 && index < 4)` after the bit scan 4; `__assume(entry != NULL)` ahead of the NONE test 4 (all the same code);
-// `__assume(count > 0)` after the count read 89 (405 bytes: the count goes through a stack home); `__assume(bitmap >= 0)`
-// ahead of the call 106 (413 bytes: the bitmap gets a stack home). Reading with round 79's latch probe: the clear's
-// temporary is a next-fit choice (the probe took ECX, the clear then EDX), so ours enters the latch one step after
-// EAX (the tag argument's load) and skips the shift's ECX, where retail enters it at EAX. Diagnostic (reverted): 0x143c0's
-// stage parameter as `long` (definition, the six declarations and the three `(short)` call casts; every caller passes a
-// long) 4, with 0x143c0 and its matched callers unchanged: the stage conversion is not the extra step. Probes (reverted):
-// one or two copies between globals ahead of the 0x143c0 call leave the clear in EDX; one after the call takes ECX and
-// the clear EDX; two after the call take ECX and EDX and the clear takes EAX. So the rotation restarts at the call (its
-// result's EAX) and retail has two more steps than ours between the call and the clear, with no code left for them.
-// Round 240 (m3 lane 3, fast with 0x143c0 and 0x16b90): the entry as `state + (index << 6) + 0x1320` 4; the clear as a
-// plain assignment 4, with a `1L` shift 4; `level` declared at loop scope after the entry 4; the mask declared in a
-// `for` header with an empty step 4.
-// Round 106 (m3 lane 1, fast): the clear's count masked, `~(1 << (index & 31))`, 18 (400 bytes: the `and` stays); the
-// entry's current level in a named local for the test 4; `long index` outside and the clear as the step of
-// `for (; remaining; ...)` without a `continue` 4. Diagnostics: the level store ahead of the 0x143c0 call 38, the bitmap
-// declared once outside the loop and not reset 109: the clear keeps EDX in both. Retail 0x143c0 does not read EDX.
-// Round 108 (m3 lane 1, fast): the floor helper `__stdcall` 4, `__cdecl` 4; a `void *` parameter cast to the byte
-// pointer in a local 4; the count as a `real` 4; the truncation written at the compare and the store, no truncated
-// local, 4 (the clear stays EDX in each); the level store re-derived from state and index 51 (419 bytes, no CSE).
-// Round 107 (m3 lane 11, fast with 0x143c0, which matched in each): the magnitude test as a two-sided range test 33
-// (408 bytes); the bias arm as `if (!g_4ba019) bias = PIN(...); else bias = 0.0f;` without `adjusted` 30 (402 bytes);
-// the tag index as a `(word)` cast 24; the bias block ahead of the bitmap block 95 (400 bytes); both fmod operands
-// cast to double 4 (same code; `(double)count` alone does not compile, ambiguous overload). Reading: the floor asm is
-// 0x16ae0's body inlined (other files inline it through the same forced-inline form and match), and matched 0x18e80
-// has this loop's bit-scan and clear shape with EAX; 0x143c0's callee tree holds one unmatched function
-// (0x12ce00, a contributor's), but it uses EAX, ECX and EDX in both builds, so its clobber set is not the cause.
-// Round 187 (m3 lane 6, fast with 0x143c0, which matched in each): the level stored as `((real *)entry)[4]` 4; the entry's
-// tag through a `long const &` used for the NONE test, the count lookup and the call 4; the frame field through a
-// `real const &` for the magnitude test and fmod 4; the entry's level through a `real &` for the test and the store 4;
-// the tag and level references together 4 (all the same code; the clear keeps EDX).
-// M3 lane 5 r190 (fast with 0x143c0, which matched in each; diagnostics, all reverted): no level store after the call
-// 46 (380 B), clear still EDX; the bit-scan asm replaced by a field read 120 (383 B), still EDX; the floor helper as a
-// plain C truncation at both sites 181 (324 B): the clear takes EAX; only the second (level) site as C 123 (356 B): EAX;
-// only the first (bitmap) site as C 112 (362 B): still EDX. So the second floor's inline asm block, not the loop's
-// skeleton or the call, is what pushes the clear's temporary into EDX on this full LTCG build. The floor helper written
-// with the compiler's SSE intrinsics (truncate, convert back, compare not-equal and less-than, mask, subtract) 141
-// (423 B: a `movaps` before the conversion, the constant in a register), so retail's floor is this asm too.
-// M3 lane 10 r114 (fast with 0x143c0, which matched each time): the level steps in three variables (floored, clamped,
-// level) 4 (same code); the floor inside the PIN macro 202 (489 B: the macro evaluates the floor three times); the entry as
-// `state + 0x1320` then `+= index * 0x40` 4; a `long const slot` copy of the scanned index for the entry, the call and the
-// clear 4 (all the same code); the bias zero as an else arm of the flag test 90 (384 B).
-// Round 97 (m3 lane 2, fast with 0x143c0, which matched in each): the level store after the call through a trivial
-// forceinline setter 4; the call's result held in a bool and discarded after the store 4; the clear through a
-// forceinline helper taking the mask by reference 4; the clear through a reference bound to the mask 4 (all the same
-// code, the clear still EDX).
-// Round 212 (m3 lane 4, fast with 0x143c0, which matched in each): the floor helper `static` (PRIVATE is empty, so it had
-// external linkage) 4; the loop under a redundant `if (remaining)` guard 4; the call's tag through a trivial forceinline
-// accessor 4; `register` on the scanned index 4, on the bitmap 4 (all the same code); re-measured: round 97's forceinline
-// level setter after the call 4.
+/* The mip level is an integer index: the floored bias pinned to 0..2 and truncated. Comparing
+   and storing it as that index, converted where the float is needed, is what matches. */
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -199,12 +86,11 @@ void __stdcall function_1b0a0(byte *state)
                 bias = adjusted;
             }
             real level = (real)texture_floor(bias);
-            level = PIN(level, 0.0f, 2.0f);
-            level = (real)(long)level;
-            if (*(real *)(entry + 0x10) > level)
+            long level_index = (long)PIN(level, 0.0f, 2.0f);
+            if (*(real *)(entry + 0x10) > (real)level_index)
             {
                 function_143c0(*(long *)entry, (short)bitmap, (short)index, bias);
-                *(real *)(entry + 0x10) = level;
+                *(real *)(entry + 0x10) = (real)level_index;
             }
         }
         remaining &= ~(1 << index);

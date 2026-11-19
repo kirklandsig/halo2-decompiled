@@ -455,6 +455,17 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // MiniMax A (11-18): no new form, no lower score (77); the merge test moved out of the walk block (79), into the flag block (78), the merge test alone (152) and the record pointer in the flag block (176) all score worse, so the body stands; what still differs is that our compiler folds the redundant compare retail kept and the join copies the index in a register where retail reloads it from its stack slot.
 // Eviction scan with separate first/absolute/next slots and all pairings 77 each;
 // all three together, also with a named next-search start, 77 each. Cache-hit and return edges remain.
+// First-candidate exhaustion returning allocation result or stamped handle 142/142,
+// sole exit from first candidate 109, split initialization with first-candidate exit 143,
+// initialize before allocation 148, raw slot exit with early return or sole exit 156/171,
+// allocation result initializes the setup decision 142. Cache-hit bypass and trailing return remain.
+// N421 previews: state destination pointer advanced inside the four-copy loop 77; state copy loop bounded
+// by the record end 89; state copy walks the four in-record byte offsets 118; typed cache tail walked up to
+// its end 89; remaining-copy count and independent destination cursor 77; typed sixteen-byte state
+// destinations with a direct element index 77; typed sixteen-byte destination cursor bounded by its four
+// elements 113; typed sixteen-byte destination cursor and remaining-copy count 77.
+// NOT kept: end-pointer loops change the entry or increase the score. The counted and typed indexed
+// destinations tie the reduced control at 77. Opening body restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

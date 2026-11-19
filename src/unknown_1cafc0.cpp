@@ -830,6 +830,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // reference, a const local, a second copy, by-reference or const formals at any level, the lookup helper taking the
 // mode array, and even macros in place of every helper all keep the graph in a register with the sum by lea; only a
 // resources local read before each loop gives retail's in-place add (but not retail's in-loop read).
+// The complete found-name record at request entry, initialized, const-initialized, assigned or
+// field-initialized: 504/504/504/407. The same forms with Boolean success: 497/497/497/503.
+// NOT kept: the snapshots disturb the agreeing prefix and leave the graph/base reloads unresolved.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1098,7 +1101,6 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // retail's slots but leaves its constructor at the entry (353); re-initialising it in the block adds the
 // block-entry stores but the entry constructor stays (353); no C++ scoping gives both. Blend-query lifetime
 // (retail keeps the blend byte in memory across 0xe6800) and the result/loop byte homes also differ.
-// score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; ID homes and blend-query lifetime still differ.
 // Round 15: inline channel query 210; early success with separate name comparisons 256; separate comparisons
 // with late success 265; bitwise separate comparisons 256; inline transition-find 210 (callee still matched);
 // fraction clamp workspace 287; signed-byte result 210; primary-ID lexical rename 210. Original body restored.
@@ -1258,6 +1260,10 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // channel test 210; the 0x200 test with its arms swapped 214 (1133 B); the fraction declared where first set 210; the
 // transition set declared at its initialisation 210. Diagnostic: the channel test's id use dropped 337 (1116 B): the id
 // then stays in memory, but the id slots stay swapped and the set still does not take EBP. All restored.
+// Lookup inputs from the set, mode, weapon fields or all name fields 210/210/210/210;
+// resolved set or resolved mode and set at lookup return 210/210; complete record lookup with
+// early resolved set 210; early set under split lookup admission 210. NOT kept: all forms
+// tie with the primary and transition ID homes exchanged.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

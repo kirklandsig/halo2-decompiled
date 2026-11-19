@@ -280,7 +280,9 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 206 (was 206; 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// score 206 (was 206): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in retail.
+// Earlier 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix;
+// m3 lane 16 r130 and r132 at the end.
 // MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
 // Earlier note (206, was 214): The frame is 0x24 against retail's 0x2c and the source arrives in ECX.
 // Earlier scores were 209 and 214 after the j-row correction.
@@ -786,6 +788,11 @@ void function_245400(s_source_245400 const *source, long index,
 // both codes in stack homes (stored after the widening, masked in the register, reloaded for the shift), the first
 // side in a stack byte and EAX unused through the plane code (frame 0x2c against 0x24 to 0x28), the edge in XMM3 to
 // XMM5, the cross's operand order, the same-side return with its own epilogue, and the rows.
+// Frame 0x24, early matrix load and combined side handling remain.
+// Material table and slot names 206; extended-code names 206; independent side names
+// 206; all those names 206. First/second/both signed extensions before the word
+// test 205/207/207; extensions at the word acquisitions 207. NOT kept: the early
+// first extension gains one at retail length with the frame and matrix load still displaced.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

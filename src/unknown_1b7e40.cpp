@@ -69,7 +69,7 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
-// score 28 (was 38): m3 lane 9 r136 (fast with the file and 0x25d690/0x25d740/0x25d810/0x25d9b0/0x26ed40/0x26f060/
+// score 28 (was 28; 38 earlier): m3 lane 9 r136 (fast with the file and 0x25d690/0x25d740/0x25d810/0x25d9b0/0x26ed40/0x26f060/
 // 0x26f0c0/0xba1d0, faithful 38; aligned rows 12 -> 7). Kept: the evaluation as `if (priority <= 0) return 0;`, the
 // lookups, then one test returning the priority and a final `return 0`, with the node's distance read once into a
 // local for both range tests. That gives retail's fallback (no priority zeroing, its failures to the zero exit),
@@ -112,7 +112,7 @@ bool function_25d9b0(long prop_index);
 // priority epilogue, and this build's shared zero exit still sits after the priority block where retail's sits
 // before the fallback block; the branch-shaped spellings swap the actor and node registers.
 // MiniMax S (11-16): no new form, no lower score (49); the busy test's two returns are still if-converted into a mask select where retail branches to its own priority epilogue, and splitting the two exits with a goto reaches retail's exit shape but moves the actor into ebp and the node into ebx, which measures 65.
-// score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
+// Earlier (score 49, was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // M3 lane 11 r113 (fast with the file's functions and callees, faithful 49; aligned 9: the busy select, the zero exit's
 // `xor ax, ax` and the success block's place): the busy test joined to the && chain with `return priority` 65 (aligned 69:
 // no select, but actor/node swap to EBP/EBX and the success return stays inline ahead of the fallback); on it the decline
@@ -133,7 +133,7 @@ bool function_25d9b0(long prop_index);
 // the folded compare (49) but if-converts the busy test into a mask select, the fallback's failures returning 0 or the priority swap the
 // actor and the node (65), the first iterator call separated from the loop merges the two exits and grows the body (109), `return false`
 // and a long zero leave the zero exit's width alone (38), and the permuter found nothing below the baseline.
-// score 38 (was 49): the busy test branches to the priority epilogue like retail; the priority and view registers, the
+// Earlier (score 38, was 49): the busy test branches to the priority epilogue like retail; the priority and view registers, the
 // zero exit's width and the fallback's memory compare still differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
@@ -406,6 +406,13 @@ bool function_25d9b0(long prop_index);
 // mask select; the permuter's rewrites (300 s) found nothing below the baseline, the switch, while, goto and
 // one-use-flag forms of the earlier rounds all keep the select, and the two returns swapped (if (!busy) return
 // priority; return 0;) compile to the same bytes (49).
+// M3 lane 13 r111 (fast with the file and its callees, matched each time; base 28, aligned 7): the distance local for the
+// first range test and the field for the second 65 (aligned 68, masked 9: retail's second compare from memory, but
+// actor/node swap again); that with `goto done` and `priority = 0` 103 (551 B = retail, aligned 74); the local at both
+// tests with that exit 83 (544 B); direct reads with that exit 103 (551 B); the mixed read with a negated test clearing
+// the priority 103; the mixed read with `return priority` then `priority = 0; return priority;` 65. Retail's layout
+// re-read: the evaluation, the 32-bit zero exit, the no-invitation block (its failures jump to that exit, its success
+// loads 3 and jumps past the gate), then the priority exit last.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

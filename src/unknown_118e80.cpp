@@ -220,6 +220,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax A (11-18): no new form, no lower score (218): the 0x1faf80 exit written as an if/else around the rest of the body measures 216 on the reduced image (a gain of two, under the keep bar) and the frame stays 0x78 against retail's 0x6c: BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp).
 // MiniMax S (11-16): no new form, no lower score (241): the frame is still 0x78 against retail's 0x6c and the call to 0x1faf80 still takes the 0x148 and 0x13c addresses by adding to ebp where retail leas them, so the tail's registers differ; reading the speed scale at each use instead of once measures 250 in this build, and the block-scope form that gives retail's 0x6c frame needs 0x11f0d0's double local and its double parameter, whose body is in src/unknown_11eed0.cpp, which this lane may not edit: BLOCKED-BY 0x11f0d0.
 // MiniMax E (11-16): no new form, no lower score (218): BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp) - that callee's named double local and double parameter give this function its 8-byte stack parity under LTCG, so the frame stays 0x78 against retail's 0x6c and ESI is still saved in the prologue where retail pushes it after the 0x1faf80 exit.
 // MiniMax E (11-15): no form kept, the body is the original one again; the reduced image (--fast, one
@@ -1168,11 +1169,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // member and passed to 0x1c4b00 from that local: 14 (was 43). The force argument's own zero extension and the member's
 // slot are what still differ; retail still spills the result to a stack byte of its own and reloads the containing dword.
 // Dropping that member store measures 90, so the store stays.
-// score 14 (was 43): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
+// score 14 (was 14; 43 before): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
 // and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still
 // spills the result to a stack byte of its own and reloads the containing dword where this build keeps it in al.
 // Before, 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
+// MiniMax A (11-18): no new form, no lower score (43): the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al, and that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its 14 declarations, which live in other files: BLOCKED-BY 0x1c4b00.
+// score 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
 // from the 0x119bc0 result on: retail keeps it in its own stack cell [esp+0x14] (shared with the rounding temporary),
 // pushes that dword, and every later scratch register follows; ours stores it in the move output's byte member and
 // zero-extends it, one scratch step ahead from there on. A bool local for it (long force) 90 (1034 bytes: the tail
@@ -1404,6 +1407,16 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // a contributor's 0xe24f0 moves 586 -> 601), this helper, 0x1ec690 written as real code and 0x1eb6f0's chain
 // (0x1eb8a0, 0x109fd0) keeping its output to itself. BLOCKED-BY 0x1c4b00 (declarations), 0x1ec690 and 0x1eb6f0.
 // MiniMax A (11-17): no new form tried this round, no lower score (43): the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al; that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its 14 declarations, which live in other files. BLOCKED-BY 0x1c4b00.
+// M3 lane 8 r186 (fast with 0x119020/0x119c10/0x1c4b00/0xb7740, matched throughout; control 14): retail's block after the
+// 0x119bc0 call (object looked up again, the linear copy into +0x88, no update call) has the shape of the existing
+// velocity setter 0xb7740 inlined with its last argument true, followed by the 0x1c4b00 call, the pair the file's two
+// other 0x1c4b00 sites write with false. Written so (`function_b7740(arg_0, &local_11.field_c, NULL, true);` for the
+// lookup and copy) 307 at 1004 bytes: 0xb7740 stays a call (its file is built /Ob1, so it is inlined nowhere) and the
+// shared masked index loses its slot; BLOCKED-BY 0xb7740's file flags for that form. The copy through a copy of that
+// file's forceinline write helper (object, linear, NULL) 41; lookup, both writes and the 0x1c4b00 call in one inline
+// helper with a bool force formal 41 (same code), without the member store 93, with a long force formal 41. All keep
+// the flag in AL for a `movzx`; the stack byte and dword push still need 0x1c4b00's bool formal (four of its
+// declarations sit in other lanes' files this round). Body unchanged.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
