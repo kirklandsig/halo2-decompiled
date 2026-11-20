@@ -75,6 +75,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax D (11-20): no new form kept, no lower score (76): the row pointer formed after the increment with the limits as
+// longs gives 83 here (it swaps the EBP and EDI homes of the player pointer and the kind, so the first difference moves to
+// +0x16), the limits as longs alone 78, the enable byte read at each use 103, the old maximum as a short 76 (its counter
+// read then sign-extends where retail zeroes the register), and the row pointer spelled out at every use 85; what still
+// differs is the enable byte, which retail reloads into AL and CL after the statistics write while this build keeps it
+// in a bool local, the old maximum's home (ECX there, EAX here), the 15-bit counter read (retail's `xor eax, eax; mov ax`
+// comes from the inlined getter in the held file) and the consecutive count's register.
 // MiniMax I (11-20): no new form, no lower score (76): reading the enable byte at each use point instead of through the bool local gives 103 (the reload then lands where retail has it), the old maximum as a nested ternary 108, and the increment before the row pointer 107 with the direct enable read and 85 alone (it swaps the EBP and EDI roles); what still differs is the old maximum's home (ECX there, EAX here), the 15-bit value read (a zeroed 16-bit move there, movzx here) and the row pointer's register order.
 // MiniMax S (11-20): score 72 (was 76): the increment is now the address expression `++*(short *)((byte *)statistics +
 // index * 0x1c + 0x16)` and the row pointer is formed after it, which gives retail's `inc word ptr [eax + edx + 0x16];

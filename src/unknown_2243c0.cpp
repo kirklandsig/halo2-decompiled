@@ -217,6 +217,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax D (11-20, round 132): no new form, no lower score (117): the body is unchanged. Masking the fallback tag index
+// in place gives retail's `and edx, 0xffff` but moves the tag table from EDI into ECX and hoists its load above the frame
+// (152), while the word cast keeps the table in EDI and gives `movzx eax, dx` (117); the stage and pass homes (ESI and EBP
+// against ours' EBP and EDX) and the unfused element loads still differ, and the tag table's own address moves between
+// the reduced and the full image.
 // MiniMax C (11-20): no new form, no lower score (117): read the earlier rounds' forms; the only lower one known is the
 // score-8 chain, and it rests on one-use element bindings and moved stores, so it is kept only with an exact match. The
 // stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged.
