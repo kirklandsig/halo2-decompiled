@@ -1683,6 +1683,10 @@ void function_150820(dword *bits, bool local_only)
 // and at the 0xcd7b0 argument scores 18 (was 43) and gives the player ESI and the hand EDI, but it rereads a value the
 // player local already holds (kept only with a byte match), so the code is main's. What is left is the player address folded
 // into one LEA instead of retail's add and move, the unit index read a second time, and the policy byte in DL.
+// Sequential query and availability result 105, conditional query declaration 43, direct policy output
+// selection 88, complementary policy arms 77, command-mode assignment in the test 80, conditional command
+// result 95, captured eligibility index with sequential results or conditional declaration 105/43. NOT kept:
+// the declaration forms tie at 210 bytes; the other forms regress or change extent.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

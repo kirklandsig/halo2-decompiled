@@ -882,6 +882,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Completed lowest-point scan extent as pass/candidate/compaction bound, seven subsets:
 // 144/251/154/225/155/256/256. Signed-word pass with the completed extent at both traversal bounds 244.
 // NOT kept: the two-bound form recovers frame 0x14 but raises the score and changes the caller.
+// Independent append increment with long or short pass 270/249, pass advanced from published length 144/263,
+// pass advanced from incremented length 242/237, short pass and short length incremented independently 249,
+// short feedback with fixed compaction prefix 249. NOT kept: the forms reaching frame 0x14 shorten the
+// function to 760–762 bytes and regress. The long published-length form ties at frame 0x18.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

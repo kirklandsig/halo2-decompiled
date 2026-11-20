@@ -3455,6 +3455,10 @@ struct s_ammo_conversion_entry
 // Rounds clear before the lookups or after the destination object/tag or source object 215/221/220/211.
 // Early declarations for the retained/acquisition/both flags 190 each. Source tag deferred until acquisition 211.
 // NOT kept: the early clear changes load order, the declaration forms keep EDI, and the deferred tag shrinks the frame to 0x1c.
+// Shared absolute source slot 190, word slot 203, typed conversion block 190, read-only entries 190, entry
+// formed before comparison 214, shared slot with all type tests reread 212, shared slot and typed block 190,
+// also full-width total selection 191. NOT kept: the forms tie or regress and retain the saved-register
+// divergence.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4834,6 +4838,10 @@ struct s_weapon_projectile_creation
 // Repeated-direction setter on capture, restore, or both 1142/1139/1137.
 // The grouped result assignments expand the 0x1ea4 frame, and neither separate
 // component publication nor repeat transfer recovers retail's 0x1e98.
+// Rotation through the shared setter 1248, aggregate rotation result 1121, rotation returned by value from
+// pointers 1121, fixed axis by value 1150, staged and direct shared cross 1186 each, shared i-k-j projection
+// 1131, changing vector passed and returned by value 1185. NOT kept: no gain. The setter reduces the frame to
+// 0x1e94 but shortens the body to 5105 bytes.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
