@@ -294,6 +294,10 @@ void function_254200(void)
 // in 0x281b60's walk, ours emits each two- or three-value call-path reload group in exactly the reverse of retail's order
 // (here retail x, constant, y + size; ours x, y + size, constant), while a one-value group (the constant alone after the
 // second vertex's reservation in 0x2548f0) agrees. All restored.
+// M3 lane 3 r281 (fast, control 4): the two cached render-state writes through the existing 0x222d0 setter, as 0x2548f0
+// does, 4 (same code; kept, it replaces that setter's body written by hand); on it: the four vertex 4f calls in member
+// form 4; End in member form 4; the point copy and size `const` 4 (same code each); the four 2s calls in C form 392
+// (914 B, they stop inlining); Begin in C form 247 (1053 B). The setter's two inlined parameters do not move the pair.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -316,10 +320,8 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 			point2f local_3 = *arg_0;
 			function_1cf50();
 			function_1c710(g_51f0f0);
-			g_4b8448 = 0;
-			D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
-			g_4b8450 = 0;
-			D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
+			function_0222d0(D3DRS_CULLMODE, 0);
+			function_0222d0(D3DRS_ZBIAS, 0);
 			D3DDevice::Begin(D3DPT_TRIANGLEFAN);
 			function_254491(arg_1, arg_3);
 			D3DDevice::SetVertexData2s(1, 0, 0);
@@ -696,6 +698,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // coordinate pointers 161 (2194 B); the readiness test held in a named bool 2 (same code). Diagnostic: every
 // `#pragma inline_depth` line removed 440 (2388 B: every SDK call inlines), so retail's out-of-line calls after the
 // second vertex need the pragmas in this source. All restored.
+// M3 lane 3 r281 (fast, control 2), combinations of earlier same-code forms in the first quad: the colour and both
+// vertex 4f calls in member form 2; colour member form, a const colour pointer and a block-local `real const` depth for
+// the first two vertices 2; both vertices in member form with that depth 2; all five together 2; scale-first texture
+// products with the colour member form and the depth 2. All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
