@@ -923,6 +923,11 @@ real g_55e618;
 // the positive or negative distance test score 231/225. A saved hit with a joined failure
 // store at the tail or before the response scores 141/141. Both guards with a query-local
 // hit record score 274. NOT kept: sweep and collision homes remain displaced and scores rise.
+// Sweep and collision homes still sit twelve bytes below retail. Complete surface offset through
+// scale with separate stores 217, with vector addition 220; aggregate offset and point setter 279;
+// early complete offset 261; scale offset and point setter 279. Sweep workspace reused for tangent
+// 243 or perpendicular 261; displacement workspace reused for perpendicular 102.
+// NOT kept: the contact-offset and sweep reuse forms raise the score. The displacement reuse ties.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

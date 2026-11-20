@@ -2534,7 +2534,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // selector orders tie at 433, the direct acknowledged return gives 477, and the case 2 turn vector as an
 // aggregate copy with case 4's facing read from the state at each use measures 624 (2400 bytes, masked 84 in an
 // earlier round). No form found this round.
-// score 433 (was 433):
+//
 // Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
 // busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
 // fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
@@ -2566,6 +2566,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // `case 13: default:` through the shared exit 645 (2372 B); `case 13: default: break;` 478 (2400 B, aligned 178); only the
 // post-switch test as a plain `return 1;` 478 (2400 B, aligned 154); case 7/8 breaking early when bit 4 is clear and
 // falling into case 0 (case 13 kept) 480 (aligned 153). All restored.
+// The dispatch bounds branch still targets a late completion block. Signed type guard 671;
+// direct active-search completion 494, also with inactive-target guard 494; shared publication
+// for 18/21 604, 21/14 609, or all four request cases 626; shared dispatched type 626;
+// pending assigned on request admission 433. NOT kept: the shared requests shorten past
+// retail and move the dispatch or entry. The other forms tie or raise the score.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
