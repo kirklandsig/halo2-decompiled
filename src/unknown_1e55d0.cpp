@@ -364,6 +364,13 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // flag in shift form 318 (aligned 306), the rate read once 318 (aligned 312), the shape match as `compound ? a || b : a` 349
 // (1204 B, aligned 223, masked 123), all four 346 (1208 B, aligned 202, masked 115: the non-compound arm, rate and flag test
 // then as retail; the extra 44 bytes are 0x1c4a80 and the capsule destructor expanded where retail calls both).
+// M3 lane 7 r200 (fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH throughout; control 319): the
+// countdown through a byte reference bound to the state's second byte 319 (only the position products' operand order
+// moves); the switch byte read into a named long 319 (same code); the input bound by a const reference for the shape
+// read 319 (same code); the three aliases declared input first with the state as a const reference to the parameter 319
+// (same code); the velocity pointer held through a const reference and tested in place of `&velocity` 319 (the null
+// test still folds, operand order only). Still BLOCKED-BY 0x1ec690 (the input in EDI; its draft sits in an Avoid-list
+// file this round).
 // M3 lane 2 r118 (fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319): the output flag word
 // bound once by reference for the shape block's three updates 319; the position base through a const reference to the
 // input's point 319; the velocity reference formed from the move parameter instead of the output alias 319 (all the
