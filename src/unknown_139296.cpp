@@ -1382,6 +1382,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // `while (count > 0)` with the step and `--count` at the body's end, count and offset first, 1 (same code); the first
 // loop's count and offset declared bare at the function's top 1 (same code); SSS with the success flag declared just
 // ahead of the first loop 127 (375 B).
+// M3 lane 7 r187 (fast with 0x13a532, 0x1393f3; SSS control 118): SSS with loop 1's condition result named 118 (same
+// code); SSS with 0x13ad48's anchor re-formed from the field (`local_2->field_24 + local_8 + 4`) 14 (365 B: the load is
+// merged across the condition call and `field + offset` with the element, so the anchor is retail's `lea eax, [esi+4]`
+// and all three loops get retail's registers, but the merged load is its own temp: `mov eax, [edi+0x24]; lea esi,
+// [eax+ebx]` against retail's `mov esi, [edi+0x24]; add esi, ebx`); that with the element formed in two statements 14;
+// that with the anchor as `&local_2->field_24[local_8 + 4]` 14.
 // M3 lane 3 r266 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): on the current body the count
 // declared before the offset 1, the count in the for initialiser 1 (same code). On SSS, loop 1's mask argument formed
 // from the field again (`local_2->field_24 + local_8 + 8`, also written offset-first or as `&field_24[local_8 + 8]`)

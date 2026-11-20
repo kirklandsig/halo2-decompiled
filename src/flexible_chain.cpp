@@ -235,7 +235,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// score 144 (was 171): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
+// score 144 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
 // earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
 // Earlier score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
@@ -846,6 +846,21 @@ void __stdcall function_1160c0(real dt)
 // explicit sine or cosine 144/172, completed constrained point 336.
 // NOT kept: the node array forms reach retail length with a 0xa8 frame. The best forms tie
 // and leave the selected segment in EDI/ECX and at +0x20.
+// M3 lane 5 r210 (fast with 0x116750, 0x116010, 0x1160c0, 0x73360, 0x54590; control 144, register-masked 54): the
+// rest offset rotated by a trial copy of 0x146320's file-private rotation taking the axis as three reals (projection
+// k, j, i first, cross_j and cross_k named, cross_i in row i) 221 (1368 B); with sine and cosine named before the call
+// 167 (1368 B, masked 50: the segment cell moves to +0x10, the base still EDI); that plus the node pointer ahead of
+// `inverse_dt` 167; on the body the node pointer ahead of `inverse_dt` 144 and the first-node test as `!i` 144 (both
+// the same code). Retail's scratch choice is one step off ours at both ends of the loop (segments base and segment EDX
+// for our EDI/ECX at the top, the definition reload EDX for our ECX at the bottom).
+// Round 642 forms: branch-owned segment offsets 289, typed rest-vector copy 273, physics
+// index before the node snapshot 145, tag entry reference 144, named constraint length 144,
+// widened offset scope 144, loop-owned axis 144, terminal selection by node count 181.
+// NOT kept: the near-length rest copy changes the saves and the ties retain the EDI/ECX carrier.
+// Vector storage for prior, prior/target, prior/predicted, predicted, target/predicted, and
+// all three 332/332/332/144/144/332. All three with aggregate prior copy 144 and
+// prediction setter 332. NOT kept: the vector forms tie or move the frame and extent
+// farther from retail, with the segment spill still different.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

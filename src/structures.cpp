@@ -784,6 +784,20 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // without the count test's early return 236 (708 B, no zero register); one more range read ahead of the loop 227 (zero
 // still in EBP). So the zero register appears only when both dword zero stores (section, unknown18) are in the body, and
 // range does not outrank it. Not kept: 208 is a rise, and 133 is a declaration order picked by score with [75] aligned.
+// M3 lane 4 r222 (fast with 0x14a8e0, 0x14af40 and 0xd47d0, all matched; control 172, aligned 97; an LTCG screen with named
+// homes, build/r222/scr.py, scores variants by aligned rows). Round 197's 208 form re-measured: 208 at 726 B, aligned 19, the
+// zero in EBP the only cause. On it: `bool result = false` declared ahead of instance_index (first, or at any of four
+// positions before it) 221 at 739 B: the zero register goes, section's NULL store comes from the definition's EDI and the
+// section test and the clear are retail's, but instance_index then holds EBP for the whole body (retail gives EBP to range
+// before the loop, keeps instance_index in memory and NONE in EDX inside the loop): aligned 35, and six further declaration
+// orders around it 34-37 (screen); that with the type-3 instance read from the collision record 221 (739 B, aligned 39); the
+// definition cleared in the type-1 and else arms 222 (730 B); the point copy declared after the others 221 (726 B, aligned
+// 37); the count test returning `result` 208 (the same code as the lead); range's bare declaration at eight positions the
+// same code; 1 to 6 dead locals ahead of the body keep the zero (not a symbol-count state); a const instance_index on the
+// result-first form the same code. So the zero/instance_index claim on EBP follows the order of result's and
+// instance_index's declarations, and range never wins it here. 19 of the 24 orders of the instance_index, result,
+// definition and section declarations (screen): three states only, aligned 19 (the lead's), 36-37 (result ahead of
+// instance_index) and 70-75 (section ahead of result).
 // M3 lane 13 r115 (fast, 0x14a8e0, 0x14af40, 0xd47d0 MATCH throughout; all restored): lane 7 r123's form rebuilt 208 at
 // 726 B (zero still in EBP); on it: definition and section cleared by statements after the declarations 208; the empty
 // count's early return giving `result` 208; `if (!section) return result;` with the loop unnested 212; the count test
