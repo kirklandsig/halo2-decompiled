@@ -953,6 +953,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // position-matrix, direction-matrix 371/355/359; all pointers or references 359/359.
 // Reduced control 334. NOT kept: regressions. The effect address remains folded and the
 // matrix receiver exchanges the opening EBX and ESI roles.
+// M3 lane 13 r129 (fast with 0x247fd0 and 0x248cc0, both matched; control 334): the effect index local `long const` 334;
+// the gate byte as one `byte const` of the shifted, masked flags 334; the gate byte read as the low byte of the record's
+// flags word 334 (all the same code); the velocity's effect record through the index local 358 (1634 B: the record
+// address is then shared with the gate, retail re-derives it); the allocation's old head read into a local before the
+// head update 365. All restored.
 // M3 lane 15 r116 (fast with 0x247fd0 and 0x248cc0, both MATCH; control 334, aligned 250): the in-loop lookup through the
 // existing particle_object_for_tag re-measured 371 (1696 B, aligned 215: placement and result slots sit low, so 4-byte
 // displacements); the child reciprocal's two tests as `0.f < x` 334 (same code: the zero still takes XMM2 for retail's XMM1);
