@@ -722,6 +722,7 @@ struct s_1f9762
 // test as `count <= index + 1` 4 with `setle al`, the count and the index each through a one-use local 6 and 6,
 // and the count through a one-use local minus one 3 which also rotates the two dot products), while every
 // spelling that keeps the index in EAX decrements the count instead; the committed body (score 1) stands.
+// MiniMax B (11-20): no new form, no lower score (1): the entry test is still the only difference (`dec edx` where retail has `inc eax`); this round's spellings of it - `index + 1 >= count` 4, `count <= index + 1` 4, `index + 1 > count - 1` 131, the same with one side widened 4, the count or the index through a one-use local 6 each and the same with a long local 6 - all leave the increment in EDX, and the permuter (34 tries) found nothing below the baseline.
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
