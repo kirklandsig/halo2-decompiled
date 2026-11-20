@@ -358,6 +358,10 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // EAX and jumps to one `push eax` call, so retail keeps a text variable whose message paths bypass that call with no
 // NONE test. Diagnostic (reverted): the message arms calling set_text and jumping past an unconditional 0x253b1a
 // call 393 (2320 bytes).
+// M3 lane 14 r122 (fast with 0x230134/0x2b0a14, MATCH; control 316): the session widget's three state calls as one
+// call with a nested ternary argument 332 (2337 B); the voice pointer renamed to sort before the session pointer 316,
+// declared before it and assigned after it 316; the message buffer at function scope 316; the final layout record
+// declared before the player record 316 (same code each: the (8,5)/(8,4) widget slots stay swapped).
 // M3 lane 5 r209 (fast with 0x230134, 0x22eeee, 0x2b0a14, 0x253b1a; control 316, aligned 49 = register-masked 49). LEAD: the
 // five buffer homes and the two child-pointer homes follow a reference ranking. Diagnostics (not keepable): two extra
 // code-emitting suffix uses (`suffix.text[1] = 0;` twice) put every buffer and both child pointers in retail's homes

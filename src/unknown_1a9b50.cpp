@@ -1407,6 +1407,15 @@ static __forceinline long real_to_long(real value);
 // cloned late (the threaded form), and the merge needs the computed test that warms this call site; matched 0x1b4560 needs
 // an inline-depth pragma for the same getter at a warm site, so our link expands 0x25d740 more readily than retail's did.
 // Still BLOCKED-BY 0x25d740's inlining. Body unchanged.
+// M3 lane 14 r124 (fast with 0x25d740, 0x25d690, 0x25d700; calls counted in our column, retail 21): what decides the
+// expansion of 0x25d740 at this site. Lane 6's computed entry result (`bool local_2 = !f13 && !f14 && !f2d; if (local_2)
+// {...} return local_2;`) re-measured 508 (1921 B, 20 calls). With it, 0x25d740's body written so that it compiles to 39
+// or 41 bytes keeps the call out of line and gives retail's frame, false-exit place and 1904 B, first difference +0x147:
+// early returns 396 (0x25d740 14), the two ternaries 396 (0x25d740 18), `base` set by a first if and tested by an
+// if/else 396 (14), nested if/else arms assigning NULL 396 (14). Bodies that compile to retail's 37 bytes are expanded:
+// through the existing tracking_get 508, with named locals for every step 508. So our link's choice follows the getter's
+// compiled size, and retail's 37-byte copy stays out of line at this site, so the difference is on the caller's side
+// (the site's weight), not in the getter. Body unchanged; still BLOCKED-BY 0x25d740's expansion.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

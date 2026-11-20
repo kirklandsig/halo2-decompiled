@@ -4107,6 +4107,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // into one, same code); `input` typed byte with the shifted local 945 (4844 bytes), typed short 934; `low /= g_48565c;
 // high /= g_48565c;` in place of the explicit reciprocal 9 (same code: the compiler forms the reciprocal, pairs unchanged).
 // On the no-shifted-local form (939, shift retail's): 0-40 dead initialised locals after `small` 939 each (aligned 15).
+// M3 lane 14 r123 (fast, control 9; all restored): no shifted input local with the alpha word through its own shifted local
+// 939; the shifted input word declared bare at the top and assigned where it is 9 (same code); the span named ahead of the
+// reciprocal 9 (same code); `maximum` declared after the distance scaling 12 (its store moves); `offset` declared after
+// `maximum` 10: mode one's join reloads then run 1.0f, zero, span (base zero, 1.0f, span), so the order of the zero and 1.0f
+// reloads follows the order of offset's and maximum's declarations; `inverse_span` declared bare between them 9 and as
+// `real inverse_span = 1.0f;` there 9 (same code each: the span never moves ahead of the constant). Diagnostic: every 1.0f
+// literal ahead of the floor of `fixed` changed to another constant 1167 (4864 B), the reloads still constant first.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
