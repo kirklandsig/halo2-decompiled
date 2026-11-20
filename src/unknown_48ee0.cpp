@@ -391,6 +391,12 @@ extern real g_4c9798[36];
 // the point's rows read from it 337 (1469 B, entry changes at +0x2); the rows written origin first 174 (same code).
 // Still BLOCKED-BY 0x48e70's link-time register summary (machine 1's file): with our build keeping the size
 // and the aspect in XMM registers across its two calls, the true second-plane form moves the parameters' registers.
+// M3 lane 1 r132 (fast with 0x48e70 MATCH; control 174): retail's clamp compares the upper bound on both paths (the
+// lower arm jumps to the comiss) and stores the size back in both of its arms, so it is two separate bounds on a size
+// held in memory; written as two ifs (no else) 258 (1484 B: the size still stays in XMM0, BLOCKED-BY 0x48e70); with the
+// border product in parentheses as well 265; the border product in parentheses alone 180 (1491 B: the multiply then
+// comes first, as retail); that with the height limit as a long (retail's dword) 243 (1481 B); the mode as one nested
+// ternary 174 (same code).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

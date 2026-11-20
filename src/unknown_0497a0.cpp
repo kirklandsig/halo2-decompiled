@@ -1409,6 +1409,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // picked by score, not kept: lead only); case 4's first.z written product first 351 (same code); case 4's three rows
 // first edge first 423 (frame 0xa0), its x and y rows only 424; case 1/2's y row first-first with case 4's z row 341.
 // Body unchanged.
+// M3 lane 1 r132 (fast with 0x42c50/0x42b20/0x43740, all matched; control 351): retail's top of frame is the V end at
+// +0xac, a dead slot at +0xa8 and the u step at +0xa4, then the packer's blue/green/scale/red homes, the V at +0x90 and the
+// colour pointer and alpha at +0x88/+0x84; ours has blue/green/V/red/V end/alpha/u step/scale/colour pointer from the top.
+// The u step as one negated ternary 608; the V end as one ternary plus V 599; the V end in its own local (`v_end`, the
+// width left as v_width) 351; the negated step in its own local 351 (same code each). Diagnostics on ribbon_pixel's locals
+// (no change to slots or code, 351 each): renamed blue/green/red/alpha, renamed out of alphabetical order, the four
+// channel longs declared after scale and pixel. The slot order follows neither names nor declaration order here.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
