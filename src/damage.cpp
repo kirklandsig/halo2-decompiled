@@ -1126,6 +1126,10 @@ PRIVATE inline long damage_object_root(long object_index)
 // value (the flags' bit 2 as 3 or 0) is still computed after the four argument pushes where retail computes it before them,
 // and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
 // MiniMax R (11-17): no new form, no lower score (206): retail's frame is 0x1b4 against this build's 0x1a4 (the objects array sits at the same address in both), retail keeps the player index in a stack slot and the data pointer in edi where this build keeps the index in edi and spills the data, and the inlined index helper lives in include/data_array.h, which is not this lane's.
+// MiniMax E (11-19): no new form, no lower score (206, baseline): the frame is still 0x1a4 against retail's 0x1b4 and
+// the first stack home is still [esp+0x1c] where retail keeps it at [esp+0x10]; the call to the object lookup that
+// another file holds as a noinline copy is still the one that costs the match (206 -> 80 needs that copy), so the
+// blocker stands.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -3383,6 +3387,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // same order or score worse), so the difference is the compiler's block layout; a permuter run over this body
 // (30 tries, 305 s) found nothing below the five.
 // MiniMax R (11-17): no new form, no lower score (5): the two cold returns still hold this build's order (the stack reload before the xmm1 copy) where retail copies xmm1 first, and the source order of the two returns does not decide it (an early return, an explicit else and a merged tail all keep the order or score worse).
+// MiniMax E (11-19): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload
+// before the xmm1 copy) where retail copies xmm1 first; four return shapes were measured (an early return for the
+// not-enemy case 16, the enemy test with an else return 5, a merged single return 24, and the outer return in an else
+// of the team test 5 with byte-identical code), so the order of the two returns does not decide the block order.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
