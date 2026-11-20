@@ -1230,6 +1230,10 @@ __forceinline long vehicle_round(real value)
 // (`real speed = dot3f(...)`) 13; the side scale named after the side cross 94 (735 B); the clamp bounds in named locals
 // read twice each 93; the eleven other combinations of those four 92-169; `up` as a const reference 4 (same code); the
 // up pointer scoped to the first-cross branch with the rate on vehicle->up.k 6.
+// M3 lane 6 r210 (fast), at 4: a redundant `result = false;` closing the failure arm 4 (same code); the side term as
+// vector3f_scale of the side by `0.0f - forward.k` then vector3f_add (side, axis) / (axis, side) 32/32; the projection's dot
+// through the header's basis_dot_xzy (forward, velocity) / (velocity, forward) 8/10; `side` declared at the function's top 4
+// (same code); the side scale named (`real down = 0.0f - forward.k;`) ahead of the side cross 78.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2334,6 +2338,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // it, the forward speed as dot3f(&linear_velocity, forward)) 17; the forward speed's i term forward-first 9 (same code);
 // overlay 1's dot as `left.k * v.k + left.j * v.j + left.i * v.i` 308; the engine-overlay tests as `0.0f < period` 9;
 // the speed-fraction helper's three tests as `0.0f < x` 9.
+// M3 lane 6 r210 (fast), at 9: the arm-3 forward speed through the header's basis_dot_xzy (forward, velocity) /
+// (velocity, forward) 11/11; the kind loop on its own for-scoped counter 13; `linear_velocity` declared first, ahead of
+// the lookups, 9; the model lookup folded into the graph's (no model local) 9; the forward speed grouped (i + j) + k,
+// (j + k) + i and (i + k) + j 9/9/9 (all four the same code: the sum is reordered whatever the source grouping).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
