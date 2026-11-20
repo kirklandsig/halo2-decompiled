@@ -2167,6 +2167,10 @@ bool function_1900a5(long index);
 // check 0x193560 (another function's body, restored at once): its rating loop through a char pointer, and its result through a
 // reference to a local (the callee then summarised as writing) 746 / 784, and each loses most of the hopper check's matched
 // callers in the reduced image, so retail's reloads around 0x1934f0 are not that callee's write summary.
+// Shared logon task index 703; queried-or-absent status selected, initialized or assigned in separate arms 703/703/703.
+// Offline cleanup first with selected or initialized status 800/800; assigned connection result 819;
+// offline cleanup first with a short-circuit task query 703.
+// NOT kept: the connection result emits the decrement but materializes a Boolean; the offline-first status forms change the first branch and raise the score.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

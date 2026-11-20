@@ -1572,6 +1572,10 @@ void function_143250(
 // transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
 // outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
 // NOT kept: the accumulations leave the frame at 0x2fc and either tie or raise the score.
+// Third-band coefficient-local cubic products of r6 times r0 or r3, or both pairs 1560/1559/1537.
+// Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
+// Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
+// NOT kept: the forms raise the score and do not recover the 0x300 frame.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

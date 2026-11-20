@@ -4613,6 +4613,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // state+0x2c, view+0x158); both projections copy the point into three locals and scale those (the first in
 // registers, the second in stack homes), and the moved point is `step * i + old.x` with j and k scaled in place.
 // None of the pieces lowers the positional count while the frame (0x38) and the entry registers differ.
+// Single scale read for world, projections or all transforms 497/518/491.
+// Selected original or scaled projection coordinates 518, with world scale read once 505.
+// World point setter 521, with world scale read once 524, or with selected projection coordinates 508.
+// NOT kept: the smallest frame is still 0x5c and shortens the body; all eight raise the score.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
