@@ -915,6 +915,11 @@ struct s_physical_block_iterator
 // the left of the second test, with both tests start-first, with the block's size first in the end sum, and pages-first with
 // size-first 40 each (same code); the head flag as `bool const`, `NONE == best.previous`, `!(best.previous != NONE)` and
 // through a named `long previous` 40 each (same code). Main's body unchanged.
+// M3 lane 16 r162 (fast with 0x13d320, MATCH each run; control 201): lane 1 r124's 40 lead re-applied (patch -o), 40 at
+// 1213 B. On it: both stages tested directly on best.previous with one `entry->previous = NONE;` ahead of the head arm's
+// first-block test 102 (first difference +0x338); the bool kept with that single store 92 (+0xcc); the allocation as
+// `if ((result = record_pool_allocate(...)) != NONE)` 40 (same code); the overlap test with its conjuncts swapped (block
+// end first) 108; as `!(offset >= end || offset + pages <= start)` 40 (same code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -769,6 +769,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Real estimate before the cast on the first or both arms, or one shared store 693/693/693.
 // All eliminate the repeated elapsed-count calculation but move the first gap earlier
 // and shorten the body to 2865 bytes. EBX still keeps the supplied direction.
+// M3 lane 16 r162 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603): the settle dot as `dot3f(&nq, d)`
+// 603 (same code); the alignment dot named once (`real alignment = dot3f(d, a);` stored and scaled) 678 (2888 B); the
+// second normalise test as `!function_30bf0(...)` 603 (same code); the settle dot written in the test with no `align`
+// local 603 (same code); the second clamp's 12/8 factor declared ahead of t2 (that clamp alone) 716 (2861 B). d keeps EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

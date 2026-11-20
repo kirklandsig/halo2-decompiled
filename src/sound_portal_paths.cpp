@@ -265,6 +265,11 @@ __forceinline long portal_path_gain(real distance, real range)
 // summary form for 0x14b240 re-measured on main's bodies: this one 370 (1353 B), the twin 372 (1346 B), 0x222150, 0x12e960
 // and 0x18ab70 still matched (0x222150 without its volatile reads), 0x18ae80 846 -> 911. BLOCKED-BY 0x14b240's write
 // summary while 0x18ae80 rises on it.
+// M3 lane 16 r162 (fast with 0x18dc90, 0x14b240, 0x249d60, 0x18ae50; main 287; each form applied to both twins, twin's count
+// in brackets): the range limit as `limit = maximum_range; if (sound) limit = sound->range;` 344 [357]; the count reset moved
+// ahead of the fill loop 322 [318]; the found arm's index store after the gain/portal/cluster/count stores 289 [296]; the fill
+// loop's order store after the distance reset 290 [296]; the seed bit set ahead of the seed stores 375 [368]. Still BLOCKED-BY
+// 0x14b240's write summary (0x18ae80's file held this round).
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -584,6 +589,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Reacquire destination after travel, geometry, or at the range gate 359/359/359;
 // reacquire start after travel or geometry 369/369; reacquire both after travel, geometry,
 // or at their consumers 405/370/366. NOT kept: all raise the score and retain the extra frame word.
+// M3 lane 16 r162 (fast with 0x18d730, 0x14b240, 0x249d60, 0x18ae50; main 295; each form applied to both twins, twin's count
+// in brackets): the range limit as `limit = maximum_range; if (environment) limit = environment->range;` 357 [344]; the count reset moved
+// ahead of the fill loop 318 [322]; the found arm's index store after the gain/portal/cluster/count stores 296 [289]; the fill
+// loop's order store after the distance reset 296 [290]; the seed bit set ahead of the seed stores 368 [375]. Still BLOCKED-BY
+// 0x14b240's write summary (0x18ae80's file held this round).
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
