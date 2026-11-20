@@ -2118,6 +2118,12 @@ void function_27dd10(void)
 // parameter by value instead of `const *const &` 399 (1745 bytes; 0x281b60 389, 0x285750 427); the interpolation's
 // scale arm through interpolate_real instead of the scale blend 2 (0x285750 17); the map-index test bound-first
 // (`index < count && index >= 0`) 16 (0x281b60 16, 0x285750 12); the root offset scale as `*=` 2 (same code). All restored.
+// M3 lane 3 r278 (compile-only build of the file, exact here, then fast with 0x281b60 and the four matched walk users):
+// function_288573 as a switch on the blend method 2 (0x288570 120, 0x289580 2); blend 1's vector arm through
+// interpolate_real per component with its scale arm as `+=` 155 (1732 B); the output pointer declared ahead of the in-place
+// flag 2 (0x288570 3, 0x289580 78); the in-place test's operands swapped, the bit test as `!= 0`, the shift as an
+// assignment and the counters pre-incremented 2 each (same code); all 35 combinations of blend 1's vector and scale arms
+// (helper, interpolate_real, `+=`) with blend 2's (`+=`, `*=`) keep the pair (30 of them move 0x288570).
 // @retail 0x27dff0
 void function_27dff0(void)
 {

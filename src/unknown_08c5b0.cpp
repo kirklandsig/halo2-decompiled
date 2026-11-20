@@ -281,6 +281,9 @@ static inline long bungienet_user_voice_setting(short kind)
 // the kind as a `short const &` to the field passed through a second const reference 32 (95 B); the index as a `long const &`
 // to the field with the kind copy through a const reference 23 (99 B); the selector's result stored through a `long &` bound
 // to the setting 32 (95 B).
+// M3 lane 3 r279 (fast with 0x8c5b0/0x8c660, both MATCH): plain reads: a top-level const request pointer 32 (95 B), the compare
+// against `(short)1` 32 (95 B), the selector taking the availability as a bool argument 43 (108 B; with the existing read 43);
+// the controller taken from the real slot array (`&g_54e8e0[index]`, then the view cast) 4 (same code).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

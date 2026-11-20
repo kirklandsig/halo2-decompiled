@@ -277,6 +277,9 @@ void function_254200(void)
 // 9 (the colour loads and stores reorder); the products written straight into the helper's 4f call 4 (same code); the
 // products stored into a scaled colour aggregate 28 (first +0xe: it takes a frame home); the colour by `color3f const &`
 // 4 (same code). The constant and y + size still reload in our order after the second and third reservations.
+// M3 lane 3 r278 (single-address fast, control 4): the vertex 4f calls through the member wrapper for vertex 3 only 4,
+// vertex 4 only 4, vertices 1 and 4 4, vertices 3 and 4 4, vertices 1 and 2 4 (all the same code; the wrapper's extra
+// inline level does not move the constant / y + size reload pair).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
