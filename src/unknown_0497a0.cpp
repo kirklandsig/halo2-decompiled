@@ -1485,6 +1485,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // then the chained x and y pairs 348 (a statement order, 3 below the control: case 0 then loads y, x and the second z into
 // retail's XMM1/XMM0/XMM2, but the half-width and the first edge's copies still rotate, XMM3/XMM6/XMM5 for retail's
 // XMM4/XMM5/XMM6); case 0's points through the existing real_point3d_set 445 (2576 B). Body unchanged.
+// M3 lane 12 r163 (H2M_FAST with 0x42c50/0x42b20/0x43740 MATCH; control 351): case 0's edges written x, y, z (first then
+// second) 355; case 0's second edge before the first 459 (2580 bytes); the u step kept positive with `u -= u_step` in
+// the loop 611 (2592 bytes); the state clamp through PIN 356; the outer vertex as `vertex[1]` at each use (no `outer`
+// pointer) 662 (2552 bytes). Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

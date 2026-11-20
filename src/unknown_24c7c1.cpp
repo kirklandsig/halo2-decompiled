@@ -876,6 +876,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 191; the count declared after `left` 191; all three 191; `left`, the tick count, `top` in that order 191 (six forms,
 // all the bool timer's code: `left` is still stored as a dword at -0x4c and no short is packed with it; the homes do not
 // follow where the shorts are declared).
+// M3 lane 12 r160 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, all MATCH; control 114): use-count forms to move
+// the spill homes: the fade time read once into a local used twice 293 (1892 bytes); the elapsed fade time named 114
+// (same code); the status player taken from `player` 535 (1861 bytes); the timer flag read through the global 114 (same
+// code); the tutorial colour as three arms each calling the unpack 215 (1890 bytes).
 // M3 lane 7 r197 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
 // 102). On the bool timer (191, 1888 B): the four flags renamed so that their names sort in each of four orders 191 each
 // (same code: the byte homes do not follow names); the three message flags declared without initialisers after the

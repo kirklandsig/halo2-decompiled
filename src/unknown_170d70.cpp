@@ -258,7 +258,7 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 
 /* advances the player's motion channels by the elapsed time, then rebuilds the forward and up
    vectors at current[10] and current[13] as an orthonormal pair when they drift */
-// score 64 (was 72): The 0x5c frame agrees. The deadline cursor and signed group ordinal spill in the opposite order, and the basis correction still differs.
+// score 64 (was 64): The 0x5c frame agrees. The deadline cursor and signed group ordinal spill in the opposite order, and the basis correction still differs.
 // Earlier (64, was 72): the current pointer is declared before the values, and the new up's j is stored as soon as it
 // is computed (the permuter found both: 70 and 66 alone). Before (72, was 81): the loop matches but for two slots
 // (the time pointer the compiler makes and
@@ -337,6 +337,13 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Plain while traversal 125, player-state reference 125, rotation group first 376, deadline advance
 // beside the target advance 158, or side-vector aggregate 125, all with the independent deadline.
 // NOT kept: the 125 forms recover the first 0x2b8 bytes but grow the correction at 1413 bytes.
+// M3 lane 12 r160 (fast; control 64): 0-7 initialised unused locals added at the top (a symbol-count phase scan,
+// diagnostic) change the tail's product operand sides (22 of 33 retail's at none, 27 at six) and the length, but no
+// phase gives retail's tail and the time/group slot swap never moves. Each form with its phase-0 score and its best
+// over the eight phases: left through the existing cross product helper 68/68; the new up through it 79/79; that helper
+// for left and its staged variant for up 120/116; the up pointer declared before forward 110 at 1395 bytes/88; a
+// read-only time cursor advanced at the loop end 125 at 1413 bytes (the loop is then exact)/91 at 1399 bytes; that with
+// the up pointer first 125/91.
 // Linear, low-order, whole polynomial, or delta cursor names 64 each. Read-only target,
 // derivative, or polynomial cursors 64 each. Shared unit-length checks 64. Separate target-copy
 // cursors 326, with independent deadline 316. Independent deadline with polynomial names
@@ -871,7 +878,7 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 129 (was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. The build still places cluster creation ahead of traversal.
+// score 129 (was 129): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. The build still places cluster creation ahead of traversal.
 // Earlier (129, was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. Cluster creation stays inline in the build.
 // The save at entry and the signed volume index still exchange EBX and EBP, and cluster creation stays before the loop.
 // Earlier score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
@@ -968,6 +975,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // indexed count clear 123 or indexed index store 129. Between-clear bind with short record subscript,
 // retained map cell, or preincremented signed count 129/129/129.
 // NOT kept: the indexed count clear gains six. It still creates the cluster before traversal.
+// M3 lane 12 r160 (fast; control 129): 0-7 initialised unused locals 129 at every count (the register tie is not a
+// symbol-count effect); the slot read again from the map for the volume's cluster store 151 (410 bytes); the entry
+// address as `pool->entries + entry_index` 129, the head cell through a short pointer 129 and `++collection->volume_count`
+// 129 (all the same code).
 // Early missing-cluster capacity guard 137, guarded miss first 159, guarded local postincrement
 // 137. Immutable reservation counts, preincrement in count publication, separate count advance,
 // immutable entry and volume addresses, or record selected by signed count 129 each.
@@ -1715,7 +1726,7 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 134 (was 205): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
+// score 134 (was 134): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
 // The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return
 // still differ.
 // Earlier comparison at 221.
@@ -1818,6 +1829,15 @@ struct s_pool_view_172840
 // Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
 // NOT kept: the 55 form grows to 870 bytes with the key scheduled late and a five-byte
 // sentinel. Keeping the reservation index for rollback removes a retail pointer reload.
+// M3 lane 12 r160 (fast; control 134): the result flag renamed to sort first or last (five names) 134 each. Re-measured:
+// independent failure tests 152, the long ternary selection 86, both 55 (870 bytes; every home and the flag tail then
+// agree, only the publication block's schedule differs). On the 55 form, all 60 orders of the selection and the next,
+// key, cluster and portal stores (selection first among the cluster store's inputs): best 17 at 868 bytes (key, next,
+// portal, cluster), retail's store order 55; the field order of the matched 0x172bb0 (key, next, 06, 0a, 28, cluster)
+// with the selection at each position, best 19. On the 17 form: the bit-set copy without its pointer local 109, the
+// pointer taken from memcpy's return value 17 (same code), the storage-used sum count-first or with casts 17; the
+// permuter (600 s from the 17 form) found nothing lower. Left on 17: the key/next load order, the copy's esi/edi setup
+// order and the data/count scratch pair in the storage-used sum. Nothing kept (width and store order match-only).
 // With independent failure stores and signed publication, dequeued-entry, selected-cluster,
 // projection, or both traversal references 55 each. Implicit cluster narrowing 55. Direct widened
 // ring subscript 226, retained portal count 230, shared portal bit tests or tests and set 55 each.

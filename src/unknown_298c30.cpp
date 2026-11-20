@@ -1522,6 +1522,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Also on the lead: the rotation helper returning its output pointer, passed straight to the offset call 108 (same
 // code); float rows without casts 183; the components read into locals first 116 (re-measure); the helper's
 // parameters renamed four ways 108 each (same code: operand order does not follow names).
+// M3 lane 12 r163 (H2M_FAST with 0x29a190 MATCH; control 569): the facing dot through dot_product2d 617 (3329 B, either
+// argument order); the angle dot through it 569 (same code, either order); both 718 (3332 B); the obstacle difference
+// normalised through normalize2d_fast (its result unused there) in place of the file's 0x298df3 copy 569 (same code);
+// the two side lengths through distance3d with the arguments reversed (same a - b deltas) 587, with the normaliser too
+// 587. Body unchanged.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
