@@ -3688,6 +3688,11 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// MiniMax A (11-19): no new form, no lower score (8): the pool reload stays ahead of the loop end's `cmp ebx, -1`, where
+// retail loads it after the next-index increment; the latch reading the pool through the global, the entry pool read
+// through a local, the next index computed in a comma element ahead of the reload and the pool read through the
+// global at both calls all keep the same 8, and every other instruction is retail's. Reusing the index variable
+// for the next slot spills it and measures 185, so the body is unchanged.
 // MiniMax C (11-19): no new form, no lower score (8): the pool reload is still placed right after the body's last call; retail loads the pool after the next-index ternary, and every other instruction is retail's.
 // MiniMax D (11-19): no new form, no lower score (8): the pool reload stays ahead of the next-slot selection in every form tried this round (the reload inside the search call's argument, the seed computed as its own statement ahead of the reload, and both pool uses reading through the global), so the reload is still six bytes ahead of retail's and the branch into the loop advance still differs at +0x6b.
 // score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
