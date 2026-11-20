@@ -625,19 +625,6 @@ static __forceinline real random_real_range_28580(real lower, real upper)
     return lower + (upper - lower) * random;
 }
 
-static __forceinline real normalize2d_inline_28580(point2f *v)
-{
-	real m = (real)sqrt(v->x * v->x + v->y * v->y);
-	if (!(fabs(m) < k_real_epsilon))
-	{
-		real inv = 1.f / m;
-		v->x = v->x * inv;
-		v->y = inv * v->y;
-		return m;
-	}
-	return 0.f;
-}
-
 long g_4b9a00;
 s_28580_view g_4b9a04[5];
 
@@ -645,7 +632,7 @@ s_28580_view g_4b9a04[5];
 // g_4b9a04[view_index].field (no state pointer), the random fractions are float with the exponent 1.0f - turn, the
 // seed steps through an inline helper taking &g_4e7408->seed (retail reloads the seed after the pow call), the sign
 // test is (seed & 0x80000000) > 0, the blend works through a point2f pointer with x/y read before keep = 1.0f -
-// blend, and the first normalize is an inlined copy while the second stays a call to 0x2b400 as in retail. Left:
+// blend, and the first normalize is written in place while the second stays a call to 0x2b400 as in retail. Left:
 // the x row's load order, the == 0 compare after the inlined normalize, the speed lerp's folded load, the order of
 // the target rows and of the out rows' products.
 // @retail 0x28580
@@ -670,7 +657,16 @@ void function_28580(long tag, real time, vector3f *out)
         real blend = definition->blend;
         direction->x = target->x * blend + x;
         direction->y = target->y * blend + y;
-        if (normalize2d_inline_28580(direction) == 0.0f)
+        real magnitude = (real)sqrt(direction->x * direction->x +
+            direction->y * direction->y);
+        if (!(fabs(magnitude) < k_real_epsilon))
+        {
+            real inverse = 1.0f / magnitude;
+            direction->x *= inverse;
+            direction->y *= inverse;
+        }
+        else magnitude = 0.0f;
+        if (magnitude == 0.0f)
         {
             direction->x = 1.0f;
             direction->y = 0.0f;
