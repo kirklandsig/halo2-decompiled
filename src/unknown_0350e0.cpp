@@ -1989,10 +1989,13 @@ bool __stdcall function_34100(long mode, real const *rectangle, real const *coor
    (direction x up) x direction */
 PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vector3f *perpendicular)
 {
+    real up_i = g_4b9e4c.i;
+    real up_j = g_4b9e4c.j;
+    real up_k = g_4b9e4c.k;
     vector3f cross;
-    cross.i = direction->j * g_4b9e4c.k - direction->k * g_4b9e4c.j;
-    cross.j = direction->k * g_4b9e4c.i - direction->i * g_4b9e4c.k;
-    cross.k = direction->i * g_4b9e4c.j - direction->j * g_4b9e4c.i;
+    cross.i = direction->j * up_k - direction->k * up_j;
+    cross.j = direction->k * up_i - direction->i * up_k;
+    cross.k = direction->i * up_j - direction->j * up_i;
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
     perpendicular->j = direction->i * cross.k - direction->k * cross.i;
     perpendicular->i = direction->k * cross.j - direction->j * cross.k;
@@ -2009,7 +2012,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // the cross components in k, j, i order (206), the perpendicular in k, i, j order (185), the reference copy before
 // the helper call (144), the first or second y term swapped as well (181, 172) and the up component first in the
 // cross products (142, the same score and the same code).
-// score 142 (was 177): retail's length, frame 0x18 and result slot; the XMM register choices and case 3's late position offsets still differ (forms below).
+// score 140 (was 142): retail's length, frame 0x18 and result slot; the perpendicular's XMM register choices and case 3's late position offsets still differ. Earlier 142 (was 177).
 // MiniMax B (11-19): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18 and the result still shares the scale argument's home instead of the slot at +8, the reference vector still starts at +8 where retail's starts at +0xc, and the four cases still differ in their float schedule; an else that writes the zero result, a literal zero in the early returns, a declared copy of the result, an angle local, a scaled local and the declaration orders all give byte-identical code, and the 177 form needs the XMM7 clobber that raises the caller 0x2e9e0 from 492 to 572.
 // MiniMax D (11-14): no new form, no lower score (193): retail's four cases still compute their cross products with
 // their own temporaries - its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before
