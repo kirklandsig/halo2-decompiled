@@ -632,6 +632,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // the loop counting the running index from first (`index - first < count`, entry `&entries[index - first]`) 8 (first still
 // in mode's home, the counter's zero store moves below the guard); material declared without a value ahead of first and
 // assigned NONE in the loop 2 (same code).
+// M3 lane 14 r130 (fast with 0x404b0/0x3fdf0; control 2): `first` renamed to sort first or last 2/2; `material` renamed
+// to sort first or last 2/2; the entry loop as `while (n < count) { ...; ++n; }` 2 (all the same code); as a guarded
+// `do ... while (++n < count)` 159 (492 B). Diagnostic: 0, 1, 2, 3, 4, 6, 8, 10 dead initialised longs at the top 2 each
+// (round 119 measured odd 9..39), so first's slot is no symbol-count tie at any parity.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

@@ -216,6 +216,11 @@ union s_6ec80
 // (!local_2 || !players) local_1 = false; else { ... }`) 225, the two ids preset by one chained `= NONE` 225 (unscoped 7), the
 // two block addresses assigned players first 225 (974 B), the guard testing players first 225; the mask declared and zeroed
 // at the function top 272 (985 B). All restored.
+// M3 lane 14 r130 (fast with 0x6ec10, 0x5b120, 0x5b060, 0x5b0d0; base 5; the mask zeroed in the guard 225), all with the
+// mask zeroed in the guard: the 0x49c8 getter (0x5b060) as one conditional return 229, as `if (live) return value;
+// return NONE;` 229, as an if/else on its result 194 (entry registers retail's, block pointers EBX/EDI swapped from
+// +0x101), each of the three also unmatching the getter (27 B against 26); the bit or-ed as a full assignment 225; one
+// readiness test after the guard repeating the pointer tests (match-only) 226.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
