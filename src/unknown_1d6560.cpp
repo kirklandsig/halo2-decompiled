@@ -627,6 +627,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // component 25 [13]; the same with case 0 through havok_object_get(component->object_index) 25 [13] (same code); with
 // case 0 through havok_object_get(object_index) 72 [2] (the component arrives in EDX); the first and third with a long
 // type 86 [13] / 92 [160 at 711 B]. Header-first still moves the incoming component/index pair. Body unchanged.
+// M3 lane 5 r219 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]): round 60's one-read form with case 0 through the
+// existing word-bitfield view's bit2 rebuilt 24 at 256 B [0]. On it: the rigid-body index bound by `long &` 97 (260 B) [172]
+// and the component bound by `s_havok_component *const &` 98 (260 B) [160] (each parameter is then address-taken and moves
+// to the stack); the model bound by `s_physics_model *const &` 24 [0] and the rigid body re-bound by a const reference
+// for the flag tests 24 [0] (both the same code); the rigid body as the array pointer with `+= rigid_body_index` after the
+// type read 111 (268 B) [9], right after its definition 24 [0], and as `rigid_body_index + rigid_bodies` 24 [0] (same code).
+// None splits the index from the rigid body (retail copies the index ECX to ESI and gives the object index ECX). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

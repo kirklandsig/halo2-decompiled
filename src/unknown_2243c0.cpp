@@ -837,6 +837,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // With grouped cache defaults those three give 161/153/120. Native pass array with unshifted
 // base or material field address 164/152. NOT kept: ties or regressions. The fallback still
 // zero-extends into EAX instead of masking EDX and the stage/pass loads still fuse.
+// M3 lane 5 r219 (H2M_FAST with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH each run; main 117): lane 1 r59's reference
+// chain rebuilt on this main 8 at +0x9e (the same eight lines). Permuter on the chain (--fast --anneal --jobs 1, 600 s,
+// the full check here took 4 minutes): 50 tries, best 8. On the chain, each the same code (8): the three pointer zeros
+// as one chained assignment; the pass definition bound as `byte const *const &` with local_10 formed from it; the pass
+// tag bound as `long const &` to the element's field; the pass tag masked at its definition; one to seven unused
+// initialised locals at the top (flat: the last two lookups' registers are not a symbol-count phase). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

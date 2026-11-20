@@ -946,6 +946,13 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // test. bool success passed as the request's urgent argument with `!success` as the other 1398 (2473 B). The cause
 // sits inside the shared inline request (src/unknown_1dacb0.cpp, held by another lane this round, and used by the
 // contributor's matched 0x1dc8c0).
+// M3 lane 5 r219 (H2M_FAST with 0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1cccd0/0x1dc8c0/0x1cd070, all MATCH each run;
+// control 348): the request's names from an aggregate copy of the found record 504 (1766 B, first difference +0x2); the
+// request given its own graph pointer local 348 (same code: the copy folds into the graph); `byte success` declared
+// ahead of the graph 348 (same code); bool success with that graph pointer 478 (as bool alone); the graph bound as
+// `s_graph_tag *const &` to the getter's result 348 (same code). The residual is the expansion of the request helper
+// (the inheritance index's zero and the graph's register), in another lane's held file this round: BLOCKED-BY 0x1ddd00.
+// Body unchanged.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
