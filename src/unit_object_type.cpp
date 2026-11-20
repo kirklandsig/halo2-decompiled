@@ -8591,9 +8591,10 @@ static void unit_vector_to_frame(vector3f *out, transform4x3f const *frame, vect
 
 static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, vector3f const *v)
 {
-	out->i = frame->up.i * v->k + frame->left.i * v->j + frame->forward.i * v->i;
-	out->j = frame->up.j * v->k + frame->left.j * v->j + frame->forward.j * v->i;
-	out->k = frame->up.k * v->k + frame->left.k * v->j + frame->forward.k * v->i;
+	real i=v->i, j=v->j, k=v->k;
+	out->i = frame->up.i * k + frame->left.i * j + frame->forward.i * i;
+	out->j = frame->up.j * k + frame->left.j * j + frame->forward.j * i;
+	out->k = frame->up.k * k + frame->left.k * j + frame->forward.k * i;
 }
 
 real function_50650(real cosine);
@@ -8791,6 +8792,7 @@ real function_50650(real cosine);
 // calls to 0xc7750 still pass position, velocity and time on the stack where retail keeps them in XMM5, XMM4 and
 // XMM3; giving 0xc7750 retail's own convention (28 at 227 bytes) makes LTCG inline it into this function and the
 // score goes to 995, so the two functions cannot both improve: BLOCKED-BY 0xc7750's convention.
+// MiniMax I (11-20): 491 (was 560): the velocity copy is gone - the speed comes from the pointer's own components and the axis is sampled from it inside the branch - which drops a frame slot and 30 bytes (2453 against retail's 2483); what is left is the frame at 0x8c against retail's 0x80 and the two 0xc7750 calls, which still pass position, velocity and time on the stack where retail keeps them in XMM5, XMM4 and XMM3: BLOCKED-BY 0xc7750's convention.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
@@ -8867,13 +8869,12 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 			function_30bf0(&target);
 		}
 	}
-	vector3f angular_velocity = *velocity;
-	real speed = (real)sqrt(angular_velocity.i * angular_velocity.i + angular_velocity.k * angular_velocity.k + angular_velocity.j * angular_velocity.j);
+	real speed = (real)sqrt(velocity->i * velocity->i + velocity->k * velocity->k + velocity->j * velocity->j);
 	if (!(0.0001f > (real)fabs(speed)) && speed != 0.0f)
 	{
 		real inverse_rate = 1.0f / rate;
 		real inverse = 1.0f / speed;
-		vector3f axis = angular_velocity;
+		vector3f axis = *velocity;
 		vector3f predicted;
 		real angle = speed * rate;
 		real sine = (real)sin(angle);
