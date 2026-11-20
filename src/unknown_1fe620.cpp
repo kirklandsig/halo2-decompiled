@@ -343,6 +343,18 @@ static __forceinline long real_to_long(real value);
 // (+0x10, the +0x14 range, +0x1c, +0xc, +0x38 named for its two uses) 437 (1864 B, 352/255/84); the negated limits
 // written in the draw calls in place of their one-use locals 389. The head still needs the seed forwarded through
 // the draws (retail's single store), which only the match-only composite gives.
+// M3 lane 14 r126 (fast with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373, aligned [exact,
+// stack masked, registers masked] 324/255/112; body unchanged): the prop flag as `!(count >= 1 && state != 0)` 373 (same
+// code); the held test as `!= false` on both bytes 373 (same code); the third draw through slot_random_range 378; all
+// three range draws through slot_random_range 391 (first difference +0x4); the prop block testing the state word before
+// the +0x1c limit 373 (other code, 328/259/116); the held byte read into a bool with 0x70e cleared before 0x70d is set
+// 465 (1865 B). Re-measured in this tree: lane 8 r110's form (the third draw's bounds as one early bounds copy, the three
+// draws through the state local with function_259d0, the lower bounds as call arguments) 334 at 1856 B, first difference
+// +0x1ab, 231/152/54: retail's head, frame 0x48, the third input in ESI and the single seed store; still not kept, since
+// the copy's two members are read once each (two one-use locals in one) and exists only to read them ahead of the draws.
+// Reading for the next round: retail expands 0x210850 only at this call, and this build expands a plain function from
+// another file only when that file allows it (lane 9 r138: without /Ob1 on its file it is expanded here and in 25 matched
+// callers), so the match stays BLOCKED-BY 0x210850.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

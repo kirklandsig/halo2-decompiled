@@ -5964,6 +5964,44 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // and explicit speed branches, alone and together, 749 each. All three with an
 // entry definition for kind, spin and engine 1027. The entry definition collapses
 // the later tag lookups. Zero, unity and the flags/vector register homes still differ.
+// M3 lane 14 r126 (fast with 0xf78b0, 0xf78e0, 0xf8070 and 0x24590, all MATCH in every trial; body unchanged at 749; counts
+// in brackets are sequence-aligned [exact, registers masked], this body [347, 129]). LEAD, HELD (match-only; it needs two
+// build rulings and the owner's OK for 0xf78b0 and 0xf8070, which are contributor code): build/r126/held-f6d10.patch,
+// 389 at retail's 2974 bytes [26, 16], first difference +0x4a (retail's prologue, zero in XMM2, result in XMM1, the nine
+// 0xf78e0 calls, the 14 0xf78b0 call tails and the re-zeroing are all retail's). What it is made of, each step measured:
+// lane 7 r163's form rebuilt (0xf78e0 `inline`, called at all 24 limit sites, the entry definition, cases in string-index
+// order 0x00e, 0x00f, 0x01a, 0x01b, 0x713, then 0x57a upward) 736 (3011 B) [150, 81]; `inline` on 0xf8070 too 736 (same
+// code); `inline` on magnitude3d's definition too 623 (2954 B) [112, 43]. Diagnostic (the one compiler-setting trial):
+// this file built without /Ob1, with 0xf78e0 a plain function, 576 (2981 B) [88, 29]: the compiler then expands 0xf78e0 at
+// retail's 15 sites by itself, leaves retail's nine calls, and still knows which registers the call keeps (an `inline`
+// 0xf78e0 is expanded too, but every remaining call then counts as clobbering all of them, so zero is remade after each
+// and values are spilled across it: `inline` is what hides a callee's registers, and it is what retail shows for
+// 0x24590 and 0xf8070, which it never expands here). On that setting: `inline` on 0xf8070 536 (2990 B) [102, 28]; an
+// explicit `else result = 0.0f` in 0x4000580, 0x800061e, 0xe000583 and 0xf000584 (retail routes all four through one
+// `movaps xmm1, xmm2` block; the result then no longer lives across 0xf5d70 and 0xe6fe0, which is why retail's result has
+// XMM1 and its zero XMM2) 437 (2975 B) [46, 29]; 0xe00057c as `function_f78b0((real)fabs(reverse ternary),
+// function_f78e0(vehicle_index, 1))` (retail expands 0xf78b0 once, there) 443 (2982 B) [71, 54]; 0xf78b0 with a plain body
+// (`result = value / maximum`, no pointer to its parameter) 418 at 2974 B [47, 30], 0xf78b0 still MATCH and its expanded
+// copy retail's x87 code; the three dots and the lateral cross through dot3f and cross3f 411 [38, 20] (vehicle_cross the
+// same code, cross3f_staged 413, the 32 helper-or-direct combinations of the five sites 389 to 395); the blend clamped in
+// place (`blend = PIN(blend, 0.0f, 1.0f)` as its own statement, retail's in-place form) 514 [25, 15]; the 0xc0005a5 test
+// as `0.0f >= vehicle->unknown25c` 389 [26, 16]. Left on it: in the 0xb000597 else arm retail has the flags address and
+// then the reloaded index in EBX and the velocity in EBP (this build the other way round, with that dot's i term loaded
+// from the velocity first), 0xe000583's test materialized (`setne cl; test cl, cl`), and three x87 product sides
+// (0x10000585's i term, two rows of the cross). Tried on the lead for those: 0xe000583 as a bit-field pair 432 (2995 B),
+// as `(flags & 4) || (flags & 8)` 118 at 2976 B [21, 11] (the else arm then keeps its own zero store; the count falls
+// because the tails line up, not because the test is retail's), a named bool 391, an inline helper 389, a plain static
+// helper 389, a two-bit field view 389, a helper taking the index 720, a dword bit-test helper called twice 432; one
+// named flags pointer for both 0xf8070 calls 391; the two selections as if/else 389, as defaults then overrides 399;
+// the dot's arguments swapped 389 (same code); `forced = true` at the top of the case 648 (2982 B: forced becomes a stack
+// byte, and the velocity then takes EBP as retail's), after the arms 512 [26, 16]; the velocity declared at function
+// scope, before or after forced and result, or speed declared first 389 each (same code); 1 to 8 unused locals 389 each
+// (not a numbering state). Diagnostics: a third use of the flags address 588 and three more index uses 551 leave the
+// roles as they are, so it is not a use-count tie. Under the file's real flags (what could be kept without a ruling;
+// none is): the explicit zero arms 777 (2952 B); the in-place blend clamp 749 (same code); the helper dots and cross 749
+// [354, 131] (other product sides); the zero arms with the clamp 774, with the plain 0xf78b0 and helpers 774, with the
+// `>=` test 784; 0xe00057c through 0xf78b0 805 (2922 B); the plain 0xf78b0 body alone 749 here with 0xf78b0 MATCH (not
+// applied: contributor code).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

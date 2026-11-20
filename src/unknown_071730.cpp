@@ -398,6 +398,13 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Use the actual owner and progress record layouts together 376.
 // Use the roster, owner, progress, hopper and state record forms together 376.
 // NOT kept: All eight record forms tie at 376 and 1,589 bytes. The reduced preview agrees with the full score and extent and reports six unresolved global references. The secondary state stays in ESI and the data getter still expands.
+// M3 lane 14 r125 (fast with 0x706f0, 0x5b080 and 0x75890, all MATCH; control 376, aligned 190): round 119's lead tried,
+// `inline` on 0x75890's own definition (its /Ob1 file) with both elapsed times written as calls to it: it expands here as
+// retail (start field loaded ahead of the clock) 413 (1589 B, aligned 181); with the property-value clear ahead of the
+// player-count test as well 376 (aligned 184), the clear ahead of the first elapsed time instead 376 (aligned 202); only the
+// first elapsed time through it 376 (aligned 190, the base's code), only the second 376 (aligned 185). 0x5b080 stays
+// expanded in every form, so the secondary state keeps ESI and the zero register stays EAX (retail ECX, re-zeroed after
+// the clock for the two missing-input compares). Both files restored; still BLOCKED-BY 0x5b080's inline calibration.
 // M3 lane 12 r154 (fast with 0x72140/0x71ff0/0x71e00/0x5b080/0x706f0, all MATCH each time; control 376, aligned 331 equal):
 // the second session as a `const &` to the owner's field 473 (1616 B); the data getter's result and the surface lookup's
 // result each bound by `const &` 376/376 (same code); a second session local re-read from the owner for the data getter's
