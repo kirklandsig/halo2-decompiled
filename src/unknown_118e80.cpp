@@ -510,6 +510,15 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // 25 (same code). Diagnostic: with NULLs in place of the forward and up in the dispatch call the tail's copies interleave as
 // retail's (79), so their escape into that call is what stops ours hoisting the loads; the dispatch's address parameters typed
 // as const point/vector pointers 25, with the type callback called through that type too 25 (same code each).
+// M3 lane 11 r134 (fast with 0x1faf80, 0xe01d0, 0x118700, 0x11f0d0, 0x11d180, 0x11ce20 and 0xbba20; control 25; body
+// unchanged). 0x1faf80 declared (object_index, facing, settings, control, threshold, turn), the definition, both declarations
+// and both calls together (both retail callers evaluate the facing pointer after the settings: here and in 0xe01d0), re-measured:
+// 12 here, 0x1faf80 2 (its `forward.i * facing->i` product loads facing first), 0xe01d0 537 -> 569. On that order, in
+// 0x1faf80: the agreement through a file-local k-j-i dot helper with the forward pointer first or second 4/4; a `vector3f
+// const *` to the object's forward declared ahead of the test for its three products 203; facing read through a `vector3f
+// const *` cast in the i product 2; the object through object_header_get(...)->object 2; the agreement sum parenthesized
+// as (k + j) + i, with the i product in parentheses, or both, 4/4/6 (the parentheses move one of the left cross products
+// instead; the i product still loads facing first). Still BLOCKED-BY 0x1faf80.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

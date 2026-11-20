@@ -370,6 +370,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
 // count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
 // 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
+// M3 lane 11 r134 (fast with 0x24a64d, 0x24a763, 0x24a52b, 0x24a7bf and 0x24a09b, all MATCH; control 67): the suffix
+// declared at function scope 66 (195 B); `long count = 0;` 83 (192 B); the loop index as `short` 46 (202 B, aligned 20:
+// i then stays in EBX and the found entry and plain arm are formed again from it as retail, but every use of i gains a
+// `movsx`, which retail never has, so retail's index is 32-bit; diagnostic only); the entries pointer `const` 67 (same
+// code); `buffer` named ahead of the suffix conversion 76 (196 B).
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

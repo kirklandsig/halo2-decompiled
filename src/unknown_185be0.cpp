@@ -132,7 +132,8 @@ union s_185be7
 };
 
 // MiniMax H (11-20): no new form, no lower score (396): the two angle conversions take swapped XMM registers, retail's unit-record copy sits between the products and the two stores, and the body is 21 bytes shorter.
-// score 396 (was 396): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
+// score 838 (was 838): Frame 0xe0 and the head agree; with 0x24590 expanded inline (main since 11-20) the record copy, the
+// stick-scale branch layout and the field_93 latch shift the body, and register ties remain (see r134 below).
 // M3 lane 3 r268 (fast): the input-record copy ahead of the two angle conversions 395 (the copy then precedes the angle
 // stores as retail, registers unchanged); that copy first with the second angle converted first 393 (the pair then takes
 // retail's XMM7/XMM0 and only the conversion constant stays in XMM2 where retail has XMM1, which retail frees because it
@@ -725,6 +726,21 @@ union s_185be7
 // On main's state (no `inline`): the else-arm order 394; the pool reference 394; both 392; with the latch form 386; with the
 // record copy first too 385; with the else-arm default, weapon helper and long mask local as well 547. Not kept: the
 // statement orders and the reference are match-only forms and the latch form alone is 390. Still BLOCKED-BY 0x24590.
+// M3 lane 11 r134 (fast with 0x24590, 0xc8880, 0x185ab0, 0x185b00, 0x185b30, 0x187b30, 0x1a4900 and 0x186ab0, all MATCH;
+// plain where noted; body unchanged at 838, aligned 103): r133's lead rebuilt on today's main (0x24590 now inline) 53 fast,
+// 55 plain (the full image adds one tie: after the pow call retail loads 1.0 into XMM4 before zeroing XMM6, ours the other
+// way). On that lead: the parent object's havok index read through object_get 53, through object_header_get(...)->object
+// 53, the parent read through object_get as well 53 (same code each); havok_component_get in place of the pool reference
+// with object_get 55; 1..7 dead initialised locals at the top 53/55/55/55/55/55/53 (diagnostic: only the post-pow pair
+// moves), 1..4 before the quotient 53, 1..3 before the havok index 53 (no symbol-count tie); the two angle products
+// clamped where they are formed (`PIN(local_15.i * local_18, ...)`) 64; the second hold-time add ahead of its scale 59.
+// On main's body: unit_get_current_weapon alone 840 (3774 B, aligned 88); a long field_c mask local 837, as a word 836
+// (aligned 100/101). On the lead: the 0.64 sum's two squares parenthesized, either order, 53/53, the second hold-time add
+// as `field_7c = (field_7c + arg_2)` 53 (same code each). Left on the lead: the second hold-time add's operand order, the quotient/1.0 pair in XMM4/XMM3 for
+// retail's XMM3/XMM4, one scratch step at the parent lookup (retail EDX, ours ECX, through the pool load and both vector
+// copies), the word mask's zero-extension register (EDX, ours EAX) and store order, and the 0.64 sum's square order.
+// Lead saved as build/r134/lead-0x185be0.patch (match-only forms: record copy first, else-arm default, swapped else
+// assignments, the pool reference, the latch spelling).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

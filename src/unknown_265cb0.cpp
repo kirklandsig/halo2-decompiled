@@ -958,6 +958,10 @@ real function_30bf0(vector3f *vector);
 // M3 lane 13 r126 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84): the clip amount, the squared
 // distance, the delta or the seat count declared at the top of the function (or of the facing block for the count) 84
 // each (same code: scope does not move these homes); the settings lookup ahead of the actor pointer 310 (1308 B).
+// M3 lane 11 r134 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84, aligned 57, frame-blind 20):
+// the two `if (facing)` tests merged (the else arm filling the facing pair, both outputs copied after) 199 (1331 B); the
+// clipped point through the existing vector3f_add_scaled 90 (aligned 69); distance_squared `real const` 84 (same code);
+// the plane distance through dot3f 138 (1308 B, aligned 73); the delta through vector3d_from_points3d 142 (1308 B, aligned 79).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

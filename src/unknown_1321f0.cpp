@@ -704,6 +704,11 @@ struct s_visibility_object_header
 // entry lookup 233 (behind then takes the object index's freed slot, in_front still the frame byte), without the else
 // arm's two flag loops 279 (both in the frame): behind wins every freed parameter slot, so no other part of the body
 // changes the pair's precedence.
+// M3 lane 11 r135 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): both outputs declared
+// `register` 4, in_front alone so 4; the packer's result kept as a `short` used by the add 4; the centre and radius
+// declared ahead of the filter 4 (all four the same code); the outer test with the global stamp on the left 200.
+// Permuter (600 s, 48 tries, annealing): best 2 only by passing behind first and in_front last to the packer (the two
+// bits exchanged: wrong values, not kept), which again shows the slot going to whichever output is read first.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

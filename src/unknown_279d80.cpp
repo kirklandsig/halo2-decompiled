@@ -2124,6 +2124,12 @@ void function_27dd10(void)
 // flag 2 (0x288570 3, 0x289580 78); the in-place test's operands swapped, the bit test as `!= 0`, the shift as an
 // assignment and the counters pre-incremented 2 each (same code); all 35 combinations of blend 1's vector and scale arms
 // (helper, interpolate_real, `+=`) with blend 2's (`+=`, `*=`) keep the pair (30 of them move 0x288570).
+// M3 lane 11 r136 (fast with 0x281b60 and the four matched walk users, all unchanged): function_288573 ending in `else
+// { __assume(0); }` 2 (the method is a constant, so it folds); function_288571/2/3 `static` 2; the bit test as
+// `(local_2 & 1) != 0` 2; function_288573's parameters const 2; the empty group ending in `continue;` with the other
+// arm unnested 2 (same code each). Diagnostics (fast): `__assume(local_2 >= 0)` after the flags read 348 (1733 bytes,
+// every walk user regresses: the node tests no longer fold); with node_flags_test returning its expression 2 (0x281b60
+// 39, 0x288570 120, 0x289580 2), so a run-time assume flips the pair only together with the unfolded tests. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

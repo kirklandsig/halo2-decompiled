@@ -1440,6 +1440,10 @@ bool c_projectile_type::v8(long a, long b)
 // `0xffffu` 12 (the same swap as the mask); `(long)(unsigned short)index` 5 (movzx); with the word read, the object's
 // power through a `real const &` 5, the 0x400 test and compare as nested ifs 5, a `long` flags local 5 (all the same
 // code as the word-read body). All restored.
+// M3 lane 11 r134 (fast with 0xa5e70, 0xa02e0 and 0xa0be0, matched each time; word read 5, mask control 12), all with the
+// full-width mask: the 0x400 arm's bit set as `result |= flags & 0x400` 46; the entry as `&data[(index & 0xffff) * 12]` 12;
+// a `real *` to the state's 0x90 field for the 0x400 test and store 12; the NONE test written `NONE != index` 12; the
+// flags local typed `word` (`(word)b`) 12. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

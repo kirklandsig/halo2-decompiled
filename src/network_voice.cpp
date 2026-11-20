@@ -4364,6 +4364,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // as an else-if; the member typed short 159 (492 B); members typed dword 179 (469 B). Probes (not forms): without the
 // member's NONE test the member still takes EBP (159); with either shift taking a second 0x54a20 call instead of the
 // member (so the member does not live across the talker calls) the channel takes EBP from entry (69 / 121).
+// M3 lane 11 r136 (fast with 0x564c0, matched each time; control 139): the route block taken out of the relay arm and
+// run after both arms on a `word members = 0;` set at the loop top 154 (488 B; frame 0x14, the data pointer in ESI),
+// on the packet-cursor form (re-measured 167, 478 B) 162 (476 B); the member chosen by `relay ? 0x54a20 : NONE` after the
+// size test 139 (same code: the two relay tests merge), on the cursor form 167 (same code); the kind byte read once into a
+// local used by both arms' tests and the two 0x56df0 calls 150 (480 B). Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
