@@ -1304,8 +1304,7 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
-// score 18 (was 43): The four-byte frame and the 212-byte extent agree. The player and the hand now hold retail's
-// registers, but the player address is folded into one LEA, the unit index is read twice, and the policy byte keeps DL.
+// score 43 (was 43): The four-byte frame and 210-byte extent agree. Player and hand occupy the opposite saved registers.
 // Earlier score 43 (was 43): The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
 // Frame and extent agree. The player, hand and first unit handle use different registers.
 // Previously noted: The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
@@ -1648,8 +1647,9 @@ void function_150820(dword *bits, bool local_only)
 // directions (here retail gives the entry-level player ESI and the hand EDI; in 0x151b80 it gives the entry-level
 // unit index EDI and the slot ESI), so no single rule of "first value takes ESI" or of reference counts with one
 // weight for nested blocks fits both; the unit index's scratch register (EDX in retail, ECX in ours) moves with it.
-// MiniMax G (11-20): score 18 (was 43): the unit index at the object lookup and at the 0xcd7b0 argument is read again
-// through the player getter, which gives the player ESI and the hand EDI. What is left is the player address folded
+// MiniMax G (11-20), NOT kept at review: reading the unit index again through the player getter at the object lookup
+// and at the 0xcd7b0 argument scores 18 (was 43) and gives the player ESI and the hand EDI, but it rereads a value the
+// player local already holds (kept only with a byte match), so the code is main's. What is left is the player address folded
 // into one LEA instead of retail's add and move, the unit index read a second time, and the policy byte in DL.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
@@ -1659,13 +1659,13 @@ bool function_151aa0(long player_index, bool primary)
 	if (player->unit_index != NONE)
 	{
 		long hand = !primary;
-		s_player_pickup_unit *unit = (s_player_pickup_unit *)tail_object_get(g_4e0300, tail_player_get(player_index)->unit_index);
+		s_player_pickup_unit *unit = (s_player_pickup_unit *)tail_object_get(g_4e0300, player->unit_index);
 		short slot = unit->held_slots[hand];
 		if (slot != NONE)
 		{
 			long weapon_index = unit->weapons[slot];
 			bool modes[4];
-			if (weapon_index != NONE && function_cd7b0(tail_player_get(player_index)->unit_index, weapon_index, modes) && modes[hand])
+			if (weapon_index != NONE && function_cd7b0(player->unit_index, weapon_index, modes) && modes[hand])
 			{
 				if (g_4e6948->mode == 4)
 				{
