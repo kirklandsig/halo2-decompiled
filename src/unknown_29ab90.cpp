@@ -568,6 +568,9 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // differ, the third normalize's in-place scaling among them). None kept: a one-use local ahead of a call, and the
 // count rises. Sites 1 and 3 are both 0x2b400's shape in retail (scaling in place in the vector's own home), so the
 // function stays BLOCKED-BY 0x2b400 (machine 1's file this round).
+// Typed actor reset and target, direction and request flag, and turn status, alone and combined,
+// scored 286 each. Typed actor fields with scalar and vector views of the history buffer also scored 286.
+// The object/settings spills still differ with the 0x64 frame in place.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

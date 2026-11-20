@@ -439,6 +439,10 @@ const dword g_455978[81] = {
 // NONE) { result = true; break; }` 485 (2076 B); a redundant `if (0 < count)` around the direction loop 373 (2011 B:
 // 0x11bed0 is then called out of line as in retail, but the entry's EBX/EDI swap and the homes stay), which confirms the
 // expansion follows the loop site's estimated frequency; no natural no-code test was found that lowers it.
+// Bounds through the existing component reader 268, with one cached endpoint coordinate 341.
+// Clipped bounds before stores 480, each clipped edge per axis 491, and separate lower and upper passes 491.
+// Conditional edge values 481, clipped point pair into setters 478, and setters before conditional stores 486.
+// The optional-state homes and the selective location and release expansions still differ.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

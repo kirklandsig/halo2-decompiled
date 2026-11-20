@@ -4244,8 +4244,8 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// score 295 (was 295; r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
-// score 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// score 295 (was 295): Frame and length agree. Rejection branches still lead to separate exits,
+// and acknowledgement is laid out early. Rounds 275 and 234 kept the round 208 score.
 // MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
 // Earlier at 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns
@@ -4611,6 +4611,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // branch on, so every later branch differs as well, the invalid-type exit still returns the constant where retail
 // reads the result byte back, and the acknowledgement block is still placed before retail's: the byte homes of the
 // result, the identity and the better flag are not yet recovered.
+// Four-way switch with shared reason-1 and reason-2 exits, varying inactive, state-nine, invalid and
+// active case order, scored 366/366/366/366/366/367/366/366. Retail still uses a comparison chain and reloads
+// the acceptance byte on the rejection paths. NOT kept: the dispatch table and earlier first difference.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
