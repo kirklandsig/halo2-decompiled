@@ -508,7 +508,8 @@ struct s_collision_result_buffer_1697c0
 // spilled between the two rotations and the collision argument schedule) needs the rotation written out at the call site, so the
 // body stands.
 // MiniMax E (11-20): no new form, no lower score (270): the frame agrees (0xa8) and the body is 1431 bytes against retail's 1423; the zero still lands in XMM1 where retail has XMM2, and this build stores it before the three component stores where retail stores it after them - swapping the two declarations measures 267, below the keep bar, and the rest (the trigonometric transfer and the collision argument scheduling) needs the shared helper, which would raise a matched caller's score.
-// score 270 (was 270): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
+// score 270 (was 270): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch differ.
+// Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
 // Earlier at 299: 1433 bytes, first +0x19. Frame map before the ray scale change (F = esp
@@ -999,6 +1000,9 @@ struct s_collision_result_buffer_1697c0
 // in that helper's single-return shape (zero set in an else arm) 282 (1437 B); the rotate helper's dot as `dot3f(axis,
 // vector)` 282 (1437 B; 0x297d30 144); its cross terms with the axis as the left operand of each product 270 (same code);
 // its output rows with the cosine product written `cosine * vector->i` 270 (same code).
+// Optional fallback in the normalizer: alternate arm / success exit / magnitude zero test / short-axis exit
+// 456/456/459/461. Shared double-factor scale with the real reciprocal on those forms 476/476/479/481.
+// NOT kept: the normalizer stays out of line and every form grows the frame to 0xac while shortening the sampler.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
