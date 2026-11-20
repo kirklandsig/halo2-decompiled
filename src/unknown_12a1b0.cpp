@@ -2591,6 +2591,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Ring advance at the latch 453; definition-only, separate definition and state, or combined rejection 305 each;
 // latch with those guards or with a read-only entry 453 each. NOT kept: latch forms grow to 1955 bytes and reserve
 // 0x12c with the short request. The guard forms tie with the same 0x120 frame.
+// MiniMax A (11-20): no new form, no lower score (305); the frame is still 0x11c against retail's 0x128, so the native request, the range and the pitch homes sit at other offsets, and the second pitch-range loop still hoists the datum index and the track index into EBX and EBP and keeps the sounds pointer in EDI where retail holds NONE, the track definition and the active bit there and indexes the sounds array at each use; the plain check and the fast check of the nine-address set agree at 305 here.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
