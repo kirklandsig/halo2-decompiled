@@ -851,6 +851,9 @@ struct s_object_damage_view
 // Keep separate slots at the maximum test, update shared slot in the reported arm, conditional update,.
 // and validate other players first. Initial-maximum and no-greater-maximum tests: 380/412/412/412/378/394/394/394.
 // NOT kept: The maximum tests all raise the score. The separate-slot forms and the initial-maximum shared forms add 16 bytes. The victim-team/credit/code homes and amount-biased history cursor differ.
+// Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
+// fallback 358/358/416/416, with conditional code selection 358/358/416/416.
+// NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
