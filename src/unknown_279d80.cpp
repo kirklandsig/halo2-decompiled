@@ -2334,6 +2334,10 @@ void function_2818e0(void)
 // destination-mask test as an if nested under the lookup 2 (same code); the interpolation test inverted with the plain apply
 // first 4 (0x27dff0 4, 0x285750 184, 0x28aaa0 2); in function_288571 pass 0 given the settings' node count directly, the local
 // for the later passes 397 (1681 bytes, every walk user 217-433). All restored.
+// M3 lane 13 r129 (screened with 0x27dff0 and the five matched walk users): the saved frame fraction declared with a
+// `0.0f` initialiser ahead of the interpolation test (diagnostic: the dead literal store is dropped before allocation) 2;
+// the walk's flags declared `byte` 280 (every walk user 213-304); node_flags_test, node_destination_get,
+// component_decompress, component_interpolate or root_offset_scale as plain `inline` 2 each (same code). All restored.
 // M3 lane 7 r198 (fast with 0x27dff0, 0x285750, 0x288570; a compile-only build of the file is exact here, 2): in
 // function_288572 the bit-flag shift ahead of the cursor step 2 (same code here; 0x288570 12); node_destination_get as one
 // exit through a found flag 2 (same code everywhere, though every symbol number moves: pass 0's flags then number below

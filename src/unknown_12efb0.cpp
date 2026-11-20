@@ -845,6 +845,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // EBX and cluster in ESI as retail; the slot is still a word and NONE is in EDX), the same with a char slot 666 (3827 B:
 // retail's `mov cl` and byte compare, NONE in EDX against retail's EAX with the call result moved to EDX); the slot read
 // ahead of the three source resets 607 (same code).
+// M3 lane 16 r158 (fast; control 607): the 0x130f60 result read through a `long const &` at its three uses 607 (same
+// code), with the palette slot as a char local 700 (3828 B); the slot tested through a `short const &` 607 (same code);
+// the slot read ahead of the three source stores 607 (same code); the slot tested on the field and declared inside the
+// branch 750 (3848 B). Aligned reading: retail presets the record NULL (`xor ebx, ebx`) just before the table test and
+// forms the table record in ECX, then copies it to EBX, as if returned by an inline getter.
 // M3 lane 8 r204 (fast with 0x130f60, 0x131030, 0x1317a0, all MATCH; control 607): a `char` slot compared with `(char)NONE`
 // 700 (3828 B); the 0x130f60 result typed `dword` 607 (same code); the tag flag declared ahead of the out value 609; the out
 // value declared at the loop body's top 607 (same code); the three source resets ahead of the out value and the call 713.

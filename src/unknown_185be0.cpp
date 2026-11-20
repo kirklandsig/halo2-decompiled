@@ -760,6 +760,16 @@ union s_185be7
 // takes XMM4 and the quotient XMM3 as retail, but the quotient is scheduled after the first clamp); the record copy
 // first 73; the else arm's loads swapped 74; both 55; those two with the quotient after local_19 44; and the pool
 // through a const reference 42 (all match-only orders and forms).
+// M3 lane 14 r131 (fast control 60, plain 62; fast CAVEATs this function): the input-record copy ahead of the two
+// angle conversions 57 fast; the else arm storing local_17 before local_16 58 fast; the quotient after local_19 49
+// fast (retail's XMM3/XMM4, scheduled after the first clamp), after local_20 82, as an expression at both uses 554
+// (3768 B); `local_18 * i` 60 and `k * PIN(...)` 60 (same code); the 0.64 squares written field_40 first 60 (same
+// code); the parent's component index through object_header_get, havok_object_get or object_get, a named object or a
+// named parent pointer 60 (same code each: the parent lookup's scratch rotation, ours ECX where retail reuses EDX,
+// does not move); the second hold-time add as `field = field + arg_2` or `arg_2 + field` 60 (same code). Lead
+// (statement order only, match-only): copy first + else-arm order + quotient after local_19 46 plain (44 fast);
+// left there the 1.0/zero remake after pow, the second hold-time add, the quotient's early schedule, the parent
+// lookup's rotation (through the flag loop's mask) and the 0.64 squares.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

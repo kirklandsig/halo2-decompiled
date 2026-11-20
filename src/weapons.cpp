@@ -3769,6 +3769,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // negated heat exemption 636; ammunition/heat gate before the loaded-minimum gate 639.
 // NOT kept: four-point best reduced gain against 636, with no length improvement. The full build
 // still gives the magazine definition and post-heat rounds separate homes in frame 0x1c64.
+// Magazine record or tag names 636 each, immutable receiver bindings 636,
+// separate record or tag references 636 each, positive notification branch 636,
+// fallback rounds before burst reset 636, and nested fallback thresholds 636.
+// Reduced control 636. The full frame and separate magazine-tag and round spills still differ.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4230,6 +4234,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // trigger cursor with separate ordinal 1584, barrel cursor with separate ordinal 1413.
 // NOT kept: the trigger cursor recovers frame 0x38 but shortens the code by 168 bytes and still
 // spills the dual-wield result. The barrel cursor leaves the entry allocation and frame different.
+// Blocked control or status shift tests 1415/1412, both shifts 1415,
+// both shifts with branch assignments 1415, original tests with branch assignments 1412,
+// the unblocked path first 1412, and scoped or read-only blocking receiver 1412 each.
+// The frame remains 0x34 and the dual result still spills.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
