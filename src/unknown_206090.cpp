@@ -819,6 +819,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // compression default and adjustment 1406, direct wide magnitude products 1566.
 // The 0x58c frame and native velocity homes remain unresolved. Direct wide magnitude products reduce the
 // frame to 0x590 and shorten the body to 6022 bytes.
+// M3 lane 14 r131 (fast = plain 1346 here, 0x2056e0 MATCH each run; body unchanged): the contact cross written straight
+// into field_4c and local_4 added there, alone on this body, 1419 (6185 B); descriptive names for the four tail
+// counters and the flag 1346 (same code: names do not move these homes); the object lookup through the existing
+// havok_object_get and its component-index field 1346 (same code); the signed square written sign first 1346 (same
+// code: the chain is canonicalised; ours multiplies the sign by the +0x88 factor first, retail squares local_11 first);
+// local_11 declared at function scope 1346 (same code).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

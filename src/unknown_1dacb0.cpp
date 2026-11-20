@@ -2061,6 +2061,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Direct found identifier with graph-index-only missing-name reset, found-first/missing-first/change-only/before-found:
 // 1008/1008/990/990 with whole value, 985/985/983/983 with field stores. NOT kept: every form raises
 // the score at 2807 bytes. The candidate slot, resolved output slots and class/NONE allocation still differ.
+// M3 lane 14 r131 (fast with 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd560, 0x1dd9d0, 0x2963f0; control 828/828): the per-pass
+// candidate declared after the overlay lookup 996 (2825 B: its NONE reset then follows the call, where retail resets it
+// before the call from ESI); the request helper's outer `if (urgent || other)` guard dropped (diagnostic, shared with
+// 0x1db170 and 0x1dc8c0, which stays MATCH) 828 (same code); the early exit returning a fresh id with the result
+// constructed after the weapon_class test 988 (2825 B); NONE on the left of the loop test and the post-loop test 828, of the
+// opening weapon_class test 828 (same code). Re-measured, the named urgent flag (lead above) 801 at 2791 B: it moves the first
+// request's kind blocks (retail jumps back to the next kind after each type loop), not a source shape.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
