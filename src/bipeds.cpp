@@ -6172,6 +6172,21 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // side and final crosses with ordinary/staged final output 98/91. Both rotations
 // before normalization with staged side 270; initialize the up copy before
 // normalization 176. The first complement spill and final forward load remain.
+// M3 lane 13 r130 (fast with 0x1ecf50/0x30bf0, both matched throughout; control 79). Two diagnostic grids, the cross of
+// the two axes earlier rounds scanned one at a time: n = 0..7 dead initialised locals after `axis` x the forward vector
+// spelled as the pointer or as `&biped->forward` at four sites (the first rotation, its normalize, the side cross, the
+// staged cross), 128 states each. With the present rotate_direction no state matches: best 60 at 887 bytes in four
+// states (n = 0 with the field at the first rotation and the staged cross, with or without the normalize; n = 2 with
+// the field at both crosses, with or without the normalize), then 63 (n = 0, the field at the first rotation, with or
+// without the normalize, 892 bytes), 68 (n = 2, the field at the side cross, 890 bytes), 72 (n = 0, the field at both
+// crosses), 77 (n = 2, the pointer everywhere). In the n = 2 state with the field at both crosses the second rotation
+// and the first rotation's cross rows are retail's, and what is left is the first rotation's dot (summed k, j, i with j
+// read early; retail i, k, j with k read early) and the two crosses' operand sides: the dot's term order and the cross
+// rows trade places between states, so no symbol count combined with the pointer/field choice reaches retail. With the
+// header's function_x84d9e8 (axis_rotation.h) for both rotations no state matches either: best 126 (n = 0 with the
+// field at both crosses, 887 bytes; n = 3 with the field at the staged cross, 888 bytes), 134 at n = 0 with the pointer
+// everywhere. Body unchanged. The lever left is the rotation helper's own text (its dot spelling and row order); its
+// file was held by another lane again this round.
 // M3 lane 1 r138 (fast with 0x1ecf50/0x30bf0/0xe3c90, all matched; control 79): the rotation helper's declaration here marked
 // `__forceinline` 79 (same code); both crosses written out component by component (side, then the up field directly) 226
 // (903 B); side through cross3f and the final cross written out into i, j, k locals then stored 240 (915 B); up and side

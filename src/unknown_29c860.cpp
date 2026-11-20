@@ -331,6 +331,22 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // Diagnostic, reverted at once: 0x299460 called through a plain pointer global (no summary for the call) 471 on the lead and 483 on
 // this body, both at frame 0x5b4, but the two normalizes ahead of it then differ too (retail agrees with ours there) and the left_i
 // products do not move: retail's view of that call lies between ours and no summary. Body unchanged.
+// M3 lane 13 r132 (fast with 0x29c860/0x29cb10, both matched each time; control 378, 78 aligned lines with stack offsets
+// masked). `inline` on the definition of 0x210770 378 (same code here; its eight matched callers still match, 0x1f99d0 goes
+// 226 -> 194 and 0x299460's first difference moves from +0x14 to +0xd0 at 3349 B with its count up 569 -> 726, so not kept:
+// lead for those two, build/r132/lead-0x210770-inline.patch); with `inline` on 0x2108a0 as well 378; `inline` on 0x29cb10
+// 378; on 0x29c860 378; on both 378 (same code each: the keyword hides nothing this function reads). Diagnostics, reverted
+// at once: `inline` on 0x299460 378 (same code, so the frame word is not that keyword either); the second tail setter
+// removed: the actor offset is still reloaded into EBX at the end of the main arm, so the count of tail uses is not what
+// keeps it in a register; the 0x1f9760-success arm calling 0x29c860 directly (an EBX argument on that path) gives retail's
+// whole tail (the offset read from its home at both setters, the four pops ahead of the last one), the same change on the
+// `!0x5d0 || 0x5d2` arm alone does not, both arms likewise. Reading: retail's tail follows from EBX not surviving the
+// 0x1f9760-success arm, whose only instruction that could take it is the call to 0x29cb10 (it saves and restores EBX
+// around its own EBX argument for 0x29c860), so retail compiled this function without knowing that 0x29cb10 preserves
+// EBX, as it compiled it without knowing what 0x299460 does with the left vector: both are facts about callees that this
+// build has and retail's lacked. BLOCKED-BY 0x29cb10 and 0x210770 as this function sees them (no source form found).
+// Also tried on the 0x1f9760-success arm: `*arg_7 = true` ahead of the 0x660 store and the call 520 (2799 B, the two
+// short arms merge); that arm setting the flag and jumping into the other short arm's block 530 (2788 B).
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
