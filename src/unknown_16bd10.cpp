@@ -1330,6 +1330,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Plane distance from zero-offset vector aggregate, component aggregate or separate
 // stores 126/435/126. Vector aggregate with scoped length or initial factor 126/126.
 // The direction preload and the squared-length and zero registers still differ.
+// Left-only or up-and-left basis stores after the normal copy 171/203, after the plane constant 177/208,
+// after the squared length 177/208, or just before the projected position 189/220. NOT kept: All eight
+// raise the score at the retail extent. Direction preload and length/zero register allocation remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

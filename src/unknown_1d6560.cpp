@@ -587,6 +587,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // (224 B: the index is shared) [213]; the main switch inside `kind != 7` with the kind-7 route after it 95 at 256 B [0].
 // Natural one-read forms on main's case 0: a header element pointer and a twice-used byte type ahead of the rigid body 117
 // (236 B) [213]; a twice-used long type after the rigid body 141 (212 B) [213]. Body unchanged.
+// Separate body array and header data before the body, after the body, or before the handle 96/95/103.
+// Shared header for the repeated types and case zero 96. One type with the original getter or shared
+// header in case zero 122/122. Model binding with array pointer or rigid-body reference 96/94. NOT kept:
+// The repeated-type form gains one. The 94 form gains two and changes the matched caller to 13.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

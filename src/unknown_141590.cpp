@@ -1550,6 +1550,10 @@ void function_143250(
 // through XMM7 where retail has XMM6; that follows from s7_s105 being scheduled earlier here, a
 // schedule difference like the others (the block is scheduled as a whole, so every remaining difference moves the rest).
 // Body unchanged.
+// Second-band axial weight named at first use, with the other products, or by compound multiplication
+// 1231/1296/1231. With named transverse products, transverse accumulations, or named up products
+// 1095/1095/1095. With all four products or the diagonal half-square terms 1226/1226. NOT kept: All
+// eight raise the score and leave the frame four bytes short.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

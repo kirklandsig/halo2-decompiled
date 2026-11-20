@@ -809,6 +809,10 @@ struct s_object_damage_view
 // NONE && killer == reported_player)` 355. Probe only (it resets the damage code when the killer and the reported player
 // are both NONE, which retail does not): `if (killer == NONE && valid) killer = reported;` then `if (killer ==
 // reported_player)` 332.
+// Record reference advanced inside the selection scan, assist scan, or both 479/375/469. Both scans from
+// one base as references or pointers 469/469. Pointer-end selection, assist, or both scans 499/379/526.
+// NOT kept: Every cursor form changes the 0x50 frame. The assist-only reference stays at 1548 bytes with
+// frame 0x4c.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

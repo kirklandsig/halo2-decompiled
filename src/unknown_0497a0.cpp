@@ -570,6 +570,10 @@
 // written back into its wave's cell and reloaded, and the three factors are still saved with `fst`); both bound by
 // non-const references to separate locals 645 (same code); s1 alone through the reference 629 (2656 B); s0 alone 614
 // (2627 B). The frame stays 0x58 in all of them.
+// Perspective direction after the waves, after the reciprocal, or in the perspective arm mutable/const
+// 633/659/633/633. Special direction from the selected up vector at entry or in the perspective arm
+// 541/635. Vertical axis before the origin or before the up vector 658/555. NOT kept: The early vertical
+// copy reaches frame 0x58 and lengthens the body. All eight raise the score.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
