@@ -1778,6 +1778,16 @@ long function_2197f0(real gain);
 // attack gains with attack index read at the join 119; post-release gain bits supply both late outcomes 161; post-
 // release gain bits with attack index read at the join 161.
 // NOT kept: separate release and attack returns recover the 678-byte extent at 119 and split off the initial gain return. Every form raises the score.
+// M3 lane 12 r153 (fast with 0x1251e0, 0x221810, 0x1295e0 and 0x128ca0; aligned exact / register-masked 56 / 20 at 87):
+// the clamp value computed before the test, `real t = time / ducking->fade_in_time; if (!(1.0f > time * inverse)) t =
+// 1.0f;` re-measured 143 (681 B, 54 / 11: retail's division ahead of the compare and its `ja` over `t = 1.0f`); retail's
+// three missing bytes are arm 1's gain add, `movss xmm1, [gain]; addss xmm1, xmm0` (the gain loaded and the
+// interpolation added into it) where every form here adds the gain from memory. On the eager clamp: arm 1 as `gain +=`
+// 143 (same code); as `s_decibels(gain.value + ....value)` 143 (same code); as a named interpolation with
+// `gain.value = gain.value + fade.value` 143 (same code); written interpolation first, `... + gain`, 103 (685 B, 54 / 11:
+// the gain's by-value copy goes from EDI through a new stack slot, frame 0x10, where retail loads the gain home into
+// XMM1). Still differs on all of them: elapsed in XMM2 (retail XMM3, the reciprocal formed first in XMM2), fade_out
+// multiplied from memory (retail keeps the test's XMM1), and `ambience_fade - elapsed` loaded ahead of the product.
 // M3 lane 8 r196 (fast with 0x221810; control 87): the fade-out time bound by const reference to the field for the test,
 // the sum and the product 87, with the product written `(elapsed - hold) * inverse * fade_out` 87 (same code: still
 // multiplied from memory); arm 1's clamp value divided by the fade-in copy 155 (687 B), the clamp test as `time /
@@ -3702,6 +3712,15 @@ static inline short sound_voice_find_available_channel(char type)
 // 96; positive free-channel guard nests the streaming guard 96; single rejection guard skips unavailable or
 // streaming channels 96.
 // NOT kept: all eight search forms tie at 96 and keep the twelve-byte frame, result spill and failure join.
+// M3 lane 12 r153 (fast with 0x129100, 0x127320, 0x12a5d0, 0x21de90, all matched; aligned exact / register-masked 69 / 50
+// at 96): the channel-system pointer read at the top of the function 122 (430 B, 111 / 55); `char result` 96 (same code);
+// lane 5 r178's match-only form rebuilt 15 (430 B, 8 lines: the search helper taking `long type`, called with the
+// `(char)` type; without the cast the type is zero-extended, 16); on it the commit arm first and the failure arm (with
+// the label) second 15 (same code); the commit arm ending `return true;` 125 (430 B); the missing channel handled by
+// its own copy of the failure calls and `return result;` in place of the goto 177 (461 B). On the 15 form the failure
+// block is laid out ahead of the commit block as in retail, but the early exits share the commit block's return (its
+// `mov al, 1` then three pops) where retail's share the failure block's (`mov al, bl` before the pops), so this build's
+// failure tail takes its own copy of the pops and the commit's `pop edi; pop esi` stay together.
 // M3 lane 8 r196 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): lane 5 r178's form rebuilt 15
 // (16 with the type byte passed unconverted: movzx). Matched siblings with retail's split result (true in AL, false in
 // BL across the failure calls) assign the result in every arm with no initializer (0x136c40, 0x21dda0); on the 15 form:
@@ -4699,6 +4718,7 @@ struct s_128ca0
 
 // MiniMax I (11-19): no new form, no lower score (81): both gain pins still trade scratch registers, the controller compares still use an immediate and the second flag3 test still shares a word load with the flag6 store; the one-use low-byte view that reaches 50 was reverted, so the body is unchanged.
 // score 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
+// [r153: see the m3 lane 12 r153 entry at the end of this note]
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
 // The second pending test through a one-use low-byte view scores 50. That alias was reverted.
 // Earlier at 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
@@ -5000,6 +5020,16 @@ struct s_128ca0
 // unclamped bits held through the pin 81, post-pin channel indices 81, nullable controller 130,
 // update-before-start dispatch 144, pinned decibel round-trip 81. NOT kept: the tied pin
 // forms retain the register exchange and the controller and dispatch forms regress.
+// M3 lane 12 r153 (fast with 0x1293f0 and the callees, all matched; aligned exact / register-masked 67 / 21 at 81):
+// lane 2 r104's lead re-measured 64 (57 / 18): flag6 set through the low byte as 0x1293f0 sets the fading bit, and the
+// stream bit through the existing 0x12a420 (main's line is that function's body written out; the call alone is 83).
+// Reading of the first difference: in both pins the two scratch temporaries (the permutation-gain byte and the copy of
+// the gain bits into operator+'s by-value operand) take the next registers in the opposite order from retail (pin one:
+// retail byte EDX, copy EAX after the bit-9 test's ECX; ours byte EAX, copy EDX; pin two: retail byte EAX, copy ECX;
+// ours byte EDX, copy ECX), as if this build allocates the operand copy first. On the lead, each the same code (64):
+// the copy named first and the sum written `local = s_decibels((real)gain) + local;`; one `s_decibels gain =
+// s_decibels((dword)local_6);` ahead of the bit-9 test used by both pins; the byte converted through `(real)(long)`;
+// the operand passed as `*(s_decibels *)&local_6`; the stream bit through a named channel-state pointer.
 // M3 lane 8 r196 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 81): lane 2
 // r104's lead rebuilt 64 (diagnostic). The pin sums with the bits as the left operand, both 210 (1102 B), the first only
 // 182 (1079 B); the permutation gain through an inline accessor taking the permutation (both pins) 81, the started bit

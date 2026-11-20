@@ -2306,6 +2306,12 @@ void function_2818e0(void)
 // double negation 6, while an extra product with a float global, an int store to a new global or a folded
 // `* 1.0f`, `+ 0.0f`, `- 0.0f`, `/ 1.0f` do not. With both blend-3 arms written as blend 2's, 0x285750 gets the
 // pair reversed too; either of its arms alone keeps retail's order. All restored.
+// M3 lane 12 r155 (a one-object compile of this file gives the real build's pairs: count first in this function and
+// 0x27dff0, flags first in 0x285750; linking it alone, with the ballast or with the graphics library objects changes
+// nothing): the output pointer's restore ahead of the three frame-state restores 13 (0x27dff0 13, 0x285750 11,
+// 0x288570 98); the bit flags as `dword` 5 (every walk user 3-5); screen only, the pair unchanged in all three: the
+// output pointer set ahead of the three frame-state sets, the bit flags as `unsigned long`, the saved frame index as
+// long (same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

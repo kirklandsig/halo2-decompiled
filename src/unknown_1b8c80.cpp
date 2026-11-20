@@ -907,6 +907,10 @@ extern "C" void _ReadWriteBarrier(void);
 // at the top, without/with the barrier 44 (208 B)/6 (same code); a discarded `(void)state->flags;` read at the top, no
 // barrier, 44 (removed); the point copied through a block-local `point3f` in the flags arm, no barrier, 50 (212 B). The
 // slot load still sinks to the NONE block in each.
+// M3 lane 12 r154 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6, each with the barrier): the state assigned again from
+// the slot at the head of the NONE block 6; the NONE test in a bool read through a `bool const &` 50 (212 B); a second pointer
+// to the slot for the point copy 6; the 0x86/0x50c arms' 0x41c/0x420 stores through a forced-inline setter 6; the busy field
+// bound to a `long const &` for the NONE test 6 (all the 6s the same code: the slot still loads after the jne).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
