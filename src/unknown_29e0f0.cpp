@@ -79,7 +79,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 382 (was 382): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
+// score 367 (was 382): The 0x64 frame agrees. First +0x11 begins the displaced selected-index stores. The group index uses EBP instead of EBX, and both bitmap operations recompute the address and mask.
 // frame 0x64 agrees and so do the marker position, the bitmaps and the group record pointer; six selected-index
 // and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
 // separate byte rather than the dead argument slot.
@@ -703,6 +703,13 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // The three selected-index homes then sit at +0x40/+0x20/+0x1c against retail's +0x44/+0x28/+0x24 (retail's order, still
 // four and eight bytes low); the found flag keeps its own byte where retail reuses the dead by-value argument's slot.
 // MiniMax G (11-19): the group bitmap cleared with memset and the group index tested and set through the shared bit vector helpers (the index kept as a long): 382 -> 367.
+// Single long/short group index through the indexed link 462/412.
+// long/short through one link pointer 462/412.
+// long/short with link pointer and joined reject 462/412.
+// long/short with link pointer and nested admission 462/412.
+// Written-differs at 367. NOT kept: All eight forms shorten the function away from retail and leave the
+// first default store displaced. The long and short captures reproduce 462 and 412 across the admission
+// forms, respectively. All five controls stay exact. The opening body is restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

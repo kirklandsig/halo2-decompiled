@@ -77,7 +77,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 
 // score 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // MiniMax C (11-19): no new form, no lower score (558): the success byte still sits at +0x13 where retail has +0x17, the four hit flags sit at 0x20..0x23 against retail's 0x1c..0x1f, the collision copy lands at 0x3c against retail's 0x40, and the comiss operand order and the exit layout still differ.
-// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// Earlier at 558 (was 558). earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // M3 lane 10 r119 (fast; control 558): `*arg_5 = 0.0f;` ahead of the minimum's initializer 559; the hit flags as `{ 0 }`
 // 689 (2819 B, block store); the success flag declared after the hit flags 552 (first difference +0x2e; the success store
@@ -701,6 +701,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // two angle initialisers in the other order; `(1/range) * minimum` computed twice; the root helper's product as limit x
 // root for rays 1 and 2; the rotated component registers; the tail's first transform (retail multiplies the forward's
 // k, j, i by the first amount before any add).
+// Definition/field-pointer signed offset in the point helper 642/644.
+// definition/field-pointer width per component 552/662.
+// definition/field-pointer assignment with guarded negation 505/505.
+// definition/field-pointer subtraction from zero 642/644.
+// Written-differs at 521. NOT kept: The 505 forms still share the negative width between the last two
+// points and move the range spill to +0x1c instead of retail’s +0x38. The success slot stays four bytes
+// low. The opening body and helper are restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

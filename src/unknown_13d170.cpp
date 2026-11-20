@@ -878,6 +878,11 @@ struct s_physical_block_iterator
 // insufficient candidate continues to that increment 201. NOT kept: the 182 form brings the
 // cases inside the loop, but uses pointer masks instead of retail's shared AL test,
 // moves the first difference earlier and shortens to 1193 bytes.
+// Paired unsigned elapsed values with conditional ages, assigned ages, named products or compound products
+// with the original and split case-zero tie tests 373/299/373/373 and 373/299/373/373.
+// Written-differs at 201. NOT kept: Six forms reach 1213 bytes at 373 with the first difference moved
+// into the prologue. The assignment forms score 299, change the frame and no longer reproduce the policy
+// layout. All four controls stay exact. The opening body is restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
