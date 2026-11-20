@@ -766,6 +766,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Nest valid index, valid tag, unique choice, or tag and uniqueness 846/846/846/846. Full-width accepted
 // count with these guards 964/964/964/964. NOT kept: the short forms tie. The full-width forms recover the
 // ESI zero but shorten the body and raise the score. The target-count and query-buffer homes still differ.
+// MiniMax B (11-20): no new form, no lower score (846): the entry zero is still EBP where retail uses ESI, the query
+// count is still read as a word where retail reads a dword, and the target count and primary still have other homes;
+// the permuter's best form is 842, under the 8-point bar. The decibel constant g_44a0b4 is a writable global in
+// src/unknown_2197f0.cpp, so its 14 loads carry a different address than retail's .rdata constant.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

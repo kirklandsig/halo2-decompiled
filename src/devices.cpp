@@ -1746,6 +1746,9 @@ bool function_108530(long device_index, long name)
 // 141/141, carried request predicate as statements or values 156/156, span accumulator 141, clamp within a
 // positive span 145. NOT kept: all lengthen the body and lose the incoming velocity register. The ramp-
 // down slot and duration and position registers remain displaced.
+// MiniMax B (11-20): no new form, no lower score (116): the initial velocity still reaches the clamp on the stack
+// where retail passes it in XMM6, so the clamp's own convention keeps the ramp-down slot and the duration and
+// position registers displaced; every form that moves the velocity off the stack loses a matched caller.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

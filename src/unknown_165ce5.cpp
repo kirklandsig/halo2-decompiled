@@ -1982,6 +1982,8 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Diagnostic (reverted at once): the look pair as two scalars plus one probe local 537 (2203 B, frame 0x28, ten cells),
 // so the frame's odd cell count cannot tell whether the record alone rounds the frame. Retail's epilogue confirms the
 // shrink-wrap: ESI/EDI are popped right after the weapon loop, before the flag tail; still BLOCKED by the stand-in.
+// MiniMax B (11-20): no new form, no lower score (188): the channel pointer still differs at every channel use and
+// the look pair still needs an aggregate slot of its own, so the frame stays 0x30 against retail's 0x2c.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
