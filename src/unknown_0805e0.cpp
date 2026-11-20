@@ -847,6 +847,11 @@ void function_1537f0(s_profile_record *record);
 // 18; the first link set to NONE and the other three copied from it through the pointer 18 (all the same code, base +0x5c);
 // the four link statements through the pointer in the order 1, 0, 3, 2 18 (base +0x5e, the second non-zero offset again).
 // All restored.
+// M3 lane 12 r158 (h2m fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): the four list heads as two
+// chained pairs in retail's store order (`g_4cf97c = g_4cf980 = NONE; g_4cf988 = g_4cf984 = NONE;`) with main's link
+// pointer 18 (same code); those head pairs with the `entry->` links as two chained pairs in retail's order and the two
+// counters chained 49 (NONE hoisted into EBP); the `entry->` link pairs inside their own braces 49; the `entry->` link
+// pairs set from `(short)-1` 49; the builder's view taken from `g_4cf98c[index]` with the `entry->` link pairs 46.
 // M3 lane 15 r117 (fast with 0x7f8b0, 0x1537f0 and 0x80490, all matched each time; control 18): the tail as one chain
 // (`entry->field_64 = entry->flags = 0;`) 18; the record declared ahead of the loop 18; the view passed as the entry
 // pointer cast 18 (the three 18s the same code); the link pointer from the array element with the rest through `entry`

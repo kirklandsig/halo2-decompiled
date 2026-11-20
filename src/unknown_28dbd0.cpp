@@ -73,6 +73,17 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax D (11-20): no new form, no lower score (173): the frame is still 0x11c against retail's 0x118; retail's
+// homes are 0xc (the random int), 0x10 (the rotation's cosine), 0x14/0x18/0x1c (the angle vector), 0x20 (the second
+// draw's int), 0x24 (the rotation's sine) and 0x28/0x2c (the rotation's temps) with a hole at 0x30, ours are 0xc,
+// 0x10/0x14/0x18 (the angle vector), 0x1c/0x20 (the sine and the cosine), 0x24, 0x2c and 0x30 with a hole at 0x28;
+// retail takes the sine first, then the dot, then the cosine, its second cross is cross(axis, cross) and its row is
+// (cross.x*proj + axis.x*cos) - cross2.x*sin, with the sine term last.
+// MiniMax R (11-20): no new form, no lower score (173, 1209 bytes, retail 1209): the frame is still 0x11c against
+// retail's 0x118 because the rotation helper gives its whole twelve-byte cross vector a stack home where retail keeps
+// the cross's components in registers, and the cosine is still taken with fcos before the sine where retail takes the
+// sine first and stores it after the dot; two new spellings of the rotation measured 182 and 185, and the permutation
+// search over the helper found nothing lower.
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
@@ -660,6 +671,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // through the coordinate setter 218, named heading aggregate and tilt axis 173.
 // NOT kept: the frame stays 0x11c with the extra cross home. The returned scale pointers shorten the body, and
 // the heading setter raises its score at retail length.
+// M3 lane 13 r128 (screened, control 173): the rotation helper in matched 0xd1850's rotate form (sine, cosine,
+// cross3f(vector, axis), projection with the dot written k, j, i, in-place rows `v * cos + axis * projection - cross *
+// sine`) 231 (1196 B); the vector scale folded into the sums (`v.i * cos + axis.i + cross.i`) 221 (1213 B, frame 0x118
+// but the request at +0x2c for retail's +0x38); the axis scale folded into the sums 230 (1216 B); both folded 229 (1200
+// B); the projection as `(1.0f - cosine) * dot3f(...)` 173 (same code).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

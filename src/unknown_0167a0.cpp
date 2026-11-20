@@ -406,6 +406,14 @@ PRIVATE inline byte const *material_parameters(long tag)
 // 62, only 0x19be0's 63, the other four 114, the 0x17420 call 56, the four argument-free calls 49, all still loading
 // `second` early. So the late load depends on the whole group of shader-record calls (a threshold, not one callee's
 // summary); 0x18a90 (a contributor's, 146 at 715 bytes against 736) saves the same registers as retail's.
+// M3 lane 2 r119 (fast; control 5 at +0x19e): the restore block's entry computed into the existing `entry` local, stored,
+// and its word read through the local 181 (975 B); the direct entry store with the entry word read inside the chain index
+// (no `packed` assignment) 5 (+0x1a7, the direct form's code); the tables stored and the three bases read through one
+// `byte *&` to the tables field, entry stored directly, 6 (the reload waits for the entry store and `second` loads early,
+// both differences at once); the entry reference typed `word *&` (the store as a word pointer) 5 (+0x19e, main's code);
+// on the direct store the chain base offset by `second` before the packed index 5 (+0x1a7, same code). Reading: the
+// reload of the tables field leaves the entry store's shadow only when that store is written directly (no reference),
+// and `second` then loads as soon as the entry lea frees ESI; retail has the first without the second.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

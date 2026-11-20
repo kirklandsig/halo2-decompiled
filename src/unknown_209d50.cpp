@@ -243,6 +243,14 @@ static inline void *function_xc5914d(long thread_index, short size)
 // the initialisation test 95; the frame reference as a `s_hs_macro_frame *&` bound to the thread's field, the initialisation
 // reading through it 95; the result copied through a `long *const &` binding of the pointer 95; the frame reference declared
 // after the result copy 95 (all 266 B: the pointer and the result still share EAX, no spill). All restored.
+// M3 lane 12 r158 (h2m fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): the three
+// allocations in an inline helper returning the arguments block and handing back the two index slots through out-pointers
+// 124 (237 B); the parameter count read once into a `long count` for the size and the count test 87 (280 B); `result =
+// NULL` first in the arm with the index increment ahead of the expression update 83 (277 B); `long *result;` assigned
+// from the arguments after the initialisation block, just before the test 95; both pointers initialised NULL at their
+// declarations and assigned afterwards 95. Re-measured: the argument index read into a local for the test and the
+// element 95. In the null-first shape the expression pool is reloaded per block (not held in EBX), so nothing presses the
+// pointer into retail's spill.
 // M3 lane 15 r117 (fast with 0x2099f0, which stays matched; volatile-free forms): the expression pool read once into a
 // local after the allocations for the init block and the type test 95 (266 B); the allocation named `result` and copied
 // into the arm's pointer, which is then cleared before the call, 83 (277 B: the pointer in EAX for the whole function,
