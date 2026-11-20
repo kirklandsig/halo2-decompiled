@@ -100,6 +100,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax E (11-20): no new form, no lower score (96): the one-read forms that use every local twice (the headers
+// local with case 0 through it, the object-index local with case 0 through havok_object_get) score 101 to 137 and flip
+// the incoming register pair, so the type stays read in both kind routes; the control already has retail's own
+// convention (component EAX, rigid index ECX, kind EDI, owner and level on the stack, ret 8) and the matched caller.
 // MiniMax A (11-18): no new form, no lower score (96): the type read once at the entry (24 at 256 B with the caller matched) needs a one-use object-index and a one-use absolute-index local, so it stays unkept; the one-use-free forms (the header base first, the header base second, the type local alone, a long type) score 83 to 136 and demote the matched caller 0x1d5bf0 to 2, 13 or 213, so the body stands.
 // MiniMax B (11-18): no new form, no lower score (96): the type is still read in both kind routes where retail reads it once at the entry; the single-read form reaches 68 only with a one-use local and a score-picked declaration order, and the one-use-free form (98) demotes the matched caller 0x1d5bf0, so the read stays as it is.
 // score 96 (was 96): unchanged in round 252; left: retail reads the type once at the entry with the header data

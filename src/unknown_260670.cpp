@@ -40,6 +40,11 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// MiniMax E (11-20): no new form, no lower score (440): re-read against retail, the frame stays 0x8a8 against retail's
+// 0x8a0 because the two flags take a dword each here and share one dword in retail (our bytes at 0xb and 0x13 against
+// retail's adjacent pair at 0x6 and 0x7), so every home above them and the sorted array's start move with the frame;
+// the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup, and the evaluator loop still tests
+// the running result before the table's proc. The body stands.
 // MiniMax B (11-19): score 440 (tried 416, NOT kept: a 510-entry sort array gives retail's 0x8a0 frame, but callers pass up to
 // 0x200 entries, so it can overflow and only steers the frame): with 510 the first
 // difference moves to +0x3b; the early homes still differ (the reference at 0x18 against retail's 0xc, the two flag bytes
