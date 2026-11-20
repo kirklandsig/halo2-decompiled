@@ -2031,6 +2031,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Retained set carried in exclusion polarity, inverted initialization at dword/word width with
 // reconstruction at each use or once, 134/129 and 134/129. Shifted initialization in the same forms
 // 154/115 and 167/125. NOT kept: all regress, and inverted initialization changes the matched caller.
+// MiniMax H (11-20): no new form, no lower score (60); retail keeps the kept mask and the written count in stack bytes while this build keeps them in registers, so the cursor, player, size and bit take other registers; a permuter run over the whole body found no variant below the baseline.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

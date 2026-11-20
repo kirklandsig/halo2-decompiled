@@ -917,6 +917,7 @@ struct s_item_collision_bsp
 // Contact point declaration beside marker, at the surface arm, before the marker query or
 // beside its plane workspaces. Direct stores and the shared point setter at each site all score
 // 190. NOT kept: the placement slot and 1366-byte extent stay the same.
+// MiniMax H (11-20): no new form, no lower score (190); the plane transform's component loads still land in xmm3/xmm4 where retail has xmm2/xmm4, the body is still 1366 bytes against retail's 1361, and a permuter run over the whole body found no variant below the baseline.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1732,6 +1733,7 @@ struct s_item_flags_view_10b850
 // Early collision sentinel 823, early settle result 822, both 823, and motion-entry
 // collision declaration with early sentinel 823. NOT kept: gains below eight.
 // The 0x154 frame and entry flag stores still differ.
+// MiniMax H (11-20): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes where this build holds them in registers; a permuter run over the whole body found no variant below the baseline.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

@@ -607,6 +607,7 @@
 // s1 between the cross and s0 536 (same code: VC evaluates s0 first and sinks s1 to its use either way); the two wave
 // scales named ahead of both adds (`real offset0 = s0 * 0.03f; real offset1 = s1 * 0.025f;`) 650 (2594 B); s0 written
 // `0.5f * (...)` 536 (same code).
+// MiniMax H (11-20): no new form, no lower score (536); the frame is still 0x54 against retail's 0x60, and the primary shape slot, the rounded wave storage and the x87 factor lifetimes still differ.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
