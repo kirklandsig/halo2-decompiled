@@ -4174,6 +4174,16 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // local with the alpha selector before input 19 (small in AL copied to CL, alpha in ECX; retail small in CL, alpha in
 // EAX) and with the alpha selector before whole 19 (small in CL as retail, but alpha computed in EDX before the whole
 // split, where retail computes it in EAX after fraction's move to EBP).
+// M3 lane 6 r215 (fast, on lane 8 r205's base B re-measured 5: the span copy after the clamp plus `offset` declared after
+// `maximum`; only the shifted input word left, coalesced with `input` in EBX and hoisted above the clear): the shifted
+// local `dword const` 5; `input` typed `dword` with a `long` shifted local 5 (both the same code); the alpha input word
+// stored ahead of the RGB word 7; the shifted local used by the RGB word with the alpha word shifting `input` again 941,
+// the reverse 941, and no shifted local with small read through a `bool const` copy for both selectors 941 (the shift is
+// then retail's `mov eax, ebx; shl eax` but small loads into AL after fraction's move with no copy); with no shifted local
+// `small` typed byte 941, typed long 494. Reading: the two
+// copy choices move together; whenever the shift is its own value (not coalesced with `input`), small's load coalesces
+// with the alpha selector's register, and retail has neither coalesced. Diagnostic: B without the shifted local in the
+// whole, alpha, fraction, input order 14 (small in CL as retail, alpha computed ahead of input).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
