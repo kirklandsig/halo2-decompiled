@@ -1554,6 +1554,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 1043, no-result return after the optional outputs 1028.
 // NOT kept: the late chained defaults gain two without changing the entry difference. The conditional
 // candidates enlarge the frame. Identifier and output homes and the later zero carrier remain.
+// M3 lane 15 r117 (fast with the twin 0x1dbc80, 0x1dc790, 0x1dc8c0, 0x1dd9d0 and 0x2963f0; control 828, the rest
+// matched each time): the `named` pointer declared with the entry pointer ahead of the do-while 828; `NONE ==
+// result.index` in both tests 828; the iterator's two entry pointers cleared by one chained `= NULL` 828; `if (named !=
+// NULL)` without braces 828 (all the same code); no per-pass candidate, `result = named ? named->animation_id :
+// c_type_709360();` 978.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

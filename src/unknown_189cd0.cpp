@@ -292,6 +292,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // frame 0xa4, tag EDI); the started test inside a forceinline notify helper around 0x109220 116; `__assume(object_index !=
 // NONE)` at the top of the marker block 152, before the dispatch 152; `__assume(object_index == NONE)` in the request arm
 // 152 (535 bytes each). All restored.
+// M3 lane 15 r117 (plain, with the five matched callers, all matched each time): the compare's operand side, on the
+// plain-read form (no reference): the started test `NONE != object_index` 116, the request test `NONE == object_index`
+// 116, the marker test `NONE != object_index` 116, all three 116 (531 B, the plain-reads code); on the kept form the
+// request and marker tests constant-first 11 (same code). The operand side does not move the object/tag contest for EBP.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

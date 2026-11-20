@@ -1129,7 +1129,7 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
-// score 17 (was 17):
+// score 5 (was 5):
 // MiniMax C (11-06): no new form, no lower score; the unit index still lands in ESI where retail keeps it in EDI and the object table pointer lands in EDI where retail keeps ESI.
 // MiniMax D (11-06): no new form, no lower score (17): the unit index still lands in esi where retail keeps it in
 // edi and the object table pointer lands in edi where retail keeps esi; this round a read-only player, a read-only
@@ -1254,10 +1254,16 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // with the lookup reading `kept->unit_index` 17/17; the unit pointer bound to a `*const &` for the slot and weapon reads 17;
 // the slot test through a `short const &` 17 (all the same code); a redundant `result = false;` at the top of the tested
 // block 33 (140 B).
-// Score 5 (was 17) with stand-in SDK headers: the unit index passed to the object lookup is read again through
+// With stand-in SDK headers, 17 -> 5: the unit index passed to the object lookup is read again through
 // `tail_player_get(player_index)`. That read is not folded into the test's, so the index is a register value of its
 // own and the object table gets esi as in retail. Left: the first player address is formed as
 // `mov edx, [edx + 0x44] ... add edx, eax` where retail has `add eax, [edx + 0x44]; mov edx, eax`.
+// M3 lane 15 r117 (fast with 0x151aa0; file control 5, 0x151aa0 43): the player getter written index-first
+// (`(index & 0xffff) + (s_tail_player *)data`, file-wide) 5 (same code); the test through the getter with the player
+// local declared in the block 26 (137 B); the unit lookup ahead of `hand` 13; guard-clause returns in place of the
+// result local 44 (140 B); `NONE != player->unit_index` 5; `NONE != slot && NONE != unit->weapons[slot]` 5 (same code).
+// Matched 0x151c10 and 0x151940 open the same way and fold the data load into the add; here the getter reload gives the
+// data two uses at code generation, so it is loaded into EDX first.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
