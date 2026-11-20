@@ -281,6 +281,19 @@ static inline long bungienet_user_voice_setting(short kind)
 // the kind as a `short const &` to the field passed through a second const reference 32 (95 B); the index as a `long const &`
 // to the field with the kind copy through a const reference 23 (99 B); the selector's result stored through a `long &` bound
 // to the setting 32 (95 B).
+// M3 lane 3 r279 (fast with 0x8c5b0/0x8c660, both MATCH): plain reads: a top-level const request pointer 32 (95 B), the compare
+// against `(short)1` 32 (95 B), the selector taking the availability as a bool argument 43 (108 B; with the existing read 43);
+// the controller taken from the real slot array (`&g_54e8e0[index]`, then the view cast) 4 (same code).
+// M3 lane 6 r213 (fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): the kind read by a two-byte memcpy into a
+// plain short (no volatile) 4 (the volatile read's exact code: the load stays unfolded, the pair stays EAX/CX); both
+// fields read by memcpy 4 (same code); the index read first with the memcpy kind 5; plain reads: the kind test as `kind > 0
+// && kind < 2` 32 (103 B, both compares survive), `(word)(kind - 1) == 0` 12 (96 B); an out-of-range kind reset to 0 ahead
+// of the test 45 (111 B, the range compares survive).
+// M3 lane 16 r155 (fast with 0x8c5b0/0x8c660, both MATCH each time; control 4): `bool changed = setting !=
+// old_setting;` with the existing read 25 (91 B: the flag is built with setne); the selector's parameter `short const`
+// 4; the selector `__forceinline` with the existing read 4; the existing read through the parameter's own address
+// (`request_reference`) 4 (same code); a plain read of both fields through one read of the parameter's address 32
+// (95 B, folded compare).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

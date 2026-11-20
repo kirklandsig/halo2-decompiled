@@ -1684,6 +1684,29 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `*out = s_matchmaking_ratings();` 862 (2800 B, but through a 0x364-byte temporary copied with `rep movsd`, frame 0x434,
 // aligned 1020 against 1016: not kept); the player loop bounded by the summary's count 883 (0x73530 8); adding_group
 // declared beside result 881.
+// M3 lane 12 r159 (fast with 0x73530; control 871 at 2780 B, 0x73530 MATCH): the player value through the matched 0x63220
+// re-measured 1012 (2608 B, 0x63220 stays a call); the single exit (opening test sets `result = false`, the type-5 scan and
+// the rest under `if (result)`) with the player value through 0x63220 and `long histogram[16]` 844 (2852 B, frame 0xb4;
+// 0x63220 inlines with its nested lookup, 0x631f0 and first 0x1931a0, but the top 0x192e60 inlines too and 0x73530 drops to
+// 8); that with the top lookup after the summary and capacity reads 851 at retail's 2828 B (0x73530 1: the session then
+// arrives in ECX, since no call sits at the entry); that with the capacity bounds in an `else if` 851 (same code); the
+// original body with the loop's variant through 0x192e60 at the loop body's top level 949 (2700 B: the loop call stays out
+// of line, the top inlines, the reverse of lane 2 r76's result on the older body). Diagnostics (restored at once): this
+// file without /arch:SSE plus the 0x63220 call 1013 (no change in the inline set); the disabled 0x6d4c0 draft linked in
+// place of its stub (with 0x6e910 listed so its file is in the image) 871 (no change). Retail's EAX session follows from
+// the top call staying out of line (EAX carries its argument); every form above that expands it moves the session.
+// Shared upper selector 865; split capacity gates 865, individual admission gates 865,
+// named upper result 865. Dword cells 876, with both library clears 903, split capacity
+// gates 876 and type retained across the lower check 876.
+// NOT kept: the selector expands but the opening lookup still expands, and all eight
+// move the session onto the stack and disturb the matched caller. The dword frame is 0xb0.
+// Player-loop lookup nested at the range, population or enablement checks, at each pair, at all three, or at
+// separate signed range bounds 871 each. The frame and both lookup boundaries remain unchanged.
+// Early signed dword histogram declaration 936; adjacent ID and signed/unsigned histogram scopes
+// 987/987; adjacent signed scopes with range fill for the first, second, or both clears 966/994/971,
+// and counted fills 993; two independently cleared dword histogram scopes 936. NOT kept: adjacent
+// scopes recover 0xb4 with the session still in EAX and shorten the body to 2652–2668 bytes. The
+// opening lookup still expands.
 // Dword bucket updates by explicit first/second/both assignments 911/911/911. Named first/second/both
 // bucket indices 928/911/928. First or both bucket addresses 911/911. NOT kept: all shorten the
 // body and increase the score. The frame reaches 0xb0 and the first variant lookup still expands.

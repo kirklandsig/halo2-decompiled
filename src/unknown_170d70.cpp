@@ -337,9 +337,24 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Plain while traversal 125, player-state reference 125, rotation group first 376, deadline advance
 // beside the target advance 158, or side-vector aggregate 125, all with the independent deadline.
 // NOT kept: the 125 forms recover the first 0x2b8 bytes but grow the correction at 1413 bytes.
+// Linear, low-order, whole polynomial, or delta cursor names 64 each. Read-only target,
+// derivative, or polynomial cursors 64 each. Shared unit-length checks 64. Separate target-copy
+// cursors 326, with independent deadline 316. Independent deadline with polynomial names
+// or shared unit-length checks 125 each. NOT kept: both 125 forms recover the traversal
+// through +0x2b7 but change the basis correction and grow to 1413 bytes.
+// Independent cursor with a named scheduled deadline 94, or both subtraction operands named 124; signed
+// ordinal beside deadline 125; channel or shared-basis normalization range 220/309; shared basis with
+// named length predicate 124; native current/target stride 120; corrected up accumulators 124. With the
+// named deadline, staged orthogonality 92, direct j/k/i stores 117, shared basis 115, aggregate side
+// vector 94. NOT kept: the named deadline restores the traversal through +0x34a at 1396 bytes, but the
+// dot product and basis correction still raise the score.
 // Linear coefficient advanced in the loop step, after the constant, or by capturing the
 // next pointer at the latch or width read: indexed deadline 347/68/92/92, independent
 // deadline 367/144/140/140. NOT kept: the spill order still differs and all scores rise.
+// Separate corrected up vector through placement, shared, or staged cross with j/k/i stores
+// 70/70/70, or whole vector publication 234. With independent deadline 130/130/130/201.
+// NOT kept: The separate component stores leave the swapped deadline and group homes in the
+// original loop. The independent form grows to 1413 bytes and differs in the basis correction.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -948,10 +963,23 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // indexed count clear 123 or indexed index store 129. Between-clear bind with short record subscript,
 // retained map cell, or preincremented signed count 129/129/129.
 // NOT kept: the indexed count clear gains six. It still creates the cluster before traversal.
+// Early missing-cluster capacity guard 137, guarded miss first 159, guarded local postincrement
+// 137. Immutable reservation counts, preincrement in count publication, separate count advance,
+// immutable entry and volume addresses, or record selected by signed count 129 each.
+// NOT kept: the guarded creation forms shorten away from retail. The register exchange
+// and inline cluster creation persist.
+// Success set at list exhaustion 140. Capacity failure clears completion and breaks, with named cluster
+// admission 133, scoped creation receiver 133, explicit list-sentinel break 133, count before head 134,
+// dword plane table 133, relative pool entry address 133, or early full-cluster guard 126. NOT kept:
+// the guarded form gains three at 431 bytes and still exchanges the register saves. The other shared-
+// result forms raise the score.
 // Publish the traversal pointer after both clears through the created pointer, reference,
 // checked-count indexing or checked-count pointer: 129/129/124/129. Shared capacity result:
 // 125/125/118/125. NOT kept: the 118 form restores EBX and BP but puts the cluster creation
 // before traversal and spills the traversal pointer after clearing the heads.
+// Assignments at map hit, signed capacity test, unlinked-entry test, or projection: 129 each.
+// With a shared capacity result: 125 each. NOT kept: The shared result restores EBX and BP
+// and advances the first difference to +0xe. The gain is four and creation stays inline.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1271,6 +1299,20 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // horizontal field 356, shared original-direction setter 380.
 // NOT kept: the repeated half-angle is 1454 bytes and duplicates a computed value. The original-direction
 // setter demotes the matched initializer.
+// Scaled k with compound scaling 349, after the first diagonal 361, or at each mixed pair 355.
+// Separate sine conversion 364 or delayed past cosine 365. Component-first sine products 337.
+// Signed pair accumulators 349; sine products at diagonal boundaries 343.
+// NOT kept: two axis squares still spill. The separate sine conversions also demote the view initializer.
+// The ratio publication and projected slope still do not recover the unity register.
+// Named tangent before/after ratio 385/385, named slope before/after ratio 363/363,
+// compound aspect correction with ratio before tangent or between stages 385/385,
+// ratio store after projected angle 337 reduced, and retained ratio through slope 392.
+// NOT kept: the best ties the 337 reduced control at retail length, still spills
+// two squares, and leaves unity in XMM7. The other forms shorten the body.
+// Axis-square constants 337; component square accumulators 339; staged diagonal contributions 381;
+// pair-local cross products after their diagonal 357; square as first diagonal summand 337;
+// diagonal-first publication 384; cosine bound to diagonal scope 384; joint trig declaration 337.
+// NOT kept: reduced control 337, full 334. Unity and two axis-square homes remain different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1742,10 +1784,24 @@ struct s_pool_view_172840
 // Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
 // NOT kept: the 55 form grows to 870 bytes with the key scheduled late and a five-byte
 // sentinel. Keeping the reservation index for rollback removes a retail pointer reload.
+// With independent failure stores and signed publication, dequeued-entry, selected-cluster,
+// projection, or both traversal references 55 each. Implicit cluster narrowing 55. Direct widened
+// ring subscript 226, retained portal count 230, shared portal bit tests or tests and set 55 each.
+// NOT kept: the 55 forms still grow to 870 bytes and keep the long sentinel load and
+// displaced key store.
+// With independent failures and signed publication, failed clip first or rollback with continue 96/96;
+// incoming cluster on the left of the comparison 56; captured short selection by equal or unequal arm
+// 55/133; positive reservation block 55; continue on full queue 59; named publication key 55. NOT kept:
+// the 96 forms reorder the clip arms and grow one byte; the 55–59 forms grow two bytes and retain the
+// five-byte sentinel load.
 // Independent failure stores with the link after the first cluster read and key after/before
 // short selection, branch/conditional: 133/57 and 133/57. Link before the read: 60/60 and
 // 129/60. NOT kept: the 57 forms grow to 870 bytes. The 60 forms recover the short sentinel
 // at 868 bytes but publish the link and cluster ahead of their retail positions.
+// Separate x/y overlaps, four independent edges, leading edge guard, or trailing edge guard:
+// 134 each. With independent failure stores and signed cluster publication: 55 each.
+// NOT kept: The 55 forms restore the flag and traversal homes but grow to 870 bytes,
+// publish the key late and retain the five-byte sentinel load.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

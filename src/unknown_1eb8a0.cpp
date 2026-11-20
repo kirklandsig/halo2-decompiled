@@ -759,6 +759,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
 // output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
 // Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
+// M3 lane 15 r116 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH: with these listed the fast count equals the plain
+// 603; control 603, aligned 658): the target copy from pos as memcpy 603, the output position copy from q as memcpy 603, both
+// 603 (same code each); the output position assigned through `out->position` before the pointer local 659 (2875 B); a, b and
+// pos as const pointees (definition and declaration) 603 (same code). Retail evidence: q is loaded into EBX at entry, EBX is
+// then a temp in the target copy and q is reloaded into it after the second normalise call, so q's EBX range is split.
 // Round 452: A single ramp-tail calculation or a single elapsed-count read
 // 693/693. Named braking distance or travel ticks 693/693; accumulated estimate 697.
 // Real estimate before the cast on the first or both arms, or one shared store 693/693/693.

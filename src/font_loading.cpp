@@ -986,6 +986,14 @@ static inline long font_character_pixel(long alpha, long color)
 // packed countdown and ordinary end pointer 209; packed end pointer and ordinary countdown 187.
 // NOT kept: the countdowns change the opening register assignment. Dword parity gives the packed bit
 // operations but shortens the body and displaces the packed run. Literal assembly still differs.
+// The parity mask width, literal byte assembly and packed run reuse still differ.
+// Two-field pair loop/output-end pair loop and ordinary endpoint selection/set opaque bits
+// 163/183/237/237; with dword parity 181/178/256/256.
+// NOT kept: reaching retail length with the pair loops increases the score; endpoint forms shorten away from retail.
+// Ordinary alpha in both assignment arms, transparent default, opaque default or opaque predicate:
+// 59/171/172/59 with byte parity; 203/240/240/203 with dword parity.
+// NOT kept: The defaults reach 504 bytes with byte parity but move the cursor registers. Dword parity
+// shortens the fills and changes run allocation. The original helper and body were restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

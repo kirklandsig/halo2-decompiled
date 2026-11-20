@@ -2161,6 +2161,13 @@ bool function_17afd0(long effect_index, long value);
 // available;` cleared by `owner == NONE || g != owner || !same_view` 119 (501 B); same_view from a forceinline (owner,
 // available) helper with a false result set by the conjunction 141 (513 B), a true result cleared by the test 141 (513 B),
 // an early `return false` then `return available` 56 (498 B); P with same_view declared at function scope 138 (P's code).
+// M3 lane 11 r135 (fast with 0x174420 and 0x1751d0; control 12, aligned 6): a false default ahead of the availability
+// and `same_view = available;` in the owner/view arm 102 (493 B, aligned 6: every register retail's; left are the early
+// false store and the copy's `mov [x], bl` where retail stores 1 and 0 on branches); that copy with the default at the
+// loop body's top 137 (493 B, aligned 6); no default, the owner/view arm copying the availability and an else arm storing
+// false 56; a false default ahead of the availability with `if (available) same_view = true;` nested in the owner/view
+// arm 119 (502 B, register-masked 6: NONE and the owner leave EBP); the copy form with the availability as one
+// conjunction 48 (494 B).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -267,6 +267,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // occupied mask as `long` 14 (all four the same code); the first sprite record through a block pointer with named top
 // and bottom edges ahead of the x corners 30 (x and y move to XMM5/XMM6). Diagnostic: dead computed copies of the pulse,
 // of both half extents, or of the first pass's sum, 14 each (extra temporaries do not move the XMM3/XMM4 pair).
+// M3 lane 11 r135 (fast with 0x2008fc 0x200891, control 14; register-masked aligned difference 1, the ADD/LEA copy
+// source alone): both x steps through a forceinline (position, half width, pulse) helper 14; the half extents built in
+// a two-real aggregate and read back into the two locals 14; the first step through a `real &` bound to the running x
+// 14; the first pass's scaled sprite width named where it is computed 14; the first pass's width scale declared ahead
+// of the sprite index 14 (all five the same code).
 // @retail 0x200462
 void function_200462(long arg_0)
 {
