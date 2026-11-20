@@ -967,6 +967,11 @@ real function_30bf0(vector3f *vector);
 // clipped point through the existing vector3f_add_scaled 90 (aligned 69); distance_squared `real const` 84 (same code);
 // the plane distance through dot3f 138 (1308 B, aligned 73); the delta through vector3d_from_points3d 142 (1308 B, aligned 79).
 // MiniMax A (11-20): no new form, no lower score (84); the clip amount and the squared distance still take separate cells where retail packs them into one, so delta and the probe outputs sit four bytes low and the motion cell sits four high; the earlier rounds' reused-variable and dead-local forms measure 81 or more.
+// M3 lane 11 r140 (H2M_FAST with 0x263740/0x26d370, both MATCH; control 84): the squared distance through dot3f of the delta
+// with itself 84 (same code); declared, then assigned 84 (same code); read through a `real const &` at its five tests 150
+// (1312 B); the clip test `amount >= 0.0f` for `!(0.0f > amount)` 236. Diagnostic (a file-local copy of the cross helper
+// with the subtracted products written a first, not keepable): 84, the same code, so the seat-loop cross products' operand
+// sides do not follow the helper's spelling.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

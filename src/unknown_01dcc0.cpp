@@ -448,6 +448,12 @@ long g_55e6c0;
 // count >= 4 ? 4 : count` 33; as if / else-if / else with the `<= 0` and `>= 4` bounds 33; upper bound first (`count > 4 ? 4 :
 // count < 0 ? 0 : count`) 153 (495 bytes); the level loop bounded by the levels local 158 (506 bytes: levels spills to the
 // count's home and the height then takes EAX at the top as retail, so a longer clamp range is what lowers its rank).
+// M3 lane 11 r140 (H2M_FAST with 0x1dc40/0x1db10, both MATCH; base: round 122's lead re-measured 31 at 484 bytes, the pitch
+// part scheduled ahead of the height part): the levels value read through a `long const &` for its store 31; a second entry
+// pointer local for the header part 31; the levels clamp, zero stores and packing in their own block scope 31; the packing's
+// height through a `long const &` to the parameter 31 (all four the base's code); the header pointer declared ahead of the
+// sub-header zero stores and used for them 157 (488 bytes), also for the select and the format store 162 (471 bytes). The
+// packing ahead of the clamp re-measured 31 (483 bytes, in-place clamp), with the header pointer 33, with levels 33.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
