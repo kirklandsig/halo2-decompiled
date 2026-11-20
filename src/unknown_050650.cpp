@@ -985,6 +985,10 @@ struct s_collision_result_buffer_1697c0
 // 270 and each rotation in a block of its own 270 (both same code); the pitch rotation through the wrapper and the yaw
 // rotation through the in-place helper with `(real)sin(yaw), (real)cos(yaw)` as arguments 331 (1434 B); the pitch-axis
 // length bound to `real const &` and tested afterwards 282 (1437 B).
+// Direct clear, hit-first, hit with continue and disabled-collision skip without a separate
+// clear carrier, each with unpublished result or positive fraction first at fallback 344/335 each.
+// NOT kept: all raise the score at retail length and change the matched caller. The 344 forms
+// also shrink the 0xa8 frame.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

@@ -4245,6 +4245,8 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
 // score 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
+// score 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns
 // directly (1264 B). Left: retail reads the accepted byte back at every exit where ours folds it at the reason-1/2/9
 // exits, the acknowledgement block is laid out last in retail, the timeout call lacks retail's owner spill (the earlier
