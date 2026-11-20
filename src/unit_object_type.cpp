@@ -2479,6 +2479,7 @@ void function_cfec0(long unit_index)
 // still folds and the entry block loses retail's `push edi`), and a `result` local assigned the parameter and returned
 // at every exit measures 47 whether the entry test reads the parameter or the local (the extra phi moves the unit
 // pointer from EAX into ECX).
+// MiniMax A (11-20): no new form, no lower score (1): the NONE test is a jle here and a je in retail
 // MiniMax B (11-19): no new form kept, no lower score (1): this round worked out why the equality spelling cannot be
 // used - with `unit_index != NONE` VC proves the value to be -1 at the exit and folds the returned copy to a constant,
 // so the copy survives only with the `> NONE` spelling and its `jle`; retail's exit block has a single predecessor
@@ -4815,6 +4816,7 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // (`fstp dword ptr [esp + 0x18]`) where retail spills first; the max angle, the forward pointer, the result pointer
 // and the seed as named locals, and the seed passed directly, all measure 2 with the same pair swapped, so the order
 // is the scheduler's and not the source's: BLOCKED-BY 0x146320 (src/unknown_146240.cpp).
+// MiniMax A (11-20): no new form, no lower score (2): the x87 speed spill and the pointer add are in the other order
 // MiniMax B (11-19): no new form kept, no lower score (2): the only difference left is the order of two instructions -
 // the x87 spill of the sampled speed (`fstp dword ptr [esp + 0x18]`) sits after `add ecx, 0x168` here and before it
 // in retail, and both write the same slot and pass the same pointer. This round tried the speed's expression with the
@@ -7685,6 +7687,7 @@ public:
    counting a held weapon in a multiplayer engine mode 7 with option 0x20,
    for the dropped weapon of a player on a flagged team; retail expands both
    counts in place */
+// MiniMax A (11-20): no new form, no lower score (508): retail keeps the pool in ECX and the unit in EDX
 // MiniMax D (11-17): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the slot loop's two induction registers and the frame slot layout follow that plan; the call to 0x106030 (src/weapons.cpp, another file) is expanded here where retail calls it out of line, and that file is not this lane's. BLOCKED-BY 0x106030.
 // MiniMax E (11-16): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the rest of the body follows that plan; the forms recorded below (the held index through the existing function_cbd50, the modes stored before the lookup, the empty/loaded pair declared first) all tie or regress.
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
@@ -9032,6 +9035,7 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // match, so the file was restored to the body that scores 62; the stun block's add rate written with its operands
 // swapped (report->scale * the definition's +0x34) measures 56 with the same code, so the product's operand order
 // does not move it, and the shake's fields are still named locals where retail re-reads the definition's +0x58.
+// MiniMax A (11-20): no new form kept, no lower score (62): reading the owner fields in retail's load order and putting the damage record's byte store before the owner copy measure 56, but that is a store order picked by score and under the keep bar, so the body is unchanged
 // MiniMax E (11-14): the shake's minimum (the definition's +0x5c) named as a local and read twice: 116 -> 62 (1602 bytes,
 // retail's length); the stun block then follows retail's instructions; left is the shake's own load order (retail reloads
 // the definition's +0x58 for its division), the owner and damage store orders and the 0xc98a0 call's register roles.

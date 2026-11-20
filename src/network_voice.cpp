@@ -3950,6 +3950,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax A (11-20): no new form, no lower score (139): retail keeps the channel in EBP and walks a packet cursor in EDI, ours keeps the data base in EBP with base+offset addressing
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (139): the rewrite that advances the packet cursor on its

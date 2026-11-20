@@ -2427,6 +2427,8 @@ struct s_actor_looking_turn_request
 // score 442 (was 442): Frame 0xcc versus retail 0xc8. The inlined combat test and actor-slot and animation-state homes differ.
 // MiniMax A (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the first difference is at the entry, where retail loads the actor table into ECX, keeps the actor index in ESI and the scaled index in EAX (stored to a home at +0x30) and holds the animation state in DI, while this build loads the table into EDX, reloads it into EAX, keeps the actor index in EDI and the animation state in DX; that is the allocator's choice for the values live across the 0x297600 and 0x2973f0 calls, and 0x1fdd90 is still expanded here where retail calls it out of line.
 // Earlier score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
+// MiniMax A (11-20): no new form, no lower score (442): the frame is 0xd0 against retail's 0xc8
+// score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
 // of the call keeps it out of line (r131, below), which still leaves the valid flag's type and the per-path publications.
 // MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
 // 0xc8 and the local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines

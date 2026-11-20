@@ -3228,6 +3228,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax A (11-20): no new form, no lower score (170): the raw-length slot is +4 against retail's +0xc
 // MiniMax I (11-19): no new form, no lower score (170): the raw current magnitude still shares the clamped length's slot where retail keeps it in a slot of its own ([esp + 0xc]) and reloads it for both clamp tests, and the dot's promotion still widens to a spill; the named raw length (251) and the clamped pair (320) recorded below still measure worse, so the body is unchanged.
 // MiniMax H (11-20): no new form, no lower score (170): the body is retail's length and the whole difference is
 // the raw current magnitude's home - retail keeps it in a slot of its own ([esp + 0xc]) and reloads it for both
@@ -3622,6 +3623,7 @@ s_cached_input_list g_5234e8[4];
 // MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
+// MiniMax A (11-20): no new form, no lower score (146 on the fast check, 113 in the full build): the list held in a local measures 136 on the reduced image but 132 against 113 in the full build, so the body is unchanged; the index still rides EDI into 0x31590 where retail keeps it in EBX
 // MiniMax A (11-20): no new form, no lower score (146 on the fast check, 108 differing instructions in the full build); caching the list pointer in a local scores 136 on the fast check's reduced image but 127 in the full build, so it was dropped - the two builds disagree here.
 // MiniMax B (11-19): no new form kept, no lower score (113 on the full image, 146 on the reduced one):
 // the call to 0x31590 still takes the index in edi where retail keeps it in ebx - that callee is matched, so its
@@ -3983,6 +3985,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 }
 
 // MiniMax G (11-20): no new form, no lower score (317): the body is retail's 1324 bytes and only the register plan differs - retail keeps the state pointer in ebp and the swap counter in edx (homes [esp + 0x10] and [esp + 0x14]) while this build takes ebp for the counter and edx for the state, with the two homes swapped.
+// MiniMax A (11-20): no new form, no lower score (317): the prefix and state registers and the ordinal homes
 // score 317 (was 317): EBP and EDX hold the prefix and state in reverse order, with swapped ordinal homes.
 // MiniMax E (11-16): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
 // MiniMax S (11-14): no new form, no lower score (317): the permuter's search over this body (29 tries, 304 s, reduced image and full image) found nothing below the baseline's 317; retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two read the stack slots in the other order, so the frame's shape and the register plan have to change together.
@@ -4405,6 +4408,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 
 // MiniMax G (11-20): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this build's locals and register plan differ from the start.
 // MiniMax I (11-20): no new form, no lower score (486): the first difference is the frame, 0x60 here against retail's 0x38; retail keeps one 12-byte home for the previous camera position and one per element.
+// MiniMax A (11-20): no new form, no lower score (486): the frame is 0x60 against retail's 0x38
 // score 486 (was 486): frame 0x60 versus 0x38, stored velocity reloads and projection homes.
 // MiniMax S (11-17): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
 // keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from
@@ -6705,6 +6709,7 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 
 #include "selected_source_pass.h"
 
+// MiniMax A (11-20): no new form, no lower score (111): the 0x14b60 clear flag again, plus the nonzero cull arm order
 // MiniMax B (11-19): no new form tried this round, no lower score (111): the pass helper's late `enabled` store and
 // 0x14b60's first argument (retail passes it in eax) still differ; that call's convention belongs to the callee's own
 // file: BLOCKED-BY 0x14b60.
@@ -6885,6 +6890,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
+// MiniMax A (11-20): no new form, no lower score (100): the 0x14b60 clear flag is pushed instead of passed in eax
 // MiniMax B (11-19): no new form tried this round, no lower score (100): 0x14b60's first argument still goes on the
 // stack here where retail passes it in eax, and the jump-table bytes it shifts still differ; that argument
 // convention belongs to the callee's own file: BLOCKED-BY 0x14b60.
@@ -7094,6 +7100,7 @@ void function_020770();
 void __stdcall function_13870(bool finish, bool blur);
 bool function_13630();
 
+// MiniMax A (11-20): no new form, no lower score (269): the 0x25dc0 branch diamond and the 0x14b60 argument
 // MiniMax B (11-19): no new form kept, no lower score (269): the permuter's variants again need a flag set by one
 // test and read by the next, a swapped argument pair at the second 0x25dc0 call and a constant held in a local, and
 // the one-use `bool` form that reaches retail's 1638 bytes (206) is kept only with a byte-for-byte match; what still
