@@ -7090,7 +7090,7 @@ done:
 // addresses. The side bit cannot have both halves: every form that keeps retail's sete/test/je (a bool local, with
 // either the compound or the assignment form in the branches, or a signed char state pointer) makes the compiler merge
 // the two arms into one load of the byte, one register update and one store.
-// score 125 (was 187; 33 with the reverted helper): the normalizer's operand order, the definition-flag bytes, the face switch's table, the timing's duration and the side bit are retail's now; the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
+// score 125 (was 187; 33 with the reverted helper): the normalizer's operand order, the face switch's table, the timing's duration and the side bit are retail's now; the definition-flag bytes, the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
 // Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
