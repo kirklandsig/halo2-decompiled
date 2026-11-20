@@ -1308,6 +1308,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // 563 (2795 B; listed above), with the dot's operands the other way 563, the same inline computing the point from the matrix
 // position and the offset itself 560 (2795 B); at the tail a frustum pointer named before the flag stores 479 (2814 B,
 // masked 111), the flags and both calls through a fresh `&entries[i]` 672 (2782 B). Body unchanged.
+// M3 lane 8 r202 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 273, masked 126): in
+// light_projection_point_ab the three rows through the file's dot_product_c1a80 on a copied, pre-scaled vector, row first 624
+// (2877 B, the copy changes the prologue), vector first 623, with the scaled scalars gathered into a vector initialiser 606
+// (2778 B); the left cross through the shared cross3f with the forward cross through cross_product_c1a80(up, left, forward)
+// 554 (2817 B, masked 176); the left cross through cross3f alone 532 (2796 B).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

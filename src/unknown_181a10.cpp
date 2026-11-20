@@ -515,6 +515,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax B (11-20): no new form, no lower score (238): the frame is 0x40 where retail has 0x44, the node pointer's home is frame+0x14 where retail keeps frame+0x20, the 1..16 classifier folds its first compare where retail loads the word into ECX and compares the register, and the classifier's data is loaded once where retail reloads it; the form that reaches retail's frame needs the material output declared at function scope, a declaration move that is not keepable.
 // score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax E (11-19): score 238 (was 238): no new form, no lower score. Read from the listing again: retail walks the
 // node chain with the next pointer already in a register and tests the last node's type and entity, then scans the
@@ -1078,6 +1079,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // function scope 230 (frame 0x44 as retail, first difference +0x1a: second/first homes +0x14/+0x18 for retail's
 // +0x10/+0x20; a declaration moved by score, not kept); the 1..16 pin as a non-inline static function taking its bounds
 // 238 (inlined at compile time, same code), with the material at function scope 230.
+// M3 lane 15 r114 (fast with the file's other seven functions, all MATCH; control 238): the 1..16 classifier given the node
+// and reading `node->shape->data` at each use (the sibling helper's accessor shape) 320 (1243 B; still one data load); the
+// byte test as a bool helper on the shape 238 (same code: no setne); the classifier as a preset result compared with the
+// value (`limited = 1; if (limited <= value) { limited = 16; if (limited >= value) limited = value; }`) 320 (1243 B: retail's
+// `mov ecx, 1` / `mov ecx, 0x10` preloads and the `mov ecx, value; cmp ecx, value` end, but `cmp eax, ecx; jl` for retail's
+// `cmp ecx, edx; jg` and the data copied from the first read instead of loaded again; aligned 179 against the control's 181),
+// that spelled `!(limited > value)` / `!(limited < value)` 320 (same code), with the field read at each use 321. The
+// positional count rises only because the block's rows shift; the data field is still loaded once.
 // M3 lane 5 r213 (fast with the file's eight other functions, matched throughout; control 238, aligned 138): the origin
 // copied member-wise z, y, x through a source pointer (retail's float copies, z first) 311 (aligned 127, frame still
 // 0x40); the hit copied member-wise 323 (aligned 166); both 361 (1260 B); the distance sum written radius first 238 (same

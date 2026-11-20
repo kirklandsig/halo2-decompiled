@@ -43,6 +43,7 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // Earlier at 176: r121, r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax D (11-19): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the XY vector read before the second copy measures 169 (seven points, under the eight-point bar), the same helper with the original vector order 171 and the two-exit helper with the early vector 174, the length taken from the helper's return 265 and the rotation rows written with the projection term first unchanged, all dropped; the magnitude and the aim length still sit at +0x10 where retail keeps them at +0xc, the final pitch takes a local slot where retail uses the fourth argument's home, and the rotations' sine, cosine and vector copies keep different slots.
+// Earlier score 176 (was 176): r123 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // r123 unchanged (merged from a second score line). frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
 // stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
@@ -675,6 +676,13 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // home after the first rotation's sine and cosine have theirs (roots and yaw +0xc, first pitch angle and both sines +0x10,
 // both cosines in the first stack argument's home, the pitch in the scale's home); ours homes the pitch first. Body unchanged.
 // MiniMax C (11-19): no gain (176, baseline; body restored). The single-exit normalizer with the XY vector before the second copy is the known 169, a gain of seven and under the bar; on it the roots and the inlined 0x11cc90 arc-cosine result sit at +0x10 where retail packs them at +0xc with the clamp input and the yaw. Re-measured here: the single-exit normalizer written with a result local and a length store 404, with a bool and ternaries 270, and the XY vector before the second copy 174.
+// shared planar scale at yaw admission 176; planar dot for projected lengths 263; planar dot with shared
+// yaw scale 263; rotation basis dot with shared yaw scale 177; staged rotation cross with shared yaw scale
+// 213; actor angle lvalues with shared yaw scale 284; shared rotation products with shared yaw scale 209;
+// aggregate rotation output with shared yaw scale 251.
+// NOT kept: the shared planar scaler ties at 176. The shared rotation products reach 1706 bytes with a
+// smaller, nonretail frame and a higher score. Unity in XMM5 and the shared root, inverse cosine and yaw
+// home remain unresolved.
 // M3 lane 7 r193 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH each time; control 176, aligned 153 by
 // difflib with addresses masked): the private normalizer single-exit (`result = 0.0f`, set to the root in the success arm,
 // one length store after the branch) 217 (1718 B, aligned 157). LEAD: this function's first two normalizations as

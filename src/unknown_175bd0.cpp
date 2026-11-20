@@ -1882,6 +1882,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax H (11-19, round 95): no new form, no lower score (128): retail keeps the particle system in ESI and colour B in
+// EDI across the two indirect calls and spills colour A to a stack slot, while this build keeps the particle system in EDI
+// and re-reads colour A at the colour call; measured and reverted: the two virtual calls in the other order (148), the
+// definition's location mode and placement read into locals before the loop so the definition is not live across the
+// set_location call (143, frame 0x48), so the body stands.
 // score 128 (was 128): The frame is still 0x40 versus retail 0x44, and the early color-A spill and ESI system are missing.
 // MiniMax B (11-19): no new form, no lower score (128): retail spills colour A to frame+0x00 and keeps the particle
 // system in ESI and colour B in EDI across the two indirect calls, while this build re-reads colour A from the effect
@@ -3506,6 +3511,20 @@ void __stdcall function_17a380(s_effect_datum *effect)
 }
 
 // score 93 (was 93): The frame is 0x4c against 0x54, system/successor use exchanged registers and the definition is unspilled.
+// MiniMax H (11-19, round 95): no new form, no lower score (49): the live mode read at each location call measures 103 and moves
+// the effect index out of the stack into a register, which loses the matched caller 0x176f60, so the cached mode in the
+// definition's slot stands.
+// score 93 (was 93); m3 lane 8 r186 reached 53 (not kept at review, see its line at the end); on that form: frame 0x54, the system in ESI, the next index and then colour B in EDI, the type
+// MiniMax A (11-18): no new form, no lower score (93): the live mode reads recover the 0x54 frame but move the effect index from the stack into a register, which loses the matched update caller 0x176f60, so the body stands.
+// MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, the system and the
+// next index still take EDI and ESI the other way round, and the definition still has no spill for the per-call mode reads.
+// Not kept at review (11-20, batch 303): MiniMax H's 49 form below needs the 0x1751d0 result in a one-use pointer local
+// (an element pointer used once), the long cached mode and the reordered locals, which are kept only with a match;
+// without the named result it measures 120 and loses the matched caller 0x176f60 (lane 8 r186), so main's body stays at 93.
+// score 49 (was 93): the frame is 0x54 with the system in ESI, the next index in EDI, the type object in EBX and colour A in a frame slot, as retail's; left: retail spills the definition at [esp+0x10] and reads the mode from it at each call, where this build caches the mode in that slot.
+// MiniMax H (11-19): 49 (was 93): the particle-location cursor is the location index of a spawn record, the result of the second 0x1751d0 call is named and both type queries are the colour call's arguments; the caller 0x176f60 stays matched. The mode read at each call measures 103 and loses the caller, and the mode's width and the colour order each move the score by one to three points.
+// Earlier score 93 (was 93): The frame is 0x4c against 0x54, system/successor use exchanged registers and the definition is unspilled.
 // Earlier score 53 (was 93): m3 lane 8 r186. Frame 0x54, the system in ESI, the next index and then colour B in EDI, the type
 // object in EBX, the tint in the effect index's home and colour A in a frame slot now agree with retail; left: the mode
 // is cached in the slot where retail spills the definition and reads the mode at each call (that form makes LTCG pass
