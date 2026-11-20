@@ -804,6 +804,10 @@ void function_3dd10(long object_index, bool force);
 // extent 86/86. Tag lookup after extent or after address 260/87. One supplied/default
 // color assignment by value or by source address 298/298. The choice count and mask
 // homes and the signed weight-scan exits still differ.
+// One choice-name read with nonmatching skip, nested mismatch, selected-name first or
+// complementary admission 86/86/189/86 at the unequal bound. All four signed forms 645.
+// NOT kept: the signed bound unrolls the scan, and the other forms regress at retail length.
+// The ordinal zero, choice count and mask homes still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
