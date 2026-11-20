@@ -3188,6 +3188,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // in the second loop 95; the no-team flag at function scope 84 (same code); the first loop's player assigned after its
 // declaration 84 (same code). On the kept body: the slot helper taking the screen and reading its mode 87 (same code), with
 // the field-order default arm 95. Two further score lines stacked in this note were merged into the first.
+// M3 lane 3 r283 (fast, control 87; body unchanged): re-measured a counter declared in each loop 85 (lane 1 r132's form, two
+// under the bar); on it the shown count sits at -0x10 (retail -0xc), the first loop's player and the no-team byte at -0xc
+// (retail -0x14) and the second loop's text_a, text_b, bitmap_a, bitmap_b at +0x1c, +0xc, -0x14, -8 (retail +0xc, -0x10,
+// -8, +0x1c). On that form: the helper's case arms storing bitmap_b before bitmap_a 85 (same code); the second loop's
+// four shorts declared text_a, bitmap_b, bitmap_a, text_b 85 (same code); the default arm in field order 93 (926 B); the
+// shown count cleared before the empty-list call and passed to it 178 (913 B); the local-player index initialised at its
+// declaration 85 (same code). Still BLOCKED-BY 0x53b40 for the players[i] reload (src/network_voice.cpp).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

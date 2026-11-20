@@ -1286,6 +1286,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Bind time destination, name size at publication, or both 89/89/89.
 // Resend goes straight to the common return, with ordinary type read at exhaustion 120.
 // NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
+// M3 lane 3 r284 (h2m fast screen with 0x96510, 0x94df0, 0x94bf0, 0x96b00, all MATCH; lead = lane 15 r115's second-result
+// form, re-measured 10): the lead with `result = 4` last in the found block 91 (221 B); the lead with a named `bool sent`
+// 10 and with the loop bound read into `long newest` 10 (same code each); main's body with `type = 4` first in the found
+// block 42 (217 B), that with the in-place `|= 2` update 104 (209 B). In main every exit is a duplicated return (zero-trip
+// ahead of early, as retail); the lead's `else result = type` arms are real blocks laid out in source order after the
+// loop, so its early exit lands ahead of the zero-trip copy.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

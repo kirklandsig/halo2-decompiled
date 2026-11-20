@@ -1494,6 +1494,24 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // fmulp); the first or the second distance passed straight into its trace call (no named local) 640 / 657 (the whole
 // allocation moves), with 1 to 7 unused locals 640 to 738. The exchanged homes: the rotated side's and the offset's names
 // swapped 108, the rotated side declared ahead of the offset 108, or at the top of the function 108 (all the same code).
+// M3 lane 3 r282 (H2M_FAST; on lane 6 r207's w10 lead re-applied, 108 at 3374 B; all restored, body unchanged).
+// Sites: A first loop distance squares, O obstacle offset squares, N obstacle normaliser squares, D facing dot,
+// S obstacle rotation sine products, H rotated/offset homes. Control wrong A O S H. Reading: the x87 operand order
+// at A, O, N and D follows the count of inlined-helper symbols before the site (dead longs inside a helper move them
+// like the top-of-function scan); S never moves. Forms: local_24..26 or local_21/22 declared in reverse, or apart
+// 108 each (same code); the first loop distance written at its site 232 (3372 B, A O right, N D S H wrong); the
+// normalised-difference helper's scale written as rows 104 (A right; an existing helper written out); the distance
+// helper with one vector3f local 232 (3372 B, A O right, N D wrong, the cosine products then component-first too);
+// dead longs in the distance helper 1..7 188/174/232 x5 (174: A O right, N D wrong), in the rotation helper 108 x7,
+// in the normalised-difference helper 1..11 188/188/188/178/178/236/240/236/236/236/232; unused dot products before
+// the rotation 108 x7; rotation rows with the casts on the components, on all four operands or the sine product
+// trig-first 108 each; double helper parameters 169; parameter orders (sin, cos, v, out) / (v, cos, sin, out) /
+// (cos, sin, v, out) / (out, v, sin, cos) 108/111/111/108 (the sine products stay component-first whichever value is
+// computed first); the y row sine-first 108; sine and cosine as double locals 190 (then the x products are
+// trig-first and the y products component-first), with double parameters 297, the sine alone a double 190.
+// Also on the lead: the rotation helper returning its output pointer, passed straight to the offset call 108 (same
+// code); float rows without casts 183; the components read into locals first 116 (re-measure); the helper's
+// parameters renamed four ways 108 each (same code: operand order does not follow names).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

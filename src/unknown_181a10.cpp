@@ -1116,6 +1116,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // accumulated (`distance = contact->distance; distance += radius;`) 248; both plane-side tests with the zero on the left 238
 // (same code); the fraction test as `!(distance < fraction)` 238 (same code); the final test as `!(normal.k <= scale)` 240;
 // the position published by aggregate assignment alone 340 (1227 B), with the hit snapshot by components 310 (1249 B).
+// M3 lane 3 r282 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): 1 to 7 dead
+// longs at the top 238/238/238/238/239/238/238 (the symbol-count phase does not reach these integer compares or
+// the frame); the preset 1..16 clamp with 0 to 7 dead longs 320 x7, 321 at 5 (the compare stays value-first);
+// origin copied member-wise x, y, z from the transform 308 (1245 B), with the hit member-wise too 361 (1258 B);
+// the decode's top bits in a named `kind` 238 (same code, the shift still folds into the mask compare).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

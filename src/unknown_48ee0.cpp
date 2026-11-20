@@ -447,6 +447,11 @@ extern real g_4c9798[36];
 // pairs in the first block 100/146/100 (two pairs: 1479 B, but the later planes' registers move and the flags and homes
 // stay). Slot reading on that form: retail shares the extent's home with the width limit and the distance's with the
 // height limit, ours the other way round. Still BLOCKED-BY 0x48e70 (machine 1's file; lane 7 r178's held patch).
+// M3 lane 3 r283 (fast, control 174; body unchanged): the mode declared at the top with the border 174 (same code); the
+// two limits' product named once and used three times 174 (same code); the depth and w constants stored once after the
+// if/else instead of in both arms 254 (1443 B); near and far distances named ahead of the scale 189 (1484 B); the four
+// texture-slot clears as one memset 173 (only the mode byte's store moves among the clears; one point, not kept).
+// Still BLOCKED-BY 0x48e70 (machine 1's file).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

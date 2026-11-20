@@ -5546,6 +5546,16 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // First staged cross: aggregate result 255; result members 255; member product differences 255;
 // left vector value 216, right 231, both 261; repeated left components read at first use 184, both inputs 184.
 // NOT kept: all lengthen the body. The first-cross load schedule and final x87 scale lifetime remain.
+// M3 lane 3 r285 (h2m fast; x87 tail typings; `cos(real)` is the float overload in this build, so double maths needs
+// `cos((double)x)`): `double forward_scale = (real)cos(yaw) * cosine;` 196 (776 B); `double cosine = cos(pitch)` with a
+// double forward and `(real)(sin(yaw) * cosine)` 187 (774 B, cosine to a frame qword); no named cosine with `double
+// forward_scale = cos(yaw) * cos(pitch)` 196 (the shared cosine to a frame dword); cosine first in both products 187; no
+// named cosine with `(double)` arguments 187; `double cosine = cos((double)pitch)` with a double forward and `(real)(sin(
+// (double)yaw) * cosine)` 187; a real cosine with `double forward_scale = cos((double)yaw) * cosine` 196 (cosine rounded
+// through a frame dword); cosine, forward and left all double 185 (772 B: the scale block and the up and forward terms are
+// retail's, cosine stays on the stack, the left terms take the double pattern `fld [m]; fmul st(n)`); double cosine and
+// forward with `(real)sin(yaw) * cosine` 187, with `sin((double)yaw) * cosine` and a double up 193, with `(real)sin(yaw) *
+// (real)cosine` 178 (776 B); double cosine, forward and left with a real up 185; left computed ahead of forward 198.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9679,6 +9689,10 @@ struct s_unit_melee_collision
 // basis and ordinal names 531.
 // NOT kept: all recover 0x17c but shorten to 2205 bytes and raise the score. The early pool load and fan
 // register allocation remain.
+// M3 lane 3 r285 (h2m fast): the unit lookup through the file's `unit_at_masked_index` 484, with the weapon object's
+// lookup through it too 484 (same code); no aim pointer (every aim read through `unit->unknown168`, the call taking its
+// address) with the range field read in each ray row 529 (2213 B, frame 0x17c, the unit then in EBP), that with the NONE
+// defaults declared ahead of the weapon index 519 (2220 B), that with both seat-flag tests through TEST_FIELD_BIT 528.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
