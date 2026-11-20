@@ -2277,10 +2277,10 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
-// score 417 (was 492): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
+// score 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // product operand sides, the loop's XMM numbering (lead at the end of this note).
 // MiniMax I (11-19): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10 and the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order.
-// score 492 (was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
+// Earlier 492 (was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // MiniMax S (11-17): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still
 // 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at
 // +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in
@@ -2637,6 +2637,19 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Clamp results through pointer/reference with a joined store 492/492;
 // complete bound-arm stores 512/512; input-first stores 537/537; in-place clamps 535/535.
 // NOT kept: each retains frame 0x90 and the direction/draw-point overlap.
+// M3 lane 4 r227 (fast with 0x2f2d0/0x2e3f0/0x222d0, = full 417; a/s/r = LCS-aligned unmatched lines exact / stack
+// offsets masked / registers masked too, main 136/128/46). Lane 14 r121's helper-form lead re-measured 445 at 2288 B
+// (54/50/16). On it: `size` computed before `opacity` 447 (48/44/22: the angle then takes retail's XMM4, the amount
+// stays in XMM1 where retail has XMM2 and size XMM1); with that, the draw point written out 456, the camera sums
+// written out 473 (2304 B), the projection written out 379 (93/82/33: a one-line realignment, the delta block worse).
+// On the lead: `size` declared ahead of `opacity` 445 and the angle ahead of `selected` 445 (same code); the forward
+// dot written out 459 (72/65/23: its sum then emits k first), with reflected written out too 511 (2296 B); delta
+// written out in all six orders 518-520 (2302 B); the unoccluded product, the far-angle products and the projection's
+// dot3f arguments swapped 445 each (same code). Keepable pieces on main without the lead's moved `attenuation`
+// declaration: delta, forward, reflected, the camera sums and the draw point through the helpers 504 (2270 B), with the
+// vertex value through PIN 504. Left on the lead: the camera forward's first load (ours i, retail j) and the k
+// products' sides in the forward and both camera sums (ours global first, retail delta first in all three), the
+// projection's i product, the loop's amount/size registers (ours 1/4, retail 2/1).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3361,6 +3374,15 @@ real magnitude3d(vector3f const *v);
 // as a real 170 (the double copy stays: inlining exposes the same conversion); the dot as `dot3f(&first, &second)` 170;
 // the arccosine of the pinned dot 292 (1091 B). Diagnostic: the two lengths, or the dot/angle/sine/cosine, under other
 // names 170/170/170 (no home moves: the raw current length still shares the clamped length's slot).
+// M3 lane 4 r227 (fast with 0x24590/0x30bf0, both MATCH; control 170; a/s/r = LCS-aligned unmatched lines exact /
+// stack-masked / register-masked, control 137/135/67). The listing agrees with retail line for line up to +0x30: the
+// only first-block difference is the raw current length's rounding store (`fstp` to a's home +4 where retail uses
+// the transfer cell +0xc that later holds the dot, the angle and the cosine). The current length as `(real)sqrt(
+// dot3f(current, current))` 170 (same code); `real a, b;` declared first and assigned by the two PINs 170 (same code);
+// a float copy of the dot for acos (round 221's form, re-measured) 170 (1037 B, 149/134/66); that with a named raw
+// current length 267 (1033 B); the sine, the projection dot, the cosine and then `projection *= 1.0f - cosine` 170
+// (same code); the rotated rows stored straight into `current` with the size computed first 196 (1038 B). Body
+// unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -5502,6 +5524,15 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // helper reading i/j/k) 231 (same code). The colour form gives retail's frame and aggregate order (matrix, corners,
 // colour, collision: by name, descending), but the spill cells stay y 4 / z 8 / radius 0xc / -radius 0x10 against
 // retail's y 4 / radius 8 / -radius 0xc / z 0x10, with z in XMM1 where retail's is XMM7. Body unchanged.
+// M3 lane 4 r227 (fast with 0x141710/0x1697c0, both MATCH; control 231; a/s/r = LCS-aligned unmatched lines exact /
+// stack-masked / register-masked too, control 165/160/61). Retail keeps the offset's y of corners 2 and 3 in that
+// corner's own output y (stores the radius to +0x64 and +0x70, then reads +0x70 back in corner 3's scaled path),
+// which suggests each corner's offset written into its output and transformed in place. Each corner's offset written
+// into its corner and the helper called in place: with the four-channel colour 369 (1824 B, first difference +0x38,
+// frame 0xe0; 173/176/119), with its rgb passed as constants 369 (same code), with the scalar alpha 375 (1819 B,
+// 164/161/65), that with each offset's y stored before its x 377 (166/163/65); all four offsets written first, then
+// the four in-place calls, with the colour 388 (1826 B). The compiler forwards every in-place store (no y store
+// survives), so this is not retail's shape either. Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

@@ -1294,6 +1294,15 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // projections as a plain loop over the face's corners 528 (2810 B, not unrolled as retail); re-measured the reference as a
 // ternary copy 643. Retail's sphere-arm forward row sums (j, i), k where its cone arm sums (k, j), i, so the two arms do
 // not compile one source order the same way. Body unchanged.
+// M3 lane 4 r227 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290; a/s/r = LCS-aligned
+// unmatched lines exact / stack-masked / register-masked, control 199/196/77). Re-measured: the forward cross through
+// cross_product_c1a80(up, left, forward) 433 (2821 B, 210/208/78); lane 5 r195's four-piece statement-order form 279
+// at 2840 B (185/183/89: register-masked worse). New: that cross with the projection helper's scaling as vk, vj, vi
+// 433 (2822 B, 222/220/81); the cross on round 84's 288 lead (entry first, cone `entry = entries;` before its clear,
+// cone bounds after the points) 431 (2821 B, 189/188/68); r195's form with the cone reciprocal from
+// `entry->plane_offset` 558 (2816 B); the projection helper computing the up row (its depth) before the forward and
+// left rows, on main 491 (2812 B), on r195's form 484. Retail loads the left vector's component first in every product
+// of the forward cross; no helper or row order tried moves that. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
