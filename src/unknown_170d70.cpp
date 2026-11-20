@@ -9,6 +9,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "projection_storage.h"
 #include "normalize3d.h"
+#include "vector_products.h"
 #include "unknown_11cc90.h"
 
 /* limits read by the range checks below (zero in the retail image; set at run time) */
@@ -2042,6 +2043,10 @@ struct s_camera_reference_171830
 // Sample and midpoint ray declaration order 270/270, sample endpoint scope 270,
 // midpoint collision workspace first 270, point query home name 270, sample and
 // midpoint ray home names 270/270, midpoint hit fraction home name 270.
+// Stand-in image 270 -> 155 (dist 46): offsets[0] is copied before the cross product (this gives retail's register
+// convention: forward ECX, up EAX, point on the stack), the cluster is a pointer whose reference byte is re-read,
+// the blend is chosen in each arm, loop 2 builds its target point first, and the centre goes through a negated
+// scaled forward vector. Left: the float zero's load placement and the depth * forward->i operand order.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2054,14 +2059,14 @@ void function_171830(point3f const *point, vector3f const *forward,
 	{
 		byte *geometry = (byte *)g_4e0348;
 		s_camera_cluster_171830 *clusters = *(s_camera_cluster_171830 **)(geometry + 0xa0);
-		byte reference = clusters[location.cluster_index].reference;
-		if (reference != 0xff)
+		s_camera_cluster_171830 *cluster = &clusters[location.cluster_index];
+		if (cluster->reference != 0xff)
 		{
 			s_camera_reference_171830 *entry =
-				&(*(s_camera_reference_171830 **)(geometry + 0x68))[reference & 0x7f];
+				&(*(s_camera_reference_171830 **)(geometry + 0x68))[cluster->reference & 0x7f];
 			if (entry->index != NONE)
 			{
-				if (!(reference & 0x80) ||
+				if (!(cluster->reference & 0x80) ||
 					entry->plane.k * point->z + entry->plane.j * point->y + point->x * entry->plane.i - entry->plane.d < 0.0f)
 					narrow = true;
 			}
@@ -2074,21 +2079,25 @@ void function_171830(point3f const *point, vector3f const *forward,
 	   a vehicle's camera marker into the vehicle, and the follow camera was
 	   pulled in to the hood */
 	real depth = *distance + offset;
+	vector3f back;
+	back.i = 0.0f - depth * forward->i;
+	back.j = 0.0f - depth * forward->j;
+	back.k = 0.0f - depth * forward->k;
 	point3f center;
-	center.x = point->x + (0.0f - depth * forward->i);
-	center.y = point->y + (0.0f - depth * forward->j);
-	center.z = point->z + (0.0f - depth * forward->k);
+	center.x = point->x + back.i;
+	center.y = point->y + back.j;
+	center.z = point->z + back.k;
 	function_171d00(point, &center, &center_fraction, narrow);
 	vector3f const *best_offset = NULL;
 	real best_sign;
-	vector3f side;
-	side.i = up->j * forward->k - forward->j * up->k;
-	side.j = forward->i * up->k - up->i * forward->k;
-	side.k = forward->j * up->i - up->j * forward->i;
 	real best_fraction = center_fraction;
 	real radius = *distance * 0.174f;
 	vector3f offsets[2];
 	offsets[0] = *up;
+	vector3f side;
+	side.i = up->j * forward->k - forward->j * up->k;
+	side.j = forward->i * up->k - up->i * forward->k;
+	side.k = forward->j * up->i - up->j * forward->i;
 	offsets[0].i *= radius;
 	offsets[0].j *= radius;
 	offsets[0].k *= radius;
@@ -2130,12 +2139,14 @@ void function_171830(point3f const *point, vector3f const *forward,
 			bool hit = false;
 			s_segment_collision collision;
 			collision.material = NONE;
+			point3f target;
+			target.x = best_offset->i * middle + center.x;
+			target.y = best_offset->j * middle + center.y;
+			target.z = best_offset->k * middle + center.z;
 			long flags = 0x808c0f;
 			if (narrow) flags = 0x808c0d;
 			vector3f direction;
-			direction.i = best_offset->i * middle + center.x - point->x;
-			direction.j = best_offset->j * middle + center.y - point->y;
-			direction.k = best_offset->k * middle + center.z - point->z;
+			vector3d_from_points3d(point, &target, &direction);
 			real found_fraction;
 			if (function_1697c0(flags, point, &direction, NONE, NONE,
 				(s_collision_result_1697c0 *)&collision))
@@ -2157,9 +2168,11 @@ void function_171830(point3f const *point, vector3f const *forward,
 			direction = lower;
 		else
 			direction = (real)(upper >= 0.0f);
-		real blend = upper_fraction > lower_fraction ? lower : upper;
-		if (direction == 0.0f)
-			blend = 0.0f - blend;
+		real blend;
+		if (direction != 0.0f)
+			blend = upper_fraction > lower_fraction ? lower : upper;
+		else
+			blend = 0.0f - (upper_fraction > lower_fraction ? lower : upper);
 		fraction = (1.0f - blend) * best_fraction + blend * center_fraction;
 	}
 	else
@@ -2175,15 +2188,14 @@ double g_45e4c8 = -3.4028234663852886e+38;
 /* the point (or vector) scaled by the matrix's scale, when it is not 1, then carried by its axes */
 PRIVATE __forceinline void follow_matrix_point(transform4x3f const *matrix, point3f *point)
 {
-	real z = point->z;
-	real y = point->y;
 	real x = point->x;
-	real scale = matrix->scale;
-	if (scale != 1.0f)
+	real y = point->y;
+	real z = point->z;
+	if (matrix->scale != 1.0f)
 	{
-		x = scale * x;
-		y = scale * y;
-		z = scale * z;
+		x = matrix->scale * x;
+		y = matrix->scale * y;
+		z = matrix->scale * z;
 	}
 	point->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
 	point->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
@@ -2315,11 +2327,15 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // bounds, a conditional, a mutable request copy or an upper selection 385/385/391/385.
 // With separate distance, const starting point view 385, starting point assignment 385, distance
 // before all coordinate clamps 420 or before the vertical clamp 413. Each stays at 2142 bytes.
+// Stand-in image 295 -> 6: products with the matrix field first (follow_matrix_point's locals in x, y, z order, the
+// vector calls passing &state->matrix), the translation added with vector3f_add, both struct copies written relative
+// to state, and function_171830's retail convention (see its note). Left: one operand order at 0x17161b, pop esi.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
 	s_motion_channels_1701f0 *state = (s_motion_channels_1701f0 *)g_4e9bd4 + user_index;
 	point3f position = *(point3f *)&state->current[0];
+	transform4x3f const *matrix = &state->matrix;
 	real distance;
 	if (0.0f > state->current[8]) distance = 0.0f;
 	else if (state->current[8] > 3.4028235e38f) distance = 3.4028235e38f;
@@ -2352,27 +2368,25 @@ void __stdcall function_170fd0(long user_index)
 	position.y = state->current[3] * direction.j - state->current[4] * direction.i + position.y;
 	position.z = state->current[5] + position.z;
 	vector3f *view_forward = &state->view.forward;
-	vector3f *view_up = &state->view.up;
-	*view_forward = *forward;
-	*view_up = *up;
+	state->view.forward = *(vector3f *)&state->current[10];
 	state->view.unknown14.i = 0.0f - state->first_derivative[0];
 	state->view.unknown14.j = 0.0f - state->first_derivative[1];
 	state->view.unknown14.k = 0.0f - state->first_derivative[2];
+	vector3f *view_up = &state->view.up;
+	state->view.up = *(vector3f *)&state->current[13];
 	state->view.field_of_view = field_of_view;
-	state->view.aspect = 1.33333337f;
 	state->view.scale_x = state->current[6];
 	state->view.scale_y = state->current[7];
+	state->view.aspect = 1.33333337f;
 	function_171d90(&state->view);
 	if (state->follow_matrix)
 	{
-		transform4x3f const *matrix = &state->matrix;
 		follow_matrix_point(matrix, &position);
-		follow_matrix_vector(matrix, &state->view.unknown14);
-		follow_matrix_vector(matrix, view_forward);
-		follow_matrix_vector(matrix, view_up);
-		state->view.unknown14.i += state->translation.i;
-		state->view.unknown14.j += state->translation.j;
-		state->view.unknown14.k += state->translation.k;
+		follow_matrix_vector(&state->matrix, &state->view.unknown14);
+		follow_matrix_vector(&state->matrix, view_forward);
+		follow_matrix_vector(&state->matrix, view_up);
+		vector3f const *translation = &state->translation;
+		vector3f_add(&state->view.unknown14, translation, &state->view.unknown14);
 	}
 	if (!(state->flags & 0x10) && distance != 0.0f)
 		function_171830(&position, view_forward, view_up, &distance, 0.02f);
