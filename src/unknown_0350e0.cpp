@@ -6207,11 +6207,12 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
     return NONE;
 }
 
-// score 2 (was 47): MiniMax A (11-20): the entry's key and value are read into locals before the
+// MiniMax A (11-20), held (47 stands): the entry's key and value read into one-use locals before the
 // 0xb8d30 call, which puts the radius in eax and the group field copies in ecx/edx as retail has
 // them; the only difference left is 0x494b0's argument setup order (ours ecx-then-eax, retail
 // eax-then-ecx), which needs the callee's parameters in the other order in src/unknown_0494b0.cpp:
-// BLOCKED-BY 0x494b0.
+// BLOCKED-BY 0x494b0. That form scores 2; one-use locals are kept only with a byte match, so it was
+// reverted at review: try it again together with 0x494b0's parameter order.
 // MiniMax B (11-19): no new form tried this round, no lower score (47): the 0x494b0 call's arguments are still set
 // up ecx-then-eax where retail sets eax-then-ecx, the entry's radius still goes to edx where retail uses eax, and
 // the three group fields are still loaded into eax and ecx where retail uses ecx and edx; the callee's own
@@ -6282,9 +6283,7 @@ void function_30ed0()
             continue;
         s_object_marker marker;
         byte *frustum = *(byte **)state + 4;
-        long value = entry->value;
-        long key = entry->key;
-        if (function_b8d30(key, value, &marker, 1, false) <= 0)
+        if (function_b8d30(entry->key, entry->value, &marker, 1, false) <= 0)
             continue;
         s_bounds3d bounds3d;
         if (!function_1650a0((s_view *)frustum, &marker.matrix.position, &bounds3d, entry->x))
