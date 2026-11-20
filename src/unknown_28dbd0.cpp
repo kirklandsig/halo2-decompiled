@@ -73,6 +73,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax D (11-20): no new form, no lower score (173): the frame is still 0x11c against retail's 0x118; retail's
+// homes are 0xc (the random int), 0x10 (the rotation's cosine), 0x14/0x18/0x1c (the angle vector), 0x20 (the second
+// draw's int), 0x24 (the rotation's sine) and 0x28/0x2c (the rotation's temps) with a hole at 0x30, ours are 0xc,
+// 0x10/0x14/0x18 (the angle vector), 0x1c/0x20 (the sine and the cosine), 0x24, 0x2c and 0x30 with a hole at 0x28;
+// retail takes the sine first, then the dot, then the cosine, its second cross is cross(axis, cross) and its row is
+// (cross.x*proj + axis.x*cos) - cross2.x*sin, with the sine term last.
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.

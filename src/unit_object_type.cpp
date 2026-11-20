@@ -25,7 +25,9 @@ unknown_0cd660.cpp, unknown_0d0690.cpp, unknown_0d0e00.cpp). */
 #include "object_queries.h"
 #include "slot_handler.h"
 #include "unknown_11cc90.h"
+#include "unknown_1e1f20.h"
 #include "vector_products.h"
+#include "vector2f_normalize.h"
 #include "object_tag_definitions.h"
 #include <math.h>
 #include <stddef.h>
@@ -7076,7 +7078,17 @@ done:
 // as scale * x and the second as y * scale, while the shared helper in include/unknown_11cc90.h multiplies both as
 // component * scale; the helper is used by other files where retail's order is component * scale, so it cannot be
 // changed from here, and writing the normalizer out by hand is a form the review list rejects.
-// score 187 (was 199): Normalization x-load order, definition-flag bytes, weapon reloads and the state slot still differ.
+// MiniMax D (11-20): 33 (was 144): the definition's two flag bits through one inline one-byte helper (retail's two
+// dead frame-byte stores), the face switch's `default: __assume(0)` (retail's jump table has no range check and four
+// entries) and the weapon timing's 0x10f690 output in its own `duration` local (the value 0x259d0 scales; retail never
+// stores the first time) and the side bit as one ternary (retail's sete/test/je and its byte update in memory) and the
+// 2-D normalizer through the shared planar_normalize helper, whose scale-first multiply is retail's order; the body is
+// retail's length (1112) again. Still differing: the side bit's materialised bool and its un-merged byte update, the
+// animation flag's base+index address and its flag register, the switch's index register and the jump table's own
+// addresses. The side bit cannot have both halves: every form that keeps retail's sete/test/je (a bool local, with
+// either the compound or the assignment form in the branches, or a signed char state pointer) makes the compiler merge
+// the two arms into one load of the byte, one register update and one store.
+// score 33 (was 144): the normalizer's operand order, the definition-flag bytes, the face switch's table, the timing's duration and the side bit are retail's now; the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
 // Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
@@ -7280,7 +7292,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 	{
 		toward = *direction;
 		facing = *(point2f const *)&unit->forward;
-		if (normalize2d_fast((vector2f *)&toward) > 0.0f && normalize2d(&facing) > 0.0f)
+		if (planar_normalize((vector2f *)&toward) > 0.0f && normalize2d(&facing) > 0.0f)
 		{
 			angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
 			if (!TEST_FIELD_BIT((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
@@ -7331,18 +7343,19 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 	}
 	if (type >= 3)
 	{
-		long first_index = function_cbd50(unit_index, UNIT_GET(unit_index)->current_weapon_index);
-		long second_index = function_cbd50(unit_index, UNIT_GET(unit_index)->next_weapon_index);
+		long first_index = unit_weapon_in_slot(unit_weapon_view_get(unit_index), unit_weapon_view_get(unit_index)->current_weapon_index);
+		long second_index = unit_weapon_in_slot(unit_weapon_view_get(unit_index), unit_weapon_view_get(unit_index)->next_weapon_index);
 
 		if (flag && type != 6 && (first_index == NONE || !function_101240(first_index)) &&
 			(second_index == NONE || !function_101240(second_index)))
 		{
 			real time = function_10f7f0(unit_index);
 
-			if (time < 0.0f)
+			if (!(time >= 0.0f))
 			{
-				function_10f690(unit_index, &time);
-				time = function_259d0(&g_4e7408->unknown0, 0, 0, time * 0.25f, time * 0.75f);
+				real duration;
+				function_10f690(unit_index, &duration);
+				time = function_259d0(&g_4e7408->unknown0, 0, 0, duration * 0.25f, duration * 0.75f);
 			}
 			unit->unknown1f5 = unit_round(g_510c54->field_2_3 * time);
 			unit->unknown1f5 = unit->unknown1f5 > 1 ? unit->unknown1f5 : 1;
@@ -7351,14 +7364,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		{
 			unit->unknown1f5 = 0;
 		}
-		if (side == 3)
-		{
-			*state |= 8;
-		}
-		else
-		{
-			*state &= ~8;
-		}
+		*state = (side == 3) ? (byte)(*state | 8) : (byte)(*state & ~8);
 		if (!animated)
 		{
 			*((byte *)unit + unit->animation_offset + 0x6c) |= 1;
@@ -7375,6 +7381,9 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 
 		switch (side)
 		{
+		case 3:
+			face = facing;
+			break;
 		case 0:
 			face.x = 0.0f - facing.x;
 			face.y = 0.0f - facing.y;
@@ -7387,8 +7396,8 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 			face.x = facing.y;
 			face.y = 0.0f - facing.x;
 			break;
-		case 3:
-			face = facing;
+		default:
+			__assume(0);
 			break;
 		}
 		function_edfa0(unit_index, &face);
@@ -9447,6 +9456,10 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
+// MiniMax D (11-20): no new form, no lower score (484): the frame is still 0x180 against retail's 0x17c; retail
+// keeps the unit pointer in EBX across the calls and its two loop counters in EAX and ECX, while this build gives
+// EBX to the inner counter and spills the unit to [esp+0x54], and retail holds the weapon slot's NONE in EBP where
+// this build materializes it in EAX.
 // MiniMax G (11-19): no new form, no lower score (484): the range field read at each ray, as retail reads it in every
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
