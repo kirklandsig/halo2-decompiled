@@ -897,6 +897,10 @@ struct s_physical_block_iterator
 // short-circuit age with eager tie 231/232/227/233; with both age masks
 // 222/217/223/244. The rejection complement with both masks reaches 1213 bytes,
 // but changes the earlier stack layout and still misses the common AL join.
+// M3 lane 6 r209 (fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): lane 1 r124's 40 lead rebuilt on
+// today's file 40 (1213 B, first difference +0x356). On it: the head flag as a `long` 93 (1214 B), as `bool const` 40 (same
+// code), the second stage on `!at_head` with its arms swapped 93, the flag declared between the pool and entry pointers 46
+// and ahead of both 46 (first difference +0xcc each).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

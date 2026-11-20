@@ -22,6 +22,11 @@ PRIVATE byte *update_object_0a6430(long index)
 }
 
 // MiniMax H (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100 call's pushed state pointer still takes EDX where retail takes ECX; the getter written inline, in the header form, in one expression, with the index masked by the caller or with the pool in a local all compile the same code.
+// MiniMax A (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the masked
+// index and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100
+// call's pushed state pointer still takes EDX where retail takes ECX; the state pointer as `&state[0x51]`, as a named
+// local bound before the count compare and the getter's masked slot in a named local all compile the same code, so the
+// body is as it was.
 // MiniMax I (11-19): no new form, no lower score (14): the 0x200 head still loads the object pool before the masked index and keeps the object in EAX where retail computes the index first and keeps it in EDX, and the 0x100 call's pushed state pointer still takes EDX where retail takes ECX; the body stays 549 bytes against retail's 548.
 // MiniMax B (11-18): no new form, no lower score (14): the 0x200 head still loads the object pool before the index
 // and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100

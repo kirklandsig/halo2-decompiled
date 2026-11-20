@@ -272,6 +272,11 @@ void function_254200(void)
 // point copy still ahead of them 20 (the colour products' spill slots swap, the pair unchanged); the point copy after the
 // calls with the size ahead 16; both after Begin 116 (1093 B); the chosen bitmap selected ahead of the readiness test 52;
 // the choice as `if (!arg_4) ... else ...` 4 (same code). All restored.
+// M3 lane 2 r116 (single-address fast, control 4): the point copy declared ahead of the size 15 (the copy's two dword
+// moves land after the size product, the colour spills swap); the colour helper's products computed red, green, blue
+// 9 (the colour loads and stores reorder); the products written straight into the helper's 4f call 4 (same code); the
+// products stored into a scaled colour aggregate 28 (first +0xe: it takes a frame home); the colour by `color3f const &`
+// 4 (same code). The constant and y + size still reload in our order after the second and third reservations.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
