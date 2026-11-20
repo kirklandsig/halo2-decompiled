@@ -45,7 +45,8 @@ struct solver_scalar_work_31c940 {
  float pair_b;
  union { float first_error; __m128 *angular_b; };
  float fallback_scalar;
- float simd_scalar;
+ // Normal pairs retain this cursor; other updates use the word for SIMD rounding.
+ union { float simd_scalar; __m128 *normal_cursor; };
  float pair_a;
 };
 
@@ -1081,7 +1082,7 @@ struct solver_complete_scalars_31c940
 	solver_scalar_arena_31c940 projections;
 };
 
-// Ordinary score 2183 (2268 before this storage and dispatch follow-up).
+// Ordinary reduced-check score 2171 (2183 before the zero-opcode dispatch change).
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
@@ -1117,11 +1118,15 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		a = initial_header->a; state.solving.a_home = a; b = initial_header->b;
 		terms = initial_header->terms;
 		op += sizeof(*initial_header);
-		while (*(signed char *)op != 0)
+		bool dispatch_done = false;
+		while (!dispatch_done)
 		{
-			__m128 *normal_axes = terms + 5;
+			__m128 *&normal_axes = scalar_work.normal_cursor;
+			// Retail forms this address before dispatch, including for empty streams.
+			normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
 			switch (*(signed char *)op)
 			{
+			case 0: dispatch_done = true; break;
 			// Retail groups up to two coupled normal pairs, then checks directly
 			// for the three-axis friction record. Longer runs redispatch here.
 			case 3:
