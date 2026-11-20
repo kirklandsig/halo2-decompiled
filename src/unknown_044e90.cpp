@@ -536,6 +536,16 @@ struct s_visibility_bound_record
 // if on `query_data = tree` 430 (same code); the first form on the long-index lead 489 (1792 bytes). Diagnostic: 1-12
 // dead initialised locals at the top 430 each (flat: the inlined plane transform's product order is no symbol-count
 // state here). The long-index lead re-measured 458 (1776 bytes).
+// M3 lane 1 r132 (fast with 0x458d0/0x45a80, both MATCH each time; control 430): ours already loads the tag table at the
+// top (ECX) but only for the tag path; retail keeps it in ESI to the bottom arm, keeps the entry in EBX in the outer
+// region (reloading it from its home after the frustum loop's call) and the geometry in EDI. A tag-table local read
+// before the geometry lookup and used by the bottom arm 430 (same code). Retail's bottom arm reads the tag, then the
+// visible-mask pointer (+0x14, stored to a home), then the object: the mask pointer read right after the tag, ahead of
+// the node loop, 397 (1778 B: the geometry then takes EDI as retail; a read moved past the loop's calls, match-only, the
+// lead); on 397: the tag-table local 397 (same code), the query data read in each arm (!parts first) 469, view_ranges
+// computed just before the view loop 479, the state pointer named for the views read and the active test 441 (1762 B,
+// the state then in EAX near retail's EDX; the early EBX zero remains). Diagnostic on 441: the geometry through a
+// pointer-taking copy of the lookup 417 (1776 B: the entry is formed first, `add ecx, table`, but stays in ECX).
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

@@ -373,6 +373,13 @@ PRIVATE inline byte const *material_parameters(long tag)
 // lookup as a forceinline helper taking its offset by `long const &` in both blocks 5, with the pass lookup the same way
 // 5 (all +0x1a7, same code); the restore block publishing the entry (from the `tables` local) before the tables field
 // 287 (976 bytes). Body unchanged.
+// M3 lane 12 r154 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e): the
+// restore block's entry/chain/pass/range lookup as a forced-inline helper taking the state and the four indices and returning
+// the range 177; the same with a direct entry store and the word read back from the field 176; the helper void, the range
+// reference bound after its call, 5 (same code); one forced-inline pass lookup shared by the first lookup and the restore
+// block (the tables and the entry output by pointer) 294 (981 B), with the entry output bound by reference inside it 295
+// (982 B). Re-measured (diagnostic): the direct entry store 5 at +0x1a7, its only difference `second` loading into ESI
+// right after the entry lea, ahead of the entry store, where retail loads it after the chain and pass bases.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

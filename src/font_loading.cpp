@@ -938,6 +938,10 @@ static inline long font_character_pixel(long alpha, long color)
 // retained 157/201, both views 157/201, both views and the ordinary six-bit count 157/201, using the
 // existing byte parity and then dword parity. NOT kept: the parity width still differs on the tied form,
 // and dword parity moves the run out of EBX and shortens the two fills.
+// Share the opaque pixel 172, carry selected opacity 229, zero-default opacity 185,
+// and an opaque predicate 222. With dword parity 224/244/215/236. NOT kept: the
+// shared opaque pixel reaches 504 bytes but changes cursor allocation. The dword
+// parity forms shorten both fill paths and leave the packed run and literal gaps.
 // common long command count 165, common word command count 151, shared run count 172, shared run count and
 // default span 135, long command count with full parity 170, word command count with full parity 162, shared run
 // count with full parity 174, shared run count and default span with full parity 152. NOT kept: A separate word
@@ -955,6 +959,9 @@ static inline long font_character_pixel(long alpha, long color)
 // instruction). The colour literal is still built with a shift and an add where retail keeps its two bytes in
 // separate registers, and the run of two is still folded into the count as an immediate where retail adds the
 // register; the original helper and body stand.
+// Compare with packed run 59, run to pair end 163, pair class arity 193, shared packed prefix arity 171.
+// With full-width parity 203/213/191/219. NOT kept: the run comparison ties, and the other forms raise the
+// score. Packed parity width, run register reuse and literal byte assembly still differ.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

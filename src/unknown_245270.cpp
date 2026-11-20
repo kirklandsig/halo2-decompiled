@@ -280,7 +280,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 164 (was 206): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
+// score 164 (was 164): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
 // and independently decoded side homes differ.
 // Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail's 0x2c; the source now arrives in ECX as in retail (earlier note: 206, was 206).
@@ -876,6 +876,10 @@ void function_245400(s_source_245400 const *source, long index,
 // Rotation reads a copied edge scaled in place 231. NOT kept: The pointer-selected rotation inputs recover frame
 // 0x2c but grow the body to 820 or 822 bytes and raise the matched caller 0x245aa0 to 6 in the reduced image. All
 // other forms keep frame 0x24 and lengthen the body. The original caller and transform shape are restored.
+// Material word references 211, primary index field reference 163, resolved plane address comparison 222,
+// with late plane table 215 or late edge 210, endpoint member references 212, with late position pointer
+// 164 or codes extended ahead of the endpoints 205. NOT kept: The primary field reference gains one point.
+// None recovers the native frame and side homes.
 // M3 lane 3 r271 (fast with 0x245aa0, 0x245400, 0x244de0 and 0x245270, all matched unless noted; control 164, aligned 193,
 // masked 88). LEAD, not kept (statement order and a written-out helper body are match-only): retail's frame 0x2c, the
 // `push ebx; push esi; mov esi, ecx` prologue, the local EBP save, both long codes in stack homes, the first side in a
@@ -912,6 +916,16 @@ void function_245400(s_source_245400 const *source, long index,
 // all geometry names with the plane table after the edge 166. NOT kept: the late
 // table still reserves 0x24 and raises caller 0x245aa0 to 3.
 // MiniMax C (11-19): no gain (164, baseline; body restored). Retail reads the second surface index (field_0a) before the first (field_08) and homes the two decoded material codes as dwords at +0x14 and +0x18 with the first index at +0x1c, which is the 0x2c frame; ours has two homes and the 0x24 frame. Reading the two material codes in retail order measures 163, a gain of one and under the bar.
+// M3 lane 5 r213 (one-object LTCG screen of this file linked with the caller's object, exact against the fast build;
+// counts are aligned rows, lane 3 r271's lead = 51 on it, 53 positional). On that lead: the edge copies declared in each
+// order x each edge row as one statement or split `(a + b)` then `+= c` three ways x the dot by hand (two orders) or
+// through dot3f (1536 forms) best 41 (copies i, k, j; rows i and j `(forward + up)` then `+= left`, k one statement); on
+// it the plane table read at each plane pointer 40 (fast 50 at 789 B), the plane pointers declared second-first 44,
+// cross3f_staged and plane pointers typed as pointers to the normals the same code. The plane cross block never moves:
+// written out in place, any of its 64 written operand orders 84 each; a file-local inline copy with any of the 64
+// operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
+// Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
+// (retail loads the second normal first in four products and reuses the first normal's k in two).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

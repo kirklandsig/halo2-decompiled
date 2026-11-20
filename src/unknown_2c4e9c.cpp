@@ -3267,6 +3267,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // step (diagnostic, loop-carried second definition) 30; the loop compare written id first 30; the id typed dword 30.
 // Compile-only only (same direct load): the read assigned in the condition, a by-value inline validity predicate, an
 // inline getter with a result local. All restored.
+// M3 lane 3 r274 (fast with 0x2c9a58, matched in each): the iterator's pool stored before the id read with the NONE
+// stores after the test re-measured 27 (the id still straight into EBX); `long const` id 30; the id read into a first
+// local and copied into the id 30 (propagated); the NONE-default id with `else return;` and the outer test kept 13 (NONE in
+// EAX for the compare and both iterator stores; match-only); the iterator declared at function scope ahead of the id 30;
+// the NONE default with `else return;` and the walk unconditional 30 (the dead default is dropped before NONE is counted:
+// NONE takes a register only with four uses).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

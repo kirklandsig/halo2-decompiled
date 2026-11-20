@@ -879,6 +879,18 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // shared helper, the found names read into locals in the six orders m-c-t 487, m-t-c 486, c-m-t 479, c-t-m 479, t-m-c
 // 478, t-c-m 478. Lead: something live from the request's start to the inheritance loop gives retail's graph roles;
 // retail's own index is set at the loop (zero in ECX). Body unchanged.
+// M3 lane 16 r150 (fast with 0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1cccd0/0x1dc8c0, all MATCH, 0x1cd070 210 unchanged;
+// control 348, aligned 53). On a private copy of the three request helpers in this file (diagnostic only: a helper's
+// body written out stands only with a match): the copy alone 348 (same code); one graph variable for the request
+// reassigned to each inherited graph 348 (same code); with `bool success`, the copy without its outer `urgent || other`
+// guard 478 (1809 bytes, as bool alone). Re-measured: the index set to zero at its declaration with the loop's own
+// initialiser dropped 269, with `bool success` 256 (1777 bytes, aligned 9). On that 256 form, the guard dropped 256,
+// the graph variable above 256, the loop written as a test-and-break loop 256 (all the same code). Its three
+// differences: the early zero store into the index's home (the mode parameter's slot) ahead of the first sorted
+// lookup, the alignment jump that its 8 bytes cost the first urgent loop, and the loop entry, where retail compares
+// the count against a zero in ECX and stores that ECX into both the index and the offset homes while this build folds
+// the compare to `test eax, eax` and stores immediates. Without the early store (the index set again at the loop) the
+// graph roles go back to this body's, so the early store, which retail does not have, is what moves them.
 // M3 lane 13 r120 (fast with 0x1cd070 210, 0x1cccd0/0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1dc8c0 MATCH throughout; control 348,
 // aligned 53; body unchanged). bool success re-measured 478 (1809 B, aligned 102) and read against retail: with bool the
 // graph is loaded into EBP at the request start, so graph+0x34 is re-formed per group (`lea eax, [ebp + 0x34]`), the mode
@@ -899,6 +911,13 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // declaration 483; the index zeroed at its declaration with the loop as a while 256 (aligned 9: re-measure of lane 10's
 // form: retail's roles, left the early zero store and retail's ECX zero at the loop entry). Only an index live from the
 // request's start moves the graph out of its register, and that form stores its zero early, which retail does not.
+// M3 lane 2 r114 (fast with 0x1ddd00/0x1dc8c0, both MATCH; control 348): bool success re-measured 478 (1809 B: the graph
+// is loaded into EBP as retail, but graph+0x34 is re-formed with `lea eax` per group and EBX holds a found name, whose
+// copies take the other dead parameter slots); the graph read through a `s_graph_tag *const &` for every use after its
+// declaration 348 (same code; for the request alone it is DL240's first form, 348 again); the three fallback name locals
+// declared mode, class, type 549 (first difference +0xf9); the graph local as a const pointer 348 (same code); bool success
+// with the request's graph through the const reference 478; the request's graph fetched again from graph_get() 633
+// (`this` stays live and the head changes).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

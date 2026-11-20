@@ -951,6 +951,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // 77/77/77; both with a shared table local, validity/attachment result 49/78.
 // The two reads still share the scaled address. The attachment-set result shortens to
 // 160 bytes. Original body restored.
+// M3 lane 6 r206 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10 and 0xbb780, matched throughout; control 49;
+// R = retail's shape, bool false first, true after the attach, NONE stored in the flagged else, re-measured 77 at 160 B):
+// the object read through a forced-inline getter that returns NULL for NONE (a join the inliner leaves before CSE) on the
+// long result 64 (185 B: its test is not folded), on R 77 (folded before CSE, lookups shared); the object read through the
+// table's data field viewed as a typed header pointer (`*(s_object_header **)(table + 0x44)`) on the long result 49 and on
+// R 77 (same code each: the two data loads are merged whatever their type); R with a char or byte result 70 / 70 (176 B).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1388,6 +1394,15 @@ bool c_projectile_type::v8(long a, long b)
 // the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the
 // matched 0xa1f70 offset form with that group offset 12, on it the call's mask from `b` and the flags local declared
 // after the call 12; the 0x400 arm's result bit set before its store 14. Word-read body kept (5).
+// M3 lane 11 r128 (fast with 0xa5e70, matched each time; word read 5, mask control 12), all with the full-width mask: the
+// definition copy without `volatile`, as a one-member aggregate (initialised, member-assigned, or declared after the flags),
+// a one-element array, or a plain local whose address goes to an unused pointer, 53 each (the dead store is removed: no
+// `push ecx`); the base v27 called inline passing `c`, passing the unmasked flags, or a constant size 51 each (its copy
+// takes the incoming slot of `a`; flags ESI, object EDI); the call's result through a `long &` to a named local 12, read
+// through a `long const &` into the result 12, the result declared first and assigned at the call 12, the call's mask in
+// a named local 12, the state through a `byte *` local passed to the call 12. Diagnostics (semantics changed, not kept):
+// the object mask 0xfffe together with the 0x800 arm setting 0x801, 2 (object ESI: breaking both constant pairs does not
+// swap back, so it is no parity effect); the call's mask changed to 0xffff (three uses of that constant) 13, still swapped.
 // M3 lane 6 r202 (fast with 0xa5e70, matched each time; word read 5, mask 12): with the full-width mask, 1 to 32 dead
 // initialised longs ahead of the object (K = 1-6, 8, 10, 12, 14, 16, 20, 24, 28, 32) 12 each, so the pair is no symbol-count
 // tie; a 12-byte group element typed (identifier, flags, value, desired value) through a pointer indexed `[index & 0xffff]` 12,
