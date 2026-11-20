@@ -986,6 +986,13 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // masked 324). Retail loads 1.0 four times (ours eight): it keeps 1.0 in XMM0 from the reciprocal to the sign and across
 // the four `1 - x` terms. A compile-only dead-local scan over the rotation block moves it with period 8 (best 241 of 225
 // lines at K = 6, 7), so the block's schedule is not a symbol-count state. All restored.
+// M3 lane 2 r113 (plain each, with the file's eight other functions, all at their baseline counts; base 535, aligned/masked
+// 442/186): the tag pointer dropped and the limits index read through the tag table at each of its four uses 720 (3649 B;
+// the lookup is redone at every use, where retail spills one pointer and reloads it); that with face_count declared first
+// 720; the edge walk ending on `edge_index != mesh->faces[face].first_edge` (no first_edge local) 533 (2 points, not kept);
+// the selection test with the candidate's distances on the left 535, the sign test as `0.0f > dot` 535, the length test as
+// `0.0001f > fabs(length)` 535 (the last three the same code). The spill homes of the tag, edge base and outer index
+// (stored once, reloaded once or twice each) still come out in the opposite order to retail's.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

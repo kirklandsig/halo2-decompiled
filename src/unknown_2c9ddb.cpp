@@ -400,6 +400,14 @@ extern long g_55c154;
 // `mov ebp, esp`, retail biased by 0x70, so every frame offset differs) and the variant's address, which ours loads once
 // per arm into EAX for the copy and the calls where retail writes the immediate each time. What gives `this` its weight
 // in retail without that read is still not found. Body unchanged.
+// M3 lane 2 r114 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all MATCH; control 61): retail's two load arms
+// (`if (selected == NONE) { if (load(saved)) {...} } else if (load(selected)) {...}`) re-measured 174 (595 B); in it the
+// constant 1 sits in EBX in the first half, `saved` and the &g_54e4a0 address in the second, and `this` takes EDI and is
+// spilled around the `rep movsd` copies. On those two arms: the bit test spelled as a mask `(entry->variant & 0x200000)
+// != 0` (diagnostic: no `test al, 1` use of the constant) 184 (597 B: EBX is then pushed late and unused in the first
+// half, but `this` still takes EDI, so the constant is not what evicts it: `this` outranks `saved` in every two-arm
+// form, where retail gives `saved` EDI and `this` EBX); a variant local of its own for the second half 174; `saved` as
+// a dword 174; `saved` as a const local 174; `saved` read through a const reference in both arms 174 (all the same code).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

@@ -2323,6 +2323,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // on that: the tint named 181 [52/29], both queries named 187 [66/42], an inline type accessor on the definition 184 (same
 // code), the whole colour block as a shared inline helper 184 (same code), the colours read between the spawn stores 185
 // [41/22], the colours before the spawn stores 190 [57/36].
+// M3 lane 2 r113 (fast with 0x177040/0x178eb0/0x179020/0x178bc0/0x175a80/0x176f60, matched or unchanged; aligned/masked
+// in brackets, control 128 [76/32]): combinations of listed partial leads: spawn scale and unknown stored ahead of the
+// cluster test (the location index still read after set_location) 130 [78/19]; that with both type queries as the colour
+// call's arguments 148 (552 B) [75/15]; plus the existing location_point_in_zone_inline 168 (552 B) [47/14]; both queries
+// in the arguments with that zone test and the node flag named for 0x175270 172 (560 B) [35/13]; the spawn stores first
+// with that zone test 167 [51/19]. Aligned counts fall to 35 but the system/colour registers and frame 0x40 stay.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3953,6 +3959,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // the address-taken home no longer holds the tint byte: frame 0x50, 352 B, system EDI and the definition in EBX); with the
 // system index read so 128 [19]. A compile-only first pass loads each index once in both mode forms, so it does not
 // predict this convention (a one-object link with the colour and type callees' objects gives EAX/ECX for both forms).
+// M3 lane 2 r113 (fast with 0x176f60/0x178c80/0x175a80/0x178bc0/0x248c60/0x17ae50; control 93): the mode read at each call
+// re-measured 108 (0x176f60 25: effect index EAX, system index ECX); diagnostic dead-local phase scan 1-7 on that form 108
+// each (the convention does not follow the symbol count); on it `tinted` declared at function scope 108, the node flag
+// declared there 108, both 108, both in one declaration 108 (all the same code); both at function scope on the cached
+// form 93 (same code). The byte locals' scope never moves their homes or the effect index's convention.
 // MiniMax B (11-19): no new form, no lower score (93): retail keeps the particle system in ESI and next_index in EDI and
 // re-reads definition->location_mode from the spilled definition on each call, where this build keeps them in EDI/ESI and
 // caches the mode in a word local; the live-mode form gives retail's frame 0x54 but measures 108, with the swapped

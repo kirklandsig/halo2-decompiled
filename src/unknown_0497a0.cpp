@@ -563,6 +563,12 @@
 // short discriminator 703/707/703/690; primary shape test 700/698/688/607.
 // NOT kept: the earlier placements reach frame 0x58 and the late placements keep 0x54.
 // The primary shape slot, rounded wave storage and x87 factor lifetimes still differ.
+// M3 lane 2 r114 (fast with 0x4a1e0; control 536): the four trig arguments of s0 cast to double 665 (2576 B); s0's sum
+// rounded to real before the halving 536 (same code); s0 and s1 each read through a const reference at its scaled add 645
+// (2666 B: both get retail's own cells, s0 at +0x18 and s1 at +0x1c, stored early as retail, but each scaled amount is
+// written back into its wave's cell and reloaded, and the three factors are still saved with `fst`); both bound by
+// non-const references to separate locals 645 (same code); s1 alone through the reference 629 (2656 B); s0 alone 614
+// (2627 B). The frame stays 0x58 in all of them.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

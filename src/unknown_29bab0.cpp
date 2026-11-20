@@ -722,6 +722,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // after planar normalization or at the collision split, scoped/entry declaration:
 // 790/790, 791/791, 790/790, 794/794. NOT kept: collision-split seeding reaches
 // 3499 bytes and position +0x80, but drops the early vector copy and shifts the heading spills.
+// M3 lane 2 r113 (fast with 0x1f9e70/0x110ab0/0x29b990/0x2922b0/0x29b2e0, each at its baseline; control 489, aligned/masked
+// 178/43): declarations of the locals whose addresses reach calls moved to function scope (the lever that gives 0x2922b0
+// retail's per-point reloads): local_11 and local_13 489; local_15 and local_17 (assigned where they were) 489; local_14
+// 489; all five 489; local_20 and the outer local_23 489; all seven 489 (all the same code: here no store is followed by
+// a read through a pointer that the scope decides, so the position/target homes and the squares stay as they are).
 // The position query still uses ESP+0x8c for retail's ESP+0x80.
 // Planar snapshot after position 775, after normalization 751, at query admission 745.
 // Planar snapshot before or after the actor update 725/723, after the translated target 723,

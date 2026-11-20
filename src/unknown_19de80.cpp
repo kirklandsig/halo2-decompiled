@@ -819,6 +819,14 @@ static inline bool teams_enabled_19e1c0()
 // (diagnostic, not keepable) 691 (same code: the assumption adds no weight); `token` declared `word const *const` 691 (same
 // code); the fallback's clamp as `remaining <= token_length ? remaining : token_length` 693 plain (1168 B), 395 on the
 // volatile result (1432 B). Body unchanged.
+// M3 lane 2 r113 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, aligned/masked in brackets):
+// combinations of listed partial forms: the event teams read at each use with every clamp as `result = remaining <= result
+// ? remaining : result` (retail's cmp/cmovle order) 425 (1457 B) [209/120]; that with `best_score <= function_1587f0(team)`
+// 425 [207/119]; the plain result with those two and the switch-side failure as `result = remaining` 701 (1161 B)
+// [183/131]; the ternary clamps with `best_score <=` 415 (1446 B) [212/124]; teams at each use, `best_score <=` and the
+// switch-side `result = remaining` 431 (1398 B) [205/119]. Reading (retail): the token is never held in a register (a
+// scratch reload per compare and again for the fallback copy, the last compare's reload landing in ESI), `remaining` holds
+// EBP from the entry, the team cases jump to the shared return when the team is NONE and re-read it for the call.
 // M3 lane 13 r119 (fast with 0x19e0f0; control 390): the plain result with `remaining` renamed through a `long const &`
 // local 691, through a local copy 691, `token` through a local copy 691, both copies 691 (1170 B each, same code as the
 // plain result); the volatile result with the `remaining` copy 390 (same code). Copies of a parameter fold away before
