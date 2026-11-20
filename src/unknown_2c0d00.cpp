@@ -214,12 +214,12 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 917 (was 920): the frame is retail's 0x2cac since m3 lane 4 r229 (below); the body is 3676 bytes against 3731. Left: the entry's
+// score 925 (was 925): after later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // registers (retail actor_index EBX, self_unit and its zero EBP, unit_index EDI, reloaded at the loop head), the skip flag's home, the
 // deferred type-0 second branch and the type 1/7/11 arms. Earlier first line (920): r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // MiniMax D (11-19): no new form, no lower score (920 plain, 926 fast): the frame is still 0x2cb4 against retail's 0x2cac, the pool globals are still hoisted above the actor test and the actor address is still folded instead of being kept in EDX, so the actor, unit and byte homes stay where they are.
-// score 920 (was 920): r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// Earlier 920 (was 920): r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // r118 (lane 14) unchanged; r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
 // MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
@@ -700,6 +700,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // object flags 926 reduced, scoped motion and priority 926 reduced, scoped motion and flags 926 reduced, scoped
 // early classification 926 reduced, all separate scopes 926 reduced. NOT kept: All eight scope forms tie the
 // reduced control at 926, with the same 0x2cb4 frame and 3718-byte extent.
+// M3 lane 5 r216 (plain; [masked, exact] aligned, base 925 [141, 403]): lane 13 r121's declared order (previous_direction
+// after direction) re-measured 933 [136, 394] (3714 B; 0x2c41b0 675 -> 661); `else straight = true;` on the no-actor path
+// (retail's second store of 1 at 0x2c0e9a) 906 [137, 325] (3724 B; lead, a redundant store); both 914 [132, 319]; one `bool
+// enemy` for both type-0 arms 925 (same code); straight with no initialiser: set first in the actor block plus the no-actor
+// `else` 921 [137, 325], set just before the previous-direction test plus that `else` 921, set in an `else` of the
+// previous-direction block and in the no-actor `else` 849 [134, 322] (3708 B, frame 0x2cac and retail's homes for the four
+// shorts, self_unit and actor; lead only: the initialiser moved into else arms). Retail's type-0 `else if` arm and the type-1
+// arm end in their own `sete`/`mov byte ptr [esp+0x12], 1` (skip flag in memory), where ours keeps it in BL.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

@@ -1309,6 +1309,11 @@ void function_2118c0(void)
 // p2, p3 33 (first +0xb0); `long k` 133 (753 B); `long row = (long)b << 3` 10 (same code). Retail's band loop keeps the
 // row (8 * b) as its own register stepped by 8 beside the down-counted trip count, with the knot rows recomputed from it;
 // ours keeps b and scales it inside each knot row's lea.
+// M3 lane 5 r216 (round 194's compile-only harness, exact here, aligned counts against its 5): the knot wraps as
+// `(word)(k + n) % 8` with the `b << 3` row 65 (203 instructions), with `long row = b * 8` 144; `long row = b * 8` with p1
+// as `noise[b * 8 + k]` 105; `word row = (word)(b << 3)` 40 (the shift kept per band plus a movzx); `long row = (long)(b << 3)`
+// 5 (same code); the band counter `dword` or `long` with the `b << 3` row 24 each, `byte`, `char` or `unsigned char` 5 each.
+// Permuter (600 s, annealing, seed 21616, 53 tries): nothing below 10.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

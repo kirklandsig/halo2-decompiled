@@ -678,6 +678,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // velocity projection 305, shared planar projections 396.
 // The unity register, near cosine spill and candidate ordinal remain. All eight previews retain retail
 // length.
+// M3 lane 5 r216 (fast screen, plain where noted; 0x29a190 MATCH unless noted): the 2-D normalize helper with an early
+// `return 0.0f` 305, in 0x2b400's shape (`x = x * inv; y = inv * y;`) 305, with the reciprocal first in both products 305,
+// with both components divided by the length 305 (all the same code); the arg_0 read through its address removed 316
+// (1726 B; plain agrees, 0x29a190 MATCH -> 345).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

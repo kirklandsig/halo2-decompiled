@@ -811,6 +811,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // compression default and adjustment 1406, direct wide magnitude products 1566.
 // The 0x58c frame and native velocity homes remain unresolved. Direct wide magnitude products reduce the
 // frame to 0x590 and shorten the body to 6022 bytes.
+// M3 lane 5 r216 (plain, 0x2056e0 MATCH each time; control 1346): a compile-only listing of this file names the frame's
+// locals: the five inlined copies of the magnitude helper's input (12 bytes each) are 60 of the 68 extra frame bytes, and
+// retail computes every magnitude in x87 straight from the vector's own slots; the helper reading its input directly
+// re-measured 1624 (5990 B, frame 0x590), so retail's extra length is elsewhere. The helpers' bodies as the existing
+// shared ones: the cross product as cross3f_staged 1357; the in-place add as vector3f_add(a, b, a) 1346 (same code); the
+// scale as vector3f_scale 1412 (6238 B, retail's length); the normalize as normalize3d 1470 (6131 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

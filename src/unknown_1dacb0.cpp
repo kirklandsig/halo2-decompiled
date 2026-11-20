@@ -2053,6 +2053,14 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // test as `!(result == c_type_709360())` 991 (2825 B); the first request keyed by `iterator.mode`, `iterator.weapon_class`
 // and `iterator.weapon_type` 1016 (2839 B); the candidate dropped for `result = named ? named->animation_id :
 // animation_id` 951; the output stores after the requests 1009 (2849 B).
+// M3 lane 5 r216 (fast; [masked, exact] aligned, base 828 [49, 321]): animation_id, result and the iterator outputs
+// renamed to sort first or last 828 each (same code); the iterator fields in the matched 0x1dc790's order 828 [50, 319];
+// 0x1dc790's single exit (`if (weapon_class != NONE) { ... } return result;`) 1040 [53, 125] (2857 B; lead: every
+// instruction is retail's but the homes, ours result at +8 and an iterator output in the borrowed parameter slot where
+// retail has the outputs at +8/+0xc/+0x10, result at +0x14 and animation_id in that slot, and the loop-alignment padding
+// that follows the prologue's length); on it: the sibling's iterator order 1040 [52, 122], the outputs declared ahead of
+// result at function scope 1040 [55, 126] (uninitialised there 1040 [53, 125]), animation_id declared once at the block's
+// top 1028 [61, 144].
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
