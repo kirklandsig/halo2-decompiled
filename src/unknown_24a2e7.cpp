@@ -384,6 +384,30 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // The same four forms with a separate comparison cursor also give 72/73/72/72.
 // The terminator uses a direct zero and the body reaches 205–206 bytes, but the
 // 0x24 frame still lacks the base spill and EBX carries the scaled entry address.
+// M3 lane 7 r201 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; main 67). Lane 10 r119's two-member
+// lead rebuilt 39 (204 B). The same code without the grouping: plain `count`/`entries` locals with the lead's body and an
+// unreachable call taking the entries pointer's address (diagnostic) 39, so the lead needs only an entries pointer that
+// calls may change, not the pair. On the lead: the arm's entry or the terminator indexed through a copy of the index read
+// by const reference 39/39 (folded); a store of the index after the terminator (diagnostic) 85 (220 B: the shared product
+// keeps EBX and the index goes to a stack word written on every pass, so a later plain use of the index does not
+// unshare the product); every access indexed with no entry or buffer local 118 (255 B: the base is reloaded after each
+// call). New reading: retail's three multiplies are what the compiler gives when the terminator is not dominated by the
+// arm's entry. With plain locals, a `built` flag set at the end of the arm and, after the arm, one pointer to the found
+// entry used by `if (built) terminator; else plain name;` 59 (207 B, first difference +0x20: the prologue, the entries
+// spill at [ebp-8], the index in EBX, the scratch cursor in ECX and the loaded id in EDX are all retail's, and the
+// terminator and the plain name are formed again from the index; left: the flag stays in CL with its test, and the
+// pointer's multiply sits once ahead of that test where retail has it in each arm), the same on the two-member lead 59;
+// without that pointer (`if (built) indexed terminator; else indexed plain name;`) 84 with plain locals and 39 on the
+// lead (the flag is threaded before the sharing, so the arm's entry dominates again); the flag set ahead of the calls
+// 84; the arm's condition named once and tested twice (build, then terminator or plain name) 83, with the result chosen
+// by a conditional after the arm 84 (both threaded early); the built name in a pointer cleared at the top and tested
+// after the arm 80 (216 B, the pointer test stays); the plain name assigned first and replaced in the arm 92 (182 B);
+// the arm as a forced-inline helper returning whether it built (the result through a reference) 90 (184 B), returning
+// the built name or null 79 (195 B) (plain `inline` leaves either out of line: 179/186); a `short` index with the
+// indexed terminator 50 (205 B, each use sign-extends); the arm as a forced-inline helper taking the entries and the
+// index (the entry formed inside, after the append test) and returning whether it built, with the indexed terminator
+// and plain name in the caller's if/else, 84, the same with one result variable in the helper 84 (the returned flag
+// is threaded before the sharing too); `register` on the index, on the lead, 39 (same code). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

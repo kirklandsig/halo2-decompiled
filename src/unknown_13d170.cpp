@@ -915,6 +915,19 @@ struct s_physical_block_iterator
 // the left of the second test, with both tests start-first, with the block's size first in the end sum, and pages-first with
 // size-first 40 each (same code); the head flag as `bool const`, `NONE == best.previous`, `!(best.previous != NONE)` and
 // through a named `long previous` 40 each (same code). Main's body unchanged.
+// M3 lane 7 r201 (fast with 0x13d320, 0x13d830, 0x13d8b0 and 0x13d950, all MATCH; control 201). Lane 1 r124's 40 lead
+// rebuilt 40 (1213 B, first difference +0x356) and lane 9 r109's 93 lead 93 (+0x338). Read on them: retail's insertion has
+// one `cmp esi, ebx; jne` on the predecessor with the NONE register set just ahead of it (`or ebx, -1` after the
+// allocation's immediate test) and the second stage threaded into each arm; the 93 lead starts that register ahead of the
+// allocation test (and swaps EBX/EDI from the walk on), the 40 lead starts it at the flag's compare as retail but keeps
+// `sete dl; test dl, dl`. On the 93 lead: one `entry->previous = NONE` ahead of the first-block test 102 (re-measure; no
+// NONE register at all, both tests on immediates and the head arm using the predecessor's register as NONE); the
+// insertion moved out of the candidate block, after it, under its own `result != NONE` 93 (same code); the second stage
+// keyed on `entry->previous == NONE` 93 (same code); the second stage through a `long *` to the link to rewrite (the
+// list head or the predecessor's successor) chosen by a conditional 112 (1191 B). On the 40 lead: the head flag as a
+// `byte` 40 (same code); the second stage through that link pointer chosen by the flag 105 (1196 B). So the NONE
+// register appears only with two NONE stores in the head arm's sub-arms, and where it starts follows the first stage's
+// compare: a flag compare starts it there, a direct branch compare joins it to the allocation test. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

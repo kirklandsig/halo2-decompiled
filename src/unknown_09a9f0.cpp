@@ -1449,6 +1449,17 @@ bool c_projectile_type::v8(long a, long b)
 // full-width mask: the 0x400 arm's bit set as `result |= flags & 0x400` 46; the entry as `&data[(index & 0xffff) * 12]` 12;
 // a `real *` to the state's 0x90 field for the 0x400 test and store 12; the NONE test written `NONE != index` 12; the
 // flags local typed `word` (`(word)b`) 12. Word-read body kept (5).
+// M3 lane 7 r201 (fast with 0xa5e70, 0xa02e0, 0xa0be0, 0xa3a00 and 0x9d450, matched each time; word read 5, mask control
+// 12): 0xa5e70 given a fourth, unused parameter taking the definition by const reference, every v27 passing `this`, and no
+// definition copy here, 55 (the unused argument and its temporary are both removed: no `push ecx`, so the dead store
+// is not a dropped by-reference argument); the definition copy as a plain local with an unreachable call taking its
+// address (diagnostic) 7 with the word read, 14 with the mask (the store stays but lands one instruction early, flags
+// still ESI with the mask). Diagnostics with the mask (unreachable address-takers, reverted): `b` kept in its stack home
+// with the flags a real copy made after the object 12 (same code: the flags still take ESI, so it is not the parameter
+// against a local), `a` in its home 12, `d` in its home 60 (196 bytes). Reading: matched 0xa02e0 (one object read, two
+// flag uses) gives the flags ESI, so ESI goes to the heavier of the two; here both have three uses and retail gives the
+// tie to the object, ours to the flags. With the mask, the definition copy's pointee typed const (as the file's other
+// copies are), typed as the const device type, or as `void const` 12 each (same code).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

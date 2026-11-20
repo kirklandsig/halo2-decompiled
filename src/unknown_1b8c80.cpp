@@ -935,6 +935,20 @@ extern "C" void _ReadWriteBarrier(void);
 // block (after the data base as retail when the read follows the lookup), but ESI's save then moves to the entry and the
 // data base folds into the add or takes ESI; retail keeps the ESI save in the flags arm (shrink-wrapped) and the data base
 // in EDX. Re-measured: volatile read first, without/with the barrier 50/29; after the lookup, then the barrier 31.
+// M3 lane 7 r201 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; each without the barrier): the state through an
+// inline helper returning a one-pointer aggregate by value, declared after or before the actor, 44/44 (208 B: folded, no
+// block boundary); the NONE block as `while (...) { ...; break; }` 44 (same code); as a loop on a flag set at its end,
+// `while (!done && ...)` or `while (... && !done)`, 44/44 (the back edge is folded before any hoisting). Diagnostics
+// (reverted, not keepable): the NONE block as a one-pass counted loop, `for (pass = 0; pass < 1 && ...; pass++)` or with
+// the busy test as a `break` inside, 75 (230 B) each, and `for (bool pending = true; pending && ...; pending = false)` 79
+// (229 B): the loop stays, but its invariant slot load is hoisted into the entry block exactly where retail has it (the
+// first six instructions are retail's: slot into ECX right after the data base, then the mask, the multiply and the add
+// ahead of a memory compare), so retail's entry is what a hoisted load ahead of a block boundary gives; an unreachable
+// call taking the slot parameter's address (the parameter then lives in memory and the state copy is pinned where it is
+// written), state first 50 (210 B), actor first 49 (210 B): the load is in the entry block but the data base moves to ESI
+// and the 0x26c value to EDX, as the volatile forms. Reading: retail needs both the load in the entry block and a block
+// boundary between the actor's add and the 0x26c compare; a real statement there or a loop preheader gives both, a
+// pinned copy alone does not. No loop spelling found that is removed after the hoist.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

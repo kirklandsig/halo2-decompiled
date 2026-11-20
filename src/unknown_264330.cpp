@@ -869,6 +869,17 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // (retail's 1616 B); `motion` and `context` declared at function scope 404 (same code); the first `next` read from the
 // `actor` local instead of a second actor lookup 442 (1616 B). Blockers unchanged: the release site's 0x25c820
 // expansion and 0x2641c0's noinline declaration (dropping it expands 0x264210's call too).
+// M3 lane 7 r201 (fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330 and 0x265680, all three MATCH; control 404 at
+// 1624 B, register/offset-masked aligned 251): the release block reached through a `release` flag set in the switch
+// and tested after it, in place of the two gotos, 442 (1644 B: the flag is not threaded on the case-3 paths); the
+// sampling test with `update` ahead of `sample` 402 (1620 B; an operand order, not kept); `sampled_one` as a long 408
+// (1628 B); the 0x264b50 test nested under its own `if (sample)` 404 (same code); the sampling result written as
+// `if (!0x2641c0(...)) sample = false; else if (update && ...)` 460 (1652 B). Reading of the calls: 0x25c820 has six
+// call sites in this build (three in its own file, two here, one in 0x263210, where it is expanded as retail's is),
+// and retail leaves 0x25d610, 0x25da40, 0x25d690 and all three 0x25d700 sites as calls here while expanding 0x2641c0
+// and the first 0x25d740 site only; ours wants every one of the small ones expanded (hence the three pragmas) and one
+// 0x25c820 site, so the difference is how much this function is allowed to expand, not one callee's spelling.
+// Blockers unchanged (0x2641c0's expansion, the release site's 0x25c820 expansion, the EAX convention).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

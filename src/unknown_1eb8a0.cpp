@@ -769,6 +769,22 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Real estimate before the cast on the first or both arms, or one shared store 693/693/693.
 // All eliminate the repeated elapsed-count calculation but move the first gap earlier
 // and shorten the body to 2865 bytes. EBX still keeps the supplied direction.
+// M3 lane 7 r201 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH unless noted; control 603, which this screen
+// reproduces; aligned = register/offset-masked difflib count over the listing, 281 at the control). The void return
+// 603 (same code); with `s->counter++` and the closing test reading the field 604 (2887 B: the counter block is then
+// retail's, the pops still sit in each exit); `s->counter++` with the long return 612 (2893 B). The 0.866 test through
+// dot3f(&s->direction, d) 604 (aligned 283, d still EBX). Lane 8 r198's saved lead (the 12/8 factor ahead of t with
+// the clamps as PIN, the limit read at each use, the impulse through vector3f_scale) rebuilt 729 (2892 B, aligned 219:
+// b moves to EDI and the time globals to EDX at the entry, d still EBX). Diagnostics (reverted): an unreachable call
+// taking d's address 603 (the same code: in this function it does not keep the parameter in its home); the three dots
+// with d and the three fallback copies behind out-of-line probes 816 (2788 B, 0x1eb6f0 lost at 2: the globals take
+// EBX and `a` EDI, so calls at d's sites are no model for it). Read again against retail: d's home [esp+0x3c] and q's
+// [esp+0x40] are reused as float spill slots on the paths where each is dead, so d is an ordinary unregistered
+// variable (not address-taken); retail forms `&s->target` in EAX and `&s->direction` in EDI and reads and writes all
+// three components through them (ours the first component only), sums the three delta components with the impulse on
+// the x87 stack from memory after all three impulse stores, and scales delta in the registers that still hold it:
+// the shapes of pointer-taking vector helpers at each of those statements. Every such helper measured alone so far
+// raises the positional count; the entry (d against q for EBX) has to come first. Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
