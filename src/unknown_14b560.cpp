@@ -1707,6 +1707,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // block after it 43 (1031 B); that block plus the reuse flag declared at the top of the result block 62. On the current
 // body: the outputs typed dword (passed as long pointers) 5 (same code); the reuse flag moved to the top of the result
 // block, ahead of the outputs, 25.
+// M3 lane 3 r276 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00, 0x14cad0; control 5): on the current body the outputs in
+// one declaration 5; declared bare and set by `tag_index = third_person = NONE;` ahead of the mode test 5 (both the same
+// code); the outputs declared with their NONE after the kept-unit block, ahead of the result test, 268 (1047 B: the result
+// test is no longer threaded). Compile-only scan with the outputs in the mode block (it reproduces that form's `mov eax,
+// 0xffffffff`): 0 to 12 dead initialised locals at the function top, and 1 to 8 inside the mode block ahead of the
+// outputs, all `mov` (the -1's form is not a symbol-count tie).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
