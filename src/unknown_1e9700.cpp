@@ -76,6 +76,14 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 }
 
 // MiniMax I (11-20): no new form, no lower score (76): reading the enable byte at each use point instead of through the bool local gives 103 (the reload then lands where retail has it), the old maximum as a nested ternary 108, and the increment before the row pointer 107 with the direct enable read and 85 alone (it swaps the EBP and EDI roles); what still differs is the old maximum's home (ECX there, EAX here), the 15-bit value read (a zeroed 16-bit move there, movzx here) and the row pointer's register order.
+// MiniMax S (11-20): score 72 (was 76): the increment is now the address expression `++*(short *)((byte *)statistics +
+// index * 0x1c + 0x16)` and the row pointer is formed after it, which gives retail's `inc word ptr [eax + edx + 0x16];
+// lea edi, [eax + edx]`, and the clamp's limits are longs, which gives retail's two `movzx word ptr` reads and its
+// thirty-two-bit comparison; the old maximum's read moves after the increment (it reads the same counter, which the
+// increment does not touch). What still differs: the enable byte is still cached in a bool local where retail reloads
+// it into AL and CL, the old maximum is still in EAX where retail keeps it in ECX and the consecutive count in DX
+// where retail keeps it in AX, the fifteen-bit counter is read with movzx where retail uses `xor eax, eax; mov ax,
+// [mem]`, and the game-time load keeps this build's registers.
 // score 76 (was 76): Retail reloads enable after the player statistics write and carries the maximum in ECX.
 // The existing getter and setter live in a separate /Ob1 translation unit. The global layout affects alias analysis.
 // MiniMax B (11-20): no new form, no lower score (76): the enable byte's raw reload needs one address-taken object that src/unknown_1967d0.cpp holds (BLOCKED-BY 0x196960/0x1968b0); what still differs is that reload, the old maximum's home (EAX here, ECX in retail), the 15-bit value read (movzx against retail's xor/mov) and the row pointer's register order.
@@ -320,6 +328,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // default 85/113, upper default 95/121, lower-bound admission with nested
 // upper comparison 86/109. NOT kept: all regress. The 434-byte long forms
 // still keep enable across the statistics write and the old maximum in EAX.
+// MiniMax S (11-20), NOT kept: 72 (was 76), a 4-point gain, under the 8-point bar for a function above 30.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -860,6 +869,9 @@ struct s_object_damage_view
 // Keep separate slots at the maximum test, update shared slot in the reported arm, conditional update,.
 // and validate other players first. Initial-maximum and no-greater-maximum tests: 380/412/412/412/378/394/394/394.
 // NOT kept: The maximum tests all raise the score. The separate-slot forms and the initial-maximum shared forms add 16 bytes. The victim-team/credit/code homes and amount-biased history cursor differ.
+// Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
+// fallback 358/358/416/416, with conditional code selection 358/358/416/416.
+// NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

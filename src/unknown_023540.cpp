@@ -4166,6 +4166,18 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // reloads follows the order of offset's and maximum's declarations; `inverse_span` declared bare between them 9 and as
 // `real inverse_span = 1.0f;` there 9 (same code each: the span never moves ahead of the constant). Diagnostic: every 1.0f
 // literal ahead of the floor of `fixed` changed to another constant 1167 (4864 B), the reloads still constant first.
+// M3 lane 8 r205 (fast, base 9): the post-clamp span as a `real const` copy used by every later read 9 (same count; mode
+// one's reload group becomes 1.0f, span, zero, retail's exact reverse), defined at the exponent loop instead 9; that copy with
+// `real offset = 0.0f;` declared after `maximum` 5 (B: both reload groups retail's, span first; only the input word's
+// `shl ebx` hoisted above the clear left; a copy local plus a moved declaration, so kept only with a match). On B: the 24
+// whole/fraction/input/alpha orders with the shifted local, best wfia (B's own) 5, the rest 19..976; with no shifted local,
+// best wafi 14, wfai 15, awfi 15, wfia 941; the shifted local declared bare at the top, right after the clear, typed long,
+// in a block, as `input_bits = input; input_bits <<= 24;`, as `input * 0x1000000`, ahead of the fraction constant, or with
+// the alpha word named too, 5 each (same code); ahead of the clear 930, right after the selectors 940; the RGB word named
+// with the alpha word as `rgb | 0x8000` 925; both words named 941; `long exponent = 0;` at the top 1172, ahead of the clear
+// 230 (4832 B), ahead of `fixed` 255; `small` declared at each other opening position 267..269 (996..998 with no shifted
+// local). Diagnostics, restored: an extra span use at the end 77 (the span moves to XMM5, the reloads stay 1.0f first);
+// `real inverse_span = 0.0f;` between offset and maximum 9; maximum with no initialiser 454 (the reloads stay 1.0f first).
 // M3 lane 16 r156 (fast, control 9): the two packed fraction/whole constants through the SDK's colour-packing macro 9
 // (same code); no shifted input local with small read through a `bool const &` for both selectors 939; no shifted local
 // with the alpha selector written at its store (`(small ? 4 : 24) << 24`) 947 (4840 B); no shifted local, alpha selector

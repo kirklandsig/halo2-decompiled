@@ -826,6 +826,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // code); the group tests reading the instance at each use with no instance local 165; the group test negated with the
 // fallback arm first 117 (same code); the material tag named once for 0x1c590 and its lookup 146 (524 B); the stage and
 // pass indices named where they are summed 117 (same code).
+// M3 lane 3 r280 (fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH each time; control 117, aligned rows 56 of 165;
+// main's body unchanged). The four cache fields cleared by one memset of the record's tail (16 bytes) where retail has
+// its four stores, after the material lookup, 162 (the head's prologue changes, aligned 63); that memset ahead of the
+// pass definition lookup 119 (aligned 74), between the two definition lookups 163; the four stores as statements
+// together after the material lookup 120 (re-measure, aligned 51), together ahead of the pass definition 148 (aligned
+// 49). The head, stage and pass block headers copied whole into (count, address) aggregate locals and indexed from
+// them 163 (561 B: the three addresses are loaded up front), with the late memset 166 (563 B).
 // Unshifted pass-record base 164; shared material tag field address 152; native pass array header 117.
 // With grouped cache defaults those three give 161/153/120. Native pass array with unshifted
 // base or material field address 164/152. NOT kept: ties or regressions. The fallback still

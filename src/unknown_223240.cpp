@@ -436,6 +436,14 @@ void function_2232a0(void)
 // declaration `__stdcall` 56 (aligned 32), with view_count declared just before the terminal call 63; diagnostic, the terminal
 // record as a two-definition pointer (NULL, then set under a test) 78: the inlined 0x223080 still adds the base first, so
 // the call site's pointer shape does not reach the inlinee's fold.
+// M3 lane 3 r280 (fast with 0x223240/0x2232a0 MATCH, 0x223080 2 as before; control 47, aligned rows 12 of 174): the
+// tail call's records pointer written from the terminal record (`&g_47f0f8[view_count] - local_2`) 52 (577 B); the
+// terminal record addressed from the first view record (`&g_47f0f8[1] + local_2`) 183 (re-measure); the terminal
+// record's two sentinel fields stored by this function in index form ahead of the initialiser 52 (586 B: the fast
+// build then folds the table base into every later use, the type store and both `lea`s included, where retail folds
+// only the six stores and forms the pointer with `lea` before the type store); the view count as a dword 47 (same
+// code); one record pointer stepped by the loop and reused for the terminal record 141. Nine of the twelve rows are
+// that fold-then-form of the record base; the other three are the stub's count register (BLOCKED-BY 0x2b5d0).
 // M3 lane 1 r136 (fast with 0x223240/0x2232a0, MATCH; control 47): what is left besides the 0x2b5d0 tail is the terminal
 // record's addressing: retail keeps the scaled index in EAX for the first stores (base folded into the displacement) and forms
 // the pointer with a late `lea`, ours adds the base at once. The record address as byte arithmetic 47 (same code); the view

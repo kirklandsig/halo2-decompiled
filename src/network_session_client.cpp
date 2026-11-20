@@ -919,6 +919,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // class's getter idiom (state range test, then the flag, the two addresses stored through the out pointers, bool result),
 // called as `!get(&machines, &players) || !machines || !players` 46, with a NULL preset and the result ignored 46, with
 // the live-state inline for the range test 46, without the range test 46 (the folded range test does not move it).
+// M3 lane 16 r158 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22), no-code forms aimed at the scratch
+// rotation, each 22 (same code): the member count through a new trivial inline accessor; the machine mask through a
+// new inline `(1 << count) - 1` helper; the mask stored through a new inline setter taking the machine buffer; the
+// summary argument through a trivial inline identity; the summary passed through a `const &` to it; the copy
+// countdown started from a `long const &` to the member count.
 // M3 lane 8 r204 (fast with 0x6e500 and 0x72700; control 22): the summary read directly under its flag (the getter's body
 // without its folded range test) 22 (same code), with a plain `for` copy 100; the opening's two addresses through two
 // one-address inline getters in 0x5b080's shape (result preset 0, range test, flag, address) tested as `!first() ||
@@ -1388,6 +1393,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // (44, first difference +0x263; the store sinks to just before the call, so one more use of the count is what retail's
 // colouring needs); the destination declared in the branch plus that probe 48 (the lea then sits before the mask
 // stores); a constant store at the end of the else arm 113 (round 53's else-arm finding does not hold here).
+// M3 lane 16 r158 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): the indexed copy with
+// the call's count through a `long const &` bound at the top 195; the indexed copy with `current` read in the loop
+// through a `const &` bound in the branch 195; that reference on this body 9 (same code); the walked destination
+// copied through a `dword *const &` bound beside it 194 (first difference +0x1e); the indexed copy into a separate
+// count declared in the branch and copied to `count` after the loop 209 (704 B), the same with the walked destination
+// declared in the branch 209 (704 B).
 // M3 lane 2 r118 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9, the indexed copy re-measured
 // 195: state EBX from the top, the loop index kept in ESI with no spill, the count spilled; retail spills the loop index
 // around each copy and keeps the count in EBX). On the indexed form: every later state use through a `*const &` bound

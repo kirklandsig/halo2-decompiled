@@ -885,6 +885,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Start index held for one output pass, each candidate, the lazy tie result, or the ranking rejection.
 // Short and long start indices: 263/249/144/144/237/229/247/247.
 // NOT kept: The short read before ranking reaches frame 0x14 but passes count in EAX and raises the score. The two short tie-only forms tie. The pass bound still adds a frame word, and the count and departure homes differ.
+// Completed lowest-point scan extent as pass/candidate/compaction bound, seven subsets:
+// 144/251/154/225/155/256/256. Signed-word pass with the completed extent at both traversal bounds 244.
+// NOT kept: the two-bound form recovers frame 0x14 but raises the score and changes the caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
