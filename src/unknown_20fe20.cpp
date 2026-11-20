@@ -1309,6 +1309,11 @@ void function_2118c0(void)
 // p2, p3 33 (first +0xb0); `long k` 133 (753 B); `long row = (long)b << 3` 10 (same code). Retail's band loop keeps the
 // row (8 * b) as its own register stepped by 8 beside the down-counted trip count, with the knot rows recomputed from it;
 // ours keeps b and scales it inside each knot row's lea.
+// M3 lane 7 r198 (fast with 0x212100 and 0x211fd0, both MATCH; this file's compile-only screen agrees): three per-knot
+// `long` row counters started at the knot index and stepped by 8 at the band loop's foot (no row local) 128 (785 B,
+// every knot row reduced to a pointer), as `dword` 128, as `word` 170 (797 B: the first counter becomes an `add reg, 8`
+// row with the other two as reloaded offsets, unreduced, but each zero-extended); the table through a `vector3f (*)[8]`
+// local for the knot rows 10 (same code); every row, p1 and out included, as `(b << 3) + index` with no row local 150.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

@@ -2322,6 +2322,14 @@ void function_2818e0(void)
 // destination-mask test as an if nested under the lookup 2 (same code); the interpolation test inverted with the plain apply
 // first 4 (0x27dff0 4, 0x285750 184, 0x28aaa0 2); in function_288571 pass 0 given the settings' node count directly, the local
 // for the later passes 397 (1681 bytes, every walk user 217-433). All restored.
+// M3 lane 7 r198 (fast with 0x27dff0, 0x285750, 0x288570; a compile-only build of the file is exact here, 2): in
+// function_288572 the bit-flag shift ahead of the cursor step 2 (same code here; 0x288570 12); node_destination_get as one
+// exit through a found flag 2 (same code everywhere, though every symbol number moves: pass 0's flags then number below
+// the count and the count is still reloaded first, so the pair does not follow symbol numbers); in function_288571 the
+// counter resets ahead of the count read 6 (the count's store moves; 0x285750 4, 0x288570 4); the destination-mask test
+// as `arg_2 ? node_flags_test(...) : true` 39 (the pass-2 scale product changes; 0x288570 120). Diagnostics (screen, not
+// kept): `__assume(node_count >= 0)` in this wrapper or on the count in function_288571 moves 8 lines, pair unchanged;
+// 0 to 15 dead initialised locals in this wrapper shift the walk's symbols by 3 each, pair unchanged. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

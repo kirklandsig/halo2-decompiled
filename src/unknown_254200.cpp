@@ -277,6 +277,13 @@ void function_254200(void)
 // 9 (the colour loads and stores reorder); the products written straight into the helper's 4f call 4 (same code); the
 // products stored into a scaled colour aggregate 28 (first +0xe: it takes a frame home); the colour by `color3f const &`
 // 4 (same code). The constant and y + size still reload in our order after the second and third reservations.
+// M3 lane 7 r198 (single-address fast, control 4): the readiness test held in a named bool 4 (same code); the point copy
+// as a `point2f const &` to the parameter's point 341 (1162 B); the point copy, then the size, after the 0x1cf50/0x1c710
+// calls 22 (the pair unchanged); the two dimension reads ahead of the texture store 56 (1110 B); the bitmap selection
+// written in the test and again in the block, no shared local, 239 (1116 B). Reading: in this function, in 0x2548f0 and
+// in 0x281b60's walk, ours emits each two- or three-value call-path reload group in exactly the reverse of retail's order
+// (here retail x, constant, y + size; ours x, y + size, constant), while a one-value group (the constant alone after the
+// second vertex's reservation in 0x2548f0) agrees. All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -666,6 +673,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // difference +0x2da); named blue, green, red (the order retail reads them) 2 (same code); that with a named `real alpha = 1.f`
 // 466 (2159 bytes, first difference +0xe); the mip LOD bias stage value as a zero real read as a dword 443 (2271 bytes).
 // All restored.
+// M3 lane 7 r198 (single-address fast with 0x254490 4 and 0x254200 matched; control 2): the scale's half product named
+// `real const half` just ahead of the first texture call and used in all four texture coordinates 386 (2272 B), named after
+// the quad's start call, ahead of the colour call 423 (2286 B); the last quad's point read into one `point2f` copy in place of the two
+// coordinate pointers 161 (2194 B); the readiness test held in a named bool 2 (same code). Diagnostic: every
+// `#pragma inline_depth` line removed 440 (2388 B: every SDK call inlines), so retail's out-of-line calls after the
+// second vertex need the pragmas in this source. All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

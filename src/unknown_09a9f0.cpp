@@ -1432,6 +1432,10 @@ bool c_projectile_type::v8(long a, long b)
 // tie; a 12-byte group element typed (identifier, flags, value, desired value) through a pointer indexed `[index & 0xffff]` 12,
 // indexed `[(word)index]` 5 (movzx); that typed pointer with the 0x800 test and the NONE test combined 12; the a5e70 call ahead
 // of the object lookup with the typed pointer 18. Word-read body kept (5).
+// M3 lane 7 r198 (fast with 0xa5e70, matched each time; control 5): the group index masked with an unsigned literal
+// `0xffffu` 12 (the same swap as the mask); `(long)(unsigned short)index` 5 (movzx); with the word read, the object's
+// power through a `real const &` 5, the 0x400 test and compare as nested ifs 5, a `long` flags local 5 (all the same
+// code as the word-read body). All restored.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
