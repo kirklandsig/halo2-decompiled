@@ -90,6 +90,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // code), the found flag declared first in the pass 359 (masked 74). Left on the 359 form: local_2 compared as a dword
 // (retail a word), the found flag's byte (+0x12) and the result byte (+0x13 against retail's +0xb), and the table/point
 // registers at the 0x29de20 call. Body unchanged.
+// Earlier 367 (was 382): The 0x64 frame agrees. First +0x11 begins the displaced selected-index stores. The group index uses EBP instead of EBX, and both bitmap operations recompute the address and mask.
 // score 367 (was 382): The 0x64 frame agrees. First +0x11 begins the displaced selected-index stores. The group index uses EBP instead of EBX, and both bitmap operations recompute the address and mask.
 // MiniMax C (11-20): the point scan written as a guarded do-while (the same bound test before the loop and after its
 // body) gives retail's loop shape and retail's 1596-byte length: 367 -> 329; what is left is the group pointer and the
@@ -731,6 +732,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // point bitmap tested and set through bit_vector_test/bit_vector_set as the group bitmap now is 367 (aligned 293), cleared
 // by memset 367, both 367 (aligned 293, masked 157); on this base local_29 `long` 418 at retail's 1596 bytes (frame 0x68,
 // aligned 242, masked 161), `short` 420 (aligned 246, masked 161).
+// M3 lane 8 r205 (fast with 0x29e730/0x29de20, both MATCH each time; control 367): the selected trio renamed
+// selected_group/point/endpoint 367 (same code: the slots follow use density, not names); the pass's visited index as
+// `short` 420 and `long` 418 re-measured (the form above); the step as `long` 442 (1567 B); the pass's best distance
+// declared ahead of the two NONE defaults 367 (same code); the endpoint search tested on `local_20 == NONE` with no
+// break 374; the output step as if/else increments 379 (1576 B); the output count as `long` 369 (1581 B); the group loop
+// index as `long` 369.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
