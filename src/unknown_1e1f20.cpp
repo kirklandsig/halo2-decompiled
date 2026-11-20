@@ -930,6 +930,11 @@ void swarm_leader_detach(long actor_index);
 // with a false-then-set result 216 (966 B; the byte lands in the dead index slot as retail, the same code as the flag
 // form reverted on 11-15, a match-only form), through a helper returning the direct expression 236 (same code). Still
 // BLOCKED-BY 0x26ed40: retail expands it here and its file's inline setting keeps it a call in this build.
+// M3 lane 4 r222 (fast with 0x26ed40, 0x1e2150, 0x258600, 0x1e4990 and 0x1e0160, all matched; control 236, aligned 108): the
+// iterator compared against the cached actor alone 308 (942 B); the memory walk as the existing joint_decline call under the
+// type test 348 (910 B, a call where retail expands it); the definition bit as a byte test `*definition & 8` 236 (same code);
+// `(bool)value` for the 0x203ed0 argument 236 (same code); the counts loop index as short 236 (same code). Still
+// BLOCKED-BY 0x26ed40 (expanded in retail, kept out of line by its file's inline setting).
 // M3 lane 13 r115 (plain unless marked fast; each step on the one before; lead saved as build/r115/lead-1e1a00.patch
 // in the m3-lane13 worktree; all restored): memory walk as `for (short i...) if (actor->memory[i].type != NONE)` calling
 // a file-local forceinline copy of joint_decline 301 (1006 B, fast); prop walk through 0x26be00/0x26be30 as matched
@@ -973,6 +978,7 @@ void swarm_leader_detach(long actor_index);
 // from existing functions (joint_decline called, direct definition test, the prop walk, the cached compare, bool value) 397
 // (862 bytes), so no part of the lead is a gain without the expanded helper. Still BLOCKED-BY 0x26ed40 for a natural form
 // (marked inline it also expands in 0x1bead0 and 0x26ef70), and on the link-time state for the handler pointer.
+// MiniMax C (11-19): no gain (236, baseline; body restored). The known 216 form holds the definition bit in a byte flag set by the tests and read by the next test, which is kept only with a byte match. What is left is the head: ours loads the pool global and the slot table into other registers than retail (the pool into EAX against retail ECX) and keeps the actor index in EBX against retail EAX.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

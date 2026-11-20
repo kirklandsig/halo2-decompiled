@@ -682,6 +682,16 @@ struct s_visibility_object_header
 // definition 4; `inline` on 0x132fd0's definition 4 (both stay out of line, same code); behind read for the packer through
 // a `bool const &` bound before the plane call 4; the pair in one declarator `bool in_front, behind;` 4; `dword flags;`
 // declared ahead of the pair and assigned from the packer 4 (all the same code, homes still ours).
+// M3 lane 11 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): `in_front = in_front;` or
+// `behind = behind;` right after the plane call 4/4 (same code: the self-copy is dropped before the homes are picked);
+// the pair in one declaration, in_front first or behind first, 4/4; the packer's result declared ahead of the pair and
+// assigned at the call 4 (all the same code).
+// M3 lane 14 r119 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): the visible test as an early
+// `return` with the block un-nested 4; `long flags` 4; in_front's address passed to the plane call through a pointer
+// local 4 (all three the same code); the entry as one ternary 124; an inline helper owning in_front and returning it
+// (behind still an out-parameter) 168 (582 B, the helper stays out of line), forced inline 291 (671 B, the listed
+// helper's code). Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 4 at every K (not a
+// symbol-count tie; rounds before covered 1 to 8).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

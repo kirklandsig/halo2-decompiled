@@ -728,6 +728,17 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 
 /* the camera director of scripted cameras: fills the observer's command */
 // score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// MiniMax E (11-19): score 126 (was 126): no new form, no lower score. Read from the listing again: the case-2 plane
+// length still preloads the camera point's left.k into XMM1 where retail preloads left.j, so the length's accumulator
+// stays in XMM0 against retail's XMM1 and the zero that follows stays in XMM1 against retail's XMM0; the plane distance
+// dot itself matches instruction for instruction, so the difference is in the hoisted load alone. The length dot written
+// out with the six term orders (394-397), the swapped dot arguments (394) and the swapped distance dot's arguments (126,
+// identical code) were measured and dropped. This round measured five more spellings of the same dot: the two dots in
+// the other order 399, the squared length of the camera point 478, the squared length of the plane 399, the swapped dot
+// arguments 394 and the dot against itself 177, all worse than 126, so the hoisted component is not reachable from the
+// dot's spelling. The distance dot's products still load the position's component first
+// where retail loads the forward's, the yaw block still keeps its zero in XMM1 and the pan arm's two lea still come
+// out the other way round.
 // M3 lane 15 r104 (fast with 0x142d10, which stays MATCH; control 126, all restored): 0x142d10's parameters in the order
 // retail's call setup implies (ECX up, EDX forward, EAX out set up in that order: `out, forward, up`; definition,
 // declaration and the one call) 124 (fixes the pan arm's two `lea`s; a gain under 4, so not kept: the lead for a
@@ -1291,6 +1302,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // ordered fraction clamp, staged angle accumulation, named angular delta, branch-local command
 // field stores, and a role-named projection scale: 126/141/390/126/126/395/154/126.
 // NOT kept: The direction-k preload and length/zero register split remain.
+// M3 lane 12 r152 (fast with 0x16c6f0/0x13cb40/0x142d10, all MATCH; control 126): redundant parentheses (no grouping
+// change) around the field-of-view lerp product 1-3 pairs 126/126/126, around the case-2 division 126/126/147, around the
+// timer division 126/126/147; the plane length written out j, k, i without dot3f 397 (1700 B: left.j hoisted as retail, but
+// the normal's i/k registers swap and left.k is read off the camera pointer), with 1-3 pairs around its first product
+// 398/398/392 or its leading pair 397/397/391; written out i, j, k 397, with the same pairs 398/398/392 and 397/397/393.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

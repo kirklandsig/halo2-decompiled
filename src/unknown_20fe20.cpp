@@ -1284,6 +1284,17 @@ void function_2118c0(void)
 // row * 8` and `&noise[k][m] + row * 8` with the shifted row 175 (745 B); `long row = b * 8 + k` for p1/out with the knot
 // rows from `row - k + w` 150. Screen only: the knot sums masked `& 0x1f` keep retail's `add reg, 8` row and unreduced
 // knot rows (with three `and`s), the same lead as the earlier mask/`row | w` diagnostics.
+// M3 lane 11 r127 (fast with 0x212100/0x211fd0, both MATCH each time; control 10): `long row = b; row *= 8;` 150; the
+// three knot sums through references (`long index3 = row; long &sum3 = index3; sum3 += w3;`, `b << 3` row) 16; the row
+// through a `long const &` bound to a `b * 8` local 150; `b * 8` knot rows with p1 from `(b << 3) + k` 150; `byte` knot
+// indices with `b * 8` rows 114. Compile-only (exact here): `(short)`, `(char)`, `(byte)`, `(long)` or `(dword)` on the
+// knot indices in `b * 8` rows, `short` or `char` knot indices with `b * 8` rows, all reduce every row; the five reduced
+// pointers fit in registers (eax, ecx, edx, esi, edi with the counter in ebp), so register pressure does not keep
+// retail's knot rows unreduced; a row read from a static table of band rows (diagnostic) leaves the rows unreduced but
+// loads the row.
+// M3 lane 13 r119 (fast with 0x212100 and 0x211fd0, both MATCH): `word k` 10 (same code); `long row = b; row *= 8;` 150;
+// `unsigned long` knot indices `(k + n) & 7` with `long row = b * 8` 185 (751 B); `long row = b * 8` with the knot subscripts
+// `(dword)(row + w)` 150, with `(dword)row + w` 150 (unsigned sums still reduce every row).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

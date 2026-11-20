@@ -214,7 +214,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 920 (was 920): r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// score 920 (was 920): r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // r118 (lane 14) unchanged; r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
 // MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
@@ -642,6 +642,29 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // the fetch both after that test 926 [673]. Retail's layout puts the join (distance test, definition bit, classification
 // start up to its first `jmp`) right after the type-0 other-actor branch, with the type-0 `else if` branch and the type
 // 1/7/11 arms after it jumping back; every form here keeps source order.
+// M3 lane 13 r121 (fast with the three callers 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, 0x2c3030, 0x2c2060, 0x2c3550,
+// 0x29c860; this set's control is 920 = plain; [difflib-aligned] in brackets, control [680]): retail's call in 0x2c41b0
+// computes the previous-direction argument right after it pushes the ignore and unit indices and before the direction,
+// so the declared order is (actor_index, flags, settings, obstacles, blocking_obstacles, position, radius, direction,
+// previous_direction, unit_index, ignore_index). With that order at the definition, the four declarations and the three
+// calls, 0x2c41b0 goes 675 -> 661 and the two matched callers stay matched, but this body reads 928 [678] (3707 B), so
+// it is not kept: build/r121/lead-2c0d60-param-order.patch. On the present order: both qualifiers dropped 972 [541]
+// (3671 B, frame 0x2cb0); the type byte read at each use 936 [667]; both 968 [502] (3676 B, frame 0x2cac, 925
+// instructions against retail's 921). What is left on that base is the entry's registers (ours settings EBX, the object
+// table ESI, zero EDI; retail actor_index EBX, self_unit and its zero EBP, unit_index EDI, held up to the loop head and
+// re-read on its back edge), the skip flag's home (ours BL; retail's byte at +0x12, packed with blocking, aligned and
+// straight) and the moved join block. On that base: the skip flag forced into memory with a qualifier (diagnostic) 889
+// [489] (3708 B; the four bools then pack as retail's, but its stores go through a register where retail has `sete byte
+// ptr`); the entry dot through dot3f in either order 975 [500]; the two type-0 inflation tails as one forceinline helper
+// with the inflation and the skip flag passed by address 968 (same code as written out; the first tail only 947 [496]);
+// the settings block as a forceinline helper with the four priorities by address 991 [487]; the new order 975 [493]. A
+// switch over the type local 926 [697], over the type byte 947 [683]; with the new order 889 [696] (3732 B: position
+// only, the aligned count is worse) and 937 [678]. Retail reads the type byte four times in the loop: once sign-extended
+// for the four arm compares (`movsx eax`, then `cmp eax, 1`, `7`, `0xb`), and as a byte at the range test, at the
+// `1 << type` and in the sphere loop.
+// MiniMax H (11-19): no new form, no lower score (920): retail lays the join out of source order, with the type 0
+// other-actor branch followed by the join and the remaining arms jumping back to it, and no form tried here changes
+// that layout; the plain and the fast score are the same (920), so the body is as it stands.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1499,9 +1522,22 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax D (11-19): no new form, no lower score (400): every block's own arithmetic agrees with retail (the x87 chain of
+// the candidate loop, the corner calls, the attempt loop and the emit block are the same code, only their stack homes
+// differ), and what is left is MSVC's own allocation of the loop's locals: retail keeps the zero in EBX at the head, puts
+// the count in SI and reads it back from its parameter home in the scan loops and holds the edge in EBX, while this build
+// keeps the zero in EDX, the count in BX and the edge, the next and the step in stack homes, with the frame at 0x114
+// against retail's 0x10c; the declaration orders of the loop's locals (the step pointer last, the edge after the link and
+// the edge first) all compile to the same code.
 // score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
+// M3 lane 3 r272 (fast with 0x270930/0x2c3030/0x26ccb0/0x2c2a70, matched throughout; control 400, aligned 350, masked
+// 94): the count bound by `short const &` and read through it at its four loop uses 400 (same code); `edge = 0xffff` at
+// the scan hit 433 (retail's second store appears, the edge stays in a slot, as r169 found); the candidate search
+// under a guard on its own range 500 (1783 B); the corner results tested through `bool const &` references 400 (same
+// code); the trace's edge read through a `long const &` 400 (same code). Retail's distance block is 0x210a30's inlined
+// body (already listed: calls to it stay out of line here).
 // MiniMax E (11-17): no new form, no lower score (400): the permutation search over the body (38 tries, 300 s, annealed,
 // one job) reached nothing below the baseline of 395 differing instructions on both the full and the reduced image, so the
 // body is unchanged. What still differs is the frame and its slots: ours reserves 0x114 against retail's 0x10c, so every
@@ -1510,6 +1546,7 @@ long function_1fa7f0(void);
 // MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
 // MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
 // and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
+// Earlier at 400 (r123, r125 unchanged; second score line merged into the note's first, r272): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // Earlier (400, was 400): r123, r125 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).

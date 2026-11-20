@@ -717,6 +717,11 @@ struct s_1f9762
 // argument order, a subtract-assignment form, a named local for the input pointer, the current point read
 // through the path or through the actor's own field, or the first dot's argument order; reading the index
 // through the path instead rotates the whole float block (score 10). The committed body (score 1) stands.
+// MiniMax D (11-19): no new form, no lower score (1): retail's `inc eax` needs the index in EAX and the count
+// in EDX, and every spelling that increments the index puts it in EDX instead (`index + 1 >= count` 4, the same
+// test as `count <= index + 1` 4 with `setle al`, the count and the index each through a one-use local 6 and 6,
+// and the count through a one-use local minus one 3 which also rotates the two dot products), while every
+// spelling that keeps the index in EAX decrements the count instead; the committed body (score 1) stands.
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
@@ -1469,6 +1474,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax S (11-19): no new form, no lower score (239): the body is retail's statement for statement and the whole
+// delta is the colouring of the vector block - retail holds the result in XMM0 as a copy of the zero constant
+// (`movaps xmm0, xmm1`, the zero in XMM1) where this build folds the constant into the store, retail normalizes the
+// direction's x before its y and this build the y before the x, and retail's left test multiplies the facing's y by
+// the direction's x with both in registers where this build copies the direction's x and takes the facing's y from
+// memory; the side vector's y replaced by the direction's x gives 256, the facing's x and y read into named locals
+// before the test 270, and the helper's multiply order and temporaries 239.
 // score 239 (was 239): The zero and radius have different XMM homes, and unsupported types use a separate return path.
 // The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
 // M3 lane 14 r112 (fast; control 239, aligned 198, register-masked 85): retail keeps the result in XMM0 from its zero

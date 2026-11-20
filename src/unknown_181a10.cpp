@@ -516,6 +516,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 }
 
 // score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// MiniMax E (11-19): score 238 (was 238): no new form, no lower score. Read from the listing again: retail walks the
+// node chain with the next pointer already in a register and tests the last node's type and entity, then scans the
+// entity's property list for the key 0x2001; our body reads the root's type straight from the node and compares it
+// with one, so the type's home and the compare's width differ. The frame stays 0x40 against retail's 0x44, the second
+// node stays at frame+0x08 against retail's frame+0x14, and the shape's data pointer is still read twice where retail
+// reads it three times and ends its test in a setne and a test pair. This round split the node-type guard five ways (the
+// two tests apart, the type in a named local, the entity test first, and both named) and every one of them compiles to
+// the same 238, so the load before the compare is not reached from the guard's spelling.
 // frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // frame 0x40 versus 0x44. The second node and shape share the wrong stack slot.
 // Retail keeps origin y/z in reused slots and has two unused dwords below the plane.
@@ -1058,6 +1066,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
 // origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.
 // NOT kept: The frame and second-node home still differ, as does the classifier data reload sequence.
+// M3 lane 5 r210 (fast with the file's seven other functions; control 238, register-masked 89): the dead second root walk
+// ahead of the property get 341 (1243 B); the key read ahead of the kind-4 test 251; the key adjust as `(data - 1) * 8`
+// 238 (same code); friction and restitution declared at function scope 238 (same code); the material output declared at
+// function scope 230 (frame 0x44 as retail, first difference +0x1a: second/first homes +0x14/+0x18 for retail's
+// +0x10/+0x20; a declaration moved by score, not kept); the 1..16 pin as a non-inline static function taking its bounds
+// 238 (inlined at compile time, same code), with the material at function scope 230.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
