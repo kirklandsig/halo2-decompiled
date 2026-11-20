@@ -55,6 +55,7 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax D (11-19): no new form, no lower score (61): retail still keeps two 0x212bc0 call sites with their own g_54e49c stores and their own copy into g_54e4a0, calls the name copy out of line at 0x13fac0 and passes the controller index in ECX to 0x238c69, while ours keeps one call site with the choice in a byte slot, the copy in place and five stack arguments; the out of line copy lives in a file this lane may not edit.
 // MiniMax G (11-19): no new form, no lower score (61): retail's second half still has two 0x212bc0 call sites (the
 // default arm inline, the selected arm out of line at 0x2ca467), each with its own g_54e49c store and its own copy
 // into g_54e4a0, and it calls the name copy out of line at 0x13fac0; ours keeps one call site with the
@@ -364,6 +365,17 @@ extern long g_55c154;
 // `saved` and the storage address follow it there and `this` is left in ESI or EDI with a spill round each copy, which
 // also costs the biased frame; retail hoists neither constant because `this` holds EBX from the first instruction, as
 // this one-call body does.
+// M3 lane 5 r212 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ba9f4, all MATCH; trials only, restored): base = two load arms +
+// 0x238c69 as (controller, mode, type, name, maximum_count) at its definition, both declarations and both calls + a count named
+// in the default arm (round 189's recipe) 183 (575 B: `this` ESI and spilled, EBX zero, then saved, then the hoisted variant
+// address); with `flag_c = true;` after the selected re-read 175 (582 B); the selected arm's copy as memcpy 183 (same code);
+// build_default declared (variant, type) everywhere (retail loads the type into EAX before pushing the address) 183 (same
+// code); the selected arm's index store after the copy and flag clear 179 (580 B). Diagnostics (wrong values, reverted): the
+// selected arm's file type from the local copy instead of the global 62 (584 B, aligned 12; `this` EBX and retail's layout
+// but for the default arm's EAX copy of the address); no build_default call 181; no flag clear 189; the request name from the
+// local copy 176. The second use of the variant's address in the selected arm (copy destination plus file-type argument)
+// makes the constant a register candidate that outranks `this`; retail keeps every use an immediate (the same hoist is open
+// in 0x22d503's family). Body unchanged.
 // M3 lane 7 r189 (fast with 0x13fac0/0x212bc0/0x238c69/0x238c21/0x2ca244/0x2ba9f4, all MATCH in every trial; control 61,
 // nothing kept). What fixes each remaining piece is now known but for one register fight. (1) Retail's argument order
 // for 0x238c69, controller first (definition, both declarations, three calls): alone 76 (574 B, re-measured), and on two load
@@ -400,6 +412,14 @@ extern long g_55c154;
 // `mov ebp, esp`, retail biased by 0x70, so every frame offset differs) and the variant's address, which ours loads once
 // per arm into EAX for the copy and the calls where retail writes the immediate each time. What gives `this` its weight
 // in retail without that read is still not found. Body unchanged.
+// M3 lane 2 r114 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all MATCH; control 61): retail's two load arms
+// (`if (selected == NONE) { if (load(saved)) {...} } else if (load(selected)) {...}`) re-measured 174 (595 B); in it the
+// constant 1 sits in EBX in the first half, `saved` and the &g_54e4a0 address in the second, and `this` takes EDI and is
+// spilled around the `rep movsd` copies. On those two arms: the bit test spelled as a mask `(entry->variant & 0x200000)
+// != 0` (diagnostic: no `test al, 1` use of the constant) 184 (597 B: EBX is then pushed late and unused in the first
+// half, but `this` still takes EDI, so the constant is not what evicts it: `this` outranks `saved` in every two-arm
+// form, where retail gives `saved` EDI and `this` EBX); a variant local of its own for the second half 174; `saved` as
+// a dword 174; `saved` as a const local 174; `saved` read through a const reference in both arms 174 (all the same code).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
