@@ -97,6 +97,10 @@ PRIVATE inline void actor_point_target_position(s_actor_point_target const *targ
 // add in a forceinline helper taking the squared length 276; sqrtf for the root 276; a helper returning (real)(k*k + j*j + i*i) 276.
 // With normalize_inline instead of normalize3d (cost vector split only): 296 (301 before the split). Retail's walk found no other
 // logic difference (fields, conditions, calls, stores and loop shapes all agree).
+// score 13 in a full build with stand-in SDK headers (was 276): the squared range is computed inside each arm of the
+// output_index split (retail 0x1c0e68..0x1c0e8b) instead of once after the join, which keeps it an SSE sum and gives
+// retail's frame size. Left: stack cells only, every instruction agrees (retail orders three equal 4-byte cells
+// zone_index, actor, buffer; ours buffer, zone_index, actor; zone_set and distance are exchanged).
 // @retail 0x1c0b80
 bool function_1c0b80(long actor_index, long const *excluded, short excluded_count,
 	s_actor_point_target *target, long *unknown, long *reference)
@@ -151,14 +155,19 @@ bool function_1c0b80(long actor_index, long const *excluded, short excluded_coun
 						}
 						position = &zone->positions[position_index];
 						position_target = &position->target;
+						real range_squared;
 						if (position_target->output_index == NONE)
+						{
 							vector3d_from_points3d(&position_target->point, &actor->position, &vector);
+							range_squared = length_sq3f(&vector);
+						}
 						else
 						{
 							actor_point_target_position(position_target, &point);
 							vector3d_from_points3d(&point, &actor->position, &vector);
+							range_squared = length_sq3f(&vector);
 						}
-						if (!(length_sq3f(&vector) < g_46fbdc * g_46fbdc))
+						if (!(range_squared < g_46fbdc * g_46fbdc))
 						{
 							continue;
 						}
@@ -170,14 +179,19 @@ bool function_1c0b80(long actor_index, long const *excluded, short excluded_coun
 							vector3f direction;
 							point3f cost_point, direction_point;
 
+							real length_squared;
 							if (position_target->output_index == NONE)
+							{
 								vector3d_from_points3d(&position_target->point, prop_position, &vector);
+								length_squared = length_sq3f(&vector);
+							}
 							else
 							{
 								actor_point_target_position(position_target, &cost_point);
 								vector3d_from_points3d(&cost_point, prop_position, &vector);
+								length_squared = length_sq3f(&vector);
 							}
-							distance = (real)sqrt(length_sq3f(&vector)) + path_distance;
+							distance = (real)sqrt(length_squared) + path_distance;
 							if (position_target->output_index == NONE)
 								vector3d_from_points3d(prop_position, &position_target->point, &direction);
 							else
