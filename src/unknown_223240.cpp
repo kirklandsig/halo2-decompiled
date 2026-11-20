@@ -450,6 +450,10 @@ void function_2232a0(void)
 // count formed after the loop 40 (a declaration move, seven points, not kept: the fold stays, only the tail's zero stores
 // change); the terminal record indexed by the loop counter 182 (584 B); the count written at both uses with no view_count
 // local 120; the count taken back from a terminal pointer (diagnostic) 195. Body unchanged.
+// M3 lane 4 r236 (fast with 0x223080/0x223240/0x2232a0; control 47; the fast image shows matched 0x223080 at 2, a
+// reduced-image artifact): the terminal record passed as `&g_47f0f8[local_0 + 1]` (the record after the loop's last) 182
+// (584 B), as `&g_47f0f8[local_2 + 1]` 183 (583 B), as `g_47f0f8 + view_count` 47 (same code); the loop's record as
+// `g_47f0f8 + 1 + local_0` 47 (same code), with the terminal through the loop counter 182. Still BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

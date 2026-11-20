@@ -443,6 +443,10 @@ extern long g_55c154;
 // with the create-default test straight after the load and the index store and copy in each arm 167 (576 B); that with the
 // ternary in the load's argument and `selected == NONE` tested again 173 (567 B); one load with `selected` set to `saved`
 // when it is NONE 76 (577 B).
+// M3 lane 4 r236 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all MATCH; control 61): two load arms re-measured 174
+// (595 B: EBX takes the constant 1 in the first half, then `saved`, then &g_54e4a0; `this` in EDI); on them the copy's count
+// written as the name array's element count 174, both counts that way 174, the name pointer and count named once for the
+// copy and the 0x238c69 call 179 (580 B); the one-load body with both named 88 (562 B, the copy out of line as retail).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

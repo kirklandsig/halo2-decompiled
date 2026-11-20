@@ -627,6 +627,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // component 25 [13]; the same with case 0 through havok_object_get(component->object_index) 25 [13] (same code); with
 // case 0 through havok_object_get(object_index) 72 [2] (the component arrives in EDX); the first and third with a long
 // type 86 [13] / 92 [160 at 711 B]. Header-first still moves the incoming component/index pair. Body unchanged.
+// M3 lane 4 r237 (fast, caller 0x1d5bf0 in brackets, 0 = MATCH; control 96 [0]): `kind` typed char (the definition and the
+// caller's declaration together; the caller reads it from a char table) 97 [193], typed short 100 (272 B) [0]; `level` typed
+// short 101 (272 B) [164]; on the one-read form (object index, absolute index, rigid body, header array, byte type; 28 [0])
+// kind char 31 [193], kind short 47 (260 B) [0], kind char with a long type 119 (268 B) [194]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

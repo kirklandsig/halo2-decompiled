@@ -1998,6 +1998,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // end-of-loop flag test reading the first weapon through `first_weapon` 188; the weapon counter declared at the function's
 // top 188; `unit` declared bare at the function's top and assigned in place 188 (same code each). Still BLOCKED by the
 // stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 4 r237 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): `bool active` in its own block with the
+// set-active call 188; zoom, no_zoom and no_scope declared at the loop body's top 188; both together 188 (same code each); the
+// sound callback selected ahead of the orientation pointer 185 (a statement order, under the bar), with the active block 185;
+// `unit` as a const pointer 188. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

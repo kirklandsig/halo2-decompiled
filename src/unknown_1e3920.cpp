@@ -893,7 +893,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax I (11-19): no new form, no lower score (237): the -1 sentinel still sits in edi where retail keeps it in esi, and this
 // build still reads the squad entry index into esi after the first call where retail reloads it into ecx; the query output homes
 // and the loop's entry block still sit at other frame offsets.
-// score 199 (was 222): Squad and query homes still differ. The perception actor at the shared creation
+// score 199 (was 199): the substitution query's results are now tested as retail tests them (enabled, which 0x2036c0
+// writes through ESI, first; forced as the fallback), same count. Lane 4 r235's 160 was not kept at review (see the
+// review lines below). Left: the squad and query homes still differ.
+// Earlier 199 (was 222): Squad and query homes still differ. The perception actor at the shared creation
 // join puts the unit-creation arm after request case 2, with the jump back to the common actor test.
 // Earlier 222 (was 222): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
@@ -1351,6 +1354,32 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Common no-creation return in unit/perception order 304/304. Positive common creation guard in both
 // orders 222/222. Perception actor at the join 199 (kept), unit actor at the join 222. Those two
 // joins with a no-creation return 308/304. The early-return forms disrupt the register allocation.
+// m3 lane 4 r235 (fast; aligned / masked counts in brackets, base 199 [73 / 25]): 160 [32 / 8] in four parts, only (1) kept at review (see below).
+// (1) The substitution query's results the way retail tests them: 0x2036c0 returns its third parameter (set together
+// with the probability) through ESI and its fourth through the pushed pointer, and retail tests the ESI byte first and
+// falls back to the pushed one; the body had them the other way round (199 -> 199 by itself, the call block then
+// retail's but for its homes). (2) The two weapon lookups as a NONE test on the short, then a long `index` for the
+// range test and the element (retail's `movsx; test ecx, ecx; jl; cmp ecx, [count]`). (3) The palette count read at
+// each use. (4) `short grenade` with the two tests at full width (`grenade_index - 1 != NONE`) and no cast at the
+// call or on the squad's value (retail assigns from whichever register holds the field's low half, `lea eax, [ebx - 1]`
+// and `lea eax, [ecx - 1]` with no second extension, the code of a 16-bit destination). Parts: (2)+(3)+(4) without (1) 160; (1)+(3)+(4) 167; (1)+(2)+(3) 270; (1)+(4) 361; (1)+(3) and (4)'s tests
+// with a long grenade 335-338 [92 / 17] (grenade takes ESI, the unit EDI, the squad leaves EDI); the kept form with a
+// long grenade 224-277 [69-75] (NONE in EDX, the globals pointer in EAX).
+// On the kept form: the squad bit started false and set under `if (squad)` 200 [33 / 8-10] (retail's shape, positional
+// rise); the query locals as `enabled; probability; forced` 160 (retail's store order, same count) and in four other
+// orders 160-199; the three NONE initialisers chained 158 [31] (store order nearer, two points, not kept), chained with
+// a long grenade 277; grenade declared at the outer scope, short 160, long 277, all three there 277; the grenade
+// selection as an inline helper writing through a pointer 160 short / 277 long (folds away, same code); long locals
+// for the two grenade fields with the tests through `(short)` 206 (1262 B, the two `lea` tails merge), the squad's
+// field read at each use 203 / 338; the grenade selection as a function in another file taking the long by address
+// 277, with the squad bit started false 224 (expanded and folded like the direct long forms: the address does not
+// keep the grenade in memory as retail's +0x34 home would need).
+// Review (m3, 11-20): part (1) kept: retail's 0x2036c0 writes `*enabled` through ESI, and 0x1e0850 tests that byte
+// first, so the ternary was the wrong way round (199 -> 199). Parts (2)-(4) not kept: (2) and (3) write out the body of
+// the existing palette lookup (palette_tag_get in src/unknown_2902b0.cpp: NONE test, range test against the count at
+// +0x98, tag index at +4 of the 40-byte entry) by hand, with the index widened to long. Calling that helper as it is
+// (short index) with (1) and (4) scores 344, and (1) with (4) on the old lookups scores 361. The 160 rests on the
+// widened hand-written lookup, a parameter type picked by score. A lead for a match only.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1368,7 +1397,7 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 				bool enabled = false, forced = false;
 				real probability = 0.0f;
 				function_2036c0(character_index, *(short *)(squad + 0x30), &enabled, &forced, &probability);
-				replace = forced ? function_203900((short)squad_index, probability) : enabled;
+				replace = enabled ? function_203900((short)squad_index, probability) : forced;
 				if (replace)
 				{
 					character_index = *(long *)(definition + 0x28);
@@ -2438,6 +2467,18 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // EBP for retail's EDI with the options the other way round, the seed pointer reloaded around the 0x259a0 call
 // (BLOCKED-BY 0x259a0's file flags, as recorded above), retail's 32-bit weapon index with its own cell.
 // MiniMax A (11-20): no new form, no lower score (251); the pool and the options sit in EDI and ESI where retail keeps ESI and EBP, and the seed pointer must stay in EBX across the opaque 0x259a0 call (BLOCKED-BY 0x259a0).
+// m3 lane 4 r235 (fast; aligned by difflib / registers and frame offsets masked in brackets, control 251 [135 / 44]):
+// retail loads the pool global once (EDI) and keeps it across every call, re-reading the pool's data at each of six
+// lookups, and loads the seed global three times (EBX, once inside the two-weapon loop); this build does the reverse,
+// the seed global holding EBP for the whole function and the pool loaded three times. Retail's second block also looks
+// the unit up afresh for each of the two weapon slots (the unit index and the pool's data re-read after the first
+// slot's store), where the two inline lookups here share one. Forms: the two slots filled through an inline helper
+// taking the array 365 (1166 B); stored through a pointer local 279 (1216 B) [137 / 44]; the long loop counter
+// re-measured 278 (1191 B) [130 / 42], with the helper 386. Diagnostics, restored at once: without the four
+// state-changing calls (0xc6f80, 0x101a10, 0x1018b0, 0x1e1a00) the pool is still loaded per region (340 at 1143 B), so
+// no callee's write summary is what keeps it out of EDI; 0x259a0 given a link-time summary (an inline kept out of
+// line in an ordinary file) 306 [137 / 49], the pool still loaded three times. No object built without link-time code
+// generation refers to the pool, seed or tag globals. Nothing kept.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
