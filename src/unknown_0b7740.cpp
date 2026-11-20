@@ -1725,6 +1725,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // redundant `parent = 0;` there 20 (all the same code). Reading: ECX already holds the pool at the arm's entry in both
 // builds (loaded for the current-object lookup, EDI holds its data), and retail re-reads only the data from it while ours
 // reloads both, so this is the register choice of the index (ours ECX), not a lost common value.
+// M3 lane 12 r157 (fast with 0xb8bd0/0xbdc40/0xbc820/0xbd020/0xbee60/0xbfa40/0xbdb60, all MATCH; control 20 at 1399 B):
+// a pool local declared right before the render-index test for both no-model lookups 320 (1408 B); declared before the
+// model-index read 20 (same code: the copy is propagated and the global reloaded); the flag through a parent-object
+// local read after the matrix lookup 20; both no-model lookups spelled as the current-object lookup (header-array
+// cast) 20; the parent index read through the typed object view 20 (same code each). Lead: on 0xbba80 one `const &`
+// binding moved a tag entry into retail's EAX but rotated every later scratch choice, and a second binding right
+// after it rotated them back (match); untried here.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

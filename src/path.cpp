@@ -920,6 +920,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // reuses, and previous_index into the margin's slot. On the lead: j declared at function scope, just before the margin
 // and just after it 2/2/2 (same code); the fill loop as main's pointer walk with the if clamp 235; `previous` without
 // its NULL initialiser 378 (1372 B).
+// M3 lane 16 r154 (fast with 0x270930 and 0x210a30, both MATCH; both builds end in `ret 0x24`, frame 0xe8 against 0xe4):
+// lane 11 r95's flag form re-applied to today's file 2 (only `mov ebp, [esp + 0x104]` / `mov edx, [esp + 0x10]` at the
+// scan loop's back edge in the other order; build/r154/lead-270d90-score2.patch in m3-lane16). On that 2: the traversal
+// reading its node through a second pointer local (`current`) instead of reassigning the entry `node` 210 (+0x8c); `usable`
+// declared at the top of the traversal body, outside the capacity test, 2 (same code); the step point copied from a
+// ternary-selected source with the edge-index record as its own `if` 388 (1357 B); the projected point written as three
+// rows in place of vector3f_add_scaled 2 (same code). Body unchanged.
 // scan completed-step count 287, distance-gated completed-step count 287, bounded link ordinal and scan
 // count 366, step frame across conversion 332, indexed fill with completed-step count 295, indexed fill
 // with completion update first 295, coordinate scope before scan latch 295, predecessor edge before point

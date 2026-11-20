@@ -949,6 +949,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // `const &` plus the first draw in `last_sample` 317 (1665 B, first difference +0x43: through the gate and the flag update
 // only the flag byte's slot (+0x1f against +0x1b) and the definition's (+0x18 against +0x1c) differ), with the compare order
 // 316, with 0x247fd0's store order too 311 (1665 B; the field_44 AND is then split as retail but the later OR splits too).
+// Round 444. Position/direction/matrix receiver pointers 335/369/355; position-direction,
+// position-matrix, direction-matrix 371/355/359; all pointers or references 359/359.
+// Reduced control 334. NOT kept: regressions. The effect address remains folded and the
+// matrix receiver exchanges the opening EBX and ESI roles.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

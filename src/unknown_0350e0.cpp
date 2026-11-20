@@ -1978,12 +1978,24 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     cross.i = direction->j * g_4b9e4c.k - direction->k * g_4b9e4c.j;
     cross.j = direction->k * g_4b9e4c.i - direction->i * g_4b9e4c.k;
     cross.k = direction->i * g_4b9e4c.j - direction->j * g_4b9e4c.i;
-    perpendicular->i = direction->k * cross.j - direction->j * cross.k;
-    perpendicular->j = direction->i * cross.k - direction->k * cross.i;
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
+    perpendicular->j = direction->i * cross.k - direction->k * cross.i;
+    perpendicular->i = direction->k * cross.j - direction->j * cross.k;
 }
+// MiniMax I (11-20): score 142 (was 177): the three-term projection sums are written as a two-term statement plus
+// `+=`, which keeps the source's sum tree (a three-term sum is reassociated by the compiler and would change the
+// value), the helper writes the perpendicular's components in retail's k, j, i order, the y sum's third term takes
+// the perpendicular first, and case 3 takes its position offsets in z, x, y order; the cases 2 and 4 now share
+// retail's tail and the atan2 tail matches byte for byte, but cases 1 and 3 still differ in the XMM register
+// choices, case 3 still computes its x and y offsets early and spills the y offset, and the body is 816 bytes
+// against retail's 812.
+// Tried and not kept this round: the offsets after the helper call (197), the x and y offsets after it (179), the
+// offsets inlined in the sums (183), the offsets in three scalar locals (191), the offsets in x, y, z order (143),
+// the cross components in k, j, i order (206), the perpendicular in k, i, j order (185), the reference copy before
+// the helper call (144), the first or second y term swapped as well (181, 172) and the up component first in the
+// cross products (142, the same score and the same code).
+// score 142 (was 177): retail's length, frame 0x18 and result slot; the XMM register choices and case 3's late position offsets still differ (forms below).
 // MiniMax B (11-19): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18 and the result still shares the scale argument's home instead of the slot at +8, the reference vector still starts at +8 where retail's starts at +0xc, and the four cases still differ in their float schedule; an else that writes the zero result, a literal zero in the early returns, a declared copy of the result, an angle local, a scaled local and the declaration orders all give byte-identical code, and the 177 form needs the XMM7 clobber that raises the caller 0x2e9e0 from 492 to 572.
-// score 177 (was 193): retail's length, frame 0x18 and result slot; the cross terms' schedule and case 1's copy still differ (forms below).
 // MiniMax D (11-14): no new form, no lower score (193): retail's four cases still compute their cross products with
 // their own temporaries - its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before
 // the jump table - and the helper form that reaches 177 raises the caller 0x2e9e0 to 573, while that caller's 492
@@ -2264,30 +2276,42 @@ real function_2f2d0(vector3f const *direction, point3f const *position, long mod
     case 1:
         direction_perpendicular_to_up(direction, &perpendicular);
         reference = g_4b9dac;
-        y = reference.j * perpendicular.j + reference.k * perpendicular.k + reference.i * perpendicular.i;
-        x = 0.0f - (direction->k * reference.k + direction->j * reference.j + direction->i * reference.i);
+        y = reference.j * perpendicular.j + reference.k * perpendicular.k;
+        y += perpendicular.i * reference.i;
+        x = direction->k * reference.k + direction->j * reference.j;
+        x += direction->i * reference.i;
+        x = 0.0f - x;
         break;
     case 2:
         reference.i = 0.0f - direction->i;
         reference.j = 0.0f - direction->j;
         reference.k = 0.0f - direction->k;
-        y = g_4b9e4c.k * reference.k + g_4b9e4c.j * reference.j + g_4b9e4c.i * reference.i;
-        x = 0.0f - (g_4b9e64.k * reference.k + g_4b9e64.j * reference.j + g_4b9e64.i * reference.i);
+        y = g_4b9e4c.k * reference.k + g_4b9e4c.j * reference.j;
+        y += g_4b9e4c.i * reference.i;
+        x = g_4b9e64.k * reference.k + g_4b9e64.j * reference.j;
+        x += g_4b9e64.i * reference.i;
+        x = 0.0f - x;
         break;
     case 3:
+        reference.k = position->z - g_4b9da0.z;
         reference.i = position->x - g_4b9da0.x;
         reference.j = position->y - g_4b9da0.y;
-        reference.k = position->z - g_4b9da0.z;
         direction_perpendicular_to_up(direction, &perpendicular);
-        y = reference.j * perpendicular.j + reference.k * perpendicular.k + reference.i * perpendicular.i;
-        x = 0.0f - (direction->k * reference.k + direction->j * reference.j + direction->i * reference.i);
+        y = reference.j * perpendicular.j + reference.k * perpendicular.k;
+        y += perpendicular.i * reference.i;
+        x = direction->k * reference.k + direction->j * reference.j;
+        x += direction->i * reference.i;
+        x = 0.0f - x;
         break;
     case 4:
         reference.i = position->x - g_4b9da0.x;
         reference.j = position->y - g_4b9da0.y;
         reference.k = position->z - g_4b9da0.z;
-        y = g_4b9e4c.k * reference.k + g_4b9e4c.j * reference.j + g_4b9e4c.i * reference.i;
-        x = 0.0f - (g_4b9e64.k * reference.k + g_4b9e64.j * reference.j + g_4b9e64.i * reference.i);
+        y = g_4b9e4c.k * reference.k + g_4b9e4c.j * reference.j;
+        y += g_4b9e4c.i * reference.i;
+        x = g_4b9e64.k * reference.k + g_4b9e64.j * reference.j;
+        x += g_4b9e64.i * reference.i;
+        x = 0.0f - x;
         break;
     default:
         return result;
