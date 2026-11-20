@@ -94,13 +94,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax R (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the first difference is still the
 // register that carries the constant 1.0f, which this build loads into XMM1 where retail loads it into XMM2, and the
 // reciprocal copy and the two product registers follow that one choice, so the float register assignment of the whole
 // function turns on it; the near arm also keeps the cosine on the x87 stack where retail spills it to a float slot and
 // takes the y row in SSE, and the candidate count is a byte here against a short in retail. A permutation search over
 // the body (four tries in 399 s) reached 301 only by naming the constant and the index, a form not kept.
-// score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax D (11-20): no new form, no lower score (305, 1732 bytes, retail 1732). The first difference is still the constant
 // 1.0f, which this build loads into XMM1 where retail loads it into XMM2; the reciprocal copy and the radius load then swap
 // with it, so the whole float register assignment of the function turns on that one constant. Four source-order trials moved
@@ -703,6 +703,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // `return 0.0f` 305, in 0x2b400's shape (`x = x * inv; y = inv * y;`) 305, with the reciprocal first in both products 305,
 // with both components divided by the length 305 (all the same code); the arg_0 read through its address removed 316
 // (1726 B; plain agrees, 0x29a190 MATCH -> 345).
+// M3 lane 4 r236 (fast with 0x298c30/0x29a190; control 305; the return is `ret 0x1c` in both builds): the negated radius
+// written at its two uses instead of the named local 418 (1708 B); the distance's two differences named as double locals
+// 316 (1740 B); the distance's y term ahead of its x term 305 (same code: retail subtracts x first, ours y first); the
+// differences as a point2f local then sqrt of their squares 431 (1775 B); that through magnitude2d 431. The first
+// difference is still the 1.0f/radius pair (ours 1.0f XMM1 and the radius XMM2, retail the reverse).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
