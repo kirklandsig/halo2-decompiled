@@ -771,6 +771,7 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // and the remaining homes remain.
 // MiniMax G (11-12): no new form, no lower score (126): the frame, the length and the layout are retail's; left are
 // the SSE register colouring (the 1.0 constant) and the remaining homes.
+// MiniMax G (11-20): no new form, no lower score (107): the frame, the length and the layout are retail's and what is left is the entry magnitude's colouring - this build loads the 1.0 constant into xmm2 where retail has xmm3 and adds the first two squares after the square root instead of before it, and that difference cascades through the rest of the xmm allocation; the normalized components' product orders and the permutation search found no lower form.
 // MiniMax H (11-11): no new form, no lower score (126); the velocity copied as a planar aggregate with the speed's
 // squares written y then x 122 (four points, under the bar) and the y-first squares alone 126 (same code), so the
 // original body is kept; the 1.0 constant still lands in xmm2 instead of xmm3. Later in the same round: the velocity
@@ -1767,6 +1768,7 @@ long function_10f5f0(long object_index);
 // MiniMax A (11-13): no new form tried this round, no lower score (561): our frame is 0x1990 where retail's is
 // 0x1984, so every stack reference sits a dword higher, and the point-sum loop's unrolling and the flag stores
 // keep retail's different shape; the frame needs a different set of locals in the body.
+// MiniMax G (11-20): no new form, no lower score (561): the frame is still 0x1990 against retail's 0x1984, so the state and the buffer homes sit at different offsets, and retail still materialises the word flag's bit 12 as a byte at [esp+0x13] where this build tests it in place; the aggregate and the storage forms that recover the frame raise the score.
 // MiniMax C (11-14): no new form, no lower score (561); retail still materialises the word flag's bit 12
 // as a byte at [esp+0x13], written and never read, where this build tests it in place.
 // Round 121 (m3 lane 9, fast), at 561: diagnostic, a noinline declaration of 0x113e40 (reverted at once) 634 at 2204
@@ -3606,6 +3608,7 @@ real g_47ff30 = 2.5f;
 // NOT kept: the target-limited helper stays out of line and the body shortens.
 // M3 lane 16 r143 (fast): retail reads the mass field once for the three mass products and twice at the end (once
 // per scaled vector, the force's stores between), which the two vector3f_scale calls on the field give: frame 0xfc and
+// MiniMax G (11-20): no new form, no lower score (672): the acceleration spill and the velocity homes are still not retail's, the elevation still takes XMM7 where retail has XMM3 (so the 1.0, the boost and the maximum speed sit one register low), the rates pointer still goes to EBX and is copied to EDX at each call where retail loads it into EDX once, and the reciprocal is still formed after all three clamps where retail forms it after the first.
 // retail's tail, but 710 (MiniMax S's lead, re-measured); the end mixing (field read at each of the six products) 706
 // (3248 bytes); vector3f_scale with the mass local 672 (same code); the scale lead with the maximum speed as boost first
 // 710; with the reciprocal after the first clamp 706; with each fraction formed after its clamp 719; main's body with
@@ -4077,6 +4080,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // and reads the parity flags with lahf, so the two bodies have different shapes from the first difference on.
 // MiniMax C (11-14): no new form, no lower score (1000); the frame still reserves 0x78 against retail's
 // 0x74, so every stack home sits four bytes higher.
+// MiniMax G (11-20): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack; the body is 32 bytes longer than retail's.
 // MiniMax S (11-14): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
@@ -4819,6 +4823,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // MiniMax G (11-12): no new form, no lower score (118): the projection/cross input ranks and the angle/trig homes
 // remain; retail keeps the angle on the x87 stack in all three arms, which only the listed `double angle` spelling
 // gives.
+// MiniMax G (11-20): no new form, no lower score (118): the dot's i-term is still commuted (this build multiplies the up's i by the forward's i where retail multiplies the forward's i by the up's i), the trigonometry still spills the sine to +0x18 and the cosine to +0x1c where retail has them the other way round, and the default arm's axis still takes xmm3 and xmm4 where retail has xmm0 and xmm1; the product order, the declaration order and the two cross products' forms give the same or a worse score.
 // MiniMax D (11-11): 117 (was 136): the flip truth is a byte-wide flag (retail keeps it in a byte at
 // [esp+0x1c] and hands it back in AL), the fallback up copy is one aggregate move, the angle stays on the
 // x87 stack as a double and the default case's axis is computed before the trigonometry; what still differs
@@ -6028,6 +6033,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // MiniMax G (11-12): no new form, no lower score (749): frame 0x18 and retail's length agree, but the entry
 // definition ownership, the zero/result SSE allocation and the per-site versus hoisted 1.0 constants are still not
 // retail's.
+// MiniMax G (11-20): no new form, no lower score (759): the definition pointer is still re-derived at each use instead of retail's one copy in EBP, the entry's zero and the result still take different SSE registers (this build zeroes xmm4 and takes the result in xmm2 where retail zeroes xmm2 and takes it in xmm1), and the push order, the case dispatch chain and the per-site 1.0 load still differ.
 // MiniMax H (11-11): no new form, no lower score (749); the definition pointer is still re-derived at each use instead of
 // retail's one copy in EBP, the zero and the result still take different SSE registers and the 1.0 is still hoisted here.
 // M3 lane 7 r163 (fast with 0xf78e0/0xf78b0, both MATCH): 1-7 unused locals 749 each; 0x24590 moved to a /O2 /Gr file
@@ -6601,6 +6607,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
+// MiniMax G (11-20): no new form, no lower score (978): the frame is 0xfc against retail's 0xd8, so the prologues differ first, and the index/offset and vector/rotation homes after it are still not retail's; no form of the body I tried moves them.
 // MiniMax I (11-20): no new form, no lower score (978): the frame is 0xfc against retail's 0xd8, so the prologues differ first, and the index/offset and vector/rotation homes after it are still not retail's; I found no form of the body that moves them.
 // score 978 (was 990): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,

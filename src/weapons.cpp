@@ -3399,6 +3399,7 @@ struct s_ammo_conversion_entry
 // the divergence starts in the prologue, where retail holds the destination weapon in EBP and the
 // other weapon in EBX while ours holds the destination in EDI and spills the other; the acquisition
 // flag is stored the other way round as well, and flipping it to retail's sense compiles worse.
+// MiniMax G (11-20): no new form, no lower score (190): retail keeps the destination weapon in EBP and the other weapon in EBX, stores the acquisition flag the other way round (a byte zeroed with the loop counter's dword and set with setg on acquired) where this build keeps a byte of its own that starts at one, and retail keeps the conversion entry without a nullable test; the flag's polarity, the two products' operand orders and the entry's null test were re-measured and give the same or a worse score.
 // MiniMax S (11-15): no new form, no lower score (190): retail keeps the destination weapon in EBP and the other weapon in
 // EBX, stores the acquisition flag the other way round (a byte zeroed in the prologue and set with `setg` on "acquired") and
 // keeps the conversion entry without a nullable test, while ours holds the destination in EDI, spills the other and tests the
