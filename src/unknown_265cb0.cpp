@@ -919,6 +919,23 @@ real function_30bf0(vector3f *vector);
 // kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
 // retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
 // the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
+// M3 lane 5 r210 (fast with 0x263740, 0x25c9d0, 0x26d370 and five neighbours; control 84, register-masked 46): both
+// seat-loop crosses through a trial copy of the textbook cross spelling (`a->j * b->k - a->k * b->j`, as several files keep
+// it locally) 84, the first cross only 84, the second only 84 (all the same code: the product operand order does not
+// follow the spelling); the seat array declared at function scope 84, beside the facing outputs 84 (same code).
+// Y643: sampled point with direct delta 320; sampled point with shared delta 332; selected point pointer with direct
+// delta 337; selected point pointer with shared delta 345; sampled point with direct delta and late range 326;
+// sampled point with shared delta and late range 339; selected point pointer with direct delta and late range 332;
+// selected point pointer with shared delta and late range 344.
+// NOT kept: Calculating delta after clip selection shortens the function below retail length and raises the score on
+// all eight forms. The earlier range reads also change the matched caller 0x25c9d0 in the reduced image.
+// Empty seat list when the actor has no vehicle. Conditional then default count, each with indexed
+// then pointer traversal, scores 186/204/102/204 with short counts and 202/206/199/206 with long counts.
+// Empty-or-half-open seat range 207 or with step at lookup 202, signed admission with
+// equality latch 152, nonnegative indexed bound 188, indexed advance after lookup 161,
+// seat array extent 84, separate clipped fraction 245, scalar names 84, inclusive last
+// seat 204. NOT kept: the extent and names tie. The indexed advance and separate clip
+// fraction reach 1308 bytes but keep the result and clip homes displaced.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2184,6 +2201,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
+// base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
+// takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.
 // MiniMax H (11-18): no new form, no lower score (168): the 0x80 frame agrees, but the first iterator load still
 // encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
 // retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
@@ -2802,6 +2822,18 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 377 (2882 B, 99/75: retail's block order for the far-and-slow test). Left: the players table's register at the iterator
 // setup (the matched siblings' identical three statements load it into EAX) and the direction components, which retail
 // keeps in XMM1-3 from the relative dot to the facing dot.
+// M3 lane 5 r210 (fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740 and four neighbours; control 168, register-masked 41):
+// the actor lookup written out (diagnostic for the iterator head's operand order) 168 (same code); the contact iterator
+// declared first 168 (same code); best level and strongest declared after the iterator start 172; the players
+// iterator's index and datum index stored before its table 170; the players iterator declared at function scope 168
+// (same code).
+// Contact step results declared in the while condition or advanced in the for loop score 168/168
+// and 753/753 as a node view and prop datum, respectively. Keeping the other object across both
+// actor-index reads scores 163/163 and 753/753. NOT kept: five-point gain at 163.
+// Post-increment loss/age/both 168/168/168; separate increment publication
+// loss/age/both 224/206/223; post-increment loss or age with shared actor displacement
+// and other-object field reads 162/162 at 2880 bytes. NOT kept: the six-point gain
+// leaves a score above 30. Player iterator and scoring registers still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

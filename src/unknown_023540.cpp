@@ -2427,6 +2427,18 @@ dword __cdecl function_131fc0(real alpha);
 // reached 54 reads a global twice through a volatile, which the rules ban; re-measured at 140 (1729 bytes, as
 // retail's). BLOCKED-BY the callee.
 // MiniMax R (11-15): no new form, no lower score (140): the preserve_alpha load is still hoisted above the `simple` branch where retail loads it after the branch and again in bl, and retail's two writes of the chosen default into the parameter's own home are still missing; the callee 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp. BLOCKED-BY the callee.
+// MiniMax I (11-19): 100 -> 14 (fast, the reduced image; the length is now retail's, 1729 bytes): the u coordinate is
+// written as a division by the width, which the compiler turns into retail's single division per dimension and the
+// multiply by the stored reciprocal, so the whole vertex block now matches retail. Left: the width and the height
+// trade their homes (retail keeps the width at 0x10 and the height at 0x14) and the bottom edge's two v products
+// load the coordinate where retail loads the reciprocal. The width and the height are declared in retail's order
+// (the width first); declaring them the other way measures 12, but that is only a reordering of two equal
+// initialisers picked by the score, so it is not kept.
+// MiniMax I (11-19): 100 -> 77 (fast, the reduced image): the two default rectangles are now stored in retail's
+// order (the corner pairs 0, 2, 1, 3 for the source and the same for the destination). Left: retail divides the
+// width and the height once and multiplies the coordinates by the stored reciprocals, this build multiplies the
+// coordinates by named reciprocals and folds the other operand, so retail's reciprocal registers, its dimension
+// homes (the width at 0x10, the height at 0x14) and the bottom edge's v products still differ.
 // score 100 (was 140): 1733 bytes against 1729; everything up to the default rectangles now equals retail (the
 // flag loads, the short arm's reload and the two parameter-home writes included). Left: the order of the eight
 // default stores, the reciprocals' registers and the operand order of the UV products (see round 117 below).
@@ -2828,31 +2840,30 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_1cc30(12);
     function_1c710(g_51f0f0);
     default_source[0] = 0.0f;
-    default_source[1] = width;
     default_source[2] = 0.0f;
+    default_source[1] = width;
     default_source[3] = height;
     default_destination[0] = 320.0f - width * 0.5f;
-    default_destination[1] = 320.0f + width * 0.5f;
     default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
+    default_destination[1] = 320.0f + width * 0.5f;
     default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
     if (!source) source = default_source;
     if (!destination) destination = default_destination;
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
-    real inverse_width = 1.0f / width;
     real inverse_height = 1.0f / height;
-    D3DDevice_SetVertexData2f(1, source[0] * inverse_width, source[2] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[0] / width, source[2] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[0], destination[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] * inverse_width, source[2] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[1] / width, source[2] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[1], destination[2], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[1] * inverse_width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[1] / width, source[3] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[1], destination[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
-    D3DDevice_SetVertexData2f(1, source[0] * inverse_width, source[3] * inverse_height);
+    D3DDevice_SetVertexData2f(1, source[0] / width, source[3] * inverse_height);
 #pragma inline_depth(0)
     D3DDevice_SetVertexData4f(0, destination[0], destination[3], 16777215.0f, 16777215.0f);
 #pragma inline_depth(255)
@@ -3026,6 +3037,15 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // M3 lane 14 r116: 330 -> 354 with no change here: 0x22cf0 now takes the position pointer in EDX as retail's does, so
 // both calls gain retail's `mov edx, eax` (the only change in this function's code) and the body is 4 bytes longer.
+// score 354 (was 354): the render-memory allocation now rounds the byte count up to a dword boundary, keeps the
+// handle's NONE test and takes the output pointer through the masked handle, as retail does; the loop's pair
+// pointer, the level's table entry and the second 0x235a0 copy still differ.
+// MiniMax H (11-19): no new form below the committed score (249): the level's table entry was tried as a byte pointer
+// with the record's own twelve byte stride (296, the entry still loads folded), as a byte pointer with a four byte
+// stride (224 but the record's stride is wrong), as a named offset local (325) and with the level's limit as a named
+// local (253); the limit still comes down with a decrement where retail takes it with a lea, so the level's table
+// entry and the second 0x235a0 copy still differ.
+// NOT kept (coordinator screen, MiniMax H 11-19): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3162,6 +3182,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax R (11-16): no new form, no lower score (54): the body is still retail's length and the scheduler still places the
 // x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527); the corner rows in the
 // other orders give 54 or worse, and the permuter (13 tries in 339 s, annealing) found no variant under 54.
+// MiniMax D (11-19): no new form, no lower score (54): what is left is still the scheduler's order of the x87 and the SSE
+// chains inside the two corner sets (this build places each x87 coordinate step one slot earlier among the SSE ones than
+// retail, the first difference at +0x527); the helper's spellings and the corner-call orders the earlier rounds measured
+// all give 54 or worse.
 // score 54 (was 54): r200 unchanged; earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
@@ -3406,6 +3430,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // helper plain `inline` 54 (same code); sine first in the first pair only 249 (2006 B); sine first in the second pair only
 // 128 (2022 B). Left as before: at each tie in both corner sets retail issues the SSE step ahead of the x87 one (the
 // coordinates 3, 4 and 5 of each set run on x87 in both builds).
+// MiniMax I (11-19): no new form, no lower score (54): the corner block holds the same 111 instructions in the same registers as retail's and only the schedule differs (first at +0x527, where we store the x87 coordinate 3 before `subss xmm1, [esp+0x90]` and retail does the sub first); our first set's stores still come out 0,3,4,6,7,1,2,5 against retail's 0,3,4,7,1,6,2,5, and the helper's spellings, both sets' 24 call orders and the eight separate statements were tried earlier without a lower score.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -4035,6 +4060,16 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Left as before: retail copies the input to EAX and shifts it after the clear (ours shifts EBX in place before it),
 // and at both gain sites retail reloads the spilled inverse span into XMM3 before the 1.0f constant into XMM2. A
 // compile-only build of this file alone does not reproduce the shift (it lands after the clear there).
+// M3 lane 5 r207 (fast, base 9): the pinned gain product named in both gain sites (`real scaled_offset = gain * offset;`)
+// 80 (registers renamed through modes zero and one, the reloads still 1.0f first); `long const fixed` 9 (same code); the RGB
+// input word named from the shifted local 9 (same code); the exponent search as a do/while from -1 947; permuter (600 s,
+// 55 tries) best 9. Diagnostics: mode zero's pin dropped, or its span quotient dropped: the reloads after the depth-bias
+// write stay 1.0f first, so the pair order does not follow the number of 1.0f or span uses after the call.
+// M3 lane 10 r130 (fast, control 9): 9-40 dead initialised locals after `small` 9 each (aligned 6; rounds 171 and 201
+// covered 1-8); the depth-bias write in its own skip test after the blending block at modes zero and one 9 (the tests thread
+// into one, same code); `input` typed byte with the shifted local 945 (4844 bytes), typed short 934; `low /= g_48565c;
+// high /= g_48565c;` in place of the explicit reciprocal 9 (same code: the compiler forms the reciprocal, pairs unchanged).
+// On the no-shifted-local form (939, shift retail's): 0-40 dead initialised locals after `small` 939 each (aligned 15).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

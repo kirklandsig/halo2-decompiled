@@ -1995,6 +1995,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // throughout 160 [73], with the per-arm stores 158 [73]. Lead: a kept-first form in which the player is not the cheapest
 // value to drop while the per-player decrement stays after the mask clear, and in which the length does not reuse the
 // size's register.
+// m3 lane 15 r108 (fast with 0x56380/0x564c0/0x53b00/0x56000, all matched each time; control 60), statement orders of the
+// four head statements (S size, K kept, W written, C `capacity -= 2`) with `11 + 2 * include_mask` and a dword kept: SWKC
+// 118 (456 B: the head is retail's through the has-player test with the bit in EBP and the size in EBX, but the live EAX
+// zero is reused for `cmp edi, eax` and `written = 0`, and kept then takes EAX), SKWC 60, SWCK 130, KSWC 60, CSWK 130,
+// SCWK 130; on SWKC: `11 + 2 * (include_mask != 0)` 139, `include_mask ? 13 : 11` 139, kept typed long with `!= 0` 139,
+// the player bit declared after the clamp 118 (same code). A /Gd first-pass screen of all 288 order x size x kept-type x
+// bit-position forms holds the player in EDI in every size-first order, but each one that keeps the EAX zero reuses it.
+// On SWKC the result typed dword or int 118 each (same code), dword with `!= 0` 139: the zero is reused whatever its type.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2138,7 +2146,7 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
-// score 64 (was 85): left: retail tests the muted-word bit first, then the first port flag reusing the second
+// score 64 (was 85): r209 unchanged. left: retail tests the muted-word bit first, then the first port flag reusing the second
 // availability byte in CL, then the second port flag expanded in place (two calls of 0x53be0); this body tests the two
 // port flags first and calls 0x53bb0 out of line, 12 bytes short. BLOCKED-BY 0x53bb0 (its per-site inlining).
 // MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes
@@ -2362,6 +2370,15 @@ static inline dword voice_get_player_mask_inlined(void);
 // Fast trials (control 64): retail's test order muted word, first flag, second flag 85 (427 bytes); with a named
 // target bit 85; with the flag tests nested under the mask test 85; with `local & active & bit` 82 (415 bytes); with
 // an early return on !enabled 85.
+// M3 lane 5 r209 (fast with 0x54890, 0x53a20, 0x53bb0, 0x53b90, 0x53b40; control 64, aligned 17, register-masked 16): on
+// this order, an early return on !enabled 64, the inner mask test as a `continue` 64, the inner bit named once for the
+// test and the clear 64 (all the same code); the muted test through the existing volatile-read inline twin of 0x53850,
+// last 137 or first (retail's order) 137. Retail's first port flag reuses the second availability byte the muted test
+// loaded (CL), so retail's reads there are plain; the per-site inlining of 0x53bb0 still blocks the rest.
+// MiniMax H (11-19): no new form, no lower score (64): retail's tail tests the two availability bytes before it asks
+// the mode query and then makes an extra call to 0x53be0 whose result it halves and masks to a bit, while this build
+// asks the mode query first and keeps the two bytes' test after it; the earlier rounds' 85 point forms need the
+// active and passive mode flags, which only a byte match would keep, so the control (64) stands.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -4277,6 +4294,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // two calls 192 to 197 (457/451 B: the index is read once). Lead, saved as
 // build/r198/lead-0x55e10-70-diagnostic.diff in the m3-lane8 worktree: the s z c p cursor form needs a natural reason
 // for the channel to outweigh the member (a fifth reload point), then the immediate cursor add and the zero-trip exit.
+// m3 lane 15 r108 (fast with 0x564c0, matched each time; control 139): on the packet-cursor form (re-measured 164, 478 B):
+// the relay arm's three talker calls reading a `long channel_index = channel->index;` named inside the member-bit test
+// 158 (476 B: the member takes EBP straight from the call and the channel no register, retail reads [ebp + 0xc] three
+// times), that local in the plain arm too 193 (455 B); the member typed dword 164, the stride typed dword 164 (same code
+// each). On this body: the relay arm's channel_index local 174 (471 B).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

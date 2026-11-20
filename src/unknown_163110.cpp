@@ -616,6 +616,13 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// MiniMax G (11-19): no new form, no lower score (115), body unchanged. Naming the three edge coefficients in locals read
+// before the normal's copy scores 276 (1867 B): the compiler keeps them in registers and the copy's stores move behind the
+// products. Swapping the i term's operands (`planes[0].normal.i * view->vector_e4.i`) compiles to exactly the same code
+// (115 at 1851 B), so the product's operand order is not what decides the register roles. The residual difference is
+// unchanged: retail loads the i coefficient into xmm4 before the copy and reads the copied i back from the stack, so the
+// negation's zero sits in xmm4, while we keep the copied i in xmm4 and read the coefficient into xmm3 late; every XMM role
+// after that point is swapped with it.
 // score 115 (was 115; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
 // Earlier: coefficient XMM roles, classification operands and projection staging still differ.
@@ -1111,6 +1118,18 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // with the delta left unscaled 119 (first +0xb6); that with plane3f planes and `total` declared first 121; both planes
 // built through the plane-through-point helper of src/unknown_17d9a0.cpp 310 (and 0x17d9a0 itself stops matching in
 // the fast image, 256). The point memcpy after the segment clear re-measured 193 (a listed form).
+// M3 lane 3 r270 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115, exact-aligned 73; lane 12 r123's 18
+// form rebuilt 18, exact-aligned 22). On this body: one to seven unused initialised locals after `culled` 119, 135, 130,
+// 242 (1830 B), 246 (1830 B), 135, 127 (first difference +0xbb at every count: the head is not a numbering tie, as lane 11
+// r81 found at two other sites); the intersection through the existing vector3f_add_scaled (the point as the base, the
+// unscaled delta and the ratio) 119 (first +0xb6); `delta` declared at function scope 115, the intersection point and
+// the ratio declared at function scope 115 (same code each); the bounds copy and the segment clear moved below the near
+// clamp 191 (first +0x41); plane 0's near add moved below plane 1's set-up 176 (first +0x60). Reading of the head: both
+// builds sum the first plane's d as j, k, then i; retail evaluates the i term coefficient first (a fresh XMM4, its load
+// then hoisted above the copy) and the copied normal's i second (the k coefficient's freed XMM3), ours the copied
+// normal's i first; the k term is evaluated normal first and the j term coefficient first in both builds. In the clip
+// rows retail multiplies the y and z deltas by the ratio in place and copies the ratio only for x; ours copies it for
+// x and y, the scale helper's operand order.
 // m3 lane 8 r198 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115, difflib-aligned 73). Lane 12 r123's
 // match-only 18 form rebuilt 18 (aligned 22) and, with three unused locals after `culled` (diagnostic), 14 (aligned 18),
 // as lane 5 r203 found. Reading of the 14 that are left: retail computes the clip deltas x, z, y into XMM5, XMM3, XMM2,
@@ -1127,6 +1146,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // without the unused locals), the same with the y delta named for the denominator only 50, declared at its term 50; the
 // x delta declared after the denominator 92. The named delta renamed (three names for x, three for y) 14/27, the same
 // code each: local names do not move the order. Nothing kept; body unchanged.
+// Separate source and oriented planes: near/far/both aggregate stores 491/361/508,
+// orient in place then copy 530, near/far/both field stores 394/135/395,
+// immutable source and oriented aggregates 571. NOT kept: the far field stores keep
+// the late coefficient load, and the other forms move the frame away from retail.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

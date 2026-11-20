@@ -840,6 +840,11 @@ struct s_physical_block_iterator
 // where retail loads it into EAX); on it the clock read once into a `dword now` used by both ages 209, the comparison
 // written `candidate->pages * best_age < best.pages * age` 209, the products as `age * best.pages > best_age *
 // candidate->pages` 209; both ages as unclamped `dword` locals with MAX() inside the products 373 (first difference +0x11).
+// M3 lane 12 r149 (fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): the deletion walk's iterator
+// declared with the scan's locals 201 (same code); `oldest_time` initialised to 0 362 (1230 B); `best` declared ahead of the
+// ring 201 (same code). Lane 9 r109's lead rebuilt on this body 93 (1213 B; walk count/bit and the overlap sum's register
+// still swapped: retail sums into the pages register and keeps best.offset for the second test through a copy); on it
+// the iterator declared with the scan's locals 93 (same code), `oldest_time` initialised 357 (1223 B).
 // M3 lane 3 r267 (fast with 0x13d320, MATCH throughout; base 201, aligned 118): case 0's flag written false and set by an
 // `if` 201 (same code, still jump-threaded); `bool better = !have_best;` with `if (better)` 222 (1228 B); the arms in the
 // order default, 1, 0 204, in the order 1, 0, default 201; case 0 as `better = candidate->time < best.time; if (equal
@@ -866,6 +871,23 @@ struct s_physical_block_iterator
 // code); a single-stage insertion with `entry->next = first; first = result` in each head sub-arm or once after them 96/96; one
 // `entry->previous = NONE;` ahead of the first-block test on the copy form, the two single-stage forms and the lead 102/100/101/92.
 // Permuter on the 40 lead (600 s, seed 199, 59 tries): none below 40. Body unchanged.
+// M3 lane 15 r110 (fast with 0x13d320 and the file's six other functions, all MATCH each run; control 201): lane 1
+// r124's 40 lead rebuilt on today's base, 40 at 1213 B (first difference +0x356). On it: both insertion stages tested
+// directly on best.previous 93 (the threading is then retail's `cmp esi, ebx; jne`, but the NONE constant takes a
+// register from the allocation test on, `or edi, -1; cmp eax, edi`, and the result moves to EBX); the first stage
+// direct and the second through the bool 96 (1220 B); the first through the bool and the second direct 93. In the
+// deletion walk: best.offset read into two locals with one initialiser, one per overlap test, 40; the same with
+// `pages + start` 40; best.offset in a local read through a `long const &` for both tests 40 (each 40 the same code:
+// best.offset is still re-read for the second test, where retail keeps it in EDI and compares a `mov edx, edi` copy).
+// AC597: Independent head retirement and policy result with admission/rejection flags, unequal-first and
+// equal-first tie breaks in both forms, and later/earlier timestamp gates:
+// 223/228/228/210/228/210/244/223.
+// Best-present set at eligible join 201; carry acceptance into best-present 281;
+// replacement pointer selected in the cases 182, assigned in explicit arms 253 or created
+// at the copy 201; replacement ring index 256; loop increment from saved successor 201;
+// insufficient candidate continues to that increment 201. NOT kept: the 182 form brings the
+// cases inside the loop, but uses pointer masks instead of retail's shared AL test,
+// moves the first difference earlier and shortens to 1193 bytes.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

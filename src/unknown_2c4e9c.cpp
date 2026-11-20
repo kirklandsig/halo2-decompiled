@@ -1611,27 +1611,35 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // shared validity at both widget tests 78, title tested first 94; shared or block-local output cursor 69 each.
 // NOT kept: title buffer clear before list admission 6, before the title test 4, before the list
 // load 8; retail clears it only after both guards. All three keep the native extent.
+// Matched in a full build with stand-in SDK headers (was 15): the setting index is read into a local before the
+// lookup, and the string list index is read once into a local that the NONE test and the title call share (the
+// definition test and the list test are two nested ifs).
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
 	word buffer[0x100];
 	c_class_1a2c81 *title = find_child(6, 0, false);
 	c_class_1a2c81 *description = find_child(6, 2, false);
-	s_variant_setting_definition *definition = (s_variant_setting_definition *)game_variant_settings_find_setting(list.setting_index);
+	long setting_index = list.setting_index;
+	s_variant_setting_definition *definition = (s_variant_setting_definition *)game_variant_settings_find_setting(setting_index);
 
-	if (definition && definition->string_list_index != NONE)
+	if (definition)
 	{
-		if (title)
+		long string_list = definition->string_list_index;
+		if (string_list != NONE)
 		{
-			buffer[0] = 0;
-			function_1a0180(definition->string_list_index, definition->title_string_id, buffer);
-			title->function_22f52e()->set_text(buffer);
-		}
-		if (description)
-		{
-			buffer[0] = 0;
-			function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
-			description->function_22f52e()->set_text(buffer);
+			if (title)
+			{
+				buffer[0] = 0;
+				function_1a0180(string_list, definition->title_string_id, buffer);
+				title->function_22f52e()->set_text(buffer);
+			}
+			if (description)
+			{
+				buffer[0] = 0;
+				function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
+				description->function_22f52e()->set_text(buffer);
+			}
 		}
 	}
 	list.select_current_value();
@@ -3246,6 +3254,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // load; the file's 14 functions still matched). A retail byte scan finds a memory load into a scratch register,
 // compared with a constant and then copied to a callee-saved register, in no other function. Compile-only under /O2
 // (diagnostic): no frame and a rotated loop, so retail's body is an /O1 one. All restored.
+// M3 lane 2 r112 (fast with 0x2c9a58, matched in each): a redundant `if (map_id == NONE) map_id = NONE;` after the read 30
+// (folded); the id assigned in both arms of a test on the field, the `== NONE` arm first, 13 (the NONE-default code);
+// `if (map_id == NONE) return; else` the walk 30; the walk in a file-local `static inline` helper taking (list, id) or
+// (id, list) 100/100 (14 B: the helper stays a call), as `__forceinline` 30 (the inlined parameter loads straight into
+// EBX). Re-measured the if/else two-definition id 36: NONE has five uses there (two tests, the else store and the two
+// iterator stores), so it is kept in ECX.
 // M3 lane 8 r197 (fast with 0x2c9a58, matched in each): `long map_id;` then the test on the field with the id assigned
 // inside the block 30; `if (field != NONE) map_id = field; else return;` with the walk unconditional 30 (both give
 // retail's EAX load, compare and later copy in a compile-only build, where `this` arrives in ECX, but under LTCG,
