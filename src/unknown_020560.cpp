@@ -1216,6 +1216,17 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 590/591/513, or an end bound 1234/1234/1187. A direct winning pointer with
 // a count-bounded projection or distance cursor 605/605. NOT kept: all regress;
 // the offset spill and independent induction addresses still differ.
+// M3 lane 4 r228 (fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418 at 2094 B; masked aligned rows in brackets,
+// control [276]): scan 2's distance as length_sq3f(&offset) 646 (2039 B) [310], with the dot named `projection` 646 [310],
+// with a named sample pointer 646 [298]; the dot named on this body 418 (same code). Scan 2 reading source->entries for
+// the offset and the distance: 549 at retail's 2122 B [149]: retail's two pointers, pass counter at +0x18 and latch, but
+// nearest then leaves EDI in both scans (spilled at +0x10, opposite at +0x14, retail the reverse), delta takes y, z, x
+// with y spilled (retail z, x, y with z spilled), no offset.x store, and the distance sums (k + i) + j (0x24550's order,
+// retail (k + j) + i). On that body: the distance as length_sq3f(&offset) 628 (2057 B) [139], as dot3f(&offset, &offset)
+// 628 [139], as length_sq3f of a second difference vector (diagnostic only, the reverted hand recompute) 544 (2122 B)
+// [129]; on that last body opposite declared before scan 1 583 (2097 B) [137], the delta from source->entries with
+// samples named after scan 2 561 [341], the delta declared before scan 1 544 (same code). Lead: the two-pointer scan 2
+// needs source->entries, and nearest has to keep EDI across both scans.
 // Nearest/opposite/both pre-tested while loops 418 each. Positive-domain do loops
 // in the nearest/opposite/both scans 971/1092/1612. With the other scan pre-tested
 // while, 971/1092. NOT kept: the post-test forms suppress four-wide expansion,

@@ -216,6 +216,12 @@ inline real function_10e8e0(real t);
 
 #define VIBRATION_VERSION 0x96c
 
+// score 18 (was 256) in a full build with stand-in SDK headers: the key pointer steps in the loop body ahead of the
+// `t_key > time` test (retail 0x10e145 `add esi, 4` precedes 0x10e148), and the blend, magnitude test and
+// insert/replace section run only when the channel has keys and is not skipped: retail's 0x10e07e (jle, key_count
+// <= 0) and 0x10e086 (jne, skipped) jump to the channel loop's latch at 0x10e3fd, past 0x10e258-0x10e3fc. Left: the
+// channel pointer's home store sits before the loop guard (retail: in the preheader, 0x10e02b), push esi before
+// push edi, one preheader xmm load one slot early.
 // @retail 0x10de40
 void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, real time, real blend, bool skip_special)
 {
@@ -279,12 +285,13 @@ void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, rea
 					{
 						long prev = NONE;
 						s_vibration_key *key = keys;
-						for (long k = 0; k < key_count; k++, key++)
+						for (long k = 0; k < key_count; k++)
 						{
 							if (curves->version == VIBRATION_VERSION)
 							{
 								t_key = (real)key->time * curves->time_scale;
 							}
+							key++;
 							if (t_key > time)
 							{
 								prev = k - 1;
@@ -316,34 +323,34 @@ void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, rea
 							}
 						}
 					}
-				}
 
-				result = (result - *prior) * blend + *prior;
-				real magnitude = (real)fabs(result);
-				if (!(magnitude < 0.0001f))
-				{
-					if (used < 12)
+					result = (result - *prior) * blend + *prior;
+					real magnitude = (real)fabs(result);
+					if (!(magnitude < 0.0001f))
 					{
-						out_values[used] = result;
-						out_indices[used] = c;
-						used++;
-					}
-					else
-					{
-						real smallest = 3.4028235e38f;
-						long smallest_index = 0;
-						for (long i = 0; i < 12; i++)
+						if (used < 12)
 						{
-							if (smallest > real_sign_cleared(out_values[i]))
-							{
-								smallest = (real)fabs(out_values[i]);
-								smallest_index = i;
-							}
+							out_values[used] = result;
+							out_indices[used] = c;
+							used++;
 						}
-						if (magnitude > smallest)
+						else
 						{
-							out_values[smallest_index] = result;
-							out_indices[smallest_index] = c;
+							real smallest = 3.4028235e38f;
+							long smallest_index = 0;
+							for (long i = 0; i < 12; i++)
+							{
+								if (smallest > real_sign_cleared(out_values[i]))
+								{
+									smallest = (real)fabs(out_values[i]);
+									smallest_index = i;
+								}
+							}
+							if (magnitude > smallest)
+							{
+								out_values[smallest_index] = result;
+								out_indices[smallest_index] = c;
+							}
 						}
 					}
 				}

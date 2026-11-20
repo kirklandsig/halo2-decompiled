@@ -710,6 +710,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Written-differs at 367. NOT kept: All eight forms shorten the function away from retail and leave the
 // first default store displaced. The long and short captures reproduce 462 and 412 across the admission
 // forms, respectively. All five controls stay exact. The opening body is restored.
+// M3 lane 6 r206 (fast with 0x29e730 and 0x29de20, both matched; control 367, difflib-aligned 308, register/offset-masked
+// 157): the found flag renamed `found`, local_29 renamed start_point or zz_29, 367 each (same code: names do not pick the
+// byte that takes the dead by-value argument slot at 0x80, which retail gives the found flag and ours gives local_29); the
+// point bitmap tested and set through bit_vector_test/bit_vector_set as the group bitmap now is 367 (aligned 293), cleared
+// by memset 367, both 367 (aligned 293, masked 157); on this base local_29 `long` 418 at retail's 1596 bytes (frame 0x68,
+// aligned 242, masked 161), `short` 420 (aligned 246, masked 161).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

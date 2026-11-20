@@ -274,6 +274,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // (value-wrong diagnostic) 160 (535 bytes: the tag then takes EBP as retail, but the object holds ESI for the whole
 // function, so a longer object range alone does not demote it); every read plain with `__assume(tag_index != NONE)` before
 // the started dispatch 152, before the request arm's 0x189fe0 call 152, at both 152 (535 bytes each: tag EDI, object EBP).
+// M3 lane 7 r192 (plain; every form without the reference, object reads plain, control 116 at 531 B): no duration local
+// (both uses through the parameter) 116; `bool attached` (request and marker tests) declared just before the clamp 107
+// (523 B: the first 0x92 bytes are then retail's, tag EBP, spatialization EDI, and the late half is retail's; only the bool's
+// `cmp esi, -1; setne al` and its two `test al, al` remain, the request's zero bytes stored from AL); that bool declared at
+// the slot block's top 153 (537 B); the bool before the clamp also for the started test 117 (530 B); a plain `long` copy of
+// the object used only by the two early tests 116 (folds back into the parameter).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

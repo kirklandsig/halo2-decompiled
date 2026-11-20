@@ -1734,6 +1734,9 @@ real function_30bf0(vector3f *vector);
 // the mobile flag byte in the entry block where this build clears it after the first branch, and the query's four
 // components still reach the x87 stack in the other order; retail's 0xd37f0 takes the block in EAX and the query in
 // EDX where this build has them the other way round, and that callee's parameter order is fixed in a declaration.
+// MiniMax G (11-19): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the normal
+// copy and the limited, rotation and colour homes are still in other slots; the permuter over 300 s made ten tries and
+// reached no lower score than its own 370, and the test-set mobile flag measures 362 (kept only with a byte match).
 // score 378 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).
@@ -1935,6 +1938,10 @@ real function_30bf0(vector3f *vector);
 // unpacked lightmap first 446; with the mobile flag as a test-set (match-only) 430 (1870 B, first difference +0x57); the
 // bounds as `color3f const` locals 378 (same code); the mobile test written into the `k` ternary (no `mobile` local) 487
 // (0x3db00 drops to 12, 0x3dfe0 to 45).
+// Static lower bound 446, static upper bound 446, implicit zero-fill aggregate 464, chained bound
+// stores 378, reversed bound declarations 378, destination address table pins 641, member table pins
+// 648, destination table with input snapshot 648. Either static bound recovers frame 0x40 and 1870
+// bytes at a higher score. The input snapshot changes both checked callers in the reduced image.
 // MiniMax H (11-19): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, so the whole
 // prologue differs before the body starts; the forms tried by the earlier rounds are recorded above and none of them
 // brings the frame back to retail's size without losing 0x3db00 or 0x3dfe0.
@@ -2649,6 +2656,15 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // is twelve bytes out of step; moving a local to another scope or declaration order to shape the frame is a form the
 // machine's review drops, and the forms tried by the earlier rounds are recorded above and none of them moves this
 // body.
+// M3 lane 15 r113 (fast with both callers and all sixteen callees, all MATCH; control 542): the first arm's lightmap and
+// material sample coordinates renamed so they sort the other way 542 (same code: no home moves; no asm is in the body,
+// so the address-taken homes follow reference density, not names). On the three-statement scaling form (27 calls as
+// retail, re-measured 657 at 3057 B: there the dynamic length's call is scheduled ahead of the base length's, the base
+// normal's scaled components stay in registers where retail stores them, and the dynamic normal's are stored where
+// retail keeps them in registers): the dynamic normalisation written ahead of the base one 653 (3063 B); the base scaling
+// through the existing vector3f_scale 657; the final rescale through vector3f_scale 657; the dynamic-first form with
+// per-format sample pointers formed from each vertex index (one-use pointers, match-only) 619 (3081 B, aligned 269 and
+// register-masked 246 against the control's 974/855).
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

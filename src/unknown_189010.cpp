@@ -833,7 +833,7 @@ extern s_sound_source_callbacks const g_444afc;
 extern s_sound_source_callbacks const g_444b1c;
 
 // @retail 0x189060
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction, long tag_index)
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale, long tag_index)
 {
 	short const *local_0 = &value;
 	s_sound_source_description description;
