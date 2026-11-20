@@ -1701,6 +1701,12 @@ static inline s_players_globals *players_globals_14f2e0()
 // 43 (same code); on B the outputs declared bare and filled by `memset(&x, NONE, sizeof(x))` 45 (still `mov`, the two
 // stores swap); one output declared with its NONE ahead of the mode test and the other in the mode block, measured
 // (third person ahead) 243, (tag ahead) 242, both 1031 B.
+// M3 lane 6 r206 (fast with 0xa9440 and 0x14f040, both matched; control 5; compile-only screens agree): with the outputs
+// in the mode block, as one two-long aggregate initialised `{ NONE, NONE }` and reached through two references 52 (1031 B,
+// `mov eax, 0xffffffff`); the mode test as `if (mode == 4) goto done;` (the function's existing exit) with the outputs in a
+// block after it 43 (1031 B); that block plus the reuse flag declared at the top of the result block 62. On the current
+// body: the outputs typed dword (passed as long pointers) 5 (same code); the reuse flag moved to the top of the result
+// block, ahead of the outputs, 25.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

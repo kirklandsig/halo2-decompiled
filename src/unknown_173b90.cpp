@@ -2138,6 +2138,13 @@ bool function_17afd0(long effect_index, long value);
 // availability, owner ternary or NONE default, attached flag defaulted, draw compare order, a second definition local,
 // effect index and cluster read at each use, the latch step inline, nested camera and else blocks): best 2, main's own
 // state; every conjunction-shaped row 51 or worse (NONE stays in EBX for the whole walk and the owner is not shared with it).
+// M3 lane 10 r132 (fast with 0x174420 and 0x1751d0; base 12; round 129's one-object LTCG screen first, 144 random combinations
+// of the same_view forms with the natural toggles, best main's own state 2): same_view false after the availability and set
+// true by one flat owner/view/availability test 141 (513 B); the availability as an if/else on this body 96; same_view false
+// ahead of the availability, set by the flat test, with the availability as one expression, the camera flag nested, the
+// cluster and the effect index read at each use 101 (NONE and the owner share EBP there, but the availability takes AL and
+// same_view BL); the owner as `if (effect_index == NONE) NONE else lookup` 12 (same code); the false default ahead of the
+// availability with a NONE-defaulted owner 123 (500 B). All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

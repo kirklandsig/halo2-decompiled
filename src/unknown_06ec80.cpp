@@ -202,6 +202,11 @@ union s_6ec80
 // ahead of the 0x4dac block 18, the value_18 read moved after the getter 19; with the guard testing players first and the
 // two NULLs players first 11/13 (left: the moved statement and the two block pointers' EBX/EDI). Both misplace a store or
 // a load, so neither is retail's source.
+// M3 lane 10 r132 (fast with 0x6ec10/0x5b120; base 5; screened first on round 129's one-object LTCG screen): the five live
+// tests spelled with the file-local `SESSION_STATE_IS_LIVE(arg_0->state)` macro of the other session files 5 (screen: the
+// same allocation), that with the mask scoped 225; the 0x18 value typed dword 5 (same code); the 0x49c8 getter result
+// named and copied 5 (same code); the mask tested ahead of the machine word 8. Screen only, all in the scoped state 58-61
+// with the mask scoped: the two flags declared ready first, the getter result named, the dword 0x18 value. All restored.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

@@ -556,7 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 115 (was 115): earlier 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// score 114 (was 114): earlier 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
 // `short const &` for the bounds store 191 (1888 bytes; the reference folds away and `left` is still stored as a dword);
@@ -842,6 +842,19 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // timer flag as a bool 191 (1888 B: timer -0xe, tutorial -0xd, scripted still packed at -2 beside the split-screen byte,
 // where retail has -0xf/-0xe/-0xd below `origin`), with `origin` declared ahead of the split-screen flag 191 (same
 // code); `origin` scoped to its own block around the top/left computation 115, with the bool timer 191 (same code each).
+// M3 lane 16 r150 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, all MATCH each run; control 115, 31 lines
+// with the frame offsets masked): the flash scalar passed by value to an inline setter of the vertex procedure and its
+// parameter 383 (1892 bytes); the tutorial colour from an inline function with three returns (a4, a8, a4) 442 at 1859
+// bytes when the compiler leaves it out of line, forced inline 115 (same code); the tutorial colour as an if/else of two
+// unpack calls, the second holding the bit ternary 214 (1890 bytes; the 1.0 loads move); the nested ternary with its first
+// arm read through the global and the others through the local 115 (same code); the player taken from the HUD state
+// local declared ahead of it 246 (1891 bytes). With the offsets masked the body differs from retail only in the left word
+// store, the timer byte, the tutorial colour's block order (retail: flag test, the a4 load, the bit test jumping back
+// to it, the a8 load) and the argument order at the 0x24ce9d and 0x1fa30 calls; every other line is a home. Retail's
+// homes from EBP down: split flag, origin and bounds, scripted, tutorial, timer, line height, flash with the row counter,
+// total height, text bounds, colour, top, left, player, view, count, row height, font; ours: split flag, scripted, origin
+// and bounds, tutorial, timer with flash and the row height, line height, total height, colour, view, text bounds,
+// player, top, row counter, count, font, left.
 // MiniMax A (11-19): no new form, no lower score (114; 115 on this build's reduced image): what is left is the
 // frame homes and two widths - retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd
 // where this build writes the scripted flag as a dword at -0x14, the tutorial flag as a byte at -0xd and the
@@ -849,6 +862,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // a dword at -0x50 (the spelling that narrows it groups the two coordinates into one array, a banned
 // locals-grouping form); the view pointer sits at -0x44 against -0x30 here and the font at -0x50 against -0x4c.
 // The tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
+// m3 lane 11 r130 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115 fast, 114 full):
+// text_bounds renamed to sort first 115 (identical code); the three message flags and the message block in an inner
+// block of their own, with the bool timer 463 (1883 B: the flags leave memory) and with the long timer 128; the view
+// pointer typed const 115 (same code); the timer flag as `char` 191 (1888 B, the byte timer's code). The sibling
+// 0x13954b converts its origin into a `short origin[2]` it passes to a call; here no call takes the pair, so that
+// spelling stays the locals-grouping form listed above.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

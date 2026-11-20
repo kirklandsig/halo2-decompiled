@@ -539,6 +539,17 @@ static inline real interpolate_linear(real a, real b, real t)
 // flag-8 store guarded by `!restart` ahead of the break, the boundary pair nested under `frame < 0 || frame == count`, an
 // unused `wrapped` range flag, the break inside each boundary block with none at the join, an in-range result-style helper
 // as an empty first arm.
+// M3 lane 10 r132 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file, which
+// reproduces the skip): dispose also false at its declaration 1 (same code); restart typed char 1 (same code; signed
+// char, byte and unsigned char screen the same); the whole advance loop in a forceinline helper taking next time, elapsed,
+// dispose and restart by reference 1 (the references fold); the if/else arms swapped with the active test negated 1 (same
+// code); the active test in a named bool 1 (same code). Screen only, skip kept: the loop as a guarded do, restart in the
+// loop condition with a guarded update, restart cleared again at each pass top, three more copies of the next-frame
+// switch after the loop (so no size limit). Diagnostics (screen, not keepable): the miss reaches the restart test only
+// when restart's value is unknown at the loop head: an opaque call taking &restart before the loop, or inside the loop
+// after the test, or a non-constant start value; the same call after the loop, an escape followed by `restart = false`,
+// or an opaque call without restart's address keep the skip. So retail's compiler saw no constant restart on one of
+// the loop head's two edges. All restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

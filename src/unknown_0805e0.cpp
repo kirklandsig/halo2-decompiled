@@ -823,6 +823,12 @@ void function_1537f0(s_profile_record *record);
 // element too 46 (both hoisted). Diagnostics (value-wrong): the four heads set to -2 33 (260 bytes: no hoist and base +0x4c,
 // but the link stores and the -1 are scheduled above the builder's byte stores, which retail keeps in source order as stores
 // through a pointer are); two heads -2 and two NONE 65 (still hoisted).
+// M3 lane 7 r192 (fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): the link pointer taken from the end
+// of the view (`(short *)(&entry->player + 1)`) 18 (base +0x5c); a named view pointer for the builder call beside main's link
+// pointer 18 (+0x5c); the link pointer's stores as two chained pairs in retail's order (`links[0] = links[2]`, `links[1] =
+// links[3]`) 18 (base +0x5e: through the pointer the base follows the link stores' order, never +0x4c); the heads as two
+// chained pairs in retail's store order with the `entry->` links as chained pairs 49 (NONE now in EBP from the head stores),
+// with main's link pointer 18 (same code).
 // @retail 0x7f930
 void function_7f930(void)
 {

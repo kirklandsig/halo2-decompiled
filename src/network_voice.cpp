@@ -2003,6 +2003,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // the player bit declared after the clamp 118 (same code). A /Gd first-pass screen of all 288 order x size x kept-type x
 // bit-position forms holds the player in EDI in every size-first order, but each one that keeps the EAX zero reuses it.
 // On SWKC the result typed dword or int 118 each (same code), dword with `!= 0` 139: the zero is reused whatever its type.
+// M3 lane 7 r192 (fast with 0x56380/0x564c0/0x53b00/0x56000; control 60; the caller 0x56380's score in brackets, [0] =
+// matched): SWKC (size, written, kept, capacity) re-measured 118 [0] (456 B: retail's head through the has-player test, the
+// EAX zero live, but reused for the clamp's `cmp edi, eax` and the written store, then kept takes EAX); on SWKC the flag
+// typed `byte` with `11 + 2 * (include_mask != 0)` 139 [0] (460 B); the clamp as one nested ternary 118 [0] (same code);
+// the written-first orders WSKC 144 (443 B) [13], WSCK 153 (434 B) [13], WKSC 144 (443 B) [13] (the player goes to the
+// stack in each).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2147,6 +2153,18 @@ static inline bool voice_mode_is_passive(void)
 static inline dword voice_get_player_mask_inlined(void);
 
 // score 64 (was 85): r209 unchanged. left: retail tests the muted-word bit first, then the first port flag reusing the second
+// MiniMax B (11-19): no new form, no lower score (64): retail's inner loop is muted-word bit, first port flag, second
+// port flag, with the second query expanded in place (two calls of 0x53be0); re-measuring retail's test order here gives
+// 85, and `inline` on 0x53bb0 with either order gives 105 or 102 and takes the matched callers 0x54890 and 0x53a20 with
+// it, so the flags-first body stands. The body is 415 bytes against retail's 427: the twelve missing bytes are the
+// second port flag's expansion, and every form that expands it expands it in 0x54890 and 0x53a20 too, which the earlier
+// per-site threshold screen showed no single threshold satisfies. BLOCKED-BY 0x53bb0 (its per-site inlining).
+// MiniMax B (11-20): no new form, no lower score (64): the second port-flag query is still called out of line
+// where retail expands it in place (two calls of 0x53be0); every expansion form measured before expands it in
+// the matched callers 0x54890 and 0x53a20 as well, and `inline` on 0x53bb0 with either test order gives 105 or
+// 102 and takes those two callers with it. The body stays 415 bytes against retail's 427, the missing twelve
+// being that expansion. BLOCKED-BY 0x53bb0 (its per-site inlining) and 0x59670/0x596a0 (the session getters).
+// score 64 (was 85): left: retail tests the muted-word bit first, then the first port flag reusing the second
 // availability byte in CL, then the second port flag expanded in place (two calls of 0x53be0); this body tests the two
 // port flags first and calls 0x53bb0 out of line, 12 bytes short. BLOCKED-BY 0x53bb0 (its per-site inlining).
 // MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes

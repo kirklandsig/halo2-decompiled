@@ -1694,11 +1694,23 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // `inline` on 0xb8bd0 394 (1373 B: both sites expanded, 0x18c3b0 157). Diagnostic, reverted: `__assume(parent_index !=
 // NONE)` after the flag read 392. Retail keeps the pool in ECX while the defaults (EAX, DL) are live across the lookup,
 // so its index has to take ESI; ours spends ECX on the index and reloads the pool.
+// M3 lane 14 r122 (fast with 0xb8bd0/0xbdc40/0xbc820/0xbd020/0xbee60/0xbfa40/0xbdb60, all MATCH; control 20): the no-model
+// lookups through a `long const &` bound to the parent index 20 (same code); one parent-object local read through a
+// `const &` to it 44 (1390 B, data from EDI); the declaration defaults kept with a repeated `else { parent = 0;
+// parent_mirrored = false; }` 18 (1394 B, the else-arm form above: the initialisers are dropped); the parent node read
+// into a local before the parent test 20 (same code); parent, flag and index declared once for both arms with the
+// no-model defaults in an else arm 18 (1394 B, same code as the else-arm form).
 // M3 lane 12 r151 (fast with 0xb8bd0, 0xbdc40, 0xbc820, 0xbd020, 0xbee60, 0xbfa40 and 0xbdb60, all MATCH; control 20 at
 // 1399 B): the no-model test inverted with the defaults in the NONE arm and the lookups in the else 25 (1395 B); the
 // else-arm defaults (r267's 18) with the flag read before the matrix 18 (1394 B: the node's `movsx` moves ahead and takes
 // ESI), with the flag's object through object_header_get 18 (same code as r267's); 0xb8bd0 called for the matrix with the
 // else-arm defaults 48 (1387 B); defaults first with a parent header pointer named in the arm for both reads 41 (1392 B).
+// M3 lane 4 r228 (fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): in the no-model arm, the index copied into a
+// second named local for both lookups 20; the index bound by `long const &` for the test and both lookups 20; the same
+// reference only inside the parent arm 20; a redundant `parent_mirrored = false;` at the top of the parent arm 20; a
+// redundant `parent = 0;` there 20 (all the same code). Reading: ECX already holds the pool at the arm's entry in both
+// builds (loaded for the current-object lookup, EDI holds its data), and retail re-reads only the data from it while ours
+// reloads both, so this is the register choice of the index (ours ECX), not a lost common value.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

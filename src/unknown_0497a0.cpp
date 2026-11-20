@@ -24,6 +24,7 @@
 // the default arm and the PIN calls), which is a form the coordinator rejects, so it is not kept; the frame stays 0x54 against
 // retail's 0x60 and the wave's three dead x87 factors stay behind retail's product.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// MiniMax E (11-20): no new form, no lower score (536): retail keeps the first cross's three products and two of its components in stack cells across the two sines and gives the cross result and w the same home, so retail's homes run v1, v2, w, v3, v4 against v1, v2, w, v4, v3 here and its frame is 0x60 against 0x54; spelling both crosses with matching product operands (650), the products as a local vector (650), the staged cross helper with the adds written out (663) and the adds written out alone (663) all leave the products in registers and shorten the body.
 // and late x87 factor lifetimes remain, at retail length 2622.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
@@ -563,6 +564,12 @@
 // short discriminator 703/707/703/690; primary shape test 700/698/688/607.
 // NOT kept: the earlier placements reach frame 0x58 and the late placements keep 0x54.
 // The primary shape slot, rounded wave storage and x87 factor lifetimes still differ.
+// M3 lane 2 r114 (fast with 0x4a1e0; control 536): the four trig arguments of s0 cast to double 665 (2576 B); s0's sum
+// rounded to real before the halving 536 (same code); s0 and s1 each read through a const reference at its scaled add 645
+// (2666 B: both get retail's own cells, s0 at +0x18 and s1 at +0x1c, stored early as retail, but each scaled amount is
+// written back into its wave's cell and reloaded, and the three factors are still saved with `fst`); both bound by
+// non-const references to separate locals 645 (same code); s1 alone through the reference 629 (2656 B); s0 alone 614
+// (2627 B). The frame stays 0x58 in all of them.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -393,6 +393,12 @@ const dword g_455978[81] = {
 // read once into a short local 297 (0x11bed0 5), an early return for the no-bsp case 298 (0x11bed0 still matches, still expanded
 // here), the arms swapped 311 (0x11bed0 90 bytes), the cluster preset to NONE and set under `if` 295 (0x11bed0 76 bytes). 0x11bed0
 // restored. Still BLOCKED-BY 0x11bed0's expansion here and 0x279740's first-release expansion (its file's inline restriction).
+// M3 lane 14 r122 (fast with 0x11bed0, 0x14a280 and 0x29b990, all MATCH; control 298): the found flag carried by the loop
+// condition with no break keeps 0x11bed0 out of line here (no guard): `!local_0 && local_13 < local_6` 358 (2043 B),
+// `local_13 < local_6 && !local_0` 311 (2047 B); with the k-cleared planar copy and the sample-end copy 370 (2022 B) and
+// 310 (2026 B), the exit then tests after the increment where retail breaks before it. Diagnostic (an always-true guard,
+// not keepable): planar, sample-end copy and `if (arg_11)` around the 0x11bed0 call 324 at 2030 B, first difference
+// +0x54; what is left is mostly 0x279740's first-release expansion (53 bytes) and scratch-register rotation.
 // M3 lane 1 r129 (fast with 0x11bed0, 0x11be90, 0x14a280, 0x1d43d0 and 0x279740, all matched throughout, and 0x21a100 93;
 // control 298, aligned 144/136 = unmatched instructions ours/retail, masked 67/59; body unchanged). Lane 9 r142's
 // always-true guard keeps 0x11bed0 out of line, so natural spellings that put its call one level deeper were tried:
@@ -402,6 +408,13 @@ const dword g_455978[81] = {
 // (2047 B, first difference +0xd: the result lives in memory and is tested at the loop top); the tail as
 // `if (cluster != NONE) { local_0 = true; break; }` 513 (2114 B, first difference +0x8). Still BLOCKED-BY 0x11bed0's
 // expansion here and 0x279740's first-release expansion.
+// M3 lane 13 r124 (fast with 0x21a100, 0x11bed0 and 0x14a280; 0x21a100 93 and the other two MATCH each time; control
+// 298): `inline` on 0x11bed0's own definition 298 (still expanded here; 0x127400 then expands it too, 484 -> 563); the
+// planar copy as the full table entry with normalize2d_fast on its first two members 369 (2132 B, a repeat of the
+// listed vector3f local); round 87's ray start copied from `*arg_11` with `arg_4` added in place 407 (2149 B on
+// today's body: the entry ESI/EDI swap and the homes stay off); the length test as `0.0001f > fabs(...)` 298 and the
+// radial height as `local_17 * 0.0f` 298 (same code each). With registers masked, what is left is the expanded
+// 0x11bed0, retail's expanded 0x279740 range check at the first release, the second length test and that ray copy.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
