@@ -95,6 +95,20 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 }
 
 // score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// MiniMax D (11-20): no new form, no lower score (305, 1732 bytes, retail 1732). The first difference is still the constant
+// 1.0f, which this build loads into XMM1 where retail loads it into XMM2; the reciprocal copy and the radius load then swap
+// with it, so the whole float register assignment of the function turns on that one constant. Four source-order trials moved
+// the negation of the radius ahead of the normalization (342, the negation materialised early), moved the endpoint block ahead
+// of it (368, the frame restructures and the first difference moves to +0x3), swapped the y row's addend order (305, identical
+// code, MSVC canonicalises the commutative add) and copied the facing vector's two components into locals (387, the frame
+// grows to 0x70). Swapping the two multiplications in the normalizing helper measures 307.
+// The near arm still differs in kind: this build keeps the cosine on the x87 stack and computes y*cos on x87 into a float
+// slot, while retail spills the cosine to a float slot and computes y*cos with mulss (the y row in SSE) and keeps the x row
+// on x87; the cosine's float rounding is what decides which of the two rows is evaluated in SSE.
+// The candidate count is a byte here (the count in BL, the endpoint index in BP) where retail has the count in BP and the
+// index in BX; as a short the count measures 469 at 1686 bytes (the length no longer matches retail and the caller
+// 0x29a190 regresses), as earlier rounds recorded. Body restored to the kept form.
+// score 305 (was 305): The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax B (11-14): no new form, no lower score (382): retail carries the constant at +0x57 in xmm2 where this build
 // carries it in xmm1, which then swaps the product registers, retail's counter is in BX where this build's is in BP, and
 // the body is still 40 bytes shorter than retail's (1692 against 1732); the normalizer's two products follow the source
