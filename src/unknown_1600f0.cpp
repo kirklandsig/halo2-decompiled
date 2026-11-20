@@ -1210,6 +1210,7 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
+// MiniMax C (11-20): no new form, no lower score (679): the frame is still 0x798 against retail's 0x79c, the viewer stays in edi and the coordinate homes and the panel's timing reads still sit in this build's slots; the forms that reach retail's frame size score lower on other axes, so the body stands as found.
 // score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
 // P622: a one-use caption-phase local at the division gives 671 (match-only, reverted); frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
 // M3 lane 4 r226 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): x as long 684; y as short 681; the width folded into x's

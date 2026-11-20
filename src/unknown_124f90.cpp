@@ -1361,6 +1361,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax C (11-20): no new form, no lower score (87): retail forms the reciprocal first (xmm2), keeps the fade-out time in xmm1 from the earlier test, divides eagerly before the compare and adds the gain into a register at the end, while this build forms the reciprocal late, sinks the division into the branch and adds the gain from memory; every form written here leaves the reciprocal's register and the division's schedule where they are.
 // MiniMax H (11-19, round 95): no new form, no lower score (87): the permuter over this function's forms made no gain either
 // (best was the baseline), and the fade block still keeps 1.0f/fade_in_time in xmm2 where retail keeps it in xmm3, so the join
 // with the (elapsed - hold) * inverse * fade_out term stays in other registers than retail's.
@@ -3703,6 +3704,13 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// MiniMax C (11-20): no new form, no lower score (8): the pool reload still lands ahead of the next-slot diamond in every form
+// tried this round (the seed as its own statement ahead of the reload, the advance as two body statements with the mode-1 arm
+// broken instead of continued, and the seed through a comma), and retail's mode dispatch (`movsx eax, ax; sub eax, 0; jne`)
+// needs the continue, so the body is unchanged. Later in the same round: the candidate computed before the reload in the
+// increment clause, the candidate as a named local, the find through the global and the whole increment through the global
+// all measure 8 with the same code, and the permuter (378 s) found nothing; the reload is a speculatable global load and
+// this compiler hoists it to the head of the increment region, above the candidate's branch, in every spelling.
 // MiniMax A (11-19): no new form, no lower score (8): the pool reload stays ahead of the loop end's `cmp ebx, -1`, where
 // retail loads it after the next-index increment; the latch reading the pool through the global, the entry pool read
 // through a local, the next index computed in a comma element ahead of the reload and the pool read through the
@@ -4328,6 +4336,7 @@ struct s_128ca0
 // score 48 (was 72): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
 // word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
 // DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
+// MiniMax C (11-20): no new form, no lower score (72): the two gain pins still trade scratch registers (retail gives the gain byte its register ahead of the bits' copy), the field_c store still sits one slot late and the controller compares still use an immediate where retail holds NONE in edx; the body stands as found.
 // score 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
