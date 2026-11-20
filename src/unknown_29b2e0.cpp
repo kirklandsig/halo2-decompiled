@@ -753,6 +753,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // j, i, k); that helper with the cross written out 204; with the cosine taken first 177; with cross3f_staged 169 (same
 // code); with cross3f reading the up vector straight from the object (no `local_17` pointer) 156 (1706 B, aligned 144).
 // Re-measured: round 134's lead (named first-rotation sine and cosine with cross3f) 141 at 1707 B, aligned 123.
+// Second projection as a zero-depth aggregate or through the component setter 389/372, or from the XY
+// workspace 420. Alternate shared normalizer for the second projection or both 289/393. Shared approach
+// operation for yaw, pitch or both 298/280/291. All regress. The exchanged depth and XY stores, yaw zero
+// copy and the first rotation's product order and spill homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

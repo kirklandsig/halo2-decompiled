@@ -1277,6 +1277,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // alone or with nearest 418 each. Named projection with opposite or both 1236 each.
 // Filtered distance with the current cutoff for a rejected candidate 417. NOT kept:
 // one-point gain, extent grows past retail, and the separate frame homes remain.
+// One direction workspace for anchor and fallback 419, with scan-scope offset or a shared candidate
+// position 419/419. One candidate position with aggregate or shared setter offset 433/418. Shared
+// direction and aggregate or setter offset 433/419, or with a candidate read from the live table 550.
+// The aggregate recovers retail length and the candidate-X spill, with a 0x28 frame.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

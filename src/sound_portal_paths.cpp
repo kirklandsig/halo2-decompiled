@@ -576,6 +576,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Reacquire destination after travel, geometry, or at the range gate 359/359/359;
 // reacquire start after travel or geometry 369/369; reacquire both after travel, geometry,
 // or at their consumers 405/370/366. NOT kept: all raise the score and retain the extra frame word.
+// Shared ordinal for fill/output 295, walk/fill 295, walk/output 299, or all three 299.
+// Advance portal and cluster outputs at their stores 291, gain and portal outputs 286, all
+// optional outputs 318, or all with shared fill/output ordinal 318. NOT kept: the 291 form
+// gains four. The 286 form restores the 0x428 frame but grows to 1372/1363 bytes, advances
+// outputs at their stores and leaves the BSP base loads and starting-cluster register unresolved.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

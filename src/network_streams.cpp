@@ -1286,6 +1286,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Bind time destination, name size at publication, or both 89/89/89.
 // Resend goes straight to the common return, with ordinary type read at exhaustion 120.
 // NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
+// Saved word tests with a direct low-byte OR or shared byte setter 86/86, byte tests and OR
+// 84, paired word test and byte OR 88, message initialized at lookup 86. Success result before
+// publication with the ordinary result at the sole exit 112 or split empty and exhausted
+// outcomes 74. Separate window-count admission with byte OR 86. The compiled prologue or
+// found tail differs in every form, including the byte-test form at retail length.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
