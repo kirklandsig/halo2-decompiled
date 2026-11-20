@@ -355,6 +355,12 @@ static __forceinline long real_to_long(real value);
 // Reading for the next round: retail expands 0x210850 only at this call, and this build expands a plain function from
 // another file only when that file allows it (lane 9 r138: without /Ob1 on its file it is expanded here and in 25 matched
 // callers), so the match stays BLOCKED-BY 0x210850.
+// M3 lane 6 r212 (fast; control 373; aligned [exact, stack masked, registers masked]): round 204's composite re-measured
+// 347 (1855 B) [127, 118, 16]; on it the two resolver copies as memcpy 347 (same code: the failed-lookup copy stays
+// load/store interleaved, where retail loads all three words first, as an aliasing-safe copy through an expanded 0x210850's
+// pointers does); the side-vector rows j, i, k 215 at 1861 B [157, 128, 31], i, k, j 268 [132, 121, 25]; on the body,
+// the k zero product named for its two rows 373 [320, 255, 112]. Retail keeps the side vector's i, j, k in XMM1, XMM2,
+// XMM3 from the cross product to the output rows. BLOCKED-BY 0x210850 (expanded only at this call).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
