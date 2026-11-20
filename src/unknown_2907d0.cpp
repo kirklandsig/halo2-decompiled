@@ -243,6 +243,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // pointer local scoped to the else arm only 19, to the node arm only 19; the node arm's point and forward calls in one
 // forceinline helper taking (node, transform, out point, out vector) 19 (the three the same code); the position stored
 // after field10 and the angle call 41 (472 B); field1c and field2e stored between the position and field10 35.
+// M3 lane 3 r285 (h2m fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): `field2e = 1` stored
+// ahead of the angle call 34; `field1c = 4` stored ahead of it 33; the record's position stored with memcpy 19; the else
+// arm's two copies through a forceinline (transform, point out, vector out) helper 19 (the 19s the same code); field10
+// stored ahead of the position with field2e ahead of field1c 20.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
