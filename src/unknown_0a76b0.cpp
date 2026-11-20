@@ -4417,6 +4417,12 @@ extern vector3f *g_4687bc;
 // component at the element); the element as data then `+=` without the reference, through a named index copy, as byte
 // arithmetic; `long const` effect tag and index; a const definition; `*rigid_body->nodes`; the model in a `byte *`
 // local; the node index as `short` (one more line, both sites unchanged).
+// M3 lane 16 r155 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): an unused `char` copy of the
+// component's +0x18 index after the lookup (the shape the matched 0x0b67a0 callers in another file carry) 8 (same code,
+// diagnostic); the material as a plain `short` local (its address to 0x1eb020, `c_type_47f957(material_index)` at the
+// 0x188180 call) 25 (the global loaded as a dword); the component bound through a `s_havok_component *const &` for the
+// 0x0b67a0 call and the element 8; the re-looked-up definition and the effect tag read as const 8; the model index
+// named ahead of the effect tag read 8 (the 8s the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

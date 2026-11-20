@@ -1834,6 +1834,10 @@ PRIVATE __forceinline real const &component_time_step()
 // binding (465 B, 104/6; stop-first 105/29: then only the XMM2/XMM3 swap and `add eax, 4` differ). Dead locals after
 // the binding never give it; a named base or power in the body counts one each, locals inside the inline helpers and
 // bare declarations count nothing. A pointer with a second, live definition in the low-step arm still folds both reads.
+// M3 lane 16 r155 (fast; control 26): `target - position` named as an offset after the magnitude (target left
+// unchanged), step-first 29, stop-first 46; the target-below-zero and square-root arms as one ternary, step-first 26
+// (same code), stop-first 43. The stop-first listing: the whole head and branch layout retail's except the scale in
+// XMM1, the zero in XMM2 and the stop temp in XMM3 (retail XMM3/XMM2), and the step loaded from `[eax + 4]` both times.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -3492,6 +3496,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // `position.set(...)` 15; the rotation part bound as an `hkRotation &` for the three columns 15; the translation copied
 // through `m_quad` 15 (all the same code); the converter reading the vector into i, j, k locals first 32 (the value in
 // XMM0 is still stored first, then the zero). Dead initialised locals K = 0..40 at the top: 15 at every K.
+// M3 lane 16 r155 (fast with 0x1d83e0, 0x1d77d0 and the converter's other users, all unchanged; control 15): the
+// converter `__forceinline` 15; the vector-to-Havok helper `__forceinline` 15; the Havok vector's set writing the four
+// lanes of `m_quad` directly 15; that set `__forceinline` 15 (same code each); the converter a plain static function
+// 918 (655 B, called out of line). In both builds the frame_b equal arm loads k, j, i and stores i, j, k, w; only
+// retail's frame_a arm loads column 0 as k, i, j, so that block's schedule, not the helper's text, is what differs.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,

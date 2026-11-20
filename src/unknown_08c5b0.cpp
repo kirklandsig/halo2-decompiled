@@ -281,6 +281,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // the kind as a `short const &` to the field passed through a second const reference 32 (95 B); the index as a `long const &`
 // to the field with the kind copy through a const reference 23 (99 B); the selector's result stored through a `long &` bound
 // to the setting 32 (95 B).
+// M3 lane 16 r155 (fast with 0x8c5b0/0x8c660, both MATCH each time; control 4): `bool changed = setting !=
+// old_setting;` with the existing read 25 (91 B: the flag is built with setne); the selector's parameter `short const`
+// 4; the selector `__forceinline` with the existing read 4; the existing read through the parameter's own address
+// (`request_reference`) 4 (same code); a plain read of both fields through one read of the parameter's address 32
+// (95 B, folded compare).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

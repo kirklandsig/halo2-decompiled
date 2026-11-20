@@ -1135,6 +1135,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // block 24 (a moved declaration). Diagnostics: a probe global stored from the axis's j, k or i after the 0x14a280 call 92/92/91
 // (1102 B, rotation ours), so a later axis read does not rank the dot; lane 12 r147's M re-measured 20, M with the offset x, z,
 // y 6 (left: the offset computed in that order).
+// M3 lane 16 r155 (fast with 0x1ecf50 and 0x26d100, both MATCH each time; control 26): the 0.1 offset products
+// constant-first 26; the 0.5 lift product constant-first 26; the collision marker as a typed short field at +0x24 of
+// the collision view 26; the offset reading the axis as `n[0..2]` 26, both sides as `n[0..2]` 26 (all the same code).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
