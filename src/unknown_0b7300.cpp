@@ -715,6 +715,10 @@ bool function_d5060(s_scenario_block *palette, long type, long unknown10,
 }
 
 /* makes the scenario's objects that come with the map */
+// Matched in a full build with stand-in SDK headers (was 64): the placement definition is read into two named locals;
+// the offset tests use the first and the palette address is computed from the second (written out, not through
+// function_x6e4ccb). The two share a register but are separate values to the compiler, so the palette's offset load
+// is not merged with the test's and the later re-read gets retail's `mov eax, ecx` copy.
 // @retail 0xd5560
 void function_d5560(bool skip_existing)
 {
@@ -723,12 +727,13 @@ void function_d5560(bool skip_existing)
 	for (long type = 0; type < k_object_type_count; type++)
 	{
 		s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
+		s_object_type_placement_view *palette_definition = OBJECT_TYPE_PLACEMENT(type);
 
 		if (definition->scenario_datums_offset != NONE && definition->scenario_palette_offset != NONE)
 		{
 			long size;
 			s_scenario_block *block = function_x71bcc9(scenario, type, &size);
-			s_scenario_block *palette = function_x6e4ccb(scenario, type);
+			s_scenario_block *palette = (s_scenario_block *)((byte *)scenario + palette_definition->scenario_palette_offset);
 
 			for (short i = 0; i < block->count; i++)
 			{
