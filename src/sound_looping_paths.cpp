@@ -728,6 +728,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // kept); `bool inside` computed right after the query count 927; the override's logarithmic gain computed once ahead of
 // its loop 959 (3380 B); the pool global read at the function top 966 (3355 B); `primary` declared ahead of the target
 // count 846 (same code).
+// Nest valid index, valid tag, unique choice, or tag and uniqueness 846/846/846/846. Full-width accepted
+// count with these guards 964/964/964/964. NOT kept: the short forms tie. The full-width forms recover the
+// ESI zero but shorten the body and raise the score. The target-count and query-buffer homes still differ.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

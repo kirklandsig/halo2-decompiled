@@ -1707,6 +1707,10 @@ bool function_108530(long device_index, long name)
 // intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
 // trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
 // form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
+// Separate request paths as statements or values 141/141, positive span first as statements or values
+// 141/141, carried request predicate as statements or values 156/156, span accumulator 141, clamp within a
+// positive span 145. NOT kept: all lengthen the body and lose the incoming velocity register. The ramp-
+// down slot and duration and position registers remain displaced.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

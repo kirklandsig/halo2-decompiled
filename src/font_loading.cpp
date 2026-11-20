@@ -955,6 +955,9 @@ static inline long font_character_pixel(long alpha, long color)
 // instruction). The colour literal is still built with a shift and an add where retail keeps its two bytes in
 // separate registers, and the run of two is still folded into the count as an immediate where retail adds the
 // register; the original helper and body stand.
+// Compare with packed run 59, run to pair end 163, pair class arity 193, shared packed prefix arity 171.
+// With full-width parity 203/213/191/219. NOT kept: the run comparison ties, and the other forms raise the
+// score. Packed parity width, run register reuse and literal byte assembly still differ.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
