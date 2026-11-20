@@ -2317,6 +2317,11 @@ void function_269250(long clump_index, long actor_index);
 // selection and best declared ahead of the walk 129; the team test as `if (team != ...) continue;` 126; the score declared
 // at loop scope 126; the activity flag read ahead of the walk's start 126; the walk record at function scope 126 (all
 // four the same code).
+// Walk-index candidate before/after scoring: common ranking 87/87, team-local
+// 126/126. Iterator datum-index candidate at the same boundaries: common
+// 146/146, team-local 128/128. The team-local datum form promotes the pool
+// to EDI and leaves the selected handle in memory at the wrong offset.
+// Candidate-local prior best for both default and threshold 87.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

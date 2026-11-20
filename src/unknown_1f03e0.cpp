@@ -1714,6 +1714,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // written out; that without the `!= 0` 234 (same code). Left as before: the damping bit's first extraction in ECX (retail
 // EDX), the crosses' operand sides, the expanded input length, and the general arm's k row in XMM2.
 // MiniMax A (11-20): no new form, no lower score (234); the first arm's cross still differs in one product's operand order (retail reads facing.j * up.k where ours reads up.k * facing.j), and writing the six products out gives 529.
+// Separate requested and effective gravity 604, step-first condition 590,
+// positive admission arm 584, direct completion 597, disabled branch entry
+// 603, general-branch damping 632, direct dispatch test 639, and request as
+// effective default 523. These still miss the damping register and enlarge
+// the retail-length body.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
