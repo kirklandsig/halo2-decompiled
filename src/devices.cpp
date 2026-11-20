@@ -1757,6 +1757,7 @@ bool function_108530(long device_index, long name)
 // moved declaration) and with either first form 109 (same code). In the inner block retail gives XMM registers to the
 // distance (XMM5), the final velocity (XMM7) and the 2.0 constant (XMM3) and reloads the ramp-down and the cruise velocity
 // from memory; ours keeps the ramp-down (XMM7) and the cruise velocity (XMM4) and reloads the distance.
+// MiniMax C (11-20): no new form, no lower score (116): the velocity still reaches the clamp on the stack, retail in xmm6.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2041,6 +2042,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // block-local copy of the render model, a const reference, forceinline pair helpers, a one-member aggregate render
 // model with and without a constructor, one-pass loops, the copy written in both arms, switch accessors): the store
 // stays at the eighth slot in every one.
+// M3 lane 2 r119 (fast; control 2): a redundant `had_animation = false;` at the top of the flag block 2 (same code);
+// had_animation left uninitialised and cleared in an else arm of the flag block 170; the time computed ahead of the
+// flag test 71 (1636 B, not sunk into the block); the animation id read ahead of the flag test (the speed block
+// assigning the same local) 13: its load and spill then sit above the branch and the block's fstp follows `push edi` as
+// retail, so with `mov edi` out of the block the store reaches retail's slot; the animation read through a const
+// reference at both sample calls 2 (same code).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -2736,6 +2743,7 @@ bool function_0b6760(s_index_pair const *pair);
 // position read ahead of the first channel-1 test and passed to the frame call 98; the group target read once into a
 // local for the test and the motion call 388 (1479 B; retail reads the group's value at both uses). Still
 // BLOCKED-BY 0xb6760 at the channel-1 sites.
+// MiniMax C (11-20): no new form, no lower score (61): the channel-1 call loads the device index into eax, retail into ecx.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

@@ -884,6 +884,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // declared ahead of it 114, both 114, the flash value declared at the top of the timer arm 114 (same code each). Retail
 // shares the flash value's home with the row counter (-0x18) and gives the message height its own (-0x4c); ours shares
 // the timer, flash and message height (-0x14): the packing follows the lifetimes, not the declarations.
+// MiniMax C (11-20): no lower score (114): the frame homes and the left coordinate word store differ; a word for left scores 482.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

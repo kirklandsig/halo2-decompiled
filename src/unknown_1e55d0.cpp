@@ -67,6 +67,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax G (11-20): no new form, no lower score (319): the aligned 0x94 frame still agrees and the first argument still arrives in eax as retail has it, but the output and the input take the other two of the registers retail uses because 0x1ec690 is still a stub; the rest of the body is unchanged.
 // score 319 (was 319): the aligned 0x94 frame agrees. Left: retail keeps the output in EBX and the input in EDI (0x1ec690,
 // still a stub, takes its input in EDI in retail) and never gives the state a register; it lays the non-compound and
 // capsule arms after the epilogue, calls 0x1c4a80 where ours expands it, loads the rate once and tests the 0x20 flag by
@@ -370,6 +371,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // (same code); the velocity pointer held through a const reference and tested in place of `&velocity` 319 (the null
 // test still folds, operand order only). Still BLOCKED-BY 0x1ec690 (the input in EDI; its draft sits in an Avoid-list
 // file this round).
+// M3 lane 2 r118 (fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319): the output flag word
+// bound once by reference for the shape block's three updates 319; the position base through a const reference to the
+// input's point 319; the velocity reference formed from the move parameter instead of the output alias 319 (all the
+// same code); case 6 ahead of 4/5 (retail's block order) re-measured 318; the capsule helper plain `static inline` 530
+// (968 B, it stays out of line); the position bounds as a negated `||` chain 319, the shape match folded into the `if`
+// 319, the active flag through TEST_FIELD_BIT 319, `NONE !=` on the parent test 319 (all the same code). Also
+// BLOCKED-BY 0xb77d0 this round: `inline` on its /Ob1 definition (so the link could expand it here as retail does, in
+// place of the written-out velocity block) needs src/unknown_0b7740.cpp, another lane's file this round.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

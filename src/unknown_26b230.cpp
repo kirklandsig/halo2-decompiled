@@ -2301,6 +2301,12 @@ void function_269250(long clump_index, long actor_index);
 // 146, team-local score with optional attach 112.
 // The optional attachment with a team-local score recovers EBX, the x87 compare and the slot at +0x14. The
 // found-block and transfer schedule still differ.
+// M3 lane 3 r278 (fast with the ten matched callees and walk users in the image; a single-address fast image builds
+// 0x269580 with the other register convention and shows this function's two 0x269580 calls with their arguments
+// reversed, which the full build does not: keep the callees in the image): the in-arm compare re-measured 126; on it the
+// selection and best declared ahead of the walk 129; the team test as `if (team != ...) continue;` 126; the score declared
+// at loop scope 126; the activity flag read ahead of the walk's start 126; the walk record at function scope 126 (all
+// four the same code).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

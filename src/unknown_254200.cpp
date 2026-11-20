@@ -277,6 +277,16 @@ void function_254200(void)
 // 9 (the colour loads and stores reorder); the products written straight into the helper's 4f call 4 (same code); the
 // products stored into a scaled colour aggregate 28 (first +0xe: it takes a frame home); the colour by `color3f const &`
 // 4 (same code). The constant and y + size still reload in our order after the second and third reservations.
+// M3 lane 3 r278 (single-address fast, control 4): the vertex 4f calls through the member wrapper for vertex 3 only 4,
+// vertex 4 only 4, vertices 1 and 4 4, vertices 3 and 4 4, vertices 1 and 2 4 (all the same code; the wrapper's extra
+// inline level does not move the constant / y + size reload pair).
+// M3 lane 6 r213 (fast, control 4): 48 random combinations (2 to 13 at once) of thirteen same-code natural forms: each
+// vertex's 4f call in member form (four separate choices), the colour helper's 4f call in member form, each render-state
+// call in member form (two choices), the closing call in member form, the size as `arg_2 * 2`, the bitmap choice as if/else, the
+// dimension locals as `int`, the readiness test as nested ifs, the colour helper taking `color3f const &`: all 48 give
+// 4 with the same aligned code, so the extra inline levels and their argument temporaries never reach the reload pair.
+// Also r213: the four vertices through a file-local forceinline position helper (x, y) issuing the far-depth 4f call 8
+// (the colour helper's spills swap, the pair stays).
 // M3 lane 7 r198 (single-address fast, control 4): the readiness test held in a named bool 4 (same code); the point copy
 // as a `point2f const &` to the parameter's point 341 (1162 B); the point copy, then the size, after the 0x1cf50/0x1c710
 // calls 22 (the pair unchanged); the two dimension reads ahead of the texture store 56 (1110 B); the bitmap selection
@@ -673,6 +683,13 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // difference +0x2da); named blue, green, red (the order retail reads them) 2 (same code); that with a named `real alpha = 1.f`
 // 466 (2159 bytes, first difference +0xe); the mip LOD bias stage value as a zero real read as a dword 443 (2271 bytes).
 // All restored.
+// M3 lane 6 r213 (fast with 0x254490 4 and 0x254200 matched; control 2): a file-local forceinline position helper (x, y)
+// issuing the far-depth 4f call, used by the first quad's first two vertices 2, also used by 0x254490's four vertices 2
+// (0x254490 8: its colour spills swap); a forceinline texture-coordinate helper (u, v) for the first two 2f calls 2; both
+// helpers 2; the texture helper with the first two vertices' 4f calls in member form 2 (all the same code). Reading: a
+// helper that evaluates the coordinates before the depth constant does not reverse the pair either, so the pair does not
+// follow the order the values are first computed; the swapped reloads sit on the reservation call's edge only (the
+// skip branch lands after them), and the unmatched 0x3a5c0, 0x185be0, 0x217c40 and 0x4e260 show the same kind of swap.
 // M3 lane 7 r198 (single-address fast with 0x254490 4 and 0x254200 matched; control 2): the scale's half product named
 // `real const half` just ahead of the first texture call and used in all four texture coordinates 386 (2272 B), named after
 // the quad's start call, ahead of the colour call 423 (2286 B); the last quad's point read into one `point2f` copy in place of the two

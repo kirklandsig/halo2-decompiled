@@ -1313,6 +1313,9 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // (2877 B, the copy changes the prologue), vector first 623, with the scaled scalars gathered into a vector initialiser 606
 // (2778 B); the left cross through the shared cross3f with the forward cross through cross_product_c1a80(up, left, forward)
 // 554 (2817 B, masked 176); the left cross through cross3f alone 532 (2796 B).
+// M3 lane 4 r233 (h2m fast), at 290: one matrix pointer for every matrix use in the sphere arm 588 (2788 B); the two true
+// flags as one chained assignment 290 (same code); the reference axis as an if/else of the two copies 574 (2822 B);
+// `orthogonal = (short)shape->kind == 1` 599 (2778 B); the cone depth from `entry->plane_offset` 291.
 // M3 lane 7 r197 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 199, masked 77): the
 // projection helper's rows through the existing 0x1427f0 inverse transform (the same k, j, i rows) re-measured 1273 (2143 B,
 // out of line); with `inline` on 0x1427f0's definition 495 (2799 B: expanded, but its rows are not retail's, and matched

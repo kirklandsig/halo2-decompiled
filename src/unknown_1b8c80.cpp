@@ -927,6 +927,14 @@ extern "C" void _ReadWriteBarrier(void);
 // the data block minus the header size, fold back to the plain cast (44 code without the barrier). Reading: only a
 // pointer variable with two uses and a non-copy definition is anchored where it is defined; the data block anchors the
 // slot load at entry (retail's schedule) but its +0xc temporary holds EDX at allocation, so the data base goes to ESI.
+// M3 lane 16 r156 (fast, control 6): reads of the slot parameter through its own address after the actor lookup:
+// volatile, then the barrier after the lookup and a second barrier after the read 28 (205 B); volatile after `actor, barrier`
+// 29; the state declared bare first and assigned by a volatile read after the lookup, no barrier, 49 (210 B); a plain read
+// through a `s_slot *const *` to the parameter between two barriers 6, and after the lookup ahead of the barrier 6 (both
+// the base code: the barrier does not pin a parameter read). Reading: each volatile form loads the slot in the entry
+// block (after the data base as retail when the read follows the lookup), but ESI's save then moves to the entry and the
+// data base folds into the add or takes ESI; retail keeps the ESI save in the flags arm (shrink-wrapped) and the data base
+// in EDX. Re-measured: volatile read first, without/with the barrier 50/29; after the lookup, then the barrier 31.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1630,6 +1638,7 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax S (11-20): no new form, no lower score (123): retail keeps the iterator entry in EBX and spills the raw mask byte to its own stack byte where ours keeps the normalised mask in BL and the entry in a stack slot, and the frame is 0x10 against retail's 0x14.
 // score 123 (was 123): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
 // MiniMax H (11-20): no new form, no lower score (123): the flag bytes take AL and ECX where retail takes CL and EDX, the frame is 0x10 against retail's 0x14, and the default block sits before the final tests.
 // score 123 (was 134): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
@@ -2126,6 +2135,14 @@ void function_1f86a0(long actor_index);
 // EDX because ECX already belongs to the iterator address for the first step (retail forms that address ahead of the
 // actor-index store), the unit index chain stays in ECX and the object table goes to ESI because EAX is not free there;
 // none of the forms above moves either.
+// M3 lane 2 r117 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all matched; control 123, aligned 105,
+// register-masked 48): the mask, the entry, both, the `same` flag and the element each read through a const reference
+// 123 (five forms, all the same code as this body). Diagnostics (reverted at once): a call to an unresolved function
+// at the top of the loop body 245 (867 B), after the mask 249 (869 B), after `same` 245 (874 B); the mask stays in BL
+// and the entry in memory in all three. `inline` on 0xbaf40 and 0xbaf80's definitions (diagnostic, full check) leaves
+// this function unchanged and loses eight matched callers elsewhere, so 0xbaf40's memory summary, the lever the notes
+// above left open, is not the cause; open as before: retail gives EBX to the loop entry (with a home it reloads after
+// the roots), spills the mask byte and frames 0x14.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
