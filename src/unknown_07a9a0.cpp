@@ -1710,6 +1710,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Dword bucket updates by explicit first/second/both assignments 911/911/911. Named first/second/both
 // bucket indices 928/911/928. First or both bucket addresses 911/911. NOT kept: all shorten the
 // body and increase the score. The frame reaches 0xb0 and the first variant lookup still expands.
+// MiniMax B (11-20): no new form, no lower score (871): the frame is 0xd0 against retail's 0xb4 and retail calls 0x192e60 out of line where ours expands it; the histogram as a long array reads 911 and as a memset read 936, both worse than the kept body.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -2750,6 +2750,7 @@ bool function_0b6760(s_index_pair const *pair);
 // local for the test and the motion call 388 (1479 B; retail reads the group's value at both uses). Still
 // BLOCKED-BY 0xb6760 at the channel-1 sites.
 // MiniMax C (11-20): no new form, no lower score (61): the channel-1 call loads the device index into eax, retail into ecx.
+// MiniMax B (11-20): no new form, no lower score (61): the entry registers are still one rotation off from retail's and the body is sixteen bytes short of retail's 1495; what is left sits at the two channel-1 0xb6760 calls, whose convention is fixed in another file.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

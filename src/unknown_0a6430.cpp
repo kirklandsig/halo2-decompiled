@@ -154,6 +154,7 @@ PRIVATE byte *update_object_0a6430(long index)
 // count bytes 14/14/14; first/second/both packed word observations 14/181/181;
 // existing model-count result through memcpy 14. NOT kept: no equality; native
 // state-pointer register and final pool/index schedule remain. Full body restored.
+// MiniMax B (11-20): no new form, no lower score (14): every spelling of the pool lookup compiles to the same bytes - retail loads the pool into EAX after the index and keeps the object in EDX, ours loads the pool into ECX first - and retail's 0x100 call pushes lea ecx,[edi+0x51] where ours pushes EDX.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
