@@ -1564,6 +1564,18 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax B (11-20): no new form, no lower score (400): the body's arithmetic already agrees with retail block by
+// block, so the whole gap is MSVC's own allocation of the loop's locals. Tried and reverted: the conversion fallback
+// respelled as an if/else-if pair, so that the source-point copy appears twice as in retail (468); the same pair with
+// the failed-call copy written component by component, which is the other shape retail uses (483); the found flag hoisted
+// out of the traversal loop (400, the same 1752 bytes); the direction and distance locals hoisted out of the candidate
+// loop (400, the same 1752 bytes: MSVC gives them the same homes either way). The permuter's two runs over this body
+// (300 s, then 600 s with seed 77, one job each, annealed) reached nothing below the baseline of 395 differing
+// instructions on the reduced image. What still differs is the frame and the homes in it: ours reserves 0x114 against
+// retail's 0x10c, so the two byte flags sit at +0x6 and +0x7 against retail's +0x2 and +0x3, the origin at +0x8 against
+// +0x4 and the next at +0x10 against +0xc, and retail's order (distance, sector, index, direction) is ours' (sector,
+// edge, distance, index, direction) with the edge in a stack slot where retail holds it in EBX; retail keeps the count
+// in SI and re-reads it from its parameter home in the scan loops, while ours keeps it in BX for the whole function.
 // MiniMax D (11-19): no new form, no lower score (400): every block's own arithmetic agrees with retail (the x87 chain of
 // the candidate loop, the corner calls, the attempt loop and the emit block are the same code, only their stack homes
 // differ), and what is left is MSVC's own allocation of the loop's locals: retail keeps the zero in EBX at the head, puts
