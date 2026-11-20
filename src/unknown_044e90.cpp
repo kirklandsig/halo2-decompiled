@@ -11,6 +11,7 @@ struct s_visibility_bound_record
     byte transform_index;
     byte padding[3];
 };
+// MiniMax E (11-20): no new form, no lower score (430): the frame 0x74a4 agrees with retail's, but the head still differs - retail forms the entry address with a lea into EBX from the scaled index and keeps the tag table in ESI from there to the bottom arm, while this build reads the tag through a displacement from the scaled index and hoists the table into ECX at the top, with the entry spilled at [esp+0x48] against retail's [esp+0x30]; making the header's geometry lookup take the caller's entry pointer leaves 0x458d0 and 0x45a80 matched but gives 449 here, so the lookup stays index-based.
 // MiniMax E (11-16): no new form tried this round, no lower score (443): the frame still agrees with retail's, and the first
 // difference is still at +0x10, where retail forms the entry address with a lea into ebx from a sign-extended index before the
 // register saves and this build forms it with a shifted copy added to the table after them; the part centre's body is inlined

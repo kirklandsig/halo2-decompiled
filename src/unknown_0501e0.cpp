@@ -700,6 +700,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // live in [esp+4] and [esp] with y in XMM0. Every first-view product loads its coefficient first, and in the second view
 // only the three x products do: the nine coefficients behave as values shared between the views, of which only right.i gets
 // a register.
+// MiniMax E (11-20): no new form, no lower score (221): the frame is still 0x20 against retail's 0x14 - retail keeps the first point's three offsets in registers and spills the second point's, where this build materialises both offset vectors; the explicit-component form measured 218 and the swapped offset loops 220, both under the 8-point bar, so the body stands.
 // MiniMax B (11-20): no new form, no lower score (221): the frame stays 0x20 against retail's 0x14 because the first
 // offset vector still needs a stack home (its address reaches the view helper); writing the offsets as explicit
 // component assignments reaches 218 (under the 8-point bar) and a by-component view helper 265, both kept out.

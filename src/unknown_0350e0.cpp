@@ -5533,6 +5533,7 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
     corner->z += 0.001f;
 }
 
+// MiniMax E (11-20): no new form, no lower score (231): the frame is still 0xd0 against retail's 0xe0 and the four spill homes (y, z, radius, negated radius) still sit at other offsets than retail's (y+4, radius+8, -radius+0xc, z+0x10); the forms recorded below land at 225/226 with a longer body.
 // MiniMax I (11-19): no new form, no lower score (231): the frame is still 0xd0 against retail's 0xe0 and the radius, the negated radius and the scaled zero still take other spill slots; the four-channel colour and the `-radius` forms recorded below still land at 225/226 with a longer body, so the body is unchanged.
 // score 231 (was 231): The frame is 0xd0 against retail’s 0xe0. The radius, negative radius, and scaled zero still occupy different homes.
 // Earlier (231, was 231): Frame 0xd0 versus 0xe0. The radius, negative radius and scaled zero occupy other spill slots.

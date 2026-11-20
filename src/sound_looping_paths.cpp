@@ -790,6 +790,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // the type byte and the sign-extended source before testing them; retail reloads the sounds base after each 0x14b240 call
 // (lane 13 r110's reading); retail's used-bit zeros come from one zeroed register with the existing count's zero as an
 // immediate between them.
+// MiniMax E (11-20): no new form, no lower score (846): retail's head keeps the entry zero in EBP and gives the target count the home at +0x24 and the primary the home at +0x34, while this build zeroes ESI and puts the count at +0x88 and the primary at +0x28, so the two locals' homes are exchanged; the decibel constant is a writable global in another file, so its fourteen loads carry a different address than retail's read-only constant.
 // MiniMax B (11-20): no new form, no lower score (846): the entry zero is still EBP where retail uses ESI, the query
 // count is still read as a word where retail reads a dword, and the target count and primary still have other homes;
 // the permuter's best form is 842, under the 8-point bar. The decibel constant g_44a0b4 is a writable global in

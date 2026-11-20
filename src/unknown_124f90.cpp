@@ -4879,8 +4879,10 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax E (11-20): 0x127400 484 -> 432: the listener transform's three left components are stored in reverse order
+// (k, j, i), which is the order retail emits the cross product's stores in; the body is 2312 bytes against retail's 2290.
 // MiniMax B (11-20): no new form, no lower score (484): our frame is 0x130 against retail's 0xe8, the fallback reverb is copied into a 48-byte stack block where retail reads the existing table, and 0x16f3a0, 0x1420f0 and 0x11c120 still expand here although retail calls them out of line; their noinline declarations live in other files.
-// score 484 (was 535): one note; the older score lines below now read "Earlier (535)". Still different: the
+// score 432 (was 484): one note; the older score lines below now read "Earlier (535)". Still different: the
 // 0x155760 result is spilled (frame 0xec against retail's 0xe8, every slot 4 off) while this build keeps NONE in EBX
 // through the loop head, where retail keeps that result in EBX and compares with immediates; the expanded rotate
 // block's term order and XMM homes; the two fallback copies' shared tail; and the scale test ahead of the velocity
@@ -5095,9 +5097,9 @@ void function_127400(bool arg_0)
 			transform4x3f *local_23 = (transform4x3f *)&local_1->velocity_scale;
 			local_23->scale = 1.0f;
 			local_23->forward = local_7;
-			local_23->left.i = local_8.j * local_7.k - local_8.k * local_7.j;
-			local_23->left.j = local_8.k * local_7.i - local_8.i * local_7.k;
 			local_23->left.k = local_8.i * local_7.j - local_8.j * local_7.i;
+			local_23->left.j = local_8.k * local_7.i - local_8.i * local_7.k;
+			local_23->left.i = local_8.j * local_7.k - local_8.k * local_7.j;
 			local_23->up = local_8;
 			local_23->position.x = 0.0f;
 			local_23->position.y = 0.0f;
