@@ -91,11 +91,11 @@ void function_2232a0(void)
 // Earlier first line (47, was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // Earlier 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // MiniMax C (11-19): no new form, no lower score (47): retail folds the record base into the displacement of the terminal stores (eax keeps the scaled index) where this build adds the base to the index register first, and typing the global's element as the callee's own record type (so the cast disappears) does not change it; the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
-// score 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// Earlier at 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // MiniMax C (11-15): no new form, no lower score (79, was 79): retail's outer loop carries a pretest our do-while lacks, the slot scan holds its pointer in EDX and its predicate in CL where ours holds them in ECX and AL, the terminal stores fold the record base into the displacement where ours adds it to the index register, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found
 // arm, a doubled store kept only with a match; the pretested while alone 168, local_5 zeroed once 110; code back to
-// main at 79): score 47 (was 79): the outer traversal is now a pretested while whose source pointer is cleared at the loop head and whose found arm assigns the pointer only when the global is set, so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// main at 79): at 47 (was 79): the outer traversal is now a pretested while whose source pointer is cleared at the loop head and whose found arm assigns the pointer only when the global is set, so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax E (11-14): no new form, no lower score (90 in this lane's measurement set; the earlier note records 79 under
 // its own set): retail's call to 0x2b5d0 takes its two long parameters in another order than the stub's declaration in
 // src/stubs/lane_k.cpp allows, and the terminal stores still fold the record base into the displacement where this build
@@ -127,8 +127,8 @@ void function_2232a0(void)
 // src/unknown_023540.cpp: a local prototype that disagrees with the definition (and swaps the values passed). Lead:
 // retail passes 3 in ECX and the view count in EDX, so 0x2b5d0's real parameter order/convention is the question
 // (BLOCKED-BY 0x2b5d0).
-// MiniMax C (11-17): score 47 (was 79): the outer traversal is now a pretested while (retail tests the view count at the loop head and the bottom test jumps back into the body), the source pointer is cleared at the loop head and again in the found arm as retail does (its loop head and its found-arm getter each zero the pointer, the getter's default surviving the inline), so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
-// Earlier score 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
+// MiniMax C (11-17): at 47 (was 79): the outer traversal is now a pretested while (retail tests the view count at the loop head and the bottom test jumps back into the body), the source pointer is cleared at the loop head and again in the found arm as retail does (its loop head and its found-arm getter each zero the pointer, the getter's default surviving the inline), so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// Earlier at 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
 // layout, source) at its disabled definition and this call passes (3, view_count, ...): the same values as before, in the
 // order retail's own 0x2b5d0 body needs (with these formals it takes the count in EAX and the mode in ECX, lane 11 r50 and
 // lane 2 r55 below) and retail's setup implies (count set up first, mode last); plain 79, 0x223240 and 0x2232a0 match.
@@ -444,6 +444,12 @@ void function_2232a0(void)
 // only the six stores and forms the pointer with `lea` before the type store); the view count as a dword 47 (same
 // code); one record pointer stepped by the loop and reused for the terminal record 141. Nine of the twelve rows are
 // that fold-then-form of the record base; the other three are the stub's count register (BLOCKED-BY 0x2b5d0).
+// M3 lane 1 r136 (fast with 0x223240/0x2232a0, MATCH; control 47): what is left besides the 0x2b5d0 tail is the terminal
+// record's addressing: retail keeps the scaled index in EAX for the first stores (base folded into the displacement) and forms
+// the pointer with a late `lea`, ours adds the base at once. The record address as byte arithmetic 47 (same code); the view
+// count formed after the loop 40 (a declaration move, seven points, not kept: the fold stays, only the tail's zero stores
+// change); the terminal record indexed by the loop counter 182 (584 B); the count written at both uses with no view_count
+// local 120; the count taken back from a terminal pointer (diagnostic) 195. Body unchanged.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

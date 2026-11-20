@@ -450,6 +450,11 @@ void function_3dd10(long object_index, bool force);
 
 // score 77 (was 97): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
+// MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
+// score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
+// blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
+// Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
 // The choice count, mask and blend use other homes. The first scan exits on inequality.
 // Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
 // the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
@@ -860,6 +865,17 @@ void function_3dd10(long object_index, bool force);
 // ([1]): the selection loop as `for (j = 0; choice_count > j; ++j)` with `break` 150 [31] (`cmp ebp, ecx; jg`, homes one
 // slot up), as do-while `while (choice_count > j)` 130 [3], as `for` with `<` 148 [29]; without the `break`, or ended by
 // `j = choice_count` or `j = choice_count - 1`, 969-979 (1581 B).
+// Pre-guard bank ordinal with signed/unequal do-while latch 97/97, guarded ordinal with signed
+// do-while 77. Advance in latch 97, inclusive last bank ordinal 253, pretested unequal bank 97,
+// ordinal-based guard 97, nonzero bank guard 97. NOT kept: the pre-guard forms lose the native
+// object/tint register roles, and the inclusive bound shortens the body.
+// Weight, selection or both read-only choice references 77/77/77. Shared choice array and both
+// references, at scan entry or positive-count admission 89/272. Immutable scan-entry array 89.
+// Signed weight bound with reference or shared array 636/582. NOT kept: the signed forms unroll.
+// The reference and array forms leave the ordinal, weight and mask homes unresolved.
+// Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
+// alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
+// pre-guard zero store and the count/mask homes stay different at retail length.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

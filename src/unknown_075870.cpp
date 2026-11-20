@@ -1428,6 +1428,7 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 // `quotient` local (19), min-clamp spelled with ?: (19/25), reversed clamp `if (burst > m) m = burst` (18, cmov flips),
 // refresh read into a short local (25).
 // Permuter (25 min on r660): nothing below 19.
+// Score 18 (was 19) with stand-in SDK headers: the burst local starts at the configured minimum and is raised to the burst.
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {
@@ -1514,14 +1515,14 @@ void function_78e60(s_network_observer *observer, long index)
 	real rate = network_observer_rate_for_size(observer, budget, channel->has_callback, channel->callback_inactive);
 	long intervals = real_truncate(minimum_delay * rate * 0.001f) + 1;
 	long burst = (intervals + 1) * (minimum_delay * budget / (intervals * 8000));
-	long minimum_burst = *(long *)((byte *)observer->configuration + 0xe0);
-	if (burst <= minimum_burst) burst = minimum_burst;
+	long clamped_burst = *(long *)((byte *)observer->configuration + 0xe0);
+	if (clamped_burst < burst) clamped_burst = burst;
 	real frame_rate = network_frame_rate();
 	bool limited = function_78190(frame_rate, rate, observer, channel->wanted, channel->has_callback, channel->callback_inactive);
 	channel->budget = budget;
 	channel->rate = rate;
 	channel->rate_limited = limited;
-	channel->burst = burst;
+	channel->burst = clamped_burst;
 }
 
 PRIVATE __forceinline long function_79c01(real arg_0)
