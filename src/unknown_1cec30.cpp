@@ -3661,6 +3661,7 @@ struct s_1cf531
 // MiniMax H (11-20): no new form, no lower score (2): the corrected vector still spills to 0x40 where retail keeps it in
 // the argument vector's own slot (0x30). The corrected vector copied into the argument vector before the scale call
 // measures 23 and the final product in its own temporary 65, so it stays a plain temporary.
+// MiniMax C (11-20): no new form, no lower score (2): retail stores the corrected vector into local_13's slot at 0x30 and folds its reload into the final mulps while this build stores it at 0x40 and reloads it there; the in-place form measures 23 and the store can only be written as an hkVector4 temporary, which the header does not allow here.
 // MiniMax G (11-19): no new form, no lower score (2): only the corrected vector's spill slot differs (retail stores it to
 // local_13's slot at 0x30 and folds its reload into the final mulps, this build stores it to 0x40 and reloads it there);
 // the correction in place in local_13 measures 23 (the store goes to 0x30 but the reload after 0x183dc0 is a separate
