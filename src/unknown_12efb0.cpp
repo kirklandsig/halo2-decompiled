@@ -780,6 +780,16 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // declared once at function scope and reset per cluster 607 (same code); the weight clamp as two independent ifs 607 (same
 // code); the three per-cluster source resets ahead of the 0x130f60 call 713 (3836 B); the scenario lookup with the global
 // tested in its own `if` around the bounds test 607 (same code). All restored.
+// M3 lane 15 r111 (fast with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607): the 0x130f60 call made
+// through a file-local inline forwarder 607 (same code); the out value left without its NONE initialiser (diagnostic) 698,
+// registers unchanged. On lane 7 r184's two-getter form rebuilt (683 at retail's 3817 B; the loop head equals retail down
+// to the call, then result EAX / NONE EDX where retail has EDX / EAX): the outer getter's parameters index-first or
+// index-second 683/683 (the previous index moves to EBX, the pair stays); the tag arm's 0x131030 argument, or its
+// definition lookup, taken from the out value instead of the result (diagnostics, one result use fewer) 699/701 with the
+// pair unchanged, so the result's use count is not what keeps it in EAX; one variable for the result and the previous
+// index 683 (same code); the three source stores through an inline setter at all four places 684 (3818 B), the pair
+// and the XMM5 zero unchanged. Ours never uses XMM7 in any form here; retail holds the zero there for 43 rows.
+// Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
