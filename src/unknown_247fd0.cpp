@@ -223,6 +223,16 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// MiniMax G (11-19): no new form, no lower score (334): the gate byte is still read from the folded address
+// (`mov al, byte [eax+edx+2]`) into AL and stored at [esp+0x1f], where retail adds the base to the index first, reads
+// the byte into DL and stores it at [esp+0x1b]; a pointer local for the datum (418), the shift chain in one statement
+// (334) and the pointer local with a combined shift (334) leave the code as it is. The flags word is still loaded into
+// AX (`mov ax, word [ebp+2]`) where retail zeroes EDX and loads DX before the mask, and reading the flags into a dword
+// local first (338) or writing the mask as one expression (334) does not change it. Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (334): retail materializes the datum address with `and eax,0xffff;
+// imul eax,eax,0x190; add eax,edx` and reads the flag byte at `[eax+2]` where ours uses the two-register address
+// `[eax+edx+2]`, and the flag mask chain starts from `xor edx,edx; mov dx, word [ebp+2]` where ours zeroes EAX;
+// binding the datum to a pointer local of its own does not change the code (334). Body unchanged.
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
 // combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // MiniMax E (11-15): no form kept; the permuter's best variant (333 in the reduced image and in the full one)

@@ -809,6 +809,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// MiniMax G (11-19): no new form, no lower score (569): the radius is still promoted into XMM5 at the entry and kept
+// for the whole body where retail loads it from its home in each block, and that follows from this build's link-time
+// register summary of 0x2108a0 and 0x210770, whose definitions are in another lane's file, so the radius, the pivot
+// home (+0xa0 against retail's +0x94) and the sweep arms' XMM registers stay open: BLOCKED-BY. Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (569): the pivot offset's negative arm, the pivot home, the sweep
+// arms' XMM registers and the three rotations in the loop are still open, and the forms tried on the scale
+// expressions, the direction's components and the named scales all score the same or worse. Body unchanged.
 // MiniMax R (11-16): no new form, no lower score (569): the body is still 39 bytes shorter than retail's, the three trace results still take the homes +0xf4 and +0xd0 against retail's +0xd0 and +0xf4, and the radius still comes from one read where retail re-reads the parameter nine times.
 // score 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
 // at first use (the third inside the sweep loop) and declared in the order local_13, local_12, local_14: same code (their
