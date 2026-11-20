@@ -815,6 +815,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // with the low byte of the -1 it also stores to the record, while this build keeps the slot in a 16-bit register and holds
 // the -1 in ecx; the byte at each use and the char and signed-char slot measure 666 to 700, and the record's three initial
 // stores sit before the palette read here and after it in retail, but moving them into the palette branch measures 725.
+// Three-way source selection as conditional, explicit branches, missing-record default, or provider default
+// with palette precedence scores 734/618/618/737 for the short slot and 730/704/708/724 for the byte.
+// NOT kept: all raise the score, with the provider and palette register assignments still different.
 // M3 lane 15 r113 (fast with 0x12e5e0/0x12e960/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH; control 607): reading
 // retail again, its NONE stays in EAX from the `or eax, -1` after the 0x130f60 call through the whole palette arm (the
 // +0xd4 tag test compares `cmp edi, eax` after all the inlined accumulations) and into the fallback store, so that web

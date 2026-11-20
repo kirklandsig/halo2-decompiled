@@ -574,6 +574,11 @@
 // 633/659/633/633. Special direction from the selected up vector at entry or in the perspective arm
 // 541/635. Vertical axis before the origin or before the up vector 658/555. NOT kept: The early vertical
 // copy reaches frame 0x58 and lengthens the body. All eight raise the score.
+// Split vector declarations in retail order (shape/reciprocal initialization together or split) 536/536.
+// Split cross workspace and late axes (shape/reciprocal initialization together or split) 536/536.
+// Split late axes and cross workspace (shape/reciprocal initialization together or split) 536/536.
+// Split all vector declarations in capture order (shape/reciprocal initialization together or split) 536/536.
+// NOT kept: The assignments still give the opening frame and stack slots.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

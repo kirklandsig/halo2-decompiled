@@ -817,6 +817,11 @@ struct s_object_damage_view
 // one base as references or pointers 469/469. Pointer-end selection, assist, or both scans 499/379/526.
 // NOT kept: Every cursor form changes the 0x50 frame. The assist-only reference stays at 1548 bytes with
 // frame 0x4c.
+// Winner/fallback/both as record addresses in the indexed scan 445/483/476.
+// Winner/fallback/both with an end-sentinel cursor 539/491/511.
+// Both with a bounded cursor 511.
+// Indexed single-record join before recovering the ordinal 500.
+// NOT kept: The cursor restores the record base but pointer-valued selection adds code and displaces the native short ordinals.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -1554,6 +1554,10 @@ void function_143250(
 // 1231/1296/1231. With named transverse products, transverse accumulations, or named up products
 // 1095/1095/1095. With all four products or the diagonal half-square terms 1226/1226. NOT kept: All
 // eight raise the score and leave the frame four bytes short.
+// Input/output/both coefficient slices advanced after admission 1652/1706/1723.
+// Input/output/both slices advanced after the calls 1625/1725/1701.
+// Shared coefficient offset advanced after admission or the calls 1231/1231.
+// NOT kept: The advancing forms retain the 0x2fc frame and do not recover the displaced scalar homes.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

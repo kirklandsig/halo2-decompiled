@@ -345,6 +345,9 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // 77/66, 72/75. Suffix append returns result/destination with cached or indexed
 // clear 83/73, 67/80. NOT kept: 66 regains the 0x28 frame and reaches 206 bytes
 // but spills the result and gains one point. The base and ordinal remain missing.
+// Search selects the display form before formatting. The conditional, branched, plain default and combined plain
+// guard forms each reach 84 for the indexed scan and 77 for a separate cursor. NOT kept: the cursor keeps the
+// ordinal in EBX during the scan but scales it before the calls. The 0x24 frame still lacks the base spill.
 // M3 lane 15 r113 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b and the two string callees, all MATCH; main
 // 67): lane 10 r119's two-member lead rebuilt 39 (204 B); on it the result taken as the indexed buffer after the
 // terminator 51 (218 B: the product still shared, now holding the result too), the plain arm written as an else of both

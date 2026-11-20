@@ -1340,6 +1340,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Left-only or up-and-left basis stores after the normal copy 171/203, after the plane constant 177/208,
 // after the squared length 177/208, or just before the projected position 189/220. NOT kept: All eight
 // raise the score at the retail extent. Direction preload and length/zero register allocation remain.
+// Source-direction displacement with direct/in-place/separate/origin-copy addition 409/443/433/474.
+// Same four forms using the copied plane normal 461/492/493/539.
+// NOT kept: The staged displacement grows the body, and reading the copied normal for the final projection moves the first difference into the prologue.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
