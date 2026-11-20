@@ -909,6 +909,9 @@ struct s_item_collision_bsp
 // Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
 // Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
 // contact registers still differ at the 1366-byte extent.
+// Coordinate-array views for queried normal, matrix axes and result normal, alone and
+// in all combinations, then also at the contact join: 190 each. NOT kept: the 0xa0 frame
+// agrees, and the transformed-plane and contact-point registers still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

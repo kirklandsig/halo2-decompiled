@@ -2758,6 +2758,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // equality-first with helper or bound arms 496/507; bound selected raw ratio or conditional
 // input 417/418; named distance span and numerator with helper or bound arms 487/501.
 // The distance result still does not bring the unity store forward with the three tint stores.
+// Named products in the forward, angular attenuation and camera-angle dots alone 500/281/281;
+// forward+attenuation, forward+camera, attenuation+camera and all four dots 500/500/281/500;
+// all four with finished camera sums 500. NOT kept: the 0x94 frame stays, and the opening
+// delta and axis schedule still differs.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4250,6 +4254,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // lock 387. Both admission passes 418, removal and decay 410, all masks 415, shifted paired
 // bytes 419. NOT kept: the word-based predicates grow the body, and the retained-prefix
 // and state registers still differ.
+// Copy-out overlap-safe payload, initial value and both 359/381/366; named live count
+// with payload/both 359/366; return the last tested count with payload/initial/both
+// 357/382/354. NOT kept: all regress, and the list and prefix keep their exchanged registers.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

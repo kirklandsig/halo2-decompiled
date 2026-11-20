@@ -753,6 +753,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // j, i, k); that helper with the cross written out 204; with the cosine taken first 177; with cross3f_staged 169 (same
 // code); with cross3f reading the up vector straight from the object (no `local_17` pointer) 156 (1706 B, aligned 144).
 // Re-measured: round 134's lead (named first-rotation sine and cosine with cross3f) 141 at 1707 B, aligned 123.
+// Coordinate-array copies of the second 3D input, XY, or both 400/346/386;
+// first 3D alone, with second 3D, with XY, or with both 429/403/418/1095;
+// all with array-based fallback restore 1115. NOT kept: all regress and disturb the
+// matching entry or first normalization. The XY and depth store order still differs.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
