@@ -570,6 +570,11 @@
 // written back into its wave's cell and reloaded, and the three factors are still saved with `fst`); both bound by
 // non-const references to separate locals 645 (same code); s1 alone through the reference 629 (2656 B); s0 alone 614
 // (2627 B). The frame stays 0x58 in all of them.
+// Split vector declarations in retail order (shape/reciprocal initialization together or split) 536/536.
+// Split cross workspace and late axes (shape/reciprocal initialization together or split) 536/536.
+// Split late axes and cross workspace (shape/reciprocal initialization together or split) 536/536.
+// Split all vector declarations in capture order (shape/reciprocal initialization together or split) 536/536.
+// NOT kept: The assignments still give the opening frame and stack slots.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

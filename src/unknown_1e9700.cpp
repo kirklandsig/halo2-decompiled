@@ -809,6 +809,11 @@ struct s_object_damage_view
 // NONE && killer == reported_player)` 355. Probe only (it resets the damage code when the killer and the reported player
 // are both NONE, which retail does not): `if (killer == NONE && valid) killer = reported;` then `if (killer ==
 // reported_player)` 332.
+// Winner/fallback/both as record addresses in the indexed scan 445/483/476.
+// Winner/fallback/both with an end-sentinel cursor 539/491/511.
+// Both with a bounded cursor 511.
+// Indexed single-record join before recovering the ordinal 500.
+// NOT kept: The cursor restores the record base but pointer-valued selection adds code and displaces the native short ordinals.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
