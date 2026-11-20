@@ -907,6 +907,10 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // code). Re-measured the swap order (collection, player, update, other) 32: the swap set-up and the occupied block's load order are
 // then retail's, left the key sum and the final block's two source loads (ECX/EDX swapped). Screen only, same code:
 // `&collection->players[i].key[0]`, a `(dword)i` subscript, the byte sum with the offset last. All restored.
+// M3 lane 6 r210 (fast): the second loop's `player` and `source` declared ahead of `collection` 28 (same code); `player`
+// as `&collection->players[i]` 267 (1064 B); the swap's update named first (`update = &updates[++*count - 1];` then the
+// call) 28 (same code); the occupied key copied from `&collection->players[i]` 28 (same code); the occupied key copied
+// through the loop's `player` pointer (the same element) 291.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

@@ -806,6 +806,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1687 (6528 B); the contact count named once for the query test and the loop bound 1355 (6238 B, aligned 1395); the
 // wheel count named once for the bound and the wave term 1432 (6238 B); the velocity pair declared local_5, local_4 or
 // in two statements 1346 (same code: the homes do not move).
+// M3 lane 16 r154 (fast = full here, 0x2056e0 MATCH each run; control 1346, difflib-aligned 1399): a named contact pointer
+// (`&local_0->field_b10[local_38]`) for the whole contact pass, every contact access through it, 1445 (6179 B, aligned
+// 1374: still stepped, no `imul`); with the contact velocity's cross written into field_4c and local_4 added there 1426
+// (6182 B, aligned 1465); with the query row pointer formed beside the definition row 1445 (same code); with the result
+// returned as one expression 1427 (6195 B, aligned 1373); that plus the wave term as a float tree 1396 (6211 B, aligned
+// 1379); the float wave term alone on this body 1360 (6243 B, aligned 1404). Retail's first loop is strength-reduced
+// (stepped record pointer, row offset in a slot) and only its contact loop is not, with the counter in the +0x1c home
+// the first loop also uses for its `fild`; the cause is still open.
 // degenerate spring result 1346, falling spring result 1346, rising spring result 1346, explicit spring
 // results 1346, spring coefficient default 1359, steering sign result 1391, steering deadband arms 1346,
 // compression default and adjustment 1406, direct wide magnitude products 1566.

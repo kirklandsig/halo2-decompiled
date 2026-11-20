@@ -388,6 +388,14 @@ PRIVATE inline byte const *material_parameters(long tag)
 // direct form `&second` passed to an out-of-line call at the end of the function 46 (992 B), and `second` still loads
 // ahead of the entry store, so retail's late load is not the store aliasing an exposed parameter. A /GL- compile-only
 // build does not reproduce this block (word loads through `xor edx, edx; mov dx`, other registers).
+// M3 lane 1 r135 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, control 5 at +0x19e): the direct entry
+// store re-measured 5 (+0x1a7: `third` loads into EBX and `fourth` into EDX as soon as each register frees, in both builds,
+// but retail holds `second` behind the entry store and both base loads where ours loads it as soon as the lea frees ESI);
+// on it the three restore bases through a file-scope typed tables header 5 (+0x1a7), the chain and pass bases named after
+// the packed read 5 (+0x1a7); on the reference form the typed header 5 (+0x19e) and the pass published through a
+// reference and read back 5 (+0x19e) (all four their base form's code); the chain lookup in 0x174d0's spelling with the word
+// address kept in a local read through its address (`word *const *chain_reference = &chain;`), on the direct store 177 and
+// on the reference form 179 (974 B, first difference +0x148).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

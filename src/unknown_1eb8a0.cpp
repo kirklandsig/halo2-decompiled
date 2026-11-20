@@ -750,6 +750,15 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 672/672, conditional pointer 674/674, branched vector copy 622/623, conditional vector copy 667/670.
 // NOT kept: all regress and shorten the body past retail length. The supplied direction still takes
 // EBX at entry. Original sample selection and body restored.
+// M3 lane 1 r135 (plain; the fast image builds this body differently, 597 at 2878 B; plain control 603 at 2885 B): the first
+// clamp's 12/8 factor ahead of t 711 (2868 B, the caller 0x1eb6f0 lost); the third clamp's factor ahead of t3 603 (the
+// select lands in retail's place, the count stays); the two aim-at-target/normalise/fall-back-to-d blocks as one forceinline
+// helper used twice 603 (same code); the output copy as three q field copies 657 (2878 B, EBX still d); a block-local
+// game-time pointer read once at the top of the active block (retail loads it once there, ahead of the clamp's branch,
+// and uses it for the cap and the rate products) 600 (2888 B; a second local for the same pointer, not kept).
+// Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
+// output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
+// Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
