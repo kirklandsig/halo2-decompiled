@@ -3119,6 +3119,44 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // the count's place in 0x1d5120's list moves only this caller, and the lookup re-read beside `biped` is a mix. Left on
 // the closest forms: the 16-bit mask used twice on the success path goes to a register where retail narrows both clears
 // to byte operations, and the rate is formed after the `&settled` push.
+// M3 lane 1 r142 (fast with 0x1d5120/0xe0d70/0x1c3770/0xe0e00, all matched throughout; al = aligned differing lines).
+// Three of the four open causes located; each is a match-only form and the fourth is open, so the body is unchanged.
+// (a) The rate: through an inline taking the scale by value and holding the tick length in a local (`real rate =
+// g_510c54->rate; return rate * ticks;`, called with 0.15f) the product is formed ahead of the `&settled` push with its
+// pointer in EAX, retail's instructions exactly. With it 0x1d5120's count left of the rate or between the rate and the
+// result pointer give the same code, so the count only has to stand left of the result pointer (retail pushes `&settled`
+// ahead of the count load). A single-return inline, an inline with a result local, a named step under the body test (x87,
+// pushed through EBP) and a by-value forwarding inline around the call (x87) do not do it.
+// (b) The clears: the first one (ahead of 0x1c3770) as a word_flags_set pair for bits 13 and 14 with the other two as
+// `&= ~0x6000` gives retail's tail: the settled store, then one `and byte ptr [esi+0x349], 0x9f`, no hoisted mask. All
+// three as pairs 110; all three as one mask keep the hoisted 0x9fff (`&= 0x9fff`, `x = x & ~0x6000`, two statements, two
+// bitfield stores: same code); the high byte view 91; byte_flags_set pairs 118. Diagnostics: no clear ahead of 0x1c3770 51,
+// that clear for bit 13 only 53.
+// (c) The +0x134 bit through bit_vector_set: the memory OR (as listed above).
+// With (a), (b), (c), the byte tested in place, the count read again through the lookup at the call and the header getter
+// into a long: 52 at 249 B, al 4. Left, (d): the select's bound test, `push ebp / mov ebp, [ecx+0x74] / movsx edx, al /
+// cmp edx, ebp / pop ebp` for retail's `movsx edx, al / cmp edx, [ecx+0x74]`. Diagnostic: with a fourth value held in a
+// callee-saved register across the body (a probe read at the top and stored at both exits) the select is retail's
+// instruction for instruction, so retail has no spare callee-saved register to borrow there; the same happens with the
+// count read through `biped` at both places (the cached byte takes EBX and the argument comes from the stack into EBP, 93).
+// Private copies of the getter (diagnostic), all still the borrow: a char local, the size on the left, inverted arms,
+// nested ifs with or without an index local, a non-const pointer, casts on the left side, a reference-bound count, the
+// bound through a by-value `long index` inline used once, an `__assume` on that index. Other selects: a ternary return 37
+// at 246 B; the two tests in one by-value `long index` inline 14 at 246 B (the bound test folds, but the sign test is on
+// the widened index); the sign test on the field plus that inline gives retail's select with one extra `test edx, edx /
+// jl` (51, al 2); a default NONE with nested ifs 46 at 245 B (the widened index borrows EBP instead); the result from a
+// long index 49-51; the getter at the test and again at the call 36 at 245 B (al 12).
+// Other forms on the way: present parameter order with (rate, count, result) and retail's getter 92, with (count, rate,
+// result) 67 (al 17), plus bit_vector_set 57 (al 14); the rate as a cast or with its operands swapped 57 (same code);
+// the definition through a second lookup 93 (same code as the count through `biped`); the count from an index-taking
+// inline at the call 52 (same code), at the test too 108; a second biped pointer variable for the count 52 (same code);
+// the count through `biped` with the inline rate 99; a steps local with the inline rate 63 (250 B).
+// Follow-ups on that 52 form: per-site clear spellings (p = the flag-helper pair, m = one mask, b = two bitfield stores;
+// first / success end / failure end): pmm, pmp and pbb al 4 (retail's tail), mpp, mmp, mpm, bmm, bpp, mbb, bbm, bmb al 8
+// (hoisted mask), ppm al 22. Diagnostics: a constant count (no second read at all) still borrows EBP at the bound test
+// (67), so the second lookup is not what frees the register; the count through `biped` at both places plus one or two
+// extra unconditional uses of the index (a probe store) 76 / 80: the cached byte keeps EBX and the argument then arrives
+// in EDI, so a higher reference count for the index does not give retail's EBX argument with an uncached byte either.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -6129,6 +6167,13 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // (903 B); side through cross3f and the final cross written out into i, j, k locals then stored 240 (915 B); up and side
 // declared in a block opened after the forward normalize 79 (same code); the forward pointer set between the angle and
 // the trig calls 85 (first difference +0xc6). All restored.
+// M3 lane 1 r142 (fast with 0x1ecf50/0x30bf0/0xe3c90, all matched; control 79, aligned 37, 20 with registers masked): the
+// up vector rotated through a by-value inline that returns the rotated vector 211 (952 B); the up copy and its rotation
+// in one inline (copy, then rotate the copy) 153 (901 B); the forward rotated through that by-value inline and stored
+// back 246 (940 B); the trig values as `real const` locals declared at their computation 79 (same code); a pointer to
+// the up field for the copy, the final cross, its normalize and the fallback 242 (910 B). The 20 masked lines are still
+// the product sides in the first rotation's cross (retail copies the axis component and multiplies by the forward
+// component in memory) and in the staged cross; the rotation helper's file was on the Avoid list again.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

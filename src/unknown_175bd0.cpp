@@ -2372,6 +2372,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // initialised record ahead of the colour reads 184 (572 B); that first form with both queries as the colour call's
 // arguments and no inner block 187 (568 B); the system parameter declared `*const` with the colours read after the spawn
 // stores and the queries as arguments 181 (568 B); the first form with `multiplied` queried ahead of `tinted` 182 (572 B).
+// M3 lane 1 r142 (fast with 0x178eb0/0x179020/0x178bc0/0x177040/0x176f60/0x175a80/0x174a30, matched or unchanged unless
+// given; aligned / register-masked aligned in brackets, control 128 [85/27]): the colour block as an inline taking the
+// effect, with both colours in its own locals ahead of the type lookup, called after the spawn stores 178 at 572 B
+// [88/31]; that inline called ahead of the spawn stores 190 [92/39] (0x178eb0 32, 0x179020 28); an inline taking the
+// colours by value, called between the location-index store and the other two spawn stores 181 [90/35]; the type lookup
+// through an inline that holds the 0x1751d0 result in a local, colours read early 178 [88/31]; the first inline reading
+// colour B first 178 [88/29]. All five are the early-colour lead's code again (system in EDI through the queries, colour
+// B spilled): an inline's locals for the loaded colours do not add the reference colour B is short of.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {

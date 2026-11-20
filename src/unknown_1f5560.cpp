@@ -1841,6 +1841,21 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // native desired vector with fast or planar normalization 237 each; both native vectors 257, with shared cosine
 // dot 257, and both with planar normalization and cosine dot 257. NOT kept: the first radius-register difference
 // stays at +0x4f, and the direction/desired cosine still does not recover retail's register allocation.
+// M3 lane 1 r142 (fast with 0x29a190/0x29cbb0, 0x29a190 matched throughout; control 226 at 1176 B; al = aligned differing
+// lines / the same with registers masked, 212/60 on this body). The fraction started at 1.0 and overwritten under `if
+// (!(forward > radius * 1.3f))` 234 at 1173 B (al 213/114); as if/else arms 226 (same code); a named 1.0 used by the
+// fraction's constant arm and by `fraction * 1.5f - one` 198 at 1173 B (al 213/80; a local holding a constant, not kept).
+// Round 115's leads re-measured on this body: the type-zero left arm y first 239 at 1168 B (al 205/52); the trace radius
+// in a named local 207 at 1179 B (al 193/73); both 215 at 1173 B (al 188/67). The named 1.0 with the left arm 242 (1163
+// B), with the radius local 264 (1192 B), with both 205 at 1184 B (al 188/48); the started-at-1.0 fraction with both 221
+// (1179 B). Phase grid (two or three redundant parenthesis pairs in the lateral sum, round 117's lever, diagnostic) over
+// those ten bodies: best positional 192 at 1176 B (left arm y first, two pairs), best masked 47 (left arm and radius
+// local, either phase), the named 1.0 with both and three pairs 215 at 1173 B; none has retail's XMM numbers. Reading: by
+// register number retail's first six SSE values are direction x (XMM2), inverse length then direction y (XMM3), facing y
+// (XMM4), radius (XMM5), side x (XMM6), facing x (XMM7); ours are inverse length (2), facing y (3), radius (4), direction
+// x (5), facing x (6), side x (7): the same order except that direction x is handed out fourth where retail hands it
+// out first, and side x and facing x trade. Retail also loads 1.0 into the dead radius register in both arms of the
+// fraction (one register value from `fraction = 1.0` to the second normalize's reciprocal); ours loads it after the join.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

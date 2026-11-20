@@ -2357,6 +2357,20 @@ void function_2818e0(void)
 // as `arg_2 ? node_flags_test(...) : true` 39 (the pass-2 scale product changes; 0x288570 120). Diagnostics (screen, not
 // kept): `__assume(node_count >= 0)` in this wrapper or on the count in function_288571 moves 8 lines, pair unchanged;
 // 0 to 15 dead initialised locals in this wrapper shift the walk's symbols by 3 each, pair unchanged. All restored.
+// M3 lane 1 r142 (compile-only screen of the whole file, exact here as rounds 84 and 197 found; nothing reached retail's
+// order, so nothing went on to check.py): the wrapper's definition moved to six other places in the file (first wrapper,
+// ahead of 0x27dff0, 0x27e6b0, 0x281370, 0x2825b0, 0x285400, end of file) 2 each (same code: the pair does not depend on
+// what is compiled ahead of it). On the apply-in-each-arm walk (function_288572): node index, bit-flag pointer, flags,
+// group end and destination index each as a reference to a function_288571 local or as a local of the walk, all 32
+// masks, with one count / a clamped copy for passes 1 and 2 / separate translation and scale copies (96 forms): 34 are
+// the present code, the rest move 2-10 lines elsewhere, and the pair is count-then-flags in every one, 2 at best. The
+// channel counter incremented through a dword view 2 (same code); the blend-2 scale with a folded `* 1.0f` 2 (same code),
+// under an `if (arg_0 == 2)` whose dead else arm holds a float literal 2 (same code). Diagnostics (reverted at once): a
+// float literal operand in pass 1 or 2 flips the pair with no other change than its own instruction, the same instruction
+// with a float global in the literal's place does not; one to three reads of new int globals do not, an int sum of two
+// loads (even of one global) does; a load, multiply and store of one new global does not; the compiler's temporary
+// numbers do not correlate (0 to +3 on both sides). Retail's pair (EBX then ECX) and pass 1's (EDX then ECX) are both in
+// descending register order; ours in pass 0 is the one ascending pair.
 // @retail 0x281b60
 void function_281b60(void)
 {
