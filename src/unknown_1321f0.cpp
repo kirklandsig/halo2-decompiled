@@ -975,11 +975,11 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // ->add() at both list sites (fast 280, not inlined in the reduced image; retail inlines at 0x1345a5 and 0x1347c5, so
 // visibility_append and the written-out add predate this note); function_132b10 for the flags (72, same chain);
 // shared behind/in_front pair, selected local, per-term ifs, centre pointer, slot local (109-166); long index (151).
-// score 10 (was 69) in a stand-in image: the cluster radius is passed straight to function_132fd0 (no local), the
-// else arm reads the entry index into a short local before the bit store (0x133050's form), and the entry local is
-// declared with its NONE before the function_132e60 call, which gives retail's registers in the instance loop (the
-// centre pointer in edi at 0x134693). Left: that NONE store is scheduled ahead of the call; retail stores it after
-// the visible test (0x1346c0).
+// score 11 (was 69) in a stand-in image: the cluster radius is passed straight to function_132fd0 (no local), and the
+// entry local is declared with its NONE before the function_132e60 call, which gives retail's registers in the instance
+// loop (the centre pointer in edi at 0x134693). Left: that NONE store is scheduled ahead of the call (retail stores it
+// after the visible test, 0x1346c0), and the else arm's entry read is `movsx edx, word ptr [eax + esi]` where retail
+// has `[esi + eax]` (0x134859).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
@@ -1073,10 +1073,7 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 					index = (short)k;
 				}
 				if (!(list->shorts_b[index] & 0x800))
-				{
-					short entry = list->shorts_d[index];
-					data->entries[entry][(short)i >> 5] |= 1 << ((short)i & 31);
-				}
+					data->entries[list->shorts_d[index]][(short)i >> 5] |= 1 << ((short)i & 31);
 				if (function_16e210(item->value, g_4b9f8c))
 					data->lists[3]->shorts_b[index] |= 0x400;
 			}
