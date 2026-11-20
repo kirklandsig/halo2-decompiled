@@ -865,6 +865,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// MiniMax R (11-20), NOT kept (coordinator review: an unread output buffer and a moved statement are match-only): 561
+// (was 569): the forward trace writes to its own vector, which gives the pivot retail's
+// +0x94 home, and the sector reads moved after both trace calls, which gives the trace results retail's homes. Still
+// open: the radius is promoted into XMM5 at the entry where retail reloads it from its home in each block.
 // MiniMax G (11-19): no new form, no lower score (569): the radius is still promoted into XMM5 at the entry and kept
 // for the whole body where retail loads it from its home in each block, and that follows from this build's link-time
 // register summary of 0x2108a0 and 0x210770, whose definitions are in another lane's file, so the radius, the pivot
