@@ -3140,6 +3140,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // (925 B; the last loop keeps the screen in ebx); separate widget pointer locals for the three hidden widgets in the
 // second loop 87 (same code); the voice state passed as a ternary 87 (same code); the case arms storing bitmap_b before
 // bitmap_a 88; that with the chained default arm 93 (925 B). Still BLOCKED-BY 0x53b40's chain for the reload.
+// M3 lane 1 r132 (fast with 0x2507c3 MATCH; control 87): the second loop with its own counter (`shown`) 85 (the first
+// loop's element address then takes retail's ebp-8 home; the shown count moves to ebp-0x10, retail ebp-0xc), with the
+// third loop's own counter too 85, every loop with its own counter (no shared `i`) 85: two points, under the bar. The
+// third loop's own counter alone 87; the voice state as one ternary 87; the second loop's first three widgets in
+// their own named pointers 87 (same code each). The players[i] reload after 0x53b40 is still BLOCKED-BY
+// src/network_voice.cpp (another lane's file this round).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

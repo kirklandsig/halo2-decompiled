@@ -4552,6 +4552,13 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // replaced). Reading: retail's fall-through returns the byte it just tested without folding it to zero, and every
 // exit reads the byte back, which is what an escaped (address-taken) result gives; nothing in this inline_depth(0)
 // region takes its address.
+// M3 lane 14 r123 (fast with 0x5e3f0, MATCH): round 208's lead body re-measured 96 on current main (1264 B, first difference
+// +0x94). On it: the acknowledgement under `if (!result && acknowledge)` 96 (same code: the proceed path threads the whole test
+// away); the final return as `result ? true : false` 410 (1310 B), `result != false` 396 (1313 B), `result == true` 406
+// (1323 B); the kept arms `return result;` with the acknowledgement under `!result && acknowledge` 100 (the kept arms then
+// jump to their own `mov al, 1` return). Reading: retail's return at 0x5e891 (the state-8 exit's epilogue) gathers every path
+// on which the result is true (state 8, the kept arms with AL = 1, the post-disconnect `jne`) and the false edge has its own
+// epilogue, as if the final return were threaded on the result by a test whose other part is unknown on the proceed path.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

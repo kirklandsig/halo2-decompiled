@@ -268,6 +268,10 @@ void function_254200(void)
 // (1113 B); the point copied member by member 88 (1117 B); the depth constant through a no-code forceinline accessor at
 // all eight uses 4; every positive sum, x and y, written size first 4; every device call of the body in member form
 // (Begin, 2s, 4f, render state, End) 4. All restored.
+// M3 lane 10 r132 (single-address fast; control 4): the doubled size computed after the 0x1cf50/0x1c710 calls with the
+// point copy still ahead of them 20 (the colour products' spill slots swap, the pair unchanged); the point copy after the
+// calls with the size ahead 16; both after Begin 116 (1093 B); the chosen bitmap selected ahead of the readiness test 52;
+// the choice as `if (!arg_4) ... else ...` 4 (same code). All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -629,6 +633,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // dropped (function_14390 is a call either way) 2 (same code; kept, one pragma pair fewer); the closing `inline_depth(255)`
 // dropped 2, as `inline_depth()` 2 (same code); the colour pointer declared `const` 2. In retail every call after the first
 // quad's second vertex stays out of line except the border-colour stage call, the shape of an inline budget spent there.
+// M3 lane 4 r226 (fast with 0x254490 4 and 0x254200 matched; control 2): the first quad's halving as `arg_1 / 2.f` 2
+// (same code); the readiness test as two nested ifs 3 (first difference +0x95); the colour as a `real const *` indexed 2;
+// the table getter called once into a named local for both lookups 545 (2233 bytes: retail calls it twice); the colour
+// getter through End in their own block scope 2 (same code). All restored.
 // M3 lane 11 r127 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant of the first quad written
 // `(real)0xffffff` 2; through a file-scope `static real const` 2 (both the same code); the depth-0 inline start moved one
 // call earlier (before the second vertex) 356 (2190 bytes). Diagnostics, restored: an unused local holding the lower
@@ -643,6 +651,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the lower one in the first two calls only 2 (the accessors spend the inline budget once they reach the third call).
 // Diagnostic: 1, 3, 5, 6 or 7 stores of one integer global to a probe array at the success block's top leave the pair
 // in our order (aligned). Restored.
+// M3 lane 12 r155 (fast with 0x254490 4 and 0x254200 matched; control 2; a compile-only build leaves the graphics
+// calls out of line, so it cannot screen this pair): the first quad's two texture coordinates as `real const` upper and
+// lower locals declared after the quad's start call 398 (2264 B), declared before 0x1cf50 382 (2258 B); the last quad's size as an
+// if/else 2 (same code); the alpha converted straight to a byte 2 (same code); the point read as `arg_0->x`/`arg_0->y`
+// at each use without the coordinate pointers 18 (the y fold returns). All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

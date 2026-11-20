@@ -394,6 +394,20 @@ and the checker counts it as a gain. Never keep an argument swap at a call to
 a function that doesn't match, unless you change that function's parameters at
 its definition and every call site the same way.
 
+### An outside tool: the h2m workbench
+
+[h2m](https://github.com/andrewnakas/h2m-workbench), by andrewnakas (GPL-3.0), is
+a command-line workbench for the last part of a match. It scores whole-file
+variants of a source file against retail without touching your tree, explains
+the difference that is left (difference classes, a register map, the
+instructions only retail or only ours has), keeps a ledger of every variant it
+has scored, finds matched functions that show a given retail pattern, and can
+search source rewrites on its own. Game (LTCG) functions are scored through a
+reduced image in a private scratch root. Its README covers the setup
+(`H2M_ROOT` points at your checkout). What it finds faces the same rules as the
+permuter's output: read the diff, and keep a form only if it reads like
+Bungie's code.
+
 ## What a match means
 
 A match compares the bytes, and for each address field only its kind: whether
