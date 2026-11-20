@@ -2180,6 +2180,10 @@ bool function_1900a5(long index);
 // the same code); the properties copied ahead of the identity re-measured 705. The slot test's cmovne still needs the
 // SSE file flag (a build-flag question). All restored.
 // MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
+// Shared logon task index 703; queried-or-absent status selected, initialized or assigned in separate arms 703/703/703.
+// Offline cleanup first with selected or initialized status 800/800; assigned connection result 819;
+// offline cleanup first with a short-circuit task query 703.
+// NOT kept: the connection result emits the decrement but materializes a Boolean; the offline-first status forms change the first branch and raise the score.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

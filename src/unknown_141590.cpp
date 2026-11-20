@@ -1595,6 +1595,10 @@ void function_143250(
 // capture with matrix store for r0, r1 1766; capture with matrix store for r0, r4 1742;
 // capture with matrix store for r0, r1, r4 1788; capture with matrix store for r0, r1, r3, r4, r8 1832.
 // NOT kept: The early matrix stores displace the capture and spill schedule, miss the retail frame and raise the score.
+// Third-band coefficient-local cubic products of r6 times r0 or r3, or both pairs 1560/1559/1537.
+// Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
+// Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
+// NOT kept: the forms raise the score and do not recover the 0x300 frame.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
