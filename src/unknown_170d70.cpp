@@ -1264,6 +1264,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // horizontal field 356, shared original-direction setter 380.
 // NOT kept: the repeated half-angle is 1454 bytes and duplicates a computed value. The original-direction
 // setter demotes the matched initializer.
+// Axis-square constants 337; component square accumulators 339; staged diagonal contributions 381;
+// pair-local cross products after their diagonal 357; square as first diagonal summand 337;
+// diagonal-first publication 384; cosine bound to diagonal scope 384; joint trig declaration 337.
+// NOT kept: reduced control 337, full 334. Unity and two axis-square homes remain different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
