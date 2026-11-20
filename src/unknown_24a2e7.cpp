@@ -370,6 +370,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
 // count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
 // 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
+// Carry opening/suffix, opening/closing, suffix/closing or all append results:
+// cached terminator 69/78/83/83, indexed terminator 79/73/81/80.
+// NOT kept: the 0x24 frame persists and all scores rise. The entry base stack
+// home and unscaled ordinal through the appends still differ.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

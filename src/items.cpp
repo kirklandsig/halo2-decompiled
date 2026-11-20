@@ -1699,6 +1699,11 @@ struct s_item_flags_view_10b850
 // 821/842/822/821. Copied origin and point difference, loop/scaled add 913/882;
 // direct scaled add with ray initializer/point difference 885/877.
 // NOT kept: the tied-length gains are below eight, and the helper forms change extent and regress.
+// Motion-vector names for pre/post-query velocities, both query vectors, those
+// vectors plus carrier output, and all same-size motion vectors: 824 each.
+// Early collision sentinel 823, early settle result 822, both 823, and motion-entry
+// collision declaration with early sentinel 823. NOT kept: gains below eight.
+// The 0x154 frame and entry flag stores still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

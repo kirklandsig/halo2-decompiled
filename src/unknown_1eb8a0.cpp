@@ -759,6 +759,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
 // output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
 // Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
+// Select the direction value at activation/refresh/angular threshold 604/623/667,
+// both normalizations 646, activation-plus-threshold 662, refresh-plus-threshold 672,
+// all three 664, or select a fallback pointer at all three 662. NOT kept: all raise
+// the score. The supplied direction still takes EBX ahead of the sample.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -908,6 +908,9 @@ struct s_physical_block_iterator
 // test of best.previous with the head arm's next/first stores in both of its sub-arms and the predecessor re-read through
 // a fresh pool base 100, with those stores once after the sub-arms 96 (first difference back to +0x338: the walk's scan
 // registers flip), both with a named `long previous` 100/96 (same code). Main's body unchanged.
+// Explicit two- and three-outcome candidate decisions: timestamp expression 212/212,
+// inequality selects the test 273/273, equality refinement 212/212 and ordered accept/reject 210/210.
+// NOT kept: all raise the score and change the extent. The retail policy join still differs.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
