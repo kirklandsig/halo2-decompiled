@@ -666,6 +666,15 @@ extern "C" void _ReadWriteBarrier(void);
 // barrier, the 20 form's step): the release through `pool` 118 (475 B), with the file's getter 118, through the global
 // 120; the old step with a pool local for the step and the release 140; the 118 form mixes the global and the pool
 // local (match-only), so it is not kept either.
+// M3 lane 1 r131 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, all MATCH; lane 11 r115's 20 form rebuilt at 20, and it is
+// register-masked identical to retail: 156 of 156 rows, so only the EDI/EBP/EBX permutation is left). On the 20 form:
+// `bool finished` declared at its assignment 20 (same code); the lookup result kept as `bool has_unit = ... != 0` 107
+// (the datum index moves to EBX and the pool to EBP, the header stays in EDI); the flags-8 block as one `&&` test with
+// the object index read before it 168 (491 B); the scan from `pool` and the element from `iterator.data` (roles
+// swapped) 22 (the two home reads swap, rotation unchanged); `pool` assigned before the iterator's two stores 23 (the
+// prologue stores reorder, rotation unchanged). Re-measured: data_datum_iterator_next_inlined with a `pool` local for
+// the iterator and the release and main's arms, no barrier, 150 (register-masked 16/15: one pool value serves the scan
+// and the element, where retail reads two homes); with the 20 form's arms 153.
 // M3 lane 6 r204 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, 0x1fb360 and 0x7b430, all MATCH each run; control 122; lane 11
 // r115's 20 form re-applied, 20 at 473 bytes, register-masked aligned 0: saved whole as build/r204/lead-1fb510-20.full.cpp in
 // worktree m3-lane6; body here unchanged). What sets the 20 form's rotation, by diagnostics on it (each reverted): without
@@ -689,6 +698,13 @@ extern "C" void _ReadWriteBarrier(void);
 // still EBP), a constant flag 152, the second flag call as a direct `&= ~FLAG(22)` 52. Next: a spelling of that first call
 // (or of the unit lookup before it) that leaves a scratch register for its pool data, or that ranks the datum index above
 // it; reference counts of the datum index do not (lane 15 r107).
+// M3 lane 13 r124 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, 0x1fb360 and 0x7b430, all MATCH; control 122): lane 11 r115's
+// 20 form rebuilt (0x7b430's step: `pool` local feeding data_datum_iterator_set_current, lookup through
+// function_badc0(object_index, 3), `if (unit && !(flags & 1)) { tick; continue; } if (unit) { restore }`, no barrier)
+// 20 at 473 B, register-masked aligned 2. On it: the lookup written at each of its two tests 282 (582 B, two lookups);
+// the header read through `s_recorded_animation_object *const &` 20; the release's datum index through a `long const &`
+// bound after the step 20; the `continue` as an if/else with the restore and release in the else arm 20 (same code
+// each). Not kept: the 20 form needs the one-use `pool` copy beside direct reads of the global.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

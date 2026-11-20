@@ -259,6 +259,14 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // first difference +0x2a): retail keeps the two flags as adjacent bytes of one cell (+6/+7), ours spreads them over two
 // cells (+3 and +0xb), which is the frame's last extra dword. Left there: the small-cell order (flags +0/+1 against +6/+7,
 // actor and result swapped) and the two opposite inlining decisions. Body restored.
+// M3 lane 12 r154 (fast with 0x2605d0/0x2613d0/0x2600a0/0x262a30, all MATCH each time; control 440, aligned 538 equal): the
+// tail's path-data select as a NULL-initialised local and an if 442; that with the sort scratch in its own block 441 (frame
+// 0x8a4); the two history resets through one forced-inline helper taking the actor index 628, as a plain inline helper 793
+// (3049 B: one site stays a call); the reported owner as `if (owner == actor_index) owner = NONE;` and one store 632.
+// Diagnostic (reverted): 1, 2 or 3 dead initialised locals ahead of the flags 442 each (the flags keep their own dwords,
+// frame 0x8a8). Read from retail: the unknown40 normalize loads k, j, i and scales `i * inv`, `inv * j`, `k * inv`, where
+// normalize_inline loads k, i, j and scales `inv * i` (both sum (i*i + k*k) + j*j); retail calls 0x271300 at its first two
+// sites and expands it only in the tail.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

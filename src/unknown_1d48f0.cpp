@@ -408,6 +408,13 @@ const dword g_455978[81] = {
 // (2047 B, first difference +0xd: the result lives in memory and is tested at the loop top); the tail as
 // `if (cluster != NONE) { local_0 = true; break; }` 513 (2114 B, first difference +0x8). Still BLOCKED-BY 0x11bed0's
 // expansion here and 0x279740's first-release expansion.
+// M3 lane 13 r124 (fast with 0x21a100, 0x11bed0 and 0x14a280; 0x21a100 93 and the other two MATCH each time; control
+// 298): `inline` on 0x11bed0's own definition 298 (still expanded here; 0x127400 then expands it too, 484 -> 563); the
+// planar copy as the full table entry with normalize2d_fast on its first two members 369 (2132 B, a repeat of the
+// listed vector3f local); round 87's ray start copied from `*arg_11` with `arg_4` added in place 407 (2149 B on
+// today's body: the entry ESI/EDI swap and the homes stay off); the length test as `0.0001f > fabs(...)` 298 and the
+// radial height as `local_17 * 0.0f` 298 (same code each). With registers masked, what is left is the expanded
+// 0x11bed0, retail's expanded 0x279740 range check at the first release, the second length test and that ray copy.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

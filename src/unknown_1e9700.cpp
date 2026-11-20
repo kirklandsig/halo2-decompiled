@@ -803,6 +803,12 @@ struct s_object_damage_view
 // Test the table validity through the existing statistics record 353.
 // Use the existing player, object and statistics record layouts together 353.
 // NOT kept: The existing record types preserve the frame and all measured call-site controls. They leave the three rotated scalar homes and the amount-biased history cursor.
+// M3 lane 15 r112 (fast = full 353, with the file's functions and 0xd9640): the consideration flag as `reported_player ==
+// NONE || !same_team(...)` 353; the assist loop's counter as a short 353 (same code each); the victim team as a ternary
+// initialiser 422; killer declared before killer_team 354; the fallback as a nested valid test followed by `if (killer !=
+// NONE && killer == reported_player)` 355. Probe only (it resets the damage code when the killer and the reported player
+// are both NONE, which retail does not): `if (killer == NONE && valid) killer = reported;` then `if (killer ==
+// reported_player)` 332.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

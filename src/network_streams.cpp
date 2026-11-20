@@ -1207,6 +1207,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 88, Byte pending bit with separate sent and pending admissions 86. NOT kept: The bitfield update emits the byte
 // OR, including at 225 bytes, but changes the opening register allocation and raises the score. The original
 // message layout and body are restored.
+// Read-only or mutable message record references across the local slot lookup or the shared message
+// lookup: saved word 35 in all four forms, in-place bit update 89 in all four. NOT kept: The in-place
+// forms emit the byte OR but lose retail query and scan allocation.
 // M3 lane 3 r271 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched or unchanged each time; control 35). The live
 // flags word is confirmed as the one cause: with the in-place update and any read of `flags` after it, the scan, the
 // message in ECX, the flags in AX, the found path's EDX/ESI temporaries, the pointer-first `*time` store and the byte OR
@@ -1227,6 +1230,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // NOT kept: early initialization restores the ECX message and AX flags but places the
 // zeroing and output loads differently. The other initialization changes the entry frame.
 // MiniMax C (11-19): no gain (35, baseline; body restored). Two differences are left: the message pointer register (EAX here, ECX in retail, and with it the flags word in CX against AX) and the found path update (a full-word store here, the byte OR of the resend bit in retail). Every form that makes the update a byte OR (message->flags |= 2, or message->flags = message->flags | 2) frees the saved flags word after the tests, and the whole allocation then changes (the prologue type pointer moves from EAX to ECX, next takes ECX and the flags take DX): 89. The ternary (index != NONE ? &m_messages[index] : 0) gives retail message register ECX, flags register AX and found path exactly, but the ternary arms are laid out with the address in the fall-through and a jump over the zero, and the helper NONE initialisation is folded away: 45; with the test inverted, 43. Zeroing the message at its declaration, ahead of the lookup, gives the message in ECX and the flags in AX with the byte OR, but the zero is hoisted to the loop head (retail zeroes ECX after the divide) and the helper temporary takes EDX: 59. Zeroing it after the lookup is the kept body, and the message takes EAX.
+// M3 lane 5 r213 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched throughout; control 35): a reference to the
+// flags member (`word &flags = message->flags;`, tests and update through it, `|=` or `= flags | 2`) 89, the same with a
+// const reference and the member `|=` 89, with the message zeroed at its declaration 59 (the member update's codes);
+// the flags local declared at function scope with the in-place update 89, with the saved-word update 35 (same code); the
+// found test through an inline predicate on the flags with either update 89/35, on the message with the in-place update
+// 89; the in-place update between the first and second output stores 90.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

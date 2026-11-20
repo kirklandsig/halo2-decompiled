@@ -1278,6 +1278,12 @@ void function_2118c0(void)
 // band-of-64 idiom (`&noise[row][w * 8]`, p1 `[row][k * 8]`, out `[row][k * 8 + m]`) 175 (745 B); a `long row` started at
 // zero above the band loop and stepped by 8 at its foot with the knot rows read in place 150. Screen only: the band-of-64
 // idiom from `b * 8` or `b << 3` and `(k + 7) & 7` for the first index (same code as now) reduce every row or change nothing.
+// M3 lane 7 r191 (fast with 0x212100/0x211fd0, both MATCH; this file's compile-only screen agrees on each): one `long knot`
+// index reassigned before each knot row, from `long row = b * 8` 150 (every row reduced), from `b << 3` 10 (same code); a
+// `long const &` alias of `long row = b * 8` for the knot rows with p1/out from `row + k` 150; p1/out as `&noise[k][0] +
+// row * 8` and `&noise[k][m] + row * 8` with the shifted row 175 (745 B); `long row = b * 8 + k` for p1/out with the knot
+// rows from `row - k + w` 150. Screen only: the knot sums masked `& 0x1f` keep retail's `add reg, 8` row and unreduced
+// knot rows (with three `and`s), the same lead as the earlier mask/`row | w` diagnostics.
 // M3 lane 11 r127 (fast with 0x212100/0x211fd0, both MATCH each time; control 10): `long row = b; row *= 8;` 150; the
 // three knot sums through references (`long index3 = row; long &sum3 = index3; sum3 += w3;`, `b << 3` row) 16; the row
 // through a `long const &` bound to a `b * 8` local 150; `b * 8` knot rows with p1 from `(b << 3) + k` 150; `byte` knot

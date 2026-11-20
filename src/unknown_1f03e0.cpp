@@ -1672,12 +1672,29 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `dword flags` local 614; both lengths through magnitude3d (`&state->input`, `&change`) re-measured 485 (3047 B, masked 186);
 // only the history maximum 509 (3057 B, masked 125); only the input length, through `input`, 297 (3036 B, masked 144).
 // Diagnostic: 1-16 initialised dead locals on the both-magnitude3d form 594-617 (2994-3013 B), none near. All restored.
+// M3 lane 13 r123 (fast with 0x1f0450 and 0x24590, both MATCH; control 234, difflib-aligned 194, register-masked 109): what
+// places the two delta/limited pairs. The general arm's fallback copy written member by member (`limited.i = delta.i` ...) 461
+// (3026 B): the three fallback reads then come straight from delta and the homes become retail's (delta +0x2c, limited +0x20),
+// but retail's fallback is the aggregate copy with a reload, so that is not its source; the initial copy member by member 460
+// (3038 B, homes unchanged); either fallback copy removed (diagnostic) 295/593, homes unchanged. One function-scope vector for
+// the general delta and the history change 488 (3053 B: it takes +0x20, the bounded copy stays +0x2c); delta declared at
+// function scope 234 (same code). The general delta scaled into place and then reduced by the current velocity 501, written
+// from desired with no scaled vector 499, desired scaled in place 501, desired serving as the delta too 523 (each 3057 B, the
+// bounded copy still +0x2c). The small helpers retail expands here, together: a file-local tick-length getter for the four
+// rate reads 568 (3030 B, aligned 199, masked 91); the getter with the input length through magnitude3d 557 (aligned 185),
+// through the input pointer 560, with the history length 568, with both 566/560 (aligned 227/246); both lengths without the
+// getter, re-measured, 485 (aligned 280). Body unchanged.
 // M3 lane 15 r109 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; control 234): retail's low-normal arm loads the
 // basis side first in four of the cross's six products (state->basis.k read as [esi + 0x120], the rest through the lea),
 // ours the up side; the input length is magnitude3d's inlined block. The low arm's cross through the shared cross3f 234
 // (same code: helper text order does not reach the products); the low arm's cross on the `forward` copy 380 (3053 B); the
 // basis copied after the cross 348 (3070 B); the input pointer declared after the four flags 250; no input pointer, every
 // read through state->input, 543. Body unchanged.
+// M3 lane 7 r193 (fast with 0x1f0450 and 0x24590, both MATCH; control 234): the input pointer between the flag
+// declarations (untried middle positions; f = flying, d = direct, m = damping, g = gravity, i = input): f i d m g 244,
+// f d i m g 230 (the r184 best's code: damping in EDX, first difference +0x31, the first arm's two `up.k` products and
+// its last scale row still load the other side first), f d m i g 262; the first arm's scale reading `&state->input` in
+// place of the pointer 486 (3055 B), that on f d i m g 482. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

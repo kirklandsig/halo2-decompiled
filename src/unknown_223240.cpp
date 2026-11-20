@@ -64,6 +64,7 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)&g_47f0f8[0]);
 }
 
+// MiniMax A (11-20): no new form, no lower score (47); retail folds the record base into the six stores' displacement and materializes it with a lea after them, where this build folds every use of the address into the displacement, and the tail's 0x2b5d0 call takes its count in another register (BLOCKED-BY 0x2b5d0, whose stub is in src/stubs/lane_k.cpp).
 // score 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // m3 lane 4 r224: a one-object LTCG screen (this file plus the real objects of 0x223080, 0x2f800, 0x2c8a0, 0x13f10,
 // 0x68290, 0x2f6b0, 0x2c490, 0x3f450 and the 0x2b5d0 stub) reproduces the full build's listing exactly (0 rows); against
@@ -425,6 +426,12 @@ void function_2232a0(void)
 // view count `long const` 47 (all the same code); the terminal record indexed `[local_2 + 1]` with the view count kept for
 // the stub call 183 (583 B). Diagnostic: the stub call removed still adds the table base into the register before the
 // terminal stores, so the base fold is not the stub's register need. Still BLOCKED-BY 0x2b5d0 for the tail.
+// M3 lane 5 r214 (fast with 0x223240/0x2232a0, both MATCH; control 47, aligned 20): view_count declared after the loop
+// where it is first used 40 (aligned 23: only the zero-byte stores change, a positional gain of 7 that is a moved
+// declaration, so not kept), the same as `long const` 40, with the stub's count written `local_2 + 1` 120; the scan loop
+// as a plain `for` 47, the stub's count as `local_2 + 1` alone 47, the layout as one conditional expression 47 (same code
+// each); dead longs K = 0..7 at the top 47 each. Still BLOCKED-BY 0x2b5d0 (activation loses 0x223240, 0x12b450 and
+// 0x12b690 while 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 stay unmatched).
 // @retail 0x2234e0
 void function_2234e0(void)
 {
