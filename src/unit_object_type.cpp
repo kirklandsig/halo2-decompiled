@@ -2370,6 +2370,10 @@ struct s_unit_motion
 // First-phase and bypass-owned velocity or both 88/102. The same four with completion at the shared
 // join 69/69/106/120. NOT kept: the 69 forms recover XMM4 and ret 4 but inline into the caller
 // and lose 0x1faf80.
+// MiniMax H (11-20): no new form, no lower score (86): the body still keeps the position and the velocity on the stack
+// (ret 0xc) where retail takes them in xmm5/xmm4 with the time in xmm3, and the accumulator spelling that recovers
+// retail's 227 bytes (28) makes LTCG inline this body into 0xc7840 and lose the matched 0x1e5af0 and 0x1faf80:
+// BLOCKED-BY 0xc7840's call sites.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)

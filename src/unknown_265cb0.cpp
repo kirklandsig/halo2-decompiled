@@ -2963,6 +2963,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Prop-view head 158, with the sibling cursor 158; iterator seeded before the clear 690, typed head before the clear 690.
 // Winning handles read at publication 158; level stored after its handle 420; cached signed alert slot 499; unsigned slot check 526.
 // NOT kept: the typed iterator forms tie and the remaining forms regress. The player iterator and direction homes still differ.
+// MiniMax H (11-20): no new form, no lower score (158): the relative dot still reads the direction's components from
+// memory where retail keeps them in registers (it loads the direction's j and k before the branch), the players
+// iterator still takes the table pointer in eax where retail takes it in ecx, and neither the operand order in the
+// three dots nor copying the direction's components into scalars changes anything; a permuter run found no variant.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

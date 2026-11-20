@@ -625,6 +625,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // retail's `movzx` for the object type; the operand sides of about a dozen float products (retail loads the vector
 // component and multiplies by the scale at both limit arms); and the tail (retail keeps the first level in EDX with its
 // clamp result in ECX, and loads the second step into ESI only in the add arm).
+// MiniMax H (11-20): no new form, no lower score (895): the frame is still 0x1f0 against retail's 0x1d4 and the first
+// difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
+// the other way round), so the stack homes below the top stay out of step: BLOCKED-BY 0xbadc0 in another file.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
