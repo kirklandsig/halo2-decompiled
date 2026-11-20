@@ -1905,16 +1905,6 @@ void function_25aba0(long actor_index)
 	while (--local_1);
 }
 
-struct s_ai_offset_258b60
-{
-	short value;
-};
-
-static __forceinline s_ai_offset_258b60 cs_creature_offset_258b60(s_handler_object_view const *object)
-{
-	return *(s_ai_offset_258b60 const *)&object->ai_offset;
-}
-
 /* swarm_creature_iterator_next, inlined; this copy reads the next creature
    before it records the current one, which keeps the current index in ebx
    and the actor index in ebp as retail does (with the shared one,
@@ -1930,7 +1920,15 @@ __forceinline s_handler_object_view *cs_creature_iterator_next(s_ai_object_itera
 
 		object = handler_object_get(iterator->next_index);
 		iterator->index = iterator->next_index;
-		if (!object->flags134 && (creature = (s_object_ai_data *)((byte *)object + cs_creature_offset_258b60(object).value)) != NULL)
+		if (!object->flags134)
+		{
+			creature = (s_object_ai_data *)((byte *)object + object->ai_offset);
+		}
+		else
+		{
+			creature = NULL;
+		}
+		if (creature != NULL)
 		{
 			iterator->next_index = creature->next_creature_index;
 		}
@@ -1949,8 +1947,8 @@ __forceinline s_handler_object_view *cs_creature_iterator_next(s_ai_object_itera
 // score 21 (was 100): the loop keeps the next index in esi and the creature data in edi where retail swaps them,
 // and ours steps the next index through edx where retail writes edi directly.
 // Matched in a full build with stand-in SDK headers (was 21): the creature iterator step stores index first and
-// then next_index in an if/else (retail's shape), and the object's ai offset is read through a by-value one-member
-// struct getter at both sites.
+// then next_index in an if/else (retail's shape), and at both sites the ai data pointer is set in each arm of the
+// flags134 test and tested for NULL after it.
 // @retail 0x258b60
 short function_258b60(long actor_index, cs_iterate_proc proc, long cs_index)
 {
@@ -1972,7 +1970,15 @@ short function_258b60(long actor_index, cs_iterate_proc proc, long cs_index)
 			while ((object = cs_creature_iterator_next(&iterator)) != NULL)
 			{
 				byte *data;
-				if (!object->flags134 && (data = (byte *)object + cs_creature_offset_258b60(object).value) != NULL)
+				if (!object->flags134)
+				{
+					data = (byte *)object + object->ai_offset;
+				}
+				else
+				{
+					data = NULL;
+				}
+				if (data != NULL)
 				{
 					short outcome = proc(actor_index, iterator.index, (s_cs_state *)(data + 0x28), cs_index);
 					*(short *)(data + 0x2c) = outcome;
