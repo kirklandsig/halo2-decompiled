@@ -473,6 +473,8 @@ bool function_d5390(long object_index, long key)
 }
 
 /* whether an object placed on one structure bsp stays on another */
+// Matched in a full build with stand-in SDK headers (was 31): the previous bsp index is read from the placement
+// object again instead of from the local copy, which gives retail's branch and second load.
 // @retail 0xd5460
 bool function_d5460(short previous_bsp_index, short bsp_index, long object_index)
 {
@@ -483,7 +485,7 @@ bool function_d5460(short previous_bsp_index, short bsp_index, long object_index
 		char object_bsp_index = PLACEMENT_OBJECT(object_index)->bsp_index;
 
 		if (previous_bsp_index != object_bsp_index)
-			previous_bsp_index = object_bsp_index;
+			previous_bsp_index = PLACEMENT_OBJECT(object_index)->bsp_index;
 
 		long b = bsp_index;
 		long a = previous_bsp_index;
