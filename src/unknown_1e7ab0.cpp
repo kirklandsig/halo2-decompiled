@@ -597,6 +597,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // `result = !blocked;` 527 (2328 B); the child seat's flags through `(&seats[index])->flags` 117 (same code); the result
 // flag declared after the entry lookup 128; the entry test as `!(flag && state == 2)` 117 (same code); the entry tested
 // ahead of the player index 366 (2324 B). BLOCKED-BY 0xd0590 stands (contributor; its file is on this round's avoid list).
+// M3 lane 14 r132 (H2M_FAST with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all MATCH; control 117): the child test as `unit_index
+// != iterator.unit_index` 118, `NONE != iterator.seat_index` 117, both 118; the entry through 0x1e8d50 165 (2312 B), with
+// the first 166, with both 166; on the 0x1e8d50 entry, the child's seat read through a no-code inline accessor at the NONE
+// test, at the flags index or both, and the child's unit through one, 165 each (the child test keeps `test cl, 1`).
+// Still BLOCKED-BY 0xd0590.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

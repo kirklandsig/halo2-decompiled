@@ -1758,6 +1758,18 @@ bool function_108530(long device_index, long name)
 // distance (XMM5), the final velocity (XMM7) and the 2.0 constant (XMM3) and reloads the ramp-down and the cruise velocity
 // from memory; ours keeps the ramp-down (XMM7) and the cruise velocity (XMM4) and reloads the distance.
 // MiniMax C (11-20): no new form, no lower score (116): the velocity still reaches the clamp on the stack, retail in xmm6.
+// M3 lane 14 r134 (fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, aligned 48, register-masked
+// 14). Diagnostics, each reverted at once: the ramp-down time's address stored to an extern pointer at the top of the
+// reset-order body (cruise time first, the seven plan stores in the reset order, then the halves) 131 (524 B, callers
+// 31/13): the escape does not keep it in memory (it stays in XMM7 and its slot is reused for the delta) and the ramp-up
+// time becomes the uncached one, with retail's conditional-store clamps, so retail's uncached ramp-down is an allocation
+// loss and not an address-taken variable; an entry store of the initial velocity to the motion on that body 153 (503 B,
+// both ramp times register parameters, ret 0x10; callers 19/34), on the kept body 138 (the ramp-down the register
+// parameter; callers 26/28): an early use does not hold the velocity in one register; the two ramp parameters declared
+// in the other order on the reset-order body 144 (same code as that body: the ramp-down is promoted either way and the
+// stack slots close up, so the choice follows use and not the declared position). Forms: the reset-order body
+// re-measured 144 (509 B, the ramp-down passed in XMM7; callers 26/28), with the cruise time after the seven stores 144
+// (same code); the deceleration distance as `distance -= ...; motion->deceleration_distance = distance;` 116 (same code).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2754,6 +2766,9 @@ bool function_0b6760(s_index_pair const *pair);
 // local for the test and the motion call 388 (1479 B; retail reads the group's value at both uses). Still
 // BLOCKED-BY 0xb6760 at the channel-1 sites.
 // MiniMax C (11-20): no new form, no lower score (61): the channel-1 call loads the device index into eax, retail into ecx.
+// M3 review (11-20, lane 14 r134): a MATCH was found and is held for the user's ruling: it needs `inline` on 0xb6760's
+// definition (called from five other files), a bool in the matched 0x1cd070 that keeps one 0xb6760 call out of line, the
+// position test in a bool here, the unit byte tested `<= 0`, and 0x107cc0's state ahead of its channel. Body is main's.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

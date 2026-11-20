@@ -4333,11 +4333,11 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
-// score 48 (was 72): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
+// score 48 (was 48): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
 // word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
 // DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
-// score 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
+// MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
+// Earlier at 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
 // for the count's default).
@@ -4700,6 +4700,12 @@ struct s_128ca0
 // Synchronization count as short/word/dword with the separate decrement or postdecrement
 // 116/120/122 either way. The inactive-controller branch assigns a short/dword default 116/122.
 // NOT kept: word reaches the retail length but keeps separate NONE comparisons, and dword widens the count extraction.
+// M3 lane 14 r133 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 48): the second
+// pending test as `!TEST_FIELD_BIT(local_1->flag3)` 72 (1054 B: from there on the test and both `or byte ..., 8` are
+// retail's, the scratch registers one step off and 0x12a420's copy an in-place `or`), as `!(bool)((flags >> 3) & 1)` 72,
+// as `!(bool)(flags & 8)` 72 (same code each); the flag3 set through flags_set_bit 48 (same code), with the
+// TEST_FIELD_BIT test 72; on the 48 form `long count = NONE` 123, `char count = NONE` 203; `long count = NONE` with the
+// TEST_FIELD_BIT test 122. Both pins still store field_c after the channel-index load where retail stores it first.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

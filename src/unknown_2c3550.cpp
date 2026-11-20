@@ -954,6 +954,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // pathfinding pointer declared after the radius 674 (one count, not kept); the step counter as long 764 (2949 B);
 // first_output as long 676; `flags` declared first 702; `bool result` with the pathfinding pointer after the radius 756
 // (first difference +0xa); the pathfinding pointer after the radius with the actor pointer right after it 697. Body unchanged.
+// M3 lane 14 r132 (H2M_FAST with 0x270930/0x2c4030, MATCH each run; control 675): the pathfinding pointer read through a
+// const reference at both searches and the trace 675, the source radius bound to a const reference for the clamp 675,
+// `result` declared after maximum_height 675 (same code each); `bool result` with either reference 754; `bool result`
+// declared after maximum_height 773 (2990 B).
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

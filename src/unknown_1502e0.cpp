@@ -1284,6 +1284,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // opening returns, so retail keeps the player live for a second read, but here the two reads are never merged and the
 // unit index takes ESI); a call of the existing empty 0x175f40 at the same place 17 (expanded to nothing before the
 // early merge, same code as the plain read).
+// M3 lane 14 r133 (fast with 0x151aa0, 43 each time; control 5): the first player as the array element
+// `&((s_tail_player *)data)[index & 0xffff]` with the lookup's read through the getter 5 (same code); the slot and weapon
+// test through an inline helper taking the unit index as `long const &` 17; on the 17 form `short hand = primary ? 0 : 1`
+// 38 (139 B); the e68c0 arm as `if (call) result = true;` 65 (150 B); the lookup's getter assigned back into the player
+// pointer inside the call argument 26 (137 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

@@ -484,6 +484,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // named complement 340/351; named sine 340/346; named sine and complement
 // 340/357. The frame stays 0x90, but the first axis register and square spills
 // remain and every form increases the length.
+// M3 lane 14 r132 (H2M_FAST with 0x137ed0, MATCH each run; control 334): the builder in the shape of 0x1546f0's file-local
+// rotation builder (squares and sine products as vector3f locals, the complement named after forward.i, (t * j) * i and a
+// shared t * k) with this function's cosine/sine parameters: that file's store order 382 (1735 B, frame changes), retail's
+// pair order (forward.j ahead of left.i, forward.k ahead of up.i, left.k ahead of up.j) 368 (1747 B), no shared t * k 382,
+// squares as scalars 377 (1741 B), squares as scalars in retail's pair order 355 (1759 B).
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2361,7 +2366,7 @@ real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
 // MiniMax E (11-20): no new form, no lower score (281): the opacity branch's polarity, the angle and axis_scale order and the delta order each lower the score (275 together), but they are reorderings, kept only with a byte match, so they are not kept; what is left is retail's register-first multiply and its source order for the independent float statements, which the source does not steer.
-// score 281 (was 417): The frame and output homes agree. The delta/forward schedule, draw-point X load, and loop XMM assignments still differ.
+// score 281 (was 281): The frame and output homes agree. The delta/forward schedule, draw-point X load, and loop XMM assignments still differ.
 // Earlier (417, was 492): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // product operand sides, the loop's XMM numbering (lead at the end of this note).
 // MiniMax I (11-19): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10 and the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order.
@@ -2758,6 +2763,15 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // equality-first with helper or bound arms 496/507; bound selected raw ratio or conditional
 // input 417/418; named distance span and numerator with helper or bound arms 487/501.
 // The distance result still does not bring the unity store forward with the three tint stores.
+// M3 lane 14 r132 (H2M_FAST, = full 281 for the control): the opacity arms negated with axis_scale ahead of the angle and
+// delta assigned in each of the six orders 275-276 (2286 B; reorderings, match-only); with `real attenuation = 1.0f;`
+// declared beside `animated` 504-505 (2290 B: the first clamp then stores in each arm and keeps the value in XMM4 as
+// retail, aligned exact 112 against 127); on that, reflected as three statements j, i, k 496 at retail's 2285 B (aligned
+// 117/110/44), on the 275 form 411; `forward * fwd` operands or `2.0f * (...)` 504/275 (same code); the draw point through
+// vector3f_add_scaled, the vertex value through PIN, the projection and forward through dot3f 504 each (same code), delta
+// through vector3d_from_points3d 518 (2302 B), with forward through dot3f 513. Phase scan (1-7 initialised dead longs):
+// at the top of the 275 form 499-501 (the homes move), in the end block, ahead of the camera angle or ahead of delta 496
+// every n (inert: the camera sums' operand sides and the forward block do not follow the symbol count here).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
