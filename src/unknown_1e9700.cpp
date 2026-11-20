@@ -75,6 +75,8 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 76 (was 76): Retail reloads enable after the player statistics write and carries the maximum in ECX.
+// The existing getter and setter live in a separate /Ob1 translation unit. The global layout affects alias analysis.
 // MiniMax B (11-20): no new form, no lower score (76): the enable byte's raw reload needs one address-taken object that src/unknown_1967d0.cpp holds (BLOCKED-BY 0x196960/0x1968b0); what still differs is that reload, the old maximum's home (EAX here, ECX in retail), the 15-bit value read (movzx against retail's xor/mov) and the row pointer's register order.
 // score 76 (was 76): BLOCKED-BY 0x196960/0x1968b0 (retail inlines both here; their file is /Ob1 and was on
 // this round's avoid list) and the enable reload's aggregate; earlier notes below.
@@ -308,6 +310,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // Compute the new recent count from the threshold and store it once 102.
 // Index the statistics table directly and bind the time field locally only for its two uses 85.
 // NOT kept: Direct table indexing reaches the retail extent at 85. All eight forms raise the score and move the first mismatch into the prologue. The original enable and maximum lifetimes remain.
+// Exhaustive maximum branches in long/short/word 95/95/98,
+// those branches with direct enable uses 100, exhaustive player and team
+// maxima 99, nested enabled maximum 99, early clamp input promotion 99,
+// and limits before the index check 95. The 434-byte forms still carry
+// enable across the increment and leave the maximum in EAX.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
