@@ -484,6 +484,17 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // order is canonical); the settings parameter typed `real const *` with no cast local 4 (2 without the reorder);
 // facing renamed a_facing / z_facing 2 / 2; desired declared first, settings first, desired between object and
 // settings, settings assigned after its declaration 2 / 4 / 2 / 2.
+// M3 lane 16 r154 (fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80, 0xe01d0, 0x109290 and
+// 0xbba20; control 25): 0x1faf80's parameters as (object_index, facing, settings, control, threshold, turn) re-measured:
+// here 12 (left: the forward agreement's i product and the tail's copy order), 0x1faf80 2, 0xe01d0 537 -> 569. Retail's
+// 0xe01d0 call (0xe0264-0xe0286) also forms the facing address in EBX only after the settings address, so both retail
+// callers support that order, and 0xe01d0's call site then is retail's but for one push/lea swap: its aligned count falls
+// 442 -> 437 and its length 2726 -> 2722 (retail 2712), so its rise is positional. In 0x1faf80 only the test's i product
+// (`object->forward.i * facing->i`, the one product whose facing operand has no offset) loads facing first; a dead-local
+// phase scan (0..7 unused locals) on four spellings of that test (as now, dot3f either argument order, i/j/k order) gives
+// 2/2/6/4/4/4/4/2, 4/4/6/4/4/6/6/4, 4/4/8/6/4/4/6/4, 2/2/6/4/4/4/4/2: the other float rows move with the phase, the i
+// product never does; the threshold compared through a pointer to it 2. Still BLOCKED-BY 0x1faf80. On this body: the
+// final copies as direct field assignments 25, through memcpy 25 (same code each: the copy order is not the spelling).
 // native settings array 25, native special bit 25, ordinary mode first 247, active angular limits first 25,
 // staged axis admission 25, paired axis snapshots 49, zero-limit branch snapshot 27, const up agreement on
 // native frame 25.
