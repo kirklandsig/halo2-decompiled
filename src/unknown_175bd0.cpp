@@ -3519,6 +3519,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
 // MiniMax G (11-18): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, the system and the
 // next index still take EDI and ESI the other way round, and the definition still has no spill for the per-call mode reads.
+// Not kept at review (11-20, batch 303): MiniMax H's 49 form below needs the 0x1751d0 result in a one-use pointer local
+// (an element pointer used once), the long cached mode and the reordered locals, which are kept only with a match;
+// without the named result it measures 120 and loses the matched caller 0x176f60 (lane 8 r186), so main's body stays at 93.
 // score 49 (was 93): the frame is 0x54 with the system in ESI, the next index in EDI, the type object in EBX and colour A in a frame slot, as retail's; left: retail spills the definition at [esp+0x10] and reads the mode from it at each call, where this build caches the mode in that slot.
 // MiniMax H (11-19): 49 (was 93): the particle-location cursor is the location index of a spawn record, the result of the second 0x1751d0 call is named and both type queries are the colour call's arguments; the caller 0x176f60 stays matched. The mode read at each call measures 103 and loses the caller, and the mode's width and the colour order each move the score by one to three points.
 // Earlier score 93 (was 93): The frame is 0x4c against 0x54, system/successor use exchanged registers and the definition is unspilled.
@@ -4032,18 +4035,17 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 
 	if (definition->unknown0c != 0)
 	{
-		s_particle_system_spawn spawn;
-		s_effect_location_datum *location;
-
-		spawn.location_index = particle_system->location_index;
-		long location_mode = definition->location_mode;
+		long particle_location_index = particle_system->location_index;
 		dword color_a = effect->color_a;
 		dword color_b = effect->color_b;
-		{
-			s_effect_particle_system_definition *system_definition = particle_system->function_1751d0();
-			c_type_4e7709 *particle_definition = function_137bd0(system_definition->tag_index);
+		s_effect_location_datum *location;
+		word location_mode = definition->location_mode;
 
-			function_175a80(color_a, color_b, particle_system, particle_definition->multiplied(), particle_definition->tinted());
+		{
+			c_type_4e7709 *particle_definition = function_137bd0(particle_system->function_1751d0()->tag_index);
+			bool tinted = particle_definition->tinted();
+
+			function_175a80(color_a, color_b, particle_system, particle_definition->multiplied(), tinted);
 		}
 		while ((location = effect_location_next(effect, &location_index, location_mode)) != 0)
 		{
@@ -4051,12 +4053,12 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 			transform4x3f *location_matrix = function_178bc0(location, effect, &matrix, true);
 			bool field_b4 = location->node_index != NONE && (location->node_index & 0x8000);
 
-			if (spawn.location_index != NONE)
+			if (particle_location_index != NONE)
 			{
-				s_particle_location_datum *particle_location = DATUM(g_51ec8c, s_particle_location_datum, spawn.location_index);
+				s_particle_location_datum *particle_location = DATUM(g_51ec8c, s_particle_location_datum, particle_location_index);
 
 				function_248c60(particle_location, particle_system, location_matrix, field_b4);
-				spawn.location_index = particle_location->next_index;
+				particle_location_index = particle_location->next_index;
 			}
 		}
 	}
