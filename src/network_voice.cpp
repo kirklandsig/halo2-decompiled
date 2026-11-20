@@ -1967,6 +1967,34 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // declared after the clamp 137 and no bit local (the loop test as `& (1 << player)`) 137 (same code each); 0-7 unused
 // locals at the top 137 each and 60 each on the kept body (no symbol-count state on either); the header stores through
 // a named header pointer 60 and `if ((capacity -= 2) >= entry_size)` 60 (same code each).
+// m3 lane 8 r198 (fast with 0x56380, 0x564c0, 0x53b00 and 0x56000; control 60; the caller 0x56380's score in brackets,
+// [0] = matched). Re-measured: kept, written, capacity, size with `include_mask ? 13 : 11` 137 [13]; capacity, size,
+// written, kept with it 134 [0]. Diagnostic, reverted at once: a `volatile` kept mask on the kept-first form 151 (444 B)
+// [137]: the block from the clamp to the loop is then retail's instruction for instruction (the mask through EBX to its
+// slot, the immediate written store, capacity decremented in place, the xor/cmp/setne/lea size in EBX, EAX's zero live to
+// the capacity exit, `test edi, edi`). So retail's allocator leaves the kept mask in memory and gives its registers to the
+// cursor (EDX), the player (EDI), the size (EBX) and the bit (EBP); ours keeps the mask in EBP and drops the player, whose
+// reloads cost nothing (each use is a shift count or follows one). New forms on the kept-first ternary form, 137 [13] each
+// (same code): the mask's bit cleared through a reference local, through a pointer local, through a by-pointer and a
+// by-reference inline helper; the mask as the member of a one-member aggregate and as a one-element array; the mask typed
+// long, typed word; the narrowed mask named once for the test and the call; the call argument without its cast; the clamp
+// as a nested conditional; the size written out at each use; a separate length local assigned to the result as the block's
+// last statement. The size as `11 + 2 * include_mask` at each use 127 (450 B) [12]. Use-count diagnostics (not keepable;
+// the player stays on the stack in each): the compaction call without its test 165, the test with a zero argument 132, a
+// use of the player after the loop 176, the loop update as `kept = 0` 155, the per-player decrement after the capacity
+// debit 221 [14]. The per-player decrement moved ahead of the entry's mask clear 101 (461 B) [2]: the pre-loop block is
+// retail's and the mask stays in memory, but the cursor takes EDI (arriving in EAX) and the player EDX, the decrement is a
+// load/dec/store ahead of the shift where retail decrements in place after the `and`, and the length is multiplied into the
+// size's EBX (`imul ebx, ecx`, `mov eax, ebx`) where retail copies written into EDI first; with the two parameters'
+// declared order swapped that code is unchanged (101; only the caller's two moves trade places), so the register roles do
+// not follow the declared order. With the first cursor byte stored in each include_mask arm: on the kept-first form 134
+// (456 B) [12]; on the moved-decrement form 138 (460 B) [137]: cursor EDX, player EDI, size EBX, bit EBP, the mask in
+// memory and retail's test ahead of the load and store, but the player then arrives in EDI itself (the length stays in
+// EBX, so EDI is never written) and the entry pointer walks from +4 where retail's walks from +6. Return forms on the
+// kept-first ternary form: `return length;` ending the block 164 [73], with the per-arm stores 165 [73]; direct returns
+// throughout 160 [73], with the per-arm stores 158 [73]. Lead: a kept-first form in which the player is not the cheapest
+// value to drop while the per-player decrement stays after the mask clear, and in which the length does not reuse the
+// size's register.
 // m3 lane 15 r108 (fast with 0x56380/0x564c0/0x53b00/0x56000, all matched each time; control 60), statement orders of the
 // four head statements (S size, K kept, W written, C `capacity -= 2`) with `11 + 2 * include_mask` and a dword kept: SWKC
 // 118 (456 B: the head is retail's through the has-player test with the bit in EBP and the size in EBX, but the live EAX
@@ -2118,7 +2146,7 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
-// score 64 (was 85): left: retail tests the muted-word bit first, then the first port flag reusing the second
+// score 64 (was 85): r209 unchanged. left: retail tests the muted-word bit first, then the first port flag reusing the second
 // availability byte in CL, then the second port flag expanded in place (two calls of 0x53be0); this body tests the two
 // port flags first and calls 0x53bb0 out of line, 12 bytes short. BLOCKED-BY 0x53bb0 (its per-site inlining).
 // MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes
@@ -2342,6 +2370,15 @@ static inline dword voice_get_player_mask_inlined(void);
 // Fast trials (control 64): retail's test order muted word, first flag, second flag 85 (427 bytes); with a named
 // target bit 85; with the flag tests nested under the mask test 85; with `local & active & bit` 82 (415 bytes); with
 // an early return on !enabled 85.
+// M3 lane 5 r209 (fast with 0x54890, 0x53a20, 0x53bb0, 0x53b90, 0x53b40; control 64, aligned 17, register-masked 16): on
+// this order, an early return on !enabled 64, the inner mask test as a `continue` 64, the inner bit named once for the
+// test and the clear 64 (all the same code); the muted test through the existing volatile-read inline twin of 0x53850,
+// last 137 or first (retail's order) 137. Retail's first port flag reuses the second availability byte the muted test
+// loaded (CL), so retail's reads there are plain; the per-site inlining of 0x53bb0 still blocks the rest.
+// MiniMax H (11-19): no new form, no lower score (64): retail's tail tests the two availability bytes before it asks
+// the mode query and then makes an extra call to 0x53be0 whose result it halves and masks to a bit, while this build
+// asks the mode query first and keeps the two bytes' test after it; the earlier rounds' 85 point forms need the
+// active and passive mode flags, which only a byte match would keep, so the control (64) stands.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -4230,6 +4267,33 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // member is then spilled to a frame slot as retail's, but the cursor is folded back into `data + consumed` with consumed
 // in EBP, so the channel still has no register); consumed declared above the clamp 154 (479 B). 0-7 unused locals at the
 // top 139 each on this body and 164 each on the cursor form (no symbol-count state).
+// m3 lane 8 r198 (fast with 0x564c0, 0x55b40, 0x565c0, 0x56df0 and 0x53890, all matched each time; control 139; aligned =
+// difflib count with addresses masked, 93 at the control). The packet-cursor form (`byte *packet = data + 2;` advanced at
+// the loop's end, `consumed` kept beside it) re-measured 164 (478 B, aligned 88). Diagnostics on it, not keepable (a
+// compare of `channel->index` with a constant, placed in turn): at the loop's end 127 (488 B, aligned 52); after the else
+// arm's submit call 79 (488 B, aligned 41); after the relay arm's submit call 115 (488 B, aligned 41); at the top of the
+// relay arm 161 and after the else arm's kind test 160 (no change of homes); the member's second shift removed 186 (438
+// B). In the first three and the last the channel takes EBP from the entry and the member goes to a frame slot, the route
+// moves into the channel argument's slot and the whole loop body is retail's: one more reload point of the channel after
+// a submit call (whose index argument takes ESI) is the margin, or the member not living across the calls. With the
+// diagnostic after the else arm's submit call, the 24 orders of the four pre-loop statements (s `size -= 2`, z the size
+// ternary, c `consumed = 2`, p the cursor): s z c p 70 (488 B, aligned 24: the pre-loop block is retail's but for the
+// cursor's `add edi, ecx` three instructions late where retail has `add edi, 2`, the consumed and packet-size slots
+// swapped, and no separate zero-trip exit returning ECX); c p z s 79 (aligned 30); c z p s and c z s p 80 (33); z c p s,
+// z c s p and z s c p 79 (35); c s z p and s c z p 64 (41); c p s z, c s p z and s c p z 79 (41); every order with p first
+// 94 to 96 (65 to 66) and s z p c, z p c s, z p s c, z s p c 146 (493 B): in those the cursor is folded back into `data
+// + consumed`. `size -= consumed` for `size -= 2` gives the same code in each of its twelve orders. On s z c p: the
+// cursor's start as `data + 2u`, `&data[2]`, `data + sizeof(word)`, `data + consumed`, and the 2 of consumed or of both
+// as `sizeof(word)` 70 each (same code: the shared 2 stays in ECX for the add). Main's indexed form with the diagnostic
+// at either place 146/157 (data keeps EBP, no cursor). Natural forms on the cursor form with the s z c p head, no
+// diagnostic, 167 (478 B, aligned 124) and unchanged by each of: the member and kind tests as two ifs; `members == 0`;
+// a block-scoped copy of the channel pointer for the arms; the member's bit cleared outside its test; no explicit
+// convention on the function (also 139 on main's form: the compiler picks the same stack convention). The kind test
+// ahead of the member fetch 162. The member or the channel renamed (four names) and the member declared at function
+// scope 164 each on the plain cursor form (same code). A shared inline delivery helper taking the channel for both arms'
+// two calls 192 to 197 (457/451 B: the index is read once). Lead, saved as
+// build/r198/lead-0x55e10-70-diagnostic.diff in the m3-lane8 worktree: the s z c p cursor form needs a natural reason
+// for the channel to outweigh the member (a fifth reload point), then the immediate cursor add and the zero-trip exit.
 // m3 lane 15 r108 (fast with 0x564c0, matched each time; control 139): on the packet-cursor form (re-measured 164, 478 B):
 // the relay arm's three talker calls reading a `long channel_index = channel->index;` named inside the member-bit test
 // 158 (476 B: the member takes EBP straight from the call and the channel no register, retail reads [ebp + 0xc] three

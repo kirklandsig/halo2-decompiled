@@ -1950,6 +1950,18 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // assignment: the +0xb8 channel pointer initialised where declared 188, `real zoom = magnitude3d(...)` 188, `point2f *look
 // = ...` 188, the weapon index declared in the for header 188, `bool active = ...` 188 (same code each). The lead's steps
 // stay match-only and the stand-in block stands.
+// m3 lane 8 r198 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188). Frame arithmetic: retail has 11
+// dword slots (0x2c), the yaw alone at -0x2c and the pitch at -0x28 shared with the duration temporary; ours has the same
+// 11 slots and the same sharing, plus 4 bytes of padding: with the look pair as a three-element array (diagnostic) the
+// frame is 0x38 (13 slots rounded up to 8, the array kept whole at -0x34 and the duration temporary in a slot of its own),
+// so a local aggregate of 8 bytes or more rounds the frame to a multiple of 8, and retail's 0x2c says its two look values
+// are no such aggregate. Tried: the look values as two one-element arrays 196 (frame 0x28: scalarised, they take the
+// spring slots again); as two scalars in an inner block written through pointer locals 477 (2186 B, frame 0x28; the
+// pointers fold away); the reference to the game-time globals as a const pointer local 188 (same code); the function
+// with internal linkage 188 and without its explicit convention 188 (same code each: the argument stays on the stack and
+// ESI/EDI are still saved ahead of the unit test). Re-measured: every rate read through g_510c54 219. Other matched
+// functions of this file save a register after an early exit with the build's extra caller present (0x168896), so the
+// extra caller does not forbid a late save in general; what makes this function's unit test wait for both saves is open.
 // M3 lane 15 r108 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): every 0xb000067-arm use of the
 // +0xb8 channel through the channel pointer (the overlay call, the frame position, the duration and the set) 202 (2189 B);
 // the look pointer typed `point2f const *` 188 (same code). On round 105's 40-point lead (re-measured 40 at 2199 B on

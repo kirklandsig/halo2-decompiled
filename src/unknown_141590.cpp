@@ -118,7 +118,19 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax B (11-19): no new form, no lower score (201): the permuter over this body tried three rewrites in 359 s and
+// left the baseline at 195. Retail still keeps five 4-byte cells below the quaternion where ours keeps four, and computes
+// s = 2w*w - 1 above the identity copy while w2 comes after it; writing s as a helper parameter regresses to 302 with
+// frame 0x18, so the body stands.
 // score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// MiniMax A (11-19): no new form, no lower score (201): retail's frame is 0x24 against our 0x20 because retail spills the
+// quadratic term twice (a dead store at [esp+0x18] and a live one at [esp+0x20]) where our third row reuses the cell of
+// the cross term; the dot's associations, the cross terms and the term orders already agree with retail's listing. Tried:
+// the dot written into each output (484, 1497 B), the dot's terms written vector first (244, 1309 B), the same with the
+// rows' terms reordered (244), the doubled scalar and the quadratic term passed to the helper (305, frame 0x14), the scale
+// computed before the cross product (240) and the quadratic term associated differently (205) - all worse than the body as
+// it stands, so the body is unchanged.
+// score 201 (was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Earlier: Frame 0x1c versus 0x24 and
 // quaternion/cross spill overlap remain.
 // M3 lane 2 r107 (fast = plain 201): retail's 2.0 for the forward dot and w2 is a fresh load after the dot (its first 2.0,
@@ -484,6 +496,11 @@ static inline void quaternion_transform_vector(
 // (1317 B)/264/259, the low ones at frame 0x1c with more aligned differences (179-181). The sine branch's cross
 // through cross3f 208; the axis scale passed straight to vector3f_scale 201 (same code); the clamp as one conditional
 // expression 301 (1318 B). Body unchanged.
+// M3 lane 16 r146 (fast with 0x11d000, 0x143120 and 0x141710, all matched each time): the sine as `2.f * (sine_half *
+// cosine_half)` 244 (1308 B); the sine test as `0.f != sine` 201 (same code); the scalar part stored before the axis cross
+// 287 (1327 B); the clamp testing `cosine` instead of `dot` 201 (same code); the dot assigned to `cosine` directly (no
+// separate dot local) 207 (1321 B). Retail's 2.0 goes to XMM6 and the cosine half to XMM5 (ours XMM5 and XMM4); the repair
+// crosses' product sides differ as before. Body unchanged.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1506,6 +1523,9 @@ void function_143250(
 // not the schedule. 0x143250's parameters in the orders its three call setups could imply, definition, declaration
 // and calls together, the callee matching in each: (n, out, a, b) 939, (n, a, out, b) 936, (a, b, n, out) 935,
 // (a, out, n, b) 936, (out, a, n, b) 939, (a, n, out, b) 936. Body unchanged.
+// First-band matrix carries r0/r1/r4 into the higher-band computations:
+// singles 1736/1739/1657, pairs 1770/1732/1750, all 1782 before or after
+// the order guard. NOT kept: the reloads regress and retail uses independent scalar homes.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
