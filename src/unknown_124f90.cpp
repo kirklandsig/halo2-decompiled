@@ -1824,6 +1824,11 @@ long function_2197f0(real gain);
 // Composite release or normalized overlap staged, each with initialized or accumulated attack time.
 // Guarded and eager fractions: 87/87/87/87/143/143/143/143.
 // NOT kept: The guarded stages tie at 87. The eager stages shorten to 681 bytes and raise the score to 143. The elapsed/reciprocal allocation, separate gain load and final gain join still differ.
+// Composite threshold applied to unscaled quotient receiver or scaled estimate 143/143;
+// fraction assigned separately in both arms, quotient or cap first 143/94;
+// named scaled test with conditional quotient or in-place quotient 143/143;
+// direct quotient accumulated before cap 143; selection in interpolation argument 143.
+// NOT kept: the cap and quotient forms raise the score; separate gain load and late join remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {

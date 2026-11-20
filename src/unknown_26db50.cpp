@@ -1135,6 +1135,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // block 24 (a moved declaration). Diagnostics: a probe global stored from the axis's j, k or i after the 0x14a280 call 92/92/91
 // (1102 B, rotation ours), so a later axis read does not rank the dot; lane 12 r147's M re-measured 20, M with the offset x, z,
 // y 6 (left: the offset computed in that order).
+// M3 lane 8 r205 (plain with 0x1ecf50/0x26d100, both MATCH each time; control 26): 0x26d0e0's body inline here is ruled out
+// (retail reads the collision point from this function's own frame after the call); the rotation through include/
+// axis_rotation.h's helper with the 0.1 offset as a component loop 71 (1085 B), on lane 12 r147's M block 65 (1085 B); on M
+// the 0.1 offset through vector3f_add_scaled 39, the axis re-read after the call into a `vector3f const *up` for the three
+// offset statements 39, the collision point read through `point3f const *hit` there 36.
 // M3 lane 7 r198 (plain check with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each time; control 26): the 0.1 offset's z
 // sum computed into a local bound by `real const &` between the x and y statements and stored last 21 (the rotation is
 // retail's; left: the marker schedule and the offset block computed x, z, y); that with the entry pointer, then the

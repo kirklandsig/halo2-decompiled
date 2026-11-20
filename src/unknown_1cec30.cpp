@@ -1299,7 +1299,10 @@ void havok_component_rigid_body_point_impulse_apply(long rigid_body_index, s_hav
 		__m128 mass4;
 
 		havok_from_vector3d(&havok_point, (vector3f const *)point);
-		havok_from_vector3d(&impulse, velocity);
+		/* the change bound by reference: callers then count it as written through (0x1c4c50 reloads
+		   its loop counter, kept beside the change, after this call) */
+		vector3f const &change = *velocity;
+		havok_from_vector3d(&impulse, &change);
 		mass = rigid_body->m_motion->getMass();
 		mass4 = _mm_set_ss(mass);
 		impulse.m_quad = _mm_mul_ps(_mm_shuffle_ps(mass4, mass4, 0), impulse.m_quad);
@@ -3569,6 +3572,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // `position.set(...)` 15; the rotation part bound as an `hkRotation &` for the three columns 15; the translation copied
 // through `m_quad` 15 (all the same code); the converter reading the vector into i, j, k locals first 32 (the value in
 // XMM0 is still stored first, then the zero). Dead initialised locals K = 0..40 at the top: 15 at every K.
+// M3 lane 1 r139 (fast with 0x1d83e0 and 0x1d77d0, control 15 as the plain check): a redundant `if (0 < node_count)` guard
+// around the first child search 15 (same code); the first-node test held in a bool read through a const reference 258;
+// `first` read through a const reference for the test and the call 242; the body_a store written in each arm of the first
+// conversion 349 (1216 B); the equal arm reading the pair through a const reference to the pointer 15 (same code). Permuter
+// with the caller and callee as context (604 s, 63 variants): best 15. Body unchanged.
 // M3 lane 11 r135 (fast with 0x1d83e0, 0x1d77d0 22 and 0x1d0c20; control 15): the converter's parameters as (frame,
 // matrix) at its definition and all five calls 15; the converter as a member of a derived Havok-frame view (`this` the
 // frame) 15; the converter `__forceinline` on this body 15 (all three the same code); the pair's first frame named once
