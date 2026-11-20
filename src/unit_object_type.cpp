@@ -7736,6 +7736,8 @@ public:
 // it into ECX, and the first unit's row pointer into EBP where retail uses EDX, so the frame homes and the two
 // induction registers follow; the call to 0x106030 is still expanded inline here while retail calls it out of line:
 // BLOCKED-BY src/weapons.cpp.
+// score 494 (was 508, r924 stand-in image): the dual-wield test written `if (held[0] != NONE) { flag test } else { clear
+// modes 1 and 3 }` (arms swapped; size 1785 = retail's). BLOCKED-BY 0x106030 as before for the rest.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -7857,12 +7859,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 		*(word *)dual = 0;
 		if (dual_wieldable)
 		{
-			if (held[0] == NONE)
-			{
-				modes[1] = false;
-				modes[3] = false;
-			}
-			else
+			if (held[0] != NONE)
 			{
 				dword held_flags = *(dword *)(UNIT_DEFINITION_GET(UNIT_GET(held[0])) + 0x12c);
 
@@ -7871,6 +7868,11 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 					modes[1] = false;
 					modes[3] = false;
 				}
+			}
+			else
+			{
+				modes[1] = false;
+				modes[3] = false;
 			}
 			if (second_hand_only)
 			{
