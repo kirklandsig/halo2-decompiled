@@ -722,6 +722,10 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // (they move the time test's registers, no split); the count named and stored to g_4e28f0 after a flag read 27 (the store
 // moves above the load before allocation); a block local read between the named count and its store 73. Re-measured: the
 // count named and stored to the async field after a flag read 18, the arm through a field pointer 14 (the listed forms).
+// Round 129 (m3 lane 14, fast with 0x12e210, which stays matched; control 27): the release address from the entry's
+// physical block local (no second lookup) 87 (248 bytes: the block pointer is kept, retail re-derives it from the pool);
+// the loop's block local bound to a const reference used for the argument 27, used for the linked test 27; the loop's
+// block local declared `register` 27; the arm's linked test as `!= false` 27 (all four the same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

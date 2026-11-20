@@ -2280,6 +2280,7 @@ __forceinline char unit_action_round(real value)
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
 // MiniMax H (11-20): no new form, no lower score (234): the weapon-slot index compares as a byte against an immediate where retail sign-extends it to sixteen bits; the pool and index take other registers.
+// MiniMax E (11-20): no new form, no lower score (234): the best form in the notes below needs every early exit written as a goto to one return, which is kept only with a byte match, and the permuter on that form found nothing below 105; what is left is the pool, index, type and name register homes and the completion byte.
 // score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below (r214 lead 105 just above the marker).
 // Round 192 (m3 lane 8, fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470;
 // control 234): goto-free single exit (switch default and mode-else leave the name NONE, `if (name != NONE)` round the
@@ -2598,6 +2599,14 @@ __forceinline char unit_action_round(real value)
 // 335, a shared projected header 293, and a word slot with the active and
 // short hand helpers 320. The shared header reaches 1189 bytes with the
 // displacement in ECX and the hand comparison still at byte width.
+// The pool and slot still take the wrong registers, and the hand test differs in width.
+// Metadata name first 237, valid metadata with fallback else 239, name-miss branch first 242,
+// and block-local metadata name 239. With the short-slot hand getter 250/250/256/250.
+// A header byte displacement shared at all lookups, only at entry, or from
+// entry to the final lookup 234/234/234, with the existing short hand
+// getter 297/297/297. A stable entry pool and a fresh final pool with
+// the shared displacement 311, or 325 with the short hand getter.
+// NOT kept: the stable entry pool forms move the first difference to +0x7.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4423,6 +4432,16 @@ extern vector3f *g_4687bc;
 // component at the element); the element as data then `+=` without the reference, through a named index copy, as byte
 // arithmetic; `long const` effect tag and index; a const definition; `*rigid_body->nodes`; the model in a `byte *`
 // local; the node index as `short` (one more line, both sites unchanged).
+// M3 lane 13 r128 (screened, control 8): the default material built from `(short)(long)g_54e898` 8; the component index
+// named for the lookup, after the material 8; the impulse declared at the top of the physics-tag block 8; the strength
+// passed as `(long)strength` 8 (all the same code); the node-count and first-node tests joined, the node read again
+// inside 105 (1101 B).
+// M3 lane 16 r155 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): an unused `char` copy of the
+// component's +0x18 index after the lookup (the shape the matched 0x0b67a0 callers in another file carry) 8 (same code,
+// diagnostic); the material as a plain `short` local (its address to 0x1eb020, `c_type_47f957(material_index)` at the
+// 0x188180 call) 25 (the global loaded as a dword); the component bound through a `s_havok_component *const &` for the
+// 0x0b67a0 call and the element 8; the re-looked-up definition and the effect tag read as const 8; the model index
+// named ahead of the effect tag read 8 (the 8s the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

@@ -865,6 +865,12 @@ static inline bool teams_enabled_19e1c0()
 // 428 (1436 B); `remaining > 0 &&` leading the first compare (plain) 479 (1487 B). The first player case clearing its
 // buffer with the zero result (`text[0] = (word)result;`, retail's SI store) on the plain result 691 (same code: the zero
 // propagates), with the early return 473. Body unchanged.
+// M3 lane 14 r129 (fast with 0x19e0f0, which stays matched; control 390, plain result 691): the plain result with a
+// redundant `result = 0;` at the top of the first name case 691 (same code); `token_length` typed `unsigned long` (with the
+// caller's pointer type) on the volatile/plain result 390/691 (same code each); an entry `if (remaining <= 0) return 0;`
+// (diagnostic: it adds a test retail lacks) on the plain result 473 (1392 B: `remaining` in EBP and the token re-read from
+// its slot for every compare as in retail, token_length EBX and event EDI spilled where retail has EDI/EBX), on the
+// volatile result 428 (1436 B).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

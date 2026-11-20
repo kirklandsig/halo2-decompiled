@@ -364,6 +364,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Earlier scores were 315 and 354.
 // Earlier 315 (was 354). Advancing the required index at the row latch brings the entry frame to 0x42c.
 // Earlier header: 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Earlier at 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // (A second header line, "score 305 (was 354)" with the same text, merged here in m3 lane 14 r124.)
 // Frame 0x42c versus 0x428. The starting cluster is in EBX and both BSP table bases stay live through the walk.
 // Prior score history: 315 before r118, 354 before that.
@@ -555,6 +556,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // order 305/305; walking record roles alone and with candidate arrays 305/305; distance and order
 // declarations first or last 305/305; distinct traversal/fill/output ordinals 305, with path
 // measurement names 305.
+// Rank-fill cursor 321, distance-fill cursor 321, both 337, ordinal from rank pointer 339.
+// Rank storage first declared at the fill with rank/key/both cursors 321/321/337.
+// Both fill cursors with the two-row condition in the output loop 334. All keep the 0x42c
+// frame and the cached BSP bases.
 // Round 648: deferred seed portal 396; destination ordinal from its record 364; split flag predicates 320;
 // bitmap word shifted at reads 348; fallback-first range 346; short-circuited range tests 305;
 // defaulted output gain 308; common count update 305.
@@ -568,6 +573,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // at the stores 295 (1365 B); the limit capped by an `if` 295; `count >= 2 ? 2 : count` 295 (same code); the sort scratch
 // in its own block, the twin's spelling, 280 (frame 0x428 as retail, first difference +0x16; left the cluster pointer in
 // EBX and the cached table bases; a scope that moves a stack home, match-only, not kept).
+// Reacquire destination after travel, geometry, or at the range gate 359/359/359;
+// reacquire start after travel or geometry 369/369; reacquire both after travel, geometry,
+// or at their consumers 405/370/366. NOT kept: all raise the score and retain the extra frame word.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

@@ -271,6 +271,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // extent written converted size first (`size * (x1 - x0) * 0.5f`); the corners' y written half height first (`h + y`,
 // `-h + y`); the first x step as `x = x + pulse * half width`; the half extents read through a `s_float_rect const &` to the
 // bounds: 14 each (all the same code: the advance product keeps XMM4, the half-height copy XMM3).
+// M3 lane 11 r135 (fast with 0x2008fc 0x200891, control 14; register-masked aligned difference 1, the ADD/LEA copy
+// source alone): both x steps through a forceinline (position, half width, pulse) helper 14; the half extents built in
+// a two-real aggregate and read back into the two locals 14; the first step through a `real &` bound to the running x
+// 14; the first pass's scaled sprite width named where it is computed 14; the first pass's width scale declared ahead
+// of the sprite index 14 (all five the same code).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

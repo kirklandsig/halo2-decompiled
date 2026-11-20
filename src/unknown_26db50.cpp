@@ -1140,6 +1140,17 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // axis_rotation.h's helper with the 0.1 offset as a component loop 71 (1085 B), on lane 12 r147's M block 65 (1085 B); on M
 // the 0.1 offset through vector3f_add_scaled 39, the axis re-read after the call into a `vector3f const *up` for the three
 // offset statements 39, the collision point read through `point3f const *hit` there 36.
+// M3 lane 7 r198 (plain check with 0x1ecf50, 0x26d100 and 0x26dde0, MATCH each time; control 26): the 0.1 offset's z
+// sum computed into a local bound by `real const &` between the x and y statements and stored last 21 (the rotation is
+// retail's; left: the marker schedule and the offset block computed x, z, y); that with the entry pointer, then the
+// collision record and marker, at the top of the trace's success block 17; with the collision record and marker first,
+// then the entry pointer, 15 (only the offset block left, as lane 6 r198's z-first form); all three offset sums into
+// reference-bound locals in x, y, z order, then stored 40 (rotation ours); one `vector3f const *up = g_4687b0` local
+// for the rotation, the 0.5 lift, the 0x26d100 call and the offset 254 (1079 B), with the reference-bound z 256. The
+// fast image builds this function differently (869 B), so every trial here is a plain check. All restored.
+// M3 lane 16 r155 (fast with 0x1ecf50 and 0x26d100, both MATCH each time; control 26): the 0.1 offset products
+// constant-first 26; the 0.5 lift product constant-first 26; the collision marker as a typed short field at +0x24 of
+// the collision view 26; the offset reading the axis as `n[0..2]` 26, both sides as `n[0..2]` 26 (all the same code).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
