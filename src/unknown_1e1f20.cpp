@@ -1000,6 +1000,11 @@ void swarm_leader_detach(long actor_index);
 // against the cached actor 208 at 958 B but aligned 113, masked 86 (the prop walk hoists the pool's data address; one shifted
 // region re-syncs, so not a real gain), the same through the existing prop_node_get at each use 208 (same code); bool with the
 // re-read 255; bool with the cached compare 327 (926 B, aligned 105, masked 63). Still BLOCKED-BY 0x26ed40.
+// M3 lane 12 r160 (fast with 0x26ed40's nine callers and the matched functions of its file; control 236): the memory
+// walk calling 0x26ed40 under the type test through the cached actor 364 as a short for loop or a long do loop (a call);
+// with `inline` on 0x26ed40 301/319 (1006 bytes), 0x1bead0 and 0x26ef70 then expanding it too and losing their match;
+// its file without the inline-depth flag (diagnostic, flags unchanged) the same three expansions; `value != 0` 236 and
+// `memory + memory_index` 236 (same code). Retail keeps the call at all eight other sites. Still BLOCKED-BY 0x26ed40.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

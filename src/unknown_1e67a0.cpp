@@ -1307,6 +1307,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 580 (it stays out of line, 988 B here), forced inline 199 at 1382 B (first difference +0x2). With lane 1's preset
 // moved-away flag: on the by-value setter 94 (the lead's own code), on the direction local 176, on the goal copy 244
 // (1431 B). 1 to 7 unused (never referenced) locals on the flag form 145 each (dropped before they count). Nothing kept.
+// M3 lane 12 r160 (fast with 0x1eb640; control 114): 0-7 initialised unused locals 114/140/150/150/139/163/166/144
+// (1-6 give 1382 bytes; unlike never-referenced ones they count), but the four axis-by-vector products of the inlined
+// rotation keep this build's operand sides at every count; the angle scaled in place without the rotation local 186
+// (1365 bytes); the velocity scale read at each use 206 (1395 bytes); the axis copied into a local vector 230 (1406
+// bytes); `angle` declared before `movement` 114 (same code). Still BLOCKED-BY the rotation helper in src/unknown_1eb8a0.cpp.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
