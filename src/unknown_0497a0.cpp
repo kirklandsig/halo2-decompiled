@@ -1452,6 +1452,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // width left as v_width) 351; the negated step in its own local 351 (same code each). Diagnostics on ribbon_pixel's locals
 // (no change to slots or code, 351 each): renamed blue/green/red/alpha, renamed out of alphabetical order, the four
 // channel longs declared after scale and pixel. The slot order follows neither names nor declaration order here.
+// The frame stays 0xa8 against 0xac. Packer input reference 351; result pointer/reference
+// 351/351, or both with a color reference 351/351. First color as the output then copied
+// to the outer vertex 301; both vertex fields as outputs 352; returned result address 351.
+// First field as output with the pixel returned by value, pointer/reference 352/352;
+// field readback on the original packer 352. NOT kept: the 301 form saves the color
+// pointer but adds a register copy between stores where retail uses the same packed register.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

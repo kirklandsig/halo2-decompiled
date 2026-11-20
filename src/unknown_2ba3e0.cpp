@@ -923,6 +923,11 @@ real g_55e618;
 // the positive or negative distance test score 231/225. A saved hit with a joined failure
 // store at the tail or before the response scores 141/141. Both guards with a query-local
 // hit record score 274. NOT kept: sweep and collision homes remain displaced and scores rise.
+// Sweep and collision homes still sit twelve bytes below retail. Complete surface offset through
+// scale with separate stores 217, with vector addition 220; aggregate offset and point setter 279;
+// early complete offset 261; scale offset and point setter 279. Sweep workspace reused for tangent
+// 243 or perpendicular 261; displacement workspace reused for perpendicular 102.
+// NOT kept: the contact-offset and sweep reuse forms raise the score. The displacement reuse ties.
 // M3 lane 2 r116 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): perpendicular and tangent declared at the
 // countdown block's top beside displacement and sweep 102 (same code); displacement and sweep declared at the function's
 // top beside the cache 110; keep computed just ahead of the final rows 138 (1534 B, frame changes); the velocity copy as

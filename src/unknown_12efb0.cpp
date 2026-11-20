@@ -852,6 +852,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Predicate shared across both sources after defaults, after the provider, or before the provider 733/733/750.
 // Shared cluster index for lookup and predicate 741; complementary predicate across both sources 733.
 // NOT kept: All grow and regress, with a first difference before the original loop span.
+// The provider result, palette width and selected record homes still differ.
+// Weighted palette/tag/either arm continues and common completion continue, short slot 634/706/774/607;
+// signed byte slot 631/691/771/700. NOT kept: the common short-slot continue ties and the other forms regress.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

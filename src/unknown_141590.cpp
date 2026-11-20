@@ -1583,6 +1583,10 @@ void function_143250(
 // Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
 // 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
 // NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
+// The third-band scalar homes still leave the frame one word short. Running sums for paired mixed axial,
+// transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
+// outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
+// NOT kept: the accumulations leave the frame at 0x2fc and either tie or raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

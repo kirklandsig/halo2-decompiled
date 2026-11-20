@@ -234,6 +234,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // displaced, both and reversed sites was measured at 423/376/529/359/538/536/718 in an earlier round, all worse,
 // and the in-place displaced transform and the perspective-only inverse locals measure 263 and 261. No form
 // found this round.
+// Earlier findings. one note (the stacked score lines merged, r184).
 // Merged header (r184): 195 (was 195), one note.
 // Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
@@ -697,6 +698,11 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // component 315 (1029 B); `d` through a `vector3f const *const &` alias in the sums 257 (981 B); `a` through such an alias
 // 231 (976 B); the displaced point transformed before the origin 250 (924 B); the two inverse defaults as one point2f
 // 195 (same code). 0x142570's file (src/unknown_141590.cpp) was on another lane's list this round. All restored.
+// The second displaced transform still spills X and Z in a 0x30 frame. Orthographic bypass
+// 223; perspective-only early invalid-factor exit 210, or inside the perspective arm 210.
+// Direct inverse factors with the bypass 217, early exit 208, or in-arm test 204.
+// View-owned admission result with factor copies 210 or direct inverses 204.
+// NOT kept: all forms retain the extra spill word and raise the score.
 // M3 lane 2 r116 (fast with 0x30bf0 and 0x30710, both MATCH; control 195): the point helper's scale test written
 // `1.f != camera->scale` 263 (995 B); the factor test written `0.f != fa && 0.f != fb` 211 (978 B); the factors defaulted
 // to 1 at their declaration with the else arm dropped 261 (906 B); the zero outputs as one chained assignment 195 (same

@@ -1702,6 +1702,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // move the session onto the stack and disturb the matched caller. The dword frame is 0xb0.
 // Player-loop lookup nested at the range, population or enablement checks, at each pair, at all three, or at
 // separate signed range bounds 871 each. The frame and both lookup boundaries remain unchanged.
+// Early signed dword histogram declaration 936; adjacent ID and signed/unsigned histogram scopes
+// 987/987; adjacent signed scopes with range fill for the first, second, or both clears 966/994/971,
+// and counted fills 993; two independently cleared dword histogram scopes 936. NOT kept: adjacent
+// scopes recover 0xb4 with the session still in EAX and shorten the body to 2652–2668 bytes. The
+// opening lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

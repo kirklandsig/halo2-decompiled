@@ -342,6 +342,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // cursors 326, with independent deadline 316. Independent deadline with polynomial names
 // or shared unit-length checks 125 each. NOT kept: both 125 forms recover the traversal
 // through +0x2b7 but change the basis correction and grow to 1413 bytes.
+// Independent cursor with a named scheduled deadline 94, or both subtraction operands named 124; signed
+// ordinal beside deadline 125; channel or shared-basis normalization range 220/309; shared basis with
+// named length predicate 124; native current/target stride 120; corrected up accumulators 124. With the
+// named deadline, staged orthogonality 92, direct j/k/i stores 117, shared basis 115, aggregate side
+// vector 94. NOT kept: the named deadline restores the traversal through +0x34a at 1396 bytes, but the
+// dot product and basis correction still raise the score.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -955,6 +961,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // immutable entry and volume addresses, or record selected by signed count 129 each.
 // NOT kept: the guarded creation forms shorten away from retail. The register exchange
 // and inline cluster creation persist.
+// Success set at list exhaustion 140. Capacity failure clears completion and breaks, with named cluster
+// admission 133, scoped creation receiver 133, explicit list-sentinel break 133, count before head 134,
+// dword plane table 133, relative pool entry address 133, or early full-cluster guard 126. NOT kept:
+// the guarded form gains three at 431 bytes and still exchanges the register saves. The other shared-
+// result forms raise the score.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1764,6 +1775,11 @@ struct s_pool_view_172840
 // ring subscript 226, retained portal count 230, shared portal bit tests or tests and set 55 each.
 // NOT kept: the 55 forms still grow to 870 bytes and keep the long sentinel load and
 // displaced key store.
+// With independent failures and signed publication, failed clip first or rollback with continue 96/96;
+// incoming cluster on the left of the comparison 56; captured short selection by equal or unequal arm
+// 55/133; positive reservation block 55; continue on full queue 59; named publication key 55. NOT kept:
+// the 96 forms reorder the clip arms and grow one byte; the 55–59 forms grow two bytes and retain the
+// five-byte sentinel load.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
