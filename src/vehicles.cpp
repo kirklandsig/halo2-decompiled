@@ -5195,6 +5195,19 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // guard (`xor eax, eax; cmp edi, eax`, the zero store from EAX) where retail tests EDI and stores an immediate, so the
 // loop top loses its padding jumps; that with `16 - count` 136, with `&markers[primary_count]` 46, with an
 // `if (count > 0)` guard 126.
+// M3 lane 14 r128 (fast screen, plain-equivalent image): the colours stored before the source 17 (the colour constant
+// then takes ECX and the definition reload moves up as retail); on the running count: `count > i` 126, `++i` 126, count
+// declared then assigned 126, `i = 0;` before a `for (; ...)` 126, `short i = 0;` after the sum 126, the loop counter
+// declared in the for 126, `short i` declared first 126, a named short second count added in place 126, an explicit
+// `if (count > 0)` guard with the colour order 126 (the guard's zero is shared with the loop counter in EAX), `int` count
+// 126, `count = count + ...` 126, `short i = 0;` with the for's own `i = 0` 126; dead-local phase scan on the running
+// count, 1..7 locals, 126 each. LEAD 5 (match-only, 653 bytes): the running count with `short i = 0;` declared between
+// the two fills and `for (; i < count; i++)`, plus the colours before the source; only the counter's immediate zero
+// store differs (scheduled ahead of the second call, retail's follows the guard test). A named second count with the zero
+// between the call and the sum 10 (the store is still hoisted above the call); the zero before the first fill 18. Loop
+// bound written as the sum of the two counts with a named short second count 45 (the guard block exactly retail's, the
+// sum in EAX), long second count 43, operands swapped 45, with the colour order 46. A permuter run on the 5 lead (21
+// tries) found nothing lower.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {

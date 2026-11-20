@@ -2807,12 +2807,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
 // score 87 (was 87; round 196's forms at the end of this note): the shown count, element-address and index homes are permuted against retail's, retail reloads
-// score 87 (was 87): r275 unchanged. The shown count, element-address and index homes are permuted against retail's, retail reloads
+// Earlier note at 87: r275 unchanged. The shown count, element-address and index homes are permuted against retail's, retail reloads
 // MiniMax E (11-20): no new form, no lower score (87): re-read against retail, the frame agrees at 0x788 and the three
 // live pointers sit in the other homes (retail keeps the players array at -0xc, the element address at -8 and the player
 // record at -0x14, ours at -8, -0x18 and -0xc), so every later use of them pairs with the wrong row; the homes are not
 // reachable from the expression's spelling and moving them would mean steering the declaration order. The body stands.
-// score 87 (was 87): the shown count, element-address and index homes are permuted against retail's, retail reloads
+// Earlier note at 87: the shown count, element-address and index homes are permuted against retail's, retail reloads
 // players[i] after the 0x53b40 voice query (BLOCKED-BY that chain's helper shape in src/network_voice.cpp, held by
 // another lane this round), and the last loop keeps the screen in ebx where retail gives ebx to bitmap_a.
 // m3 lane 4 r224: dead initialised longs at the top, K = 1-6, 8, 10, 12, 14, 16, 20, 24, 28: 87 at every K (921 bytes,
@@ -3163,6 +3163,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // last loop then reloads the screen before every call and gives bitmap_a EBX as retail, but pushes a zero register
 // where retail pushes immediate zeros, and the first loop's lookups take the screen in ESI), with the field-order default
 // and the per-loop counters 202; the screen passed as a one-member by-value aggregate 87 (scalar-replaced, same code).
+// M3 lane 14 r128 (fast with 0x2507c3, 0x22f042 and 0x22ee47, all MATCH; control 87): the last loop's `(short)i`
+// cast dropped 87 (same code); players[i] named once in the first loop (the lookup and the local-player compare) 270
+// (917 B), in the second loop (lookup, search, both voice queries) 165 (917 B), in both 291 (913 B); the shown count
+// declared after the matchmaking flag 92. The players[i] reload after 0x53b40 is still BLOCKED-BY src/network_voice.cpp
+// (another lane's file this round). Stacked score lines merged into this note (all at 87).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

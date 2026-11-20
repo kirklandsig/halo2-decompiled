@@ -439,6 +439,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // 63: everything after the calls then has retail's shape, but retail also keeps the entry fetch in EBP for the reset), not
 // kept (a moved declaration, a gain of 1). 0xbadc0 prints as ours now, but its file is on this round's Avoid list.
 // Still BLOCKED-BY 0xbadc0.
+// M3 lane 14 r128 (fast with 0x103b10, 0x14de90, 0xbadc0 and 0x100f70, all MATCH; control 110): the user index as a
+// short 107 (362 B, a gain of 3, not kept); the weapon flag set by an `if` after a false default 114 (357 B); the weapon
+// index through include/unknown_1e1f20.h's unit_get_current_weapon(unit_index) 110 (same code: the fetches still
+// merge); re-measured: the user index as one conditional initializer 110, the reset test weapon flag first 97 (378 B,
+// not retail's keep-first test order). Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp is avoided again).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

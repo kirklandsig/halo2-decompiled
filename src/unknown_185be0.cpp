@@ -4,6 +4,7 @@
 #include "unknown_11cb00.h"
 #include "unknown_11cc90.h"
 #include "slot_handler.h"
+#include "unknown_1e1f20.h"
 #include <math.h>
 #include <string.h>
 // @flags /O2 /Ob1 /arch:SSE /Gr
@@ -132,7 +133,12 @@ union s_185be7
 };
 
 // MiniMax H (11-20): no new form, no lower score (396): the two angle conversions take swapped XMM registers, retail's unit-record copy sits between the products and the two stores, and the body is 21 bytes shorter.
-// score 396 (was 396): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
+// score 62 (was 838): retail's 3777 bytes. Left: the input-record copy is scheduled after the two angle stores here
+// (retail before them), 1.0 and zero remade in the other order after pow, the second hold-time add loads the argument
+// first, the quotient in XMM4 and 1.0 in XMM3 (retail the other way round), the else arm loads local_16 first, one
+// scratch step at the parent lookup, the first mask in EAX (retail EDX) and the 0.64 sum squares field_40 first.
+// Earlier 396 (was 396, before 0x24590 became inline on main): Frame 0xe0, the head and the flag block agree. The XMM
+// state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
 // M3 lane 3 r268 (fast): the input-record copy ahead of the two angle conversions 395 (the copy then precedes the angle
 // stores as retail, registers unchanged); that copy first with the second angle converted first 393 (the pair then takes
 // retail's XMM7/XMM0 and only the conversion constant stays in XMM2 where retail has XMM1, which retail frees because it
@@ -725,6 +731,18 @@ union s_185be7
 // On main's state (no `inline`): the else-arm order 394; the pool reference 394; both 392; with the latch form 386; with the
 // record copy first too 385; with the else-arm default, weapon helper and long mask local as well 547. Not kept: the
 // statement orders and the reference are match-only forms and the latch form alone is 390. Still BLOCKED-BY 0x24590.
+// M3 lane 14 r128 (0x24590 inline on main; fast with 0x24590, 0x185b30, 0x186ab0 and 0x187b30, all MATCH; this body
+// builds differently in the fast image, so kept forms are plain-confirmed; start 838 plain, 836 fast). KEPT: the 1.0
+// default of the rescale factor in an else arm (retail copies 1.0 only on the two failure edges) 382 fast alone; the
+// existing unit_get_current_weapon for the hand-written lookup 840 fast alone, 79 with the else arm; a separate long
+// local for the field_c mask (the word mask local is no longer reused) 837 alone, 379 with the else arm; all three 76
+// fast, 78 plain; the field_c mask read from the field in the loop instead of any local 60 fast on the 60 form (the
+// reused word local 63; kept: the field read); with the latch as `? 1 : 0` (retail's full-width `mov eax, 1` /
+// `xor eax, eax`) 60 fast, 62 plain at
+// 3777 bytes. On 62 (fast 60): local_20 computed before local_19 611; the quotient computed after local_19 49 (1.0 then
+// takes XMM4 and the quotient XMM3 as retail, but the quotient is scheduled after the first clamp); the record copy
+// first 73; the else arm's loads swapped 74; both 55; those two with the quotient after local_19 44; and the pool
+// through a const reference 42 (all match-only orders and forms).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -781,13 +799,14 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         {
             real local_8 = (real)fabs(local_2.field_44);
             real local_9 = (real)fabs(local_2.field_40);
-            real local_10 = 1.0f;
+            real local_10;
             if (local_8 > 0.1f && local_9 > 0.1f)
             {
                 if (local_8 > local_9) { local_9 /= local_8; local_8 = 1.0f; }
                 else { local_8 /= local_9; local_9 = 1.0f; }
                 local_10 = (real)sqrt(local_9 * local_9 + local_8 * local_8);
             }
+            else local_10 = 1.0f;
             real local_11 = PIN(local_10 * local_2.field_40, -1.0f, 1.0f);
             real local_12 = PIN(local_10 * local_2.field_44, -1.0f, 1.0f);
             s_185be7 local_13;
@@ -897,10 +916,9 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                 }
             }
         }
-        local_8 = local_1->field_c;
         for (long local_24 = 0; local_24 < 16; local_24++)
         {
-            if (!(local_8 & (1 << local_24)))
+            if (!(local_1->field_c & (1 << local_24)))
             {
                 local_3[local_24] = local_2.field_0[local_24];
                 local_4[local_24] = local_2.field_10[local_24];
@@ -917,13 +935,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         if (local_10 && local_1->field_2e == NONE && arg_4->field_0)
         {
             long local_11;
-            if (local_1->field_0 != NONE)
-            {
-                byte *local_12 = function_185be2(local_1->field_0);
-                short local_13 = *(char *)(local_12 + 0x212);
-                local_11 = NONE;
-                if (local_13 != NONE) local_11 = *(long *)(local_12 + local_13 * 4 + 0x218);
-            }
+            if (local_1->field_0 != NONE) local_11 = unit_get_current_weapon(local_1->field_0);
             else local_11 = NONE;
             if (((byte *)arg_4->field_0)[6] > 0x7f || ((byte *)arg_4->field_0)[7] > 0x7f) local_10 = false;
             if (local_11 != NONE && !function_100f70(local_11) && local_2.field_44 * local_2.field_44 + local_2.field_40 * local_2.field_40 > 0.64000004529953f) local_10 = false;
@@ -964,7 +976,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         SET_FLAG(arg_5->field_18, 2, local_3[5] != 0);
         SET_FLAG(arg_5->field_18, 20, local_3[5] != 0);
         SET_FLAG(arg_5->field_18, 25, local_3[5] != 0);
-        local_1->field_93 = local_3[0] && ((g_510c50 && ((byte *)g_510c50)[5]) || local_1->field_93);
+        local_1->field_93 = (local_3[0] && ((g_510c50 && ((byte *)g_510c50)[5]) || local_1->field_93)) ? 1 : 0;
         SET_FLAG(arg_5->field_18, 1, local_3[0] && !local_1->field_93);
         SET_FLAG(arg_5->field_18, 4, local_3[4] != 0);
         SET_FLAG(arg_5->field_18, 5, local_3[4] != 0);
