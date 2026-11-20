@@ -3,6 +3,7 @@
 #include "unknown_2626b0.h"
 #include "unknown_20fe20.h"
 #include "slot_handler.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <string.h>
 // @flags /O2 /Ob1 /arch:SSE /Gr
@@ -682,10 +683,26 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // pointer-to-volatile group views (local_6, local_11) 155 alone; lane 7's permuter set without them 98 (1604 B, the same
 // ESI exchange left). The table read once through `s_29de21 *const *` taken from the parameter (so its loads could be
 // shared) at the call, the range test or the endpoint search 155/155/155, and 0x29e730 (the caller) drops to 6: not kept.
+// Nearest-scan count, group link array, both together, or array at nearest scan 382 each.
+// First or current link reference and signed table-search bound 382 each.
+// Promoted group with a retained link array 453 at 1560 bytes.
+// The selected-index homes and link-list and group-table registers still differ.
 // M3 lane 9 r143 (a reduced-link LTCG screen of this file, within 7 rows of the fast build; aligned rows against retail,
 // control 391): the per-pass found flag declared once at function scope and cleared at each pass 391 (same homes); the
 // result flag declared ahead of the selected indexes 393; the selected indexes declared in reverse 391; the pass loop's
 // direction declared after its start index 366 (9 rows short); the group bitmap cleared by a chained assignment 391.
+// M3 lane 11 r125 (fast with 0x29e730 and 0x29de20, both MATCH; control 382, difflib-aligned 403, register/offset-masked
+// 174). Retail's output loop walks a separate point cursor (ESI) and steps it by comparing the anchor with the selected
+// point's unchanged home (`cmp ax, word ptr [esp + 0x38]`), indexes the entries by the count (`imul eax, eax, 0x1c` each
+// pass), and tests the anchor and stores it as 16-bit values (`cmp word ptr [esp + 0x34], -1`, a dword copy from the
+// candidate's home). Forms: a `short point = local_1;` cursor stepped by `local_2 > local_1 ? 1 : -1` with the entries
+// indexed by local_37, 386 (aligned 375, masked 152); that with local_2 `short` 400 (1579 B, aligned 331, masked 146: the
+// output loop is then retail's but for the NONE constant held in EBP and the merged tail); local_2 `short` alone 383; the
+// cursor with the output pointer kept 402 (1622 B); that with local_2 `short` 381 (aligned 333); the 400 form with
+// local_29 `short` 416 (1582 B, frame 0x68); the 386 form with local_29 `short` 421; local_29 `short` alone 456 (1563 B).
+// The three selected-index homes then sit at +0x40/+0x20/+0x1c against retail's +0x44/+0x28/+0x24 (retail's order, still
+// four and eight bytes low); the found flag keeps its own byte where retail reuses the dead by-value argument's slot.
+// MiniMax G (11-19): the group bitmap cleared with memset and the group index tested and set through the shared bit vector helpers (the index kept as a long): 382 -> 367.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
@@ -712,13 +729,15 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                     s_29e0f1 *local_11 = local_6->field_70;
                     point3f marker_position;
                     function_210850((s_type_c3b527 const *)local_8, &marker_position);
-                    dword visited_groups[2] = {0, 0};
+                    dword visited_groups[2];
+                    memset(visited_groups, 0, sizeof(visited_groups));
                     for (short local_14 = 0; local_14 < local_10->field_80; ++local_14)
                     {
-                        short local_15;
+                        long local_15;
+                        if (bit_vector_test(visited_groups, local_10->field_84[local_14].field_0)) continue;
                         local_15 = local_10->field_84[local_14].field_0;
-                        if ((visited_groups[local_15 >> 5] & (1 << (local_15 & 31))) || local_15 < 0 || local_15 >= local_11->field_40) continue;
-                        visited_groups[local_15 >> 5] |= 1 << (local_15 & 31);
+                        if (local_15 < 0 || local_15 >= local_11->field_40) continue;
+                        bit_vector_set(visited_groups, local_15, true);
                         dword visited_points[1] = {0};
                         short local_17 = local_10->field_84[local_14].field_2;
                         short local_18 = local_17;

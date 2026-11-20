@@ -602,6 +602,18 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // in mode's home, so the order of the induction variables' first uses does not decide it); the entry loop in a
 // forceinline helper taking (cache_index, first, selection) 2; the part context declared at the function top 2; the
 // selection in 0x40e90's spelling (`long`, NONE, then the ternary) 2 (all the 2s the same code).
+// M3 lane 11 r127 (fast with 0x404b0, which is 186 in the reduced image either way; control 2): the copy's source named
+// as an entry cursor (after or before first), passed to the copy and stepped at the end of the loop body, 163/163 (490
+// bytes: cache_index then arrives in ECX, and 0x404b0 rises to 206); the block's entry array named as a pointer after or
+// before first, used for the copy and `&entries[n]`, 2/2; first read back from the current counter after the store 2
+// (all three 2s the same code). Retail's first and the loop cursor take different homes though their final code does
+// not overlap, so at allocation time the cursor must start before first's last read (the index start).
+// M3 lane 14 r119 (fast with 0x404b0; control 2): a `long` material index (`movzx`, then a dword compare with 0xff) 76;
+// postfix steps for n and part 2; the selection as `mode == 0 ? ~0UL : (mode == 2 ? 0x10 : 0x20)` 2; `geometry != NULL`
+// 2 (the 2s the same code). Diagnostic, restored at once: first stored to a draw record after the loop (first live
+// across the cursor's range) 36 (517 B): first then leaves mode's home, so its slot follows a range overlap, and
+// retail's preheader order (the cursor's start ahead of first's last read) is what gives that overlap without code.
+// Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 2 at every K (not a symbol-count tie).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

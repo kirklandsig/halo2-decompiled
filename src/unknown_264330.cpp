@@ -436,6 +436,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // frame, 0xa4 against retail's 0xa0, and the actor index, which retail takes in EAX because it inlines 0x2641c0 at its
 // caller, so this body's own signature cannot change: BLOCKED-BY 0x2641c0 (its noinline declaration is in
 // src/unknown_265cb0.cpp, another lane's file).
+// MiniMax A (11-19): no new form, no lower score (412): retail still takes the actor index in EAX (and keeps it in EBX)
+// and gives the frame 0xa0, while ours takes it from the stack and gives the frame 0xa4; the slot offset and the actor
+// pointer that retail saves at [esp+0x28] and [esp+0x20] are the values its inlined 0x2641c0 reuses, and ours saves the
+// pointer at [esp+0x18] instead. The inline of 0x2641c0 and the calling convention are outside this file (its noinline
+// declaration lives in another lane's file), so the difference cannot be closed here; the body is unchanged.
 // MiniMax H (11-18): no new form, no lower score (412): the frame stays 0xa4 against retail's 0xa0 and the early
 // homes keep their order (ours the actor base at 0x18, the flag byte at 0x17 and the constant 1 at 0x1c, where retail
 // has the index at 0x28, the actor base at 0x20, the constant 1 at 0x1c and the flag byte at 0x13, since retail saves
@@ -778,6 +783,28 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // reloads in the 412 body) because the prop index holds EBX; retail holds the actor index in EBX for the whole body
 // (the three callees that take it in EBX get it without a load) and the prop index in EDI with a stack home. The
 // argument register follows from that allocation, not from an inner function. Body unchanged.
+// M3 lane 6 r204 (fast with 0x1e34e0, 0x263210, 0x264330, 0x264210, 0x2641c0, 0x26be00, 0x26be30, 0x265680, 0x264b50; control
+// 412, aligned [218, 198, 149] as exact / stack offsets masked / registers masked; body unchanged). Where the stack argument
+// comes from, by cutting the body (diagnostics, each restored): with no loop, with only the walk and the 0x263670 call, or
+// with the loop's first block alone (up to the maximum test, where the actor index is not read) the function takes the
+// index in EAX (`mov ebx, eax` or `mov edi, eax` at the entry) and the caller 0x1e34e0 MATCHES, so that caller's 25 is this
+// convention and nothing else; adding any one later block that reads the actor index inside the loop (the sampling block,
+// the state-change view update, the 0x264330 call or the 0x25ac00 call, each alone) puts it back on the stack, and so do
+// the loop without the switch and the loop without the sampling block. In this body the index then takes EDI and the
+// `update` byte BL; removing 0x263670's call from the first-block cut homes the argument in EBP and keeps it on the stack.
+// Flag forms, none moves it: sample and update as long 428 (1624 B), update alone as long 417, all three flags long 428,
+// the update flag dropped (diagnostic) 478 with the prop index in EBX; a short prior state re-measured 413. The walk
+// through the existing 0x26be00/0x26be30 re-measured 442 at retail's 1616 bytes, fast and plain, aligned [198, 182, 141]
+// (the two prototypes have to stand ahead of this function: declared inside the body the second one stays a call, 460 at
+// 1592 B); with the iterator's index read at each use 442 (same code). On the walk form the whole difference at the loop
+// head is one pair: this build keeps the prop index in EBX for the loop and loads the actor index into EDI from the
+// stack, where retail keeps the actor index in EBX (the register 0x2683f0, 0x1e2150 and 0x25ac00 take it in) and reloads
+// the prop index from the iterator's slot at every use (its EDI is free for the view pointer of cases 2 and 3).
+// Diagnostic on the walk form, reverted: the iterator's address stored in a volatile pointer 434 (1624 B), the index
+// still held in EBX across the calls, so it is not the iterator's storage that decides the pair. Not kept: the walk
+// raises the count (412 -> 442) although it removes the hand-written step; the next round should start from the walk
+// and look for what ranks the actor index above the prop index (retail's inlined 0x2641c0 is one read of it fewer).
+// MiniMax C (11-19): no gain (412, baseline; body restored). Retail holds the actor index in EBX for the whole body and gives the prop index EDI with a stack home; ours keeps the argument in its stack home and reloads it, and the prop index takes EBX, which also leaves the frame at 0xa4 against retail 0xa0. The inlined 0x2641c0 inline decision belongs to another lane file.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
