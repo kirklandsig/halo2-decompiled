@@ -871,6 +871,10 @@ static inline bool teams_enabled_19e1c0()
 // (diagnostic: it adds a test retail lacks) on the plain result 473 (1392 B: `remaining` in EBP and the token re-read from
 // its slot for every compare as in retail, token_length EBX and event EDI spilled where retail has EDI/EBX), on the
 // volatile result 428 (1436 B).
+// Fallback copy bound computed at entry, defaulting to token length or capacity in
+// branches or ternaries: ordinary result 669/480/669/669, existing qualified result
+// 563 each. NOT kept: the early bound adds a stack slot, growing the frame to 0x20c.
+// The token is still loaded after the prologue and the 0x204 frame remains unresolved.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

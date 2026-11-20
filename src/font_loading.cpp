@@ -994,6 +994,10 @@ static inline long font_character_pixel(long alpha, long color)
 // 59/171/172/59 with byte parity; 203/240/240/203 with dword parity.
 // NOT kept: The defaults reach 504 bytes with byte parity but move the cursor registers. Dword parity
 // shortens the fills and changes run allocation. The original helper and body were restored.
+// Full literal in the color state, then mask after the optional store, with high-first,
+// low-first, split-byte or combined assembly: byte parity 61/61/61/119, dword parity
+// 207/207/207/204. NOT kept: the byte forms assemble into one register, while widening
+// parity still merges the fills and moves the packed run out of EBX.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

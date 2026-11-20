@@ -663,6 +663,11 @@ struct s_24e9c7_points
 // Shared external origin pointer or lvalue 125/125; with the first, both upper or all four
 // base copies before half-width conversion 123/124/129 for either form. NOT kept: two-point best
 // gain. The first copy uses EDX earlier, but the across-Y spill and return home still differ.
+// Separate signed-width truncation and halving, width or height first, then halve
+// after the upper offsets with an early origin, after both upper offsets, after
+// the first origin, or after its upper sums: 138/123/124/163 for either order.
+// NOT kept: 123 and 124 gain only two and one at 743 bytes. The returned height
+// still uses EBP-8 and the early across-axis product has no retail spill.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
