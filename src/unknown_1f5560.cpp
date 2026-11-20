@@ -1803,6 +1803,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // twin scalars, planar scaler, or scaled center initializer 226 each. Type-zero/type-one
 // radial scaling 256/252, both radial arms 257, all displacements 248.
 // The shared planar displacement moves both center additions to their common continuation.
+// Native direction vector with fast normalization 248, aggregate direction 248, planar scaling normalizer 248;
+// native desired vector with fast or planar normalization 237 each; both native vectors 257, with shared cosine
+// dot 257, and both with planar normalization and cosine dot 257. NOT kept: the first radius-register difference
+// stays at +0x4f, and the direction/desired cosine still does not recover retail's register allocation.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

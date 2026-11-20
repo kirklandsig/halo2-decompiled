@@ -1554,6 +1554,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 1043, no-result return after the optional outputs 1028.
 // NOT kept: the late chained defaults gain two without changing the entry difference. The conditional
 // candidates enlarge the frame. Identifier and output homes and the later zero carrier remain.
+// Default result index or graph word for the class rejection 828 each, also supplying the three output
+// defaults 828 each, and result index first in the comparison 828. Candidate published in the for step
+// with reset at lookup 932, reset on a missing name 998, and a persistent empty identifier for the
+// selection and latch 978. NOT kept: the for forms reach retail length with a larger frame. The class,
+// resolved outputs and candidate still have different homes.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

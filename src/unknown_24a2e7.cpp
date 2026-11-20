@@ -370,6 +370,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
 // count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
 // 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
+// Immutable suffix text with cached/indexed clear 95/90, named display choice 95/90, and plain-name
+// break 95/90. Selecting an empty suffix when append is off gives 59/63; append-scoped suffix 67/84.
+// NOT kept: the 59 form adds an empty-string selection absent in retail, keeps the 0x24 frame
+// and omits the entry-base spill and the final ordinal multiply.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

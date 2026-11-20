@@ -4773,6 +4773,10 @@ struct s_weapon_projectile_creation
 // before trig 1121, with in-place direction snapshots 1204. Separate range and turn scopes 1121.
 // The in-place snapshots recover the 0x1e98 frame and move the first difference to +0x79,
 // but finish 93-97 bytes short. The original separate clipping workspace remains.
+// Ordinary-case exclusion 1138, synchronized-only first 1143, exhaustive ordinary-first conditional
+// 1140, default network case first 1153; independently computed synchronization 1143 and independent
+// synchronization/network results 1157. Switch with case 2 first or default first 1121 each.
+// NOT kept: the conditionals lengthen the body, and neither switch order changes the 0x1ea4 frame.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
