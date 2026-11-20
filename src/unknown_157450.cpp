@@ -482,6 +482,26 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax G (11-19): 23 (was 32): the kept form was re-measured with a plain check (23, same 10774 matched) and the
+// mask's type was tried once more around it: a dword mask with a dword OR and a word store (33), the same with the
+// compare narrowed on the mask side (83), the same with the present teams cast to a word (83), the dword mask in one
+// expression (32), the word mask without the cast on the present teams (24) and the word mask in one expression with no
+// dword local (77) all score worse than the kept 23, so retail's one dword reload of the word spill is not reachable
+// from the mask's type alone.
+// MiniMax G (11-19): 23 (was 32): the old team mask is now a word local (retail's `mov cx` entry and its word
+// spill) and the new mask is computed into a dword that the field pointer then stores, so retail's entry and the
+// whole player loop match byte for byte. Left: the mask is still reloaded narrowly once for the compare and once
+// for the change block where retail reloads its word spill once into ECX ahead of the first jne and shares that
+// register with the OR for the store; the playing teams are still in EAX where retail keeps them in EDX; the
+// engine index is still read after the two stores where retail reads it at the head of the change block; and the
+// present update still lands in the accumulator register where retail puts it in the bit register.
+// MiniMax G (11-19): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where
+// retail loads it as a word (`mov cx, word [ebp+0xe]` and a word store) and reloads the spill once into ECX ahead of
+// the first jne; the player's present update still lands in ESI where retail keeps it in EBX, and the playing teams
+// are still in EAX where retail keeps them in EDX. A word mask gives retail's entry and word spill but reloads the
+// spill twice (a narrow load for the compare and a wide one for the OR, 77); the dword mask with the compare
+// narrowed on the mask side 82; the word mask with the OR widened by a cast 77 (same code); a two-use team-bit
+// carrier 45 (one shift against retail's two) and the local team in the playing update 45. Body restored to main's.
 // MiniMax S (11-17): no new form, no lower score (32, was 32); the old team mask is still loaded and spilled as a dword where retail loads and spills a word, and every re-spelling of that pair (word local, word store, dword OR, reversed compares) scores 77 or more, so the body stays as it is.
 // MiniMax S (11-16): no new form, no lower score (32): the permuter over the four sources of the reduced image (3000 s, 60 tries) found nothing below the baseline, a bit local shared by the two accumulators scores 45 because the compiler folds the shift into the first use, and the only form below the baseline is a single-use bit local at 29, which the review drops as a one-use local; retail's changed block still stores the two masks before its not/and and reads the engine index at the head of the block.
 // MiniMax S (11-16): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, it is still read from memory at each use where retail keeps it in ECX across the tail, the present accumulator's update still lands in ESI where retail keeps it in EBX, and the engine index is still read after the stores where retail reads it at the head of the change block; the word mask alone scores 77, the non-volatile accumulator alone 102 and the two together 63.
@@ -876,7 +896,7 @@ void function_158140(void)
 	s_game_engine_globals *globals = function_xaee93d();
 	dword old_playing_teams = globals->playing_teams;
 	word *team_mask = &globals->team_mask;
-	dword old_team_mask = *team_mask;
+	word old_team_mask = *team_mask;
 	dword playing_teams = 0;
 	volatile dword present_teams = 0;
 	s_record_pool_iterator iterator;
@@ -903,7 +923,8 @@ void function_158140(void)
 		long team;
 
 		globals->playing_teams = (word)playing_teams;
-		*team_mask = old_team_mask | (word)present_teams;
+		dword updated_team_mask = old_team_mask | (word)present_teams;
+		*team_mask = (word)updated_team_mask;
 		if (game_engine_get() && globals->index24 != NONE)
 		{
 			function_b58c0(globals->index24, 1);

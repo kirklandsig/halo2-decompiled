@@ -83,6 +83,18 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax I (11-19): no new form, no lower score (219): retail's two rotation copies take their complement products' operands on
 // different sides, which one shared helper cannot produce, and the jump table still sits four bytes earlier than retail's.
+// MiniMax G (11-19): no new form, no lower score (244): retail's two inlined copies of the rotation helper still put the
+// squares and the sine products in the other frame homes (retail squares the k component into XMM0 and keeps the sine in
+// XMM1, ours keeps the sine in XMM1 and multiplies each axis component by it), and the jump table still sits four bytes
+// before retail's. This round the helper's own order was tried with the three squares first (391), with the three sine
+// products first (383) and with the second square moved up (391), all worse than the interleaved body; the operand
+// orders, the scalar spellings and the case grouping are the ones the earlier rounds list. Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (244): retail's two inlined copies of the rotation helper still take
+// the squared and the sine vector in the opposite frame homes (the first copy squared-first, the second sine-first),
+// and the basis switch still crosses from the second axis global in the other order; the helper spellings tried (the
+// cross term as `(1.0f-cosine)*axis->i*axis->j`, the sine product as `axis->i*sine`, the axis through a block-scoped
+// pointer local, the case group written first) all score the same or worse. Body unchanged.
+// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax R (11-17): no new form, no lower score (219): retail keeps two separately scheduled rotation copies whose complement products take their operands on different sides, which one shared helper cannot produce, and the helper's body may not be written out by hand unless the function then matches.
 // MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
 // still hoist and spill the sine products where retail keeps them in registers, and the jump table
