@@ -1424,6 +1424,10 @@ static __forceinline long real_to_long(real value);
 // through the existing tracking_get 508, with named locals for every step 508. So our link's choice follows the getter's
 // compiled size, and retail's 37-byte copy stays out of line at this site, so the difference is on the caller's side
 // (the site's weight), not in the getter. Body unchanged; still BLOCKED-BY 0x25d740's expansion.
+// M3 lane 13 r129 (fast with 0x25d740, 0x25d690, 0x1a9d80 and 0x1a9e00, all matched; control 382): the game time read
+// inside the timeout arm that uses it 447 (1912 B); the near-stop timeout compare as `0.5f < ...`, the speed magnitude
+// test as `0.0f < local_12`, the alignment test as `dot < local_26`, the planar length test as `0.0f < normalize2d(...)`
+// 382 each (same code). All restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

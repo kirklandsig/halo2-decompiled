@@ -379,6 +379,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // 319, the active flag through TEST_FIELD_BIT 319, `NONE !=` on the parent test 319 (all the same code). Also
 // BLOCKED-BY 0xb77d0 this round: `inline` on its /Ob1 definition (so the link could expand it here as retail does, in
 // place of the written-out velocity block) needs src/unknown_0b7740.cpp, another lane's file this round.
+// Shared case payload 317, with countdown snapshot, separate state scopes, or both 317 each.
+// Mode read before decrement 341, separate state scopes with or without countdown snapshot
+// 319 each, shared payload with scoped state and countdown declared in the test 318.
+// NOT kept: the shared payload reaches 1164 bytes with at most a two-point gain and
+// keeps the entry register exchange.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

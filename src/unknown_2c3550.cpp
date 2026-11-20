@@ -941,6 +941,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // prologue with flags, at +0x68) 700, after maximum_height and ahead of flags 701; `bool result` with it 773, alone 754
 // (NONE then takes EBX as retail, but a zero is cached in EDI and the state pointer moves to ESI); `bool result` with the
 // radius as one ternary 765 (2968 B; the radius is then stored once, as retail).
+// M3 lane 4 r234 (fast with 0x270930 and 0x2c4030, both MATCH; control 675): `flags` as a dword 675; `final_complete` as
+// a byte 675; `previous_node` initialised to NONE 731; the actor pointer through the existing actor_get 675; `previous_point`
+// declared ahead of `previous_node` 675 (the same code each, apart from the NONE initialiser). Body unchanged.
 // M3 lane 14 r129 (fast with 0x270930 and 0x2c4030, MATCH each run; control 675, aligned 601): the step loop under a
 // redundant `if (0 < count)` 703 (2961 B, aligned 598: the guard is not free here, the loop's entry test changes); with
 // `bool result` 754 (aligned 610); the pathfinding pointer read from the state at both searches and the trace (no entry

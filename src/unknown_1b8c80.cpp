@@ -1654,13 +1654,12 @@ void function_1f86a0(long actor_index);
 
 // MiniMax S (11-20): no new form, no lower score (123): retail keeps the iterator entry in EBX and spills the raw mask byte to its own stack byte where ours keeps the normalised mask in BL and the entry in a stack slot, and the frame is 0x10 against retail's 0x14.
 // score 123 (was 123): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
-// MiniMax H (11-20): no new form, no lower score (123): the flag bytes take AL and ECX where retail takes CL and EDX, the frame is 0x10 against retail's 0x14, and the default block sits before the final tests.
-// score 123 (was 134): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
 // magnitude retail's spill holds instead of being normalised to 0/1, and the build is now retail's exact 861 bytes.
 // Left: the frame is still 0x10 against retail's 0x14 (retail spills the 0x20 mask byte to frame+0x03 and keeps the
 // loop entry in EBX, saved after the early return; ours keeps the mask in BL and the entry in memory), so the tail's
 // frame offsets stay four bytes low, and in the head retail takes the actor index in EDX and reads the object table's
 // data ahead of the actor's index arithmetic.
+// MiniMax H (11-20): no new form, no lower score (123): the flag bytes take AL and ECX where retail takes CL and EDX, the frame is 0x10 against retail's 0x14, and the default block sits before the final tests.
 // MiniMax B (11-19): kept, 134 -> 123: the 0x20 mask compared against 0x20 (its only possible values) at both uses
 // keeps the masked byte's magnitude, which is what retail's spill holds, and the build takes retail's exact 861
 // bytes; what is left is the frame (0x10 here against retail's 0x14 - retail spills the masked byte to frame+0x03
@@ -2157,6 +2156,25 @@ void function_1f86a0(long actor_index);
 // this function unchanged and loses eight matched callers elsewhere, so 0xbaf40's memory summary, the lever the notes
 // above left open, is not the cause; open as before: retail gives EBX to the loop entry (with a home it reloads after
 // the roots), spills the mask byte and frames 0x14.
+// M3 lane 2 r120 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all MATCH; control 123; a/m = aligned / register-masked
+// aligned unmatched lines, control 82/48): the found block's flags read into a byte local ahead of the slot-flag test 140
+// (863 B, a 82/49); the default arm's five stores through the slot state view in the siblings' order (object, near, seat,
+// far, flags) 249 (878 B: the slot pointer takes EBX); only the default object store through the slot state view
+// (`state->unknown1c = element->object_index;`) 230 (862 B, a 79/45): that gives retail's found block exactly - the flags
+// load hoisted above the slot-flag branch with `test al, 0x20` in both arms and the flags re-read after the object store -
+// because a store through one view and reads through the other are not disambiguated. Loop, with the 0x20/0x40 reads split
+// between the selection view and the slot state view: `same` from the selection's flags, the decline's 0x20 and 0x40
+// through the state view, no mask local 235 (868 B, a 62/49): the entry then takes EBX with its home and root 1 borrows EBX
+// (retail's loop allocation), but the state reads stay slot reloads and nothing is stored at F+0x13; five other splits
+// 234/243/236/245/235 (865-867 B); `same` from `(selection->flags & 0x20) == 0x20` with the mask local assigned after it
+// (or before it) and used only by the decline 243 (867 B, a 68/29, first difference +0x4): frame 0x14 and the masked byte
+// spilled at F+0x13 as retail, but the full flags byte is then shared into BL for the 0x40 test (retail re-reads memory) and
+// the entry stays in memory; that with `(flags & 0x20) &&` and `specified &&` 244 (a 70/32); the decline's 0x20 through the
+// state view with the mask local 235; the state view for `same` and the selection's for the decline 227 (862 B, a 79/50);
+// the 0x40 test through the state view on the mask-after form 235 (the mask back in BL). With the found-block store on top:
+// the mask-after form 245 (868 B, a 65/26), the no-mask split 237 (869 B, a 59/46). Reading: the masked byte, the full flags
+// byte and the entry contest BL/EBX; retail spills the mask, re-reads the flags and gives the entry EBX, which none of these
+// gives at once. Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
