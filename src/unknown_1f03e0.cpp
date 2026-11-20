@@ -1702,12 +1702,18 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // f d i m g 230 (the r184 best's code: damping in EDX, first difference +0x31, the first arm's two `up.k` products and
 // its last scale row still load the other side first), f d m i g 262; the first arm's scale reading `&state->input` in
 // place of the pointer 486 (3055 B), that on f d i m g 482. Body unchanged.
+// M3 lane 11 r134 (fast with 0x1f0450, 0x24590, 0x30bf0 and 0xa75d0, all MATCH; control 234, aligned 194): the direct arm's
+// bounded pair renamed `bounded` or `clamped`, or its delta renamed `velocity_change` 234 each (same code: names do not swap
+// the delta/bounded homes, retail +0xc/+0x14, ours +0x14/+0xc); the input as a `vector3f const &` in place of the pointer 234
+// (same code); the general arm without the step flag (gravity cleared in the fallback arm and under `if (flying)` in the
+// bounded arm) 549 (3049 B).
 // M3 lane 12 r159 (fast, control 234 at 3047 B): the flags read through a `dword const &` bound to the field 484 (3053 B);
 // the damping bit named and read through a `bool const &` 484 (3053 B); a redundant `gravity = false;` at the top of the
 // first arm as well as at its end 234 (same code: the store is dropped); kept: the flying bit through the existing
 // forceinline 0x1f1462 mode-bit helper (re-measured on this body; 590 on round 48's) 234, same code, in place of its body
 // written out; that without the `!= 0` 234 (same code). Left as before: the damping bit's first extraction in ECX (retail
 // EDX), the crosses' operand sides, the expanded input length, and the general arm's k row in XMM2.
+// MiniMax A (11-20): no new form, no lower score (234); the first arm's cross still differs in one product's operand order (retail reads facing.j * up.k where ours reads up.k * facing.j), and writing the six products out gives 529.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

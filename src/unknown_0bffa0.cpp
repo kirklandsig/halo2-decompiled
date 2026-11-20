@@ -1313,6 +1313,26 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // (2877 B, the copy changes the prologue), vector first 623, with the scaled scalars gathered into a vector initialiser 606
 // (2778 B); the left cross through the shared cross3f with the forward cross through cross_product_c1a80(up, left, forward)
 // 554 (2817 B, masked 176); the left cross through cross3f alone 532 (2796 B).
+// M3 lane 2 r120 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned/register-masked unmatched
+// lines 199/81): the four sphere projections through a second, parenthesised copy of the projection helper (rows
+// (fj vj + fi vi) + fk vk, (li vi + lk vk) + lj vj, (uk vk + ui vi) + uj vj) and the cone projection through the existing
+// one 243 at 2830 B (145/61): the sphere rows then sum in retail's tree; every spelling inside the groups (operands swapped,
+// products as `v * row`, the single term first) is the same code, since each pair is re-sorted; that with y stored first 267
+// (161/70); with lane 1 r84's 288 lead on top 241 (124/47). Not kept: a second copy of an existing helper differing only in
+// grouping is a steering form (kept only with a match); left on that form: the pair and product operand order inside every
+// row, both crosses, the normalize's x87 sum, the cone arm's 1.0 register (XMM4 against XMM6) and plane point. Diagnostic:
+// 1 to 8 and 16 unused locals at the top 479/480/480/484/483/483/479/479 and 466 (2809-2814 B): no count returns to 2830 B,
+// so the symbol count is not a periodic phase here and a clean phase scan is not available. Body unchanged.
+// M3 lane 4 r233 (h2m fast), at 290: one matrix pointer for every matrix use in the sphere arm 588 (2788 B); the two true
+// flags as one chained assignment 290 (same code); the reference axis as an if/else of the two copies 574 (2822 B);
+// `orthogonal = (short)shape->kind == 1` 599 (2778 B); the cone depth from `entry->plane_offset` 291.
+// M3 lane 7 r197 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 199, masked 77): the
+// projection helper's rows through the existing 0x1427f0 inverse transform (the same k, j, i rows) re-measured 1273 (2143 B,
+// out of line); with `inline` on 0x1427f0's definition 495 (2799 B: expanded, but its rows are not retail's, and matched
+// 0x210770 then inlines it too, 48), `inline` alone (diagnostic) 290 here with 0x210770 at 48; the cone plane point through
+// vector3f_add_scaled re-measured 290 (same code); the cone bounds as a box2f initialiser assigned after the corner points
+// 579 (2840 B). Retail's cone arm stores the corner points first and the bounds after them in x0, y0, x1, y1 order, and
+// forms the reciprocal after loading the cone's width and height.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

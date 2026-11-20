@@ -819,6 +819,29 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // compression default and adjustment 1406, direct wide magnitude products 1566.
 // The 0x58c frame and native velocity homes remain unresolved. Direct wide magnitude products reduce the
 // frame to 0x590 and shorten the body to 6022 bytes.
+// M3 lane 14 r131 (fast = plain 1346 here, 0x2056e0 MATCH each run; body unchanged): the contact cross written straight
+// into field_4c and local_4 added there, alone on this body, 1419 (6185 B); descriptive names for the four tail
+// counters and the flag 1346 (same code: names do not move these homes); the object lookup through the existing
+// havok_object_get and its component-index field 1346 (same code); the signed square written sign first 1346 (same
+// code: the chain is canonicalised; ours multiplies the sign by the +0x88 factor first, retail squares local_11 first);
+// local_11 declared at function scope 1346 (same code).
+// M3 lane 2 r119 (fast = plain here, 0x2056e0 MATCH each run; control 1346 at 6243 B; aligned = rows outside a minimal diff
+// against retail with addresses, stack offsets and registers masked, control 932). A chain, each step on the one before:
+// (1) the magnitude helper reading its input directly (no snapshot) 1624 (5990 B, frame 0x590, aligned 939); (2) in the
+// friction arm the root `sqrt(local_62 * 0.9f)` computed before the normalised copy (retail evaluates and stores it first,
+// then does the scale product in SSE from the normalised components held in xmm) 1603 (6018 B, aligned 912); (3) the
+// contact cross written straight into field_4c and local_4 added there (retail's `lea ebx, [edi + 0x4c]` shape) 1618
+// (5977 B, frame 0x588, aligned 827); (4) the friction ternaries in retail's order (local_62, local_64, local_63) 1618
+// (5977 B, aligned 817); on (3), a named bool for `field_82 || field_83` ahead of the ternaries with that order 1602 (5993 B,
+// aligned 889; retail recomputes the `||` at both impact calls). Not kept: the positional count rises because the body is
+// 261 bytes short; retail's contact loop still multiplies the counter (three `imul`) and its homes need disp32 offsets.
+// Patch: build/r119/lead-206090.patch in the m3-lane2 worktree.
+// M3 lane 5 r216 (plain, 0x2056e0 MATCH each time; control 1346): a compile-only listing of this file names the frame's
+// locals: the five inlined copies of the magnitude helper's input (12 bytes each) are 60 of the 68 extra frame bytes, and
+// retail computes every magnitude in x87 straight from the vector's own slots; the helper reading its input directly
+// re-measured 1624 (5990 B, frame 0x590), so retail's extra length is elsewhere. The helpers' bodies as the existing
+// shared ones: the cross product as cross3f_staged 1357; the in-place add as vector3f_add(a, b, a) 1346 (same code); the
+// scale as vector3f_scale 1412 (6238 B, retail's length); the normalize as normalize3d 1470 (6131 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

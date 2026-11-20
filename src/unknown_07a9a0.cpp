@@ -1695,6 +1695,21 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // file without /arch:SSE plus the 0x63220 call 1013 (no change in the inline set); the disabled 0x6d4c0 draft linked in
 // place of its stub (with 0x6e910 listed so its file is in the image) 871 (no change). Retail's EAX session follows from
 // the top call staying out of line (EAX carries its argument); every form above that expands it moves the session.
+// Shared upper selector 865; split capacity gates 865, individual admission gates 865,
+// named upper result 865. Dword cells 876, with both library clears 903, split capacity
+// gates 876 and type retained across the lower check 876.
+// NOT kept: the selector expands but the opening lookup still expands, and all eight
+// move the session onto the stack and disturb the matched caller. The dword frame is 0xb0.
+// Player-loop lookup nested at the range, population or enablement checks, at each pair, at all three, or at
+// separate signed range bounds 871 each. The frame and both lookup boundaries remain unchanged.
+// Early signed dword histogram declaration 936; adjacent ID and signed/unsigned histogram scopes
+// 987/987; adjacent signed scopes with range fill for the first, second, or both clears 966/994/971,
+// and counted fills 993; two independently cleared dword histogram scopes 936. NOT kept: adjacent
+// scopes recover 0xb4 with the session still in EAX and shorten the body to 2652–2668 bytes. The
+// opening lookup still expands.
+// Dword bucket updates by explicit first/second/both assignments 911/911/911. Named first/second/both
+// bucket indices 928/911/928. First or both bucket addresses 911/911. NOT kept: all shorten the
+// body and increase the score. The frame reaches 0xb0 and the first variant lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -251,6 +251,14 @@ static inline void *function_xc5914d(long thread_index, short size)
 // declarations and assigned afterwards 95. Re-measured: the argument index read into a local for the test and the
 // element 95. In the null-first shape the expression pool is reloaded per block (not held in EBX), so nothing presses the
 // pointer into retail's spill.
+// M3 lane 15 r117 (fast with 0x2099f0, which stays matched; volatile-free forms): the expression pool read once into a
+// local after the allocations for the init block and the type test 95 (266 B); the allocation named `result` and copied
+// into the arm's pointer, which is then cleared before the call, 83 (277 B: the pointer in EAX for the whole function,
+// the NULL in ESI copied at the end); a redundant `result = arguments;` at the top of the init block 108 (305 B), just
+// before the count/type test 95; the result returned through `long *const &kept = result` 95. Diagnostics: the
+// volatile-free body built /O2 /arch:SSE /Gr 95 and /O2 /Ob1 /Gr 95 (the file's flags do not decide the merge). Retail
+// never writes EAX between the early copy and the arm's reload of the home into EAX, so its result and pointer are two
+// variables where every volatile-free form here makes them one.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

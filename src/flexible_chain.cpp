@@ -891,6 +891,19 @@ void __stdcall function_1160c0(real dt)
 // base copy is propagated); the ternary of two element addresses 304 (1387 B). New: the selected pointer read through a
 // `s_chain_segment *const &` binding 144 (same code). Reading: retail's segment variable takes EDX with ECX free; ours
 // takes ECX unless the variable is already live where ECX holds the count.
+// Squared separation first, reach first, root first and root after reach all 144;
+// with rest-offset components through the vector setter all 273.
+// NOT kept: the ratio stages tie. The setter changes the entry saves while retaining
+// the 0xa4 frame. The segment carrier and ratio/sine home remain.
+// Chain stiffness before the node, after the node, or before the split ordinal 277 each; stiffness after the split
+// ordinal 144; both inputs after the addresses 144, before segment selection 277, between selected ordinal and
+// address 144, or before the node 277. NOT kept: the early read forms grow to 1375 bytes and the other forms tie.
+// Node position reference and both references 144 each, short selected segment ordinal 252,
+// rest-vector reference with late copy 246, fixed-record exit and separate exits 144 each,
+// node base plus advance 144, final node point setter 335, signed tick assignment 144.
+// NOT kept: the short ordinal reaches retail length but changes the saves and regresses.
+// The frame agrees and the selected segment still needs EDX and its +0x14 spill.
+// MiniMax A (11-20): no new form, no lower score (144); the first difference is the loop head's alignment padding (the three-byte lea esp, [esp]), so the body is 1371 bytes against retail's 1368 and every later jump target is off by three; retail keeps the selected segment in EDX and spills it at +0x14 where ours holds the segments base in EDI and the segment in ECX and spills at +0x20, and the 113 lead needs a file-local one-caller helper, which is match-only and raises three shared users.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
