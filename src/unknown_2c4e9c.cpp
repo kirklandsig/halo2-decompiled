@@ -3277,6 +3277,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // stays as `mov ebx, ecx; jmp` with NONE cached in ECX); the same with the arms swapped 30; the id read and reset to NONE under
 // `if (field == NONE)`, walk guarded by the field, 30; a NONE default with the copy made inside the field test 30. A one-object
 // LTCG screen is not faithful here (`this` arrives in EBX). All restored.
+// M3 lane 6 r210 (fast with 0x2c9a58, matched in each): the id assigned in the guard's condition 30; the id read through
+// a `long const &` bound to the named local at the guard and the loop compare 30; the hit clearing the id with the loop
+// as `while (map_id != NONE && next(&iterator))` 35 (88 B; 0x2c9a58 then 8); the id started NONE and set from the field
+// inside a guard on the field 30; the loop compare on the field with the guard on the local 30. Diagnostic, not
+// keepable: a compiler barrier intrinsic after the read 30 (all 30s the same direct EBX load).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

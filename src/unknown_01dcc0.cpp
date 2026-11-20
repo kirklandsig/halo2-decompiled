@@ -428,6 +428,11 @@ long g_55e6c0;
 // store moved after the packing 159 (493 bytes); on main's body the same move 98 (480 bytes); the clamp's tests
 // constant-left (`0 > count ? 0 : 4 < count ? 4 : count`) 29, only the upper one 29, only the lower one 29 (all the
 // same code), the first spelling on round 122's lead 31.
+// M3 lane 12 r157 (fast with 0x1dc40/0x1db10/0x1d6f0/0x1d770/0x1db90/0x1de20, all MATCH; round 122's lead re-measured 31
+// at 484 bytes): on that lead the height store moved right after the levels clamp 159 (493 bytes), after the three zero
+// stores 159 (493 bytes); on main's body the height store right after the clamp's store 98 (480 bytes); the lead's whole
+// else body in a forceinline helper taking the entry and every parameter 31 (same code); no entry local (every access
+// through the global array) 144 (528 bytes; 0x1db10 4, 0x1dc40 1, 0x1d770 55).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
