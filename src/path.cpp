@@ -960,9 +960,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Common flag and short-link copy 209; increment after copy, signed edge test, parent early and
 // signed edge with split increment 300/210/326/273. Direct link/both predicates/both with parent early 211/339/353.
 // NOT kept: the lower scores retain test-set flags, and the 193 form adds six bytes.
-// score 286 (was 286): frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
+// Earlier note. frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
 // count compared as a dword where retail compares it as a word, and the node depth read at one address here and
 // through a lea there.
+// Word-count reconstruction with a retained edge index 396, signed flag 396, joined edge predicate 384,
+// early parent read 396; completed-step count 390, nested long 394, nested short 343, short guard first 345.
+// NOT kept: seven forms recover frame 0xe4, but all grow and score higher.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

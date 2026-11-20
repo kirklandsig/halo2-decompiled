@@ -2033,7 +2033,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 
 // score 431 (was 433): r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
-// score 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
 // r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
@@ -2616,6 +2616,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // byte and the state declared first 629 / 2376; a pointer local for the turn facing 622 / 2376; one to three
 // parenthesis pairs in case 4's dot 622 / 2376 (regrouped, no phase effect). The switch as an inlined predicate
 // with the tail on the caller's own locals 645 / 2384 (frame changes, aligned 532).
+// The dispatch bounds branch still reaches a later completion block.
+// Early pending assignment, joined or split motion exits, motion-result clear with nested or early guards,
+// inactive animation guard, named admission and switch-joined release 431 each. NOT kept: all tie.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
