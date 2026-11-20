@@ -5257,9 +5257,11 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
-// score 178 (was 146): The section bound and primary mask exchange registers, and the bitmap zero precedes node-scan admission.
+// score 167 (was 167): The section bound and primary mask exchange registers, which rotates the later scratch registers;
+// the node loop's head then sits one byte early and loses retail's alignment pad, and the search lacks retail's NONE start.
+// Earlier header 178 (was 146): the bitmap zero preceded node-scan admission.
 // m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
-// score 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
+// Earlier header 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // the scan) gives 166 with retail's EAX/EDI section-loop registers; a one-use local is match-only, so not kept. With it
@@ -5529,6 +5531,15 @@ struct s_damage_object_creation
 // Scoped const damage record, immutable count, int scan, early/late bound names,
 // secondary-test continue and body increment 178 each. Both section decisions before the writes 200.
 // NOT kept: the decision locals move the datum-offset spill and spill the section count.
+// m3 lane 11 r130 (fast with 0xdb810/0xdbb40, control 167 at 795 B): the cause of the shift from the node loop on is one
+// byte: the inlined node-state lookup loads g_4e0300 into EAX (the 5-byte form) where retail uses EDX, so the node loop's
+// head needs 8 pad bytes and VC drops the 7-byte pad retail has; the rotation starts in the section loop (ours count EDI,
+// mask EDX, bit EAX; retail EAX, EDI, EDX). Codex F429's one-use `dword` first-mask local re-measured on this body 112
+// (811 B: retail's section registers, the node-loop pad and the piece loop's jmp/pad layout; left the zero-extension ahead
+// of the count guard, the search's NONE start and the later rotation; one-use local, not kept). On it: the for/break search
+// 247 (777 B, frame 0x13dc, the mask takes ESI); with the root node named 247; with a piece-loop copy of the mask 232
+// (792 B, object_index loses ESI to the node count); the while search then `if (i < node_count) first_node = i;` 215
+// (810 B). On this body: the section tests written mask first 167 (same code).
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

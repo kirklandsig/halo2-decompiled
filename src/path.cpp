@@ -915,6 +915,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 396, also with the widened edge bit 396, then with one transition type read 332.
 // NOT kept: the 0xe4 forms lose the matched caller. The single type read recovers that
 // caller and restores the extra frame word. None matches or improves the opening score.
+// m3 lane 11 r130 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, 0x26f3f0; both builds end in `ret 0x24`): lane 1
+// r122's saved two-flag lead applied to this file is 2 again (the latch's two reloads, j from [esp + 0x10] and steps from
+// [esp + 0x104], in the other order). Retail's traversal latch stores `previous` into [esp + 0x10], the slot the scan's j
+// reuses, and previous_index into the margin's slot. On the lead: j declared at function scope, just before the margin
+// and just after it 2/2/2 (same code); the fill loop as main's pointer walk with the if clamp 235; `previous` without
+// its NULL initialiser 378 (1372 B).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

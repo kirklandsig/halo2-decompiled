@@ -5457,6 +5457,17 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // sums 169; complete transverse vector 272; scaled-vector addition for forward, left or both
 // 272/276/276; staged forward vector 275. NOT kept: the per-row sums tie, and every full-vector stage
 // grows the body.
+// m3 lane 11 r130 (a compile-only screen of this file reproduces both blocks exactly; fast with 0xc60c0, 0xde190, 0x1fe120):
+// retail's forward term `fld [m]; fmul st(n)` is the pattern of a float times a double (the float operand is converted
+// first), and its k row consumes up_scale and left_scale but not forward_scale: forward_scale double, the other two
+// float. Screen: `double cosine = cos((double)pitch); double forward_scale = cos((double)yaw) * cosine;` with
+// `real left_scale = (real)(sin((double)yaw) * cosine);` gives all three rows exactly, but cosine then goes to a
+// frame qword (retail keeps it on the stack): real build 194 (776 B); with no named cosine 194; every double left_scale
+// keeps cosine on the stack but takes the double row pattern (cosine, forward and left double 205 at 774 B; all four
+// double 207); a real forward_scale used as `(double)forward_scale` in the rows 169. The first cross product's
+// schedule ignores operand order: all 64 product orders of either cross product through a pointer helper, written
+// out in place (35 or more), staged, statement orders, `left` at function scope, forward declared before up, and both
+// crosses in one inline helper all leave up.i preloaded.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
