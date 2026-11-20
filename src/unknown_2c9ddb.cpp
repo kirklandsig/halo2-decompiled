@@ -443,6 +443,13 @@ extern long g_55c154;
 // with the create-default test straight after the load and the index store and copy in each arm 167 (576 B); that with the
 // ternary in the load's argument and `selected == NONE` tested again 173 (567 B); one load with `selected` set to `saved`
 // when it is NONE 76 (577 B).
+// M3 lane 15 r120 (fast with 0x13fac0/0x212bc0/0x238c69, all MATCH; control 61): the selection as an if/else setting
+// create_default true/false and the source index 69 (581 B, one call, the flag still spilled); the second half's head as
+// the matched sibling 0x2c5897 writes it (`if (function_215f40(...) && (saved = function_212380(...)) != NONE)`) with two
+// load arms 174 (595 B, the listed two-arm code); that flag diamond with the create-default test straight after the load
+// and the index store and copy in each arm 128 (581 B: no threading, and the arms' identical leading stores are hoisted
+// back above the test); the sibling's `&&` head on the one-load body 61 (same code); `if (selected == NONE ? load(saved) :
+// load(selected))` with the request mode chosen per arm and one shared 0x238c69 call 130 (549 B).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

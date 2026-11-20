@@ -1333,6 +1333,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // vector3f_add_scaled re-measured 290 (same code); the cone bounds as a box2f initialiser assigned after the corner points
 // 579 (2840 B). Retail's cone arm stores the corner points first and the bounds after them in x0, y0, x1, y1 order, and
 // forms the reciprocal after loading the cone's width and height.
+// m3 lane 15 r120 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 396, register-
+// masked 160): every sphere row sums its products in exactly the reverse order of ours (x (fj vj + fi vi) + fk vk against
+// (fk vk + fi vi) + fj vj, likewise y and z). The projection helper through forward/left/up axis pointers 604 (2780 B); y
+// stored first with the pre-scale statements k, j, i 291 at 2840 B (aligned 430); the rows computed up, left, forward 318
+// (2831 B); the cone half extents as `width / origin_offset * 0.5f` (one repeated divisor, no scale local) 515 (2813 B: the
+// reciprocal still forms early); assumes at the top on count, shape and entries (1/2/3 of them) 562/600/554.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

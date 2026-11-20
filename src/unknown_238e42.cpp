@@ -1370,6 +1370,11 @@ bool __stdcall function_2399da(long controller_index)
 // listed other-way-round shape, re-measured as a cleanup); the identity declared with a NULL initialiser 90; the identity
 // test with explicit `!= NULL` / `!= 0` and the own rank unsigned 90; the permission test with the member's rank on the
 // left 91; `own_rank >= rank` with `3 == rank` 90 (each 90 the same code). Identity ECX/rank EAX remain.
+// M3 lane 15 r120 (fast with 0xac050/0xac360/0x2399da/0x23955e, all MATCH; control 90): the membership call's result kept
+// in an unused bool local 90 (same code); the have_member block as `if (!have_member) { if (may_change) copy; else refuse;
+// }` 92 (430 B, the colouring stays); an assume that the identity pointer is not NULL at the top of the identity block 90
+// (same code); the member's current rank named before the permission test 90 (same code); the rank read through a
+// `long const *` to its own address in the dispatch 90 (same code).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
