@@ -1531,6 +1531,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
+// MiniMax I (11-20): no new form, no lower score (561): this round only re-measured the body; the frame is still 0x1990 against retail's 0x1984 (retail shares one slot between the six-real buffer and the linear velocity where this build keeps them apart) and the definition index sits at [esp+0x30] against retail's [esp+0x3c], so every later home is shifted; the five dead flag-result byte stores at [esp+0x13] and the four-times unrolled sum are also still different.
 // MiniMax I (11-20): no new form, no lower score (561): the frame is still 0x1990 against retail's 0x1984 (retail shares one slot between the six-real buffer and the linear velocity where this build keeps them apart) and the definition index sits at [esp+0x30] against retail's [esp+0x3c], so every later home is shifted; the five dead flag-result byte stores at [esp+0x13] and the four-times unrolled sum are also still different.
 // MiniMax B (11-13): no new form, no lower score (561): our frame is 0x1990 where retail's is 0x1984, so every stack
 // reference sits a dword higher, and the point-sum loop's unrolling and the flag stores keep retail's different shape; this
@@ -3900,6 +3901,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
+// MiniMax I (11-20): no new form, no lower score (1000): this round only re-measured the body; the frame is still 0x78 against retail's 0x74 and the velocity and force homes between them are not one uniform shift, and retail inlines 0x142640 and 0x1427f0 where this file calls them - both live in files this lane may not edit: BLOCKED-BY 0x142640 and 0x1427f0.
 // MiniMax I (11-19): no new form, no lower score (1000): the frame is still 0x78 against retail's 0x74 and the velocity and force homes between them are not one uniform shift, and retail inlines 0x142640 and 0x1427f0 where this file calls them - both live in files this lane may not edit, so the inlining and the frame cannot be reached from here.
 // MiniMax C (11-15): no new form, no lower score (1000): the frame is still 0x78 against retail's 0x74 and the velocity
 // and force homes between them are still not one uniform shift; retail inlines 0x142640 and 0x1427f0 where this file
@@ -4555,6 +4557,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
+// MiniMax I (11-20): no new form, no lower score (118): this round only re-measured the body; the trig values sit in the opposite stack homes (this build keeps the sine at [esp+0x18] where retail has the cosine), the projection's first product loads the other input, the up rows are written k, j, i where retail writes i, j, k, and the forward row's first product takes the sine term before the cosine term; ours is 797 bytes against retail's 806.
 // MiniMax I (11-20): no new form, no lower score (118): the trig values sit in the opposite stack homes (this build keeps the sine at [esp+0x18] where retail has the cosine), the projection's first product loads the other input, the up rows are written k, j, i where retail writes i, j, k, and the forward row's first product takes the sine term before the cosine term.
 // MiniMax I (11-17): no new form, no lower score (118): the trig homes still swap (ours the sine at [esp+0x18]
 // and the cosine at [esp+0x1c], retail the reverse), the four cross products still load the other operand and
@@ -5796,6 +5799,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax I (11-20): no new form, no lower score (759): this round only re-measured the body; the frame (0x18) and the length are retail's and the first difference is the entry's zero and result in different SSE registers (this build zeroes xmm4 and takes the result in xmm2 where retail zeroes xmm2 and takes it in xmm1); after that the push order, the case dispatch chain, the per-site 1.0 load and the definition pointer's ownership differ, and ours is 2976 bytes against retail's 2974.
 // MiniMax I (11-20): no new form, no lower score (759): the frame (0x18) and the length are retail's and the first difference is the entry's zero and result in different SSE registers (this build zeroes xmm4 and takes the result in xmm2 where retail zeroes xmm2 and takes it in xmm1); after that the push order, the case dispatch chain, the per-site 1.0 load and the definition pointer's ownership differ.
 // MiniMax B (11-13): no new form, no lower score (749): the frame and the length are retail's, but the entry's zero and its
 // 1.0 still take XMM4 and XMM5 where retail takes XMM2, and the definition receiver and the per-site 1.0 lifetime still differ.

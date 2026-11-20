@@ -1156,6 +1156,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax I (11-20): no new form, no lower score (33): the write block's close test written as one shared condition (the count test or the not-resized path with the handle test inside) measures 157, and the close duplicated in both arms measures 179 (994 bytes against retail's 930), so the body stands; what still differs is retail's single close block reached from the resized and the not-resized path, which needs a goto (kept only with a byte match), the swapped pair of homes (ours the query size at [esp+0x28] against retail's [esp+0x24] and the write count at [esp+0x24] against retail's [esp+0x28]), the write call's flags zero built in EAX where retail builds it in ECX, and the checksum compare taking EDX where retail takes EAX.
 // MiniMax B (11-19): no new form, no lower score (33): the frame and extent agree, the query-size and write-count
 // homes stay four bytes off, and the only lower form found so far is the goto that lane 11-16 used here, which is not
 // to be repeated; the body stands.
