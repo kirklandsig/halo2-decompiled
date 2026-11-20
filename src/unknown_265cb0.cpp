@@ -2239,11 +2239,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
 // retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
 // registers.
-// score 158 (was 168): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
+// score 158 (was 158): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
 // the players iterator loads its table into ECX (retail EAX) and the direction is not held in XMM1..XMM3 across the two dots.
-// Earlier first line: 168 (was 168): r200 unchanged.
+// Earlier first lines: 158 (was 168); 168 (was 168): r200 unchanged.
 // MiniMax A (11-20): no new form, no lower score (168): the 0x80 frame agrees and the first difference is still the contact head's reversed base and index in the address encoding (ours `[eax + ecx + 0x58]`, retail `[ecx + eax + 0x58]`), which comes from the inlined 0x26be00's `object->value58` read of the clump table - that helper lives in src/unknown_26bda0.cpp, so the roles cannot be changed from this file; the rest of the gap is the players iterator's table pointer, which retail loads into EAX and stores at once (a five-byte load against this build's six-byte one into ECX, which moves the loop pad and every row after it), and the per-case scratch rotations; the two NONE stores in the other order measure 170 and the two player searches merged into one 829, so the two separate searches and the store order are retail's.
-// score 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// Earlier first line (merged into the note above): 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // M3 lane 8 r189 (fast with 0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 168): the first difference is the
 // inlined 0x26be00, whose head load retail addresses as [table + slot offset + 0x58] and ours as [offset + table + 0x58]
 // (the slot offset is shared with the actor lookup). Forms: the byte alias `data` dropped for `(byte *)actor` 168; the
@@ -2904,6 +2904,21 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 164; the decay through a short local with one unconditional store 159; the players iterator's two NONE fields stored
 // ahead of its table pointer 160. Diagnostic: 1 to 7 unused long locals at the top
 // 168 each (the +0x5c base/index order does not follow the symbol count).
+// M3 lane 2 r123 (fast with 0x25d810/0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 158, difflib-aligned 96,
+// register-masked 50; check.py --fast agrees on the lead). LEAD (match-only: an if/else order picked by score): the
+// positive arm's skip test hoisted ahead of its dispatch with the reset arm first (`if (31c != NONE && 31c != slot)
+// continue; if (31c == NONE) { reset } else if (cooldown > 0) decay; 31c = slot;`) 149 (2880 B, aligned 90, masked 44):
+// the arm is then retail's row for row (the NONE test threads into the skip test, the reset arm sits after the join and
+// jumps back to the decay's 0x320 store); the same with the decay arm first 158 (same code), so the gain is the arm order
+// alone. Also: the slot store at the end of both positive arms 239 (2896 B: the then-arm's store reuses the slot loaded
+// for its compare, CX, so the two copies differ and do not merge); the hoisted skip test with three plain statements
+// (reset, decay, slot) 224 (2884 B). Re-measured on 158: the reset-first else-if chain 164; the reset arm first 164;
+// player NULL first with a long copy of the short index 372 (the search lines are retail's, everything after them one row
+// and one scratch step late behind the iterator's ECX load). Scoring block with no `visible || established` wrapper: the
+// established arm setting positive with `else if (visible && !(far && slow))` for the rest 186 (2853 B; with the lead
+// 177); the established block followed by one `established || (visible && !(far && slow))` test 255 (2848 B; with the
+// lead 255). Diagnostic: one or two unused locals read from actor fields beside the iterator 158 (dropped before
+// allocation; the iterator's ECX does not move).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
