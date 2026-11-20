@@ -384,6 +384,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // The same four forms with a separate comparison cursor also give 72/73/72/72.
 // The terminator uses a direct zero and the body reaches 205–206 bytes, but the
 // 0x24 frame still lacks the base spill and EBX carries the scaled entry address.
+// Ordinal from cursor difference with selected end 84/75/93/80, or positive-count
+// guard 82/74/95/76, indexing all found accesses, formatted destination, plain name
+// and clear, or post-concatenation clear. NOT kept: all add an integer divide, and
+// the extra frame word in the 0x28 forms does not preserve the unscaled scan ordinal.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

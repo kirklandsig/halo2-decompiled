@@ -768,6 +768,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // and copied/assigned heading 671/727/503/727. The same workspace as a
 // point 671/727/503/727. The 671 forms reach retail's 3499 bytes.
 // NOT kept: the initial position still goes to +0x8c and every score rises.
+// Branch-owned side Y 720, advancing the planar base 718, selecting full Y 693 or its
+// displacement 698, branch/selected radial Y 694/627, shared planar cross test 702,
+// and shared planar difference 719. NOT kept: full Y selection recovers the +0x80
+// position home and frame 0x88 but shifts the first difference to +0x60 and regresses.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

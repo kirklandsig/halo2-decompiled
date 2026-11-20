@@ -1214,6 +1214,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // conditional point selections 130; normalized vector value 246.
 // NOT kept: the scalar forms that tie retain frame 0xc0. The separate scaled vector, reciprocal and
 // vector value grow the body, and the earlier doubled half-root regresses.
+// Item cross 130, mixed-product scale 130, shared rotation with axial or forward
+// contribution first 273/278, shared i-k-j projection 154, value-returning cross
+// with shared scale 248, and staged cross in place on the marker or facing operand
+// 241/271. NOT kept: the shared projection recovers frame 0xb4 and 848 bytes but
+// raises the score and changes its sum grouping.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

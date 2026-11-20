@@ -703,6 +703,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // MiniMax B (11-20): no new form, no lower score (221): the frame stays 0x20 against retail's 0x14 because the first
 // offset vector still needs a stack home (its address reaches the view helper); writing the offsets as explicit
 // component assignments reaches 218 (under the 8-point bar) and a by-component view helper 265, both kept out.
+// Paired coordinate displacements, first/second endpoint first, loop 218/218 and scalar
+// rows 216/217. Per-coordinate scaled selection with direct/shared scale tests,
+// aggregate 289/256 and loop 303/279. NOT kept: the four displacement forms gain at
+// most five. The frame stays 0x20, and the second displacement and coefficient homes differ.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
