@@ -206,6 +206,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // the bool output passed to 0x2626b0 as `local_14 != false` 172 (978 bytes). Re-measured: the three outputs declared at
 // the top 12, the node pointer const 12. 0x260670 (ours, on the bool output's chain) is still 440 at 3097 bytes against
 // 3077 (frame 0x8a8 against 0x8a0).
+// M3 lane 13 r122 (`--fast 0x1af160 0x1e1f20`, control 12; merging same-role locals to change the frame's symbol set, the
+// lever that fixed 0x12eb00's tied homes, each match-only): the second 0x25d690 result assigned to `local_2` (no `local_28`)
+// 12; the 0x265c30 flag carried in `local_18` 12, in `local_17` 33; the 0x1e1f20 result carried in `local_13` 72 (978
+// bytes); the rounding input sharing 0x1af530's real output (one real declared at the arm's top) 44. The pairs stay swapped.
 // M3 lane 16 r147 (`--fast 0x1af160 0x1e1f20`, control 12): the delay rounding through a forceinline seconds-to-ticks
 // helper (the tick-rate product and fld/fistp inside) assigned to the long output 134 (981 bytes), its result stored
 // straight to the record's short 25 (the helper's result takes its own home); the 0x1e5280 completion flag declared

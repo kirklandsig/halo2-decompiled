@@ -1923,6 +1923,26 @@ static inline bool unit_dual_wielding(long unit_index)
 // (the getter's local order is irrelevant); 0xc9d00 written with UNIT_GET at both uses or a header-array local in place
 // of its pool copy (scratch copies of its file, which is not ours this round) gives the put-away lookup retail's
 // offset-first order but drops retail's `mov eax, ecx` copy (13). The permuter cannot search this form (reduced 48, full 2).
+// M3 lane 3 r271 (fast with 0xc9d00, 0x1058b0 and 0xfff40 in the image, all matched each time; the five weapon lookups'
+// address orders are written O for offset-first and D for data-first: retail O O O D O with the `mov eax, ecx` copy): the
+// 0xc9d00-call form with `result` at the top re-measured 4 (D D D D D), with weapon_get_102e10 at the first lookup 2
+// (O O O O D). The flip of lookups 1-4 comes from any one-use local in the first lookup's statement, not from the masked
+// index: a one-use pool copy there (`s_record_pool *objects = g_4e0300;` read once) 2, a one-use offset local written on
+// either side of the data 2/2. The same locals used at two lookups 4 (D D D D D): the pool copy at lookups 1 and 2, that
+// with own copies at lookups 3 and 5, the offset local reused at lookup 2 or 5; the offset local at the animation test or
+// at every lookup 34 (534 B). Written operand order never counts: a lookup spelled offset-first with no local at lookup
+// 1 or 5 of the 4 form, or at the animation test or lookup 5 of the 2 form, same code. On the 2 form, no change (2): the
+// getter at lookups 1 and 5, at all five; lookup 5 or the animation test through a one-use pool copy; the animation test
+// through a one-use header-array local; `result` declared after the definition (the order of 0x1058b0 and 0x105c20),
+// `i` declared first, the put-away pointer, `current` or the definition declared bare at the top. Worse: one pool copy at
+// the top for lookups 1, 2, 3 and 5 182 (564 B: the copy takes EBX and its data address is strength-reduced); the trigger
+// loop through a trigger pointer from a fresh lookup 131 on the 4 form, 130 on the 2 form (533 B); a pool copy shared by
+// the animation test and a written-out holder lookup 200 (579 B); the dual-wield helper through a twice-used pool copy
+// 200 (579 B, diagnostic); the animation test through `current` 185 (576 B). The permuter on the 2 form with 0xc9d00,
+// 0x1058b0 and 0xfff40 as context: 19 tries in 600 s (its reduced image is 542 files), nothing below 2. Matched 0x101490
+// has retail's offset-first trigger loop beside data-first lookups only through its `volatile` pool read, so that
+// lookup is a separate expression there. Left: what keeps the animation test's lookup data-first and the put-away lookup
+// offset-first (with the copy for 0xc9d00's pool copy) once the others are offset-first.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -2978,6 +2998,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // reserves eight bytes and keeps the weapon index in EBP with two pointers spilled, and with the two activity
 // names tested before the switch where retail has them as cases of a tree whose root branches jle to the
 // less-or-equal side.
+// MiniMax D (11-19): no new form, no lower score (389): retail's 27-case selector is a comparison tree whose root
+// branches jle to the less-or-equal side, where this build's compiler always branches jg; the case orders, the if-chain
+// with the default, and the merged switch all measure 389 or worse (412, 434, 726, 760), so that part of the gap is the
+// compiler's dispatch shape and not the source's.
 // score 389 (was 389): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
 // tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
 // all 27 selectors, every field offset (0x180/0x184/0x18c/0x175/0x16c/0x16e/0x17e/0x248, barrels 0x1a4+0x34*i,
@@ -3318,7 +3342,7 @@ void function_102f10(long weapon_index, short trigger_index)
 void function_b7360(long object_index);
 void function_b58c0(long index, dword mask);
 long function_1896c0(real scale, long sound_index);
-void function_a88a0(long player_index, long definition_index, long other_definition_index, long count);
+void function_a88a0(long player_index, long first_definition, long second_definition, long count);
 
 struct s_ammo_conversion_entry
 {
@@ -3547,6 +3571,31 @@ struct s_ammo_conversion_entry
 // what is left: retail keeps the weapon in EBP and pushes EDI only after the loop guard (the early exit returns the
 // cleared flag in AL), the scan count is spilled with the index in EBP, and the found entry is reached through the
 // pointer formed in the scan. Not kept: no count below 190. Original body restored.
+// M3 lane 2 r110 (fast; control 190; aligned = LCS line count, 135 for this body). Behaviour fix kept: the call to 0xa88a0 passed
+// its two definition indices the other way round. Retail loads EDI from the weapon's index and ESI from the other weapon's
+// (0xffed6-0xffee0) and the matched callee tests the type byte of the one in ESI, its first definition parameter. Count stays 190.
+// Lead, match-only (build/r110/lead-0xffc60-52.patch in m3-lane2): 52 at 731 bytes, first difference +0xa1, every remaining line
+// the ECX/EDX choice from the loop head on. It is: one exit (`if (mode == 4) acquired = false; else { ... }` for the early
+// `return false;`, which puts the result in AL through the first block: `xor al, al`, the store from AL, EDI pushed after the
+// loop guard, the count loaded for the guard); the two flags declared ahead of `*rounds = 0;` (retail stores other_has_rounds as
+// an immediate and the result from AL); a transfer count started at 0; the same-definition clamp as a long ternary (`movsx esi,
+// si` in place); the conversion scan reading its count and table from the magazine definition at each use with the entry pointer
+// taken in the loop (the scan is then retail's instruction for instruction, count spilled); the loaded clamp in long; `retained`
+// as a ternary; the type byte read at each use; the magazine pointer declared ahead of the definition's; the unloaded count read
+// through `other` beside the source pointer. The last two make it match-only: with the definition's pointer first the loop index
+// takes ECX for retail's EAX (207 at 713 bytes, aligned 33), with both sum operands through the source pointer `other` loses EBX
+// to the weapon (204). Without those and the flags-first order the retail-shaped body measures 204-210.
+// Steps (fast): retail-shaped transfer body 218; with ternary `retained` 205; count and table at use 229; that with no magazine
+// local 159 (161 with the call fix); 36 declaration combinations with the fix 161-231; explicit returns after the loop
+// 233/233/235; single exit with the magazine pointer first and unloaded through `other` 58, through the source 157, magazine
+// pointer last 210; flags-first order and long ternary 52. Clean steps alone on this body: call fix + single exit 203, with the
+// positive flag 203, flags first 204, long ternary 203, long loaded clamp 202, type byte at use + ternary `retained` 209.
+// Same code or worse (compile-only screen, about 1500 forms): loop condition reversed, post-increment, index declared at
+// function scope, a while loop, compare operands reversed, a named other-definition index, transfer and source declaration
+// places, MIN or if forms of the three clamps, the existing game-mode helper, inline accessors for the two magazine pointers or
+// the count, a short pointer or reference to the unloaded count, `acquired = true` ahead of the conversion clamp (the cmov
+// becomes a branch), the leftover-rounds flag as an `||` chain (gives retail's loop-head registers but reads the flag).
+// Permuter on the 52 form (600 s, 43 tries): best 52.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3621,7 +3670,7 @@ bool __stdcall function_ffc60(long weapon_index, long other_index, long player_i
                 *(long *)((byte *)WEAPON_DEFINITION(other) + 0x138);
             if (sound != NONE) function_1896c0(1.0f, sound);
         }
-        function_a88a0(player_index, weapon->definition_index, other->definition_index, *rounds);
+        function_a88a0(player_index, other->definition_index, weapon->definition_index, *rounds);
         function_a7cd0(weapon_index);
         if ((1 << other_type) & 4)
         {

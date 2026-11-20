@@ -827,6 +827,15 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // The full build reads 115 once src/unknown_1ee340.cpp's constructor stores its vertices through the component accessor
 // (this round's 0x1edd00 match) and 114 with that file as before (plain checks of both trees): the reload pair before the
 // flag setup (`mov edi, [ebp - 0x64]` against retail's `mov ecx, [ebp - 0x40]`) follows the whole-image link, as in round 97.
+// M3 lane 4 r222 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115): the tutorial colour as
+// `if (flag_1384) unpack(a4) else unpack(bit ? a8 : a4)` 214 (1890 B: the a4 load then comes first as in retail, but the shared
+// call follows it where retail's follows the a8 load); that with g_510c94 read at each use 446 (1903 B); negated with the arms
+// swapped 214 (1890 B); the first on the bool timer 151 (1889 B); the timed message colour read through g_510c94 at each use
+// (no `timed` local) 416 (1890 B). Same code: `left` as `short const` on the bool timer (191); 0 to 5 dead locals ahead of the
+// bool-timer body (homes unchanged, so not a symbol-count state). A one-object LTCG screen names the homes: retail shares the
+// flash scalar with the row counter and the row fade with the total height, and gives the row height a cell of its own; on the
+// bool timer ours shares the row height with the total height and the flash scalar with the row fade, and the row counter has
+// its own cell. A scan of every matched retail function finds no other lone word-sized frame local like `left` (only an /Od one).
 // M3 lane 1 r124 (fast with the file's other 21 functions, all MATCH each run; control 115, difflib-aligned 113): nearly
 // every difference is a frame home. 0x24ce9d (same file, matched, no longer held) taking `left` and `top` as `short`
 // 182 (1883 B; 0x24ce9d stays matched); `left` as a `short const` initialised where it is computed 115 (same code); the
@@ -846,6 +855,13 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // total height, text bounds, colour, top, left, player, view, count, row height, font; ours: split flag, scripted, origin
 // and bounds, tutorial, timer with flash and the row height, line height, total height, colour, view, text bounds,
 // player, top, row counter, count, font, left.
+// MiniMax A (11-19): no new form, no lower score (114; 115 on this build's reduced image): what is left is the
+// frame homes and two widths - retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd
+// where this build writes the scripted flag as a dword at -0x14, the tutorial flag as a byte at -0xd and the
+// split-screen flag as a byte at -2; retail writes the left coordinate as a word at -0x3c where this build writes
+// a dword at -0x50 (the spelling that narrows it groups the two coordinates into one array, a banned
+// locals-grouping form); the view pointer sits at -0x44 against -0x30 here and the font at -0x50 against -0x4c.
+// The tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

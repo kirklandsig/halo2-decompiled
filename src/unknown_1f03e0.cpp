@@ -1089,6 +1089,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax B (11-19): no new form, no lower score (234): the permuter over this body tried three rewrites in 363 s and left
+// the baseline at 234. The shared out.k store does reproduce retail's tail - with the disabled arm's last row left in a
+// register and the three arms ending in one shared store of out.k, the disabled arm jumps to retail's store and the
+// direct arm keeps its own copy - but the direct and general arms' rows then take the other operand side and other
+// register homes (the direct arm's speed product, the general arm's current add), so the body loses 24 bytes and the
+// score rises to 596, and to 590 with the two arms left as they are and their k read back. Left: the damping bit's first
+// extraction in ECX, the two cross products that keep up.k on the other side, and the general arm's k row ending in XMM2
+// where retail's ends in XMM0.
 // score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
@@ -1116,8 +1124,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // shuffles differently (ours fmulp/faddp/fxch/fstp against retail's fmul/faddp/fstp), the direct arm's four
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
-
-// score 234 (was 347): Damping extraction still uses ECX in place of EDX. The gravity store, input address and later vector homes also differ.
+// Earlier 234 (was 347): Damping extraction still uses ECX in place of EDX. The gravity store, input address and later vector homes also differ.
 // Earlier 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // Earlier 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
@@ -1647,11 +1654,30 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // renamed 347, scoped around the two products 569, with the 2-D helper 445, products written rotated-first 347; with the
 // one-use `maximum` passed straight 442 (347 on the plain both-statements form). Also: step before delta 560, limited
 // declared before delta 347, the rotation's second row written the other way 347.
+// M3 lane 13 r118 (fast with 0x1f0450 and 0x24590, both MATCH; control 234): retail's direct arm loads speed once and
+// scales through a copy (`movaps xmm2, xmm3; mulss xmm2, xmm0`, then `mulss xmm3, xmm1`), the shape of a scale passed as
+// an expression to an inline scale helper. On the direct arm's output as three row statements (re-measured 543), a new
+// file-local 2-D scale helper (result = s * v per row, no speed local): into a `scaled` point with delta as two rows 442
+// (3035 B); scaling `rotated` in place, delta from it, 423 (3051 B: that arm is then retail's instruction for instruction,
+// but for its delta/limited homes, +0x14/+0xc against retail's +0xc/+0x14, and the rate pointer in EAX for EDX); into
+// `scaled` with delta through vector2d_from_points2d 427 (3051 B); the helper with the arm's vector3f_assign kept 469 (3051
+// B). On the in-place form, the flags declared flying, direct, damping, gravity with the input pointer after them 422 (3050
+// B, entry block exact, first difference +0x3d), with gravity cleared first in the first arm too 422 (same code).
+// Diagnostic dead initialised locals (reverted), 1-8 on the in-place form 425/425/570/437/495/493/383/369, 1-15 on the 422
+// form 422/419/557/435/484/486/378/372/375/368/557/435/483/378/486. Left on the 422 form: the first and flying crosses'
+// operand sides, the input length's x87 loads (retail k, j, i), the general arm's limited registers (XMM1/2/0, retail
+// XMM0/1/2) and homes, the history add's side. LEAD: a 2-D counterpart of vector3f_scale for the direct arm (new, so match-only).
 // M3 lane 15 r106 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; base 234, aligned 194, stack- and register-masked
 // 119): the four flag bools as `(bool)((x >> n) & 1)` 232 (3050 B; two points, not kept); the contact flags read once into a
 // `dword flags` local 614; both lengths through magnitude3d (`&state->input`, `&change`) re-measured 485 (3047 B, masked 186);
 // only the history maximum 509 (3057 B, masked 125); only the input length, through `input`, 297 (3036 B, masked 144).
 // Diagnostic: 1-16 initialised dead locals on the both-magnitude3d form 594-617 (2994-3013 B), none near. All restored.
+// M3 lane 15 r109 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; control 234): retail's low-normal arm loads the
+// basis side first in four of the cross's six products (state->basis.k read as [esi + 0x120], the rest through the lea),
+// ours the up side; the input length is magnitude3d's inlined block. The low arm's cross through the shared cross3f 234
+// (same code: helper text order does not reach the products); the low arm's cross on the `forward` copy 380 (3053 B); the
+// basis copied after the cross 348 (3070 B); the input pointer declared after the four flags 250; no input pointer, every
+// read through state->input, 543. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
