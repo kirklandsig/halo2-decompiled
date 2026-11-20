@@ -1230,6 +1230,10 @@ __forceinline long vehicle_round(real value)
 // (`real speed = dot3f(...)`) 13; the side scale named after the side cross 94 (735 B); the clamp bounds in named locals
 // read twice each 93; the eleven other combinations of those four 92-169; `up` as a const reference 4 (same code); the
 // up pointer scoped to the first-cross branch with the rate on vehicle->up.k 6.
+// M3 lane 6 r210 (fast), at 4: a redundant `result = false;` closing the failure arm 4 (same code); the side term as
+// vector3f_scale of the side by `0.0f - forward.k` then vector3f_add (side, axis) / (axis, side) 32/32; the projection's dot
+// through the header's basis_dot_xzy (forward, velocity) / (velocity, forward) 8/10; `side` declared at the function's top 4
+// (same code); the side scale named (`real down = 0.0f - forward.k;`) ahead of the side cross 78.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2334,6 +2338,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // it, the forward speed as dot3f(&linear_velocity, forward)) 17; the forward speed's i term forward-first 9 (same code);
 // overlay 1's dot as `left.k * v.k + left.j * v.j + left.i * v.i` 308; the engine-overlay tests as `0.0f < period` 9;
 // the speed-fraction helper's three tests as `0.0f < x` 9.
+// M3 lane 6 r210 (fast), at 9: the arm-3 forward speed through the header's basis_dot_xzy (forward, velocity) /
+// (velocity, forward) 11/11; the kind loop on its own for-scoped counter 13; `linear_velocity` declared first, ahead of
+// the lookups, 9; the model lookup folded into the graph's (no model local) 9; the forward speed grouped (i + j) + k,
+// (j + k) + i and (i + k) + j 9/9/9 (all four the same code: the sum is reordered whatever the source grouping).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -3226,6 +3234,7 @@ real g_47ff30 = 2.5f;
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
 // MiniMax I (11-19): no new form, no lower score (672): the frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the transform position is still cleared as one twelve-byte region where retail uses three four-byte zero stores; the two leads that reach retail's frame (the mass field read at each use and the final force and torque scaling) each score worse, so the body stands.
+// MiniMax H (11-20): no new form, no lower score (672): the frame is 0x100 against retail's 0xfc, one dword more, and the homes are not one uniform shift (retail's dt at 0x10, the linear-velocity address at 0x14, the acceleration scale at 0x34, the maximum speed at 0x3c and the angular-velocity address at 0x44 against ours at 0x20, 0x38, 0x58 and 0x68), so no single local accounts for the gap; the permuter tried sixteen forms in 523 s without a gain.
 // score 672 (was 672): earlier 682; current transform position cleared as one twelve-byte region; native
 // has three consecutive four-byte zero stores. Frame 0x100 versus 0xfc and scalar/vector homes remain.
 // MiniMax S (11-17): no new form, no lower score (672, was 672); our frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the two leads that reach retail's frame (the mass field read at each use, 676, and the final force and torque scaling through vector3f_scale, 710) each score worse, so the body stays as it is.
@@ -3829,6 +3838,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // MiniMax B (11-11): no new form, no lower score (1000): the frame gap of twelve bytes and the mismatched homes stay;
 // the velocity and the force are not the same pair of homes, so no single local accounts for it.
 // MiniMax C (11-10): no new form tried, no lower score (1000); the frame is 0x80 against retail's 0x74 and the velocity and force homes between them are not one uniform shift, and the forms in the note below (the velocity as scalars, the acceleration producers, the contact results and the two helpers' inlining) all land above 1000.
+// MiniMax H (11-20): no new form, no lower score (1000): the frame is 0x78 against retail's 0x74 and that is the first difference, with the two parameter loads and the first local all four bytes higher here (esp+0x8c and esp+0x90 against esp+0x88 and esp+0x8c, and the local at esp+0x48 against esp+0x44), so this frame carries one dword more than retail's; the homes between them are not one uniform shift, so dropping that dword alone would not line the rest up, and the velocity and force homes stay blocked by 0x142640 and 0x1427f0 in another file.
 // score 1000 (was 1052): Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
 // MiniMax R (11-06): no new form, no lower score (1000); the frame is 0x78 against retail's 0x74 and the homes
 // between them are not one uniform shift (the parameter reloads sit 4 apart, the pair at esp+0x64 0x10 apart and the

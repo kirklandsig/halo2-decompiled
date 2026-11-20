@@ -2154,6 +2154,13 @@ bool function_17afd0(long effect_index, long value);
 // retail's), with `available != false` 98; same_view false at the loop body's top set by the three-way test 141 (502 B); `bool
 // same_view = available;` cleared by the owner/view test 56; the true default kept with the copy in an if/else on the owner/view
 // test 56. All restored.
+// M3 lane 1 r135 (fast, control 12; P = the plain conjunction, re-measured 138 at 510 B: availability spilled to a stack
+// byte, the conjunction in BL, NONE in EBX for the walk): the clearing test given an `else same_view = true;` arm 138 (510 B,
+// P's code); a false default with `same_view = available ? true : false` in the owner-ok arm and `false` in its else 121
+// (502 B); the true default with `if (owner fail) false; else same_view = available;` 56 (498 B); `bool same_view =
+// available;` cleared by `owner == NONE || g != owner || !same_view` 119 (501 B); same_view from a forceinline (owner,
+// available) helper with a false result set by the conjunction 141 (513 B), a true result cleared by the test 141 (513 B),
+// an early `return false` then `return available` 56 (498 B); P with same_view declared at function scope 138 (P's code).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

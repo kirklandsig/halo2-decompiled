@@ -1254,6 +1254,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // with the lookup reading `kept->unit_index` 17/17; the unit pointer bound to a `*const &` for the slot and weapon reads 17;
 // the slot test through a `short const &` 17 (all the same code); a redundant `result = false;` at the top of the tested
 // block 33 (140 B).
+// Score 5 (was 17) with stand-in SDK headers: the unit index passed to the object lookup is read again through
+// `tail_player_get(player_index)`. That read is not folded into the test's, so the index is a register value of its
+// own and the object table gets esi as in retail. Left: the first player address is formed as
+// `mov edx, [edx + 0x44] ... add edx, eax` where retail has `add eax, [edx + 0x44]; mov edx, eax`.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1262,7 +1266,7 @@ bool function_151b80(long player_index, bool primary)
 	if (player->unit_index != NONE)
 	{
 		long hand = !primary;
-		s_player_pickup_unit *unit = (s_player_pickup_unit *)tail_object_get(g_4e0300, player->unit_index);
+		s_player_pickup_unit *unit = (s_player_pickup_unit *)tail_object_get(g_4e0300, tail_player_get(player_index)->unit_index);
 		short slot = unit->held_slots[hand];
 		if (slot != NONE && unit->weapons[slot] != NONE)
 		{
@@ -1633,6 +1637,16 @@ void function_150820(dword *bits, bool local_only)
 // displacement with shared unit index 43, both typed remainders 43, both byte displacements 43, named typed
 // remainder 43, named byte-displacement remainder 43. NOT kept: All eight forms preserve the full-width mask and
 // tie at 210 bytes. The player, hand and initial unit index keep their opening registers.
+// M3 lane 1 r134 (fast with 0x151b80, 17 throughout; control 43, register-masked aligned 1: the hand's copy into its
+// saved register sits ahead of the unit index's mask in retail and behind the `lea` in ours). One to seven dead
+// initialised locals 43 each (same code: not a local-symbol-count state); a named unit_index local for the test, the
+// lookup and the 0xcd7b0 argument, declared after or ahead of the result, 43 / 43 (same code); a true
+// `__assume(player != NULL)` ahead of the result, after it or inside the block 43 each; `__assume(unit != NULL)` after
+// the lookup 43; `__assume(hand == 0 || hand == 1)` 43 (all the same code). Reading across the two functions: in both
+// the value live from the entry block and the block's own value exchange ESI and EDI against retail, but in opposite
+// directions (here retail gives the entry-level player ESI and the hand EDI; in 0x151b80 it gives the entry-level
+// unit index EDI and the slot ESI), so no single rule of "first value takes ESI" or of reference counts with one
+// weight for nested blocks fits both; the unit index's scratch register (EDX in retail, ECX in ours) moves with it.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
