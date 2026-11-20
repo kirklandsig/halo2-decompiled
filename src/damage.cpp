@@ -2,6 +2,7 @@
 /* DAMAGE.CPP: object damage */
 
 #include "unknown_11c920.h"
+#include "player_queries.h"
 #include "bit_vector.h"
 #include "globals.h"
 #include "data_array.h"
@@ -1005,133 +1006,18 @@ PRIVATE inline long damage_object_root(long object_index)
 	return root;
 }
 
-// MiniMax A (11-13): no new form, no lower score (206): the damage-record copy is 136 bytes in both builds, but retail starts it 16 bytes later (its locals take four more dwords and the copy is eight-aligned), so the frame is still 0x1a4 against retail's 0x1b4; the count limit and the array size agree, and the first 0xbadc0 use is still expanded here where retail calls it. BLOCKED-BY 0xbadc0.
-// MiniMax A (11-12): no new form, no lower score (206): the frame is still 0x1a4 against retail 0x1b4 and the entry block still pushes before it reads the flags word and negates it, where retail reads the flags first; the first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
+/* the squared distance between two points */
+static inline real damage_distance_squared3d(point3f const *a, point3f const *b)
+{
+	real dx = a->x - b->x;
+	real dy = a->y - b->y;
+	real dz = a->z - b->z;
+
+	return dz * dz + dy * dy + dx * dx;
+}
+
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
-// MiniMax B (11-19): no new form tried this round, no lower score (206): the frame is still 0x1a4 against retail's
-// 0x1b4, so the argument slots sit lower here, and the first 0xbadc0 use is still expanded here where retail calls it
-// out of line; that site lives in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0.
-// MiniMax C (11-15): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it; the out-of-line form of that site lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
-// MiniMax B (11-12): no new form, no lower score (206): the frame is 0x1a4 against retail's 0x1b4 and the argument
-// slots sit lower here; retail reads the flag word at [esi+0xc], masks bit 1 and negates it before the pushes where this
-// build pushes first and loads the flag afterwards, and the link-time inliner still folds the callee in.
-// MiniMax D (11-14): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the argument slots still sit lower here, and the flag word at [esi+0xc] is still read after the pushes where retail reads and negates it first.
-// MiniMax D (11-15): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first
-// 0xbadc0 use is still expanded in this build where retail calls it out of line; that callee's body is in another file.
-// MiniMax I (11-15): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded in this build where retail calls it out of line; that callee's body lives in another file, which this lane may not edit.
-// MiniMax R (11-16): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first
-// 0xbadc0 use is still expanded in this build where retail calls it out of line; that callee's body is in another file.
-// BLOCKED-BY 0xbadc0.
-// MiniMax E (11-20): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the
-// first 0xbadc0 use still expands in this build where retail calls it out of line: BLOCKED-BY 0xbadc0.
-// score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
-// MiniMax A (11-11): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
-// entry block still pushes before it reads the flags word and negates it, where retail reads the flags first. The
-// first 0xbadc0 use is expanded in this build while retail calls it, and the out-of-line form that makes the body
-// byte exact lives in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
-// MiniMax D (11-10): no new form, no lower score (206); the first 0xbadc0 use is still expanded in this build, so
-// the frame stays 0x1a4 against retail's 0x1b4; the out-of-line form of that site that makes the body byte exact
-// is in a file this lane may not edit.
-// MiniMax S (11-10): no lower score (206): the record-pool iterator with the iterator's address escaping gives 225, the index-based scan with it 228, and the squared-distance helper called at both tests with the mask in a named local 225; the first 0xbadc0 use is still expanded here, and the frame stays 0x1a4 against retail's 0x1b4.
-// MiniMax D (11-09): no new form, no lower score; retail's player scan keeps the ordinal in [esp + 0x34] and tests
-// the pool's used-bit word at [g_4e8c24 + 0x48 + (index >> 5) * 4] itself, and its frame is 0x1b4 against our
-// 0x1a4, so its definition and objects array sit where ours do not.
-// MiniMax G (11-06): matches only when the three object lookups call 0x175d70's file-local noinline copy of
-// 0xbadc0 (object_get_175d70) from here, which keeps them out of line as retail has them; held under the
-// noinline ruling (an existing noinline copy called from another file is the same steer), patch kept. The rest
-// of that body (the s_player_iterator scan, a squared-distance helper called at both tests, the mask in a local
-// before 0xbb050, the last object index declared first) with the lookups through 0xbadc0 is 246.
-// MiniMax G (11-04): no new form, no lower score; the first 0xbadc0 call only leaves the line behind a second
-// count test (248), and the squared distance at both tests (284) or with the mask in a local (275) is worse.
-// MiniMax E (11-06): no new form, no lower score; the first 0xbadc0 use is still expanded here while
-// retail calls it, and that body lives in src/unknown_0bad50.cpp, which this lane may not edit.
-// MiniMax C (11-09): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
-// first 0xbadc0 use is still expanded here while retail calls it (BLOCKED-BY 0xbadc0).
-// MiniMax E (11-10): no new form, no lower score (206).
-// use (the flags & 2 unit test) but calls it at the other two; retail calls all three. Retail keeps data in edi,
-// the definition in esi and &data->position in ebx (the distances are [ebx], [ebx+4], [ebx+8]) and spills the
-// player index to the frame; it also recomputes the squared distance for the second test (ours shares it).
-// Done: the players' parent walk is the damage_object_root loop (783 bytes, retail 782; 229 -> 209), and
-// the cached `position` pointer (206). Tried: the player_index/NONE split of the first badc0 use (354, all three
-// inlined); separate `!unit` / `player_index == NONE` tests (209); a squared-distance helper called twice (249,
-// still shared); s_record_pool_iterator + data_iterator_next_inlined for the players (208).
-// Round 273: Outer copy/player ordinal/return-candidate lifetimes, seven subsets,
-// 206/230/230/225/225/233/233; all plus descriptive result names 233. Original body restored;
-// frame 0x1a4 versus 0x1b4, ordinal/result spills and first lookup expansion remain.
-// Round 529: existing point-difference helper with native vector workspace, crossed with
-// complete player-scan lifetime, paired squared extents and complete-record library copy:
-// 206/206/206/206/206/206/206/206. Frame and first expanded verifier remain; original body restored.
-// Round 532: object ordinal consumed by the array read before validation, signed char/short/int/long,
-// with original conditional return or explicit final result: 320/320/310/310/320/320/310/310.
-// Extents 872-880 against 782; frame and verifier expansion remain. Original object induction and body restored.
-// F335: last-default, full-branch, existing-result fallback and early-return completion, each
-// with positive-unit admission or absent-unit skip: 206 each (783 bytes). Aligned frame and first verifier remain.
-// B374: twice-consumed inner radius maximum via macro/branches/lower/upper fallback,
-// outer expression or test-produced result: 230/230/235/234 twice; 767/782 bytes, frame still 0x1a4.
-// No match; original repeated selector and complete body restored.
-// P274: Object-array cursor/native short count/shared sequential verifier receiver,
-// subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
-// Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
-// N330: Positive player/capacity/annulus/all admissions, each with direct unit fields
-// or the native shared player-unit handle: 206/206/206/206/206/206/206/206.
-// Frame and first verifier expansion remain; original player scan and complete body restored.
-// DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
-// admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
-// byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
-// Round 544: Two displacement observations, direct/scalar/shared-vector/
-// independent-vector, negative then positive admission: 284/249/284/284/284/249/284/284.
-// No match; repeated-computation forms NOT kept. Original whole body restored.
-// P282: Existing player-index getter at policy/preference sites and actual flags member, subsets
-// 1/2/4/3/5/6/7: 314/206/206/314/314/206/314; all with library record copy 314. Policy-getter forms
-// grow to 874/782, frame still 0x1a4; originals and all observations restored.
-// P288: Absolute player-ordinal for traversals, returned-index/search-start ownership with
-// four lexical homes: 396/396/396/396/331/331/331/331. NOT kept: frame/extent regress; original full
-// body restored. Sixteen frame bytes and first verifier call boundary remain.
-// M333: Actual query-mask conditional/zero-default/full-branch/three-default producers:
-// 206/215/207/211; each with distinct policy/damage/preference verifier names repeats
-// those scores. Frame 0x1a4 and first verifier expansion remain; original full body restored.
-// Round 69 (lane 1): BLOCKED-BY 0xbadc0's inline decision at the first site. With 0xbadc0 out of line in a scratch copy
-// (harness only, never in src/) this function is byte exact (0, 782/782): s_player_iterator local (retail's 16 unused
-// frame bytes) + data_iterator_next_inlined, a squared-distance inline (a - b, root center first) called at both tests
-// with the distance on the left of `<=`, the mask in a named local before 0xbb050, last_object_index declared first.
-// The same body with 0xbadc0 inlining 246 (862 bytes, plain build agrees with the harness); so not kept.
-// Keeps the site out of line: one more real test above it; `if (object_count > 0)` around the loop 48 (782 bytes, a
-// second test retail lacks, repeats the loop's own). Does not: 0xbaf80 inlining 246, helper-built or costlier 0xbadc0
-// bodies, no /Ob1 246, memory argument 246, bit-test and == spellings 246-249, null test above it 259, getter at the
-// first site 356 (942), one helper at sites 1 and 3 356, admission helper 376, while 309/356, guard + do-while 250.
-// Partial with the site inlining: iterator 207 (787), + mask and declaration order 200, shared distance 200: below the bar.
-// m3 lane 1 r94 (plain full checks, on the walk kept for 0xd9d60; 206 there too): the unit-only flag named once and used for
-// the query mask and the loop test 216 (785 bytes); the object loop's counter declared with the function's locals 206, one
-// `unit` variable for the first two lookups 206, and that variable reused for the third lookup 206 (same code each); `objects[i]`
-// read at each use instead of the `object_index` local 225 (798 bytes). The first 0xbadc0 site is still inlined.
-// MiniMax I (11-10): no lower score (206 kept); an `if (object_count > 0)` guard around the object loop gives 248 (782
-// bytes, a second test retail lacks, the same extra test the out-of-line site needs) and a for-form player scan gives
-// 396; the frame stays 0x1a4 against retail's 0x1b4 and the first verifier call is still expanded in ours, and the
-// sixteen frame bytes retail leaves unused have no spelling that recovers them.
-// MiniMax H (11-13), NOT kept (coordinator): 206 -> 80 came with the three object lookups calling
-// object_get_175d70, 0x175d70's file-local noinline copy of 0xbadc0, from this file: the same steer held under the
-// noinline ruling (MiniMax G 11-06). The rest of that round: the flag update through a local (load, or, store), the
-// outer radius added in two statements, the parent walk through an index-returning helper, the s_data_datum_iterator
-// player scan and a squared-distance helper called at both tests.
-// MiniMax H (11-14): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first 0xbadc0 use is still expanded here where retail calls it, and that callee's own file is not this lane's.
-// m3 lane 7 r160 (fast with 0xd74e0, 0x14de90 and 0xbadc0, control 206): retail's first and third sites are exactly
-// 0x14de90 (unit_get_player_index) inlined with its 0xbadc0 call kept (`call; test eax, eax; je; cmp [eax + 0x13c], -1`);
-// that existing getter at both sites 314 (874 bytes: our link inlines 0xbadc0 inside it too, at site 1); the copy as
-// memcpy 206 (same code); `last_object_index` declared first 205; with the query mask named before 0xbb050 205; with the
-// players walked by an s_record_pool_iterator and data_iterator_next_inlined 201 (787 bytes, frame still 0x1a4). BLOCKED-BY
-// 0xbadc0 (its inline decision at site 1; src/unknown_0bad50.cpp is not this lane's).
-// MiniMax S (11-16): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the objects array still sits at base+0xc0, the player ordinal still keeps a register where retail homes it at +0x34, and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
-// MiniMax C (11-16): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the objects array still sits at base+0xc0, the player ordinal still keeps a register where retail homes it at +0x34, and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
-// MiniMax I (11-17): no new form, no lower score.
-// MiniMax D (11-17): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the query's mode
-// value (the flags' bit 2 as 3 or 0) is still computed after the four argument pushes where retail computes it before them,
-// and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
-// MiniMax R (11-17): no new form, no lower score (206): retail's frame is 0x1b4 against this build's 0x1a4 (the objects array sits at the same address in both), retail keeps the player index in a stack slot and the data pointer in edi where this build keeps the index in edi and spills the data, and the inlined index helper lives in include/data_array.h, which is not this lane's.
-// MiniMax E (11-19): no new form, no lower score (206, baseline): the frame is still 0x1a4 against retail's 0x1b4 and
-// the first stack home is still [esp+0x1c] where retail keeps it at [esp+0x10]; the call to the object lookup that
-// another file holds as a noinline copy is still the one that costs the match (206 -> 80 needs that copy), so the
-// blocker stands.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1139,73 +1025,76 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 	real radius = MAX(definition->radius04, MAX(definition->radius58, definition->radius68));
 	point3f const *position = &data->position;
 	long objects[k_maximum_area_of_effect_objects];
-	long object_count = function_bb050(0, (definition->flags0c & 2) ? 3 : 0, &data->unknown1c, position, radius,
-		objects, k_maximum_area_of_effect_objects);
-	long first_object_index = NONE;
+	long type_mask = (definition->flags0c & 2) ? 3 : 0;
+	long object_count = function_bb050(0, type_mask, &data->unknown1c, position, radius, objects,
+		k_maximum_area_of_effect_objects);
 	long last_object_index = NONE;
+	long first_object_index = NONE;
 
 	*(dword *)data->unknown04 |= 1;
 
 	if (definition->player_radius > radius)
 	{
-		long player_index = NONE;
+		s_player_iterator iterator;
 
-		while ((player_index = data_next_absolute_index_inlined(g_4e8c24, player_index + 1)) != NONE)
+		iterator.data = g_4e8c24;
+		iterator.index = NONE;
+		iterator.datum_index = NONE;
+		while ((iterator.player = (s_player_datum *)data_iterator_next_inlined((s_record_pool_iterator *)&iterator.data)) != NULL)
 		{
-			s_damage_player *player = (s_damage_player *)(g_4e8c24->data + g_4e8c24->size * player_index);
-
-			if (!player)
-				break;
-			if (player->unit_index == NONE)
+			if (iterator.player->unit_index == NONE)
 				continue;
 
-			s_damage_object *root = DAMAGE_OBJECT(damage_object_root(player->unit_index));
+			s_damage_object *root = DAMAGE_OBJECT(damage_object_root(iterator.player->unit_index));
 
 			if (object_count >= k_maximum_area_of_effect_objects)
 				continue;
 
-			real dx = root->field_x221477.x - position->x;
-			real dy = root->field_x221477.y - position->y;
-			real dz = root->field_x221477.z - position->z;
 			real inner = root->field_xae9109 + radius;
-			if (inner * inner >= dz * dz + dy * dy + dx * dx)
+			if (damage_distance_squared3d(&root->field_x221477, position) <= inner * inner)
 				continue;
 
 			real outer = definition->player_radius + root->field_xae9109;
-			if (outer * outer >= dz * dz + dy * dy + dx * dx)
-				objects[object_count++] = player->unit_index;
+			if (damage_distance_squared3d(&root->field_x221477, position) <= outer * outer)
+				objects[object_count++] = iterator.player->unit_index;
 		}
 	}
 
-	for (long i = 0; i < object_count; i++)
+	/* the guard repeats the loop's own test: with it the three object lookups below stay calls, as in retail */
+	long i = 0;
+
+	if (0 < object_count)
 	{
-		long object_index = objects[i];
-
-		if (definition->flags0c & 2)
+		for (; i < object_count; i++)
 		{
-			s_damage_object *unit = (s_damage_object *)function_badc0(object_index, 3);
-			if (!unit || unit->player_index == NONE)
-				continue;
-		}
-		if (object_index == ignore_object_index)
-			continue;
+			long object_index = objects[i];
 
-		s_damage_object *unit = (s_damage_object *)function_badc0(object_index, 3);
-		s_type_1e6529 copy = *data;
-
-		function_d74e0(&copy, object_index, false);
-		last_object_index = object_index;
-		if (unit)
-		{
-			if (first_object_index == NONE)
+			if (definition->flags0c & 2)
 			{
-				first_object_index = object_index;
+				s_damage_object *unit = (s_damage_object *)function_badc0(object_index, 3);
+				if (!unit || unit->player_index == NONE)
+					continue;
 			}
-			else
+			if (object_index == ignore_object_index)
+				continue;
+
+			s_damage_object *unit = (s_damage_object *)function_badc0(object_index, 3);
+			s_type_1e6529 copy = *data;
+
+			function_d74e0(&copy, object_index, false);
+			last_object_index = object_index;
+			if (unit)
 			{
-				s_damage_object *other = (s_damage_object *)function_badc0(object_index, 3);
-				if (other && other->player_index != NONE)
+				if (first_object_index == NONE)
+				{
 					first_object_index = object_index;
+				}
+				else
+				{
+					s_damage_object *other = (s_damage_object *)function_badc0(object_index, 3);
+					if (other && other->player_index != NONE)
+						first_object_index = object_index;
+				}
 			}
 		}
 	}
@@ -4724,6 +4613,25 @@ bool function_138880();
 // (the positional gain is the length); the clamp arm first with bool locals for both 0xd8b50 flags 244 at 2170 B; those
 // three together 165 at 2170 B (aligned 165; left: the `& 7` copy order, a zero's register, and the body block from the
 // inlined 0x138880 on).
+// m3 lane 6 r218 (fast with 0x192950, 0xd9f70, 0xd8b50, 0xda110 and 0x138880, control 194; the held form also in a plain check).
+// HELD (needs the owner's OK), build/r218/held-0xd5de0.patch: this function MATCHES byte for byte (2170/2170; 0xd8b50, the
+// other callees and the caller 0xbc470 as before) with 0xd8b50's flag parameter declared first (at both calls retail loads
+// the three address registers and pushes the flag last; 0xd8b50 itself still matches) plus these forms here: an implied
+// `stun_ticks != 0 &&` ahead of the second 0x138880 test (the link-time inliner's limit follows how often it estimates a
+// site runs, and one more test in front makes that test a call as in retail), a `word team` local at each 0x1e9720 call, a
+// bool local for each 0xd8b50 flag, the info branch reading its rate before its maximum, `pending & 7` written at both of
+// its uses, the shield clamp test held in a named bool with the clamp arm first, and the last loop reading `states[i]` at
+// each use. 0xd8b50 is a contributor's function, so the body here is main's and nothing of this is kept.
+// Counts on the way (each form added to the ones before): implied test 231 (2170 bytes), word team locals 179, bool flag
+// locals 192 (2180), rate-first info branch 24, 0xd8b50's flag first 16, `pending & 7` at both uses 13, then the clamp
+// test: positive 172, parenthesised 172, `!!` 172, `!(shield <= maximum)` 174, a double negation 172, `!(maximum >=
+// shield)` 4, `!= false` 2, a named bool 2; on the 2 the last loop: the region pointer at the loop top 132, `state++, i++`
+// 7, `i < info->region_count` 4, indexed states with a state local 3 (four spellings), `states[i]` at each use MATCH.
+// The same body without the 0xd8b50 reorder 8 (the flag pushed ahead of the three address registers at both calls),
+// without the implied test 134, without the rate-first info branch 179. With the positive clamp test the body block's
+// float registers move (zero in xmm3, rate in xmm1), whatever the body block's own order: declaration, either branch,
+// ternaries, nested tests, recharge spellings and one to three redundant parentheses 169 each, one maximum for shield and
+// body 190 (slots rotate), the 0x80 notify in each arm 199 and 200; the two-step `&= 7` 169 (same code).
 // @retail 0xd5de0
 bool function_d5de0(long object_index)
 {
