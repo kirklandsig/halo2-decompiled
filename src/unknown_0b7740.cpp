@@ -1689,6 +1689,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // else-arm defaults (r267's 18) with the flag read before the matrix 18 (1394 B: the node's `movsx` moves ahead and takes
 // ESI), with the flag's object through object_header_get 18 (same code as r267's); 0xb8bd0 called for the matrix with the
 // else-arm defaults 48 (1387 B); defaults first with a parent header pointer named in the arm for both reads 41 (1392 B).
+// M3 lane 4 r228 (fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): in the no-model arm, the index copied into a
+// second named local for both lookups 20; the index bound by `long const &` for the test and both lookups 20; the same
+// reference only inside the parent arm 20; a redundant `parent_mirrored = false;` at the top of the parent arm 20; a
+// redundant `parent = 0;` there 20 (all the same code). Reading: ECX already holds the pool at the arm's entry in both
+// builds (loaded for the current-object lookup, EDI holds its data), and retail re-reads only the data from it while ours
+// reloads both, so this is the register choice of the index (ours ECX), not a lost common value.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

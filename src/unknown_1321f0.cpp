@@ -688,6 +688,11 @@ struct s_visibility_object_header
 // (behind still an out-parameter) 168 (582 B, the helper stays out of line), forced inline 291 (671 B, the listed
 // helper's code). Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 4 at every K (not a
 // symbol-count tie; rounds before covered 1 to 8).
+// M3 lane 4 r228 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): the plane call through a
+// forceinline wrapper taking (data, center, in_front, behind, radius) 291 (671 B: 0x132fd0 is then expanded); behind's
+// address through a pointer local set before the plane call 4; in_front alone in an inner block with the plane call and
+// the packer (behind outside) 4; behind alone in that inner block 4; one loop index for the three else-arm loops 4; one
+// index for the flag_a/flag_b loops only 4 (all the 4s the same code).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {
