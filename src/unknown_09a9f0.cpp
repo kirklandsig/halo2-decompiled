@@ -1432,11 +1432,15 @@ bool c_projectile_type::v8(long a, long b)
 // tie; a 12-byte group element typed (identifier, flags, value, desired value) through a pointer indexed `[index & 0xffff]` 12,
 // indexed `[(word)index]` 5 (movzx); that typed pointer with the 0x800 test and the NONE test combined 12; the a5e70 call ahead
 // of the object lookup with the typed pointer 18. Word-read body kept (5).
+// score 5 (was 5), without the volatile: the definition pointer is stored through a reference to its address, which
+// keeps it in the frame as retail has it; the code is the same as with the volatile.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
  // Preserve the local definition pointer stored in the retail stack frame.
- c_object_type_definition *volatile definition = this;
+ c_object_type_definition *definition;
+ c_object_type_definition **const &kept = &definition;
+ *kept = this;
  byte *object = (byte *)OBJECT(a);
  dword flags = b;
  long result = function_a5e70(a, flags & 0x3ff, d);
