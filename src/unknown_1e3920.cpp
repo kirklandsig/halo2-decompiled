@@ -893,7 +893,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax I (11-19): no new form, no lower score (237): the -1 sentinel still sits in edi where retail keeps it in esi, and this
 // build still reads the squad entry index into esi after the first call where retail reloads it into ecx; the query output homes
 // and the loop's entry block still sit at other frame offsets.
-// score 222 (was 222): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
+// score 199 (was 222): Squad and query homes still differ. The perception actor at the shared creation
+// join puts the unit-creation arm after request case 2, with the jump back to the common actor test.
+// Earlier 222 (was 222): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // MiniMax E (11-16): no new form tried this round, no lower score (237): the frame and the length agree with retail's and the squad
@@ -1346,6 +1348,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // 334 (1272 B), after both arms' success blocks 348 (1283 B); a `goto` to a label before the actor test at the arm's end 222
 // (same code). Retail's order is the chain from the actor test through case 2 moved up behind the perception arm, which needs
 // the creation arm to end in a jump; no form found that keeps one.
+// Common no-creation return in unit/perception order 304/304. Positive common creation guard in both
+// orders 222/222. Perception actor at the join 199 (kept), unit actor at the join 222. Those two
+// joins with a no-creation return 308/304. The early-return forms disrupt the register allocation.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1379,8 +1384,6 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 			if (*flags & 1)
 			{
 				perception_index = function_28dab0(character_index, (s_28dab2 const *)placement);
-				if (perception_index != NONE)
-					actor_index = function_1e02f0(squad_index, character_index, NONE, perception_index, flag);
 			}
 			else
 			{
@@ -1409,6 +1412,8 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 					actor_index = function_1e0160(squad_index, character_index, unit_index, flag);
 				}
 			}
+			if (perception_index != NONE)
+				actor_index = function_1e02f0(squad_index, character_index, NONE, perception_index, flag);
 			if (actor_index != NONE)
 			{
 				s_actor_view *actor = actor_get(actor_index);

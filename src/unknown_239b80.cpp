@@ -864,6 +864,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // hull count's alone 242 (768 B), the count's alone 178 (807 B, aligned 88), both on the `current`-first body 245. So
 // neither an address-taken nor an escaping count or hull count gives retail's allocation; what ranks the hull count
 // above the count for the fourth callee-saved register is still open.
+// Start index held for one output pass, each candidate, the lazy tie result, or the ranking rejection.
+// Short and long start indices: 263/249/144/144/237/229/247/247.
+// NOT kept: The short read before ranking reaches frame 0x14 but passes count in EAX and raises the score. The two short tie-only forms tie. The pass bound still adds a frame word, and the count and departure homes differ.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -1817,6 +1817,9 @@ long function_2197f0(real gain);
 // gain then assigned 87 (same code), returned from the arm 174 (668 B); arm 3's sum stored through the long view 87
 // (same code). Reading: ours has exactly one sum with the gain in a register (arm 4, fed across the join) and retail
 // exactly one too (arm 1, loaded there); the other three add the gain from memory in both.
+// Composite release or normalized overlap staged, each with initialized or accumulated attack time.
+// Guarded and eager fractions: 87/87/87/87/143/143/143/143.
+// NOT kept: The guarded stages tie at 87. The eager stages shorten to 681 bytes and raise the score to 143. The elapsed/reciprocal allocation, separate gain load and final gain join still differ.
 // @retail 0x127010
 long function_127010(short class_index)
 {
