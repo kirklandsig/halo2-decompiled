@@ -1322,6 +1322,7 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax E (11-20): no new form, no lower score (43): the plain body keeps retail's instruction sequence exactly and differs only in the register rotation; the getter reload at the lookup gives retail's registers (player esi, hand edi, unit index edx) but folds the player address into a lea (73), the reload at the unit test gives the same registers at 24 but folds the field address into the lea as well, and a unit-index local inside the block drops the player pointer altogether (77).
 // score 43 (was 43): The four-byte frame and 210-byte extent agree. Player and hand occupy the opposite saved registers.
 // Earlier score 43 (was 43): The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
 // Frame and extent agree. The player, hand and first unit handle use different registers.

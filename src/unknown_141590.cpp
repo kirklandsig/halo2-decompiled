@@ -118,6 +118,7 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax E (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four (frame 0x20 against 0x24) and the cosine half stays in xmm5 where ours swaps the two; the difference follows the three inlined quaternion_transform_vector calls, and writing that helper's body out is not allowed. The helper written with retail's own term orders (the dot as i,k,j; the i row (cross*2w + v*s) + q*dot; the j/k rows (v*s + q*dot) + cross*2w) compiles to the same 1324 bytes and the same listing, so the compiler reassociates the sums and the source's grouping does not choose them.
 // score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Stacked status lines merged in r192.
 // MiniMax G (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four, and the cosine half stays in XMM5 where ours swaps the two.
