@@ -1023,6 +1023,8 @@ PRIVATE inline long damage_object_root(long object_index)
 // MiniMax R (11-16): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the first
 // 0xbadc0 use is still expanded in this build where retail calls it out of line; that callee's body is in another file.
 // BLOCKED-BY 0xbadc0.
+// MiniMax E (11-20): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4 and the
+// first 0xbadc0 use still expands in this build where retail calls it out of line: BLOCKED-BY 0xbadc0.
 // score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // MiniMax A (11-11): no new form, no lower score (206); the frame is still 0x1a4 against retail's 0x1b4 and the
 // entry block still pushes before it reads the flags word and negates it, where retail reads the flags first. The
@@ -3363,6 +3365,9 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // MiniMax R (11-16): no new form, no lower score (5): only the order of the two final "return damage" blocks still differs
 // (retail puts the no-team return before the not-enemy one, this build the reverse); the early-return form of the team test
 // compiles to the same bytes and the same order, so the two blocks' physical order is the scheduler's.
+// MiniMax E (11-20): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload
+// before the xmm1 copy) where retail copies xmm1 first; the outer return written as an early return for the team test
+// compiles to the same bytes and the same order.
 // score 5 (was 108): only the order of the two final "return damage" blocks differs (retail
 // puts the no-team return before the not-enemy one, ours the reverse). Tried: three early returns
 // (16), a goto to one shared return (24), a flat team/state test (5, same order), separate team and

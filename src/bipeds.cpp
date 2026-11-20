@@ -555,6 +555,8 @@ void function_e5930(long unit_index);
 // MiniMax A (11-18): no new form, no lower score (118): the reset dispatch 0xe5930 is still expanded at this call
 // site (413 bytes against retail's 343) where retail keeps the call out of line, and retail's 0x1f0 test shifts the
 // dword before its bit test where the field is a byte here, so the test folds to a byte test: BLOCKED-BY 0xe5930.
+// MiniMax E (11-20): no new form, no lower score (118): retail keeps 0xe5930 out of line here, so the reset
+// dispatch does not expand and the body is 70 bytes shorter; that helper's file is not this lane's: BLOCKED-BY 0xe5930.
 // score 118 (was 118): flag-store scheduling and the final helper's unwanted expansion remain; BLOCKED-BY 0xe5930.
 // Logic walk (2026-10-31): every store of 0xde4c0-0xde608 agrees with this source (offsets, sizes, the NONE/0/0x7f values,
 // the 0xb9dd0 call with &+0x368, the 0x1f0 bit 1 choosing flags_348 |= 8 / &= ~8, +0x3d8/+0x3e0/+0x3dc/+0x3e4/+0x3e8, the
@@ -778,6 +780,9 @@ struct s_biped_flags_10a_view
 // pointer at the top of the body and spills it where this build reads it at its one use (the head is 25 bytes short),
 // the 0x111650 call takes its names in EAX where retail pushes both arguments (ret 8 in retail), and the type-0 bit is
 // read as `and al, 4` where retail shifts first: BLOCKED-BY 0x111650 (src/unknown_10f1e0.cpp).
+// MiniMax E (11-20): no new form, no lower score (222): retail computes the state pointer at the top and spills it
+// where this build reads it at its one use, and the 0x111650 call pushes both arguments where ours takes the names in
+// EAX: BLOCKED-BY 0x111650.
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -3503,6 +3508,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // retail's dead flag byte kept before the 0xe16b0 call - a local whose address is taken, a form this lane may not use -
 // and the +0x34b state byte is still zero-extended where retail sign-extends it (the signed field measures 323, one
 // point, under the keep bar).
+// MiniMax E (11-20): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c (retail's dead
+// flag byte before the 0xe16b0 call) and the +0x34b state byte is zero-extended where retail sign-extends it.
 // score 324 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
 // contributor form below), the +0x34b state byte zero-extended, scalar, centre and result homes. Round 85 (m3 lane 13) at
 // the end of this note; the earlier first lines are kept below as "Earlier first line".
@@ -5382,6 +5389,8 @@ void function_e4300(long arg_159e6d)
 // MiniMax A (11-18): no new form, no lower score (91): the reset dispatch 0xe5930 is still expanded at this call site
 // (113 bytes against retail's 61) where retail keeps the call out of line, and the helper's own file
 // (src/unknown_0e57e0.cpp) is not this lane's, so the boundary cannot be recovered here: BLOCKED-BY 0xe5930.
+// MiniMax E (11-20): no new form, no lower score (91): the reset-mode dispatch expands here (113 bytes against
+// retail's 61) where retail calls it out of line: BLOCKED-BY 0xe5930.
 // score 91 (was 91): reset-mode dispatch expands instead of retail calling it out of line (113/61 bytes).
 // Separate reset noinline declaration 91; Boolean flag test 98; both 98; noinline with
 // field-use object lookup 94; Boolean lookup with/without noinline 101/101; both call-boundary

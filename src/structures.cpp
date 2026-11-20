@@ -545,6 +545,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // order and the frame's slot heights differ, and the promoted clone of 0x11e800 still hands its four pointers over in
 // another register order (retail ecx, edx, eax, esi). That callee's body lives in src/unknown_11cb00.cpp, which this
 // lane may not edit: BLOCKED-BY 0x11e800.
+// MiniMax E (11-20): no new form, no lower score (172): the BSP stays in EBP here and the section in EBX where retail
+// keeps the BSP in EBX with the section in its stack home, and the vertex flag is initialised here where retail sets
+// it only when a vertex exists: BLOCKED-BY 0x11e800.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
