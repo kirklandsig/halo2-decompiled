@@ -619,6 +619,12 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // takes the path pointer into EBX after the pushes, keeps the success result in the stack byte at [esp+0x13] and
 // loads the source radius before the 0.2f constant, and this build takes the path pointer into EAX before the
 // pushes, keeps the result in a dword and loads the constant first.
+// MiniMax A (11-19): no new form, no lower score (675): at retail's length the first difference is still +0x14, the
+// prologue's register homes - retail takes the path pointer into ebx after the pushes, keeps the success result in the
+// stack byte at [esp+0x13] and puts the actor pointer at +0x4c, the radius at +0x2c and the completion flag at +0x2b,
+// where this build takes the pointer into eax before the pushes, keeps the result in a dword at +0x64 and puts the
+// actor pointer at +0x54, the radius at +0x24 and the flag at +0x22; the out parameter's short type stays BLOCKED by
+// its declaration and the caller in path.cpp.
 // score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
 // score lines below are merged into this one (m3 lane 11 r102).
 // MiniMax R (11-14, run 65): no new form, no lower score (675): the retail disassembly of 0x2c41b0 confirms the

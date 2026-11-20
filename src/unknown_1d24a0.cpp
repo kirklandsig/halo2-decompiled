@@ -104,7 +104,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 949 (was 949): Frame 0x1f0/0x1d4 (ours 28 bytes larger), entry argument/flags in EAX/ECX against retail ECX/EAX,
+// score 949 (was 949): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain; earlier 949 (was 902), 902 (was 902).
+// Frame 0x1f0/0x1d4 (ours 28 bytes larger), entry argument/flags in EAX/ECX against retail ECX/EAX,
 // byte-flag homes and the record/vector homes still differ; the forms below were measured.
 // MiniMax B (11-18): no new form, no lower score (949, was 949): the frame is still 0x1f0 against retail's
 // 0x1d4, so every stack home differs; retail unrolls the scale helper into three multiplies with both
@@ -132,9 +133,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // stack home below the top differs, and the loop head's shape is still decided by the callee 0xbadc0, whose file
 // this lane may not edit.
 // MiniMax S (11-16): no new form, no lower score (902); retail's scale helper is still unrolled while this build's loop is rolled, the frame stays 0x1f0 against retail's 0x1d4, and the contact array's destructor that blocks the unroll is set in another lane's header.
-// Earlier at 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier score line: 949 (was 902): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // MiniMax A (11-18): no new form, no lower score (949 in the reduced image): the first difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, ours the other way round) and the frame (0x1f0 against retail's 0x1d4), so every stack home below the top is out of step.
 // Earlier 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier score line: 902 (was 902): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier at 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// score 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // M3 lane 3 r268 (fast, control 949): the three entry flags renamed (time step, newly active, velocity changed) 949
 // (same code: the flag bytes stay at +8/+9 where retail leaves +9 between them); the newly-active test with the
 // flags-word bit first and the time-step flag second 997; the swap-remove copy reading `[--size]` in one statement 949
@@ -511,6 +515,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // body is then 83 to 103 bytes short, mostly the loop head that 0xbadc0 decides), so none is kept; aligned, the three
 // cross-file causes (destructor-free release, `inline` 0x24590, opaque 0xbadc0) account for about half of what differs.
 // Body, header and both other files restored.
+// M3 lane 4 r222 (fast with 0x1cf9f0, 0x1d2070, 0x1d1260, 0x24590 matched and 0x1d2280 26 throughout; control 949, aligned 689):
+// the component flags read once into a `dword flags` for the entry test and the bit-13 test 962 (4283 B), as `long` 962;
+// the attached-object lookup as `local_13 = NULL; if (field_4 != NONE) local_13 = ...` 949 (same code); the later
+// `field_4 != NONE &&` dropped from the component test (local_13 is NULL then) 982; the slot clamp replaced by its range
+// test 964 (retail computes the clamp, `movsx`/`jle`/`mov ecx, edx`, so not retail's form). The cross-file causes stand:
+// 0x24590 and 0xbadc0 (both files held this round) and the contact array's destructor.
 // M3 lane 13 r115 (fast, all restored): the body as one `if (flags & 0x104000) { ... }` with no early return 949 (same
 // code); the flags word read once into a named local for both entry tests 962 (4283 B); the was-active bit tested as
 // `!(flags & 0x2000)` 951; the activity flag and response maximum declared before the two entry flags 956; the
@@ -524,6 +534,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // [524/391] (still `test ecx, 0x104000` with the component in EAX where retail has EAX and ECX the other way round). Retail
 // saves EBX with ESI and EDI for the whole function and only EBP around the loop; ours saves EBX with EBP around the loop,
 // which is one instruction of shift from the third push to the loop head. All restored.
+// MiniMax B (11-19): no new form, no lower score (949): the frame is still 0x1f0 against retail's 0x1d4 and the first
+// difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
+// the other way round), so every stack home below the top is out of step; the loop head's shape is decided by the callee
+// 0xbadc0, which lives in another file - BLOCKED-BY 0xbadc0.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

@@ -930,6 +930,27 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // instruction]; on retail's shape alone 72 (index rebuilt as retail, data load still shared). Reading: retail's reload of
 // the data pointer needs a store between the header test and the object read, and its rebuilt index needs the header
 // lookup built from a different index expression than the object read's; retail's only store is before the NONE test.
+// M3 lane 2 r110 (fast with 0xa5b10/0x108e10/0xbb780/0xa5a00/0xa5b40/0xa5b80, matched throughout; control 49; R = retail's shape,
+// bool false first, true after the attach, NONE stored in the flagged else, 77 at 160 B). Finding: retail's second lookup (data
+// pointer loaded again from the table kept in EDX, index masked and tripled again, scale-4 address) is what VC emits when the
+// object read has two predecessors: global loads survive a join, expression CSE does not. With the flagged arm storing NONE and
+// falling into `if (entity->object_index != NONE)` the object read is retail's instruction for instruction, 53 at 177 B (left:
+// the unthreaded `cmp [edi + 8], -1` retest and the result's home). The retest on a `valid` flag 73 (176 B, threaded before CSE,
+// lookups shared), on the index local set NONE in the flagged arm 75 (160 B), that nested under the NONE test 75. So the source
+// has a second path to the object read that is removed only after CSE. Other forms: the entity's index stored again between the
+// header test and the object read 42 at 176 B (retail's BL result, EBP window and data reload; the second store stays, the index
+// product is shared), with the read through the local 42 (same code); the store written in each arm 78 (188 B); every index read
+// from the entity 77; the entity's first field in a named local 77; the header test behind a repeated validity check (an inline
+// predicate with a result variable or two returns, `index == NONE || !flag`, a flag local under its own NONE test) 64/64/75/64
+// (the predicate's bool is materialised); diagnostics, removed: an empty `if` (five spellings) or an empty inline call under a
+// condition (four) ahead of the object read 77 each (gone before CSE). Body unchanged.
+// The saved result register and shared lookup still differ. Bind the shared virtual-call size, state,
+// size then state, or state then size. Creation-validity result 49/49/49/49. Attachment-success
+// result 77/77/77/77 at 160 bytes, with the last argument still cached in EBP.
+// Shared header/datum accessor at flag/store/both 49/49/49; with attachment-set Boolean
+// 77/77/77; both with a shared table local, validity/attachment result 49/78.
+// The two reads still share the scaled address. The attachment-set result shortens to
+// 160 bytes. Original body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

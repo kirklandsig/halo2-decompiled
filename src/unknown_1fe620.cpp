@@ -330,6 +330,7 @@ static __forceinline long real_to_long(real value);
 // i and j in XMM1 and XMM2 from the cross to the output rows and copies each for the cosine products; this build puts the
 // displacement in XMM1 to XMM3 and the side vector after it). Nothing kept: the composite needs the +0x14/+0x18 locals (one
 // use each) and the resolver's two-arm body, so it is match-only, and each part alone raises the count.
+// MiniMax C (11-19): no gain (373, baseline; body restored). The head differs in the pool load (retail reloads the random-state global after the calls to 0x2104b0 and 0x1fe410, ours keeps the pointer in ESI across them, an LTCG modref decision in another file compilation) and in the transport of the 0x7a argument (ECX against EDX), which the caller in another file decides. Binding the second parameter to one settings local for its five uses measures 415.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

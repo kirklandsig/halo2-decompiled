@@ -672,6 +672,14 @@ union s_185be7
 // the unclamped fraction 823.
 // NOT kept: the typed seat-table field (396 plain, no gain; body kept stable for the held 0x24590 inline lead);
 // naming the upper speed or magnitude gains only two points in preview, and the separate clamp forms regress.
+// M3 lane 4 r222 (fast with 0x24590, 0xc8880, 0x185ab0, 0x185b00, 0x185b30, 0x187b30, 0x1a4900 matched and 0x186ab0 114
+// throughout; control 396): the first difference is the angle conversion (retail: factor in XMM1, x in XMM7, y in XMM0, both
+// stores after the record copy's `rep movsd`; ours: factor in XMM2, x in XMM0, y in XMM7, stores ahead of the copy). The
+// record copy ahead of the two conversions 395 (the stores then follow the copy as retail's, the registers unchanged; a
+// statement order picked by score, not kept); that with the factor first in each product 395; the factor first alone 396
+// (same code); the factor as a file-level `static real const` for all four uses 396 (same code); the source row through one
+// `real const *` for both components 957. The XMM numbering follows the clobber set of 0x24590 (its file is held this round):
+// BLOCKED-BY 0x24590 still.
 // M3 lane 13 r115 (fast, all restored): the range-fraction clamp as `if (v < 0) v = 0; else if (v > 1) v = 1;` 396 (same
 // code); the fraction declared without a value and cleared in an else arm of the span test 942 (3740 B), with the
 // if/else clamp too 942; the quotient clamped inside one PIN expression 932 (3791 B); the exponent named for the test
@@ -689,6 +697,9 @@ union s_185be7
 // XMM1/XMM6, does not cache the conversion constant and reloads the first angle limit into XMM7 only after the block),
 // one scratch-rotation step at the parent object's lookup (retail EDX, ours ECX; it carries through both vector copies)
 // and the loop pads, which follow the 27 bytes this body is short before the first mask loop.
+// MiniMax B (11-19): no new form, no lower score (396): retail treats 0x24590 as clobbering the XMM registers, which is
+// what fixes the whole block from the speed fraction to the stick clamps; the `inline` lead on 0x24590 is measured above
+// (384 [65], one shift left) and is not kept because six of its other callers' counts rise - BLOCKED-BY 0x24590.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

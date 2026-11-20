@@ -380,6 +380,17 @@ extern real g_4c9798[36];
 // limit as a long (retail's dword load at the product) 250 (217 masked: the limit slots move); the clamp as one nested ternary 174
 // (same code); both 250; the clamp through a reference-bound `real &` to the size 180 (1491 bytes); the mode as one ternary chain
 // 174 (same code). BLOCKED-BY 0x48e70's link-time register summary (held `inline` on its definition, machine 1's file).
+// M3 lane 1 r129 (fast with 0x48e70, 0x1cf50 and 0x1ddd0, all matched, and 0x184440 965 throughout; control 174, aligned
+// 70/68 = unmatched instructions ours/retail, masked 36/34; body unchanged). Retail's second plane copies the direction
+// straight into the plane, reads the three normal components back from it for the dot and keeps them in XMM3/XMM4/XMM6
+// for the scale products, with the point's three direction components loaded into registers first (y, z, then x).
+// Re-measured in this tree: the direction straight into the plane with the dot through the plane 343 (1458 B, frame
+// and entry change at +0x2), the same keeping the normal local 343 (same code), the dot through the direction 339
+// (1459 B); new: the first plane's dot through the local normal instead of the plane 213 (retail's 1479 B, aligned
+// 123/122); the second point's rows in retail's y, z, x order 178 (1489 B, aligned 66/63); the normal copied first and
+// the point's rows read from it 337 (1469 B, entry changes at +0x2); the rows written origin first 174 (same code).
+// Still BLOCKED-BY 0x48e70's link-time register summary (machine 1's file): with our build keeping the size
+// and the aspect in XMM registers across its two calls, the true second-plane form moves the parameters' registers.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

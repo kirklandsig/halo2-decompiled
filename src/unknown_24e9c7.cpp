@@ -609,6 +609,11 @@ struct s_24e9c7_points
 // Quad aggregate from one shared origin before size, after across, after height or after half width:
 // 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
 // NOT kept: The across-y spill and the returned-height home remain different at retail length.
+// M3 lane 2 r109 (fast, 0x22a664 matched; control 125): forward_i and forward_j read once into named locals for the across
+// products and up 161 (767 B); the same with `0.0f - forward_j` 140 (746 B: still `0 - forward_j` after the height chain,
+// not before it); the across products written forward first (`-forward_j * size`) 125 (same code); the bounds height and
+// width named before the height 125 (same code); the width named before halving 125 (same code). The scheduler still
+// computes the across products after the height and width conversions, so across j is never spilled to retail's -8.
 // M3 lane 1 r126 (fast with 0x24e59f/0x22a664, both MATCH; control 125, aligned 87): the size read ahead of the bitmap
 // pointer 125; the scale read there too, ahead of the size 125; the side point declared ahead of up 125; back, side, up
 // declared in that order ahead of the up products 125; the corner record declared ahead of up 125 (all the same code).
@@ -618,6 +623,19 @@ struct s_24e9c7_points
 // half-width products of the across locals (a second use of each) 154 (753 B, masked 109), with `size * (0.0f -
 // forward_j)` 137 (749 B, masked 119). Compile-only, forward i and j read into locals for the across and up products
 // leaves the products late (same order as main). Each early-product form leaves the result home at [ebp-8].
+// M3 lane 14 r121 (control 125; forms screened in a compile-only build with a true-LCS count, registers masked /
+// stack slots masked of 197 lines, main 53 / 95, then five measured with `--fast`, 0x24e59f and 0x22a664 MATCH each
+// time). Reading: retail loads forward_i once (XMM4) for both the across j product and `result * forward_i`, so the
+// across j product has no register and goes to the side point's y home at once, while the across i product stays in
+// XMM6; both products copy the size and multiply by the other operand. forward_i read into a local for the across j
+// and up x products on main's form 124 (L 50 / 95; one point, not kept); forward_i and forward_j locals with the side
+// point set to the across products and scaled in place 126 (51 / 97), only forward_i there 142 (739 B), only
+// forward_j 54 / 98; the size written `placement->size + 1.0f` in each across product with across locals 143 (739 B,
+// 53 / 95), with the in-place side point 150 (735 B, 54 / 96), with unary minus 56 / 93; the in-place side point
+// with `0.0f - forward_j` re-screened 54 / 99, with compound `*=` 54 / 99, with the across operands written the other
+// way round 54 / 99 (same code); both forward locals on main's form 57 / 100. Body unchanged.
+// AC597: Both lateral components start from size in scalar, per-component scalar, aggregate point or
+// field-written point forms, with dimension scale before or after: 125/125/125/125/144/144/143/143.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

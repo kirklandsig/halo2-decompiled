@@ -966,6 +966,262 @@ void function_1d1540(s_havok_component *component);
    generation gives this function that convention only while no out-of-line function calls it directly: its two
    callers, 0x1d0c20 and 0x1d5120, reach it through s_havok_component::rigid_body_transform_set, the inline member
    spelling in include/unknown_1cec30.h. With a direct call from either of them the component arrives on the stack. */
+// MiniMax A (11-19): no new form, no lower score (65): the component still arrives on the stack, so the frame is still 0x84 against retail's 0x88 and the copy of the transform is still a block copy against retail's four aligned moves; the argument registers are still chosen by LTCG over the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files.
+// MiniMax H (11-19): no new form, no lower score (65): the transform copy is still a block copy where retail stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX; the frame stays 0x84 against retail's 0x88.
+// MiniMax B (11-18): no new form, no lower score (65): the transform copy is still a block copy here where retail
+// stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX;
+// the memberwise set form measures 90 (worse), and the component's home is decided across the
+// 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 call cycle, whose bodies are in other files: BLOCKED-BY 0x1d1260.
+// MiniMax S (11-17): no new form, no lower score (65): the frame is 0x84 against retail's 0x88, the index and the component arrive on the stack where retail keeps them in ecx and ebx, and the entry copy is a block copy where retail stores the four members separately; the component's home is decided across the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 call cycle, whose bodies are in other files.
+// MiniMax A (11-12): no new form, no lower score (65); the component still arrives on the stack
+// where retail hands it over in EBX, so the frame is 0x84 against retail's 0x88 and the transform
+// copy is still a rep movsd where retail uses four movaps; the component's home is decided across
+// the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 call cycle, whose bodies are in other files.
+// MiniMax S (11-11): no new form, no lower score (65): retail hands this function its component in ebx while this build keeps it on the stack, so the frame is 0x84 against retail's 0x88 and the transform copy is a rep movsd where retail uses four movaps.
+// MiniMax I (11-10): no new form, no lower score (65); the component and the index still arrive on the
+// stack where retail passes the transform in EAX, the index in ESI and the component in EBX and returns
+// with a plain ret, and the transform copy still uses rep movsd in a 0x84 frame where retail copies with
+// four movaps in 0x88; the component's EBX home is decided across the call cycle in other files.
+// MiniMax E (11-11): no new form, no lower score (65): frame 0x84 against 0x88, the component still arrives on the stack where retail has it in EBX, and the entry copy is rep movsd where retail uses four movaps; every form that makes the component a register argument puts it in EDI and costs matched 0x1d1b60: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
+// MiniMax G (11-13): no new form, no lower score (65): retail's frame is 0x88 with the transform local at
+// esp+8 and the inverse at esp+0x48, both 16-byte aligned, and esp is 16-byte aligned at the call to
+// 0x2da3f0 (esi and edi pushed); this build's extra push ebx alone makes the frame 0x84 with the local at
+// esp+4, so the component's EBX home is the one lever for the frame, the offsets and the plain ret.
+// Retail's entry copy is the member-wise one (four movaps, as the matched 0x1d08e0 in this file), and
+// rep movsd clobbers ECX, which is why the index cannot travel in ECX while the copy is a block copy.
+// Matched precedents for a register argument in an aligned frame exist (0x1c59a0, 0x39780, 0x5b650,
+// 0x62300, 0x70280, 0x93100, 0x93fa0, 0x136df0, 0x1523c0, 0x19d650, 0x1ce010), but none of them also
+// stores an aligned SSE value, which is the shape 0x1d0cf0 needs.
+// MiniMax I (11-14): no new form, no lower score (65): the frame is still 0x84 against retail's 0x88, the component still arrives on the stack where retail keeps it in EBX, and the entry copy is still rep movsd where retail uses four movaps; the component's EBX home is decided by LTCG over the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files.
+// MiniMax C (11-14): no new form, no lower score (65): retail's own argument order is (transform, index,
+// component), the transform in EAX and the index in ECX, while this build takes the index and the component
+// on the stack, and the parameter list may not be changed here; the frame is still 0x84 against retail's
+// 0x88, the entry copy is still rep movsd where retail uses four movaps, and that convention is decided
+// across the call cycle whose bodies are in other files.
+// MiniMax D (11-16): no new form, no lower score (65): retail's own argument order is (transform in EAX, index in
+// ECX, component in EBX) and this build takes the transform in EAX and pushes the index and the component, so the
+// frame is 0x84 against retail's 0x88 and the entry copy is a rep movsd where retail uses four movaps; the copy
+// through hkTransform::set is 90 at 231 bytes, so both differences have to be fixed together.
+// MiniMax D (11-16): no new form, no lower score (65): with the copy through hkTransform::set (four movaps, as retail
+// has it) the index does travel in ECX as retail has it - the block copy's clobbered ECX was what kept it on the stack -
+// but the component still arrives on the stack where retail keeps it in EBX, the frame stays 0x84 against retail's 0x88
+// and the length grows to 231 bytes (90); the component's EBX home is still decided by LTCG over the 0x1d0cf0 ->
+// 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430
+// drafts.
+// MiniMax R (11-17): no new form, no lower score (65): the frame is still 0x84 against retail's 0x88, the index and
+// the component still arrive on the stack where retail keeps them in ecx and ebx, and the entry copy is still a
+// rep movsd where retail uses four movaps; the component's ebx home is decided over the whole
+// 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files (0x1d1260 is in
+// src/unknown_1d1260.cpp): BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
+// MiniMax H (11-18): no new form, no lower score (65): the copy written as an assignment instead of a construction
+// (a default hkTransform and then `local = *transform`, which copies the four members one by one) gives 90 at 231
+// bytes, where the copy through hkTransform::set gave 77 at 237, so the member-wise copy does not pay for the frame
+// and the index; the frame is still 0x84 against retail's 0x88, the index and the component still arrive on the stack
+// where retail keeps them in ecx and ebx, and the entry copy is still a block copy where retail stores the four
+// members separately: BLOCKED-BY 0x1d1260 and 0x278f00, whose bodies are in other files.
+// score 65 (was 65): MiniMax R (11-15): no new form, no lower score; retail takes the transform in EAX, the index
+// in ECX and the component in EBX (frame 0x5c) where this build pushes the index and the component (frame 0x50), and
+// LTCG picks that split across the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other
+// files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
+// score 65 (was 65): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
+// than ECX/EBX, and the constructor copy uses rep movsd rather than aligned SIMD. The two-use body
+// slot receiver recovers the fixed-first guard and ordinary-path body lifetime; the post-reset
+// body is fetched again. The convention still follows the call cycle outside this file.
+// Earlier: component arrives on the stack where retail passes it in ebx (no push ebx,
+// plain ret, frame 0x88), the entry copy is rep movsd where retail uses movaps, and retail tests
+// m_fixed before flag5. Tried: copy through hkTransform::set 77 at 237 bytes (0x1d1b60 lost);
+// set + body pointer + m_fixed first 88 at 230 (retail's code except the ebx parameter); that with
+// flag5 first 27 at 220 (component in edi, costs 0x1d0c20 and 0x1d1b60); as a member function, every
+// parameter order, body pointer at the top, else arm first, early return, noinline: all as 88.
+// The 88 body is retail's but for the component's stack home (allocated to ebx, loaded from the
+// stack); the getter at each use 88; this function declared ahead of 0x1d1260 88; 0x1d0c20 defined
+// first 88. Without the 0x1d1260 call the component arrives in edi (89); without the 0x1d1540 call
+// it stays on the stack (77): the call to 0x1d1260 with the component live across it decides it.
+// Reset/rebuild inline/noinline contracts, original then aligned-copy/fixed-or-flag-first graphs
+// 81/81/81/81/81/81/81/81/88/88/88/88/27/27/27/27. Original executable source restored. All four 27
+// forms still lose matched 0x1d1b60 at 59 in the reduced image.
+// Round 28 (lane G): the declaration order does not decide the argument registers: with retail's
+// order (transform, index, component) and the old order kept only for the caller in another file,
+// the score is still 81 here and 38 in 0x1d0c20, and matched 0x1d1b60 stays matched, so the order
+// was left as it is. What still differs: retail keeps the component in EBX, ours on the stack.
+// Both-inline paired form: plain 27 at 220 bytes; matched 0x1d1b60 loses 59; rejected.
+// Round 158: assigned copy + body pointer + m_fixed first 88 at 230 (retail's code; a /Gd first
+// pass loads the component once into ebx, yet it stays a stack argument); same with set() 88; flag5
+// first 27 (component edi); body fetched before the transformed block, either test order, 74 (edi).
+// The edi forms take 0x1d5120 from 77 to 15 but lose 0x1d1b60 (59) and move 0x1d0c20 to 49.
+// Round 33: the inverse step as a shared force-inline helper (with 0x1d0ee0) 81; that with the
+// retail body 88 (index now in ECX, ret 4: only the component's stack home and the frame shift it
+// causes differ); a volatile read of the component at either call or the second fetch 89/89/92;
+// the whole body inside a force-inline helper (diagnostic) 88. The same 88 result without 0x1d5120
+// in the image; a /Gd compile loads the component once into EBX. Matched 0x1c59a0, 0x1cbf50 and
+// 0x136860 take EBX arguments with self-aligned frames, so the alignment alone is not the cause.
+// Round 431: Library transform copies with original/fixed-first body receiver: memcpy and memmove, then
+// both with the inverse reserved at entry: 81/85/77/76/81/85/77/76. The 76 forms are five-point gains
+// only; both 77 forms lose matched 0x1d1b60 at 60. Original executable body restored.
+// Round 89: the 88 body with each other parameter order 88 each (0x1d0c20 40); without 0x1d1b60's call to
+// 0x1d0c20 86 (still a stack argument). A /Gd first pass of the 88 body uses EBX, ESI and EDI (component in
+// EBX); without the 0x1d1540 call also all three (stack); without the 0x1d1260 call only ESI and EDI
+// (component an EDI argument); matched 0x1cbf50's first pass uses ESI and EDI and LTCG passes its parameter
+// in the unused EBX. Lead: a body whose first pass needs at most two callee-saved registers.
+// Round 108 (on the 88 body: hkTransform::set copy, body pointer, m_fixed first): control 88 at 230; the
+// fixed arm's refetch assigned back to the body pointer 88; the body pointer declared first, or declared
+// after the copy target and assigned at the fetch, 88/88; the setter declared without `inline` (both arms
+// call it, 182 bytes) 112, the component still loaded from its stack home into EBX, so the body held across
+// the inlined setter's calls is not the cause; the same-file caller's call removed (diagnostic) 86, the
+// component then loaded into ESI, still a stack argument. Original body restored.
+// Lane 15 round 18: 0x1d8e80 moved to its address neighbours' file (src/unknown_1d8dd0.cpp): identical
+// code (81); the 88 body with that move 88 (its /Gd first pass then uses only ESI+EDI, component in
+// EDI, so the two-register rule does not decide it); flag5 first 27 again (component EDI, 0x1d1b60
+// lost at 59, 0x1d3fc0 149 -> 179, 0x1d5120 77 -> 15); that with the move 27; flag5 first with the
+// plain struct copy 85. Diagnostics: the 88 body's /Gd pass loads the component once into EBX (flag5
+// first: EDI) and only the EDI form becomes a register argument; without 0x1d0c20's call LTCG gives the
+// 88 body the component in ECX and the index on the stack, without 0x1d5120's call nothing changes, and
+// 0x1d0c20's aligned transform moved into a forceinline helper changes nothing: 0x1d0c20's call decides it.
+// Round 93 (lane 8): the 88 body (set copy, body pointer, m_fixed first) again 88 (230 bytes; its code is
+// retail's but for the component loaded from [ebp + 8] into EBX with push/pop, ret 4); that keeping the
+// first body pointer for the fixed arm's call (no second fetch) 77 at 220 (index ECX, component an EDI
+// register argument, only ESI saved and EBX unused; 0x1d5120 77 -> 15, but matched 0x1d1b60 59 and
+// retail fetches again after 0x1d1260); the transform by reference 88; inverse declared with local 88;
+// the second fetch into the body local 88. The lead stands: LTCG made the component a register argument
+// only when the first pass left a callee-saved register free.
+// Round 250: One body receiver with conditional post-reset refetch: constructor copy, flag/fixed-
+// first and bool/byte refresh 81/81/81/81 at 220 bytes; set copy 85/85/86/86 at 231. Frame/component
+// convention remains; every matched control survives.
+// Round 13 (lane 18, fast, with 0x1d0c20/0x1d1b60/0x1d5120/0x1d3fc0): retail's argument setup at both
+// callers is ECX (index), then EBX (component), then EAX (transform), so the setup-order rule gives
+// (transform, component, index): on this body 81 (0x1d1b60 lost at 2), on the 88 body (set copy, body
+// pointer, m_fixed first) 88; the 88 body with a const body pointer 88; the transform by reference 88;
+// the component by reference 88 (the 88 forms keep 0x1d5120 at 73, 0x1d0c20 40). A /Gd compile-only first
+// pass of this body keeps the component in ESI and never touches EBX, yet LTCG still stacks it, so the
+// first pass alone does not predict the EBX parameter.
+// Round 41 (lane 11, fast, with 0x1d0c20/0x1d1b60/0x1d5120): the 88 body again 88 (0x1d0c20 40, 0x1d5120 73);
+// on it the plain struct copy in place of set() 85 at 220 bytes (rep movsd, component still loaded from
+// [ebp + 0xc] into EBX; 0x1d0c20 38, 0x1d5120 77); the fixed arm refetching into the body pointer and
+// returning on its own 88. On the plain-copy body, parameters (transform, index, component) 85 (same code;
+// definition, both declarations and both calls changed together) and (component, index, transform) 85 with
+// matched 0x1d1b60 lost at 2.
+// Round 60 (m3 lane 9, fast with 0x1d0c20/0x1d1b60/0x1d5120): on the 88 body (set copy, body pointer,
+// m_fixed first; aligned 8, only the component's stack home): the definition marked `inline` 88; the
+// reset test as a named bool 154 (278 bytes); the body read by direct rigid_bodies indexing 88; the fixed
+// and flag tests nested with a return in the reset arm 88; the transformed flag read before the copy 88.
+// It is on the object/havok call cycle (0x1d1260 and 0x1d1540 reach it again through 0x1d1b60 ->
+// 0x1d0c20 without any stubbed function), so where LTCG enters that cycle may decide its convention.
+// Round 26 (lane 17, plain): 0x1d1260/0x1d1540 declared at the top of this file 81 (same code); that with the
+// 88 body 88 (0x1d0c20 40, 0x1d5120 73), so the cycle walk order is not what keeps the component on the stack;
+// the 88 body with flag5 read into a named bool before the body fetch 88, with a member-wise copy 88 (fast).
+// Round 357: Common setter with byte/word/dword/long refresh results, constructor then aligned set copy 77/83/82/82/56/59/58/58. Original body restored; frame and component transport remain.
+// DL242: Actual body-array slot pointer/reference with constructor flag/fixed guards 83/65,
+// aligned set 60/90 (60 loses matched 0x1d1b60); fixed-first whole-transform memcpy/memmove 65/78.
+// Keep constructor copy with two-use slot pointer and fixed-first guard, ordinary whole-program
+// confirmed; post-reset lookup retained. Component/index stack transport, 0x84/0x88 frame and
+// rep/SIMD copy remain.
+// Round 534: complete transform workspace roles and inverse entry/use storage on the
+// two-use slot receiver, four name pairs: 65/65/65/65/65/65/65/65. Frame 0x84/0x88,
+// constructor copy and stacked component/index remain; original complete body restored.
+// Round 330: early native slot pointer/reference, constructor/set copy, before-copy then
+// after-copy-before-inverse acquisition 86/85/86/85/88/85/88/85. Original body restored;
+// frame/component transport remains; two early-constructor forms lose matched 0x1d1b60.
+// DH298: Copy after inversion, assignment/set/memcpy/memmove with inverse at use
+// 140/140/84/99; inverse at entry 140/140/84/99. All regress and are restored; fresh
+// post-reset lookup and matched caller survive; frame and argument transport remain.
+// N324: Native slot retained through common setter with fresh post-reset slot lookup; bool/byte/word/dword
+// reset results, aggregate then aligned set copy 81/81/85/87/56/56/55/54. NOT kept: aligned forms lose
+// matched 0x1d1b60 at 59; reset-result form remains unmatched. Frame and incoming argument transport remain.
+// P281: Whole rotation/translation or SIMD-member aggregate initialization, inverse entry scope and
+// actual slot before inversion: 106/90/106/90/101/85/101/85. All regress; early rotation/translation
+// forms also lose the matched caller at 1. Original constructor, slot timing and complete body restored.
+// M322: Slot-preserving nested/early/named reset guards with constructor
+// 65/65/133; assignment 90/90/157; aligned setter nested/early 90/90.
+// Assignment recovers SIMD/ECX index but frame 0x84 and stacked component
+// remain, at 231/220 bytes. All regress or tie; original complete body restored.
+// N328: Actual twice-used rigid-body reference, direct/getter acquisition and fixed-first/ordinary-return
+// admission, original then aligned input copy: 85/85/85/85/88/88/88/88. Original slot graph restored;
+// frame and incoming component/index remain.
+// Round 380: Actual transformed-frame predicate, bool/byte/short/long relative truth
+// then world complement: 65/65/65/65/80/80/80/80. Frame/copy and stacked index/component remain;
+// original flag observation, native slot, fresh refetch and complete body restored.
+// Round 382: Native fixed-body predicate alone on constructor/two-use-slot graph,
+// bool/byte/short/long fixed truth then movable complement: 65/65/65/65/65/65/65/65. Original
+// byte test, fresh refetch and full body restored; frame and component/index transport remain.
+// DH309: Actual whole-array data receiver as pointer/field reference, original/aligned copy,
+// with inverse at use/entry: 86/86/85/85/87/87/88/88. Original element receiver restored;
+// frame, input copy and component/index transport remain.
+// Round 548: Existing four-component setters for rotation/translation/both, inverse
+// at use then entry, and both setters with early slot/use-entry inverse: 215/130/254/215/130/254/250/250.
+// NOT kept: scalar-copy/frame and transport shapes miss; original constructor, fresh lookup and full body restored.
+// N342: Fixed-path reset flag as bool/byte/short/long enabled truth 93/93/93/93,
+// disabled complement 94/94/94/94. NOT kept: one-use predicates do not match;
+// original constructor, two-use slot, fresh post-reset lookup and full body restored.
+// Round 550: Sole-return done exit with constructor/assignment/set/memcpy/memmove
+// copies 65/90/90/65/78; constructor/assignment/set with inverse at entry 65/90/90.
+// NOT kept: exit/copy forms miss; original implicit exit, constructor, inverse scope,
+// two-use slot and fresh post-reset lookup restored. Frame and component/index transport remain.
+// F350: Native transform/reset word masks 89/90/94; shifted Boolean word
+// forms 65/65/65; direct bitfields 94; both masks with the existing aligned
+// copy 40 at 223/220 bytes. NOT kept: only the combined mask/copy graph gains,
+// retail shifts the flags, and the length moves away. Original body restored;
+// aligned frame, constructor copy and component/index transport remain.
+// AC505: Native body-pointer member receiver, pointer/reference and fresh reset receiver,
+// constructor copy 60/60/60/60; aligned set copy 93/93/93/93 (234/220 bytes).
+// NOT kept: gain 5 below the gate; member receivers and all copy forms restored.
+// N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
+// constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
+// NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
+// Round 3 of #1044: statement-by-statement walk of retail against the 88 body (set copy, body pointer,
+// m_fixed first): offsets (+4 flags bit 6/bit 5, +0x30 transform, +0x70 data, stride 0x60, +0x40 body), shifts,
+// both callees with ECX = component, the refetch after 0x1d1260, 0x1d8e80 called in the fixed arm and inlined
+// in the other, and the local at esp+0x10 all agree, so there is no behaviour difference; only the component's
+// transport differs (retail: EAX transform, ECX index, EBX component, plain ret and no push ebx). Retail's
+// register ranks are index offset ESI, body EDI, component EBX; the flag5-first 27 form swaps body and component
+// (body EBX, component EDI argument), the m_fixed-first forms keep retail's ranks but never convert. New: the
+// local as aliased float storage (no aligned type; frame no longer realigned) 93 with the component still on
+// the stack, so the aligned frame is not what blocks EBX here; flag5 first with direct rigid_bodies indexing at
+// every use 77 (0x1d1b60 lost at 60); plain struct copy with flag5 first 85 (rep movsd takes ESI/EDI and the
+// component still stays on the stack, so forcing ESI+EDI busy does not free EBX); parameter order (transform,
+// component, index) on the 27 form 27 (same). Of 31 matched game functions with aligned SSE stack stores none
+// takes an EBX argument, so there is no matched precedent for this shape. Callees 0x1d1260/0x1d1540 each save
+// EBX, ESI and EDI, so their save sets do not explain it. Original body restored.
+// Permuter (25 min on #1044 round 3, about 470 variants): only a volatile short copy of m_fixed with a char
+// cast in the test and the arms swapped gave 60 (frame 0x94); not kept (volatile without a match).
+// Round 153 (m3 lane 5, fast with 0x1d5120/0x1d0c20/0x1d1b60): set copy, body pointer, m_fixed first, direct-index refetch
+// 88 (230 B); set copy, slot pointer fetched before the transformed block 85 (228 B); set copy, slot, direct refetch 90
+// (231 B); constructor copy, body pointer, getter/direct refetch 85/85 (220 B). /Gd first pass: component EBX in every
+// m_fixed-first form, EDI in flag5-first forms; only EDI ever becomes a register argument here.
+// MiniMax D (11-17): no new form, no lower score (65): the copy of the transform is still retail's four
+// memberwise SSE stores against our block copy, and the component still arrives on the stack instead of in
+// the register retail uses for it, so our frame is four bytes smaller and our return still pops an
+// argument; the memberwise copy through the existing hkTransform setter (65 -> 90 here and 38 -> 40 in
+// 0x1d0c20) and the slot-hoist, direct-index and outer-scope inverse forms (85, 88, 90) were all worse and
+// were restored. The component's transport is set by the call cycle 0x1d0cf0 -> 0x1d1260 -> 0x1d1540 ->
+// 0x2da3f0/0x2da5d0, whose bodies are in other files.
+// M3 lane 6 r203: LEAD (see 0x1d5120's note, build/r203/lead-1d0cf0-d8.patch): this body with the copy through
+// hkTransform::set and one body pointer (`hkRigidBody *body = component->rigid_bodies[index].rigid_body;`) matches
+// once 0x1d5120 calls the matrix setter 0x1d0c20 and 0x1d0c20's definition is `inline`: the component then
+// arrives in EBX and the index in ECX. Not kept: matched 0x1d3fc0 then expands 0x1d0c20 and 0x1d5120 rises to 113.
+// M3 lane 12 r150 (fast with 0x1d0c20, 0x1d1b60 and 0x1d5120; control 65, 0x1d0c20 38, 0x1d5120 77): the 88 body (set copy,
+// body pointer, m_fixed first) re-measured 88 at 230 B, 0x1d0c20 40, 0x1d5120 73: line for line retail's except `push ebx;
+// mov ebx, [ebp + 8]` and `ret 4` for retail's EBX argument. On it, every declared order of the three parameters (definition,
+// the declaration in src/unknown_1d5120.cpp and both calls changed together) 88/88/88/88/88 (same code). Diagnostics on it
+// (none a keepable form; each restored): the flag5 test first 27 at 220 B (component arrives in EDI, 0x1d1b60 lost at 59);
+// 0x1d1540 called in place of 0x1d1260 88 (same code, so the callee's identity and its call cycle do not decide it); with
+// either caller's call removed 88 (the callers do not decide it); without the two component calls 95 (EDI argument);
+// without the inverse block 106 (EBX from the stack); no aligned locals at all 161 (EBX from the stack, the transform in
+// EBP); the transform unused 102 (index in EAX, component still EBX from the stack); the index unused 84 (EDI argument);
+// no else arm 138 / no second body lookup 77 at 220 B / no setter call in the fixed arm 92 (EDI argument each time); no
+// flag5 test 140, the inverse block replaced by a call 87, the else arm through a second lookup 88, an extra early
+// component test and call 111 (EBX from the stack each time); two more component calls in the fixed arm 63 (EDI argument,
+// the body pointer in EBX). In nine shapes where the component is the third callee-saved value handed out (EBX) it stays
+// on the stack, in seven where it is the second (EDI) it becomes a register argument; other matched functions do take an
+// EBX argument that is live across calls (0x1d1a20 in this file, 0x860b0 with an aligned frame and a copied second
+// argument), so the register itself is not barred. Left: what makes retail hand the component over in EBX with the body
+// pointer still in EDI. In retail this function is on the object code's call cycle (0x1d1260 -> 0x278f00 -> 0xb8540 ->
+// 0x109400 -> 0xe4c10 -> 0xe18d0 -> 0xb75a0 -> 0xb7430 -> 0x1c4a80 -> 0x1d3fc0 -> 0x1d0c20 -> here; 0x1d1540 reaches it
+// too through 0x1c39c0), and in this build the cycle is open because 0xb8540 and 0xb7430 are disabled bodies behind
+// empty stand-ins. Locate-only probe (plain check, every file restored): both bodies enabled and their stand-ins masked,
+// with the 88 body here: still 88 (same code), 0xb8540 and 0xb7430 match, and matched 0xe18d0, 0xe4c10, 0xb75a0, 0x1d3fc0
+// and 0x278f00 flip (33, 10, 73, 123, 185), as those two files' own notes say: the walk then enters the cycle at another
+// member than retail's. BLOCKED-BY the cycle's entry (0xb8540, 0xb7430 and 0xb7b40 enabled together, as 0xb8540's note
+// asks).
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -1564,6 +1820,11 @@ PRIVATE __forceinline real const &component_time_step()
 // (still `[eax + 4]` twice); the first product read directly or through the accessor with the reference bound after it
 // 17/14 (the head reverts). So the head is a symbol-count tie: a natural +3 names is worth trying once `add eax, 4` has
 // a cause.
+// M3 lane 16 r147 (one-file harness, exact: main 17/14 positional/aligned = 26, stop-first 36/36): the time globals bound
+// as one const reference with `.rate` read at both products 17/14 (same code); the pin bounds named in each arm 462 B,
+// 74/40; the scaled value assigned back into `acceleration`, step-first 17/14 and stop-first 36/36 (same code each);
+// stop-first with the step started as the scale result and multiplied in place 36/36; stop-first with the stop tick
+// count and the per-tick travel named 36/36, plus the final change named 36/36 (same code each).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2579,6 +2840,21 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
 // NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
 // Early velocity j/k loads, speed-product residence and property-zero EDI remain.
+// M3 lane 12 r150 (fast with 0x1d06c0, 0x1d0400 and 0x181db0, all matched each time; control 91): round 189's lead rebuilt
+// is 5 again at 1454 B (vector3f_add sum with `speed_sum = speed_sum + ...`, a named weight, vector3f_scale with the speed
+// expression as its argument, `result` declared after it, havok_from_vector3d, the setter building its word first); left
+// are the last block's five lines: retail emits copy, speed*i, store x, then the j and k products, the zero and the three
+// other stores, ours the j and k products and the zero ahead of speed*i and its store. On that form, the last block
+// written as: the scale straight into the result (cast to a vector3f) with w stored after it 68 (1457 B; the emit order of
+// the last block is still ours, so it does not follow statement order, and only k is then loaded beside the length);
+// a named speed and `set(speed * i, j * speed, k * speed)` with or without the weight 197/197 (first difference +0x2d5,
+// the first contact loop; its last block stores z first, reusing that register for the zero); velocity.i scaled by a
+// statement and passed to `set` with the j and k products 102; the scale in place then `set(velocity.i, .j, .k)` 161
+// (1470 B); havok_from_vector3d given vector3f_scale's return value 16, that value in a named pointer 186; a named speed
+// passed to vector3f_scale 122; `result` declared ahead of the scale 16 (the second contact loop's unrolled copy flips
+// its i product, as round 189 found); a three-component loop storing `speed * velocity.n[axis]` into the result, with
+// or without the weight, 122/122 (all three products in place, i no longer copied); a loop copying the scaled vector
+// into the result 13; a loop scaling the velocity in place then havok_from_vector3d 175.
 // Scale result passed straight to the Havok conversion 8, scalar stores 160, returned-vector
 // scalar stores 8, direct scale into output 76 or with named speed 130, separate scaled vector 8,
 // indexed setter 161, and vector constructor plus zero lane 206.
@@ -3114,7 +3390,7 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
-// score 15 (was 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
+// score 15 (was 15; earlier 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
 // caller, the reduced image gives another convention: 344). 0x1d83e0 MATCHES, so the call registers
 // (component EAX, index EDX, matrix ESI, two stack words) and the frame agree. The node_b word is now
 // read inside the `pair->node_b != NONE` test (the guard compares the short, the sign extension and its
@@ -3195,6 +3471,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // forceinline helper (search, relative frame, conversion) 309 (1228 B); the converter's translation through an inline
 // helper returning the Havok vector by value (an aggregate-return scheduler boundary) 15 (same code); all four parts by
 // value 354 (1456 B, copied through a temp); the three columns by value 354; column 0 only by value 355 (1389 B).
+// M3 lane 16 r147 (one-file harness with src/unknown_1d77d0.cpp, 15 as the check): the first child counter declared in
+// its `for` 15; the equal arm's converter call in braces 15 (same code each); one source pointer for both arms, repointed
+// at the composed matrix, with one converter call after the test 313 (1023 B); the first half's rigid-body entry named
+// once for the count, first node, child search and body store 314 (1165 B); the entry reads through the array's
+// operator[] 15 (same code).
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3333,6 +3614,11 @@ struct s_1cf531
  word field_2 : 4;
 };
 
+// MiniMax G (11-19): no new form, no lower score (2): only the corrected vector's spill slot differs (retail stores it to
+// local_13's slot at 0x30 and folds its reload into the final mulps, this build stores it to 0x40 and reloads it there);
+// the correction in place in local_13 measures 23 (the store goes to 0x30 but the reload after 0x183dc0 is a separate
+// movaps, never folded), the correction as a named hkVector4 and the correction declared earlier both give the same 2,
+// the final product's operands swapped 19, and a plain correction sharing local_13's slot grows the frame to 0x64 (94).
 // score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
 // uses the saved impulse slot at 0x30.
 // Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and

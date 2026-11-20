@@ -565,6 +565,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// MiniMax A (11-19): no new form, no lower score (34): the sum written with the extra count first compiles to the same
+// bytes, and the two counts still take the other registers - the player count arrives in edx where retail puts it in
+// eax - so the copy loop, the rep stosd fill, the call setup and the final clamp all follow from that one exchange;
+// retail's caller loads the player count into eax after the pushes and copies the running count to edx last, ours
+// loads the player count into edx between the pushes and copies the count to eax last, and that caller's body lives
+// in src/unknown_07a9a0.cpp, which this lane may not edit. BLOCKED-BY 0x7e210.
 // score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
 // MiniMax I (11-17): no lower score (34): a local copy of the player count, so that the parameter is read only once
 // in the copy loop, compiles to the same code, and the count's register home stays the caller's to pick.
@@ -1004,6 +1010,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // a plain fill value the load takes EAX at the top of the fill block and the player count cannot have it, and only a
 // fill value that is computed (the conversion) leaves EAX to the player count. No value-preserving natural form of
 // that was found.
+// MiniMax H (11-19): no new form, no lower score (34): the earlier rounds' notes record that the register this
+// function's parameters arrive in follows the caller 0x7e210, which is in another file and outside this lane, so the
+// remaining difference in the body is not reachable from here; the forms tried by the earlier rounds are recorded
+// above and none of them moves this body.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
