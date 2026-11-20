@@ -1742,6 +1742,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // both step products written rate first 234 (same code); the 469 form (general output through vector3f_add, direct rows as
 // statements; re-measured 469, aligned 154, masked 65, its k row still `addss xmm2, [eax + 8]`) with that flags local 611;
 // the first arm's up vector through a pointer local used by the cross and the last add-scaled 429 (3052 B). Body unchanged.
+// Separate requested and effective gravity 604, step-first condition 590,
+// positive admission arm 584, direct completion 597, disabled branch entry
+// 603, general-branch damping 632, direct dispatch test 639, and request as
+// effective default 523. These still miss the damping register and enlarge
+// the retail-length body.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

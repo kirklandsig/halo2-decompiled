@@ -534,6 +534,15 @@ static inline void quaternion_transform_vector(
 // construction cross and ordinary repair crosses.
 // Scores 187/199/236/199.
 // NOT kept: The 187 form restores the 0x24 frame but changes the last projection’s grouping. The 199 form falls below the gain threshold.
+// Coefficient local names in all six weight/projection orders, then cross-term names before
+// or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// Typed basis projection with quaternion/input first: scalar snapshot 178/212,
+// scalar doubled in place 170/212, caller-owned quadratic weight 311/304.
+// Typed-member forms 187/199 reproduce earlier projection leads.
+// Original projection with staged scalar square 151, shared scalar before doubling 154,
+// opening weight order 212, and original quadratic expression in retail order 259.
+// NOT kept: the shared dot changes the left-axis grouping. The staged square gains only
+// with both changes together, leaves frame 0x20, and changes the projection schedule.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1593,6 +1602,11 @@ void function_143250(
 // Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
 // 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
 // NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
+// Third-band products declared at their first coefficient: initial/later/both
+// mixed roots 1548/1497/1556; third mixed root 1515; component-weight families
+// at entries 23/25/both 1669/1689/1655; all product groups 1671. NOT kept:
+// the first three recover frame 0x300 but displace the scalar homes and
+// regress. The other forms retain the short frame.
 // The third-band scalar homes still leave the frame one word short. Running sums for paired mixed axial,
 // transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
 // outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
@@ -1617,6 +1631,10 @@ void function_143250(
 // Scores 1472/1380/1608/1324/1632/1220/1203/1611.
 // NOT kept: Row 1 reaches retail length and row 2 restores frame 0x300. Both raise the score. The
 // previous scalar spills remain.
+// Separate third-band copies of the second-band axial/horizontal mixed products
+// 1697/1721 and axial/horizontal squares 1751/1791. Both mixed sets 1792, both
+// square sets 1866, all products 1959, all immutable copies 1959.
+// NOT kept: the explicit copies shorten past retail and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

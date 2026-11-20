@@ -909,6 +909,10 @@ struct s_item_collision_bsp
 // Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
 // Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
 // contact registers still differ at the 1366-byte extent.
+// Left products from a carried j coefficient, j/k, all three at first use, or all three
+// with overlapping rows: 191 each through plane fields or row scalars. NOT kept: j now
+// loads before k, but its XMM home and the first axis operands still differ. The 0xa0
+// frame agrees and the rebuilt body still exceeds retail by five bytes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1708,6 +1712,11 @@ struct s_item_flags_view_10b850
 // Ray storage for bounce only 879, impact only 860. The local-sum forms
 // reach frame 0x148, while the reused-ray forms stay above retail’s 0x12c.
 // All score higher and the original position and ray expressions are restored.
+// Shared integration and fluid step, before the cross or at the first response:
+// single product 824/845, split multiplication 817/852. With a query-scoped ray,
+// 846/862 and 815/843. NOT kept: the 815 form reaches the retail extent and frame
+// 0x148, but the ray and flow still have separate slots and the scale stays in XMM4.
+// The entry Boolean stores and the 0x12c frame remain unresolved.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

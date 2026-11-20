@@ -680,6 +680,11 @@ struct s_24e9c7_points
 // (first difference +0x5); every offset as reals (no aggregates) 133; the across pair as a two-float aggregate 144 (746 B);
 // `back` from the across products 154 (753 B); the forward pair read once into locals 142 (740 B); every negation as
 // `0.0f -` 147 (735 B).
+// Separate signed-width truncation and halving, width or height first, then halve
+// after the upper offsets with an early origin, after both upper offsets, after
+// the first origin, or after its upper sums: 138/123/124/163 for either order.
+// NOT kept: 123 and 124 gain only two and one at 743 bytes. The returned height
+// still uses EBP-8 and the early across-axis product has no retail spill.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

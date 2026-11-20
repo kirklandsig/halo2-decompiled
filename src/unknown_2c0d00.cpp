@@ -220,7 +220,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // the self-unit pointer at F+0x34, the range_max short at F+0x38, the block_priority short at F+0x48 and the ignore_priority
 // short at F+0x50 against ours four bytes further out), so dropping the one extra dword would not line the rest up; the
 // entry also keeps the actor index in EBP where retail keeps it in EBX and uses EBX for the zero that retail keeps in EBP.
-// score 917 (was 920): the frame is retail's 0x2cac since m3 lane 4 r229 (below); the body is 3676 bytes against 3731. Left: the entry's
+// Earlier at 917 (was 920): the frame is retail's 0x2cac since m3 lane 4 r229 (below); the body is 3676 bytes against 3731. Left: the entry's
 // registers (retail actor_index EBX, self_unit and its zero EBP, unit_index EDI, reloaded at the loop head), the skip flag's home, the
 // deferred type-0 second branch and the type 1/7/11 arms. Earlier first line (920): r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
@@ -752,6 +752,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // the type-1 `if` 739. Retail's scaled lookup indices go to a fresh register each time (`lea edx, [eax+eax*2]` at the loop top,
 // `lea edx, [eax+eax*4]` for the component, `lea ecx, [eax+eax*4]` for the sphere) with the table loaded after them; its sphere
 // loop keeps the centre's z in XMM4 and 1.0 in XMM0 and subtracts k, j, i in that order.
+// Actor unit through the object header 925; query unit through header 926;
+// all object reads through headers 926; typed location 926; typed actor unit
+// category 925; direction defaults in branch arms 945 or at actor-block entry
+// 928; confidence and classification names 925. Both defaults forms recover
+// frame 0x2cac but regress, still using EBX for the entry zero.
+// Memberwise query location copy after the unit lookup 901, Whole query location through memcpy 925.
+// NOT kept: the memberwise copy uses two word transfers where retail uses one dword.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

@@ -2938,7 +2938,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // (1595 against 1543), so this build's early exit jumps to a block further from the function's start than
 // retail's and the body after it pairs against the wrong instruction; the extra code is the second 0x235a0
 // copy inlined where retail calls it: BLOCKED-BY 0x235a0.
-// score 354 (was 354; earlier 330, 364, was 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
+// Earlier at 354 (was 354; earlier 330, 364, was 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
 // made 0x4b5d0 175, long makes it 93); the structure global is read
@@ -3116,6 +3116,12 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // short-pair cursor 365, cursor with node read after the sample guard 369.
 // NOT kept: the separate workspaces move the frame away from retail and both matrix copies
 // still inline. The unguarded cursor also reads the node index for an empty bucket.
+// Both matrix copies still expand in the opening body. Rotation result first 357;
+// capacity failure before the buckets 358; bucket end cursor 434, or positive-count
+// extent 355; word availability 355; both matrices indexed 354. Structure sample
+// source after the first position lookup 358 or second 343. NOT kept: the latter
+// moves a single-use field read across a call and grows the body by one byte.
+// Second source bound inside the optional sample 354.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

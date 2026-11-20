@@ -2323,6 +2323,11 @@ void function_269250(long clump_index, long actor_index);
 // storing the selection before the best 126 (all the same code as their bases); the post-walk test `if (selected ==
 // actor->unknown07c) continue;` inside the found arm 126 (same code). On this body: the score as one ternary (`team match ?
 // score call : best`) 128 (484 B). Body unchanged.
+// Walk-index candidate before/after scoring: common ranking 87/87, team-local
+// 126/126. Iterator datum-index candidate at the same boundaries: common
+// 146/146, team-local 128/128. The team-local datum form promotes the pool
+// to EDI and leaves the selected handle in memory at the wrong offset.
+// Candidate-local prior best for both default and threshold 87.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

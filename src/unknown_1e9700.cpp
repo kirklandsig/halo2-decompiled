@@ -343,6 +343,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // inline-getter form the setter's enable test read through a const address cast 86 (426 B: the reload appears right
 // after the increment, in BL, and the team block reuses it), the team test too 86 (same code); match-only forms.
 // MiniMax S (11-20), NOT kept: 72 (was 76), a 4-point gain, under the 8-point bar for a function above 30.
+// Raw enable held as unsigned byte, signed byte, word or long 103/103/98/101.
+// Either byte with a direct setter read 103/103; raw team byte added to the
+// player byte, with a held or direct setter read, 103/103.
+// NOT kept: all regress. The raw byte avoids Boolean materialization but the
+// enable still remains live across the increment and the maximum stays in EAX.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -891,6 +896,10 @@ struct s_object_damage_view
 // Scores 509/353/509/509/353/509/353/509.
 // NOT kept: Assist-only tails tie. Selection tails allocate 0x54, move the object argument to EAX
 // and break the matched caller.
+// Shared victim/credit/both full-width player slots across pool and counter uses
+// 439/357/434, word slots 418/360/438, both unsigned full-width 434, credit slot
+// assigned with the selected handle 477.
+// NOT kept: all raise the score. The 357 form retains frame 0x50 but grows to 1553 bytes.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

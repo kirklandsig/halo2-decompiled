@@ -884,6 +884,10 @@ static inline bool teams_enabled_19e1c0()
 // the virtual call, at the fallback copy, at both, or at the first compare 691 each (same code: the reference folds away, so it
 // does not take the token out of the ranking); the four name copies through a file-local inline bounded copy 691 (same code);
 // the "%s" formats through a file-local inline bounded format 594 (1269 B, token still EDI); both helpers 594.
+// Fallback copy bound computed at entry, defaulting to token length or capacity in
+// branches or ternaries: ordinary result 669/480/669/669, existing qualified result
+// 563 each. NOT kept: the early bound adds a stack slot, growing the frame to 0x20c.
+// The token is still loaded after the prologue and the 0x204 frame remains unresolved.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

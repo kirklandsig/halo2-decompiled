@@ -2182,6 +2182,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // NOT kept: the clearance-local square was already rejected as a moved one-use local without a
 // match. Its alternate loop forms produce the same score and square slot. The count and clearance
 // homes still differ.
+// First or second reconstructed point through the returned address 555/553, both 551,
+// second point copied from the return 617. Early signed successor with the first,
+// second or both returns 603/603/616, between both reconstructions 558.
+// NOT kept: all tie or regress. The early forms change the 0xb964 frame.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

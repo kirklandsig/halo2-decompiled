@@ -479,6 +479,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Const square, cross-coefficient and cosine-complement locals, alone or grouped,
 // and all three with const angle products 334 each. The 0x90 frame agrees and the
 // axis and square registers and their early spills still differ.
+// Sine products/cross products/both at first row use 334/362/362.
+// Both in paired output order 363; with the complement at the first pair 373.
+// Squares at their diagonals 388; all products staged in row/pair order 346/396.
+// NOT kept: naming the sine products ties; the cross and square variants
+// raise the score. The first-axis register and square spills remain.
 // Round 452: Caller-produced cosine complement, evaluated per turn or for both
 // turns first. With both sine and complement passed as expressions 378/382;
 // named complement 340/351; named sine 340/346; named sine and complement
@@ -2759,6 +2764,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Camera displacement, reflection and animated tint local renames, alone and in pairs
 // or together, and forward-distance rename 281 each. The 0x94 frame agrees and the
 // delta/reflection XMM allocation and unity-store schedule stay unchanged.
+// Shared axis across native differences 421; staged dot with original/native delta order
+// 294/225; with tint/unity/both before the dot 225/535/535; reflected coordinates
+// staged before the setter, without/with those defaults 225/535. NOT kept: the
+// 225 forms retain the 0x94 frame but lengthen the function to 2290 bytes, five
+// past retail. The early exit displacement and delta/reflection registers still differ.
 // Round 452: Distance ratio through the bounds macro or explicit bound arms 501/501;
 // equality-first with helper or bound arms 496/507; bound selected raw ratio or conditional
 // input 417/418; named distance span and numerator with helper or bound arms 487/501.
@@ -3522,6 +3532,9 @@ real magnitude3d(vector3f const *v);
 // forms shorten the body. The separate raw-length home and real dot reload still differ.
 // Named floor, ceiling or both comparison outcomes for the current and target lengths, all four together,
 // and their complementary outcomes: 170 each. NOT kept: all forms generate the opening code.
+// Shared squared-length producer under the current or target root at the lower
+// test, upper test, in-range result, or all three sites: eight at 170.
+// The raw current root still shares the bounded slot; the promoted dot stays.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4705,6 +4718,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Selected original or scaled projection coordinates 518, with world scale read once 505.
 // World point setter 521, with world scale read once 524, or with selected projection coordinates 508.
 // NOT kept: the smallest frame is still 0x5c and shortens the body; all eight raise the score.
+// Y inversion at the moved, stored or both projections 530/486/530,
+// with both inverted and a shared displacement 513. Screen-y result in the
+// projection helper as field, named row or direct expression 517 each;
+// the named row with shared displacement 530.
+// NOT kept: the stored-only form ties; the others add frame storage and length.
+// The independent velocity reads and register projection results remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

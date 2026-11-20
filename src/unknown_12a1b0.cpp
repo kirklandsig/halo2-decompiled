@@ -3737,6 +3737,11 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Direct bit at both consumers 788, shared bit test 788, rejection at track use 757,
 // admission at track use 757, track result from the complete test 745.
 // NOT kept: all grow the frame to 0x40 and raise the score. The early BL load and record/track homes remain.
+// Creation from lookup miss, retained existing decision, original lookup index
+// and miss-first creation 740/740/740/740. With alternate decoded after the
+// definition test, 731/731/725/731. The latter recover the entry to +0x1c
+// but the acquisition outcome then uses different stores and the scores rise.
+// Stopped state set from the resume bit 737, same with alternate decoded inside the definition guard 663.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

@@ -3459,6 +3459,11 @@ struct s_ammo_conversion_entry
 // Source selected at capacity 208, reserve field reference 207, removal predicate 188,
 // shared weapon-kind predicate 214, shared type mask 190. NOT kept: the removal predicate
 // gains two with the same extent and saved-register divergence.
+// Initial object-table base, tag-table base, both, or both scoped to the
+// lookup phase 190 each. Source slot decoded as word/long, with the original
+// lookups or the paired bases 203/217 and 203/217. NOT kept: the base reads
+// tie, and naming the source ordinal regresses. Destination EBP and delayed
+// EDI save remain.
 // Rounds clear before the lookups or after the destination object/tag or source object 215/221/220/211.
 // Early declarations for the retained/acquisition/both flags 190 each. Source tag deferred until acquisition 211.
 // NOT kept: the early clear changes load order, the declaration forms keep EDI, and the deferred tag shrinks the frame to 0x1c.
@@ -3766,6 +3771,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // magazine flags 597, prefetched notification predicate 635, late notification bit 639, positive branch with signed
 // remainder 627, shot result before debit 633. NOT kept: the flag snapshot moves the flag read and shortens the
 // frame to 0x1c5c in the reduced image. The full frame and register roles still differ.
+// Magazine record or tag names 636 each, immutable receiver bindings 636,
+// separate record or tag references 636 each, positive notification branch 636,
+// fallback rounds before burst reset 636, and nested fallback thresholds 636.
+// Reduced control 636. The full frame and separate magazine-tag and round spills still differ.
 // Typed holder-header accessor 636; unsigned type mask 636; typed Boolean type bit 632;
 // conjunctive holder rejection 636; negated ammunition shortage 636; short debit store 636;
 // negated heat exemption 636; ammunition/heat gate before the loaded-minimum gate 639.
@@ -4230,6 +4239,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // graph getter 1417, conditional animation lookup 1434, primary channel reference 1417, typed frame count 1417,
 // nested animation-end test 1417. NOT kept: these animation-state forms leave the 0x34 frame, pool registers and
 // spilled dual result in place.
+// Blocked control or status shift tests 1415/1412, both shifts 1415,
+// both shifts with branch assignments 1415, original tests with branch assignments 1412,
+// the unblocked path first 1412, and scoped or read-only blocking receiver 1412 each.
+// The frame remains 0x34 and the dual result still spills.
 // Tracked-target snapshot 1412; typed owner player read 1412; separate magazine activity
 // 1416, or seeded from prior activity 1415; call-first logical OR 1425; wide magazine
 // accumulator 1412; narrow pre-magazine activity 1449; named animation receiver 1412.
@@ -4859,6 +4872,12 @@ struct s_weapon_projectile_creation
 // each. Owner presence branch 1122 at 5199 bytes, admitted motion 1121, tracer from the two tests
 // 1119 at 5212 bytes, complete damage initializer 1121. NOT kept: tracer gains two and retains the
 // 0x1ea4 frame. The owner branch shortens the body and regresses.
+// Rotation through complete setter 1248, aggregate result 1121; shared dot
+// with setter 1216, staged cross scalars with setter 1244. Shared cross,
+// alias-safe cross, and shared cross with direct component stores 1186 each;
+// shared dot/cross with setter 1165. NOT kept: the setter alone drops the frame
+// to 0x1e94 and shortens the body by 107 bytes. The shared cross forms use
+// 0x1eac. Separate clipping and the native frame gap remain.
 // Shared marker position 1154, marker origin/direction setters 1122/1149, i-k-j inherited/perpendicular
 // dot products 1144/1121, actor speed scale-add 1121, synchronized point setter 1136, inherited velocity setter 1121.
 // NOT kept: the marker direction setter grows the frame to 0x1eac and the remaining forms keep 0x1ea4.
