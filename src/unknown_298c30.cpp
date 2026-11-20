@@ -855,6 +855,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// MiniMax R (11-20): score 561 (was 569): the forward trace writes to its own vector, which gives the pivot retail's
+// +0x94 home, and the sector reads moved after both trace calls, which gives the trace results retail's homes. Still
+// open: the radius is promoted into XMM5 at the entry where retail reloads it from its home in each block.
 // MiniMax G (11-19): no new form, no lower score (569): the radius is still promoted into XMM5 at the entry and kept
 // for the whole body where retail loads it from its home in each block, and that follows from this build's link-time
 // register summary of 0x2108a0 and 0x210770, whose definitions are in another lane's file, so the radius, the pivot
@@ -1482,8 +1485,9 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	short local_4 = function_2108a0(*(long *)((byte *)local_1 + 0x28c));
 	point3f *local_5 = (point3f *)((byte *)local_1 + 0x27c);
 	vector3f local_6;
+	vector3f traced_direction;
 	point3f local_7;
-	function_210770(local_4, arg_4, (vector3f *)&local_7);
+	function_210770(local_4, arg_4, &traced_direction);
 	function_210770(local_4, arg_5, &local_6);
 	if (arg_1->field_0)
 	{
@@ -1502,8 +1506,8 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 		return true;
 	s_path_trace_result local_12, local_13, local_14;
 	function_26c590(function_29962f(), local_5, local_11, NONE, &local_6, local_3, NULL, &local_12);
-	long local_15 = ((s_sector_trace_result *)&local_12)->sector_index;
 	function_26c590(function_29962f(), local_5, local_11, NONE, &local_8, local_3, NULL, &local_13);
+	long local_15 = ((s_sector_trace_result *)&local_12)->sector_index;
 	long local_16 = ((s_sector_trace_result *)&local_13)->sector_index;
 	point2f local_17, local_18, local_19;
 	if (arg_1->field_0)
