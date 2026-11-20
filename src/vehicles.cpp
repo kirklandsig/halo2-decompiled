@@ -5185,6 +5185,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // guard (`xor eax, eax; cmp edi, eax`, the zero store from EAX) where retail tests EDI and stores an immediate, so the
 // loop top loses its padding jumps; that with `16 - count` 136, with `&markers[primary_count]` 46, with an
 // `if (count > 0)` guard 126.
+// Score 17 (was 22) with stand-in SDK headers: the source store comes after the first colour, in retail's store order.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -5229,8 +5230,8 @@ void __stdcall function_f6060(long vehicle_index)
 				parameters.unknown38 = 0;
 				parameters.unknown3c = 0;
 				parameters.unknown30 = 0;
-				parameters.source = NULL;
 				parameters.color_a = 0xff808080;
+				parameters.source = NULL;
 				parameters.color_b = 0xff808080;
 				parameters.unknown18 = NONE;
 				parameters.object_index = NONE;
