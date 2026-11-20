@@ -1260,6 +1260,14 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the resend bit in the message; the in-place update reaches retail's byte OR (or byte ptr [ecx+0xe], 2) but frees the
 // flags word and changes the whole allocation (89), the ternary message pointer with the in-place update is 90, and
 // the ternary alone keeps retail's registers but lays the arms out with the address in the fall-through (45).
+// M3 lane 13 r129 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched throughout; control 35): the resend scan as a
+// file-local bool helper (marks the message, returns true) under `&& helper) type = 4;` 35 forceinline with the saved-word
+// update (same code), 91 with the member update; the caller returning 4 itself 111/129; as plain `inline` the helper stays a
+// call (250/237). Lane 15 r115's second-variable lead re-measured 10 at 225 B (only the last two exit blocks swapped); on it:
+// the count or the send test inverted 10/10 (same code), both 87, the copy inside the count arm 88, without the count
+// test's else 95, `result` declared first 10, `next` at function scope 10, the count as `> 0` 22; the copy in a
+// `!send && count` arm with an else 28, as `send || !count` arms 28; a result local in the failed-send block with two
+// returns 94, an early `return type` on the send 94 (both push every register at entry).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -1020,6 +1020,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // using the secondary guard 533/533, flag then while 532/532, flag early exit 532/532,
 // or transfer before phase admission 537/537.
 // NOT kept: score gains are at most three and the definition spill stays at +0xb4.
+// M3 lane 13 r129 (plain each; base 535): the component scale as `inverse * axis.n[component]` 535; the length test as
+// `0.0f < length` 535; the angle as `sign * angle` 535 (all three the same code); the short-axis test as
+// `fabs(length) >= 0.0001f` 552; the sign as `real sign = 1.0f;` cleared to -1 by an `if (dot >= 0.0f)` 661 (first
+// difference +0x7). All restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
