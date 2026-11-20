@@ -6603,6 +6603,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // with or without the state rotation as well: frame 0xdc, flipped at +0xb4 as retail, 1016 (5080 bytes; a 4-byte
 // hole is left at +0, the desired orientation at +0x34, the shared matrix at +0x58, the inertia on the flipped
 // output); that with `bool boosting` 1108 (frame still 0xdc).
+// Consumed flip buffer with memcpy, inverted selection and reused contact basis score 1017/1016/1017.
+// Separate product with shared contact/current/state and memcpy 1021. Three reused matrix homes
+// with flip memcpy, inverted selection, state memcpy and both memcpy calls score 1089/1088/1089/1089.
+// NOT kept: the consumed flip forms reach 0xdc but shorten the body and raise every score.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -2562,6 +2562,10 @@ __forceinline char unit_action_round(real value)
 // header accessor with a word 316/311/311/316; each with the short-slot hand getter
 // 319/311/311/319. The long slot forms recover EDI and the saved slot offset; the pool
 // still loads into EDX and the completion byte remains different.
+// Sparse equality checks in case order and pivot-first order score 325/323. Guarded switch default
+// 325. Range before the sparse switch 256. The short-slot forms score 322/320/322/308.
+// Both short-slot equality chains reach 1188 bytes. NOT kept: pool, displacement and completion
+// byte allocation remain different and scores rise.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

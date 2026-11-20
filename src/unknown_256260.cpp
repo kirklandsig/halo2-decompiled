@@ -447,6 +447,10 @@ static inline s_prop_datum *prop_ref_iterator_next_256810(s_prop_ref_iterator_25
 // left as bool. Tried with short front: index used straight from the iterator, other declaration orders,
 // iterator fields swapped or index copied first, one index variable shared by both loops (166-169); for or
 // while loops over next_index rotate the loop (202, 205).
+// Shared minimum-distance accumulator 107 and 166 with short facing. Earlier second iterator
+// 117 with either accumulator. Earlier perception index 107 and 166 with short facing.
+// No-prop early exit with separate and shared distances 124/124 (707 bytes).
+// NOT kept: none recovers the actor spill and current index register together.
 // @retail 0x256810
 short __stdcall function_256810(long actor_index, s_slot *slot)
 {
