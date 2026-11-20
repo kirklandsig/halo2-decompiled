@@ -1436,6 +1436,10 @@ bool c_projectile_type::v8(long a, long b)
 // `0xffffu` 12, the group stride written `12u` 12, the 0x800 arm's bit written `0x800u` 12 (suffixes fold: the constant pairs
 // stay shared); the result started at 0 and accumulated (`result |= function_a5e70(...)`) with the mask 12, with the word read
 // 5 (same code).
+// M3 lane 7 r198 (fast with 0xa5e70, matched each time; control 5): the group index masked with an unsigned literal
+// `0xffffu` 12 (the same swap as the mask); `(long)(unsigned short)index` 5 (movzx); with the word read, the object's
+// power through a `real const &` 5, the 0x400 test and compare as nested ifs 5, a `long` flags local 5 (all the same
+// code as the word-read body). All restored.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
