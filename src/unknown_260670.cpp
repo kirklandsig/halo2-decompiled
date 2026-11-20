@@ -285,6 +285,11 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // the actor from the saved index offset); `*has_path = false` ahead of the random pick 449. Diagnostic (removed): the
 // owner lookup through a file-private copy of the find-and-copy helper 663 (3191 B: 0x13e2d0 is then expanded here,
 // where the matched 0x140b20 keeps it a call with the same helper shape).
+// M3 lane 14 r131 (fast with 0x2605d0, 0x2613d0, 0x2600a0, all MATCH; fast CAVEATs this function; control 440): the
+// written-out first evaluator pass in a block of its own 440 (same code); the two flags in one declaration 440 (same
+// code); the sort scratch in a block of its own with the first pass in its own block 439 (frame 0x8a4), with `possible`
+// declared ahead of the flags 439; `__forceinline` on 0x262a30's definition 499 (3191 B: 0x13e2d0 expands with it, as
+// with `inline`) and 0x2623a0 65 -> 182 (diagnostic, restored at once).
 // M3 lane 1 r137 (H2M_FAST with 0x2605d0/0x2613d0 MATCH, 0x1af160 12): the two flags declared and cleared just before the
 // main loop 772 (3081 bytes, frame 0x8a4: they then pack into one dword at retail's 0x6/0x7, swapped, and the offset and
 // best score take retail's homes; the late clears are positional misses); the sort scratch word in its block 440 (same

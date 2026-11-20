@@ -525,6 +525,8 @@ static inline void quaternion_transform_vector(
 // Named double cosine/sine radicands 217/217, both independently or together 201/201.
 // Named double cosine/sine roots 258/258, both 215, and both radicands and roots 210.
 // All keep the 0x20 frame and miss the separate retail transform spill.
+// Coefficient local names in all six weight/projection orders, then cross-term names before
+// or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1599,6 +1601,10 @@ void function_143250(
 // the nine rotation reads 939; r0..r8 renamed (diagnostic: slot order does not follow these names) 939; `s5_s15` as
 // `s15 * s5` 939; every band temporary but the accumulator `real const` 939 (all the same code); the third band's
 // accumulated diagonal sum as one expression stored to matrix[8] 1333 (10752 B).
+// Third-band coefficient-local cubic products of r6 times r0 or r3, or both pairs 1560/1559/1537.
+// Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
+// Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
+// NOT kept: the forms raise the score and do not recover the 0x300 frame.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
