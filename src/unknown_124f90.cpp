@@ -1817,6 +1817,10 @@ long function_2197f0(real gain);
 // gain then assigned 87 (same code), returned from the arm 174 (668 B); arm 3's sum stored through the long view 87
 // (same code). Reading: ours has exactly one sum with the gain in a register (arm 4, fed across the join) and retail
 // exactly one too (arm 1, loaded there); the other three add the gain from memory in both.
+// Retained release duration with scaled overlap, staged subtraction/normalization/scaling,
+// independent release component, or attack accumulator 92/92/92/92. Retaining the attack
+// divisor for the final quotient instead gives 92/92/92/92. NOT kept: all raise the score;
+// the 0xc frame and length hold, and elapsed and gain loading still differ.
 // @retail 0x127010
 long function_127010(short class_index)
 {

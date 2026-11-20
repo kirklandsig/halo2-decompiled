@@ -868,6 +868,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // hull count's alone 242 (768 B), the count's alone 178 (807 B, aligned 88), both on the `current`-first body 245. So
 // neither an address-taken nor an escaping count or hull count gives retail's allocation; what ranks the hull count
 // above the count for the fourth callee-saved register is still open.
+// Compaction after the complete walk uses input count 195, republished result 264, separate
+// compacted count 250, or named input bound 195. Starting each scan at the first index with
+// a predecessor gives 195/257/247/195. NOT kept: all retain the extra frame word and raise the score.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

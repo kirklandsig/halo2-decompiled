@@ -561,6 +561,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Round 648: deferred seed portal 396; destination ordinal from its record 364; split flag predicates 320;
 // bitmap word shifted at reads 348; fallback-first range 346; short-circuited range tests 305;
 // defaulted output gain 308; common count update 305.
+// Reacquire destination after travel, geometry, or at the range gate 359/359/359;
+// reacquire start after travel or geometry 369/369; reacquire both after travel, geometry,
+// or at their consumers 405/370/366. NOT kept: all raise the score and retain the extra frame word.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
