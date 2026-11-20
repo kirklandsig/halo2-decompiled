@@ -475,6 +475,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Const square, cross-coefficient and cosine-complement locals, alone or grouped,
 // and all three with const angle products 334 each. The 0x90 frame agrees and the
 // axis and square registers and their early spills still differ.
+// Sine products/cross products/both at first row use 334/362/362.
+// Both in paired output order 363; with the complement at the first pair 373.
+// Squares at their diagonals 388; all products staged in row/pair order 346/396.
+// NOT kept: naming the sine products ties; the cross and square variants
+// raise the score. The first-axis register and square spills remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2737,6 +2742,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Camera displacement, reflection and animated tint local renames, alone and in pairs
 // or together, and forward-distance rename 281 each. The 0x94 frame agrees and the
 // delta/reflection XMM allocation and unity-store schedule stay unchanged.
+// Shared axis across native differences 421; staged dot with original/native delta order
+// 294/225; with tint/unity/both before the dot 225/535/535; reflected coordinates
+// staged before the setter, without/with those defaults 225/535. NOT kept: the
+// 225 forms retain the 0x94 frame but lengthen the function to 2290 bytes, five
+// past retail. The early exit displacement and delta/reflection registers still differ.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

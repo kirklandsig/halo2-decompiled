@@ -1574,6 +1574,11 @@ void function_143250(
 // Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
 // 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
 // NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
+// Third-band products declared at their first coefficient: initial/later/both
+// mixed roots 1548/1497/1556; third mixed root 1515; component-weight families
+// at entries 23/25/both 1669/1689/1655; all product groups 1671. NOT kept:
+// the first three recover frame 0x300 but displace the scalar homes and
+// regress. The other forms retain the short frame.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
