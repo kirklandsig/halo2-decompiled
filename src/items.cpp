@@ -1187,6 +1187,7 @@ void function_1420f0(transform4x3f *out, point3f const *position, vector3f const
 void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f const *new_parent);
 
 // MiniMax E (11-20): no new form, no lower score: our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the inverted threshold test with a split dot scores 199.
+// MiniMax B (11-20): no new form, no lower score (130): the cross result keeps a 12-byte stack home because its address is passed to the scale helper, which makes our frame 0xc0 against retail's 0xb4 and our locals sit 12 bytes higher; retail multiplies the dot as j, i, k and keeps the cross in registers, and a dot written as a separate statement reaches that product order but moves the old vector's components into other registers. Writing the cross out in place gives retail's frame and 848 bytes but scores 159.
 // score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
 // depth one 130; size preference 277; complete rotated vector 207; fallback vector initializer 130.
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
