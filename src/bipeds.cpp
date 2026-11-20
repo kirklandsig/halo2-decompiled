@@ -2810,6 +2810,10 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax E (11-20): no new form, no lower score (63): the +0x3aa byte tested in place with the count read again at
+// the call through BIPED_GET gives 68 (249 bytes), the header's main-rigid-body getter on that graph 91, and a local
+// component index on it 68; the extra EBP for the Havok base, the widened count test and the hoisted 0x9fff word
+// clears remain.
 // MiniMax B (11-19): no new form tried this round, no lower score (63): the differing pairs are structural and not
 // stack slots alone - the extra EBP (the Havok base loaded early), the count transport and the hoisted 0x9fff flag
 // clears - and the settling count still travels in EAX to 0x1d5120, whose declaration lives in another file:
@@ -4046,6 +4050,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
 // MiniMax I (11-19): no new form, no lower score (537): the frame is still 0x7c against retail's 0x78 - the definition's row pointer is taken into ebx where retail takes it into ebp - so the changed flag byte sits at [esp+0x12] against retail's [esp+0x11] and the flight threshold's home at +0x14 against +0x18.
+// MiniMax E (11-20): no new form, no lower score (537): the frame is 0x7c against retail's 0x78 - this build keeps the definition's row pointer in ebx and homes the index offset at [esp+0x1c] where retail keeps it in ebp; a single index local used at all three lookups measures 644 and both weapon reads taken from the biped local 670, so the body stands.
 // score 537 (was 548): The 0x78 frame agrees. The changed byte is at +0x12 versus +0x11, then the flight
 // threshold uses +0x14 versus +0x18 and the vector schedules differ.
 // MiniMax E (11-17): no new form, no lower score (548): the frame is still 0x7c against retail's 0x78, and the definition's row pointer is still taken into ebx where retail takes it into ebp and pushes ebp as well, so the definition, biped and state homes sit four bytes apart and the flight call's arguments stay one register out.
@@ -4619,6 +4624,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
+// MiniMax E (11-20): no new form, no lower score (308): the first difference is still the stack home of the matrix local, +0x60 here against retail's +0x50, with the origin at +0x44 against +0x40; the same set of locals is given its slots in another order, and moving the declarations' order or scope to reach it is a form this lane may not use.
 // score 308 (was 336): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
 // M3 lane 16 r148 (fast with 0xe1b60/0xe23e0/0x24590, all MATCH each time; plain agrees), KEPT 336 -> 308 (1931 B, aligned
 // 291 -> 227): the pivot offset through the existing vector3d_from_points3d (point to world pivot) and the reach distance
@@ -5707,6 +5713,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax E (11-20): no new form, no lower score (79): the first difference is still at +0x107, inside the inlined rotation helper rotate_direction, whose body lives in src/unknown_1eb8a0.cpp and may neither be edited nor written out by hand here; retail multiplies the axis by the forward x in two of the three cross terms where the helper multiplies the forward by the axis, and axis_rotation.h measures 134.
 // score 79 (was 79): Frame 0x24 agrees. The first rotation spills its cosine complement too early and the final cross reloads forward j.
 // MiniMax A (11-18): no new form, no lower score (79): the frame is 0x20 against retail's 0x24 and this build pushes ebx before it masks the character index where retail masks it first; the first rotation spill and the final cross reload still differ.
 // Earlier: The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
