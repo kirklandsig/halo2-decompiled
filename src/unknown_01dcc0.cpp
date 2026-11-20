@@ -412,6 +412,10 @@ long g_55e6c0;
 // then takes EDX at the top and the height EBX). 0x1d6f0 reads all five of its parameters, so no dropped argument.
 // Also on that base: the guard written `if (!entry->data && !entry->flag95) { ... } else result = false;` 31 and the loop
 // index declared beside the offset 31 (both the base's code).
+// M3 lane 16 r151 (fast with 0x1dc40/0x1db10, both MATCH): round 122's lead re-measured 31 (484 bytes); on it the height
+// store moved after the packing 159 (493 bytes); on main's body the same move 98 (480 bytes); the clamp's tests
+// constant-left (`0 > count ? 0 : 4 < count ? 4 : count`) 29, only the upper one 29, only the lower one 29 (all the
+// same code), the first spelling on round 122's lead 31.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

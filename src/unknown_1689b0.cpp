@@ -1555,6 +1555,8 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// score 551 (was 580): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
+// The projected and first point now have retail's stack homes.
 // MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
 // either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
 // loop guard still differ.
@@ -2100,6 +2102,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // named projection products 565, early nearest reset and common projection scale 564,
 // prism ordinal before the query 553. NOT kept: grouping moves the sum slots, and cached
 // plane components eliminate retail coefficient reloads and move the prism cursor.
+// Shared count reciprocal 598, with common clearance store 598, selected sum with split clearance
+// 567, selected sum and clearance 591, early sum selection 589, selected sum through point setter
+// 591, selected coordinates 619, and class-specific assignments for all three inputs 603.
+// NOT kept: shared output selection shortens the function and displaces the pre-query stack homes.
 // M3 lane 5 r211 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0, control 551; the four matched ones stay MATCH):
 // a redundant `if (0 < count)` around the edge loop 599 (2894 B); the nearest-edge scan (nearest reset, `inside`, clamp
 // and edge loop) as a forceinline helper returning `inside` 556 (2878 B: the plane distance's y and z products then load
