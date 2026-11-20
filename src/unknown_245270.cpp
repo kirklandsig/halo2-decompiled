@@ -932,6 +932,20 @@ void function_245400(s_source_245400 const *source, long index,
 // operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
 // Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
 // (retail loads the second normal first in four products and reuses the first normal's k in two).
+// M3 lane 5 r217 (the same one-file link-time screen, exact against the full build for this body; aligned rows on lane
+// 3 r271's lead, 40): the cross does move with the order its rows are stored in. Written out in place with rows in
+// each of six orders 84 to 96, in a file-local helper 40 (i, j, k), 44, 43, 47, 54 (k, i, j), 56 (k, j, i): with the k
+// row stored first all six products take retail's operand sides (second normal's k, i and j loaded against the first
+// normal's i and j, first normal's k loaded against the second's j and i), but the products then run k row first
+// where retail runs i, j, k. A staged cross (three scalars, then three stores) over every compute and store order:
+// 37 with i computed ahead of j and stores i, j, k (four of six products retail's), 40 with j ahead of i, 54 / 56
+// with k stored first. One normal component read into a local first (each of six) 41 to 59; four written operand
+// spellings of each form the same code. The facing value as one triple-product expression, four spellings, 80 each.
+// One to three parenthesis pairs on the dot's first product 45 / 67 / 80. Ten cross forms x 0 to 7 dead locals ahead
+// of the points: 35 with the staged i, j, k cross at 7 (only the two products of the first normal's k still face the
+// other way: retail loads that k once and multiplies it by the second normal's j and i from memory). A coordinate
+// descent from seven starts over the cross form, both dead-local counts, six dot spellings, the edge copies' order,
+// the scale arm's order and twelve spellings per rotation row: best 35, no match. Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

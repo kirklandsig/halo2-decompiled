@@ -1691,6 +1691,17 @@ void function_1e3b60(long actor_index);
 // iterator and the update flag kept in memory and the 0x25c820 call kept out of line gives MATCH here (0x262ba0 545
 // at 1496 B); any two of the three without the third 25 (see 0x262ba0's note for the forms and counts).
 // BLOCKED-BY 0x262ba0 (0x25c820 expanded inline there; iterator and flag homes).
+// M3 lane 5 r217 (fast with 0x262ba0, 0x2641c0, 0x264210, 0x1be120, 0x1fba10, 0x25c230, 0x25d020, 0x265680; 25 here in
+// every form; 0x262ba0's file was another lane's this round, so nothing there was tried): 0x2641c0's noinline
+// declaration dropped: 0x262ba0 509 (1696 B, expanded there as retail), 0x264210 114 (139 B), and the five other
+// callers keep the call and their match, so the one site our link expands against retail is 0x264210's unconditional
+// call. With the declaration dropped: two dead constant locals in 0x2641c0 114 there; eight dead computed locals 114;
+// the swarm flag, swarm index and sample block through three forceinline accessors 114 (0x2641c0 still matches): the
+// decision does not follow the callee's statement count. 0x264210 as an early return 114; its result in a named bool
+// 114; its position pointer named ahead of the call 114. Listing with 0x2641c0 expanded in 0x262ba0: the release label
+// still expands 0x25c820 while case 1's arm calls it, so that expansion is not a budget effect of the missing
+// 0x2641c0 expansion. Lead for 0x262ba0: only the label that three gotos reach is expanded; the two release calls
+// written in each failing arm (no label) would make each site as cold as case 1's, which stays a call.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

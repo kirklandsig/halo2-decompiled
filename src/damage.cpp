@@ -2979,6 +2979,22 @@ struct s_unit_event
 // same way 420; the region index read once through its address into a const local used for the permutation lookup,
 // 0xa8360 and the region-state update (no region pointer) 558 (1852 B, the dead add gone); the region array named
 // before the region pointer 425. The cycle (region index EBX, permutation pointer EBP) does not move.
+// m3 lane 5 r217 (fast with 0xdaaa0, 0xdae60, 0xdb760, 0xd5de0, 0xd9d60, none moved; control 420, aligned 217 rows by
+// difflib, 54 with registers masked). LEAD, not kept (a one-use pointer local, and the positional score rises): the
+// object's region states named first, as lines 4524 to 4908 of this file do, `s_object_region_state *region_states =
+// (...)((byte *)object + object->region_states_offset); region_states[region_index].destroyed_permutations |= 1 <<
+// permutation_index;` 523 at 1852 B, but aligned 128 (masked 52) and first difference +0x5a for +0xc: the entry cycle
+// is gone (region index EBP, permutation pointer EBX as retail) and the update is retail's `or word [eax + ebp*8],
+// reg` in place of the `lea` and plain `or`. Left on it: ours keeps the object pointer in ESI from the update on and
+// reloads the datum offset into scratch registers, retail keeps the datum offset in ESI (first loaded at the second
+// attachment lookup) with the pool pointer in EDI and reloads the object pointer from its home into EDX or EAX at
+// each use, which is the 16 bytes; the shift's 1 then has no free register in retail and goes through the region
+// argument's dead home. On the lead: the object declared after the permutation pointer 565 (aligned 154, entry
+// exchanged again); a const object pointer 523 (same code); the bit named ahead of the update 521 (aligned 128).
+// Without the named states: the element address named (`&states[region_index]`, then `->destroyed |= bit`) 420
+// (same code as the body); the shifted bit cast to a word 420 (same code); no region local (one expression for
+// the permutation pointer) 558 (1852 B, aligned 210); the object declared after the permutation pointer 462 (1868
+// B, aligned 240, first difference +0x4).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
