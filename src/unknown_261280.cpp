@@ -10,7 +10,7 @@
 #include <float.h>
 #include "unknown_25fc30.h"
 
-bool function_2624d0(s_261d20_entry *entry, s_reference reference);
+bool function_2624d0(s_reference reference, s_261d20_entry *entry);
 __declspec(noinline) bool function_260160(long actor_index, s_prop_search *search, s_261d20_entry *entry);
 struct s_reference_filter_view;
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference);
@@ -34,7 +34,7 @@ bool function_2613d0(long actor_index, s_reference reference, s_prop_search *sea
 		{
 			struct { s_261d20_entry entry; byte output[0x78]; } evaluation;
 			s_261d20_entry &entry = evaluation.entry;
-			if (function_2624d0(&entry, reference))
+			if (function_2624d0(reference, &entry))
 			{
 				byte *candidate = (byte *)&entry;
 				if (reference.unknown2 & 0x8000)
@@ -101,7 +101,7 @@ s_reference function_261280(s_prop_search *search, long actor_index, s_261d20_en
 	if (REFERENCE_EQUAL(reference, g_470fa0) && !REFERENCE_EQUAL(actor->unknown418, g_470fa0) && actor->unknown3f0)
 	{
 		reference = actor->unknown418;
-		if (entry && function_262b40(reference) && function_2624d0(entry, reference))
+		if (entry && function_262b40(reference) && function_2624d0(reference, entry))
 		{
 			if (request->unknown618)
 			{
@@ -151,7 +151,7 @@ struct s_reference_candidate_view
 };
 
 // @retail 0x2624d0
-bool function_2624d0(s_261d20_entry *entry, s_reference reference)
+bool function_2624d0(s_reference reference, s_261d20_entry *entry)
 {
 	bool result = false;
 	s_type_c3b527 *location = (s_type_c3b527 *)function_262b40(reference);
@@ -326,7 +326,7 @@ short __stdcall function_262180(long actor_index, long block_index, long range_i
                             if (function_2623a0((s_reference_filter_view const *)context, actor_index, actor, reference))
                             {
                                 s_reference_candidate_view *entry = (s_reference_candidate_view *)&entries[*count];
-                                if (function_2624d0((s_261d20_entry *)entry, reference))
+                                if (function_2624d0(reference, (s_261d20_entry *)entry))
                                 {
                                     switch (type)
                                     {
@@ -617,6 +617,9 @@ bool __stdcall function_261ec0(long actor_index, long squad_index, s_261d20_entr
 
 #include "unknown_2605d0.h"
 
+// Matched in a full build with stand-in SDK headers (was 110): function_2624d0 takes the reference first and the
+// entry second. Retail forms the entry address in EDI before it pushes the reference (0x261e5c..0x261e6e), so the
+// reference conflicts with EDI and is read from the stack at both of its uses.
 // @retail 0x261d20
 short __stdcall function_261d20(long actor_index, s_261d20_entry *entries, long maximum_count,
     s_2605d0_request const *request)
@@ -646,7 +649,7 @@ short __stdcall function_261d20(long actor_index, s_261d20_entry *entries, long 
         {
             s_reference reference = { index, (word)(list_index | 0x8000) };
             if (function_2623a0((s_reference_filter_view const *)request, actor_index, actor, reference) &&
-                function_2624d0(&entries[(short)count], reference))
+                function_2624d0(reference, &entries[(short)count]))
             {
                 if (*(short *)(list + 2) == 1)
                     *(short *)((byte *)&entries[(short)count] + 0x5c) = ((short *)(list + 0x444))[index];
