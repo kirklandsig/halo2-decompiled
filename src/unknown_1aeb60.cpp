@@ -499,8 +499,8 @@ struct s_1af5c4
 	byte *field_30;
 };
 
-short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
- point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+short __stdcall function_1c8df0(short arg_2, point3f const *arg_1, point3f const *arg_4, short arg_3,
+ long arg_0, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
 
 // MiniMax H (11-19): no new form, no lower score (5): the hit product still loads the hit fraction first where retail loads the distance, and the ignore index still loads after the first ray difference where retail loads it before; the product's order needs a one-use field copy and the early load needs the two-point probe inlined, so neither is kept.
@@ -714,6 +714,6 @@ short function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 	long leaf_index = function_14a280(g_4e033c, 0, &position);
 	if (leaf_index != NONE)
 		cluster_index = *(short *)(((s_1af5c4 *)g_4e0348)->field_30 + leaf_index * 8);
-	return function_1c8df0((short)cluster_index, local_2->field_2c, &local_2->field_30, local_8, &position, 0, false,
+	return function_1c8df0((short)cluster_index, &position, &local_2->field_30, local_2->field_2c, local_8, 0, false,
 		local_0->unknown26c != NONE, true, NULL);
 }

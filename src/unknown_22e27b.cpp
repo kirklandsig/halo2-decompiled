@@ -558,6 +558,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // join test, `== true` (keeps the skip) or the separate high `if` with five natural toggles (flags on the field in the loop, no
 // per-pass dispose reset, the flag-8 test on the field, long next time, a late flags local): once the thread breaks the flags word
 // is hoisted into BX and the zero leaves EBX in every one (27+ aligned lines). All restored.
+// M3 lane 14 r127 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): the loop as `for (; time >= next_time; next_time
+// += frame_time)` with the other two updates in the body 1 (same code); restart typed `long` 230 (661 B); an in-range arm
+// `else { restart = false; }` after the high boundary 153 (663 B); restart cleared again at each pass top, beside dispose, 206
+// (661 B); the low boundary as `0 > frame` 1 (same code). All restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

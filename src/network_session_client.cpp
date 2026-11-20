@@ -919,6 +919,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // class's getter idiom (state range test, then the flag, the two addresses stored through the out pointers, bool result),
 // called as `!get(&machines, &players) || !machines || !players` 46, with a NULL preset and the result ignored 46, with
 // the live-state inline for the range test 46, without the range test 46 (the folded range test does not move it).
+// M3 lane 14 r127 (fast with 0x6e500 and 0x72700; control 22): a redundant `result = false;` at the top of the state arm
+// 22; the opening as `!(flag && &machines && &players)` 22; the NULL-preset pair declared at the function top ahead of
+// `result` 46; on the preset pair the first pointer read through a `const &` bound to it 46; the variant as a
+// `const byte *const &` bound to the field 22 (the 22s the same code; both callers lost in each 46).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
