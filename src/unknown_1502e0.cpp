@@ -1666,6 +1666,16 @@ void function_150820(dword *bits, bool local_only)
 // directions (here retail gives the entry-level player ESI and the hand EDI; in 0x151b80 it gives the entry-level
 // unit index EDI and the slot ESI), so no single rule of "first value takes ESI" or of reference counts with one
 // weight for nested blocks fits both; the unit index's scratch register (EDX in retail, ECX in ours) moves with it.
+// M3 lane 14 r131 (fast with 0x151b80, 5 throughout; control 43): the hand as `short` 81 (217 B); `long const hand` 43
+// (same code); a second player local fetched again in the block (`tail_player_get(player_index)`) for the lookup and the
+// three call arguments, the guard through the first, 18 (212 B), and the guard through the getter with the player
+// local fetched in the block 18 (same code): retail's player ESI / hand EDI / unit index EDX, but the player's add and
+// move fold into `lea esi` and the unit index is read again after the guard (match-only lead); a block-local copy of
+// the player (`owner = player`) 43 (the copy folds: only a second getter call moves the registers); the re-fetched
+// player only for the two late arguments 87 (224 B); the guard, the lookup and the 0xcd7b0 argument through the getter
+// with the late arguments through a block player 65 (214 B); the unit index read once through the getter into a named
+// local (guard, lookup, 0xcd7b0 argument) with a block player for the late arguments 71 (210 B), with the result
+// declared after it or the player fetched ahead of the hand 71/71, the 0xcd7b0 argument through the block player 70.
 // Assignment in the admission test for initial unit, player, both, held slot, weapon, both
 // inventory indices, unit receiver plus slot, or unit and inventory indices: 43 each.
 // NOT kept: All eight tie at 210 bytes and keep the player and hand in the exchanged registers.
