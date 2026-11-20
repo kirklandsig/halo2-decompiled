@@ -993,6 +993,12 @@ void swarm_leader_detach(long actor_index);
 // 106 / 65); the bit test spelled `!= NULL` / `!= 0` 236 (same code). In the tail retail keeps NONE in EDI and the pool in
 // EBP after the 0xcbf60 call and reloads the scaled index from +0x10 at each lookup; ours puts the pool in EDI, the index
 // in EBP and compares with -1 immediates. Still BLOCKED-BY 0x26ed40.
+// M3 lane 8 r202 (fast with the nine callers, all MATCH each time; control 236, aligned 110, register-masked 69): every caller is
+// machine 3's, so `value` as bool at the definition and all eight declarations (retail's raw push to 0x203ed0 and low-byte
+// tests) 288 (aligned 108, masked 66); that with the view index re-read after the 0x1e2150 callback and the iterator compared
+// against the cached actor 208 at 958 B but aligned 113, masked 86 (the prop walk hoists the pool's data address; one shifted
+// region re-syncs, so not a real gain), the same through the existing prop_node_get at each use 208 (same code); bool with the
+// re-read 255; bool with the cached compare 327 (926 B, aligned 105, masked 63). Still BLOCKED-BY 0x26ed40.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
