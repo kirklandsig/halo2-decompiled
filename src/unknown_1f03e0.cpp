@@ -1098,6 +1098,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // extraction in ECX, the two cross products that keep up.k on the other side, and the general arm's k row ending in XMM2
 // where retail's ends in XMM0.
 // MiniMax B (11-20): no new form, no lower score (234): the first cross multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the same code for all sixty-four operand spellings and is used by nine matched functions here, so that difference needs this one cross written out in place; the damping bit's first extraction also still uses ECX where retail uses EDX.
+// MiniMax G (11-20): no new form, no lower score (234): the permuter reaches 230 only in a variant that casts the facing pointer to volatile, which is barred, and the four flag declarations in the order that puts the damping bit in EDX give 230 as well, under the keep bar; the first arm's cross still reverses only retail's two `a->j * b->X` products, which the shared helper cannot change without moving the functions that already match.
 // score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper

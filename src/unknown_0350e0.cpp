@@ -6477,6 +6477,7 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // MiniMax C (11-14): no new form, no lower score (47): the 0x494b0 call's arguments are still set up
 // ecx-then-eax where retail sets eax-then-ecx, the entry's radius still goes to edx where retail uses eax,
 // and the three group fields are still loaded into eax and ecx where retail uses ecx and edx.
+// MiniMax G (11-20): no new form, no lower score (47): the group field copies still take their values in EAX and ECX where retail uses ECX and EDX, and the radius argument of 0x1650a0 is still loaded into EDX where retail loads it into EAX; the call to 0x494b0 still sets its registers up in the other order, which is that callee's parameter order in another file: BLOCKED-BY 0x494b0.
 // score 47 (was 88): r136 lane 7: draw_light_source_pass (pass 11) follows 0x44370's body for its mode: the cull through
 // two 0x15680 calls (retail's dead g_485898 load and arm order) and case 11's
 // `enabled = true` before the 0x496f0 call; 655/659 bytes, the remaining differences are register choices.
@@ -7430,6 +7431,7 @@ PRIVATE __forceinline real absolute_32350(real value)
 //   exits at entry and reads it back from memory, so it has five epilogue copies where this build folds the exits
 //   together; retail's |x| > |y| keeps both absolute values and re-evaluates the winner in each arm (a ja/jbe
 //   diamond) where this build selects with a move; 0x4a1e0 takes its three arguments in eax/ecx/edx in retail.
+// MiniMax G (11-20): no new form, no lower score (429): the frame is still 0xb34 against retail's 0xb40; retail's zeroed byte sits just below the alpha float and its callee flag is a separate byte above it, where this build has one byte that is both, and declaring the flag before the float only puts the two initialisations in retail's order for the same 429; retail's inlined pass is 0x44370 in another file: BLOCKED-BY 0x44370.
 // score 416 (was 445): frame 0xb34 versus 0xb40, and the false result and second query still use different homes.
 // MiniMax A (11-20): score 416 (was 437): the special flag is initialised to false before the 0x3d7f0 call, which
 // stores the zero retail stores; retail's zero byte sits at +3 and its special flag at +0xb, ours at +7.
