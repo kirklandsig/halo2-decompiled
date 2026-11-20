@@ -1850,19 +1850,21 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // references 193, animation names record 175, names record with a shared turning key 193, component
 // acquired after the state observations 193, rigid body acquired before the position query 683. NOT kept:
 // The unit load and definition, animation flags and point homes remain displaced.
+// score 158 in a full build with stand-in SDK headers (was 175): `state` is declared after `animation_flags` and
+// `speed_scale` after `position` (declaration order only).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
 	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	s_havok_component *component = havok_component_get(biped->havok_component_index);
-	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	word const *animation_flags = (word const *)((byte *)biped + biped->unknown33e);
+	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	bool airborne = *(long *)(state + 0x7c) == 0xe0000c2;
-	real speed_scale = 1.0f;
 	long material = 0;
 	real boost;
 	point3f position;
+	real speed_scale = 1.0f;
 	vector3f velocity;
 	vector3f facing;
 
