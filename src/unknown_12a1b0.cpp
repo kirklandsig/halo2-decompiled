@@ -336,6 +336,9 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// score 80 (was 93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and the
+// walk keeps the element pointer where retail keeps a packed datum index; a pool local with the typed stride, the
+// inlined next-used scan and a sign test on the slot index reaches 80 (222 bytes); no one-use local here.
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax G (11-20): no new form, no lower score (93): 0x11bed0 is still expanded here where retail calls it out of line.
 // MiniMax H (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
@@ -487,15 +490,17 @@ void function_11bed0(s_location *location, point3f const *point);
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
-	s_record_pool_iterator iterator;
-	iterator.data = LOOPING_SOUNDS;
-	iterator.datum_index = NONE;
-	iterator.index = -1;
-	for (s_type_5ef569 *sound = (s_type_5ef569 *)data_iterator_next_calling(&iterator); sound;
-		sound = (s_type_5ef569 *)data_iterator_next_inlined(&iterator))
+	s_record_pool *data = LOOPING_SOUNDS;
+	long index = function_16bc00(data, 0);
+	s_type_5ef569 *sound = 0;
+	if (index >= 0)
+		sound = (s_type_5ef569 *)data->data + index;
+	while (sound != 0)
 	{
 		if (sound->source.audible == 1)
 			function_11bed0(&sound->source.spatial.location, &sound->source.spatial.position);
+		index = data_next_absolute_index_inlined(data, index + 1);
+		sound = index >= 0 ? (s_type_5ef569 *)data->data + index : 0;
 	}
 }
 
