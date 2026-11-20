@@ -1352,6 +1352,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax I (11-19): no new form, no lower score (87): the fade block still keeps 1.0f/fade_in_time in xmm2 and joins (ambience_fade - elapsed) with the (elapsed - hold) * inverse * fade_out term in other registers than retail, and the body stays 684 bytes against retail's 678.
 // score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
 // Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
@@ -1766,12 +1767,22 @@ long function_2197f0(real gain);
 // (52/54/17, the fade-out still from memory); elapsed declared const 87 (same code); the fade-out local with arm 1
 // written interpolation first (retail's `other` there is the gain copied into XMM1) 161 (688 B, the copy goes to a
 // new stack slot). No change kept.
+// Overlap-duration accumulation, named release fraction plus duration, or adjusted attack-time
+// accumulator 87/87/87. Eager quotient with conditional or branch cap 143/143, with named
+// release fraction 143, with tested release duration 148, or with a common attack bound 143.
+// NOT kept: the eager forms shorten the body but shift the quotient and gain-add registers.
+// The separate gain read at the release-to-attack join remains.
 // independent transitions use their own gain accumulator 112; independent gain accumulator with attack index read
 // at the join 112; independent gain accumulator returned from its phase 126; independent gain return with attack
 // index read at the join 126; separate completed release gain and attack gain returns 119; separate release and
 // attack gains with attack index read at the join 119; post-release gain bits supply both late outcomes 161; post-
 // release gain bits with attack index read at the join 161.
 // NOT kept: separate release and attack returns recover the 678-byte extent at 119 and split off the initial gain return. Every form raises the score.
+// M3 lane 8 r196 (fast with 0x221810; control 87): the fade-out time bound by const reference to the field for the test,
+// the sum and the product 87, with the product written `(elapsed - hold) * inverse * fade_out` 87 (same code: still
+// multiplied from memory); arm 1's clamp value divided by the fade-in copy 155 (687 B), the clamp test as `time /
+// copy` too 144 (680 B); `inverse * time` in the test 87 and `inverse * (elapsed - hold)` in the product 87 (same code).
+// Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2657,7 +2668,7 @@ long __stdcall function_127d00(s_type_99c531 const *source, real maximum_distanc
 short sound_definition_rate_limit_pitch_range(long stage_index, s_sound_definition const *definition);
 struct s_looping_playback_definition;
 short function_218f50(s_looping_playback_definition *definition, short previous, real pitch);
-short function_219070(long set_index, s_sound_definition const *definition);
+short function_219070(short set_index, s_sound_definition const *definition);
 struct s_sound_effect_request;
 void function_2226b0(long tag_index, s_sound_effect_request *request);
 long record_pool_allocate(s_record_pool *data);
@@ -2831,6 +2842,8 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax H (11-19): no new form, no lower score (17): the sound set index is still sign-extended (`movsx ebp, ax`) where retail copies the dword, and 0x219070 is still called with two arguments where retail passes one; both are that callee's declaration in another file.
+// MiniMax I (11-19): no new form, no lower score (17): retail copies the whole eax of 0x218f50 and calls 0x219070 with the definition in EDI and one stack argument, while this build keeps the short result and both arguments on the stack; both callees are declared in other files (src/unknown_218ac0.cpp and src/unknown_219070.cpp), which this lane may not edit. BLOCKED-BY 0x218f50 and 0x219070.
 // score 17 (was 17): MiniMax I (11-16, round 2): no new form, no lower score: the first difference is still
 // 0x219070's call shape, whose declaration lives in another file, and the delayed start still stores the flag byte
 // before the start time; MSVC does not hoist stores, so both follow from that callee's declaration. Body unchanged.
@@ -2935,6 +2948,8 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // the dword, and this build still pushes two arguments where retail calls 0x219070 with one; both are fixed by that
 // callee's declaration in another file, and the delayed start still stores the flag byte before the start time.
 // MiniMax A (11-17): no new form kept, no lower score (17): the range value as a short local scores 53 in the reduced image and 52 in the full image (the sign extension moves to the 0x219070 call as movsx eax, bp where retail copies the dword), and the long local is the only form that reaches retail's mov ebp, eax; the delayed start still stores the start time at offset 0x8c before the flag byte at +4 where this build sets the flag byte first. BLOCKED-BY 0x218f50 and 0x219070.
+// Matched in a full build with stand-in SDK headers (was 17): see the pull request; the change includes the
+// declaration of function_219070 used here and by its other caller.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -3002,7 +3017,7 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 			}
 			else
 			{
-				long arg_58ecd0;
+				short arg_58ecd0;
 
 				if (rate_limit_stage != NONE)
 				{
@@ -3015,15 +3030,17 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 
 					arg_58ecd0 = function_218f50((s_looping_playback_definition *)definition, NONE, ((real)pitch_bounds[1] - lower) * state->location.scale + sound->pitch + lower);
 				}
-				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, function_219070(arg_58ecd0, definition), (short)chunk_index);
+				short permutation = function_219070(arg_58ecd0, definition);
+				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, permutation, (short)chunk_index);
 			}
 			sound->value_a0 = (char)rate_limit_stage;
 			sound->fade_end_time = chunk_index;
 			sound->fade_start_time = chunk_index;
 			if (delay > 100 && !SOUND_FLAG(sound->location.flags, 8) && !SOUND_FLAG(sound->location.flags, 11))
 			{
+				s_sound_playback_flags *flags = (s_sound_playback_flags *)&sound->flags;
 				sound->start_time = SOUND_SYSTEM->time + delay;
-				sound->flag0 = true;
+				flags->flag0 = true;
 			}
 			else
 			{
@@ -3254,6 +3271,7 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax I (11-19): no new form, no lower score (96): the saved byte result still takes four extra frame bytes and the entry load order and the failure join still differ; the body stays 437 bytes against retail's 430.
 // score 96 (was 96): The saved byte result takes four extra frame bytes. The entry load order and failure join still differ.
 // The result byte takes four extra frame bytes. The entry loads and failure tail still differ.
 // MiniMax B (11-18): no new form, no lower score (96): retail keeps the outcome in AL (set at the entry, cleared on the
@@ -3671,6 +3689,11 @@ static inline short sound_voice_find_available_channel(char type)
 // the search 129/132; provisional byte 151; assigned outcome in each admission arm 135;
 // existing-channel outcome first 135.
 // NOT kept: the Boolean paths recover the eight-byte frame but change entry and failure joins.
+// Reuse result from combined or staged channel/buffer admission, as byte or bool.
+// With cleanup on failed result, combined 176/135 and staged 172/197. With a common
+// exit after commit, combined 176/135 and staged 161/182.
+// NOT kept: all retain the twelve-byte frame. Combined admission reads the index first
+// but takes it in EAX and still spills the result.
 // Entry channel result with plain/complemented status: bool has-channel 135/138,
 // bool needs-channel 182/185, byte has-channel 176/179, byte needs-channel 182/185.
 // counted while scan over cached inclusive bounds 96; cached inclusive bounds with return from the found channel
@@ -3679,6 +3702,15 @@ static inline short sound_voice_find_available_channel(char type)
 // 96; positive free-channel guard nests the streaming guard 96; single rejection guard skips unavailable or
 // streaming channels 96.
 // NOT kept: all eight search forms tie at 96 and keep the twelve-byte frame, result spill and failure join.
+// M3 lane 8 r196 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): lane 5 r178's form rebuilt 15
+// (16 with the type byte passed unconverted: movzx). Matched siblings with retail's split result (true in AL, false in
+// BL across the failure calls) assign the result in every arm with no initializer (0x136c40, 0x21dda0); on the 15 form:
+// no initializer with `else result = true;` for the early path 134 (every path then gets its own epilogue: the commit's
+// tail is retail's, but the early path's own exit is placed straight after the entry tests); that with the commit arm
+// ending `return true;` 138 (`mov bl, 1` on the early path); the early path as the first arm 134; the commit placed after
+// the final return behind a label, ending `result = true; goto done;` 15 (same code) or `return true;` 125. Retail's
+// failure block falls into the exit it shares with the early path and the commit owns the duplicated epilogue; every
+// form here puts the commit ahead of the shared exit. Body unchanged.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4051,6 +4083,7 @@ struct s_animation_state
 
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// MiniMax C (11-19): no new form, no lower score (8): the pool reload is still placed right after the body's last call; retail loads the pool after the next-index ternary, and every other instruction is retail's.
 // score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
 // advance differs at +0x6b.
 // Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
@@ -4664,6 +4697,7 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// MiniMax I (11-19): no new form, no lower score (81): both gain pins still trade scratch registers, the controller compares still use an immediate and the second flag3 test still shares a word load with the flag6 store; the one-use low-byte view that reaches 50 was reverted, so the body is unchanged.
 // score 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
 // The second pending test through a one-use low-byte view scores 50. That alias was reverted.
@@ -4958,10 +4992,23 @@ struct s_128ca0
 // the word load is shared again), `long count = NONE` with a byte-cast load 122. Left: the pins' EAX/EDX, the field_c store's slot, the
 // controller compares' immediates (retail EDX = NONE), the inner chunk push order, the chunk-set call's argument
 // loads, and the flag6 / stream stores' forms swapped (ours load/or/store then memory or, retail the reverse).
+// Current permutation through test and gain 81, with update arm first 144. Shared packet properties,
+// effects, both, or properties from spatialization onward 81/81/81/81. Common pin after selecting
+// permutation or signed adjustment 244/241. NOT kept: address lifetimes leave both pin register
+// pairs unchanged. Sharing the pin removes retail's two separate calculations and shortens the body.
 // Signed permutation gain parts 81, named gain operands 81, separate pinned result 81,
 // unclamped bits held through the pin 81, post-pin channel indices 81, nullable controller 130,
 // update-before-start dispatch 144, pinned decibel round-trip 81. NOT kept: the tied pin
 // forms retain the register exchange and the controller and dispatch forms regress.
+// M3 lane 8 r196 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 81): lane 2
+// r104's lead rebuilt 64 (diagnostic). The pin sums with the bits as the left operand, both 210 (1102 B), the first only
+// 182 (1079 B); the permutation gain through an inline accessor taking the permutation (both pins) 81, the started bit
+// (`flags >> 9`) through an inline accessor 81, the bits named as a decibel value before the first sum 81 (all three the
+// same code: the gain byte keeps EAX and the bits EDX). Body unchanged.
+// Clamp selects bits through conditionals 114; separate lower/upper or upper/lower selections 160/162;
+// existing real clamp 169; two bound assignments 150; decibel result with typed bounds 192;
+// in-place bit or decibel clamp 177/163. NOT kept: all raise the count, and all but the
+// conditional selection also raise the matched fade user. Both pin register exchanges remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -5147,6 +5194,8 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax H (11-19): no new form, no lower score (535): the frame stays 0x134 against retail's 0xe8 because the fallback reverb is copied to the stack here while retail reads the existing const, and 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line.
+// MiniMax I (11-19): no new form, no lower score (535): our frame is still 0x134 against retail's 0xe8 and our null test of the global still comes before the register saves where retail's comes after, so the rest of the rows follow from that frame; 0x16f3a0, 0x1420f0 and 0x11c120 still have to stay out of line and live in other files. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
 // score 535 (was 535): MiniMax I (11-16, round 2): no new form, no lower score: our frame is 0x134 against retail's
 // 0xe8, so 0x4c bytes of locals are ours alone, and our null test of the global comes before the register saves where
 // retail's comes after; the rest of the rows follow from that frame. Body unchanged.

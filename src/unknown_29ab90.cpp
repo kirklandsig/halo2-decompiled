@@ -39,6 +39,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax S (11-19): no new form, no lower score (286): site 1 planar normalize written out with its own zero path measures 309, because retail reloads the second component after storing the first while ours folds that multiply into the memory operand; the frame homes still take each other slots and the working-vector group is still a rotation off retail, so the body stands.
 // MiniMax G (11-18): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24]
 // where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
 // magnitude), the working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has
@@ -50,7 +51,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has [esp+0x38]..[esp+0x48], and site 1's
 // planar normalize still keeps its own zero path where retail uses the shared 0x2b400 helper in
 // include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
-// score 286 (was 286): The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// score 286 (was 286): r209 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
 // magnitude), the working-vector group is still a rotation off retail's, site 1's planar normalize still keeps its own
@@ -512,6 +513,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // ours magnitude +0x10, settings +0x14, a planar pair +0x18/+0x1c, object +0x20, a planar pair +0x24/+0x28: the three
 // scalar homes and the two planar pairs trade places together, and retail's first planar vector is normalised in
 // place in its home (the 0x2b400 shape). Still BLOCKED-BY 0x2b400.
+// Round 145 (m3 lane 16, fast, control 286): site 1 is 0x2b400's shape in retail (normalizing path first, the magnitude
+// kept in the dead arg_8 home [esp+0x94], the zero stored there out of line at 0x29ae10), which this build cannot inline
+// (0x2b400 is declared noinline for 0x2c2a70's call): BLOCKED-BY 0x2b400. Homes: retail's 12-byte order from ESP is the
+// first global copy, the +0x290 copy, the second global copy, local_12, with local_15/local_13 at 0x1c/0x24; ours puts the
+// +0x290 copy first and local_12 below the second global copy. local_4/local_5/local_6/local_7 each renamed to sort first
+// 286 each (same code); local_12 declared at function scope 286; local_7 declared first 286; local_15 initialised before
+// local_13 289 (1869 bytes).
 // M3 lane 6 r201 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286; aligned-equal of retail's 454
 // with addresses / also registers and stack offsets masked, base 270 / 413; all restored). New finding: retail does not
 // fold the gain's constants. Its last product is `(1 - floor) * 0.5`, times the gain, times 4.0 (mulss by the 0.5
@@ -524,6 +532,12 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // keepable): 286 (270 / 420: site 1's branch order and in-place scaling are then retail's, the zero still has its own
 // home), with the split product 326 (272 / 422). Still BLOCKED-BY 0x2b400 for site 1; the frame homes and the turn
 // dot's operand order remain as the earlier notes describe.
+// M3 lane 5 r209 (fast with 0x29b2e0 at 176, 0x1f9760 at 1, 0x1e5450/0x30bf0/0xb9dd0 MATCH; control 286, aligned 234,
+// register-masked 191): the turn factor's half width named (`half_width`, squared into the numerator) instead of
+// reusing local_20, with the gain as one expression 325 (1868 B), the gain then halved 326 (1871 B), with the named
+// numerator kept 286 (aligned 233, masked 186: not kept, no gain); the blend rows with the history product written
+// first 286 (same code); the complement computed ahead of the sums 316. Retail loads the history weight once into
+// XMM6 ahead of the sums and re-reads the field for the complement; site 1 is still BLOCKED-BY 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

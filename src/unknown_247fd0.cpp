@@ -880,12 +880,27 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // the inlined address does not reserve a slot); the workspace split into plain locals 446 (frame 0xa0); the workspace
 // as probe, direction, collision result and placement with the blend and first sample as plain locals 456 (frame 0xa0).
 // Retail's 16 unreferenced bytes between the collision result (+0x3c..+0x87) and the placement (+0x98) are the open lead.
+// Shared seed across real draws or through the header 351/351; shared random-state
+// receiver 334; seed with a named packed header or separate sample scopes 351/351;
+// with first or all real draws from the value producer 351/351; separate seed
+// lifetimes for category and real draws 351. The folded effect address and gate slots remain.
 // M3 lane 16 r142 (fast with 0x247fd0/0x248cc0, both MATCH; control 334), all the same code as the control: the volatile
 // gate flag declared inside the gate block 334; the end block's definition re-read as `arg_2->function_1751d0()->tag_index`
 // (no reassignment of local_3) 334; the three scale rows as `*= arg_7` 334; the y and z blend rows written step product
 // first like the x row 334; local_3 declared at the function top and assigned in place 334. Retail also copies the
 // system's age (+4 into field_10) through xmm0 where ours uses an integer register, and stores the three scale products
 // after the age step through a pointer to field_1c (ESI) with y and z at [ebp+0x20]/[ebp+0x24].
+// M3 lane 11 r125 (fast with 0x247fd0 and 0x248cc0, both MATCH; control 334, aligned 246): the field_02 update as one
+// `(field_02 & 0xe004) | 4` store 334 (same code); the gate read, shift and mask in one expression inside the volatile
+// assignment 334 (same code); the byte read, shifted and masked in its declaration 334 (same code); the gate stored to the
+// volatile and the byte tested 405; the list head read into a named local, the head store, then the element's link 365
+// (aligned 237: after the 0x1751d0 call the scratch registers are then retail's, ECX for the allocated index first, EAX for
+// the old head and EDX for field_02, but the link store follows the head store; retail stores the link first).
+// M3 lane 15 r109 (compile-only screen of this file reproduces the folded gate; each then fast with 0x247fd0/0x248cc0,
+// both MATCH): the gate's byte read through a new inline helper writing the flag through a pointer, through a named effect
+// pointer, through a pointer to the byte, through a named `effects` table pointer indexed, and as byte arithmetic on the
+// table with `sizeof`: 334 each (same code: `[eax + edx + 2]` stays folded); an effect pointer with the flag from
+// `(effect->flags >> 3) & 1` (compile-only only: an extra reload of the flag). Body unchanged.
 // Native effect bitfield direct or through a record reference gives 344 in all four forms.
 // Native flags masked with either velocity selection gives 334/334. Word flags with a
 // bit-position test gives 417/417. NOT kept: the masks reproduce the folded address,

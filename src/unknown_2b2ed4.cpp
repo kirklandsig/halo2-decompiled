@@ -74,6 +74,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax S (11-19): no new form, no lower score (316): retail sends every text arm straight to one function_253b1a call with no NONE test and takes the message set_text inside the message block, so ours keeps the cmp eax,-1 test at the join, the !online arm inline where retail parks it at 0x2b3674 and the >> 10 arm next to the join where retail outlines it at 0x2b3088; the buffer homes stay a rotation off retail, so the body stands.
 // MiniMax H (11-18): no new form, no lower score (316): the frame 0xfd4 still agrees and the first difference is
 // still the null-datum test's jump target (retail's `je` goes to the shared epilogue at the function's end, ours to
 // a near block); wrapping the whole body in `if (datum)` compiles to the same code, so the null test stays as it is,
@@ -85,7 +86,26 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // -0x8cc, display_name -0x6cc, suffix -0x4cc, layout -0x2cc against retail's display_name -0x8cc, title -0x6cc,
 // layout -0x4cc, suffix -0x458); writing the text arms as direct calls measures 425, moving the set_text into the
 // message block 502 and calling function_253b1a in each arm 540, so the one-call body with the text variable stands.
-// score 316 (was 316): Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// score 316 (was 316): r209 unchanged (lead below: the buffer homes follow reference counts). Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// m3 lane 8 r195 (fast = plain here): 43 at retail's 2345 bytes (plain check, 0x2b37fd and 0x2b3fca still match) with four
+// changes together: the received text as `if (in this title) text = 0x15000269; else text = 0x1a000268;`, each can_join
+// arm of both switch defaults written as its own load, append and terminator, the online block first with
+// `else text = 0x700024e;` as the chain's last arm, and the title and suffix clears as two statements, title first. Not
+// kept: the online-first order is an arm swap, so it stays only with a byte match. Without it 665; it alone 720; with the
+// received if/else only 396. Why: the five buffer homes follow reference density after dead-store removal and before
+// cross-jumping (one layout reference fewer, `|= 3` or no value4 store, or two suffix references more give retail's homes
+// exactly; extra dead suffix clears change nothing), and retail's three extra bytes are the two defaults not if-converted.
+// Steps: the full-sequence defaults alone 550/551 (one) and 598 (both, 2252 bytes: `known` leaves BL, tails over-merge),
+// a terminator once after each switch 549-605; with the received if/else 665 (2354 bytes: the invite pointer takes ESI);
+// that with the dispatch tested `text == NONE` first 396 (registers right, the call block laid out early); the clears
+// alone 316. Left at 43: the item loop's `>> 10` arm stays inline where retail parks it after the session player's jmp
+// (matched 0x18f62b and 0x24c461 park such a block when a repeated test is jump-threaded). On the 43 form, all 43 or worse:
+// `!friends ? >> 10 : >> 12` 44, nested ifs 43, the xuid test as an early `continue` 43, `== 0` and no-cast tests 43/43,
+// the original `!can_join` order 43, a file-local forced-inline test 43, `>> (friends ? 12 : 10)` 137, bool casts per arm
+// 609, the flag10/flag12 bitfields 610, the arms as nested ifs 55, a named bit set by an if/else 609/610, the word shifted
+// by 10 then overridden 612, `((friends ? flags >> 2 : flags) >> 10) & 1` 609. The permuter cannot search it (its reduced
+// image scores 109). Earlier this round on the 316 body: the clears split 316, the flag sets through bitfields 316/316.
 // Round 127 (m3 lane 10, fast): `inline` on 0x230134's definition (to change what callers assume it keeps) expands it
 // into its callers: 1211 here (2789 bytes) and nine matched callers lost, restored at once; the invitation count declared
 // after the bools 316 and the request at function scope 316 (same code each); display_name declared ahead of the child
@@ -338,6 +358,24 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // EAX and jumps to one `push eax` call, so retail keeps a text variable whose message paths bypass that call with no
 // NONE test. Diagnostic (reverted): the message arms calling set_text and jumping past an unconditional 0x253b1a
 // call 393 (2320 bytes).
+// M3 lane 5 r209 (fast with 0x230134, 0x22eeee, 0x2b0a14, 0x253b1a; control 316, aligned 49 = register-masked 49). LEAD: the
+// five buffer homes and the two child-pointer homes follow a reference ranking. Diagnostics (not keepable): two extra
+// code-emitting suffix uses (`suffix.text[1] = 0;` twice) put every buffer and both child pointers in retail's homes
+// (display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix -0x458, message -0x258), aligned 22 at 2356 B (one use: 50;
+// four: 24; six: 57); dropping the layout's value4 store does the same (aligned 23); one extra title use fixes only the
+// display_name/title pair (aligned 40); the layout clear dropped or three extra layout clears, and `(void)` reads or
+// `(void)&suffix`, change nothing (no-code uses do not count). Retail's extra suffix uses are its per-arm `lea esi,
+// [suffix]` in the value04/value08 switch arms: retail sets ESI before ECX at every suffix load, so cross-jumping keeps
+// the lea in each arm, where this build sets ECX first at suffix loads (ESI first at message loads) and merges it. Neither
+// the suffix's declaration place (after/before message, before title: 316, same code) nor the load member's parameter
+// order (`load(handle, screen)` at all 32 sites, 316, same code) changes that order. Trials: the online arm ahead of the
+// `!online` text (retail lays the 0x700024e block out just before the dispatch) 720 (2391 B: the zero register moves to
+// ESI from the entry); the closing layout locals in their own block 316 (same code); declared at the top 604; the
+// redundant layout flags clear dropped (the constructor clears it) 316 (same code); re-measured by mistake: both default
+// arms as one load with a `can_join ?` id 675 (2193 B, as round 138). Diagnostic: in the value04 == 0 arm, the suffix
+// load written before the message load gets retail's ESI-first order (and the message load keeps it), 484 (2354 B): a
+// suffix load right after a message load is the one that sets ECX first. The suffix loads as direct 0x230134 calls
+// re-measured 330 (2334 B, as round 242; the order is unchanged).
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

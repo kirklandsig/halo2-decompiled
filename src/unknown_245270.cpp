@@ -845,6 +845,11 @@ void function_245400(s_source_245400 const *source, long index,
 // XMM4-6 against XMM3-5); that with the edge as three member differences 211 at 783 B [97/53]; the side bits through
 // a forceinline helper taking the long code by const reference 232 (752 B, folds as the shifted sides); select,
 // member differences and `(local_2 >> 15) & 1` sides together 237 (746 B). Body unchanged.
+// Secondary index before material table 163; secondary record retained for extension 211;
+// both codes reread by index 210; table after widened codes 204, with bound vertex records 204;
+// late table with shifted orientation bits 199; per-plane decoding 200, with equal-code guard 200.
+// NOT kept: the one-point gain leaves frame 0x24 and the side homes displaced. The late
+// table with signed sides changes the caller. Retail still keeps the source in ESI.
 // M3 lane 1 r126 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH each time; control 164, aligned 134): on the single
 // condition, sides as `(code & 0x8000) != 0` 232 (752 B) and as `((dword)code >> 15) & 1` 232 (752 B: the two tests merge
 // into one jump). The edge rotation through an inline vector form of this file's point transform (copy the components,
@@ -871,6 +876,42 @@ void function_245400(s_source_245400 const *source, long index,
 // Rotation reads a copied edge scaled in place 231. NOT kept: The pointer-selected rotation inputs recover frame
 // 0x2c but grow the body to 820 or 822 bytes and raise the matched caller 0x245aa0 to 6 in the reduced image. All
 // other forms keep frame 0x24 and lengthen the body. The original caller and transform shape are restored.
+// M3 lane 3 r271 (fast with 0x245aa0, 0x245400, 0x244de0 and 0x245270, all matched unless noted; control 164, aligned 193,
+// masked 88). LEAD, not kept (statement order and a written-out helper body are match-only): retail's frame 0x2c, the
+// `push ebx; push esi; mov esi, ecx` prologue, the local EBP save, both long codes in stack homes, the first side in a
+// stack byte and `cmp byte ptr [esp + 0xf], bl` all come from one statement order: both vertex pointers first, then each
+// long code with its index, the plane table, the two plane pointers, the two sides, and only then the edge vector (the
+// second vertex pointer stays live across the plane code; its loads are still scheduled early). Steps, each on the one
+// before: (1) main's body with the plane table read after the codes, the edge after the sides and the dot written
+// edge-first 198 (787 B, aligned 112: retail's frame and homes); (2) lane 1 r119's head on it (`s_material_245400 const
+// *second = &materials[local_0->field_0a];` ahead of `local_1`, the compare and both long codes read through
+// `materials[local_1]` and `second`) 116 (790 B, aligned 98: the first 17 instructions are retail's); (3) the sides as
+// shifted bits or mask tests on that 206 (764 B: one code back in a register, frame 0x28), but with named indices
+// (`long first_index = local_2 & 0x7fff; long second_index = local_3 & 0x7fff;` for the plane pointers and the index
+// test) and `bool local_10 = ((dword)local_2 >> 15) & 1;` 138 at 783 B, and with each index declared right after its
+// code 136 (783 B: everything through the `pop ebp; je` is retail's but the jump targets); (4) the dot through the
+// existing dot3f(&local_12, &local_6) 128; (5) the edge scale as a select (edge_i/j/k copied, `edge_i = arg_2->scale *
+// edge_i;` in the arm, vector3f_scale written out), edge_k/j/i declared in that order, rows i `forward, left, up`, j `up,
+// forward, left` in one statement, k `forward, left` then `+= up` 53 (789 B, aligned 51, masked 25; found by a compile-only
+// descent over the rows, the scale form, the copies' order, the dot, the cross helper and the edge spelling, which scores
+// this file as the LTCG build does but for three call lines). Left at 53: the plane cross (retail loads the first
+// plane's k once and has the second plane's member as the loaded operand of the other four products; cross3f and
+// cross3f_staged give the same code, and 384 written-out spellings of it are worse), the dot's last add ahead of its
+// last product, the select's three copies in i, j, k order, the i and j rows, and the point transform's rows (they move
+// with the vector rows' spelling: field ranks). Also measured on the way: step 1 without the head 198, with the plane
+// table late but the edge early 212 (0x245aa0 3); sides as `(short)local_2 < 0` on step 2 182 (`cmp word ptr [home], 0;
+// setl`), read again from the material records 205; a 15/1-bit overlay of the code on step 2 206 (promoted, same as the
+// shifts); the flag form of the sides on step 2 with step 5's select 207 (0x245aa0 3); one row pattern for all three rows, any term
+// order or operand side, same code (aligned 62 compile-only: single-expression sums are rank-ordered); extra locals move
+// two or three lines with period 8 and nothing else; steps 2 to 5 in main's statement order 236 (751 B). Diagnostics,
+// reverted: the function returning the second vertex pointer at the facing failure 214 (the pointer then takes ESI, the
+// homes appear); the dot written edge-first on main's body 207 at 783 B (aligned 157: retail's in-place products).
+// The 0x24 frame still lacks the separate code and side homes. The matrix already loads at its test.
+// Edge/cross names in both orders 164/164; edge/point names in both orders 164/164;
+// endpoint and plane receiver names in both orders 164/164; all geometry names 164;
+// all geometry names with the plane table after the edge 166. NOT kept: the late
+// table still reserves 0x24 and raises caller 0x245aa0 to 3.
+// MiniMax C (11-19): no gain (164, baseline; body restored). Retail reads the second surface index (field_0a) before the first (field_08) and homes the two decoded material codes as dwords at +0x14 and +0x18 with the first index at +0x1c, which is the 0x2c frame; ours has two homes and the 0x24 frame. Reading the two material codes in retail order measures 163, a gain of one and under the bar.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
