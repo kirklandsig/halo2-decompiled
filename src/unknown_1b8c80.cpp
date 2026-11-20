@@ -1622,6 +1622,8 @@ void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
 // score 123 (was 123): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
+// MiniMax H (11-20): no new form, no lower score (123): the flag bytes take AL and ECX where retail takes CL and EDX, the frame is 0x10 against retail's 0x14, and the default block sits before the final tests.
+// score 123 (was 134): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
 // magnitude retail's spill holds instead of being normalised to 0/1, and the build is now retail's exact 861 bytes.
 // Left: the frame is still 0x10 against retail's 0x14 (retail spills the 0x20 mask byte to frame+0x03 and keeps the
 // loop entry in EBX, saved after the early return; ours keeps the mask in BL and the entry in memory), so the tail's
