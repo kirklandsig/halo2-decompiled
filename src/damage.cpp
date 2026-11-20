@@ -2459,6 +2459,12 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // code: the NONE path is threaded straight to the join, the entry load stays below the je). After 0xd6660 matched by
 // storing through a pointer to its field: the entry read through a two-use pointer to the accumulator field, declared at
 // the guard 3 or at the top 3, and `info` read through a pointer to its field 3 (all three the same code).
+// M3 lane 11 r137 (fast with 0xd6660): the guard as a non-short-circuit `(info != NULL) & (entry != NULL)` 236 (873 B: the
+// entry read joins the info test's block and the allocation flips as with the entry local); the region tests setting a
+// `lethal_region` bool inside `if (info && entry)` with the definition flag tested after it 3 (same code); the guard's info
+// test through `accumulator->field_4_2` (the info local kept for the other uses) 203 (881 B); the entry as a condition
+// declaration `if (info) if (void const *entry = ...)` 3 (same code); the entry bound by `void *const &` to the field 3
+// (same code).
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

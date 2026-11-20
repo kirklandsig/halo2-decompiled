@@ -11,6 +11,7 @@ static __forceinline long real_to_long(real value);
 #include "unknown_2551c0.h"
 #include "swarm.h"
 #include <string.h>
+#include "vector2f_products.h"
 
 /* the command a command script runs (0x2c bytes, at +0x4 of a command
    script): its type, a per-type selector, two values and two references
@@ -2030,7 +2031,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// score 431 (was 433): r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
 // r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
@@ -2573,6 +2574,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // through the shared exit with the result cleared after it 502 (2432 B); its else arm as a conditional clear 537
 // (2440 B). Retail compares the actor field first in cases 9 and 11 only (`cmp [ebx + 0x18], reg`; cases 5, 6, 7/8
 // compare arg_1 first); listed above at 432. All restored.
+// M3 lane 11 r137 (fast with the file and 0x110ab0, plain-confirmed; control 433, aligned 152): kept, 433 -> 431: case 2's
+// turn test through the existing dot_product2d in place of the 2-D dot written out (either operand order, same code). On
+// it: the turn vector as an aggregate copy through `turn_facing` 611 (2404 B); case 4 as `dot3f(&displacement,
+// &local_2->field_c)` with no facing copy 611 (2400 B); both 623 (2384 B, register-masked 120 against 137: each is
+// retail's code there, but the actor takes EDI and the state EBX); both with case 6's flags through a named byte and two
+// stores 623 (masked 118); both with `long local_30` 623.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2612,7 +2619,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				{
 					point2f local_6 = *(point2f *)((byte *)local_0 + 0x4d8);
 					if (normalize2d(&local_6) > 0.f &&
-						local_0->unknown290.j * local_6.y + local_6.x * local_0->unknown290.i < 0.984f)
+						dot_product2d((vector2f const *)&local_6, (vector2f const *)&local_0->unknown290) < 0.984f)
 					{
 						vector3f const *turn_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
 						vector3f_assign(&local_0->unknown424.vector, turn_facing->i, turn_facing->j, turn_facing->k);
