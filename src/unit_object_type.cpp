@@ -2304,7 +2304,9 @@ struct s_unit_motion
 // variant below 104.
 // MiniMax C (11-17): no new form, no lower score (104, was 104): this body keeps position/velocity on the stack (ret 0xc) where retail takes them in XMM5/XMM4 with the time in XMM3 and returns with ret 4; the accumulator form (#515's body) gives retail's convention and the same 227 bytes at 28, but it then inlines into 0xc7840 and loses the matched 0x1e5af0 and 0x1faf80, so it cannot be kept.
 // MiniMax E (11-20): no new form, no lower score (104): this body still keeps position/velocity on the stack (ret 0xc) where retail takes them in XMM5/XMM4 with the time in XMM3 and returns with ret 4; the accumulator form that gives retail's convention inlines into 0xc7840 and loses the matched 0x1e5af0 and 0x1faf80, so the two bodies pull against each other: BLOCKED-BY 0xc7840.
-// score 104 (was 104): this body keeps position/velocity on the stack (ret 0xc); retail takes them in
+// score 86 (was 104): Position and time use retail's XMM5 and XMM3. Velocity still arrives on the
+// stack, the 8-byte return cleanup and the step clamps and final stores differ.
+// At 104, both position and velocity were on the stack (ret 0xc). Retail takes them in
 // XMM5/XMM4, time in XMM3 and returns with ret 4. #515's body (output accumulators initialised from the inputs,
 // and each step as `time > motion->field ? motion->field : time` reading the field again) gives retail's
 // convention and the same 227 bytes at 28; only time/step are swapped (time in XMM2, step in XMM3). But then
@@ -2350,61 +2352,68 @@ struct s_unit_motion
 // bytes at 28 still makes LTCG inline this body into 0xc7840 and flips the matched 0x1faf80: BLOCKED-BY
 // 0xc7840's call sites.
 // MiniMax R (11-17): no new form, no lower score (104): this body still keeps the position and the velocity on the stack (ret 0xc) and is 265 bytes against retail's 227, where retail takes them in xmm5/xmm4 with the time in xmm3; the accumulator spelling that gives retail's convention and length reaches 28 but LTCG then inlines the callee into 0xc7840 and loses the matched 0x1e5af0 and 0x1faf80.
+// Integrated position and remaining time 86, plain confirmed, with position in XMM5, time in XMM3 and
+// the calls staying out of line. Integrated velocity and remaining time 89; separate phase limits with
+// position, velocity, or both accumulators 89/89/69; named displacements 89; inactive exit with
+// position or both accumulators 89/69. NOT kept: the 69 forms inline into the caller and lose its
+// matched caller 0x1faf80.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
 {
+	real integrated_position = position;
+	real remaining_time = time;
 	bool result = motion->done;
 
-	if (!result && time > 0.0f)
+	if (!result && remaining_time > 0.0f)
 	{
 		real step = motion->field_10_4;
 
 		if (step > 0.0f)
 		{
-			if (time <= step)
+			if (remaining_time <= step)
 			{
-				step = time;
+				step = remaining_time;
 			}
 			real change = motion->acceleration * step;
-			position = (change * 0.5f + velocity) * step + position;
+			integrated_position = (change * 0.5f + velocity) * step + integrated_position;
 			velocity = change + velocity;
-			time -= step;
+			remaining_time -= step;
 		}
-		if (time > 0.0f)
+		if (remaining_time > 0.0f)
 		{
 			step = motion->coast_time;
 			if (step > 0.0f)
 			{
-				if (time <= step)
+				if (remaining_time <= step)
 				{
-					step = time;
+					step = remaining_time;
 				}
-				position = step * velocity + position;
-				time -= step;
+				integrated_position = step * velocity + integrated_position;
+				remaining_time -= step;
 			}
-			if (time > 0.0f)
+			if (remaining_time > 0.0f)
 			{
 				step = motion->s_type_8c87de;
 				if (step > 0.0f)
 				{
-					if (time <= step)
+					if (remaining_time <= step)
 					{
-						step = time;
+						step = remaining_time;
 					}
 					real change = motion->deceleration * step;
-					position = (change * 0.5f + velocity) * step + position;
+					integrated_position = (change * 0.5f + velocity) * step + integrated_position;
 					velocity = change + velocity;
-					time -= step;
+					remaining_time -= step;
 				}
-				if (time > 0.0f)
+				if (remaining_time > 0.0f)
 				{
 					result = true;
 				}
 			}
 		}
 	}
-	*out_position = position;
+	*out_position = integrated_position;
 	*out_velocity = velocity;
 	return result;
 }

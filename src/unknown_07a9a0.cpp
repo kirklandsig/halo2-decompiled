@@ -1684,6 +1684,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `*out = s_matchmaking_ratings();` 862 (2800 B, but through a 0x364-byte temporary copied with `rep movsd`, frame 0x434,
 // aligned 1020 against 1016: not kept); the player loop bounded by the summary's count 883 (0x73530 8); adding_group
 // declared beside result 881.
+// Early signed dword histogram declaration 936; adjacent ID and signed/unsigned histogram scopes
+// 987/987; adjacent signed scopes with range fill for the first, second, or both clears 966/994/971,
+// and counted fills 993; two independently cleared dword histogram scopes 936. NOT kept: adjacent
+// scopes recover 0xb4 with the session still in EAX and shorten the body to 2652–2668 bytes. The
+// opening lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
