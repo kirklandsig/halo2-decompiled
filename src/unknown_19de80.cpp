@@ -308,12 +308,12 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // MiniMax H (11-19, round 95): no new form, no lower score (390): retail's register ranking is the result in ESI, the token
 // length in EDI, the event in EBX and the remaining count in EBP, with the token re-read from its stack slot for every
 // compare, while this build keeps the result in a volatile slot, so the constant zero takes EBP and the frame is 0x208.
 // An ordinary result does give retail's 0x204 frame and its ESI result, but it merges the name and team copy tails (691),
 // and no reordering of the four name arms avoids that merge, so the body stands.
-// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // MiniMax B (11-18, round 2): no new form, no lower score (390): the frame is still 0x208 against retail's 0x204 and
 // the token preload still differs; the permuter over the body (one job, --fast, 300 s) tried 24 forms and its best is
 // 384 differing instructions against the 385 baseline - one instruction, which the eight-point gate leaves out - and
@@ -856,6 +856,15 @@ static inline bool teams_enabled_19e1c0()
 // scan's read the event takes the last register (EBP) and without it the first (EDI), so the registers go out lowest
 // weight first, and retail's order (token length EDI, event EBX, `remaining` EBP) puts `remaining` above the event,
 // which has the scan's loop read. No natural form found that weighs `remaining` that high.
+// Round 203 (m3 lane 8, fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
+// diagnostics (a volatile probe local, reverted): a read of `remaining` ahead of the first compare flips the plain result
+// to retail's homes (remaining EBP from the entry, the token preloaded into EAX and reloaded per compare) 453 (1470 B,
+// token_length EBX, event EDI spilled); the same read inside the opponent loop leaves the token in EDI 708 (1157 B), so loop
+// weight is not the lever, only an entry-block reference is. Natural entry references, each with its own test: `if
+// (remaining <= 0) return 0;` at the top on the plain result 473 (1392 B, remaining EBP as retail), on the volatile result
+// 428 (1436 B); `remaining > 0 &&` leading the first compare (plain) 479 (1487 B). The first player case clearing its
+// buffer with the zero result (`text[0] = (word)result;`, retail's SI store) on the plain result 691 (same code: the zero
+// propagates), with the early return 473. Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
