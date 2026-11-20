@@ -1862,7 +1862,7 @@ void function_c96b0(long unit_index, long *result, real a, real b)
 /* puts a weapon in the unit's slot, or empties the slot and gets rid of
    the weapon there by mode (mode 4 keeps it) */
 // @retail 0xcea70
-void __stdcall function_cea70(long mode, short slot_index, long weapon_index, long unit_index)
+void __stdcall function_cea70(short slot_index, long weapon_index, long mode, long unit_index)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 
@@ -1929,7 +1929,7 @@ void function_ccf20(long unit_index)
 	{
 		if (unit->weapon_object_indices[i] != NONE)
 		{
-			function_cea70(1, (short)i, NONE, unit_index);
+			function_cea70((short)i, NONE, 1, unit_index);
 		}
 	}
 }
@@ -2224,7 +2224,7 @@ void function_ce920(long unit_index, long slot_index, long mode, bool flag)
 		{
 			mode = 1;
 		}
-		function_cea70(mode, (short)slot_index, NONE, unit_index);
+		function_cea70((short)slot_index, NONE, mode, unit_index);
 		for (long hand = 0; hand < 2; hand++)
 		{
 			if ((short)slot_index == (&unit->unknown216)[hand])
@@ -3222,7 +3222,7 @@ void __stdcall function_ced30(long unit_index, long object_index)
 			{
 				unit->next_weapon_index = NONE;
 			}
-			function_cea70(4, (short)i, NONE, unit_index);
+			function_cea70((short)i, NONE, 4, unit_index);
 		}
 	}
 	if (unit->current_weapon_index == NONE)
@@ -3467,7 +3467,7 @@ void function_c6810(long unit_index)
 // @coldspear (#104, 2026-10-30): reading the request definition g_4677c8[9] through a volatile pointer gives 26,
 // not kept: retail re-reads the definition there.
 // @retail 0xce520
-void function_ce520(long weapon_index, long unit_index, bool flag)
+void function_ce520(long unit_index, long weapon_index, bool flag)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	long slot = NONE;
@@ -4093,6 +4093,9 @@ void __stdcall function_ceb30(long unit_index)
 // order alone 2); both held: the retail setup orders are reg-to-reg copies or differ per caller, so they
 // are not retail evidence, and 0xcea70 is matched code in @Banshee64's range. The 0xce520 order also
 // changes its call in 0x15e360 (src/unknown_157450.cpp), which stays matched either way.
+// Matched in a full build with stand-in SDK headers (was 4): the register moves in front of the calls of 0xcea70 and
+// 0xce520 follow the callees' parameter order, so 0xcea70 is declared (slot_index, weapon_index, mode, unit_index) and
+// 0xce520 (unit_index, weapon_index, flag); their bodies are unchanged and every call site passes the same values.
 // @retail 0xd09c0
 void __stdcall function_d09c0(long unit_index, long slot_index, long definition_index, short value, dword const *state)
 {
@@ -4131,7 +4134,7 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 	}
 	if (weapon_index != NONE)
 	{
-		function_ce520(weapon_index, unit_index, false);
+		function_ce520(unit_index, weapon_index, false);
 		weapon_index = NONE;
 	}
 	if (definition_index != NONE)
@@ -4146,7 +4149,7 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 			{
 				function_15e050(weapon_index, value);
 			}
-			function_cea70(NONE, (short)slot_index, weapon_index, unit_index);
+			function_cea70((short)slot_index, weapon_index, NONE, unit_index);
 			if (unit->unknown13c != NONE)
 			{
 				function_1520f0(unit->unknown13c);
@@ -6986,7 +6989,7 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	{
 		function_b9a90(weapon_index);
 	}
-	function_cea70(NONE, slot_index, weapon_index, unit_index);
+	function_cea70(slot_index, weapon_index, NONE, unit_index);
 	switch (mode)
 	{
 	case 0:
