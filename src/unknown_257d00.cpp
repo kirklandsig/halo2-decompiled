@@ -2032,6 +2032,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 
 // score 433 (was 433): r209, r155 unchanged. The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
+// r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
+// differ. The 0x1c frame and entry register ownership agree.
+// Earlier: The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
 // Earlier score 433 (was 433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
 // MiniMax I (11-19): no new form, no lower score (433): the case-13 body still returns through its own 16-bit move instead of
 // retail's shared 32-bit return-1 block, the turn-facing sum is still added in the other order, and the case-4 dot product is
@@ -2535,6 +2538,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // order with direct acknowledgement exit 477, Unsupported selector exits as completed 433. NOT kept: The selector
 // orders and unsupported-selector return tie. The direct acknowledged return shortens the body to 2400 bytes at
 // 477. The checked callee stays at 164.
+// Early pending returns for a busy actor 586, disabled delayed facing 565, or both 590. Timer and
+// turn-start exits 588 with nested admission, 567 with admission guards. Separate mode guards 566.
+// Conditional settled or pending facing 599/618. NOT kept: All scores rise. The shortest form
+// leaves the dispatch and planar transfer different.
 // M3 lane 5 r209 (fast with 0x110ab0 at 164; control 433, aligned 151, register-masked 130). Retail's jump table sends
 // type 13 to the same return-1 block as the default (`ja`) target, after the post-switch result test that retail lays
 // out right after case 0 (cases 7/8, 0, 5 and 10 cross-jump into its `sete`). On retail's case order: case 13 removed

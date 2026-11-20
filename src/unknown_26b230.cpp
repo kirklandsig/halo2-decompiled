@@ -2245,6 +2245,9 @@ void function_269250(long clump_index, long actor_index);
 // a never-taken call, removed at once): the selection at its declaration 143 (488 B, the pool then hoisted into EBX but the
 // not-found path threads), selection and best 174, the walk record after the loop 231, both 255, the selection after the loop
 // only 124 (480 B). Body unchanged.
+// Raw actor, raw clump or both step conditions 87/87/87. Raw actor or both raw steps with read-only
+// views 87/87. Typed read-only actor with raw clump 87, raw actor with typed read-only clump 87,
+// raw clump with per-use view 87. NOT kept: All tie. Pool, selection and score transport still differ.
 // M3 lane 3 r270 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0/0x268510/0x268c90/0x26ae30, all
 // matched each time; control 87, aligned 54, masked 45; the in-arm compare re-measured 126 at 480 B, the datum-index
 // selection on it 128). New on the in-arm form: a phase scan of one to seven unused initialised locals 126 at every count

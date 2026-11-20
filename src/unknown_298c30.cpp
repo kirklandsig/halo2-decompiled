@@ -618,6 +618,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // the root 310 / 314 (same code). Diagnostic dead locals 1..7 on both: 314/316/314/314/314/314/313 (the loop head never moves).
 // Our loop head stores the root and reloads it for the radius compare (`fstp`, two pops, `fld`) where retail keeps it on the x87
 // stack (`fstp st(2); fstp st(0); fst`): one instruction more, shifting the near arm by a line.
+// Near direction point per candidate 372, at near-arm scope 372, at endpoint scope 372, or shared
+// with the far arm 370. Facing-copy point per candidate, per near arm, or shared 410/449/437.
+// Separate pre-sine and completed y values 305. NOT kept: The point workspaces grow the body and
+// some grow the frame. The separate y values tie and leave the cosine spill unchanged.
 // M3 lane 1 r129 (fast with 0x29a190 and 0x298c30, both MATCH unless noted; base 305, aligned 171/167 = unmatched instructions
 // ours/retail in an LCS-aligned diff; plain where said; nothing kept). Four retail-evidenced forms that work only together:
 // (a) the emitter's stores in retail's order (angle, side, facing test, direction) 314 (aligned 140/136; plain 314);

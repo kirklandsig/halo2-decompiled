@@ -311,6 +311,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // named copy decision 142, existing placement cross for left 68 or with explicit deadline cursor 125.
 // NOT kept: the explicit cursor restores the traversal at 1413 bytes, and the other forms leave the
 // deadline and group homes exchanged.
+// Complete forward/up/both snapshots for correction on the inferred walk
+// 232/234/408, on the explicit walk 204/190/399. Both snapshots used during
+// validation and correction 433/434. NOT kept: all shorten away from retail
+// and regress. The two-vector forms also change the matched caller. The
+// inferred deadline and signed group ordinal still exchange stack slots.
 // Direct j/k/i up reconstruction 137, or with independent deadline 133.
 // Six named cross products 126, or with independent deadline 125.
 // Independent deadline with captured up components 134, one orientation
@@ -909,6 +914,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // both count field bindings 129, reserved volume name 129, named projection result 129.
 // NOT kept: the cluster array changes extent, and the projected slot changes the prologue.
 // The other forms leave the opening register exchange.
+// With a shared capacity exit, skip linked entries, refused projections,
+// or both before advancing at the test 125 each. Direct count increment,
+// postincrement as reservation, and positive capacity arm 125 each. Signed
+// successor with either increment form 122. NOT kept: the best gains seven
+// at 431 bytes. Cluster creation still precedes the volume loop.
 // Shared capacity result with a loop break 125, with joined cluster address 139,
 // early camera key 118, camera base 125, common plane store 118, signed
 // successor 122, widened volume slot 125, paired group cells 125,
@@ -1227,6 +1237,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // with a component local 354; scalar squares with a diagonal loop 403; both loops 365;
 // complement loop before or after cosine 370/373; three loops 382; in-place diagonal loop 406.
 // NOT kept: the new forms all change the 0x50 frame and raise the score.
+// One-argument vertical field arctangent 351. Explicit denominators at
+// horizontal/vertical/both scaled angles 373/373/368. With the one-argument
+// vertical field these score 377/377/372. Naming that vertical ratio on
+// the combined form gives 339. NOT kept: seven points, with unity in XMM2
+// at entry against XMM5 and FLD1 replacing the vertical unity memory load.
 // Unity still starts in XMM3. Forward-field pointer through deviation or only the rotations 355/357.
 // Up-field pointer at first rotation or entry 362/361. Both pointers early or up bound later 360/360.
 // Both field references or both pointers at first rotation 361/359. NOT kept: all regress, and six
