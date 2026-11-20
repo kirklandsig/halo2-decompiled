@@ -1215,7 +1215,7 @@ PRIVATE inline long score_string_list_1608e0()
 // M3 lane 4 r226 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): x as long 684; y as short 681; the width folded into x's
 // expression (no width local) 679 (same code: left is still read once); `panel->time` as one `flag1128 || score_to_win != 1`
 // 701 (2888 bytes); the row total written into the fade count's initialiser (no total local) 710 (2888 bytes). Body unchanged.
-// score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and origin slots,
+// Earlier status line, merged in r127 (679, was 679): Frame 0x798 versus retail 0x79c. Viewer and origin slots,
 // scroll-limit conversion and initial divisor spill still differ. Earlier fast check 678.
 // One-use caption phase at the division 671 (requires a match, reverted).
 // Frame 0x798 versus retail 0x79c. Viewer and coordinate homes,
@@ -1590,6 +1590,13 @@ PRIVATE inline long score_string_list_1608e0()
 // early horizontal cursor with retained top 677, named scroll pixels 679.
 // NOT kept: the early horizontal cursor gains two at retail length and leaves
 // the 0x798 frame. The widened viewport forms grow nine bytes.
+// M3 lane 13 r127 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679; 0x1603f0 reads 253 in the reduced image with a
+// callee caveat, control included, and matches in the full build). Reading: retail computes the width with a 16-bit
+// `sub ax, [left]` and adds the left edge again from memory for x, with the screen height's dword loads between the two;
+// ours keeps the left edge in CX for both. Forms: the score flags as `panel->score = count != 0; panel->alternate_score =
+// panel->score && !...` 690; the first fade as `2.0f * (alpha - ...)` 679 (same code); the row count named once for the
+// total and the height, player count first 679 (same code), team count first 678 (one lower, under the bar; the sum's
+// registers turn retail's but nothing else moves); the background as `= { 0 }` 681. Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

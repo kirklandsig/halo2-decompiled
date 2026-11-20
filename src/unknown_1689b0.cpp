@@ -1560,7 +1560,7 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
 // either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
 // loop guard still differ.
-// score 551 (was 551): Frame 0xb964 and the sum, projected point, prism cursor and query-zero homes agree.
+// Earlier status line, merged in r127 (551, was 551): Frame 0xb964 and the sum, projected point, prism cursor and query-zero homes agree.
 // Count and clearance homes differ, and the radius square precedes the nonempty branch. The axis reload
 // and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
 // Earlier 580.
@@ -2141,6 +2141,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 602/600/584, end-step while 602. Unsigned word ordinal 620/620/623/620. NOT kept: all raise the score.
 // The late signed square reaches its retail slot but displaces the ESI zero and prism cursor. The count
 // and clearance homes remain displaced.
+// M3 lane 13 r127 (fast with 0x16a440 23, 0x120790, 0xc2d00, 0x17a380, 0x2469b0, unchanged each time; control 551). The along
+// sum is emitted (z + y) + x here and (x + z) + y in retail: its five other term orders 551 each (same code: the order is
+// canonicalised); retail also stores the candidate's rows x, z, y where ours stores z, x, y: the candidate rows in the
+// orders x z y 570 (2900 B), y x z 574, y z x 611, z x y 585, z y x 567, the amount written first in the three products 551
+// (same code); the projected point through the existing vector3f_add_scaled 604 (2906 B), the candidate through it 582,
+// both 597; the perpendicular as cross3f(&plane.n, &edge) (the same values, both signs cancel) 557, with the side cross
+// as cross3f(&relative, &edge) tested `> 0.0f` too 574; the two averages as three divisions by the count (one stored
+// reciprocal) 573 for the face average, 578 for both. Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

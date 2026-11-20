@@ -1159,7 +1159,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // parameter order that would fix the swap is retail's and the callers' declarations are in files this lane
 // may not edit.
 // MiniMax C (11-19): no new form, no lower score (529): the frame is 0x2c against retail's 0x28, the selection result still spills where retail keeps it in a register, and the block and the query still arrive swapped (ours block EDX and query EAX, retail EAX and EDX); retail's own parameter order is (type, query, block), which this lane may not change.
-// score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
+// Earlier status line, merged in r127 (529, was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
 // MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
 // MiniMax C (11-16): 529, was 529: no new form, no lower score; the call boundaries agree with retail's
@@ -1615,6 +1615,25 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // early failure or late success assignment: do 569/580/583/580, while
 // 529/566/568/573. NOT kept: the 569 form recovers frame and length but
 // regresses. Late success changes the matched upstream caller.
+// M3 lane 13 r127 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/275; the
+// second stacked score line above merged into the note). Lane 5 r182's retail-order lead rebuilt on this tree (its 0xd37f0
+// part, the in-place colour-scale helper, the rotation reading the axis through the pointer and (type, query, block) with
+// 0xd4080's call to match): 452 [448/187], entry and scan retail's but for `test ebx, eax` (retail `test eax, ebx`);
+// 0xd4080 493, so it stays a lead. Its pieces: without the live axis 549 (2229 B; 0xd4080 380), without the helper 561
+// (0x3db00 lost), with neither 599 (0x3db00 lost); the live axis alone on main's body 610 (2132 B; 0x3db00 lost, 0xd4080
+// 515). On the lead: both length scales taken before either is applied (retail holds the first in the lightmap argument's
+// slot across the second call) 582 (2205 B; 0x3db00 lost), with the falloff named ahead of the last luminance as well
+// (retail stores it in that slot before the call) 572 (2198 B; 0x3db00 lost) [497/171], that with `return true` closing
+// the block 575 (2204 B) [390/173]; the length chained `record->length = length = magnitude3d(...)` ahead of the copies
+// 465, after them 517 (2191 B); the length stored to the record and read back into the local (defined after the record's
+// first read) 490 (2214 B) at either place: the length still takes the frame's low slot and the normalize's magnitude the
+// record argument's home, the reverse of retail; the mask named ahead of the loop 533 (2192 B); the bias local right after
+// the lightmap copy 568 (2176 B: it loads early as retail's, but the query then stays in EDX); the normal copied per
+// component 461 (2193 B), through the existing vector3f_assign 457 (2191 B) [408/173]; the length from the cast query with
+// the normal's pointer declared after the lightmap copy 452 (same code: the pointer folds into the query's EDI, retail
+// copies it to ECX for the normal); direction0 as `0.0f - normal.i` per component (retail's form) 478 (2162 B) [348/182];
+// one to four unused locals at the top 488, 487, 489, 489 (first difference +0x19; no count gives retail's j/k normalize
+// sides). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
