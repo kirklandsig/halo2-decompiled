@@ -217,6 +217,15 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax C (11-20): no new form, no lower score (117): read the earlier rounds' forms; the only lower one known is the
+// score-8 chain, and it rests on one-use element bindings and moved stores, so it is kept only with an exact match. The
+// stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged.
+// MiniMax B (11-20): no new form, no lower score (117): the fallback tag index is still zero-extended through
+// EAX where retail masks the 32-bit value in place (`and edx, 0xffff`); the in-place mask moves the tag table
+// from EDI into ECX and hoists its load above the frame (152), while the `(word)` cast keeps the table in EDI
+// but gives `movzx eax, dx` (117), and masking the index inside the subscript reproduces retail's `and` only
+// with that same table move. The stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused
+// element loads still differ. No form found this round.
 // score 117 (was 117): the fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
 // and pass element loads are unfused in retail, and the definitions take other scratch registers; +0xd8 is read late.
 // MiniMax C (11-15): no new form kept, no lower score (117, was 117): the fallback path still masks the tag index with
@@ -799,6 +808,28 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // of that 81; the four zeros between the two definitions re-measured 13. Body unchanged.
 // AC597: Tag table refreshed after virtual dispatch, with direct word/mask, named word/mask, masked
 // handle in place, typed word/mask and a shared signed/unsigned slot: 165/152/165/152/152/165/152/155.
+// M3 lane 16 r152 (fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH unless noted; main's body unchanged at 117;
+// match-only screens on lane 1 r59's reference chain, rebuilt on this main 8 at +0x9e with the same lines). On the chain:
+// one pointer local walked from the pass element through its tag data and the +0x20 block (`cursor = element; cursor =
+// tag data; cursor = *(cursor + 0x20)`) 8 (same code: the reassigned local splits); the pass definition named and then
+// read through a `byte const *const &` alias of that local 36 (the definition then loads into EAX as retail, but the
+// +0x20 read takes EDX where retail stays in EAX, and arg_3 moves to EBP); the material definition named and read
+// through such an alias 92 (552 B: it takes EDI as retail, the index stays ECX and the zero's `xor` late); the pass tag
+// read through a `long const &` alias of its local 59; both definition aliases 86 (545 B, 0x224d90 36). A named local
+// aliased by a const reference gives the same code as binding the reference to the accessor's temporary, so the
+// listed 36/92/86/59 forms have no second spelling. Diagnostic (a scratch global, reverted at once): the pass tag's
+// table offset stored after the material lookup 143 (553 B: the pass element's load unfuses instead of ECX staying
+// busy). Reading by next-fit over EAX, ECX, EDX: retail's choices at the last two lookups (pass definition EAX twice,
+// material tag EDX, zero EAX, material definition EDI) are what next-fit gives if ECX stays busy from the pass tag's
+// load to the material definition's and EDX until the +0x20 read; nothing in this body uses either that late.
+// M3 lane 12 r156 (fast with 0x2243c0 and 0x224d90, both MATCH; control 117): the tag local not const 117 (same
+// code); the group tests reading the instance at each use with no instance local 165; the group test negated with the
+// fallback arm first 117 (same code); the material tag named once for 0x1c590 and its lookup 146 (524 B); the stage and
+// pass indices named where they are summed 117 (same code).
+// Unshifted pass-record base 164; shared material tag field address 152; native pass array header 117.
+// With grouped cache defaults those three give 161/153/120. Native pass array with unshifted
+// base or material field address 164/152. NOT kept: ties or regressions. The fallback still
+// zero-extends into EAX instead of masking EDX and the stage/pass loads still fuse.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

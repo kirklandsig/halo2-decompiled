@@ -1294,6 +1294,35 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // projections as a plain loop over the face's corners 528 (2810 B, not unrolled as retail); re-measured the reference as a
 // ternary copy 643. Retail's sphere-arm forward row sums (j, i), k where its cone arm sums (k, j), i, so the two arms do
 // not compile one source order the same way. Body unchanged.
+// M3 lane 4 r227 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290; a/s/r = LCS-aligned
+// unmatched lines exact / stack-masked / register-masked, control 199/196/77). Re-measured: the forward cross through
+// cross_product_c1a80(up, left, forward) 433 (2821 B, 210/208/78); lane 5 r195's four-piece statement-order form 279
+// at 2840 B (185/183/89: register-masked worse). New: that cross with the projection helper's scaling as vk, vj, vi
+// 433 (2822 B, 222/220/81); the cross on round 84's 288 lead (entry first, cone `entry = entries;` before its clear,
+// cone bounds after the points) 431 (2821 B, 189/188/68); r195's form with the cone reciprocal from
+// `entry->plane_offset` 558 (2816 B); the projection helper computing the up row (its depth) before the forward and
+// left rows, on main 491 (2812 B), on r195's form 484. Retail loads the left vector's component first in every product
+// of the forward cross; no helper or row order tried moves that. Body unchanged.
+// M3 lane 13 r125 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned 273, masked 114): the cone
+// plane through a file-private inline taking (plane, normal, point), as the code base's plane-through-a-point helper, re-measured
+// 563 (2795 B; listed above), with the dot's operands the other way 563, the same inline computing the point from the matrix
+// position and the offset itself 560 (2795 B); at the tail a frustum pointer named before the flag stores 479 (2814 B,
+// masked 111), the flags and both calls through a fresh `&entries[i]` 672 (2782 B). Body unchanged.
+// M3 lane 8 r202 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 273, masked 126): in
+// light_projection_point_ab the three rows through the file's dot_product_c1a80 on a copied, pre-scaled vector, row first 624
+// (2877 B, the copy changes the prologue), vector first 623, with the scaled scalars gathered into a vector initialiser 606
+// (2778 B); the left cross through the shared cross3f with the forward cross through cross_product_c1a80(up, left, forward)
+// 554 (2817 B, masked 176); the left cross through cross3f alone 532 (2796 B).
+// M3 lane 4 r233 (h2m fast), at 290: one matrix pointer for every matrix use in the sphere arm 588 (2788 B); the two true
+// flags as one chained assignment 290 (same code); the reference axis as an if/else of the two copies 574 (2822 B);
+// `orthogonal = (short)shape->kind == 1` 599 (2778 B); the cone depth from `entry->plane_offset` 291.
+// M3 lane 7 r197 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 199, masked 77): the
+// projection helper's rows through the existing 0x1427f0 inverse transform (the same k, j, i rows) re-measured 1273 (2143 B,
+// out of line); with `inline` on 0x1427f0's definition 495 (2799 B: expanded, but its rows are not retail's, and matched
+// 0x210770 then inlines it too, 48), `inline` alone (diagnostic) 290 here with 0x210770 at 48; the cone plane point through
+// vector3f_add_scaled re-measured 290 (same code); the cone bounds as a box2f initialiser assigned after the corner points
+// 579 (2840 B). Retail's cone arm stores the corner points first and the bounds after them in x0, y0, x1, y1 order, and
+// forms the reciprocal after loading the cone's width and height.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

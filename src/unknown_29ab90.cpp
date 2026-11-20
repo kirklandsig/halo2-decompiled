@@ -51,7 +51,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has [esp+0x38]..[esp+0x48], and site 1's
 // planar normalize still keeps its own zero path where retail uses the shared 0x2b400 helper in
 // include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
-// score 286 (was 286): r209 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// score 286 (was 286): r275 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
 // magnitude), the working-vector group is still a rotation off retail's, site 1's planar normalize still keeps its own
@@ -532,12 +532,42 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // keepable): 286 (270 / 420: site 1's branch order and in-place scaling are then retail's, the zero still has its own
 // home), with the split product 326 (272 / 422). Still BLOCKED-BY 0x2b400 for site 1; the frame homes and the turn
 // dot's operand order remain as the earlier notes describe.
+// M3 lane 14 r122 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286): the output vector declared
+// bare, bound to a `vector3f &` and assigned through it after the working vector's copy 286; the output vector copied
+// from the second global copy 286; both global copies by one chained assignment 286; the forward correction as an
+// aggregate initializer 286; the second global copy initialised from the output vector 286 (same code each: no home moves).
 // M3 lane 5 r209 (fast with 0x29b2e0 at 176, 0x1f9760 at 1, 0x1e5450/0x30bf0/0xb9dd0 MATCH; control 286, aligned 234,
 // register-masked 191): the turn factor's half width named (`half_width`, squared into the numerator) instead of
 // reusing local_20, with the gain as one expression 325 (1868 B), the gain then halved 326 (1871 B), with the named
 // numerator kept 286 (aligned 233, masked 186: not kept, no gain); the blend rows with the history product written
 // first 286 (same code); the complement computed ahead of the sums 316. Retail loads the history weight once into
 // XMM6 ahead of the sums and re-reads the field for the complement; site 1 is still BLOCKED-BY 0x2b400.
+// M3 lane 3 r275 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286): the zero-length test after
+// 0x2922b0 as `0.0f == function_30bf0(...)` 286 (same score); the override test as `0.0f != field` 288 (1869 B); site 1
+// through the existing planar_normalize (include/vector2f_normalize.h) 286; the velocity dot through local_1->velocity
+// at each use instead of its pointer local 286; the magnitude helper returning a ternary 393 (1877 B). Site 1 stays
+// BLOCKED-BY 0x2b400 (its noinline declaration sits in another lane's file this round).
+// M3 lane 3 r277 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286): the 0x1f9760 out-parameters declared
+// at function scope 286; local_6 copied from local_5 286; local_27, local_31 or local_22 declared at the top of the
+// `if (local_2)` block 286/286/286 (same code each). Site 1 still needs 0x2b400's parked zero path inline (BLOCKED-BY 0x2b400).
+// M3 lane 14 r128 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286): the history weight named
+// once (`real local_33 = local_2->field_64;`) for the three blend rows and the complement 320 (1866 B), the same
+// weight read ahead of the sums 320; the sums written into the blend rows without local_31 288; the two planar
+// copies as `*(vector2f const *)` reads 286 (same code), with the third planar copy too 310 (1864 B). Retail loads
+// the weight once into XMM6 for the rows and re-reads it for the complement; ours folds it from memory in every
+// row. Site 1 is still BLOCKED-BY 0x2b400.
+// M3 lane 16 r157 (fast with 0x29b2e0, 0x1f9760 and 0x2922b0 unchanged; control 286 at 1865 B, aligned / register- and
+// offset-masked 184 / 41; body unchanged). The history weight in a named local: declared ahead of the sums with the
+// complement read from the field and the history product first 320 (1866 B, 191 / 43); the same with the complement taken
+// from the local 320 (196 / 43); declared after the sums, the rows in the existing order 320 (184 / 43); ahead of the
+// sums, the rows in the existing order 320 (191 / 43): retail's one load of the weight into XMM6 does not come from a
+// named local. The 0x1f9e70 product's factor read into a named local ahead of the call (retail reads +0x50 into a stack
+// temporary before the call and multiplies the result by it) 334 (1889 B, 174 / 41); declared ahead of the third planar
+// normalize 339 (173 / 39); lane 4 r180's planar copy of the saved direction re-measured 310 (1864 B, 170 / 35); the
+// two together 294 and 298 (1882 B, 161 / 35 and 161 / 31: between the two late calls only five masked lines then
+// differ, the third normalize's in-place scaling among them). None kept: a one-use local ahead of a call, and the
+// count rises. Sites 1 and 3 are both 0x2b400's shape in retail (scaling in place in the vector's own home), so the
+// function stays BLOCKED-BY 0x2b400 (machine 1's file this round).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

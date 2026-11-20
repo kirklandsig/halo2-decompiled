@@ -571,6 +571,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // retail's caller loads the player count into eax after the pushes and copies the running count to edx last, ours
 // loads the player count into edx between the pushes and copies the count to eax last, and that caller's body lives
 // in src/unknown_07a9a0.cpp, which this lane may not edit. BLOCKED-BY 0x7e210.
+// MiniMax E (11-20): no new form, no lower score (34): the body still differs from retail only in the scratch registers - the player count is tested in edx here and in eax in retail, and the clamp's mask is built in edx here and in ecx in retail (the clamped value itself is in eax in both) - and the notes below record that retail's caller 0x7e210 hands the count over in eax, so the arrival register is not this body's to choose; swapping the two operands of the total's sum compiles to the same bytes.
 // score 34 (was 34): only register roles differ (the player count arrives in EDX, retail EAX); earlier notes below.
 // MiniMax I (11-17): no lower score (34): a local copy of the player count, so that the parameter is read only once
 // in the copy loop, compiles to the same code, and the count's register home stays the caller's to pick.
@@ -991,6 +992,13 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // assignment 34. A `/Gd` first-pass compile of each (and of the copy guarded by `if (0 < player_count)`, the fill
 // guarded by `player_count < total` or `0 < extra_count`, and the file without `/arch:SSE`) still loads the extra count
 // into EAX and keeps the player count in EBX, where LTCG then gives it EDX.
+// M3 lane 3 r273 (fast, and a one-object link-time screen of this file that reproduces 34 and round 23's `(short)` fill 7):
+// the fill as `while (i < total) parties[i++] = next_party;` 70; counted down from `total - 1` 72 (193 bytes); screen: the
+// fill over its own index `j` and through `long const *value = &next_party` 34 (same code), counted by extra_count worse; a
+// standin caller with other argument sources leaves the roles as they are (the body decides them). Diagnostics on the fill
+// value: `next_party + 1`, `<< 1`, `(word)`, `(short)` and `party_indices[0]` give retail's roles; `& 0xffff`, `| 1` and a
+// stack parameter do not, so retail's plain dword load of the fill value still needs a natural form evaluated after the
+// count and destination.
 // M3 lane 6 r204 (fast with 0x91e30, MATCH each run, and 0x7e210 871; control 34, register-masked aligned 2). Nothing kept.
 // The count parameters reused: the fill stepping the player count itself, `for (; player_count < total; player_count++)`
 // 34 and as a `while` with `parties[player_count++]` 34 (same code); the total kept in the extra count (`extra_count +=

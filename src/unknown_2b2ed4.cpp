@@ -74,6 +74,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+/* fills one row of the online friends or players list: the name, the status text and the
+   invitation, session and voice icons */
 // MiniMax S (11-19): no new form, no lower score (316): retail sends every text arm straight to one function_253b1a call with no NONE test and takes the message set_text inside the message block, so ours keeps the cmp eax,-1 test at the join, the !online arm inline where retail parks it at 0x2b3674 and the >> 10 arm next to the join where retail outlines it at 0x2b3088; the buffer homes stay a rotation off retail, so the body stands.
 // MiniMax H (11-18): no new form, no lower score (316): the frame 0xfd4 still agrees and the first difference is
 // still the null-datum test's jump target (retail's `je` goes to the shared epilogue at the function's end, ours to
@@ -86,6 +88,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // -0x8cc, display_name -0x6cc, suffix -0x4cc, layout -0x2cc against retail's display_name -0x8cc, title -0x6cc,
 // layout -0x4cc, suffix -0x458); writing the text arms as direct calls measures 425, moving the set_text into the
 // message block 502 and calling function_253b1a in each arm 540, so the one-call body with the text variable stands.
+// A permuter run against the full image over 700 s (twelve tries) reached no lower score than its own baseline.
 // score 316 (was 316): r209 unchanged (lead below: the buffer homes follow reference counts). Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
 // Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
 // m3 lane 8 r195 (fast = plain here): 43 at retail's 2345 bytes (plain check, 0x2b37fd and 0x2b3fca still match) with four
@@ -144,15 +147,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
 // the block order follows retail's apart from a few blocks, but stack offsets
-// Stack homes, suffix address rederivation and block placement remain.
-// Stack homes, suffix address rederivation and block placement remain.
-// Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // Earlier: the block order follows retail's apart from a few blocks, but stack offsets
-// frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
-// merging the two XONLINE_FRIEND copies into one local in the status block
-// the block order follows retail's apart from a few blocks, but stack offsets
-// the block order follows retail's apart from a few blocks, but stack offsets
-// Stack homes, suffix address rederivation and block placement remain.
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's
 // friends == false shift out of line (still within the loop), clears ebx inside the received-invite
@@ -246,15 +241,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Coherent flags alone: 2327 bytes, count 330; original body and stores restored.
 // Round 292: native six-state suffix cases reversed, five rotations, odd/even and
 // middle-out orders 330 each; original complete cases restored; homes and re-derivations remain.
-// Round 279: Existing status producer writes the real final payload directly, before/after
-// the disjoint range helper, crossed with constructor-owned zero and native flag bits:
-// 400 each, 2324/2345 bytes. Original local output, library copy, flags and full body restored.
 // Round 332: Terminator stores through the append result with shared flags and native identity/status, subsets
 // 0-7: 327/338/327/338/327/338/327/338.
 // Three-point gain rejected; original executable source restored.
-// Round 284: shared actual invitation/session/voice icon-result publication, subsets
-// 1-7: 490/389/487/374/487/390/669; all with native short session/voice results 673.
-// Original complete body restored; child/text/layout homes and suffix address rederivation remain.
 // Round 301: complete available/disabled/muted query-result arms, subsets 1-7,
 // 633/617/625/554/639/633/637; all with reused valid-player predicate 642. Original body restored.
 // Round 207 (lane 3, fast): the >= 10 invitation icon as one call with `received ? 28 : 17` 358 (2328 bytes);
@@ -358,6 +347,10 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // EAX and jumps to one `push eax` call, so retail keeps a text variable whose message paths bypass that call with no
 // NONE test. Diagnostic (reverted): the message arms calling set_text and jumping past an unconditional 0x253b1a
 // call 393 (2320 bytes).
+// M3 lane 14 r122 (fast with 0x230134/0x2b0a14, MATCH; control 316): the session widget's three state calls as one
+// call with a nested ternary argument 332 (2337 B); the voice pointer renamed to sort before the session pointer 316,
+// declared before it and assigned after it 316; the message buffer at function scope 316; the final layout record
+// declared before the player record 316 (same code each: the (8,5)/(8,4) widget slots stay swapped).
 // M3 lane 5 r209 (fast with 0x230134, 0x22eeee, 0x2b0a14, 0x253b1a; control 316, aligned 49 = register-masked 49). LEAD: the
 // five buffer homes and the two child-pointer homes follow a reference ranking. Diagnostics (not keepable): two extra
 // code-emitting suffix uses (`suffix.text[1] = 0;` twice) put every buffer and both child pointers in retail's homes
@@ -441,11 +434,15 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                 s_entry *entry = &items[i];
                 XUID const *other = NULL;
                 if (entry) other = (XUID const *)entry;
-                if (xuid_equal(xuid, other, false) &&
-                    !(bool)((friends ? entry->flags >> 12 : entry->flags >> 10) & 1))
+                if (xuid_equal(xuid, other, false))
                 {
-                    flags |= 0x200;
-                    ++invitations;
+                    dword entry_flags = entry->flags;
+                    if ((friends && !(bool)((entry_flags >> 12) & 1)) ||
+                        (!friends && !(bool)((entry_flags >> 10) & 1)))
+                    {
+                        flags |= 0x200;
+                        ++invitations;
+                    }
                 }
             }
         }
@@ -482,16 +479,17 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
         {
             XONLINE_FRIEND friend_;
             friend_get_online_friend(datum, &friend_);
-            text = online_friend_is_in_this_title(&friend_) ? 0x15000269 : 0x1a000268;
+            if (online_friend_is_in_this_title(&friend_)) text = 0x15000269;
+            else text = 0x1a000268;
         }
         else if (player_outgoing && !friends) text = 0x100002e9;
         else if (outgoing && friends) text = 0x12000267;
-        else if (!online) text = 0x700024e;
-        else
+        else if (online)
         {
             word title[256];
             s_string_buffer suffix;
-            title[0] = suffix.text[0] = 0;
+            title[0] = 0;
+            suffix.text[0] = 0;
             XONLINE_FRIEND friend_;
             friend_get_online_friend(datum, &friend_);
             online_friend_get_title_name(&friend_, (wchar_t *)title, 256);
@@ -523,10 +521,18 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                             message.text[255] = 0;
                             break;
                         default:
-                            if (!can_join) suffix.load((c_widget *)list->get_screen(), 0x13000257);
-                            else suffix.load((c_widget *)list->get_screen(), 0xf000256);
-                            unicode_string_append(message.text, suffix.text, 256);
-                            message.text[255] = 0;
+                            if (!can_join)
+                            {
+                                suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                                unicode_string_append(message.text, suffix.text, 256);
+                                message.text[255] = 0;
+                            }
+                            else
+                            {
+                                suffix.load((c_widget *)list->get_screen(), 0xf000256);
+                                unicode_string_append(message.text, suffix.text, 256);
+                                message.text[255] = 0;
+                            }
                             break;
                         }
                     }
@@ -561,10 +567,18 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                         message.text[255] = 0;
                         break;
                     default:
-                        if (can_join) suffix.load((c_widget *)list->get_screen(), 0xf000256);
-                        else suffix.load((c_widget *)list->get_screen(), 0x13000257);
-                        unicode_string_append(message.text, suffix.text, 256);
-                        message.text[255] = 0;
+                        if (can_join)
+                        {
+                            suffix.load((c_widget *)list->get_screen(), 0xf000256);
+                            unicode_string_append(message.text, suffix.text, 256);
+                            message.text[255] = 0;
+                        }
+                        else
+                        {
+                            suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                            unicode_string_append(message.text, suffix.text, 256);
+                            message.text[255] = 0;
+                        }
                         break;
                     }
                 }
@@ -625,6 +639,7 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
             }
             else text = 0xe00024f;
         }
+        else text = 0x700024e;
         if (text != NONE) status->function_253b1a(text);
         else status->function_22f52e()->set_text(message.text);
     }

@@ -1278,6 +1278,12 @@ void function_2118c0(void)
 // band-of-64 idiom (`&noise[row][w * 8]`, p1 `[row][k * 8]`, out `[row][k * 8 + m]`) 175 (745 B); a `long row` started at
 // zero above the band loop and stepped by 8 at its foot with the knot rows read in place 150. Screen only: the band-of-64
 // idiom from `b * 8` or `b << 3` and `(k + 7) & 7` for the first index (same code as now) reduce every row or change nothing.
+// M3 lane 7 r191 (fast with 0x212100/0x211fd0, both MATCH; this file's compile-only screen agrees on each): one `long knot`
+// index reassigned before each knot row, from `long row = b * 8` 150 (every row reduced), from `b << 3` 10 (same code); a
+// `long const &` alias of `long row = b * 8` for the knot rows with p1/out from `row + k` 150; p1/out as `&noise[k][0] +
+// row * 8` and `&noise[k][m] + row * 8` with the shifted row 175 (745 B); `long row = b * 8 + k` for p1/out with the knot
+// rows from `row - k + w` 150. Screen only: the knot sums masked `& 0x1f` keep retail's `add reg, 8` row and unreduced
+// knot rows (with three `and`s), the same lead as the earlier mask/`row | w` diagnostics.
 // M3 lane 11 r127 (fast with 0x212100/0x211fd0, both MATCH each time; control 10): `long row = b; row *= 8;` 150; the
 // three knot sums through references (`long index3 = row; long &sum3 = index3; sum3 += w3;`, `b << 3` row) 16; the row
 // through a `long const &` bound to a `b * 8` local 150; `b * 8` knot rows with p1 from `(b << 3) + k` 150; `byte` knot
@@ -1289,6 +1295,36 @@ void function_2118c0(void)
 // M3 lane 13 r119 (fast with 0x212100 and 0x211fd0, both MATCH): `word k` 10 (same code); `long row = b; row *= 8;` 150;
 // `unsigned long` knot indices `(k + n) & 7` with `long row = b * 8` 185 (751 B); `long row = b * 8` with the knot subscripts
 // `(dword)(row + w)` 150, with `(dword)row + w` 150 (unsigned sums still reduce every row).
+// M3 lane 14 r124 (fast with 0x212100 and 0x211fd0, both MATCH; screens on a compile-only harness of this file, exact
+// here, aligned counts against its 5): the band loop as `while (b < 3)` 10 (same code); the three components written out
+// with no component loop 10 (same code), with `long row = b * 8` 150 (aligned 105, every row reduced); a redundant
+// `b < 3` guard around the band body with `b * 8` 185 (748 B); a redundant `w3 < 8 && w2 < 8 && w0 < 8` guard ahead of
+// the band loop with `b * 8` 155. Screen only, diagnostics: the knot indices in a `long [3]` array whose address escapes
+// to an external call before the loops 111, in a function-static array 119, in a local aggregate 116 (all with `b * 8`:
+// every row still reduces, so an aliasable index home is not it); a redundant `row >= 0` guard 151; a conditional knot
+// pointer under `row < 24` 185.
+// M3 lane 2 r116 (fast with 0x212100 and 0x211fd0, both MATCH; control 10): the three knot indices declared in the band
+// body 174 (756 B); the weights ta/tb/tc and previous at the sample loop's level 14 (first +0x105); previous alone at the
+// knot level (beside the knot indices, where retail computes it) 18 (first +0xda); the knot-row pointers declared p0, p1,
+// p2, p3 33 (first +0xb0); `long k` 133 (753 B); `long row = (long)b << 3` 10 (same code). Retail's band loop keeps the
+// row (8 * b) as its own register stepped by 8 beside the down-counted trip count, with the knot rows recomputed from it;
+// ours keeps b and scales it inside each knot row's lea.
+// M3 lane 5 r216 (round 194's compile-only harness, exact here, aligned counts against its 5): the knot wraps as
+// `(word)(k + n) % 8` with the `b << 3` row 65 (203 instructions), with `long row = b * 8` 144; `long row = b * 8` with p1
+// as `noise[b * 8 + k]` 105; `word row = (word)(b << 3)` 40 (the shift kept per band plus a movzx); `long row = (long)(b << 3)`
+// 5 (same code); the band counter `dword` or `long` with the `b << 3` row 24 each, `byte`, `char` or `unsigned char` 5 each.
+// Permuter (600 s, annealing, seed 21616, 53 tries): nothing below 10.
+// M3 lane 6 r213 (fast with 0x212100 and 0x211fd0, both MATCH; control 10): p1 and out from one named `long cell = b * 8 +
+// k` 10 (same code); `long row = b * 8` with the three knot sums named (`long row3 = row + w3;` ...) 150; `long row = b * 8`
+// with p1 and out from `row + k` as well 150; an `unsigned short` band counter 10 (same code); p1 as `noise[k + row]` from
+// `(long)b << 3` with out as `&p1[m]` 200 (735 B). Reading of retail: p1 and out are reduced to pointers at every loop level
+// (k, m and band), the knot rows at none, though only the knot index is non-affine in k; the code ahead of the band loop
+// (the byte-op wraps, their movzx and stack homes) is already identical, so the cause sits in the band body's knot sums.
+// M3 lane 7 r198 (fast with 0x212100 and 0x211fd0, both MATCH; this file's compile-only screen agrees): three per-knot
+// `long` row counters started at the knot index and stepped by 8 at the band loop's foot (no row local) 128 (785 B,
+// every knot row reduced to a pointer), as `dword` 128, as `word` 170 (797 B: the first counter becomes an `add reg, 8`
+// row with the other two as reloaded offsets, unreduced, but each zero-extended); the table through a `vector3f (*)[8]`
+// local for the knot rows 10 (same code); every row, p1 and out included, as `(b << 3) + index` with no row local 150.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

@@ -412,6 +412,37 @@ long g_55e6c0;
 // then takes EDX at the top and the height EBX). 0x1d6f0 reads all five of its parameters, so no dropped argument.
 // Also on that base: the guard written `if (!entry->data && !entry->flag95) { ... } else result = false;` 31 and the loop
 // index declared beside the offset 31 (both the base's code).
+// M3 lane 6 r208 (fast with 0x1dc40/0x1db10, both MATCH; base: round 122's lead re-measured 31 at 484 bytes): a 16-form
+// screen of the clamp's store (in place / after the packing / after the flag / after the select) x the select ahead of the
+// header word x the header pointer: 29/30/38/39, 29/31/41/40, 29/31/60/40, 132/134/142/138; only select-first without the
+// pointer gives retail's top block (38 at +0x85 in place, 41 at +0x7c with levels after the packing), where the height stays
+// in EAX up to the call's push. On levels after the packing with the select first: the header pointer declared after the
+// select for the header word 49; only for the register call 41; declared before the flag store for the register call only
+// 29 (484 bytes: all but the top block's height/count swap retail's; the call then reloads the height and the swap returns),
+// with the header word through it 38, with the select and the header word through it 31. On round 122's lead: the packing's
+// height from the stored field 31, both dimensions from the stored fields 31, a const reference to the stored height 140.
+// The per-level byte count named ahead of the loop 43, at the top 138/138. Diagnostics: a byte store of the height after its
+// store or after the zero stores 142/133 (retail's top block); the clamp with only its lower or upper arm 102/138 (the
+// upper-only clamp still takes EAX). A 900 s permuter run on the 29 header-pointer form: 96 tries, none below it.
+// M3 lane 16 r151 (fast with 0x1dc40/0x1db10, both MATCH): round 122's lead re-measured 31 (484 bytes); on it the height
+// store moved after the packing 159 (493 bytes); on main's body the same move 98 (480 bytes); the clamp's tests
+// constant-left (`0 > count ? 0 : 4 < count ? 4 : count`) 29, only the upper one 29, only the lower one 29 (all the
+// same code), the first spelling on round 122's lead 31.
+// M3 lane 12 r157 (fast with 0x1dc40/0x1db10/0x1d6f0/0x1d770/0x1db90/0x1de20, all MATCH; round 122's lead re-measured 31
+// at 484 bytes): on that lead the height store moved right after the levels clamp 159 (493 bytes), after the three zero
+// stores 159 (493 bytes); on main's body the height store right after the clamp's store 98 (480 bytes); the lead's whole
+// else body in a forceinline helper taking the entry and every parameter 31 (same code); no entry local (every access
+// through the global array) 144 (528 bytes; 0x1db10 4, 0x1dc40 1, 0x1d770 55).
+// M3 lane 1 r137 (H2M_FAST with 0x1dc40/0x1db10, both MATCH; on the round-51 signed pitch/packed lead, re-measured 29 at
+// 484 bytes with 0x1ddd0's `value = linear ? value : 0;` select): the clamp as a raw-count store then two independent
+// `if (count < 0)` / `if (count > 4)` field overwrites 133 (485 bytes); the entry as a reference 29 (same code); the format
+// call's linear argument from the stored flag field 29 (forwarded); the loop's per-level bytes from the stored width and
+// height fields 152. Re-measured: round 122's header-pointer form 28 (484 bytes, a gain of one, not kept).
+// M3 lane 6 r211 (fast with 0x1dc40/0x1db10, both MATCH; base: round 122's lead re-measured 31 at 484 bytes, the pitch part
+// scheduled ahead of the height part): on it the clamp as `count < 0 ? 0 : count >= 4 ? 4 : count` 32; as `count <= 0 ? 0 :
+// count >= 4 ? 4 : count` 33; as if / else-if / else with the `<= 0` and `>= 4` bounds 33; upper bound first (`count > 4 ? 4 :
+// count < 0 ? 0 : count`) 153 (495 bytes); the level loop bounded by the levels local 158 (506 bytes: levels spills to the
+// count's home and the height then takes EAX at the top as retail, so a longer clamp range is what lowers its rank).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

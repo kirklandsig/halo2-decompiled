@@ -2113,6 +2113,23 @@ void function_27dd10(void)
 // interpolation arm 2; both 2; in function_288573 the blend-1 weight through a `real const &` for the three arms 2; the
 // blend-1 arms as a switch on the component 2 (all the same code; 0x281b60 2 throughout). The screen still flips pass 0
 // with `+= 1.0f` in the blend-1 scale arm (diagnostic). All restored.
+// M3 lane 2 r116 (fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2/2): the vector and
+// scale blends' bodies through the existing interpolate_real 159 (1735 bytes; 0x288570 120); the walk's inheritance
+// parameter by value instead of `const *const &` 399 (1745 bytes; 0x281b60 389, 0x285750 427); the interpolation's
+// scale arm through interpolate_real instead of the scale blend 2 (0x285750 17); the map-index test bound-first
+// (`index < count && index >= 0`) 16 (0x281b60 16, 0x285750 12); the root offset scale as `*=` 2 (same code). All restored.
+// M3 lane 3 r278 (compile-only build of the file, exact here, then fast with 0x281b60 and the four matched walk users):
+// function_288573 as a switch on the blend method 2 (0x288570 120, 0x289580 2); blend 1's vector arm through
+// interpolate_real per component with its scale arm as `+=` 155 (1732 B); the output pointer declared ahead of the in-place
+// flag 2 (0x288570 3, 0x289580 78); the in-place test's operands swapped, the bit test as `!= 0`, the shift as an
+// assignment and the counters pre-incremented 2 each (same code); all 35 combinations of blend 1's vector and scale arms
+// (helper, interpolate_real, `+=`) with blend 2's (`+=`, `*=`) keep the pair (30 of them move 0x288570).
+// M3 lane 11 r136 (fast with 0x281b60 and the four matched walk users, all unchanged): function_288573 ending in `else
+// { __assume(0); }` 2 (the method is a constant, so it folds); function_288571/2/3 `static` 2; the bit test as
+// `(local_2 & 1) != 0` 2; function_288573's parameters const 2; the empty group ending in `continue;` with the other
+// arm unnested 2 (same code each). Diagnostics (fast): `__assume(local_2 >= 0)` after the flags read 348 (1733 bytes,
+// every walk user regresses: the node tests no longer fold); with node_flags_test returning its expression 2 (0x281b60
+// 39, 0x288570 120, 0x289580 2), so a run-time assume flips the pair only together with the unfolded tests. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2290,6 +2307,11 @@ void function_2818e0(void)
 // three restores best 2 (two save orders give the same code, every other order moves 0x285750 or 0x288570);
 // root_offset_scale's three conditions in all six orders, its product as `*=` or with the operands swapped 2 (same
 // code or only a branch order). All restored.
+// M3 lane 4 r226 (fast with 0x27dff0 and the five matched walk users): the pair is in the rotation pass, the one pass
+// with no C-level float arithmetic for blend methods 1 and 2 (both asm), where method 3's matched 0x285750 has literal
+// float code. interpolate_real's fraction as `real const &` 2; the blend weight passed to function_288573 as a parameter
+// 2 (0x27dff0 147, 0x285750 157); quaternion_blend's fraction copied into a local the asm reads 2; the saved frame
+// fraction `real const` 2; component_interpolate's fraction read once into a named local 2 (0x288570 120). All restored.
 // M3 lane 8 r197 (fast with 0x27dff0 and the matched walk users; a compile-only screen of this file is exact here, 2):
 // the blend asm split into two blocks at the fraction load 2; the multiply asm split after its first operand load 2;
 // the interpolation's blend fraction named before the blend call 2; the blend asm's sign constant as a const SSE
@@ -2301,6 +2323,25 @@ void function_2818e0(void)
 // double negation 6, while an extra product with a float global, an int store to a new global or a folded
 // `* 1.0f`, `+ 0.0f`, `- 0.0f`, `/ 1.0f` do not. With both blend-3 arms written as blend 2's, 0x285750 gets the
 // pair reversed too; either of its arms alone keeps retail's order. All restored.
+// M3 lane 12 r155 (a one-object compile of this file gives the real build's pairs: count first in this function and
+// 0x27dff0, flags first in 0x285750; linking it alone, with the ballast or with the graphics library objects changes
+// nothing): the output pointer's restore ahead of the three frame-state restores 13 (0x27dff0 13, 0x285750 11,
+// 0x288570 98); the bit flags as `dword` 5 (every walk user 3-5); screen only, the pair unchanged in all three: the
+// output pointer set ahead of the three frame-state sets, the bit flags as `unsigned long`, the saved frame index as
+// long (same code). All restored.
+// M3 lane 4 r231 (screened with 0x27dff0 and the four matched walk users): in function_288572 the outer loop bounded by a
+// `long const` copy of the count 95 (0x288570 120, 0x289580 2); the group end declared at the walk's top 2 (same code); the
+// destination-mask test as an if nested under the lookup 2 (same code); the interpolation test inverted with the plain apply
+// first 4 (0x27dff0 4, 0x285750 184, 0x28aaa0 2); in function_288571 pass 0 given the settings' node count directly, the local
+// for the later passes 397 (1681 bytes, every walk user 217-433). All restored.
+// M3 lane 7 r198 (fast with 0x27dff0, 0x285750, 0x288570; a compile-only build of the file is exact here, 2): in
+// function_288572 the bit-flag shift ahead of the cursor step 2 (same code here; 0x288570 12); node_destination_get as one
+// exit through a found flag 2 (same code everywhere, though every symbol number moves: pass 0's flags then number below
+// the count and the count is still reloaded first, so the pair does not follow symbol numbers); in function_288571 the
+// counter resets ahead of the count read 6 (the count's store moves; 0x285750 4, 0x288570 4); the destination-mask test
+// as `arg_2 ? node_flags_test(...) : true` 39 (the pass-2 scale product changes; 0x288570 120). Diagnostics (screen, not
+// kept): `__assume(node_count >= 0)` in this wrapper or on the count in function_288571 moves 8 lines, pair unchanged;
+// 0 to 15 dead initialised locals in this wrapper shift the walk's symbols by 3 each, pair unchanged. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

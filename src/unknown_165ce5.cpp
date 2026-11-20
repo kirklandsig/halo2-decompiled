@@ -1969,6 +1969,35 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // callback selected ahead of the orientation pointer 45; the weapon object looked up after the orientation pointer and
 // the callback 97 (2200 B). Left on the lead: frame 0x30/0x2c, the ESI/EDI saves, the weapon reloaded into EDI ahead
 // of the object lookup (ours after the callback select), the overlay set load order and the channel pointer register.
+// M3 lane 14 r123 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): kept, the look pointer typed as the
+// existing view-angles record (`&entries[user_index].angles`, yaw/pitch fields) in place of the point2f cast, and the look pair
+// as one such record in place of a two-element array, 188 (same code each, plain). Tried: the weapon-active value as an
+// if/else on the unit and weapon guard 188 (same code); the look pair as two scalars clamped by if/else-if chains 204 (frame
+// 0x28); the weapon-active flag typed byte 387 (2197 B). Slot map (masked listing): retail packs zoom with unit (-0x1c) and the
+// active byte with spring_d (-0x14), ours the other way round; the ESI/EDI saves stay BLOCKED by the build's stand-in caller.
+// M3 lane 13 r127 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188). Slot references counted on both
+// listings: every EBP offset from -1 to -0x2c is used in both builds and ours leaves -0x30 unreferenced; retail's -0x10
+// (spring_c) is never reused, its -0x14 holds spring_d and then the active byte, its -0x1c the unit, the user flags and then
+// the zoom group; ours puts the active byte with the unit and flags (-0x18) and the zoom group with spring_d (-0x14). The
+// homes follow lifetimes, not scopes: `bool active` declared at the unit block's top 188, `real zoom` there 188, both in
+// either order 188 / 188, the weapon object pointer declared there and assigned in the loop 188, `flags` declared ahead of
+// the look pair 188 (same code each). Retail pops EDI and ESI right after the weapon loop, ahead of the two flag tests
+// that close the unit block, and pushes each just ahead of its first use after the unit test; ours saves both ahead of
+// the test and restores them at the end (the round 98 block). Body unchanged.
+// M3 lane 14 r125 (fast; control 188): slot sharing against retail: retail packs unit, the user-flags copy and zoom in
+// -0x1c, mode in -0x18, spring_d and the active byte in -0x14; ours packs unit, flags and active in -0x18, mode in -0x1c,
+// spring_d and zoom in -0x14. Tried: `bool active` declared in the unit block 188, `real zoom` declared in the unit block
+// 188, the look record declared at function scope 188, `flags` declared after the weapon index 188 (same code each).
+// Diagnostic (reverted at once): the look pair as two scalars plus one probe local 537 (2203 B, frame 0x28, ten cells),
+// so the frame's odd cell count cannot tell whether the record alone rounds the frame. Retail's epilogue confirms the
+// shrink-wrap: ESI/EDI are popped right after the weapon loop, before the flag tail; still BLOCKED by the stand-in.
+// MiniMax B (11-20): no new form, no lower score (188): the channel pointer still differs at every channel use and
+// the look pair still needs an aggregate slot of its own, so the frame stays 0x30 against retail's 0x2c.
+// M3 lane 11 r136 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the look pair as two scalars
+// declared at the function's top 196, declared at their clamps 196 (frame 0x28 both: they share the spring slots); the
+// end-of-loop flag test reading the first weapon through `first_weapon` 188; the weapon counter declared at the function's
+// top 188; `unit` declared bare at the function's top and assigned in place 188 (same code each). Still BLOCKED by the
+// stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -1983,8 +2012,8 @@ void __stdcall function_166d75(long user_index)
 		real spring_c = 27.0f;
 		real spring_d = 6.0f;
 		s_first_person_weapon *first_weapon = &user->weapons[0];
-		real look_angles[2];
-		point2f *look;
+		s_view_angles look_angles;
+		s_view_angles const *look;
 		dword flags;
 		long field_x11c898;
 
@@ -2012,25 +2041,25 @@ void __stdcall function_166d75(long user_index)
 		}
 		function_11eed0((real *)&user->unknown2030[0x0], (real *)&user->unknown2030[0x8], unit->aiming_velocity.i, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
 		function_11eed0((real *)&user->unknown2030[0x4], (real *)&user->unknown2030[0xc], unit->aiming_velocity.j, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
-		look_angles[0] = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
+		look_angles.yaw = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
 		s_game_time_globals &frame_settings = *g_510c54;
-		look_angles[1] = PIN(*(real *)&user->unknown2030[0x2c] * (-1.0f / frame_settings.rate), -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_angles[0], frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_angles[1], frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		look_angles.pitch = PIN(*(real *)&user->unknown2030[0x2c] * (-1.0f / frame_settings.rate), -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_angles.yaw, frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_angles.pitch, frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
 
-		look = (point2f *)&g_4ed284->entries[user_index].yaw;
+		look = &g_4ed284->entries[user_index].angles;
 		flags = user->flags;
 		if (TEST_FLAG(flags, _first_person_user_active_bit))
 		{
-			*(real *)&user->unknown2030[0x28] = function_0bff60(look->x, *(real *)&user->unknown2030[0x20]);
-			*(real *)&user->unknown2030[0x2c] = function_0bff60(look->y, *(real *)&user->unknown2030[0x24]);
+			*(real *)&user->unknown2030[0x28] = function_0bff60(look->yaw, *(real *)&user->unknown2030[0x20]);
+			*(real *)&user->unknown2030[0x2c] = function_0bff60(look->pitch, *(real *)&user->unknown2030[0x24]);
 		}
 		else
 		{
 			*(point2f *)&user->unknown2030[0x28] = *g_4687c4;
 		}
-		*(real *)&user->unknown2030[0x20] = look->x;
-		*(real *)&user->unknown2030[0x24] = look->y;
+		*(real *)&user->unknown2030[0x20] = look->yaw;
+		*(real *)&user->unknown2030[0x24] = look->pitch;
 		user->flags = flags | FLAG(_first_person_user_active_bit);
 
 		for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)

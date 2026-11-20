@@ -861,6 +861,16 @@ struct s_physical_block_iterator
 // `candidates` 93, 1-8 dead locals 93; permuter on the 93 form (900 s, 94 tries) best 93. Left on 93: one EBX/EDI swap
 // over the whole tail (the walk's high-water mark and bit, the overlap test's data and sum registers, and the
 // insertion's result EDI / NONE EBX in retail, here the other way round with NONE also taking the `result != NONE` test).
+// M3 lane 8 r199 (fast with 0x13d320, the file's six other functions and 0x16b840, all MATCH each run; control 201): lane 1
+// r124's 40 lead rebuilt 40 (1213 B, first difference +0x356, aligned 18). On it: the insertion tested through a plain `long
+// previous = best.previous;` copy in place of the bool, used by both stage tests and both block indexes 93 (the `sete` goes, but
+// NONE then takes a register ahead of the allocation test and the walk scan and the tail swap EBX/EDI), the copy for the two tests
+// only 93, the copy taken ahead of the allocation 93; the bool as a flag set by a branch (`at_head = false; if (...) at_head =
+// true;`, either arm form, or declared ahead of the allocation) 93 each (threaded, as the copy); `long const &` bindings of
+// best.offset and of pages for the overlap test, before or inside the walk, or a named start read through one, 40 each (same
+// code); a single-stage insertion with `entry->next = first; first = result` in each head sub-arm or once after them 96/96; one
+// `entry->previous = NONE;` ahead of the first-block test on the copy form, the two single-stage forms and the lead 102/100/101/92.
+// Permuter on the 40 lead (600 s, seed 199, 59 tries): none below 40. Body unchanged.
 // M3 lane 15 r110 (fast with 0x13d320 and the file's six other functions, all MATCH each run; control 201): lane 1
 // r124's 40 lead rebuilt on today's base, 40 at 1213 B (first difference +0x356). On it: both insertion stages tested
 // directly on best.previous 93 (the threading is then retail's `cmp esi, ebx; jne`, but the NONE constant takes a
@@ -878,6 +888,33 @@ struct s_physical_block_iterator
 // insufficient candidate continues to that increment 201. NOT kept: the 182 form brings the
 // cases inside the loop, but uses pointer masks instead of retail's shared AL test,
 // moves the first difference earlier and shortens to 1193 bytes.
+// Paired unsigned elapsed values with conditional ages, assigned ages, named products or compound products
+// with the original and split case-zero tie tests 373/299/373/373 and 373/299/373/373.
+// Written-differs at 201. NOT kept: Six forms reach 1213 bytes at 373 with the first difference moved
+// into the prologue. The assignment forms score 299, change the frame and no longer reproduce the policy
+// layout. All four controls stay exact. The opening body is restored.
+// Eager older-or-tied, eager rejection complement, eager non-later gate and
+// short-circuit age with eager tie 231/232/227/233; with both age masks
+// 222/217/223/244. The rejection complement with both masks reaches 1213 bytes,
+// but changes the earlier stack layout and still misses the common AL join.
+// M3 lane 6 r209 (fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): lane 1 r124's 40 lead rebuilt on
+// today's file 40 (1213 B, first difference +0x356). On it: the head flag as a `long` 93 (1214 B), as `bool const` 40 (same
+// code), the second stage on `!at_head` with its arms swapped 93, the flag declared between the pool and entry pointers 46
+// and ahead of both 46 (first difference +0xcc each).
+// M3 lane 1 r135 (fast with the file's six functions and 0x13d320, all MATCH; round 124's 40 lead re-applied, 40 at +0x356):
+// on it, 1 to 7 dead longs at the top 40 each (no phase effect on this integer code); the walk test through `long const
+// start`/`end` named in the loop, through a block pointer local, as two nested ifs, with the block's end named, 40 each
+// (same code: the second compare still re-reads best.offset where retail keeps it in EDI with a `mov edx, edi` copy); one
+// test of best.previous with the head arm's next/first stores in both of its sub-arms and the predecessor re-read through
+// a fresh pool base 100, with those stores once after the sub-arms 96 (first difference back to +0x338: the walk's scan
+// registers flip), both with a named `long previous` 100/96 (same code). Main's body unchanged.
+// M3 lane 15 r116 (fast with 0x13d320 and 0x13d830, both MATCH; control 201): lane 1 r124's 40 lead re-applied on today's file,
+// 40 (1213 B, aligned 22: the overlap walk, where retail loads best.offset into EDI, sums `pages + offset` into EBX and
+// compares a `mov edx, edi` copy, with the handle built in ECX and moved to EBX for the delete call; and the head flag's
+// `sete; test` ahead of retail's direct `jne`). On the lead: the walk test as `pages + best.offset`, with `best.offset <` on
+// the left of the second test, with both tests start-first, with the block's size first in the end sum, and pages-first with
+// size-first 40 each (same code); the head flag as `bool const`, `NONE == best.previous`, `!(best.previous != NONE)` and
+// through a named `long previous` 40 each (same code). Main's body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

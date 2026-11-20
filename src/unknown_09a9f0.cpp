@@ -226,7 +226,17 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): r200 unchanged (r123 too). The entry saves EBP instead of EBX for the byte result. The header flag and object reads
+// MiniMax H (11-19, round 95): no new form, no lower score (8): the store between the header test and the object read is what
+// makes this build reload the table's data pointer, and every copy of the index is forwarded, so the two lookups keep sharing
+// one address. The second store removed measures 71 with the word cast and 77 without it (the header test loses its EBP window
+// and the frame changes), the object read through the entity's field or through a copy of the index measures 42 each, and the
+// flagged arm joined into a retest of the stored index measures 55; all restored.
+// MiniMax H (11-20): the false result is now set before the creation call and the true one at the attachment, the entity's index is
+// stored again between the header test and the object read, and the object read's index is a word, so the two addresses are formed
+// independently; the second store is one more than retail makes and the object read masks with movzx where retail masks with and.
+// score 8 (was 49): the entry saves EBX for the byte result as retail does, and the header flag and object addresses are now formed
+// independently with the table's data pointer reloaded. The object read masks its index with movzx where retail masks with and,
+// and the index is stored once more than retail stores it.
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
@@ -951,19 +961,45 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // 77/77/77; both with a shared table local, validity/attachment result 49/78.
 // The two reads still share the scaled address. The attachment-set result shortens to
 // 160 bytes. Original body restored.
+// M3 lane 6 r206 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10 and 0xbb780, matched throughout; control 49;
+// R = retail's shape, bool false first, true after the attach, NONE stored in the flagged else, re-measured 77 at 160 B):
+// the object read through a forced-inline getter that returns NULL for NONE (a join the inliner leaves before CSE) on the
+// long result 64 (185 B: its test is not folded), on R 77 (folded before CSE, lookups shared); the object read through the
+// table's data field viewed as a typed header pointer (`*(s_object_header **)(table + 0x44)`) on the long result 49 and on
+// R 77 (same code each: the two data loads are merged whatever their type); R with a char or byte result 70 / 70 (176 B).
+// M3 lane 5 r215 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10 and 0xbb780, matched throughout; control 49; R =
+// retail's shape, bool false first, true after the attach, NONE stored in the flagged else, re-measured 77 at 160 B). On R:
+// the whole header address returned by value from an inline accessor as a one-pointer aggregate, at both lookups, at the
+// flag test only, at the object read only 77 / 77 / 77 (a computed address in an aggregate is scalar-replaced, unlike the
+// copied data pointer of the 42 form); the flag test through an inline predicate that tests NONE again inside, with a
+// result variable set under the flag test 77, with three returns 77; through an inline header getter that returns NULL
+// for NONE 77; through an inline "usable" predicate (false for NONE, false when flagged) 77; that predicate as the only
+// test with the flagged clear under `else if (object_index != NONE)` 77; the object read through the NULL-for-NONE header
+// getter 77 (all nine the same code as R: every join is folded before CSE). Diagnostics, reverted at once (an unreachable
+// call given a parameter's address keeps it memory-homed; not a keepable form): `f` so 78; `e` and `f` so 53 with the first
+// difference at +0x3a (retail's whole head, `xor bl, bl` and both arguments re-read from their slots; what is left is only
+// the one shared lookup, 16 bytes short); `entity` so 70; all five so 65. So the uncached `e`/`f` and the BL result follow
+// from the two separate lookups, not the other way round.
+// MiniMax G (11-20): the second lookup's index is only independent of the header lookup with the word cast,
+// and that gives retail's `movzx ecx, ax` where retail has `mov ecx, eax; and ecx, 0xffff`; an unsigned-long
+// index folds to the same value as the header's, so both lookups share one index computation (42). What still
+// differs is that instruction, the inner store of the object index that retail does not repeat, and two bytes
+// of padding after the last return.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
     long value = d;
+    bool result = false;
     long object_index = v29(b, info, &value, e, f);
     entity->object_index = object_index;
-    long result = object_index != NONE;
-    if (result)
+    if (object_index != NONE)
     {
         if (!(OBJECT_HEADER(object_index)->flags & 0x10))
         {
-            OBJECT(object_index)->field_d4 = entity->field0;
+            entity->object_index = object_index;
+            OBJECT((word)object_index)->field_d4 = entity->field0;
             object_dispatch_attach_simulation_entity(object_index);
+            result = true;
             if (value)
             {
                 v31(entity->object_index, value, e, f);
@@ -972,7 +1008,6 @@ bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info
         else
         {
             entity->object_index = NONE;
-            result = false;
         }
     }
     return result;
@@ -1388,11 +1423,32 @@ bool c_projectile_type::v8(long a, long b)
 // the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the
 // matched 0xa1f70 offset form with that group offset 12, on it the call's mask from `b` and the flags local declared
 // after the call 12; the 0x400 arm's result bit set before its store 14. Word-read body kept (5).
+// M3 lane 11 r128 (fast with 0xa5e70, matched each time; word read 5, mask control 12), all with the full-width mask: the
+// definition copy without `volatile`, as a one-member aggregate (initialised, member-assigned, or declared after the flags),
+// a one-element array, or a plain local whose address goes to an unused pointer, 53 each (the dead store is removed: no
+// `push ecx`); the base v27 called inline passing `c`, passing the unmasked flags, or a constant size 51 each (its copy
+// takes the incoming slot of `a`; flags ESI, object EDI); the call's result through a `long &` to a named local 12, read
+// through a `long const &` into the result 12, the result declared first and assigned at the call 12, the call's mask in
+// a named local 12, the state through a `byte *` local passed to the call 12. Diagnostics (semantics changed, not kept):
+// the object mask 0xfffe together with the 0x800 arm setting 0x801, 2 (object ESI: breaking both constant pairs does not
+// swap back, so it is no parity effect); the call's mask changed to 0xffff (three uses of that constant) 13, still swapped.
 // M3 lane 6 r202 (fast with 0xa5e70, matched each time; word read 5, mask 12): with the full-width mask, 1 to 32 dead
 // initialised longs ahead of the object (K = 1-6, 8, 10, 12, 14, 16, 20, 24, 28, 32) 12 each, so the pair is no symbol-count
 // tie; a 12-byte group element typed (identifier, flags, value, desired value) through a pointer indexed `[index & 0xffff]` 12,
 // indexed `[(word)index]` 5 (movzx); that typed pointer with the 0x800 test and the NONE test combined 12; the a5e70 call ahead
 // of the object lookup with the typed pointer 18. Word-read body kept (5).
+// M3 lane 6 r213 (fast with 0xa5e70, matched each time; word read 5): with the full-width mask, the group mask written
+// `0xffffu` 12, the group stride written `12u` 12, the 0x800 arm's bit written `0x800u` 12 (suffixes fold: the constant pairs
+// stay shared); the result started at 0 and accumulated (`result |= function_a5e70(...)`) with the mask 12, with the word read
+// 5 (same code).
+// M3 lane 7 r198 (fast with 0xa5e70, matched each time; control 5): the group index masked with an unsigned literal
+// `0xffffu` 12 (the same swap as the mask); `(long)(unsigned short)index` 5 (movzx); with the word read, the object's
+// power through a `real const &` 5, the 0x400 test and compare as nested ifs 5, a `long` flags local 5 (all the same
+// code as the word-read body). All restored.
+// M3 lane 11 r134 (fast with 0xa5e70, 0xa02e0 and 0xa0be0, matched each time; word read 5, mask control 12), all with the
+// full-width mask: the 0x400 arm's bit set as `result |= flags & 0x400` 46; the entry as `&data[(index & 0xffff) * 12]` 12;
+// a `real *` to the state's 0x90 field for the 0x400 test and store 12; the NONE test written `NONE != index` 12; the
+// flags local typed `word` (`(word)b`) 12. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

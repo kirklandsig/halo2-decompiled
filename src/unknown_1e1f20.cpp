@@ -592,6 +592,8 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax B (11-20): no new form, no lower score (236): the head still loads the pool global into EAX where retail keeps it in ECX and holds the scaled actor index in EBX where retail keeps it in EAX, and the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (BLOCKED-BY 0x26ed40, src/unknown_26e370.cpp); the known 216 form holds the definition bit in a byte flag set by one test and read by the next, which is kept only with a byte match; this round's permuter (2 tries, 339.9 s) reaches 205 differing instructions against its baseline of 219 only through a constant-only local and a bool flag set by one test, both banned.
+// MiniMax G (11-20): no new form, no lower score (236): the head still loads the actor pool global into eax where retail keeps it in ecx and holds the scaled actor index in ebx where retail keeps it in eax, and the tail still keeps the pool in edi where retail keeps it in ebp; the body is still 22 bytes short of retail's 980 because retail expands 0x26ed40 into it.
 // score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ. M3 lane 3 r268
 // (fast with 0xf0fd0, 0x1fb360 and the eleven matched callers/neighbours, all MATCH): the prop walk through 0x26be00/
 // 0x26be30 with the view index read through a prop_node_get pointer after the callback 285 (948 bytes); the
@@ -953,6 +955,12 @@ void swarm_leader_detach(long actor_index);
 // 0x1e1a00 -> 0xcbf60 -> 0xcc810 -> 0x1bbdf0 -> 0x1e1a00; with 0x1fb510 emptied, diagnostic, still 297, so 0x1fb360's
 // path decides it); 0x1e1a00's definition moved to the end of its file 297.
 // Permuter on the 4 (600 s): no better variant. Alone on the original body, `value` as bool 288.
+// M3 lane 5 r212 (fast on round 189's full-image list: 0xf0fd0, 0x1fb360, the callers and callees, all as before; control 236
+// [masked 41, exact 82]): `(bool)value` at the 0x203ed0 call 236 (same code); `actor_get(actor_index) != other` 236 (same
+// code); `!unit[0xaa]` 236 (same code); the memory walk through the cached actor pointer 308 (942 B), with a short index 308.
+// Diagnostic (reverted): the memory walk removed 397 (862 B): the head then loads the pool into ECX and the offset into EAX
+// as retail (actor_index moves to EBX), so the walk's shape is what sets the head. Still BLOCKED-BY 0x26ed40 (retail expands
+// it here) and the bool parameter's declaration in src/unknown_1e3920.cpp (avoided this round).
 // M3 lane 7 r189 (fast with 0xf0fd0, 0x1fb360, the ten callers, 0x26be00, 0x26be30, 0x203ed0, 0x1e22d0, 0x26ed40: this list
 // reproduces the full image's allocation; control 236, nothing kept). Re-built lane 13's lead on today's body (file-local
 // forceinline copy of joint_decline called from a `for (short ...)` memory walk with the test through the entry actor, the
@@ -979,6 +987,27 @@ void swarm_leader_detach(long actor_index);
 // (862 bytes), so no part of the lead is a gain without the expanded helper. Still BLOCKED-BY 0x26ed40 for a natural form
 // (marked inline it also expands in 0x1bead0 and 0x26ef70), and on the link-time state for the handler pointer.
 // MiniMax C (11-19): no gain (236, baseline; body restored). The known 216 form holds the definition bit in a byte flag set by the tests and read by the next test, which is kept only with a byte match. What is left is the head: ours loads the pool global and the slot table into other registers than retail (the pool into EAX against retail ECX) and keeps the actor index in EBX against retail EAX.
+// M3 lane 2 r114 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40; control 236), tail forms the
+// list above lacks: the definition test held in a bool from the `&&` expression (retail stores the bit into the dead
+// [esp+0x34] slot before branching, the shape of a named phi) 236 (same code: no store); the definition read from the
+// cached actor instead of a fresh lookup 298 (946 B); the last block through the cached actor 296 (990 B); the last
+// block re-deriving the actor at each of its three uses 251 (980 B, retail's length, aligned 161 / masked 114 against
+// 106 / 65); the bit test spelled `!= NULL` / `!= 0` 236 (same code). In the tail retail keeps NONE in EDI and the pool in
+// EBP after the 0xcbf60 call and reloads the scaled index from +0x10 at each lookup; ours puts the pool in EDI, the index
+// in EBP and compares with -1 immediates. Still BLOCKED-BY 0x26ed40.
+// M3 lane 8 r202 (fast with the nine callers, all MATCH each time; control 236, aligned 110, register-masked 69): every caller is
+// machine 3's, so `value` as bool at the definition and all eight declarations (retail's raw push to 0x203ed0 and low-byte
+// tests) 288 (aligned 108, masked 66); that with the view index re-read after the 0x1e2150 callback and the iterator compared
+// against the cached actor 208 at 958 B but aligned 113, masked 86 (the prop walk hoists the pool's data address; one shifted
+// region re-syncs, so not a real gain), the same through the existing prop_node_get at each use 208 (same code); bool with the
+// re-read 255; bool with the cached compare 327 (926 B, aligned 105, masked 63). Still BLOCKED-BY 0x26ed40.
+// M3 lane 2 r118 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236): the
+// memory walk's entry through the existing element_502424_get 236 (same code); the prop walk's node through the existing
+// prop_node_get view (next_index, view_index) 236 (same code); both 236; the slot loop with a slot pointer local as
+// matched 0x1e23c0 writes it 236 (same code); the prop walk through the 0x26be00/0x26be30 iterator with the node
+// re-derived through prop_node_get after the 0x1e2150 callback (retail's re-read) 285 (948 B). Still BLOCKED-BY
+// 0x26ed40 (expanded in retail, kept a call by its file's inline setting) and by `value` as bool, whose declaration in
+// src/unknown_1e3920.cpp sits in a file another lane holds this round.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

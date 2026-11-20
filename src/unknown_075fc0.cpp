@@ -354,6 +354,29 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // && 1 / local_22 > local_17)` 352 (aligned 189), the same on the 353 form 353 (aligned 190). Left on 352: NONE in ESI and
 // `this` in EDI at entry, the channel base `this + index * 0x528` (0xa8 folded into every field), the 0x76520 result in
 // BL, the window size in EDI, the counter snapshot as two plain loads, and the has-host flag set in its arm (match-only).
+// M3 lane 1 r132 (fast with 0x75910/0x76520/0x765c0/0x77940, all MATCH; control 356): retail's snapshot is two plain
+// loads of the counter and its reset stores the low word it already loaded for the elapsed count and then the high word
+// (no composition). Through the 64-bit view `*(__int64 *)&g_4e6398` (src/unknown_075870.cpp's spelling): snapshot and
+// reset 429 (1330 B, frame 0x30), the snapshot only 431 (1341 B), the reset only 419 (1356 B): with retail's plain copies
+// the body is 39 bytes short, so the composition is hiding missing code elsewhere. Re-measured round 122's
+// `bool local_16 = false;` beside local_7 353 (1370 B, a declaration move, three points); with the 64-bit reset 384.
+// M3 lane 5 r215 (fast with 0x75910, 0x76520, 0x765c0, 0x77940, all MATCH each time; control 356, aligned 245): the payload
+// floor nested under one sign test (`if (local_6 >= 0) { local_33 = local_6 - local_30; if (local_33 <= 48) local_33 = 48; }
+// else local_33 = 0x600;`, retail's single `test edi, edi; jl` with the 0x600 arm last) 402 at 1369 bytes, retail's
+// length (aligned 240, 411 lines: the tail is then retail's, but every later offset moves against the head's 0x38 frame);
+// the same with 0x600 as the initialiser and no else 402 (1369 B, aligned 245); with the floor as a ternary 402 (same code
+// as the first); with the failing branch first 402 (aligned 245); in place on a copy of local_6 402 (same code as the
+// first). Diagnostics, reverted at once (an unreachable call given a local's address keeps it memory-homed; not a keepable
+// form): the connection so 401 at 1369 bytes; the channel pointer so 480 (1419 B); the channel index so 352 (1373 B); the
+// index and the connection 410 (1359 B). None gives retail's entry (NONE in ESI, `this` in EDI, the index in EBP), so the
+// entry's register split is not a memory-homed local.
+// M3 lane 6 r212 (fast with 0x75910 MATCH in every form; control 356). Reading: retail's two zero-register byte stores
+// ahead of the has-host call are local_7 and local_8 (local_16's false comes later with the -1.0 default), so the
+// has-host flag starts false and is set in the call's arm (match-only); the counter snapshot is a plain 8-byte copy that
+// the later low/high reads do not reuse, where ours composes it into EBX:EBP up to the reset. 0x75910 returning bool with
+// local_16 declared beside local_7 and the chained has-host arm 352 (four points, not kept); with the flag form 403; the
+// flag form alone on the bool callee 403; the snapshot and reset through `*(__int64 *)&g_4e6398` 429 (1330 B), with the
+// flag form 419; the flag form with the connection read through link_connection_get at each use 397.
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,

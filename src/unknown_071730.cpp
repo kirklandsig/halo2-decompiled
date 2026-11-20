@@ -65,7 +65,11 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// MiniMax H (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line where this build expands get_data_4a00; the second session state sits in ESI against retail's EAX.
+// MiniMax E (11-20): no new form, no lower score (376): the secondary state still lives in esi where retail keeps it in eax, because 0x5b080 is expanded here and called out of line in retail; 0x5b080 lives in src/unknown_05b040.cpp, which this lane may not edit, so the difference is not reachable from this file.
+// score 376 (was 376; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
 // score 376 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// MiniMax E (11-20): no new form, no lower score (376): the top block still reads the session state into ESI and compares ESI where retail loads it into EAX and compares EAX, and retail's out-of-line call to 0x5b080 for the session data is expanded at the call site in this build, so the two paths diverge from the first difference at 0x6b on.
 // Round 127 (m3 lane 10; fast, kept form confirmed plain with 0x706f0 and 0x5b080 matched): the property value cleared by
 // memset, as the members-ready arm already clears it, 387 -> 376 (kept: retail's seven zero stores are all `mov [..], ecx`
 // from one zero register, where `= {0}` stored the first member as an immediate; 1589 bytes, retail's length; aligned 115 ->
@@ -372,6 +376,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (1589 bytes, aligned 215); the two missing-input tests as one `||` 412; the second and third exits as an else-if chain
 // around the body 387 (same code); the +0x3c pointer read before the clock 377 (1589 bytes but aligned 214, and retail
 // reads it after the clock: a positional gain only).
+// M3 lane 11 r128 (fast with 0x72140/0x71ff0/0x71e00/0x5b060/0x5b080, all MATCH; control 376 at 1589 B, aligned 190 by a
+// sequence-aligned diff, 113 with registers masked): the +0x3c pointer read ahead of the first elapsed time 419 (aligned
+// 213); the data pointer named and then read through a `byte *const &` 376 (same code); the surface description the same
+// way 376 (same code); the second missing-input test as an `else if` 376 (same code); the second session pointer declared
+// after the type test 437 (aligned 203); the +0x3c pointer declared at its first test 427 (aligned 209). Still BLOCKED-BY
+// the build's inline calibration for 0x5b080 (expanded here, called in retail) and by 0x75890 for the two elapsed reads.
 // M3 lane 13 r119 (fast with 0x706f0, 0x5b080 and 0x75890; control 376, aligned 190): retail expands 0x75890 for both
 // elapsed times (the field is loaded before the clock: `mov esi, [ebp + 0xa68]` ahead of the time read, as a call
 // argument is); its file is /Ob1, so it stays a call: through an `inline` or `__forceinline` declaration in this file 474
@@ -390,6 +400,23 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Use the actual owner and progress record layouts together 376.
 // Use the roster, owner, progress, hopper and state record forms together 376.
 // NOT kept: All eight record forms tie at 376 and 1,589 bytes. The reduced preview agrees with the full score and extent and reports six unresolved global references. The secondary state stays in ESI and the data getter still expands.
+// M3 lane 14 r125 (fast with 0x706f0, 0x5b080 and 0x75890, all MATCH; control 376, aligned 190): round 119's lead tried,
+// `inline` on 0x75890's own definition (its /Ob1 file) with both elapsed times written as calls to it: it expands here as
+// retail (start field loaded ahead of the clock) 413 (1589 B, aligned 181); with the property-value clear ahead of the
+// player-count test as well 376 (aligned 184), the clear ahead of the first elapsed time instead 376 (aligned 202); only the
+// first elapsed time through it 376 (aligned 190, the base's code), only the second 376 (aligned 185). 0x5b080 stays
+// expanded in every form, so the secondary state keeps ESI and the zero register stays EAX (retail ECX, re-zeroed after
+// the clock for the two missing-input compares). Both files restored; still BLOCKED-BY 0x5b080's inline calibration.
+// M3 lane 12 r154 (fast with 0x72140/0x71ff0/0x71e00/0x5b080/0x706f0, all MATCH each time; control 376, aligned 331 equal):
+// the second session as a `const &` to the owner's field 473 (1616 B); the data getter's result and the surface lookup's
+// result each bound by `const &` 376/376 (same code); a second session local re-read from the owner for the data getter's
+// call 400 (the getter still expands); the first session as a `const &` 461 (1595 B).
+// M3 lane 3 r277 (fast with 0x5b080, 0x75890 and 0x192e60; control 376): `inline` on 0x75890's definition 376 here (the clock
+// read is written out) but matched 0x776a0 in 0x75890's own file then expands it (102, 680 B), so that lead is closed; with
+// both elapsed times through 0x75890 as well 413; the data getter called ahead of the 0x49c8 getter and 0x192e60 444
+// (1573 B); the two missing-input tests merged into one `||` 412 (1594 B); the data getter declared at its own test 425.
+// The state register follows 0x5b080's expansion: expanded, its state test is CSE'd with the earlier inlined state
+// tests across the 0x192e60 call (ESI); retail calls 0x5b080, so its state dies in EAX. BLOCKED-BY 0x5b080 calibration.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

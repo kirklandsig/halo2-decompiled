@@ -75,9 +75,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_1 * arg_0->k + arg_1->k * local_2 - cross_k * local_0;
 }
 
-// score 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// score 521 (was 521): Earlier scores 558, 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// Earlier at 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // MiniMax C (11-19): no new form, no lower score (558): the success byte still sits at +0x13 where retail has +0x17, the four hit flags sit at 0x20..0x23 against retail's 0x1c..0x1f, the collision copy lands at 0x3c against retail's 0x40, and the comiss operand order and the exit layout still differ.
-// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// Earlier at 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// Earlier at 558 (was 558). earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // M3 lane 10 r119 (fast; control 558): `*arg_5 = 0.0f;` ahead of the minimum's initializer 559; the hit flags as `{ 0 }`
 // 689 (2819 B, block store); the success flag declared after the hit flags 552 (first difference +0x2e; the success store
@@ -701,6 +703,64 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // two angle initialisers in the other order; `(1/range) * minimum` computed twice; the root helper's product as limit x
 // root for rays 1 and 2; the rotated component registers; the tail's first transform (retail multiplies the forward's
 // k, j, i by the first amount before any add).
+// Definition/field-pointer signed offset in the point helper 642/644.
+// definition/field-pointer width per component 552/662.
+// definition/field-pointer assignment with guarded negation 505/505.
+// definition/field-pointer subtraction from zero 642/644.
+// Written-differs at 521. NOT kept: The 505 forms still share the negative width between the last two
+// points and move the range spill to +0x1c instead of retail’s +0x38. The success slot stays four bytes
+// low. The opening body and helper are restored.
+// M3 lane 2 r113 (fast with 0x1e5450/0x30bf0/0x1697c0, all matched; aligned/masked = difflib count / with registers and
+// offsets masked, control 521 [274/86]). LEAD 331 at 2896 B [131/39], plain-confirmed (callers 0x29ab90 286 and 0x29bab0
+// 489 unchanged), patch build/r113/lead-0x2922b0-331.patch in the lane 2 worktree; not kept: it rests on a moved declaration
+// and needs a byte match. Its parts: the second output's fraction written `local_4 / local_6` (the first keeps
+// `(1.0f / local_6) * local_4`: the compiler then forms 1/range once and multiplies it twice, as retail) 649 (2874 B
+// [204/75]); the first output as the division instead 649 (same code); on that the active test positive, `return local_0;`
+// closing its block and `return true;` last 632 [195/68], with the range read first in the block 623; the point array
+// `local_13` declared at function scope 541 (2887 B [138/50]: the half-width is then re-read and negated for each point as
+// retail, because the escaped array may alias the definition only when it is declared outside the block that fills it; a
+// compile-only test of a small copy shows the same rule); every other local of the active block also at function scope 541
+// (same code); the four cross products through the existing cross3f_staged 331 [131/39] (through cross3f 406 at 2872 B;
+// the private helper storing directly 406; its products b-first 541; its locals declared k, j, i 331; cross3f_staged at
+// the first site only 331, at the second or third only 541, at the tail only 543). Without the function-scope array every
+// combination stays above 521 (cross3f_staged alone 654, with the division 639 at 2886 B, plus the positive test 623, the
+// array alone 649). On 331: the angles declared local_18 first 327, by one chained assignment 327; the angle limit declared
+// ahead of the angles 343; diagnostic dead-local phase scan 1-8 331/604/611/403/338/334/331/330. Left on the lead: the
+// second cross takes the global's i and the local's j/k products with commuted operands (ours `mulss xmm1, [esi]`, retail
+// loads the global's component into a fresh register each time), the ray loop's padded entry (a length effect of that
+// block), the root clamp's product limit x root for rays 1 and 2, the rotation components' XMM colouring and the tail's
+// schedule (retail computes the tail cross after the column transform and spills its k at +0x5c).
+// M3 lane 6 r209 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): the range named at the test (`real
+// local_6 = field_48;` read once for the test and every later use) 667 (2852 B); the same with the positive test and the
+// block ending in the common return 664 (2863 B); the output cleared through vector3f_assign 521 (same code); `*arg_5 = 0.0f`
+// after the hit flags 521 (same code); the minimum declared after the hit flags 522. Stacked score lines merged into this note.
+// M3 lane 4 r232 (fast; control 521; all on lane 2 r113's 331 lead, re-measured 331 at 2896 B, 138 aligned rows): the
+// lead's first difference is the second cross only (retail loads each component of the global axis into a fresh register
+// and multiplies it by the cached input component; ours folds the global as the memory operand), and the block after it is
+// the same code two rows early. Redundant paren pairs on the plain reads ahead of it (the range, the input copies, the
+// output clears; one to three pairs) 331 each (same code: with no operator inside they shift nothing, and no arithmetic
+// precedes that cross). The private cross helper at the second site, the third, or both 331 (same code); cross3f at the
+// second 331 (one row moved), at the second and third 406 (2872 B). A one-use pointer local for the global axis at the
+// second cross 582 at 2886 B (retail's length, 138 aligned rows: every product then local-first, retail's are global-first,
+// and the listing runs four rows off from +0x91); that local declared ahead of the basis vectors 373 (2896 B), at the
+// function top 658, after the input copy 599, used for the up fallback as well 582 (same code); the forward pointer set
+// ahead of the crosses and passed to them 598 (2879 B). Body unchanged (the lead is not applied).
+// M3 lane 16 r157 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521; "lead" = lane 2 r113's 331 form, re-measured
+// 331 at 2896 B, aligned/masked 131/43). On the lead: rays 1 and 2 accumulated with `+=` and `-=` 331 (same code); the root
+// assigned inside the product (`limit * (*root = sqrt(...))`) 378 (the root leaves the sqrt argument's slot, still root x
+// limit); 1/2/3 redundant paren pairs around a constant 331 each (same code), around the ray's first product 331/584/572
+// (three pairs give retail's 2886 B with no loop-entry pad, aligned 134, but the second cross then multiplies every product
+// local-first where retail is global-first in all six); the tail's first transform as vector3f_assign arguments 582 (2886 B,
+// aligned 131, the same second-cross state as three pairs; on the kept body 516, under the bar, not kept); the rotation rows
+// as vector3f_assign arguments 450 (2913 B). The lead's aligned differences by block (exact/masked): second cross 10/9, root
+// products 4/2, angle initialisers 2/0, first rotation 25/0 (a pure XMM permutation: retail's i, j, k in XMM1/2/3, ours
+// XMM3/1/2), second rotation 30/7, tail 57/23. The paren count and the tail form move only the second cross and the loop
+// pad; nothing here moved the rotations' registers or the root products.
+// Array ordinal derived from the point cursor with countdown or end test 663/671.
+// Ordinal derived from the hit cursor with countdown or end test 518/643.
+// Paired cursors, ordinal from point or hit with countdown 659/517.
+// Paired cursors, ordinal from hit with do-end or for-end test 639/639.
+// NOT kept: The best form is four points lower at 2865 bytes and leaves the success byte at +0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

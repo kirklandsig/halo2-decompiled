@@ -499,6 +499,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	}
 	return false;
 }
+// MiniMax B (11-20): no new form, no lower score (172): the prologue still differs in one more place - retail interleaves
+// the point's three stores with its pushes (the third component at [esp+0x34] after the first push and the second at
+// [esp+0x38] after three), while this build stores the third component before any push and the second after two, so the
+// BSP in EBX against EBP and the push order still decide the frame's slot heights: BLOCKED-BY 0x11e800.
 // MiniMax I (11-17): no lower score (172): clearing the definition once at its declaration and dropping the else
 // branch's clear measures 208 (726 bytes), so the definition's two clears are not what holds the prologue apart.
 // MiniMax H (11-13): no new form, no lower score (172): retail still saves ebx first and keeps the BSP global in ebx while this build keeps it in ebp and defers the ebp and esi saves, so the prologue's order and the frame's slot heights differ; the promoted 0x11e800 clone still hands its four pointers over in another register order (retail ecx, edx, eax, esi), and that callee lives in another file.
@@ -545,6 +549,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // order and the frame's slot heights differ, and the promoted clone of 0x11e800 still hands its four pointers over in
 // another register order (retail ecx, edx, eax, esi). That callee's body lives in src/unknown_11cb00.cpp, which this
 // lane may not edit: BLOCKED-BY 0x11e800.
+// MiniMax E (11-20): no new form, no lower score (172): the BSP stays in EBP here and the section in EBX where retail
+// keeps the BSP in EBX with the section in its stack home, and the vertex flag is initialised here where retail sets
+// it only when a vertex exists: BLOCKED-BY 0x11e800.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
@@ -802,6 +809,42 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // 726 B (zero still in EBP); on it: definition and section cleared by statements after the declarations 208; the empty
 // count's early return giving `result` 208; `if (!section) return result;` with the loop unnested 212; the count test
 // as `!= 0` around the rest of the arm, no early return 227 (707 B); the section declared as a const pointer 208.
+// m3 lane 11 r130 (fast with 0x14a8e0, 0x14af40 and 0xd47d0, all matched): lane 7 r123's form rebuilt, 208 at 726 B. Why
+// the zero takes EBP: retail's type-1 arm keeps range in EBP across the 0x12de70 call (stored to its home just before the
+// call, reused at the join), so with BSP, cluster, range and the cleared definition every callee-saved register is busy
+// there and no zero register can form; ours spills range at once (EDX) and VC gives the free EBP to the zero used by the
+// section's NULL store, the count test, the section test and the clear. On the 208 form: the cluster indexed straight
+// from the range table with range taken after it 208 (same code); range taken after the call 254 (755 B); the type-3
+// instance read from the collision record 208; the loop index at function scope 208; `section != NULL` with the count
+// test as `!count` returning result 208 (same code each).
+// M3 lane 14 r126 (fast with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH unless noted; control 172 at 733 B, aligned
+// [exact, stack masked, registers masked] 95/77/48; body unchanged). Reading of retail first: 0x16e1b0 takes the section
+// in EBX, so retail loads the section from its home right at that call (`mov ebx, [esp+0x14]`), copies it for the vertex
+// block (`mov eax, ebx; mov eax, [eax+0x3c]`) and reloads the BSP into EBX only after a failed triangle; the range is
+// loaded into EBP at the end of the type-3 arm (`mov ebp, [esp+0x18]`, the type-1 arm jumps past it with EBP still
+// holding it), ahead of the section test. Round 268's lead rebuilt (the getter's result unset on a miss, definition NULL
+// at its declaration, `bool result` after section, unknown18 stored before part_index) 133 at 733 B, 75/68/25: every
+// line left on it is EBP (this build does not use EBP before the loop and pushes it there; retail pushes it in the
+// prologue and gives it to the range from the arms to the loop's first test). New forms, on the control / on that lead:
+// the section's address discarded (`(void)&section;`), and the range's too, 172 / 133 (same code); the section set
+// through an inline helper taking the block info, the sections field's address and `&section` 172 / 133 (same code: the
+// address does not survive the expansion); the same helper as a template over the cluster and the definition 231 (714 B)
+// / 209 (726 B) (the two copies fold into one out-of-line function, even forced inline); the triangle search loop as a
+// forced-inline helper returning true from inside the loop 196 on the lead (735 B, 53/44/32: the section is then loaded
+// at the 0x16e1b0 call as retail, but the result takes BL, the BSP EBP and there are two exits), plain `inline` 642 (the
+// helper stays out of line, 311 B, and 0x14af40 and 0xd47d0 lose their match with the clear inside it); that helper with
+// the clear and the section test inside 223 (714 B); with a `bool *found` out flag 133 (the lead's code); with its own
+// result and a break 247 (741 B). Diagnostics on the lead: one more read of the range ahead of the section test 239
+// (739 B), the loop's first index read there 242 (741 B): the range still does not take EBP (the triangle parameter
+// does). Nothing kept: no form gains on the control, and the lead needs an exact match.
+// M3 lane 6 r212 (fast with 0x14a8e0/0x14af40/0xd47d0, all MATCH; aligned [exact, stack masked, registers masked]): lane
+// 7 r123's lead re-measured 208 at 726 B [19, 19, 15] and its definition/section/result order 133 at 733 B [75, 68, 25];
+// on each, the loop bound written `range->count + range->first` 208/133 (same code); on 133 the range as a const pointer,
+// the loop's first index named before the loop, and the declarations as definition, section, range, result 133 each (same
+// code). In the 133 form EBP is pushed only before the loop, at its first use, so range never holds EBP in the head as in
+// retail.
+// score 172 (was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
+// the range and plane homes, and the four pointers of the 0x11e800 call in another register order.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

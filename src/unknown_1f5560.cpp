@@ -722,6 +722,8 @@ struct s_1f9762
 // test as `count <= index + 1` 4 with `setle al`, the count and the index each through a one-use local 6 and 6,
 // and the count through a one-use local minus one 3 which also rotates the two dot products), while every
 // spelling that keeps the index in EAX decrements the count instead; the committed body (score 1) stands.
+// MiniMax B (11-20): no new form, no lower score (1): the entry test is still the only difference (`dec edx` where retail has `inc eax`); this round's spellings of it - `index + 1 >= count` 4, `count <= index + 1` 4, `index + 1 > count - 1` 131, the same with one side widened 4, the count or the index through a one-use local 6 each and the same with a long local 6 - all leave the increment in EDX, and the permuter (34 tries) found nothing below the baseline.
+// MiniMax I (11-20): no new form, no lower score (1): the entry test is still the only difference - this build decrements the count where retail increments the index; the path-pointer spelling that matches retail's entry test flips the second dot product's i term (score 2).
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
@@ -1469,9 +1471,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
         real inverse = 1.0f / length;
         v->x *= inverse;
         v->y *= inverse;
-        return length;
     }
-    return 0.0f;
+    else
+        length = 0.0f;
+    return length;
 }
 
 // MiniMax S (11-19): no new form, no lower score (239): the body is retail's statement for statement and the whole
@@ -1481,7 +1484,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // the direction's x with both in registers where this build copies the direction's x and takes the facing's y from
 // memory; the side vector's y replaced by the direction's x gives 256, the facing's x and y read into named locals
 // before the test 270, and the helper's multiply order and temporaries 239.
-// score 239 (was 239): The zero and radius have different XMM homes, and unsupported types use a separate return path.
+// score 226 (was 239): since m3 lane 2 r115 the entry (zero XMM1, result copied to XMM0), the three exits and the
+// 0x3c frame are retail's at 1176 bytes against 1173; left are the XMM numbers (radius XMM4 for XMM5, the direction
+// XMM6/XMM2 for XMM2/XMM3), the type-zero arms' shared tail, the lateral spill and the trace call's radius temporary.
+// Before r115: the zero and radius had different XMM homes, and unsupported types used a separate return path.
 // The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
 // M3 lane 14 r112 (fast; control 239, aligned 198, register-masked 85): retail keeps the result in XMM0 from its zero
 // (`movaps xmm0, xmm1`, then the spill to +0x10) up to the type exit, which jumps past the final reload with XMM0 still
@@ -1751,11 +1757,95 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // to the zero register. Retail reaches the same final return from the type exit but past its reload, i.e. it still holds
 // the result in XMM0 from `movaps xmm0, xmm1` at its definition; the `goto done` form (260, retail's 1173 bytes) lacks
 // exactly that copy and reloads.
+// M3 lane 2 r115 (fast with 0x29a190/0x29cbb0, plain-confirmed 239; "aligned" = aligned differing instructions with the
+// XMM numbers masked, 98 on the old body). Kept at the same count, without the `volatile`: the origin read once through
+// its address (a plain read; reading `origin` directly moves it to EDX and loses matched 0x29a190, so its stack home is
+// retail's convention), one return with the sign applied to the result, the side offset as if/else arms (retail has
+// the products in each arm) and the private normalizer with one result variable (`else length = 0.0f; return length;`,
+// which removes the length's reload and store-back). Together 239 at 1176 B, aligned 57: the entry is retail's
+// `xorps xmm1; movaps xmm0, xmm1; store from XMM0`, the type exit jumps past the final reload and the left exit has its
+// own epilogue. Each alone raises the count: plain read 273, normalizer 263, both 281, those with one return 273,
+// normalizer and arms 270, plain read with arms and one return 256; with the volatile read the three together 238.
+// Leads (not kept, each a match-only form): the type-zero LEFT arm assigning center.y before center.x 194 at 1168 B
+// (195 with the volatile read): both type-zero arms are then retail's, the left one sharing the type-one arm's
+// `addss xmm0, [ebx + 4]` and re-testing the flag; a named float local for the trace call's radius argument gives
+// retail's argument block (the value stored to the dead facing home and reloaded) 253 at 1183 B, aligned 42, with the
+// plain read 254, aligned 39 (the side test then loads both facing components as retail); on that, the forward sum
+// accumulated term by term (diagnostic) 265, aligned 32 (lateral spilled to the type home as retail), with the left
+// arm y first 228, aligned 24. Left on that 24: retail loads the type-one difference into registers and multiplies by
+// the negated radius where ours copies the negated radius and multiplies by memory, and the XMM numbers (retail
+// direction XMM2/XMM3, radius XMM5, side XMM6; ours XMM6/XMM2, XMM4, XMM7 in every form below).
+// Same code as their base: the side vector's y written as the direction's x; the existing dot_product2d at the side
+// test, the lateral, the forward or the cosine, each or all; forward's terms in the other order; direction or center
+// declared earlier; side as two statements; perpendicular initialised y first or as statements; product-first centre
+// expressions in any arm. Other forms on the named-local base (253): a scalar side x 271; radius declared before the
+// result 254; radius read after the normalize 295; side.y assigned before side.x 260; the result declared after the
+// normalize 305; `(void)&origin` with direct reads 270; the volatile read after the lookup or after the radius 275;
+// forward's origin dot through the file's stepwise dot 291; side-offset arms y first 253; type-zero not-left arm y
+// first 249; type-one arm y first 248; 31 combinations of the last four and the accumulated forward 196..265 (best
+// positional: left and side arms y first 196). On the kept body: the not-left centre as `target - perpendicular *
+// radius` 200 at 1173 B (another computation, aligned 96); the type-zero arms swapped with `!left` 242; perpendicular
+// at function scope 290.
+// M3 lane 7 r191 (fast with 0x29a190/0x29cbb0; control 239): on the `goto done` type exit (260 re-measured, 1173 B) the
+// normalize block takes XMM0, which retail keeps for the result copy made at its definition (`movaps xmm0, xmm1`); retail's
+// type exit is the only exit that skips the final reload. Forms: that exit as `{ result = 0.0f; goto done; }` 265 (1178 B);
+// with a `real const &` bound to the result and returned at done 260 (same code); the reference alone on the return form 239
+// (same code); the 0x26ccb0 hit as `return result;` with no done label 271 (1191 B); the type exit as `return 0.0f;` 239 (same
+// code). Re-measured round 188's listed forms: the result assigned zero right before the type chain 281, with `goto done` 289.
+// Separate float cosine limit branch 264, double clipped cosine 239, direct clipped expression at the
+// arc helper 239, unsigned angle before result publication 262. Positive or negative initial side
+// radius 243/279, planar side vector 239, shared outgoing cosine dot 239. The zero and radius
+// registers remain different. The radius branches move the extent past retail to 1160 and 1157 bytes.
+// XMM2 still holds zero and XMM7 the radius. The compared lower bound is already
+// reused in XMM6. Named lower bound 239, fraction default one 271, explicit
+// fraction arms 239, named span 239, named excess 239, both 239, named upper
+// bound 239, early lower-range return 283. Default one reaches 1173 bytes at 271.
+// M3 lane 2 r117 (fast with 0x29a190/0x29cbb0; control 239; al = aligned differing instructions exact/XMM numbers
+// masked, 213/57 on this body). Cause of the XMM numbers: retail assumes that a call between the desired vector and
+// the cosine may write the address-taken locals (direction and desired, whose addresses go to the inlined normalizer),
+// so its cosine reads all four components from memory into XMM0/XMM1 and their register lifetimes end before the
+// calls; our link knows that 0x210770, 0x210690 and 0x26ccb0 write only through their own pointer arguments and keeps
+// the four values register candidates across the calls, which reorders the whole vector block. Diagnostics (reverted
+// at once): the cosine without its direction.x term gives the radius XMM5, the side XMM6, the centre XMM4/XMM1 and the
+// lateral spill; `&direction` passed as 0x210690's output 241 (cosine operands from memory); a call to an unresolved
+// function after the transforms 163 at 1168 B (al 108/23); a call there to the out-of-line `inline` normalizer 0x2b400
+// 233 at 1173 B: with either the cosine is retail's instruction for instruction. HELD (needs the coordinator's OK,
+// patch build/r117/held-0x210d10.patch): `inline` on 0x210d10's definition in src/unknown_20fe20.cpp (the axis helper
+// under both transforms) makes 0x210770 and 0x210690 such calls; 0x210d10, 0x210770, 0x210690 and 0x29a190 still match
+// and a full check loses nothing, this function's first difference moves from +0x4f to +0x97 (240 at 1163 B, al
+// 135/48) and 0x299460's entry becomes retail's (its float parameter is no longer preloaded into XMM5; first
+// difference +0x14 -> +0xd0), but both positional counts rise (239 -> 240 here, 0x299460 569 -> 726 at 3349 B of
+// 3372), so it is not kept. Not the cause: `inline` on 0x142700/0x1427f0 (diagnostic, full check) loses 0x210690,
+// 0x210770, 0x14a8e0, 0x168d60 and 0x23d030; the two normalizations through a normalizer defined in another source
+// file and inlined at link time (plain, inline or forced) and pointer-returning inline helpers for the direction give
+// this body's code; the 3-D set-up, both transforms and the trace in one inline function taking the planar points by
+// pointer 194 on the left-arm lead (same code as the lead), with the radius by value 265 (1186 B). Redundant
+// parentheses (new lever here): the number of redundant pairs mod 4 is one global phase of the allocation wherever the
+// pairs stand (one pair = none 239; two 276 at 1187 B; three 268 at 1187 B; four, five, eight = none; three on the
+// lateral sum's first three products 256 at 1184 B with the lateral spilled), and a new used local shifts the phase by
+// one; a 210-sample search over the arm orders x pairs on 25 products x phase on this body found 101 distinct codes,
+// none below r115's left-arm lead (194) and no match. On the HELD base (match-only forms, none matched): the named
+// trace radius 233 at 1173 B (al 119/32); with the left arm y first 239 (al 107/22), its phase 2 138 at 1173 B (al
+// 104/26); the type-one centre as both products and then both sums 237 at 1181 B (al 63/22: the radius XMM5, the
+// inverse length XMM3, the direction XMM2 and the lateral spill are then retail's; left are the side in XMM7 for XMM6,
+// the type-one arm, where retail loads the difference into registers and multiplies by the negated radius held in the
+// zero register, and the left arm's shared tail), a named scale for it 224 (1176 B), through a by-value scale helper
+// 224 (same code), the difference copied into the centre first 230..295; 370 more samples over those spellings, the
+// arm orders, the normalizer's product order and pairs: best 123 (1167 B), best aligned 60, none with the type-one
+// arm's register loads, no match.
+// First difference is the radius in XMM4 versus retail XMM5. Side displacement in a point,
+// twin scalars, planar scaler, or scaled center initializer 226 each. Type-zero/type-one
+// radial scaling 256/252, both radial arms 257, all displacements 248.
+// The shared planar displacement moves both center additions to their common continuation.
+// Native direction vector with fast normalization 248, aggregate direction 248, planar scaling normalizer 248;
+// native desired vector with fast or planar normalization 237 each; both native vectors 257, with shared cosine
+// dot 257, and both with planar normalization and cosine dot 257. NOT kept: the first radius-register difference
+// stays at +0x4f, and the direction/desired cosine still does not recover retail's register allocation.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
 {
-    point2f const *volatile *local_0 = &origin;
+    point2f const *const *local_0 = &origin;
     point2f const *local_1 = *local_0;
     s_actor_view *actor = actor_get(actor_index);
     byte *entry = (byte *)function_1e5450(actor_index, object_get(object_index)->tag_index);
@@ -1764,8 +1854,8 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
     point2f direction;
     vector2d_from_points2d(local_1, target, &direction);
     movement_normalize2d(&direction);
-    point2f side = { 0.0f - direction.y, direction.x };
-    bool left = facing->y * side.y + facing->x * side.x > 0.0f;
+    vector2f side = { 0.0f - direction.y, direction.x };
+    bool left = facing->y * side.j + facing->x * side.i > 0.0f;
     point2f center;
     if (type == 0)
     {
@@ -1788,17 +1878,21 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
         center.x = target->x + difference.x * (0.0f - radius);
         center.y = target->y + difference.y * (0.0f - radius);
     }
-    else return result;
-    real side_radius = left ? 0.0f - radius : radius;
-    center.x += side.x * side_radius;
-    center.y += side.y * side_radius;
-    real lateral = center.y * side.y + center.x * side.x - (local_1->y * side.y + local_1->x * side.x);
+    else goto done;
+    vector2f adjustment;
+    if (left)
+        planar_scale(&side, 0.0f - radius, &adjustment);
+    else
+        planar_scale(&side, radius, &adjustment);
+    center.x += adjustment.i;
+    center.y += adjustment.j;
+    real lateral = center.y * side.j + center.x * side.i - (local_1->y * side.j + local_1->x * side.i);
     real forward = center.y * direction.y + center.x * direction.x - (local_1->x * direction.x + local_1->y * direction.y);
     if (forward > radius * 0.11f)
     {
         real fraction = forward > radius * 1.3f ? 1.0f : (forward - radius * 0.11f) / (radius * 1.189999938f);
         real offset = (fraction * 1.5f - 1.0f) * lateral;
-        point2f desired = { center.x + offset * side.x - local_1->x, center.y + offset * side.y - local_1->y };
+        point2f desired = { center.x + offset * side.i - local_1->x, center.y + offset * side.j - local_1->y };
         real distance = movement_normalize2d(&desired);
         vector3f local_direction = { desired.x, desired.y, 0.0f };
         point3f local_origin = { local_1->x, local_1->y, actor->position.z };
@@ -1816,7 +1910,7 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
         real cosine = desired.x * direction.x + desired.y * direction.y;
         cosine = (real)(cosine > 1.0f ? 1.0 : cosine);
         result = function_50650(cosine);
-        if (left) return 0.0f - result;
+        if (left) result = 0.0f - result;
     }
 done:
     return result;

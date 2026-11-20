@@ -510,6 +510,14 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax A (11-20): no new form, no lower score (102): the sweep and collision homes still sit twelve bytes below
+// retail's (sweep +0x38 and collision +0xa4 against +0x44 and +0xb0), and the reflection block still keeps the
+// perpendicular's i and k in registers and spills its j, where retail keeps the perpendicular's i and j in
+// xmm5/xmm6, spills its k at +0xac and spills the tangent's i and j at +0x38/+0x3c; the dot's three products are
+// still summed in the other order; the velocity read at each use and the dot written as three statements both
+// measure worse, and the permuter made five tries over this body without beating its baseline of 93 differing
+// instructions.
+// MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
@@ -912,6 +920,35 @@ real g_55e618;
 // AC597: Typed placement output; surface construction at call, construction before position, and copy
 // before position; typed output with call construction or early copy; initialization before position
 // with call or early construction: 102/102/242/242/102/242/102/242.
+// M3 lane 12 r155 (fast; control 102): the dot through the existing basis_dot_xzy (i, then k, then j, retail's order)
+// on the velocity copy 103 (same length); on a `vector3f const *velocity = &particle->velocity` pointer (tangent read
+// through it) 194 (1541 B); with the position through real_point3d_set 188 (1536 B); on the copy with the setter 245 (1570 B);
+// the perpendicular through the existing vector3f_scale with the dot as its argument (no named dot): basis_dot_xzy on the
+// pointer 108 (1538 B, frame 0x118: the perpendicular loses its home), with the setter 188 (dot3f the same 188), on the
+// copy 103. All restored.
+// Miss guard, distant-hit guard and both guards score 231/196/225. Miss-first chains with
+// the positive or negative distance test score 231/225. A saved hit with a joined failure
+// store at the tail or before the response scores 141/141. Both guards with a query-local
+// hit record score 274. NOT kept: sweep and collision homes remain displaced and scores rise.
+// Sweep and collision homes still sit twelve bytes below retail. Complete surface offset through
+// scale with separate stores 217, with vector addition 220; aggregate offset and point setter 279;
+// early complete offset 261; scale offset and point setter 279. Sweep workspace reused for tangent
+// 243 or perpendicular 261; displacement workspace reused for perpendicular 102.
+// NOT kept: the contact-offset and sweep reuse forms raise the score. The displacement reuse ties.
+// M3 lane 2 r116 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): perpendicular and tangent declared at the
+// countdown block's top beside displacement and sweep 102 (same code); displacement and sweep declared at the function's
+// top beside the cache 110; keep computed just ahead of the final rows 138 (1534 B, frame changes); the velocity copy as
+// three scalar reals 102 (same code); the final rows as a plain component loop 102 (unrolled, same code). Ours still
+// spills perp.j (+0x48) and tangent.i (+0x100), retail tangent.i/j (+0x38/+0x3c) and perp.k (+0xac).
+// M3 lane 13 r128 (screened with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): the dot as `real const` 102; the velocity
+// copy ahead of the normal pointer and keep 102; the perpendicular as a three-term aggregate initialiser 102 (all the
+// same code); the +0x34 scale ahead of the three final rows 103; the tangent through the existing vector3d_from_points3d
+// (perpendicular to velocity) 102.
+// One vector for the displacement and sweep, seeded from the scaled
+// components or with the shared scaler. Back up and extend per coordinate
+// 247/247. Back up then extend by component stores, the in-place particle
+// scaler or the point setter and shared scaler 246/246 in all three forms.
+// NOT kept: all reach 1541 bytes but leave the sweep and hit record displaced.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

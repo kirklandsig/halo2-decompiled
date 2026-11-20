@@ -2145,6 +2145,29 @@ bool function_17afd0(long effect_index, long value);
 // cluster and the effect index read at each use 101 (NONE and the owner share EBP there, but the availability takes AL and
 // same_view BL); the owner as `if (effect_index == NONE) NONE else lookup` 12 (same code); the false default ahead of the
 // availability with a NONE-defaulted owner 123 (500 B). All restored.
+// M3 lane 11 r132 (fast with 0x174420/0x1751d0; lane 10 r129's one-object LTCG screen rebuilt): retail's allocation (availability
+// BL, same_view on the stack, NONE and the owner sharing EBP) appears only with a false default ahead of the availability and
+// same_view copied from the availability in the owner-ok arm (screen: `= available` 6, `available ? true : false`, `available !=
+// false` and `!!available` 5 each); any constant store there gives the conjunction's allocation (nested `if (available) same_view =
+// true;` 49, the three-way test 49, if/else of the copy 48, an inner if/else of constants 77). Fast: the false default with
+// `same_view = available ? true : false` 98 (496 B: `test bl, bl; setne` where retail stores 1 and 0 on branches, every register
+// retail's), with `available != false` 98; same_view false at the loop body's top set by the three-way test 141 (502 B); `bool
+// same_view = available;` cleared by the owner/view test 56; the true default kept with the copy in an if/else on the owner/view
+// test 56. All restored.
+// M3 lane 1 r135 (fast, control 12; P = the plain conjunction, re-measured 138 at 510 B: availability spilled to a stack
+// byte, the conjunction in BL, NONE in EBX for the walk): the clearing test given an `else same_view = true;` arm 138 (510 B,
+// P's code); a false default with `same_view = available ? true : false` in the owner-ok arm and `false` in its else 121
+// (502 B); the true default with `if (owner fail) false; else same_view = available;` 56 (498 B); `bool same_view =
+// available;` cleared by `owner == NONE || g != owner || !same_view` 119 (501 B); same_view from a forceinline (owner,
+// available) helper with a false result set by the conjunction 141 (513 B), a true result cleared by the test 141 (513 B),
+// an early `return false` then `return available` 56 (498 B); P with same_view declared at function scope 138 (P's code).
+// M3 lane 11 r135 (fast with 0x174420 and 0x1751d0; control 12, aligned 6): a false default ahead of the availability
+// and `same_view = available;` in the owner/view arm 102 (493 B, aligned 6: every register retail's; left are the early
+// false store and the copy's `mov [x], bl` where retail stores 1 and 0 on branches); that copy with the default at the
+// loop body's top 137 (493 B, aligned 6); no default, the owner/view arm copying the availability and an else arm storing
+// false 56; a false default ahead of the availability with `if (available) same_view = true;` nested in the owner/view
+// arm 119 (502 B, register-masked 6: NONE and the owner leave EBP); the copy form with the availability as one
+// conjunction 48 (494 B).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

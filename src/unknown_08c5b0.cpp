@@ -257,6 +257,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // `kind == 1` and availability tests 15; a `bool received = request->kind == 1;` passed to the selector 32; the kind
 // compared with a named enum constant, plain read, 32 (95 B). The identical-arm chain that matched (r104) stays out by
 // the 11-18 ruling: retail shows one compare of the kind, not one per value.
+// M3 lane 11 r129 (fast with 0x8c5b0, MATCH each time; control 4), all with plain reads: the selection as a switch with
+// one case and a default 13 (95 bytes, folded compare), seeded `setting = 1` with a one-case switch 17, the switch written
+// in place on the request's field with the unavailable case falling into the default 19; the selection as an inline const
+// member of the request, called ahead of the index read 30, after it 32 (95 bytes each, folded).
 // M3 lane 14 r119 (fast with 0x8c5b0, MATCH each time; control 4), plain reads (no volatile): the controller index, the
 // controller and its old setting read ahead of the selector, the field passed straight, 31 (95 B); the selector as early
 // returns (`if (kind != 1) return 1; if (!available) return 1;`) 36 (104 B); the changed flag declared first 29 (91 B);
@@ -267,6 +271,29 @@ static inline long bungienet_user_voice_setting(short kind)
 // change test as an inline setter returning `changed`, with the volatile read 4 (same code), with a plain read 32 (95 B).
 // Re-measured: the index read first with the volatile read 5 (request EAX, kind AX: the request dies before the kind
 // loads), with a plain read 32.
+// M3 lane 7 r194 (fast with 0x8c5b0/0x8c660, both MATCH each time), plain reads: `register short kind` 32 (95 B); the
+// availability part as its own inline helper (seeded, `if (available) setting = block;`) called as `kind == 1 ? helper() : 1`
+// 30 (94 B); that helper with early returns under `if (kind == 1) ... else setting = 1;` 32 (95 B); seeded `setting = 1` with
+// `switch (kind) { case 1: if (available) setting = block; break; }` 17 (95 B, `movsx; dec`); the same switch on the field
+// itself with the index read after it 26 (95 B).
+// M3 lane 6 r209 (fast with 0x8c5b0/0x8c660, both MATCH each run), plain reads: the kind copied and passed through a
+// `short const &` to the copy 4 (same code as the volatile read); a second request pointer local for the kind read 32 (95 B);
+// the kind as a `short const &` to the field passed through a second const reference 32 (95 B); the index as a `long const &`
+// to the field with the kind copy through a const reference 23 (99 B); the selector's result stored through a `long &` bound
+// to the setting 32 (95 B).
+// M3 lane 3 r279 (fast with 0x8c5b0/0x8c660, both MATCH): plain reads: a top-level const request pointer 32 (95 B), the compare
+// against `(short)1` 32 (95 B), the selector taking the availability as a bool argument 43 (108 B; with the existing read 43);
+// the controller taken from the real slot array (`&g_54e8e0[index]`, then the view cast) 4 (same code).
+// M3 lane 6 r213 (fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): the kind read by a two-byte memcpy into a
+// plain short (no volatile) 4 (the volatile read's exact code: the load stays unfolded, the pair stays EAX/CX); both
+// fields read by memcpy 4 (same code); the index read first with the memcpy kind 5; plain reads: the kind test as `kind > 0
+// && kind < 2` 32 (103 B, both compares survive), `(word)(kind - 1) == 0` 12 (96 B); an out-of-range kind reset to 0 ahead
+// of the test 45 (111 B, the range compares survive).
+// M3 lane 16 r155 (fast with 0x8c5b0/0x8c660, both MATCH each time; control 4): `bool changed = setting !=
+// old_setting;` with the existing read 25 (91 B: the flag is built with setne); the selector's parameter `short const`
+// 4; the selector `__forceinline` with the existing read 4; the existing read through the parameter's own address
+// (`request_reference`) 4 (same code); a plain read of both fields through one read of the parameter's address 32
+// (95 B, folded compare).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

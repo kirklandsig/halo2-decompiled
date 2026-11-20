@@ -901,10 +901,14 @@ void function_fd740(point3f const *point, byte const *effects, long index, short
 // this function to 66, but the caller's setup then grows (0xfaa60 1234), so the form is reverted. What is left here is the
 // register choice for the four register arguments (ours takes the projectile index in ecx and effect0 in eax where retail takes
 // them in eax and ecx) and the projectile lookup, which this build sinks below the game-state test where retail keeps it above.
+// Matched in a full build with stand-in SDK headers (was 69): the parameters are declared in retail's order (the three
+// effect out-pointers first, then the stack arguments) and the NONE block is grouped as retail has it, the element index
+// is a c_type_47f957 passed on as it is (the caller 0xfaa60 builds it from the material index; a class object lives in
+// memory, so the call's block has one register candidate less and effect2 gets edi), and the projectile is read through
+// a reference-bound local in the game-state test. The caller 0xfaa60 goes 1196 -> 1160.
 // @retail 0xfd7d0
-void function_fd7d0(long object_index, point3f const *point, byte const *effects,
-	long index, long element_index, long *sound0, long *sound1, long *sound2, long *effect0,
-	long *effect1, long *effect2)
+void function_fd7d0(long object_index, long *effect0, long *effect1, long *effect2, point3f const *point,
+	byte const *effects, long index, c_type_47f957 element_index, long *sound0, long *sound1, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
@@ -915,26 +919,27 @@ void function_fd7d0(long object_index, point3f const *point, byte const *effects
 		if (object_index != NONE)
 		{
 			s_projectile *object = PROJECTILE_GET(object_index);
+			s_projectile *const &kept = object;
 
-			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)object + 0xd4) != NONE)
+			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)kept + 0xd4) != NONE)
 				ignore_distance = true;
 		}
-		function_1883e0(effect_index, ignore_distance, point, c_type_47f957(g_47d8e0), c_type_47f957((short)element_index), index, 0, sound0, effect0,
+		function_1883e0(effect_index, ignore_distance, point, c_type_47f957(g_47d8e0), element_index, index, 0, sound0, effect0,
 			sound1, effect1, sound2, effect2);
 		return;
 	}
-	if (sound0)
-		*sound0 = NONE;
 	if (effect0)
 		*effect0 = NONE;
-	if (sound1)
-		*sound1 = NONE;
 	if (effect1)
 		*effect1 = NONE;
-	if (sound2)
-		*sound2 = NONE;
 	if (effect2)
 		*effect2 = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (sound1)
+		*sound1 = NONE;
+	if (sound2)
+		*sound2 = NONE;
 }
 
 /* sticks a projectile to what it hit; location is the hit's s_location, which the
@@ -1195,6 +1200,11 @@ real function_30bf0(vector3f *v);
 // still differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7); retail spills the discriminant
 // base and two_a where this build keeps them in registers, and the forced-speed and time-scale parameters are still read
 // through a pointer to themselves, a form the rules only allow with a match.
+// MiniMax G (11-20): no new form, no lower score (232): the frame is still 0x28 against retail's 0x30, the SSE
+// registers still differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7), retail
+// still has one stack operand more (ret 0x2c against this build's ret 0x28) and spends EDX at entry on the gravity
+// value's address where this build keeps the time-scale pointer, so the parameter order is retail's to declare;
+// what is left of the body is retail's two x87 divisions by two_a and its rounding of the horizontal length.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1512,6 +1522,10 @@ extern vector3f *g_4687ac;
 // start) and its opposite end lands in the side's slots, so this build's 0x48 frame, with the end and the opposite end
 // materialised, cannot be 13 dwords; dropping the end point and computing the offset inline measures 182 to 191 with a 0x3c
 // frame, and the opposite end does not take the side's slots here.
+// MiniMax G (11-20): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, because this
+// build keeps the end point and the opposite end as locals of their own where retail computes the end in registers
+// only and lands the opposite end in the side's slots; the three ray queries still inline 0x16a040, whose defining
+// file is not this lane's: BLOCKED-BY 0x16a040.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1892,6 +1906,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 // writing that body out here would copy another function's code: BLOCKED-BY 0xfbfd0.
 // MiniMax I (11-15): no new form, no lower score (296): retail expands 0xfbfd0 inline after the 0xfbd40 call while this build calls it, so the body is 66 bytes short and everything after the call is shifted; writing that body out here would copy another function's code.
 // MiniMax S (11-15): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand: BLOCKED-BY 0xfbfd0.
+// MiniMax E (11-20): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after
+// the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand: BLOCKED-BY 0xfbfd0.
 // score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
 // higher, so measure this with a big caller such as 0xfaa60 in the check).
 // Round 2 of #1061: statement-by-statement walk against retail: no behaviour difference (every
@@ -1995,6 +2011,11 @@ PRIVATE inline long projectile_object_root(long object_index)
 // MiniMax E (11-17): no new form, no lower score (296): re-measured this round; retail still expands the matched speed setter
 // 0xfbfd0 inline after the 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not write out by hand, so the 66
 // missing bytes and the pool, tag and seat-bit homes behind them stand: BLOCKED-BY 0xfbfd0.
+// MiniMax E (11-19): no new form, no lower score (296; a reduced image built for this function alone measures 359, its
+// layout differing): retail still expands
+// the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not
+// write out by hand, so the missing bytes stand; the first difference is in the prologue, where this build keeps the
+// global pointer in ebp and retail keeps it in edx: BLOCKED-BY 0xfbfd0.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2151,6 +2172,9 @@ real function_17c900(short function_type, real input);
 // normalizer's own callers constrain that helper, so it cannot be spelled differently here.
 // MiniMax I (11-15): no new form, no lower score (348): the frame is retail's 0x30 but the index stays in a register where retail keeps it on the stack, the aim point's stack home is [esp+0x28] here against [esp+0x24] in retail, and the normalization and the rotation are scheduled in another order.
 // MiniMax S (11-15): no new form, no lower score (348): the frame is retail's 0x30 and the body is four bytes long, with the index in EAX where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the shared normalizer's own callers constrain that helper, so it cannot be spelled differently here.
+// MiniMax E (11-20): no new form, no lower score (348): the frame is retail's 0x30 and the body four bytes long, with
+// the index in a register where retail keeps it on the stack and the normalization and the rotation scheduled in
+// another order.
 // score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
 // Earlier 382 (was 382): Frame 0x2c versus 0x30 and index EAX versus stacked index remain.
 // Consistent parameter reorder 382; common exit 382; lead field at every use 376 (six-point gain dropped);
@@ -2308,6 +2332,9 @@ real function_17c900(short function_type, real input);
 // the index in eax where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the
 // only form below 348 writes the salt expression out at both its uses, which the rules forbid, so the shared normalizer's
 // callers pin that helper.
+// MiniMax E (11-19): no new form, no lower score (348, baseline): the prologue still loads the two globals in the
+// opposite order (this build takes the unit table through ecx and edx, retail takes one through eax and the other
+// through ecx), and the shared normalizer still pins the rest of the body.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2774,6 +2801,8 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
    target, its speed curve and gravity, its range, then the line it moves
    along and what that line hits (up to 10 times), its orientation, and at
    the end its detonation or deletion */
+// MiniMax B (11-20): no new form, no lower score (947): retail expands the range check's 0xfaa30 body inline at two of its five uses and emits the call once per arm of the average-speed test, so our five calls stay and our frame remains 0x110 against retail's 0x118; marking that helper inline expands it at all five uses and scores 1093.
+// MiniMax D (11-20): score 1030 (was 1030; the brief's 947 predates main's merge of `inline` on magnitude3d (0x24590), which makes the compiler expand the helper at this function's second use where retail calls 0x24590 out of line): calling that helper through its own address keeps it out of line and scores 972 (4683 bytes against retail's 4682), but the helper's exported copy is then emitted with its pointer in ECX instead of EAX, so 0x24590 (score 3) and 0xe3380 (score 1) lose their matches; not kept.
 // score 946 (was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;
@@ -3489,8 +3518,8 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 	default:
 		goto no_effects;
 	}
-	function_fd7d0(projectile_index, &collision->point, (byte const *)definition, effect_type, material_index,
-		&sounds[0], &sounds[1], &sounds[2], &effects[0], &effects[1], &effects[2]);
+	function_fd7d0(projectile_index, &effects[0], &effects[1], &effects[2], &collision->point, (byte const *)definition,
+		effect_type, c_type_47f957((short)material_index), &sounds[0], &sounds[1], &sounds[2]);
 no_effects:
 
 	if (g_4e6948->mode != 4 && (collision->type == 1 || collision->type == 3) && (collision->unknown58 & 8))

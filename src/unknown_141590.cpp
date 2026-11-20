@@ -118,11 +118,14 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax E (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four (frame 0x20 against 0x24) and the cosine half stays in xmm5 where ours swaps the two; the difference follows the three inlined quaternion_transform_vector calls, and writing that helper's body out is not allowed. The helper written with retail's own term orders (the dot as i,k,j; the i row (cross*2w + v*s) + q*dot; the j/k rows (v*s + q*dot) + cross*2w) compiles to the same 1324 bytes and the same listing, so the compiler reassociates the sums and the source's grouping does not choose them.
+// score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Stacked status lines merged in r192.
+// MiniMax G (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four, and the cosine half stays in XMM5 where ours swaps the two.
 // MiniMax B (11-19): no new form, no lower score (201): the permuter over this body tried three rewrites in 359 s and
 // left the baseline at 195. Retail still keeps five 4-byte cells below the quaternion where ours keeps four, and computes
 // s = 2w*w - 1 above the identity copy while w2 comes after it; writing s as a helper parameter regresses to 302 with
 // frame 0x18, so the body stands.
-// score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // MiniMax A (11-19): no new form, no lower score (201): retail's frame is 0x24 against our 0x20 because retail spills the
 // quadratic term twice (a dead store at [esp+0x18] and a live one at [esp+0x20]) where our third row reuses the cell of
 // the cross term; the dot's associations, the cross terms and the term orders already agree with retail's listing. Tried:
@@ -130,7 +133,7 @@ static inline void quaternion_transform_vector(
 // rows' terms reordered (244), the doubled scalar and the quadratic term passed to the helper (305, frame 0x14), the scale
 // computed before the cross product (240) and the quadratic term associated differently (205) - all worse than the body as
 // it stands, so the body is unchanged.
-// score 201 (was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
+// Earlier status line (201, was 205): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Earlier: Frame 0x1c versus 0x24 and
 // quaternion/cross spill overlap remain.
 // M3 lane 2 r107 (fast = plain 201): retail's 2.0 for the forward dot and w2 is a fresh load after the dot (its first 2.0,
@@ -501,6 +504,27 @@ static inline void quaternion_transform_vector(
 // 287 (1327 B); the clamp testing `cosine` instead of `dot` 201 (same code); the dot assigned to `cosine` directly (no
 // separate dot local) 207 (1321 B). Retail's 2.0 goes to XMM6 and the cosine half to XMM5 (ours XMM5 and XMM4); the repair
 // crosses' product sides differ as before. Body unchanged.
+// M3 lane 7 r192 (fast with 0x11d000, 0x143120, 0x30bf0 and 0x141710, all matched each time; control 201): the helper's m
+// ahead of w2 247 (1317 B, retail's length: m then takes its own register ahead of the copy as retail's s, but w2 is still
+// computed ahead of the copy from the shared 2.0 and stored twice, where retail computes it after the copy with a fresh
+// 2.0); m first, then the dot and the cross terms, w2 last 245 (1312 B); `real w = q->w;` read once for w2 and m 201 (same
+// code), with m first 247 (1317 B); m first with the helper `__forceinline` 247.
+// Cosine half written to the quaternion scalar 208; half-angle product doubled by addition 244;
+// dot doubled after the cross 242; quadratic coefficient centered at one half 316.
+// Identity copied by transform members 353 or by separate axes 421. Direct identity axes
+// with translation before or after rotation 321/290. NOT kept: rotating directly from
+// the identity recovers the frame on the first form but drops the retail block copy.
+// Round 444: Persistent forward/up/left destination pointers 243/243/209, paired forward/up,
+// forward/left, up/left 204/204/199; all three pointers/references 248/248 (reduced control 201).
+// NOT kept: the two-point up/left gain reaches 1317 bytes, but the frame stays 0x20 and the
+// quadratic coefficient still lacks its separate retail spill.
+// The frame remains 0x20 against 0x24 and the quadratic coefficient still lacks its separate spill.
+// Weighted cross/input/quaternion terms named in all rows 280/201/199, pairs 257/250/262,
+// all terms 244, left-associated partial sums 244 at retail length.
+// NOT kept: the two-point gain leaves the frame mismatch.
+// Named double cosine/sine radicands 217/217, both independently or together 201/201.
+// Named double cosine/sine roots 258/258, both 215, and both radicands and roots 210.
+// All keep the 0x20 frame and miss the separate retail transform spill.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1504,9 +1528,71 @@ void function_143250(
 // s21_s2, and the copies move behind it). s21_s2 declared after s7_s2_s21 1104 (10780 B); right after s105_s2_s21 1021
 // (10775 B); beside s21_s35 1299 (10774 B); band three's r6_r3/r6_r0 as `r3 * r6`/`r0 * r6` 939 (same code); band two's r6_r3
 // and r6_r0 written into their four uses 1718 (10752 B). Body unchanged.
+// M3 lane 15 r111 (fast with 0x143250 matched in every form; control 939, `ret 4` on both sides, 214 rows differ once the
+// stack offsets are masked). A symbolic trace of both listings (m3-lane15 build/r111/trace.py and order.py: every xmm
+// and home value as a product of r0..r8 and the roots) gives the row at which each band-three local is first defined:
+// 139 of the 154 are defined in the same order on both sides. The 15 that are not: around band three's copies of
+// band-two products retail defines r4_r2, r6_r4, r3_r2, s105_s2, r6_r5, s7_s105, s105_s2_s21, r6_r1, r6_r2 ... r8_r8, s21_s2
+// (its copies r6_r4 and r6_r5 go through XMM7 ahead of s7_s105, the later ones through XMM6 once s105 is spent), where
+// ours loads s7 into XMM7 twelve rows early, defines s7_s105 first and s21_s2 thirteen rows early; r6_r3_r8 comes after
+// s21_r5 in ours (before it in retail); and retail's order r7_r7_r0, r0_r0_r0, r3_r3_r0, r4_r4_r0 is r0_r0_r0, r7_r7_r0,
+// r4_r4_r0, r3_r3_r0 in ours. Declaration moves taken from that (each kept only with a match, so all restored):
+// r6_r5 declared right after s105_s2 880 (10776 B; masked rows 216); on it s105_r0_r0_r6 after r1_r0_r7 807 (frame
+// 0x300, first difference +0x3b, masked 217), r7_r7_r0 after r0_r0_r0 892, r3_r3_r0 after r1_r1_r0 868, r2_r1 after
+// r5_r4 881, those four together 797 (masked 223), r3_r3_r0 ahead of r4_r4_r0 900, r6_r1 ahead of s105_s2_s21 1484,
+// r6_r4 ahead of s7_s105 1424. On the control: r3_r3_r0 ahead of r4_r4_r0 955; r6_r4 and r6_r5 both ahead of s105_s2
+// 1422; r6_r4 after r4_r2 with r6_r5 after r3_r2 1422; r6_r4 after r4_r2 with r6_r5 after s105_s2 1424; r6_r4 after
+// r4_r2 alone 1423; r6_r4 ahead of r3_r2, r6_r5 after s105_s2 and r6_r1 ahead of s105_s2_s21 1556. The positional
+// count falls with these moves while the masked count does not (214 at best on the control), so they move the homes,
+// not the schedule. 0x143250's parameters in the orders its three call setups could imply, definition, declaration
+// and calls together, the callee matching in each: (n, out, a, b) 939, (n, a, out, b) 936, (a, b, n, out) 935,
+// (a, out, n, b) 936, (out, a, n, b) 939, (a, n, out, b) 936. Body unchanged.
 // First-band matrix carries r0/r1/r4 into the higher-band computations:
 // singles 1736/1739/1657, pairs 1770/1732/1750, all 1782 before or after
 // the order guard. NOT kept: the reloads regress and retail uses independent scalar homes.
+// M3 lane 1 r133 (fast with 0x143250, matched unless said; control 939, 82 rows differ with registers and stack offsets
+// masked). Lead with retail evidence, not kept (4 points, under the bar; build/r133/lead-0x143600-helper-params.patch in the
+// m3-lane1 worktree): 0x143250's parameters declared (n, matrix, coefficients, out) instead of (out, n, matrix,
+// coefficients), definition, declaration and the three calls: 935 with 0x143250 still matching. Retail's three call sites
+// then come out exactly: the out argument's `lea eax` ahead of the matrix push, and the scratch registers ECX/EDX at the
+// 5x5 call and ECX at the 7x7 call (EAX is already taken by out when the two stack arguments are formed; with out
+// declared first ours takes EAX/ECX and EDX there). (n, matrix, out, coefficients) 936 (the lea order only, registers as
+// before); (matrix, n, coefficients, out) and (matrix, coefficients, n, out) 935 (same code); (coefficients, matrix, n,
+// out) 957 with 0x143250 at 4 (the pushes swap). The order of the stores into the matrix is retail's in bands one and
+// three; in band two retail computes entry 18 in place but stores it last, with the call's pushes (after entry 23), which
+// shifts some 45 rows by one: entry 18's statement moved after entry 23 on the lead 1517 (its products move with it); its
+// value named where retail computes it and stored after entry 23 1597 (10747 B: the one-use local is written back into
+// the store); that value held through a reference and stored after entry 23 1221 (10744 B, diagnostic).
+// The home of sqrt(21) is read once more in retail (a memory multiply for s105_s2_s21 and a second
+// load for s21_s2, after the eight copies): ours loads it once into XMM6 for both, so the eight band-two copies go
+// through XMM7 where retail has XMM6; that follows from s7_s105 being scheduled earlier here, a
+// schedule difference like the others (the block is scheduled as a whole, so every remaining difference moves the rest).
+// Body unchanged.
+// The sqrt(21) home and inter-band spill schedule still differ.
+// first mixed-root accumulation 939, later mixed-root accumulation 939, both mixed-root accumulations 939,
+// four root-product accumulations 939, weighted component and square accumulations 939, root-product names 939,
+// separate root assignments 939, axial squares and cubic accumulations 1848.
+// NOT kept: The axial accumulations shrink the frame to 0x2f8 and raise the score. The other forms retain 0x2fc.
+// Second-band axial weight named at first use, with the other products, or by compound multiplication
+// 1231/1296/1231. With named transverse products, transverse accumulations, or named up products
+// 1095/1095/1095. With all four products or the diagonal half-square terms 1226/1226. NOT kept: All
+// eight raise the score and leave the frame four bytes short.
+// Input/output/both coefficient slices advanced after admission 1652/1706/1723.
+// Input/output/both slices advanced after the calls 1625/1725/1701.
+// Shared coefficient offset advanced after admission or the calls 1231/1231.
+// NOT kept: The advancing forms retain the 0x2fc frame and do not recover the displaced scalar homes.
+// Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
+// 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
+// NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
+// The third-band scalar homes still leave the frame one word short. Running sums for paired mixed axial,
+// transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
+// outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
+// NOT kept: the accumulations leave the frame at 0x2fc and either tie or raise the score.
+// capture with matrix store for r1 1740; capture with matrix store for r4 1721;
+// capture with matrix store for r1, r4 1748; capture with matrix store for r0 1717;
+// capture with matrix store for r0, r1 1766; capture with matrix store for r0, r4 1742;
+// capture with matrix store for r0, r1, r4 1788; capture with matrix store for r0, r1, r3, r4, r8 1832.
+// NOT kept: The early matrix stores displace the capture and spill schedule, miss the retail frame and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

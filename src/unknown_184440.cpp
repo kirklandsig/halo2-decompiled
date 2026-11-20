@@ -181,7 +181,11 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
-// score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc (the two cached axis shorts), the head's registers and the
+// score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc, so every later slot sits at another offset;
+// the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI; ours: base in ECX, local_6 in
+// EBX, arg_3 in ESI) and the record and surface pointers' stack homes are exchanged.
+// MiniMax A (11-20): no new form, no lower score (965); the frame is still 0x11d4 against retail's 0x11cc, so the worklist array and every later slot sit at another offset, and retail carries the start surface in edi where this build carries it in esi; the 0x48e70 call sets the rest (BLOCKED-BY, its definition is in another machine's file).
+// Earlier score line: 965 (was 965): the frame is 0x11d4 against retail's 0x11cc (the two cached axis shorts), the head's registers and the
 // record and surface pointers' homes differ (retail keeps both in memory); earlier rounds below, this round's at the end.
 // MiniMax H (11-18): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, and the
 // record and surface records still sit in each other's stack homes where retail keeps the record pointer at +0x98 and
@@ -455,6 +459,18 @@ __forceinline bool function_184448(long arg_0)
 // the entry surface through an element pointer (retail forms its address with a lea and reads +6 through it) 965;
 // the block count named before its compare (retail loads it into EBX first) 965; both 965; the group entry through
 // its own element address 965 (the four are the same code: the pointers are folded away). Body unchanged.
+// M3 lane 1 r131 (fast with 0x9cca0/0x184250; register-masked LCS-aligned counts ours/retail in brackets, base
+// [278/272]): a dead-local scan (K = 1-8, 10, 12, 16 initialised longs at the top, diagnostic) keeps frame 0x11d4 at
+// every K (983/991/980/1011/976/976/964/965/990/980/965), so the frame is not a symbol-count state. Forms: the two
+// projection axes read from g_440b94 at each use with no axis locals (short counters kept) 974 at 4595 B [251/244]:
+// frame 0x11cc as retail, and the NONE record is then an immediate store to its home as retail's; on it the start
+// face through an element pointer 974 (same code); on it the per-face projected bounds declared at the face-loop
+// top 987 [249/241] (their four stores land at +0xa0..+0xac before the flip test, as retail's); on that the face's
+// flag word read once into a long for the plane index and the flip test 986 at retail's 4590 B [249/234] (retail's
+// `movsx` + `test dh, dh`; the loop top is then retail's instruction for instruction but for registers: the list
+// in EDI for retail's ECX, the plane array in ESI for EDI, the face index in EDX for ESI, and the homes); on that a
+// long vertex counter 1020 (4625 B, and 0x9cca0 stops matching in the fast image). Left on the 986 form: the entry
+// takes the start face in EBX (retail EDI) and the list in EDI (retail ECX, homed at +0xe4). Body unchanged.
 // m3 lane 4 r224 (one-object LTCG screen linking the reduced build's objects and the ballast: 0 rows from the full
 // build, 709 aligned from retail, masked 277): the record and surface pointers held in one local aggregate 712 (masked
 // 274; each alone the same code: they are still enregistered); the axes read from g_440b94 at each use (frame 0x11cc as
@@ -465,6 +481,32 @@ __forceinline bool function_184448(long arg_0)
 // 683, all four 681. Every evidence form lowers the aligned count but raises the positional one (the head's registers
 // stay: arg_3 in ebx/esi where retail takes edi, g_4e0348 in ecx where retail uses edx, the record and surface
 // pointers kept in edi/ebx where retail keeps them in their stack homes). Body unchanged.
+// M3 lane 11 r131 (fast with the callers 0x9cca0/0x184060, both MATCH unless said; aligned / register-and-slot-masked
+// counts in brackets, this body [710/278]). The forms retail's bytes show were combined instead of measured one by one.
+// Alone on this body: axis table at each use with a bool sign 988 [688/254]; long vertex count and bounds counter 1008
+// (the callers lose their match: arg_0 moves to a register); bool edge side 981; per-face bounds at the top of the face
+// loop 977; plane transform on three scalars 978; plane word in a long 974; cell bounds as short_rectangle2d 1007.
+// Together: the first and the plane scalars 1015; all but the count and rectangle forms 946 (4575 B); all seven 1002
+// [686/225] (frame 0x11cc, head agrees through instruction 14, callers MATCH); plus long edge indices 992, plus an element
+// pointer for the current vertex 984, plus both 957 [653/212]: there the record and surface pointers leave their
+// callee-saved registers for their stack homes (retail's `mov dword ptr [home], 0`) and the vertex loop agrees with
+// retail but for registers. Plus the else arm assigning the surface list before the record 952 [649/211], the lowest
+// count (not kept: 980 without the moved bounds declaration, and the forms that need no match reach 985, 961 with the
+// float normalizer, 1046 with point scalars, 1012 without the rectangle). On 952: seed before count 952, cursor declared
+// before the bounds loop 952, start-face element pointer 952, lookup spellings (global at each use, named count, one &&
+// test, both) 954/952/952/954; leave-one-out in the order above, then edge indices, vertex pointer: 960/966/970/980/
+// 1022/976/993/979/987. On 957, further toward retail's structure but off its frame (0x11c4): point transform on
+// scalars 1033 [-/206]; neighbour index read before the vertex copy 1012 (callers differ); a found flag for the worklist
+// scan (retail has no index == count test) 960; those three 961 [609/180]; with the normalizer squaring in float 981
+// [612/156] (962 with the else-arm order); with a point2f element pointer for the projection 975 [607/153]. The float
+// normalizer on 957: 962/963 (early return / scale arm first), with the else-arm order 958. Open on 952: arg_3 in EBX
+// where retail takes EDI (then the group table in ESI and its count in EBX; ours EDI/ESI). The 8 bytes the structural
+// form lacks are retail's homes for the inverse spacing and the clamp constants it reloads after each 0x48e70 call:
+// BLOCKED-BY 0x48e70.
+// M3 lane 15 r116 (fast with the callers 0x9cca0/0x184060, both MATCH; control 965): the flipped plane negated with unary
+// minus 965 (same code); the plane copied first and negated in place under the flip test 987 (4602 B), with unary minus 987;
+// the else arm's copy written field by field 1017 (4544 B); the three magnitudes through fabsf 965 (same code), computed
+// k, j, i 965 (same code).
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

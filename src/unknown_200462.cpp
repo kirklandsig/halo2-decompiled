@@ -250,6 +250,28 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // M3 lane 8 r197 (fast with 0x2008fc 0x200891, control 14): both half extents halved as `/ 2` 14; the second x step as
 // `x = product + x` 14; the right corners' x and the lower corners' y written half extent first 14 (all three the same
 // code); the pulse query after the half extents 55 (first difference +0x129); the vertical step as `y = y + 50.0f` 14.
+// M3 lane 3 r274 (fast with 0x2008fc 0x200891, control 14): 1 to 7 dead initialised locals at the top 14 each, and 0 to 7
+// on the bounds-record pointer 12 each (diagnostic, full image: the XMM3/XMM4 pair is not a symbol-count tie); on the
+// bounds-record pointer: both half extents ahead of the pulse query 53, the corner array declared at the draw loop's top 12,
+// each corner's y stored before its x 20.
+// M3 lane 3 r276 (fast with 0x2008fc 0x200891 0x1396c7 0x22a664 0x13927e, control 14): the draw pass's bitmap entry as the
+// bitmap header's typed dimensions element (width/height fields) 14; the draw pass in the typed group/sequence/dimensions
+// idiom of 0x24e9c7 (bounds as a box2f local copied from `sequence->sprites->bounds`, cast at the draw call) 14 (both the
+// same code: the copy source stays ADD); that with the first sprite through a one-use typed pointer 12 (retail's
+// `lea esi, [eax + 8]`; only the XMM3/XMM4 pair left; a one-use pointer, not kept), and with the first pass typed the
+// same way as well 12 (the pair unchanged); the corners as four chained assignments (`[3].x = [0].x = x - half width`
+// and so on) 89 (846 B).
+// M3 lane 1 r135 (fast with 0x2008fc 0x200891, control 14): the whole draw iteration as a forceinline (position, entry,
+// pulse base, definition, bounds, bitmap index, entry index) helper 14; the half extents declared bare ahead of the pulse
+// and assigned after it 14; the stepped position read into `real const` x and y for the eight corner stores 14; the
+// occupied mask as `long` 14 (all four the same code); the first sprite record through a block pointer with named top
+// and bottom edges ahead of the x corners 30 (x and y move to XMM5/XMM6). Diagnostic: dead computed copies of the pulse,
+// of both half extents, or of the first pass's sum, 14 each (extra temporaries do not move the XMM3/XMM4 pair).
+// M3 lane 11 r135 (fast with 0x2008fc 0x200891, control 14; register-masked aligned difference 1, the ADD/LEA copy
+// source alone): both x steps through a forceinline (position, half width, pulse) helper 14; the half extents built in
+// a two-real aggregate and read back into the two locals 14; the first step through a `real &` bound to the running x
+// 14; the first pass's scaled sprite width named where it is computed 14; the first pass's width scale declared ahead
+// of the sprite index 14 (all five the same code).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

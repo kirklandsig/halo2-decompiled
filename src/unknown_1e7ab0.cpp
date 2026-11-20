@@ -189,6 +189,13 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // first and the entries read through the global) all compile to the same code, as do three forms around the call (the
 // lookup before the 0x14de70 call 585, the entry test before the player test 366 and both 274); the rotation is the
 // allocation around the lookup, not the lookup's shape.
+// MiniMax E (11-20): no new form, no lower score (117): the body is still retail's length and the difference is the scratch rotation - the inlined getter's registers (ours table EAX/result ECX, retail ECX/EAX), case 4's parent (ours ECX, retail ESI) and the rotations after it; the parent's register comes from 0xd0590's parameter order, which does not match yet and lives in another file: BLOCKED-BY 0xd0590.
+// MiniMax A (11-20): no new form, no lower score (117): the whole gap starts at the inlined 420-table getter, where retail keeps the table in ECX and the null result in EAX and this build keeps them the other way, and the swap moves every jump displacement from there on; five respellings of the getter (the count in a local, the guard nested, the entries pointer named, the entry tested first, the entry compared against NULL) all compile to the same code (117) and reordering the two tests of the caller costs 366, so the register rotation is the allocator's and not the getter's spelling.
+// MiniMax H (11-20): no new form, no lower score (117): the body is still retail's length and the first difference
+// is still the inlined entry getter's register rotation at +0x31 (this build loads the table global into EAX and the
+// result into ECX, retail loads the table into ECX and the result into EAX); the getter rewritten with an early
+// return measures the same 117, and the rotation is settled by 0xd0590's parameter order in
+// src/unit_object_type.cpp: BLOCKED-BY 0xd0590.
 // score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
 // into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
 // 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter
@@ -557,11 +564,30 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // caller 165 (2312 bytes): the getter is then retail's byte for byte, and the 4 extra bytes are case 4's child test (`test cl, 1`
 // against retail's `test al, 1`, one byte) moving the jump table's alignment pad (three bytes); what is left there is case 4's
 // parent and definition registers and per-case scratch rotations. BLOCKED-BY 0xd0590 stands.
+// M3 lane 6 r205 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0/0x1e6bd0/0x14de70/0x1e8eb0/0x1e7a10/0x1e7a60/0xcbd50; control 117,
+// aligned rows 86 with the 32 jump-table rows): case 4's parent declared at function scope 117; the child walk as
+// `for (function_d0590(&iterator, parent); function_d05c0(&iterator);)` 117; the iterator declared at function scope 117; the
+// parent's object in a named pointer ahead of the definition 117; the blocked flag declared ahead of the iterator 117; the
+// child's seat in a named short for its test and the flags lookup 117 (the same code each). Retail's own call setup (ECX =
+// iterator at 0x1e7db5, then EDX = parent at 0x1e7db9) is the reverse of ours, which is what a declared (object index,
+// iterator) order gives under link-time code generation, so the HELD 0xd0590 order above still stands as the cause.
 // m3 lane 15 r108 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0, all matched each time; control 117): the entry lookup
 // ahead of the player index 585 (first difference +0x3); case 4's parent seat flags read through `seats[seat]` without
 // the seat pointer 456; the definition pointer folded into the seats expression 117 (same code); the seat index typed
 // long 199; the parent re-read from the unit for the iterator call 117 (same code). Case 4's parent stays in ECX
 // because retail's call sets ECX before EDX (0xd0590's declared order), so BLOCKED-BY 0xd0590 stands.
+// M3 lane 5 r214 (fast with 0x1e83c0/0xd0590/0xd05c0/0xdb210/0x1e8d50, all MATCH; control 117): HELD order (0xd0590 as
+// (object_index, iterator) everywhere) re-measured 110; on it the entry through the existing 0x1e8d50 156 (2312 bytes):
+// retail's code through cases 10-14 and 2, then case 4's definition pointer in EDX (retail reuses EAX) and the bit2/bit3
+// temporaries in ECX/EDX (retail EDX/ECX); on that the seat pointer as `seats + seat`, the flag tests nested, the seats
+// read without a definition local 156 each (same code); the flags through `seats[seat]` without the seat pointer 424
+// (2308 bytes, the load folds retail's add). Case 15/18 and later rotations (retail reuses the dying source register
+// for the `lea`) are on main too. Code back to main.
+// M3 lane 14 r129 (fast with 0x1e83c0, which stays matched; control 117): the table getter `__forceinline` 117; the getter
+// reading g_510c94 at each use (no table local) 117; the entry test as `entry != NULL` with `(flag & 1) == 0` 117; the entry
+// local typed const 117; case 4's iterator declared at the top of the case 117 (all five the same code). Retail's case 4
+// keeps the parent in ESI and sets up 0xd0590's arguments iterator first (`lea ecx` then `mov edx, esi`), ours keeps it in
+// ECX and must move it to EDX first: still BLOCKED-BY 0xd0590 (its file is held this round).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

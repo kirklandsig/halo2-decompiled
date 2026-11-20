@@ -1567,6 +1567,14 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // 1 with the selected arm storing only the index 10; the loop's rigid-body index declared ahead of the for 1; the two
 // change vectors declared at the function's top 1; the impulse and velocity-change calls nested under one `if
 // (change_a)` 115 (857 B). Restored.
+// M3 lane 11 r129 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300): R = the change vectors and the loop index as the
+// members of one local record (a, b, index) with a plain `for` and no mirror, re-measured 106 (864 B; the callees MATCH).
+// On R, 0x1d1160's velocity conversion as `_mm_set_ps(0, k, j, i)` 106 (0x1d1160 41, 203 B), as `_mm_setr_ps(i, j, k, 0)`
+// 106 (0x1d1160 42, 203 B), both conversions through `_mm_setr_ps` 106 (0x1d1160 57, 213 B): value intrinsics do not mark
+// the argument written; per-component `_mm_store_ss(&impulse.m_quad.m128_f32[n], _mm_load_ss(&velocity->n))` gives this
+// function its reload (MATCH) but 0x1d1160 204 B (a `lea` per store, 43). Diagnostic re-measured: R with a dead
+// `_mm_load_ss(&velocity->i);` after 0x1d1160's conversion MATCH here and in all four callees (not keepable: a dead
+// statement). Every write-marking form found is either dead code or costs 0x1d1160's bytes.
 // M3 lane 4 r223 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300; control 1). R = the two changes and the index as
 // one local record with a plain `for` and no mirror: 106 (864 B, no reload after the 0x1d1160 call). On R, in 0x1d1160's
 // impulse arm: the self-copy through the velocity re-measured, both MATCH (a dead store, not kept); the velocity's three
@@ -1582,6 +1590,22 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // `_mm_store_ss` into the quad's components: MATCH here, 0x1d1160 43 (204 B: a `lea` per store into the stack quad);
 // read with `_mm_load_ss(...).m128_f32[0]` into set(): MATCH here, 0x1d1160 83 (231 B). Retail stores the components
 // with plain `movss [esp+..]`, so its write mark on the velocity is not a store intrinsic on a local. BLOCKED-BY 0x1d1160.
+// M3 lane 7 r194 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300, all MATCH; control 1): the index reload moved from
+// the impulse arm to the end of every iteration 150 (862 B); the mirror typed `volatile int` 1 and `volatile dword` 1 (same
+// code); `local_0 = i + 1;` ahead of `++i` 11 (870 B); no mirror with a plain saved copy of the index around the impulse
+// call 126 (858 B, the copy folds away). Still BLOCKED-BY 0x1d1160 (its file was on this round's avoid list).
+// M3 lane 6 r209 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300, all MATCH; control 1): the fill loop and the count
+// reading the rigid-body size at each use 1; the fill loop counting straight into the count 140 (872 B); the mirror declared
+// ahead of the index array and zeroed after the label 1; the mirror and the size local renamed 1/1 (all the 1s the same
+// code). Still BLOCKED-BY 0x1d1160 (its file was on this round's avoid list again).
+// M3 lane 2 r119 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300, all MATCH; control 1; 0x1d1160's file was on the
+// avoid list again): the loop test written `count > i` 3 (the latch compare flips too); the mirror assigned from the
+// increment (`local_0 = ++i;`) 1; the index declared ahead of the loop with the mirror initialised from it and a
+// `while` 1; the array element read into a `long const` 1; one function-scope index shared by the fill loop and the
+// main loop 1 (all the 1s the same code). Still BLOCKED-BY 0x1d1160.
+// M3 lane 5 r216 (fast screen; 0x1d1160's file on this round's avoid list again): the loop tested `i != count` 3;
+// `indices[0] = index;` ahead of `count = 1;` 3; `long i = 0; volatile long local_0 = i; while (i < count)` 1 (same code);
+// the fill loop as a while over its own counter 1 (same code); the loop test `0 < count - i` 18 (870 B). Still BLOCKED-BY 0x1d1160.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

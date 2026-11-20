@@ -207,6 +207,24 @@ union s_6ec80
 // same allocation), that with the mask scoped 225; the 0x18 value typed dword 5 (same code); the 0x49c8 getter result
 // named and copied 5 (same code); the mask tested ahead of the machine word 8. Screen only, all in the scoped state 58-61
 // with the mask scoped: the two flags declared ready first, the getter result named, the dword 0x18 value. All restored.
+// M3 lane 11 r132 (one-object LTCG screen of lane 10 r129 rebuilt, then fast with 0x6ec10/0x5b120; base 5): member-style getters
+// for the 0x4da8/0x4db0/0x5dd0/0x4dac reads (the range test in each, no live helper) 5 (same code), with the mask scoped 225; an
+// out-pointer getter for the two blocks with the mask scoped 225; a typed player-record pointer copied from players just before
+// the guard (live across both tests) with the mask scoped 225, that pointer stepped inside the guard 225; the scoped mask tested
+// ahead of the data word re-measured 225. All restored.
+// M3 lane 3 r279 (fast with 0x6ec10/0x5b120, both MATCH; control 5): with the mask scoped in the guard, the two flags declared
+// ahead of every other local 225, the mask tested ahead of the machine word 225, the inverted guard with the clear first 225,
+// the do loop as a plain `while (local_15 < 16)` 348 (1059 B, unrolled); with the mask zeroed before the guard as now, the
+// mask tested ahead of the machine word 8.
+// M3 lane 14 r127 (fast with 0x6ec10/0x5b120; base 5): with the mask scoped in the guard, the guard's arms swapped (`if
+// (!local_2 || !players) local_1 = false; else { ... }`) 225, the two ids preset by one chained `= NONE` 225 (unscoped 7), the
+// two block addresses assigned players first 225 (974 B), the guard testing players first 225; the mask declared and zeroed
+// at the function top 272 (985 B). All restored.
+// M3 lane 14 r130 (fast with 0x6ec10, 0x5b120, 0x5b060, 0x5b0d0; base 5; the mask zeroed in the guard 225), all with the
+// mask zeroed in the guard: the 0x49c8 getter (0x5b060) as one conditional return 229, as `if (live) return value;
+// return NONE;` 229, as an if/else on its result 194 (entry registers retail's, block pointers EBX/EDI swapped from
+// +0x101), each of the three also unmatching the getter (27 B against 26); the bit or-ed as a full assignment 225; one
+// readiness test after the guard repeating the pointer tests (match-only) 226.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

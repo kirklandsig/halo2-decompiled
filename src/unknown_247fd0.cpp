@@ -223,6 +223,16 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// MiniMax G (11-19): no new form, no lower score (334): the gate byte is still read from the folded address
+// (`mov al, byte [eax+edx+2]`) into AL and stored at [esp+0x1f], where retail adds the base to the index first, reads
+// the byte into DL and stores it at [esp+0x1b]; a pointer local for the datum (418), the shift chain in one statement
+// (334) and the pointer local with a combined shift (334) leave the code as it is. The flags word is still loaded into
+// AX (`mov ax, word [ebp+2]`) where retail zeroes EDX and loads DX before the mask, and reading the flags into a dword
+// local first (338) or writing the mask as one expression (334) does not change it. Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (334): retail materializes the datum address with `and eax,0xffff;
+// imul eax,eax,0x190; add eax,edx` and reads the flag byte at `[eax+2]` where ours uses the two-register address
+// `[eax+edx+2]`, and the flag mask chain starts from `xor edx,edx; mov dx, word [ebp+2]` where ours zeroes EAX;
+// binding the datum to a pointer local of its own does not change the code (334). Body unchanged.
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
 // combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // MiniMax E (11-15): no form kept; the permuter's best variant (333 in the reduced image and in the full one)
@@ -905,6 +915,50 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Native flags masked with either velocity selection gives 334/334. Word flags with a
 // bit-position test gives 417/417. NOT kept: the masks reproduce the folded address,
 // and the field and word forms regress. Effect address and gate/settings homes remain.
+// M3 lane 4 r229 (fast with 0x247fd0/0x248cc0, both MATCH; control 334, aligned 188, register-masked 72). The gate's
+// stored bool needs no qualifier: a bool with two definitions gives retail's `shr; and 1; mov [home]; jne` by itself
+// (the store is not removed). Measured: the gate through an inline helper with a result variable (`bool result = false;
+// if (effect_index != NONE) result = effect->flag3; return result;`) 351; that helper with an effect pointer local, with
+// a bool local for the bit as well, with the bit through the file's bool cast 351 each (same code); the gate bool as a
+// plain local started false, set from the effect's bit under the index test and tested after it 351; the same with the
+// byte read, shift and mask kept as on main 351; declared after the index 351 (same code); typed byte 351; with the
+// blend's `1.f - arg_5` named 351. In all of these the gate's instructions are main's exactly; the 17 points come from
+// six later products and sums whose operand sides flip (`movss xmm1, [mem]; mulss xmm1, xmm0` for main's and retail's
+// `movaps xmm1, xmm0; mulss xmm1, [mem]`, and the three position sums loading the field first), so the qualifier on
+// main acts on those sides, not on the gate. Also: the bit tested directly under `local_0 != NONE &&` 394 (no stored
+// bool, first difference +0x2); a block-scoped single-definition bool 395; the age copied through a named real 415
+// (1665 B). The effect address still folds in every form. Body unchanged.
+// M3 lane 14 r123 (fast with 0x247fd0/0x248cc0, both MATCH; control 334): one effect pointer local assigned at the gate and
+// again at the velocity site 334 (same code: both still fold base+index). A plain (not inline) effect getter folds the same in
+// this file (334), is not inlined from 0x249170's /Ob1 file (453, 1617 B), and folds again when LTCG inlines it from a /O2
+// file (334, plain): the unfolded address is no cross-file inline. Lead, match-only: each kept value read through a const
+// reference binding gives retail's unfolded shapes one by one: the gate pointer (`s_effect_datum const *const &`) 355 (the
+// gate is then retail's `add eax, edx; mov dl, [eax + 2]`, only the flag's home differs, +0x1f vs +0x1b); with the velocity
+// pointer bound in an if/else 357 (`add; add 0x30`); with the definition short bound 348 (`mov ax, [reg + 0xc]; test ax,
+// ax`, the definition reloaded into EAX where retail keeps it in EDI); with the bit-4 byte bound 364 (1665 B, `shr al, 4;
+// test al, 1`). Retail's four sites read as values kept apart from the test or load that uses them. Diagnostic (reverted at
+// once): a volatile view of the gate byte still folds base+index (378, 1665 B), so it is the binding, not volatility.
+// Full 0x5c collision output with opening scratch 337, separate blend 406, separate first sample 395,
+// both 444, branch-local collision/ray objects 336, branch-local result plus separate blend/sample 446,
+// independent objects 444, and independent objects with a branch-local query 447.
+// NOT kept: the full result alone enlarges the frame. The retail-frame forms shorten and regress.
+// The effect lookup still folds and the gate byte stays off retail's slot. Original body restored.
+// M3 lane 1 r135 (fast with 0x247fd0/0x248cc0, both MATCH; control 334): the cache test as `local_2 != arg_0->field_50` 333
+// (retail's `cmp ebp, [esi + 0x50]`; 1 lower, under the bar); that with 0x247fd0's store order (field_50, then field_44) 346;
+// with the first draw in `last_sample` (no store of it, as retail) 392. Match-only lead: the gate's effect pointer bound to a
+// `const &` plus the first draw in `last_sample` 317 (1665 B, first difference +0x43: through the gate and the flag update
+// only the flag byte's slot (+0x1f against +0x1b) and the definition's (+0x18 against +0x1c) differ), with the compare order
+// 316, with 0x247fd0's store order too 311 (1665 B; the field_44 AND is then split as retail but the later OR splits too).
+// Round 444. Position/direction/matrix receiver pointers 335/369/355; position-direction,
+// position-matrix, direction-matrix 371/355/359; all pointers or references 359/359.
+// Reduced control 334. NOT kept: regressions. The effect address remains folded and the
+// matrix receiver exchanges the opening EBX and ESI roles.
+// M3 lane 15 r116 (fast with 0x247fd0 and 0x248cc0, both MATCH; control 334, aligned 250): the in-loop lookup through the
+// existing particle_object_for_tag re-measured 371 (1696 B, aligned 215: placement and result slots sit low, so 4-byte
+// displacements); the child reciprocal's two tests as `0.f < x` 334 (same code: the zero still takes XMM2 for retail's XMM1);
+// the scale rows through the existing scale_particle_vector_2b 338 (aligned 275); the velocity pointer as an if/else 334
+// (same code), as `local_0 == NONE ? g_4687a4 : ...` 334 (aligned 266). Compile-only: `_mm_cvtt_ss2si(_mm_load_ss(&x))` and
+// `_mm_cvtt_ss2si(_mm_set_ss(x))` both give an `and esp, -16` frame, so no intrinsic replaces the asm truncation.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

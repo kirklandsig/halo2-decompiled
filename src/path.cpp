@@ -188,9 +188,8 @@ struct s_path_result_view
 	s_path_location_view location;
 };
 
-bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
-	s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
-	s_type_c3b527 const *parent_point, long parent_node_index,
+bool function_26f3f0(long actor_index, s_type_c3b527 const *entry, s_type_f17a25 *state,
+	s_pathfinding_data *pathfinding, long surface_index, s_type_c3b527 const *parent_point, long parent_node_index,
 	long *parent_node_index_out, s_type_c3b527 *out, long *out_node_index);
 void __stdcall function_2c2060(s_type_f17a25 *state, short count, s_path_step_view const *steps,
 	short *out_count, s_path_step_view *out, bool *complete);
@@ -375,6 +374,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax B (11-20): no new form, no lower score (286): the link count's increment split out of the copy's index
+// (`memcpy(&links[link_count], ...)` then `link_count++`) measures 298, so the post-increment form is the better one;
+// retail still counts the links in a dword (`inc dword ptr [esp + 0x1c]`) but compares it as a word (`cmp dx, word ptr
+// [esp + 0x114]`), which this build does not do, and the frame is still 0xe8 against retail's 0xe4.
 // MiniMax A (11-19): no new form, no lower score (286): rebuilt the body on retail's own listing (the rep stosd fill, the
 // split link copy, the walkable bit as a byte local, the dword previous/count homes, the node-index loop variable and the
 // per-arm distance through vector3d_from_points3d/length_sq3f): the two fill loops and the flag form reach retail's frame
@@ -915,6 +918,39 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 396, also with the widened edge bit 396, then with one transition type read 332.
 // NOT kept: the 0xe4 forms lose the matched caller. The single type read recovers that
 // caller and restores the extra frame word. None matches or improves the opening score.
+// m3 lane 11 r130 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, 0x26f3f0; both builds end in `ret 0x24`): lane 1
+// r122's saved two-flag lead applied to this file is 2 again (the latch's two reloads, j from [esp + 0x10] and steps from
+// [esp + 0x104], in the other order). Retail's traversal latch stores `previous` into [esp + 0x10], the slot the scan's j
+// reuses, and previous_index into the margin's slot. On the lead: j declared at function scope, just before the margin
+// and just after it 2/2/2 (same code); the fill loop as main's pointer walk with the if clamp 235; `previous` without
+// its NULL initialiser 378 (1372 B).
+// M3 lane 16 r154 (fast with 0x270930 and 0x210a30, both MATCH; both builds end in `ret 0x24`, frame 0xe8 against 0xe4):
+// lane 11 r95's flag form re-applied to today's file 2 (only `mov ebp, [esp + 0x104]` / `mov edx, [esp + 0x10]` at the
+// scan loop's back edge in the other order; build/r154/lead-270d90-score2.patch in m3-lane16). On that 2: the traversal
+// reading its node through a second pointer local (`current`) instead of reassigning the entry `node` 210 (+0x8c); `usable`
+// declared at the top of the traversal body, outside the capacity test, 2 (same code); the step point copied from a
+// ternary-selected source with the edge-index record as its own `if` 388 (1357 B); the projected point written as three
+// rows in place of vector3f_add_scaled 2 (same code). Body unchanged.
+// scan completed-step count 287, distance-gated completed-step count 287, bounded link ordinal and scan
+// count 366, step frame across conversion 332, indexed fill with completed-step count 295, indexed fill
+// with completion update first 295, coordinate scope before scan latch 295, predecessor edge before point
+// 353, late surface with indexed fill 343, wide edge shift with indexed fill 290, late surface and wide
+// edge shift 344.
+// The 0xe4 prologue returns with indexed fill, but the completion flag still uses +0xf and the body grows.
+// The opening short scan and long link ordinal are restored.
+// M3 lane 8 r204 (fast with 0x270930, MATCH): m3 lane 16's saved two-flag lead re-applied to today's file 2 again (the same
+// back-edge pair). On it: one `short i` shared by the fill loop and the scan loop, declared before the fill loop or at the
+// top 2/2 (same code); the scan index renamed (six names) 2 each (same code); an element pointer for the two-step arm's
+// `steps[node->depth - 1]` 264 (1366 B), for `steps[node->depth]` 299 (1372 B), both 389 (1358 B). Body unchanged.
+// The extra link cursor, predecessor homes and scan-latch reloads still differ.
+// Short-link test-set form with predecessor pointer alone/ordinal alone/unsigned word/parent first
+// 409/297/399/396; scan previous point/current step/both/previous ordinal 366/430/193/230.
+// Common flag and short-link copy 209; increment after copy, signed edge test, parent early and
+// signed edge with split increment 300/210/326/273. Direct link/both predicates/both with parent early 211/339/353.
+// NOT kept: the lower scores retain test-set flags, and the 193 form adds six bytes.
+// score 286 (was 286): frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
+// count compared as a dword where retail compares it as a word, and the node depth read at one address here and
+// through a lea there.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -976,9 +1012,8 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				steps[node->depth - 1].type = node->target.type;
 				steps[node->depth - 1].link_index = (short)node->target.index;
 				s_path_node_key_view *parent = &lookup->nodes[node->parent];
-				function_26f3f0((s_pathfinding_data *)state->pathfinding,
-					node->target.index, &node->entry_point, actor_index, state,
-					&parent->entry_point, parent->node_index, &parent->node_index,
+				function_26f3f0(actor_index, &node->entry_point, state, (s_pathfinding_data *)state->pathfinding,
+					node->target.index, &parent->entry_point, parent->node_index, &parent->node_index,
 					&steps[node->depth - 1].point, &steps[node->depth - 1].node_index);
 			}
 			else if (node->target.type == 2)

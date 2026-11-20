@@ -502,6 +502,12 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// MiniMax G (11-20): no new form, no lower score (270): the rotation dot's term order (k, j, i) regresses this sampler to 324
+// and the other orders compile to the same code, so the dot stays as it is; the frame agrees at 0xa8 and the first difference is
+// still the zero's register (XMM1 against retail's XMM2) at +0x31, and the rest (the trigonometric transfer slots, the candidate
+// spilled between the two rotations and the collision argument schedule) needs the rotation written out at the call site, so the
+// body stands.
+// MiniMax E (11-20): no new form, no lower score (270): the frame agrees (0xa8) and the body is 1431 bytes against retail's 1423; the zero still lands in XMM1 where retail has XMM2, and this build stores it before the three component stores where retail stores it after them - swapping the two declarations measures 267, below the keep bar, and the rest (the trigonometric transfer and the collision argument scheduling) needs the shared helper, which would raise a matched caller's score.
 // score 270 (was 270): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
@@ -969,6 +975,11 @@ struct s_collision_result_buffer_1697c0
 // between normalization and fallback 381; default direction setter 365; pitch fallback setter 331;
 // both initial vector setters 345; best-hit direction setter 350; both best-direction setters 356.
 // NOT kept: the setter forms at the best-direction producers also change the matched sampler caller.
+// M3 lane 7 r194 (fast with 0x2967b0, 0x297660 (MATCH) and 0x297d30 (23); control 270; a one-file link with the files of
+// 0x259d0 and 0x24590 reproduces 1431 B, aligned 198): `if (!test_collision) continue;` 270 (same code); the clear tail
+// copying the candidate out and normalizing the output in place 288 (1426 B); the best tail that way 348 (1400 B, 0x297660
+// 4); both 376 (1388 B, 0x297660 40). One-file link diagnostics: the random state read as a global aggregate member
+// (aligned 368, 1426 B); the axis globals read that way (aligned 198, same code).
 // M3 lane 10 r131 (fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23), 0x297a50, 0x2980d0, 0x298370 and the callees
 // 0x1ffe00/0x1e1f20; control 270). Reading: retail's two transfer slots hold {magnitude, both draws, first sine, second
 // cosine} and {first cosine, second sine}, i.e. the four trig values take slots in the order they are produced (sine
@@ -979,6 +990,15 @@ struct s_collision_result_buffer_1697c0
 // 270 and each rotation in a block of its own 270 (both same code); the pitch rotation through the wrapper and the yaw
 // rotation through the in-place helper with `(real)sin(yaw), (real)cos(yaw)` as arguments 331 (1434 B); the pitch-axis
 // length bound to `real const &` and tested afterwards 282 (1437 B).
+// Direct clear, hit-first, hit with continue and disabled-collision skip without a separate
+// clear carrier, each with unpublished result or positive fraction first at fallback 344/335 each.
+// NOT kept: all raise the score at retail length and change the matched caller. The 344 forms
+// also shrink the 0xa8 frame.
+// M3 lane 12 r158 (h2m fast with 0x297660 (stays matched) and 0x297d30 (stays 23 unless noted); control 270): the
+// header's shared normalize3d in place of the file-local normalizer at the three uses 282 (1437 B); the file-local normalizer
+// in that helper's single-return shape (zero set in an else arm) 282 (1437 B); the rotate helper's dot as `dot3f(axis,
+// vector)` 282 (1437 B; 0x297d30 144); its cross terms with the axis as the left operand of each product 270 (same code);
+// its output rows with the cosine product written `cosine * vector->i` 270 (same code).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1570,6 +1590,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // instructions in the full image; the reduced image cannot score this function at all, as it builds it 36
 // bytes shorter there). The two 0xcafc0 blocks now match again.
 // MiniMax A (11-19), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
+// M3 lane 10 r131 (coordinator, 11-20): MATCH. Retail's failure-block stores (`result = false;` before the trailing
+// `goto done` of cases 2 and 1, `point_valid = result = false` at entry) plus one read of the actor_index parameter
+// through its address for the 0x1ffbd0 argument, which retail reloads from its home there.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1577,7 +1600,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	s_actor_looking_view *actor = actor_looking_get(actor_index);
 	bool result;
 	bool point_valid;
-	result = point_valid = false;
+	point_valid = result = false;
 	point3f point;
 	s_prop_datum *reference;
 	s_type_5cfb45 *state;
@@ -1640,6 +1663,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
 			goto aim_at_point;
 		}
+		result = false;
 		goto done;
 
 	case 1:
@@ -1670,6 +1694,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
 			goto aim_at_point;
 		}
+		result = false;
 		goto done;
 
 	case 3:
@@ -1719,7 +1744,8 @@ aim_at_point:
 		if (weapon_index != NONE)
 		{
 			function_1fc710(actor_index, &origin);
-			result = function_1ffbd0(actor_index, weapon_index, 0, &origin, &point, false, direction,
+			// One volatile read of the parameter: retail reloads actor_index from its stack home for this argument.
+			result = function_1ffbd0(*(long const volatile *)&actor_index, weapon_index, 0, &origin, &point, false, direction,
 				NULL, NULL, NULL, NULL);
 			if (!result)
 			{
@@ -2237,6 +2263,32 @@ struct s_actor_looking_structure_view
 // second product parenthesized (odd counts, 0x296e60 270 -> 282) best 35, with the score's k product too best 22.
 // Natural spellings on the `(i + k)` then `+= j` form (clamp compare reversed, fraction-first clamp product, `0.2f *
 // distance`, constant-first angle, fraction declared before the copy, `best_score < score`) 124 each (same code).
+// M3 lane 5 r213 (fast with 0x296e60 at 270, 0x2980d0 and 0x297660 matched throughout; control 23): the pathfinding lookup
+// through the existing out-of-line getter 0x1fa7f0 (as matched 0x2551f0 calls it) 82; the angle constant as a constant
+// expression (pi / 4, 2 pi / 8, pi * 0.25, (2 pi) / 8) 23 each (same code, folded first); the in-place helper spelled as
+// matched 0x1055b0's (`(1 - cos) * dot3f(vector, axis)`, rows axis-first) 144 (925 B; 0x296e60 282); as matched
+// 0x177d10's (axis k named, cross terms j, k, i, rows axis-first) 99 (0x296e60 362). Dead initialised longs at the top,
+// K = 8..40: states 23/33/39/42/48/74 only. Form x K grid (K = 0..7): the score through dot3f in either argument order
+// 35/32/48/35/45/35/35/35; the 0x1055b0 helper 144 at every K, with the dot3f score 142-147; the 0x177d10 helper 99-108.
+// M3 lane 3 r277 (fast with 0x24590 listed: without it the reduced image drops magnitude3d's expansion and 0x296e60 reads
+// 412 for its 270; plain agreed for the lead): LEAD 6 at 924 B, not kept: the two rotate helpers merged into one taking the
+// angle, with `real dot = dot3f(vector, axis);` ahead of the sine and cosine and `projection = dot * (1 - cos)` (first
+// difference +0x20c: the rotation dot and cross k are retail's; left are cross i's second product, axis j loaded first
+// where retail loads v.k, and the score's i, j, k for retail's i, k, j). It is a statement order picked by score and it
+// raises 0x296e60 270 -> 282 (1437 B; every other function of the file unchanged), so match-only. The merged helper with
+// sine and cosine first 23 (0x296e60 282: the merge alone costs 0x296e60 the 12); without the forceinline declaration 468.
+// On the lead: the dot hand-written or dot3f(axis, vector) 6; `(1 - cos) * dot` 6; rows cosine-first 6; `sine * cross` 6;
+// products written axis-first 6; cosine before sine 24; cross k computed first 33; crosses before the trig 158 (931 B);
+// crosses between the trig and the projection 162 (0x296e60 276); projection named from dot3f then scaled 144; the vector's
+// k cached first (axis_rotation.h's spelling) 244 (894 B); the score written ijk/ikj/jik/kij/kji 8/8/6/8/6 (written order
+// only swaps i and j, k stays last); grouped (i + k) + j, (k + i) + j, j + (i + k) 53 each; two statements (i + k) then
+// += j, (k + i) then += j 53/53; through dot3f either order 145 (928 B); a `direction` pointer for copy, rotation, trace
+// and score 141, without the score 127; FLOOR macro clamps 39 (sum argument, old helper) and 142 (dot3f argument); `0.f <
+// length`, fraction before the copy, `best_score < score`, `score < 0.6f`, the best pair first, implicit angle conversion,
+// `!= 0` trace test 6 each (same code). Diagnostics: dead longs at the top n = 1..7 16/6/6/6/6/6/6; redundant parens
+// on the clamp product 1/2/3 127/129/62, on the angle 88/135/149; permuter (900 s, 93 tries) none below 6. Also on
+// the lead: the axis j read once into a named real 146 (925 B; 0x296e60 339); the axis copied into a local vector 209
+// (0x296e60 368).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -2364,6 +2416,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax A (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the first difference is at the entry, where retail loads the actor table into ECX, keeps the actor index in ESI and the scaled index in EAX (stored to a home at +0x30) and holds the animation state in DI, while this build loads the table into EDX, reloads it into EAX, keeps the actor index in EDI and the animation state in DX; that is the allocator's choice for the values live across the 0x297600 and 0x2973f0 calls, and 0x1fdd90 is still expanded here where retail calls it out of line.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
 // of the call keeps it out of line (r131, below), which still leaves the valid flag's type and the per-path publications.
 // MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
@@ -2405,6 +2458,8 @@ struct s_actor_looking_turn_request
 // /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not make.
 // MiniMax C (11-17): no new form, no lower score (442, was 442): the frame is still 0xcc against retail's 0xc8, and 0x1fdd90 is still inlined here where retail calls it from its only call site (only /Ob1 on its own file keeps it out of line, a build-flag lead): BLOCKED-BY 0x1fdd90.
 // Earlier 442: frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
+// MiniMax E (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the body keeps its own length; the entry's argument order follows 0x1fdd90's convention, which does not match yet, so the call setup cannot be had from this file: BLOCKED-BY 0x1fdd90.
+// score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn
 // block's planar vectors built from members (no `&actor->forward` cast) 450 (2032 B), that with the 0xe70b0
@@ -2587,6 +2642,10 @@ struct s_actor_looking_turn_request
 // 637 (2132 B: the two 0x2967b0 calls no longer share their tail); both 667 (2136 B); both with bool valid 585 (2068 B);
 // the looking output as an if/else 579 (2080 B, re-measured); with bool valid and looking_valid 539 (2004 B). Diagnostic:
 // a second caller of 0x1fdd90 (in its own file or in this one) leaves this site inlined (442).
+// MiniMax G (11-20): no new form, no lower score (442): the frame is still 0xd0 against retail's 0xc8, because
+// this build inlines the matched predicate 0x1fdd90 where retail calls it at +0x198, and the later signed-angle
+// call still takes the horizontal inputs in the opposite order (our comiss xmm1,xmm0 against retail's comiss
+// xmm0,xmm1, with esi and edi swapped): BLOCKED-BY 0x1fdd90's own file.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

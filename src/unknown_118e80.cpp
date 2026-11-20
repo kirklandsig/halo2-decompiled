@@ -219,7 +219,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
-// score 25 (was 51): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
+// score 25 (was 25; 51 before): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
 // copy's registers (BLOCKED-BY 0x1faf80's parameter order, round 121 below), the forward agreement's i product, and the
 // order of the final up/forward loads and stores (retail runs the three up loads first and interleaves the rest, ours
 // pairs each load with its store).
@@ -475,6 +475,59 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // shared setters for all outgoing vectors 100. NOT kept: The best named special-arm addresses gain two, below the
 // retention threshold and short of the exact match required for a one-use pointer. The stack names tie and shared
 // vector setters lengthen the body.
+// M3 lane 6 r206 (fast with 0x1faf80, 0x118700, 0x11f0d0 and 0xe01d0; control 25): 0x1faf80's parameters as (object_index,
+// facing, settings, control, threshold, turn), definition, both declarations and both calls together, re-measured on this
+// body: 12 (the 0x1faf80 call setup and the zero-limit copy become retail's; left the forward agreement's i product and
+// the tail's load/store interleave), but 0x1faf80 matched -> 2 (its `forward.i * facing->i` product loads facing first)
+// and 0xe01d0 537 -> 569: not kept, BLOCKED-BY 0x1faf80 (patch build/r206/lead-1197b0-1faf80-reorder.patch in m3-lane6).
+// On that order, in 0x1faf80: facing `vector3f const *` 2; the i product's operands swapped, or all three, 2 / 2 (the
+// order is canonical); the settings parameter typed `real const *` with no cast local 4 (2 without the reorder);
+// facing renamed a_facing / z_facing 2 / 2; desired declared first, settings first, desired between object and
+// settings, settings assigned after its declaration 2 / 4 / 2 / 2.
+// M3 lane 16 r154 (fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80, 0xe01d0, 0x109290 and
+// 0xbba20; control 25): 0x1faf80's parameters as (object_index, facing, settings, control, threshold, turn) re-measured:
+// here 12 (left: the forward agreement's i product and the tail's copy order), 0x1faf80 2, 0xe01d0 537 -> 569. Retail's
+// 0xe01d0 call (0xe0264-0xe0286) also forms the facing address in EBX only after the settings address, so both retail
+// callers support that order, and 0xe01d0's call site then is retail's but for one push/lea swap: its aligned count falls
+// 442 -> 437 and its length 2726 -> 2722 (retail 2712), so its rise is positional. In 0x1faf80 only the test's i product
+// (`object->forward.i * facing->i`, the one product whose facing operand has no offset) loads facing first; a dead-local
+// phase scan (0..7 unused locals) on four spellings of that test (as now, dot3f either argument order, i/j/k order) gives
+// 2/2/6/4/4/4/4/2, 4/4/6/4/4/6/6/4, 4/4/8/6/4/4/6/4, 2/2/6/4/4/4/4/2: the other float rows move with the phase, the i
+// product never does; the threshold compared through a pointer to it 2. Still BLOCKED-BY 0x1faf80. On this body: the
+// final copies as direct field assignments 25, through memcpy 25 (same code each: the copy order is not the spelling).
+// native settings array 25, native special bit 25, ordinary mode first 247, active angular limits first 25,
+// staged axis admission 25, paired axis snapshots 49, zero-limit branch snapshot 27, const up agreement on
+// native frame 25.
+// The special-call address schedule and the final axis load order still differ.
+// M3 lane 3 r279 (fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80, 0xe01d0, 0x109290 and
+// 0xbba20; control 25): 0x1faf80's (object_index, facing, settings, control, threshold, turn) re-measured 12, 0x1faf80 2. In
+// 0x1faf80 on that order: desired initialised from the facing 82, the squared lengths through length_sq3f 2, the dot as
+// `k + (j + i)` 8, as i, j, k 2, the threshold on the left 2, dot3f either way 4, facing through a const pointer or reference
+// local 2/2. Diagnostics on its definition alone: the i product is right exactly when facing is the 5th or 6th parameter,
+// wherever the threshold sits (two orders with facing 5th right, three with facing 2nd-4th wrong), so it follows facing's
+// position, and retail's call order puts facing 2nd: still BLOCKED-BY 0x1faf80. On this body: the two field pointers dropped
+// 43 (1032 B), that with both agreements named 27, the stores written through `object->` with the pointers kept for the tests
+// 25 (same code). Diagnostic: with NULLs in place of the forward and up in the dispatch call the tail's copies interleave as
+// retail's (79), so their escape into that call is what stops ours hoisting the loads; the dispatch's address parameters typed
+// as const point/vector pointers 25, with the type callback called through that type too 25 (same code each).
+// M3 lane 11 r134 (fast with 0x1faf80, 0xe01d0, 0x118700, 0x11f0d0, 0x11d180, 0x11ce20 and 0xbba20; control 25; body
+// unchanged). 0x1faf80 declared (object_index, facing, settings, control, threshold, turn), the definition, both declarations
+// and both calls together (both retail callers evaluate the facing pointer after the settings: here and in 0xe01d0), re-measured:
+// 12 here, 0x1faf80 2 (its `forward.i * facing->i` product loads facing first), 0xe01d0 537 -> 569. On that order, in
+// 0x1faf80: the agreement through a file-local k-j-i dot helper with the forward pointer first or second 4/4; a `vector3f
+// const *` to the object's forward declared ahead of the test for its three products 203; facing read through a `vector3f
+// const *` cast in the i product 2; the object through object_header_get(...)->object 2; the agreement sum parenthesized
+// as (k + j) + i, with the i product in parentheses, or both, 4/4/6 (the parentheses move one of the left cross products
+// instead; the i product still loads facing first). Still BLOCKED-BY 0x1faf80.
+// M3 lane 14 r130 (fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80, 0xe01d0, 0x109290,
+// 0xbba20; control 25): the tail's up and forward copied into two locals before the stores 49 (1035 B: all six values
+// load into six registers first, where retail pipelines three); `vector3f new_forward, up;` 25; the field pointers
+// declared forward first 25; the dispatch callee taking pointer parameters converted to `long` only at the callback
+// call (all three callers updated) 25 (same code each); the position, dispatch and tail at function scope 74 (1042 B).
+// Diagnostics: the callee passing 0 for forward and up to the callback (LTCG then drops both from our call) keeps the
+// sequential tail copies (79), so the barrier is the address taken at our call, not the callee's use of it; 0 for the
+// forward only at our call (70) lets the forward loads rise above the up stores but not the up loads, and the forward
+// dot's i product stays object-first, so that product's order is not the escape.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1220,6 +1273,16 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax H (11-20): no new form, no lower score (14): retail spills the 0x119bc0 result to a stack byte and pushes the dword; this build keeps it in AL; that needs 0x1c4b00's bool formal in other files.
+// MiniMax D (11-20): no new form, no lower score (14, 1034 bytes): retail's block after the 0x119bc0 call still differs
+// in the tail (retail spills the 0x119bc0 result to a stack byte in the dead definition pointer's slot and pushes the
+// containing dword, this build keeps the result in al) and in the copy's load order (retail hoists the source's first
+// component above the stores through the object pointer, this build does not).
+// A typed vector member at the object's +0x88 (its unknown88, with the old value90 read rewritten as that member's k)
+// and the copy written through the member give byte-identical code (14, 1034 bytes), so the copy's spelling is not what
+// differs; the hoist needs the source local's address known not to escape, and the 0x1c4b00 call makes it escape.
+// Still BLOCKED-BY 0x1c4b00 (bool formal and its 14 declarations, in other lanes' files), 0x1ec690 and 0x1eb6f0.
+// MiniMax S (11-20): no new form, no lower score (14): the tail differs only in the force flag, ours keeping the 0x119bc0 result in al and pushing it zero extended where retail spills it to a byte home and pushes the containing dword, which needs the last parameter of 0x1c4b00 to be a bool in its definition and in its declarations, and those live in other files.
 // score 14 (was 14; 43 before): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
 // and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still
@@ -1503,6 +1566,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // declared bare there 14; a named destination pointer for the +0x88 copy 14 (same code each); the 0x119bc0 result
 // compared `!= false` at its declaration 97 (1039 bytes). Still BLOCKED-BY 0x1c4b00 (its bool formal: declarations in
 // other lanes' files this round) and 0x1ec690 / 0x1eb6f0 (their file is another lane's this round).
+// M3 lane 1 r133 (fast with 0x119bc0, 0x1c4b00, 0x119020, 0x119c10 and 0x118e80, all matched each time; control 14):
+// the member store placed after the +0x88 copy 11 (the byte store then sinks past the force push; a statement order, 3
+// points, not kept); the flag local typed byte 14 (same code); the object's +0x88 as a typed vector member for the copy
+// 14 (same code); the member store after the 0x1c4b00 call 96 (1041 bytes: the flag is kept in a stack byte across the
+// call and read back twice); no member store 90 (re-measure). Still BLOCKED-BY 0x1c4b00's bool formal: three of its 14
+// declarations sit in files other lanes hold this round (src/bipeds.cpp, src/items.cpp, src/unknown_0a76b0.cpp), and by
+// 0x1ec690 (still a disabled draft behind its stub) for the copy's hoisted loads; lane 3 r258's held form (6) stands.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

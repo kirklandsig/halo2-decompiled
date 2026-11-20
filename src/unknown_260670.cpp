@@ -40,6 +40,11 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// MiniMax E (11-20): no new form, no lower score (440): re-read against retail, the frame stays 0x8a8 against retail's
+// 0x8a0 because the two flags take a dword each here and share one dword in retail (our bytes at 0xb and 0x13 against
+// retail's adjacent pair at 0x6 and 0x7), so every home above them and the sorted array's start move with the frame;
+// the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup, and the evaluator loop still tests
+// the running result before the table's proc. The body stands.
 // MiniMax B (11-19): score 440 (tried 416, NOT kept: a 510-entry sort array gives retail's 0x8a0 frame, but callers pass up to
 // 0x200 entries, so it can overflow and only steers the frame): with 510 the first
 // difference moves to +0x3b; the early homes still differ (the reference at 0x18 against retail's 0xc, the two flag bytes
@@ -50,7 +55,7 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // them moves with the frame; the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup
 // and the other way round, and the two flags written as bytes still give each its own home (439, one point,
 // below the bar); all restored.
-// score 440 (was 440): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions.
+// score 440 (was 440): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions (round 196's forms at the end of this note).
 // Earlier 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // MiniMax H (11-18): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and the early
 // homes keep their order (ours the reference at 0x18, the flag bytes at 0xb and 0x13, the index offset at 0x20 and
@@ -251,6 +256,46 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // scratch declared in the sort's block 440 (same frame, aligned 244/233); the two flags renamed so that their names sort
 // together 440 (aligned 246/237: names do not pack them); both 440; the selected index as a long 563 (3084 B); that with
 // the scratch in its block 561. The frame's two extra dwords and the two opposite expansion decisions remain.
+// M3 lane 14 r125 (fast with 0x2605d0, 0x2613d0 and 0x2600a0, all MATCH; control 440, aligned 292, frame 0x8a8): the sort
+// scratch in a block of its own around just the sort call 439 (aligned 291, frame 0x8a4: the scratch then takes retail's
+// dead actor-offset slot, `lea ecx, [esp + 0x2c]` as retail); the scratch declared first 440; the two flags declared the
+// other way round 440; on the tight-block form the flags as `char` 439 (same code). Diagnostic (a grouping form, match-only):
+// on the tight-block form the two flags as one two-element bool array 510 at 3081 B (frame 0x8a0 as retail, aligned 204,
+// first difference +0x2a): retail keeps the two flags as adjacent bytes of one cell (+6/+7), ours spreads them over two
+// cells (+3 and +0xb), which is the frame's last extra dword. Left there: the small-cell order (flags +0/+1 against +6/+7,
+// actor and result swapped) and the two opposite inlining decisions. Body restored.
+// M3 lane 12 r154 (fast with 0x2605d0/0x2613d0/0x2600a0/0x262a30, all MATCH each time; control 440, aligned 538 equal): the
+// tail's path-data select as a NULL-initialised local and an if 442; that with the sort scratch in its own block 441 (frame
+// 0x8a4); the two history resets through one forced-inline helper taking the actor index 628, as a plain inline helper 793
+// (3049 B: one site stays a call); the reported owner as `if (owner == actor_index) owner = NONE;` and one store 632.
+// Diagnostic (reverted): 1, 2 or 3 dead initialised locals ahead of the flags 442 each (the flags keep their own dwords,
+// frame 0x8a8). Read from retail: the unknown40 normalize loads k, j, i and scales `i * inv`, `inv * j`, `k * inv`, where
+// normalize_inline loads k, i, j and scales `inv * i` (both sum (i*i + k*k) + j*j); retail calls 0x271300 at its first two
+// sites and expands it only in the tail.
+// M3 lane 7 r196 (fast with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30, 0x13e2d0, 0x260060, 0x2600e0; control 440 at
+// 3097 B, aligned 246, register/offset-masked 84; body unchanged). Read from retail: 0x262a30 is called out of line only
+// from 0x2623a0 and expanded here (0x13e2d0 called); 0x2600a0 is called from 0x260160 and here at the sorted loop. The
+// expanded owner lookup takes the address of its by-value reference, which is why retail keeps `result` in memory (frame
+// +8, `mov eax, [esp + 0x18]` at the exit) where this build keeps it in EBX. The perpendicular block's remaining operand
+// orders are inside the expansion of 0x11e000 (a contributor's finished function: BLOCKED-BY 0x11e000). Tried: the two
+// flags declared just before the main loop 772 (3081 B, frame 0x8a4: they are then enregistered, retail clears them in
+// memory at entry); the sorted-loop evaluator call and the score test as nested ifs 440 (same code); the sorted loop's
+// two break tests as separate ifs 440 (same code); the range read from the field at both multiplication operands, no
+// `range` local 632; the random path's history reset through the entry `actor` pointer 786 (3049 B: retail recomputes
+// the actor from the saved index offset); `*has_path = false` ahead of the random pick 449. Diagnostic (removed): the
+// owner lookup through a file-private copy of the find-and-copy helper 663 (3191 B: 0x13e2d0 is then expanded here,
+// where the matched 0x140b20 keeps it a call with the same helper shape).
+// M3 lane 1 r137 (H2M_FAST with 0x2605d0/0x2613d0 MATCH, 0x1af160 12): the two flags declared and cleared just before the
+// main loop 772 (3081 bytes, frame 0x8a4: they then pack into one dword at retail's 0x6/0x7, swapped, and the offset and
+// best score take retail's homes; the late clears are positional misses); the sort scratch word in its block 440 (same
+// code); `possible` declared with the flags at the top 491 (3113 bytes); the flags declared after the sort scratch 441;
+// that with selected and best score assigned after them 440. Retail's low frame: a temporary at 0x0, the flags at 0x6/0x7,
+// the result at 0x8; ours a flag at 0x3, the temporary at 0x4, the other flag at 0xb.
+// M3 lane 6 r211 (fast with 0x2605d0/0x2613d0/0x2600a0/0x1af160/0x1e1f20; all matched but 0x1af160, which stays 12;
+// control 440): re-measured the sort scratch in a block of its own around the sort call 439 (frame 0x8a4); on it the two
+// flags in one declaration 439 (same code), declared after the best score 440, the evaluator loop's flag declared at the
+// function's top and set before the loop 439 (same code); on main's body the sorted index as `long index =
+// sorted_indices[i]` 619 (3085 bytes). The flags still take a dword each (+3 and +0xb against retail's +6/+7).
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

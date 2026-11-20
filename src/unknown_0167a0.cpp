@@ -373,6 +373,37 @@ PRIVATE inline byte const *material_parameters(long tag)
 // lookup as a forceinline helper taking its offset by `long const &` in both blocks 5, with the pass lookup the same way
 // 5 (all +0x1a7, same code); the restore block publishing the entry (from the `tables` local) before the tables field
 // 287 (976 bytes). Body unchanged.
+// M3 lane 12 r154 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e): the
+// restore block's entry/chain/pass/range lookup as a forced-inline helper taking the state and the four indices and returning
+// the range 177; the same with a direct entry store and the word read back from the field 176; the helper void, the range
+// reference bound after its call, 5 (same code); one forced-inline pass lookup shared by the first lookup and the restore
+// block (the tables and the entry output by pointer) 294 (981 B), with the entry output bound by reference inside it 295
+// (982 B). Re-measured (diagnostic): the direct entry store 5 at +0x1a7, its only difference `second` loading into ESI
+// right after the entry lea, ahead of the entry store, where retail loads it after the chain and pass bases.
+// M3 lane 3 r276 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the direct entry store re-measured 5 (+0x1a7; its listing: the tables reload already in retail's place, only `second`
+// loads into ESI between the lea and the entry store); on it the restore block's packed and next as fresh `long` locals 5
+// (+0x1a7), the pass stored straight to its field and read back for the range 5 (+0x1a7); on main's body the top block's
+// entry word read without the `entry` local 5 (+0x19e) (all the same code as their bases). Diagnostic (not kept): on the
+// direct form `&second` passed to an out-of-line call at the end of the function 46 (992 B), and `second` still loads
+// ahead of the entry store, so retail's late load is not the store aliasing an exposed parameter. A /GL- compile-only
+// build does not reproduce this block (word loads through `xor edx, edx; mov dx`, other registers).
+// M3 lane 1 r135 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, control 5 at +0x19e): the direct entry
+// store re-measured 5 (+0x1a7: `third` loads into EBX and `fourth` into EDX as soon as each register frees, in both builds,
+// but retail holds `second` behind the entry store and both base loads where ours loads it as soon as the lea frees ESI);
+// on it the three restore bases through a file-scope typed tables header 5 (+0x1a7), the chain and pass bases named after
+// the packed read 5 (+0x1a7); on the reference form the typed header 5 (+0x19e) and the pass published through a
+// reference and read back 5 (+0x19e) (all four their base form's code); the chain lookup in 0x174d0's spelling with the word
+// address kept in a local read through its address (`word *const *chain_reference = &chain;`), on the direct store 177 and
+// on the reference form 179 (974 B, first difference +0x148).
+// M3 lane 2 r119 (fast; control 5 at +0x19e): the restore block's entry computed into the existing `entry` local, stored,
+// and its word read through the local 181 (975 B); the direct entry store with the entry word read inside the chain index
+// (no `packed` assignment) 5 (+0x1a7, the direct form's code); the tables stored and the three bases read through one
+// `byte *&` to the tables field, entry stored directly, 6 (the reload waits for the entry store and `second` loads early,
+// both differences at once); the entry reference typed `word *&` (the store as a word pointer) 5 (+0x19e, main's code);
+// on the direct store the chain base offset by `second` before the packed index 5 (+0x1a7, same code). Reading: the
+// reload of the tables field leaves the entry store's shadow only when that store is written directly (no reference),
+// and `second` then loads as soon as the entry lea frees ESI; retail has the first without the second.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

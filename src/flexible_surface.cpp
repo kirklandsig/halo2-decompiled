@@ -910,6 +910,21 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // accumulator weighted after first cross difference 130, Projection accumulator weighted after all cross
 // differences 154. NOT kept: The 880-byte forms keep the 0x1c frame and score 151 or higher. Later weighting
 // changes matched users 0x1ff360 and 0x2551f0. The opening shared helper and wind body are restored.
+// M3 lane 13 r123 (fast with 0x118140, 0x117c80, 0x2551f0, 0x1ff360, all MATCH; control 130 at 889 B, difflib-aligned 93,
+// register-masked 69; positional counts mislead here, the aligned ones are given). Read from the head: retail's first block
+// runs the seed-pointer load (ESI, before `push edi`), the definition load, the tick loads in EAX, then the seed read in EAX
+// and its multiply before the integer cell is stored for the time product; ours runs the whole time product first. Forms:
+// the fraction drawn before the time product 197 (886 B, aligned 91, masked 67: ESI then loads before `push edi` as retail,
+// but the seed read takes EAX ahead of the tick loads, which move to ECX); the fraction first of all 208 (aligned 128);
+// the time product first of all 153 (aligned 135), then the fraction, then the definition 152 (aligned 118); sine and
+// cosine named before the axis draw, re-measured, 152 (880 B, aligned 101), with the fraction before the time product 196
+// (880 B, aligned 102), with the fraction first 213; a seed pointer local declared first or after the definition 174/174
+// (880 B, aligned 134, masked 63: forwarded to its first use, ESI still loads after the tick loads), with sine and cosine
+// named 171 (aligned 113); the tick count converted and the rate read into locals ahead of the draw, the product after it
+// 201 (885 B: both conversions go through cvtsi2ss); the draw's integer taken first and converted in the angle product 201
+// (880 B, aligned 118), taken after the time product 202; the fraction written inside the angle product 199 (aligned 100);
+// the oscillation before the fraction 201 (aligned 96). No form puts the seed read between the tick loads and the integer
+// cell's store. The frame stays 0x1c: retail's extra cell is the second cross term the rotation spills. Body unchanged.
 // M3 lane 3 r271 (fast with 0x118140, 0x117c80, 0x30bf0, 0x2551f0 and 0x1ff360, all matched each time; control 130,
 // aligned 93, masked 69). What retail's rotation evaluates, read from its listing: the vector's j and k loaded once ahead
 // of the axis copy and its i after the first two dot products; the axis j and k reloaded into registers and its i used
@@ -928,6 +943,26 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 126/126/154; with sine before axis 154/126/154. Early binding with table indexing,
 // axis between sine and cosine or before both 152/152. NOT kept: the sampler's four-point
 // gain is below the bar, and all forms retain the 0x1c frame and later seed load.
+// M3 lane 7 r193 (fast with 0x118140, 0x117c80, 0x30bf0, 0x2551f0, 0x1ff360, all MATCH each time; control 130, aligned 65
+// by difflib with addresses masked): the wind output through the existing vector3f_scale with the strength converted to
+// real 154 at 880 B (aligned 68; one instruction earlier, the tail unchanged); `axis` declared bare ahead of the frame test
+// and assigned in it 130 (same code); the draw inside the angle product after the oscillation (no fraction local) 199 (880
+// B, aligned 69); the fraction declared after the oscillation 201 (885 B, aligned 67); the strength as a real local with
+// float rows 130 (same code). Body unchanged.
+// M3 lane 15 r115 (one-file LTCG harness with 0x30bf0's file linked in: aligned 93 at 889 bytes, as the real build; leads
+// confirmed fast with 0x118140, 0x117c80, 0x30bf0, 0x2551f0, 0x1ff360, all MATCH; control 130). Both ends are a plain `ret`
+// now (the ret 4 in older notes is gone). Fast: the draw's integer named as a dword local and converted in the fraction
+// 154 (880 B, aligned 108); the definition lookup after the angle 156 (888 B, aligned 134); the rotation applied to a
+// local copy of the wind direction stored back after 201 (916 B); the sine named ahead of the axis draw 154 (880 B); the
+// cosine named after the axis draw 155 (880 B, aligned 114). Harness only (same code as the control): the seed pointer
+// named and used for all three draws (876 B, aligned 130); the angle product as oscillation squared first; the time from a
+// named tick count; a pointer local to the wind direction for the rotation and the scale; the axis declared bare and
+// assigned; the axis index named. The frame cell retail has more is its random integer kept apart from the sine (+0x18
+// against +0x14); in every form here the two share a cell.
+// MiniMax E (11-19): no new form, no lower score (130, baseline): the frame is still 0x1c against retail's 0x20 and
+// the random sample still lands at [esp+0x14] against retail's [esp+0x18]; the SSE rotation block still differs in
+// every row's register assignment (retail keeps the seed pointer in ESI from the prologue, this build loads it after
+// the surface lookup), and the function is still 889 bytes against retail's 880.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

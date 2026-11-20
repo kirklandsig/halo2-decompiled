@@ -781,6 +781,8 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-20): no new form, no lower score (43): the datum iterator's data pointer takes EBX where retail takes EDI; its register use comes from include/data_iterator.h and src/unknown_0bad50.cpp.
+// MiniMax S (11-20): no new form, no lower score (43): the unit and its parent stay in EAX and ECX where retail keeps the unit in EBX and the parent in EAX, and the walk's step object is copied twice where retail reloads it; the pinned 0xbaf80 in another file decides the register choice.
 // score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
 // walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
 // place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
@@ -1005,6 +1007,26 @@ bool function_e4050(long object_index);
 // the unit on that path, so the unit dies at the walk) 181 (391 B); a redundant `if (unit != NONE)` around the walk 171
 // (same code); the unit object's parent named after the walk for the test, the 0xbaf40 argument and the exit store 174
 // (402 B).
+// M3 lane 1 r133 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43): a grid
+// of 48 forms of the NONE-root walk from the unit (the order of the walk variable, the root and the unit-object lookup x
+// long unit with a dword walk variable or the reverse x the unit object looked up through the unit or the walk variable x
+// the unit object's parent at each use or named after the walk x the step object named or not): the walk variable and
+// the root both ahead of the unit-object lookup 81 each (433 B, 32 forms: the frame is back and the entry test stays, but
+// the unit keeps EAX, the root takes ESI and the step object EDX), the lookup ahead of either 171 each (405 B, 16 forms).
+// Reading of the 405-byte family: retail gives EAX to the unit object's parent (0xbaf40's argument, read after the walk)
+// and to the 0xaa byte, so its unit goes to EBX and the walk's step object is free to take EAX; ours gives EAX to the
+// unit first and puts the parent and the byte in ECX. BLOCKED-BY 0xbaf80 stands (its pin is in an avoid file this round).
+// M3 lane 2 r117 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43). On
+// the `dword current` NONE-root walk (re-measured 171 at 405 B): the step object named and read through a const
+// reference ahead of the root store 82 (435 B: the frame and the entry test are back, but the step object takes EDI,
+// the unit keeps EAX and the unit object EBX), after the root store 171 (same code as the walk); the same two with a
+// long walk variable 87 (442 B) and 108 (431 B). Diagnostics (reverted at once): a call to an unresolved function in
+// the loop on the dword walk, at the loop top or in the vehicle arm, 145/147 (431 B with the call: the frame returns,
+// the unit keeps EAX and the iterator index EBX), on the kept body 97 (436 B). `inline` on 0xbaf40 and 0xbaf80's
+// definitions (diagnostic, full check) leaves this function unchanged and loses eight matched callers (0x4baf0,
+// 0x3d7f0, 0xc0c80, 0xc3ad0, 0x133790, 0x159690, 0x1ac610, 0x1ced00); `inline` on 0xe4050's loses 0xdd8e0 and 0xe3700
+// and leaves it unchanged: the link-time summaries of those callees are already retail's, so BLOCKED-BY 0xbaf80
+// concerns only its expansion here.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1692,6 +1714,25 @@ static inline s_players_globals *players_globals_14f2e0()
 // 43 (same code); on B the outputs declared bare and filled by `memset(&x, NONE, sizeof(x))` 45 (still `mov`, the two
 // stores swap); one output declared with its NONE ahead of the mode test and the other in the mode block, measured
 // (third person ahead) 243, (tag ahead) 242, both 1031 B.
+// M3 lane 6 r206 (fast with 0xa9440 and 0x14f040, both matched; control 5; compile-only screens agree): with the outputs
+// in the mode block, as one two-long aggregate initialised `{ NONE, NONE }` and reached through two references 52 (1031 B,
+// `mov eax, 0xffffffff`); the mode test as `if (mode == 4) goto done;` (the function's existing exit) with the outputs in a
+// block after it 43 (1031 B); that block plus the reuse flag declared at the top of the result block 62. On the current
+// body: the outputs typed dword (passed as long pointers) 5 (same code); the reuse flag moved to the top of the result
+// block, ahead of the outputs, 25.
+// M3 lane 3 r276 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00, 0x14cad0; control 5): on the current body the outputs in
+// one declaration 5; declared bare and set by `tag_index = third_person = NONE;` ahead of the mode test 5 (both the same
+// code); the outputs declared with their NONE after the kept-unit block, ahead of the result test, 268 (1047 B: the result
+// test is no longer threaded). Compile-only scan with the outputs in the mode block (it reproduces that form's `mov eax,
+// 0xffffffff`): 0 to 12 dead initialised locals at the function top, and 1 to 8 inside the mode block ahead of the
+// outputs, all `mov` (the -1's form is not a symbol-count tie).
+// M3 lane 5 r217 (fast; control 5; B = the outputs in the mode block, re-measured 43 at 1031 B, its one differing
+// instruction `mov eax, 0xffffffff` for retail's `or`). Diagnostics on B, reverted at once: the 0xb8540 stub writing
+// EAX in full before it returns 43 (still `mov`); the delete call through a probe stub returning long 44, returning
+// bool 44 (both `mov`: neither what the callee leaves in EAX nor a result held there frees the byte temp from AL).
+// Forms on B: the options pointer named and read through a const reference for the mode test 43 (same code); a
+// redundant `result = false;` at the top of the result block 66 (1031 B, first difference at +0x0). No retail caller
+// of 0xb8540 (65 of them) reads a value after the call.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2579,6 +2620,8 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax H (11-20): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and 0xccd20 and the first 0x151b80 call are still expanded here.
+// MiniMax S (11-20): no new form, no lower score (701): the frame is 0x4c against retail's 0x74, so retail's larger set of locals is missing and the actions, the flags word and the request copies sit at other offsets.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
 // still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
@@ -2791,6 +2834,27 @@ static __forceinline long player_round_ticks(real value)
 // request); the tick scale read at each use as well 736 (2702 B). Diagnostic, reverted at once: a file-local inline copy of 0xe68c0
 // at the last site 804 at 2842 B, frame 0x6c, the same instructions as two function-scope requests (the listed 804), and the first
 // 0x151b80 call is still expanded, so that expansion does not follow from the caller's size.
+// M3 lane 1 r133 (fast with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0, 0x14e970; control 701; aligned = difflib count of equal
+// rows with registers masked, 552 at the control). Retail evidence at the six flag sets: `or byte ptr [eax + edi + 2], N`
+// is followed by `add eax, edi` (the player pointer formed, unused at the four 0x10 sets), and at the two 0x20 sets the
+// expanded 0x1520f0 body reads the user index through that pointer (`mov ax, [eax + 0x28]`) with no second load of the
+// pool's data. Ours forms a dead `lea eax, [.. + edi + 2]` and reloads the data for the view clear. Not kept (no gain in
+// the count while the frame and the expansions stand): each flag set through a named player pointer in its own block
+// (`s_player *flagged = player_get(player_index); flagged->flags_word |= N;`) 702 (2732 B; retail's `or`/`add` pairs at
+// the four 0x10 sets; aligned 552); that with the view-clear helper taking the pointer at the 0x20 sets 701 (2720 B: no
+// reload, as retail, but the view lookup then reads +0xa2 ahead of forming the view address as 0x1520f0 itself does;
+// aligned 531); that with the candidate written `input + 0x28` at each call 705 (2722 B, aligned 556, the closest
+// opening so far); the function-scope `player` reassigned at each set 725 (2746 B); the candidate at each call alone
+// 708 (2742 B, re-measure, aligned 554). With those forms ours is 18 to 20 bytes short of retail, so the present equal
+// length hides that many bytes owed to the blockers (0x151b80 and 0xccd20 expanded here, 0xe68c0 not). Left in the
+// opening on the 705 form: retail keeps the unit's scaled index in EBX (pushed at entry, stored to its own home) and the
+// 0xfffd mask in ESI; ours keeps the mask in EBX. BLOCKED-BY 0x151b80, 0xccd20 and 0xe68c0 as before.
+// M3 lane 2 r117 (fast with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0, 0x14e970; control 701, aligned 708,
+// register-masked 270): `idle = rest = 0;` in the negative arm 701 (same code); one function-scope `weapon` for the
+// 0x60 block and the read after it 701 (same code); the parent and the seat tested on the fields with both locals read
+// inside the block 701 (aligned 694); the +0x214 read of the two-slot arm through `current` 703 (2736 B); the latch's
+// node stored ahead of its target 702 (2741 B). `inline` on 0xe4050's definition (diagnostic, full check) leaves this
+// function unchanged. BLOCKED-BY 0x151b80, 0xccd20 and 0xe68c0 as before.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3187,6 +3251,8 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax H (11-20): no new form, no lower score (103): retail materialises NONE in EDX after loop 1's call and reuses it; ours uses immediates and loads the last unit into EBP.
+// MiniMax S (11-20): no new form, no lower score (103): retail keeps the globals pointer in ESI and the countdown in EAX from one global load where ours loads a second global and keeps the last unit in EBP; the 0xb8540 and 0xb7b40 stubs still hide the writes to g_4e8c20.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
 // function where retail loads it into ESI and reloads it after the busy check and again before the
 // final store, and the two loops swap the datum and unit registers with it; the reduced image
@@ -3466,6 +3532,23 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // MiniMax C (11-19): no new form, no lower score (103): retail's loop 1 steps the pool itself, with the pool in EBX, the
 // index in EBP and no store of the iterator's data field before it, while ours keeps the shared iterator; writing that
 // step into the loop does not reach retail's shape either (the reduced image 214 against 193, the plain check 103).
+// M3 lane 1 r133 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40, every listed callee as in the baseline; control
+// 103): retail stores the iterator's data field once, in loop 2's set-up; ours stores it ahead of loop 1 and again there.
+// Diagnostic, not kept: loop 1 stepping the pool local with an index local of its own through a second inline step
+// helper (pool, index, iterator), storing only the datum and the datum index, 141 (611 B: the store ahead of loop 1 goes
+// and the last unit's NONE store takes its place as in retail, but the globals pointer keeps EDI and the rows shift).
+// Same code as the body: the final store under `if (!failed)`; the iterator declared ahead of the last unit and its
+// position; `globals->unknown9e == false`; loop 2's set-up with the data field stored last. BLOCKED-BY 0xb8540 stands.
+// M3 lane 2 r117 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40; control 103, aligned 79, register-masked
+// 26). Diagnostics (reverted at once): a call to an unresolved function after loop 2 gives 94 at 613 B with retail's
+// ESI prologue and the final store's own reload (first difference +0x3e, aligned 60), the same call inside loop 2 109
+// (616 B), inside loop 1 137 (617 B): what retail's link saw and ours does not is a write of g_4e8c20 on every path
+// into the final store. `inline` on 0x6b380's definition, alone or with a pin, 103 (same code; a full check with it
+// moves no function at all), on 0x16bc00's 210 (661 B: it expands into loop 1), on 0xe4050's and on 0xbaf40/0xbaf80's
+// 103 (full checks; they lose matched callers elsewhere). Source forms: the final store through a local read after
+// loop 2 103, that local bound by const reference 103, the `= 6` store through such a local 103, both 103, the final
+// store under `if (!failed)` through a local 103, the `= 6` store through the prologue's pointer 103 (all the same
+// code); the final store through the prologue's pointer 176 (618 B). BLOCKED-BY 0xb8540 stands.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
