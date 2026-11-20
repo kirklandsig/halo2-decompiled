@@ -23,8 +23,7 @@ real function_30bf0(vector3f *v);
 real magnitude3d(vector3f const *v);
 extern vector3f *g_4687bc;
 
-__declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4,
- long arg_0, point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+
 
 // score 20 (was 20): round 96 (26 -> 20) typed the origin parameter `point3f const *` everywhere and read it directly (no
 // renaming copy): only the mode-1 positive x row is left (retail adds the centre x as the memory operand, ours
