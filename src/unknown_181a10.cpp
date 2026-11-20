@@ -1072,6 +1072,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // function scope 230 (frame 0x44 as retail, first difference +0x1a: second/first homes +0x14/+0x18 for retail's
 // +0x10/+0x20; a declaration moved by score, not kept); the 1..16 pin as a non-inline static function taking its bounds
 // 238 (inlined at compile time, same code), with the material at function scope 230.
+// M3 lane 15 r114 (fast with the file's other seven functions, all MATCH; control 238): the 1..16 classifier given the node
+// and reading `node->shape->data` at each use (the sibling helper's accessor shape) 320 (1243 B; still one data load); the
+// byte test as a bool helper on the shape 238 (same code: no setne); the classifier as a preset result compared with the
+// value (`limited = 1; if (limited <= value) { limited = 16; if (limited >= value) limited = value; }`) 320 (1243 B: retail's
+// `mov ecx, 1` / `mov ecx, 0x10` preloads and the `mov ecx, value; cmp ecx, value` end, but `cmp eax, ecx; jl` for retail's
+// `cmp ecx, edx; jg` and the data copied from the first read instead of loaded again; aligned 179 against the control's 181),
+// that spelled `!(limited > value)` / `!(limited < value)` 320 (same code), with the field read at each use 321. The
+// positional count rises only because the block's rows shift; the data field is still loaded once.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

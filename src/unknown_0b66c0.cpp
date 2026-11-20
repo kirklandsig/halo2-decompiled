@@ -543,6 +543,16 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // plain string read once through its own address at the scan with `start += (long)string` after the clamp 40 (104 bytes)
 // [6], the same with the count tested first 39 (103 bytes) [35], the address read at the add instead 40 (104 bytes) [6];
 // 0-40 dead initialised locals at the top of the first of these 40 each (no symbol-count state).
+// M3 lane 15 r114 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): a plain string parameter read once
+// through its own address with a volatile read at the late source (natural body) 28 [6] (the string stays a stack argument,
+// one exit with the result in AL as retail, but start arrives in EDX and stays, walk EDI); that read at `start +=` after the
+// clamp 40 [match] (start ECX for life, walk EDI, counter EDX, the read folded into the add); with the volatile parameter: the
+// source written `start + string` at the call 28 [6]; `start += (long)string` right after the compare 36 [6]; a length helper
+// copy taking the parameter by reference and walking a cursor declared after the counter, natural body 28 [6], with `start +=`
+// after the clamp 40 [match]. A /Gd compile-only first pass shows the volatile natural body with retail's scan (start EDI,
+// count ESI, walk EDX, counter ECX, `lea edx, [edi + esi]` compare) but the source summed into EAX and the destination loaded
+// late into EDI; LTCG then passes start in the first pass's walk register (EDX). Every `start +=` form moves start into a
+// scratch register in that first pass (walk EDI). Retail's start is modified in its own EDI (`add edi, eax`) and passed in ECX.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

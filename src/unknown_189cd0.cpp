@@ -274,6 +274,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // (value-wrong diagnostic) 160 (535 bytes: the tag then takes EBP as retail, but the object holds ESI for the whole
 // function, so a longer object range alone does not demote it); every read plain with `__assume(tag_index != NONE)` before
 // the started dispatch 152, before the request arm's 0x189fe0 call 152, at both 152 (535 bytes each: tag EDI, object EBP).
+// M3 lane 15 r114 (plain; every form without the reference, object reads plain, control 116 at 531 bytes): the object
+// index, the scale and the two unused words as one 16-byte by-value aggregate parameter built by the five callers
+// (diagnostic for a memory-resident object index) 116 (scalarised like the plain parameters; all five callers lose their
+// match); the spatialization pointer bound to a const reference for the description test 116; two sound_class locals (one for
+// the spatialization flag test, one for the address) 116; the positioned arm's object reads through a const reference
+// bound at the arm's top 116; the tag's reads after the slot lookup through a const reference 116 (all the plain code).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
