@@ -226,6 +226,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // M3 lane 6 r209 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the node arm's forward address
 // named in a pointer local after the point call 19, ahead of it 19, the node arm's position address named 19 (the three the
 // same code); the else arm's forward copied through a pointer local 67, with the node arm's pointer as well 67.
+// M3 lane 3 r279 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the record fill and `return true`
+// written in the node arm as well, the else arm falling into the shared tail, 189 (509 B); the vector declared ahead of the
+// point 19; the rotate helper's parameters as (out, transform, in) 19; the helper taking the transform by const reference 19;
+// the address local itself `const` 19 (the 19s the same code).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

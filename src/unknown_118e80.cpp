@@ -499,6 +499,17 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // staged axis admission 25, paired axis snapshots 49, zero-limit branch snapshot 27, const up agreement on
 // native frame 25.
 // The special-call address schedule and the final axis load order still differ.
+// M3 lane 3 r279 (fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80, 0xe01d0, 0x109290 and
+// 0xbba20; control 25): 0x1faf80's (object_index, facing, settings, control, threshold, turn) re-measured 12, 0x1faf80 2. In
+// 0x1faf80 on that order: desired initialised from the facing 82, the squared lengths through length_sq3f 2, the dot as
+// `k + (j + i)` 8, as i, j, k 2, the threshold on the left 2, dot3f either way 4, facing through a const pointer or reference
+// local 2/2. Diagnostics on its definition alone: the i product is right exactly when facing is the 5th or 6th parameter,
+// wherever the threshold sits (two orders with facing 5th right, three with facing 2nd-4th wrong), so it follows facing's
+// position, and retail's call order puts facing 2nd: still BLOCKED-BY 0x1faf80. On this body: the two field pointers dropped
+// 43 (1032 B), that with both agreements named 27, the stores written through `object->` with the pointers kept for the tests
+// 25 (same code). Diagnostic: with NULLs in place of the forward and up in the dispatch call the tail's copies interleave as
+// retail's (79), so their escape into that call is what stops ours hoisting the loads; the dispatch's address parameters typed
+// as const point/vector pointers 25, with the type callback called through that type too 25 (same code each).
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

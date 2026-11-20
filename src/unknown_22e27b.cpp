@@ -558,6 +558,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // join test, `== true` (keeps the skip) or the separate high `if` with five natural toggles (flags on the field in the loop, no
 // per-pass dispose reset, the flag-8 test on the field, long next time, a late flags local): once the thread breaks the flags word
 // is hoisted into BX and the zero leaves EBX in every one (27+ aligned lines). All restored.
+// M3 lane 3 r279 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): dispose set only where it breaks (`if ((flags & 2)
+// && type == 0) { dispose = true; break; }`, no per-pass reset) 1; the restarts without the inner parentheses 1; both boundary
+// restarts as `if (...) restart = true; else restart = false;` 1; the frame store under `if (!restart) ... else break;` 1 (the
+// four the same code); the loop's identical switch arms merged (`case 0: case 2:` low, `case 2: default:` high) 199 (676 B).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
