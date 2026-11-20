@@ -182,6 +182,15 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // of the object 21 (same code each: folds into the first lookup); the sample decision moved right after the elapsed
 // clamp, ahead of the force arm, 217; update-first re-measured 218 (retail's object EBX load and homes; the timestamps in
 // EDI/ESI, the false store after the object's home store, no force-arm reload).
+// M3 lane 4 r223 (fast with 0x3d2c0 and 0xd1850, control 21): a const position pointer (object + 0x30) for the
+// stationary test and the position store in the sample block 195 (831 bytes); the special/type tail in its own block
+// 21; the parent index read into a local before its lookup 21; the position store as memcpy 21; the blend clamp as one
+// nested ternary 21 (same code each). Re-measured lane 14 r97's combined hidden return with update started from
+// force 246 (804 bytes).
+// M3 lane 15 r110 (fast with 0x3d2c0, 0xd1850 and 0x3db00, all MATCH; control 21): `(void)&cache_index;` at the top (its
+// stack slot is where update lives) 21; `(void)&update;` after its declaration 21; `(void)&priority;` 21 (same code each:
+// none takes update out of the allocator); the hidden bit read into a named bool ahead of force 237 (833 B); the object
+// read through a const reference to its header entry 21 (same code).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

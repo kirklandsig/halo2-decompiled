@@ -244,6 +244,13 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // both sites still inlined), an indexed loop 526 (re-measured); spellings that change 0x2600a0's bytes: `!= false` on the proc
 // result 705 (plain; 0x2600a0 65 bytes, 15), `result ? true : false` 656 (0x2600a0 65 bytes), `result && proc(...)` 704 (74 bytes).
 // None moves the sorted-loop site to a call. Both files restored.
+// m3 lane 1 r129 (fast with 0x2605d0, 0x2613d0 and 0x2600a0, all matched throughout; control 440, frame 0x8a8 here against
+// retail's 0x8a0; aligned 244/233 = unmatched instructions ours/retail, masked 86/75; body unchanged). Retail packs the two
+// flags in one dword (+0xe/+0xf after the two entry pushes) and gives the sort's unused first argument the actor offset's
+// dead slot; ours keeps each flag in a dword of its own (+0xb and +0x13) and the sort scratch in a slot of its own. The sort
+// scratch declared in the sort's block 440 (same frame, aligned 244/233); the two flags renamed so that their names sort
+// together 440 (aligned 246/237: names do not pack them); both 440; the selected index as a long 563 (3084 B); that with
+// the scratch in its block 561. The frame's two extra dwords and the two opposite expansion decisions remain.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

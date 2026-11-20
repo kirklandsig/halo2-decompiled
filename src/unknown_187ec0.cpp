@@ -77,6 +77,8 @@ static inline s_player_datum *player_get(long player_index)
 // field (18, reloads through a pointer), the first-player test through a `bool const &valid` as in function_187f30
 // (43, the test is materialised). No behaviour difference found; the player index, the 0x21c stride, the 0x24 field
 // and the 0x1a flag read match retail.
+// Matched in a full build with stand-in SDK headers (was 3): the player index is held in a local that a const
+// reference names for the player lookup, and the record is copied straight from the indexed table (no pointer local).
 // @retail 0x187ec0
 bool function_187ec0(void)
 {
@@ -85,12 +87,13 @@ bool function_187ec0(void)
 
 	if (index != NONE)
 	{
-		long record_index = player_get(g_4e8c20->entries[index])->index24;
+		long player_index = g_4e8c20->entries[index];
+		long const &kept = player_index;
+		long record_index = player_get(kept)->index24;
 		if (record_index != NONE)
 		{
-			s_player_record const *local_0 = (s_player_record *)g_51ea18 + record_index;
 			s_player_record record;
-			record = *local_0;
+			record = ((s_player_record *)g_51ea18)[record_index];
 			result = record.flag1a;
 		}
 	}
@@ -831,6 +834,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // into the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body
 // is in src/unknown_175bd0.cpp; the flag-line lever of the earlier round reaches no further, because the threshold
 // that decides the inline comes from the generated ballast and not from this file: BLOCKED-BY that file.
+// Matched in a full build with stand-in SDK headers (was 46): the first loop's counter is a dword.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	c_type_47f957 entry_element_index, long effect_value, s_location const *location, real scale)
@@ -864,7 +868,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 	position.compressed_forward = vector3d_compress(forward);
 	position.velocity = *g_4687a4;
 	position.location = *location;
-	for (short j = 0; j < sizeof(first_values) / sizeof(first_values[0]); j++)
+	for (dword j = 0; j < sizeof(first_values) / sizeof(first_values[0]); j++)
 	{
 		if (first_values[j] != NONE)
 		{

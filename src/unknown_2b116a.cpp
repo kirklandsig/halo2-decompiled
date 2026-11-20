@@ -4572,6 +4572,10 @@ bool __stdcall function_2b278e(long controller_index)
 // 76; fresh index at membership 54; unsigned mask bits throughout 54; signed short membership in the
 // existing qualified local 55. NOT kept: slot forms preserve numeric-index reuse, and the Boolean
 // width shortens case 3 without restoring the reloads.
+// Object copy in only one dialog arm 53, or 191 with Boolean membership, for
+// either arm. One-arm short mask 195, or 197 with Boolean membership. NOT kept:
+// the 53 forms spill the index but retain the controller object instead of its
+// slot, grow to 658 bytes and gain one.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5578,20 +5582,23 @@ void function_1486b8(long error, bool keep);
 // its copy still takes EBX); the completion store ahead of the declaration 55; the task declared at the
 // top 56; `if (result && !*completion) return result;` before the call 56; the probe branch calling the
 // cleanup itself and returning 55; `else result = false;` on the no-task path only 52 (156 bytes).
+// Matched in a full build with stand-in SDK headers (was 10): result is false at its declaration instead of in the
+// else arm, and qos_is_complete's value is tested through a reference-bound local.
 // @retail 0x2bb04e
 bool function_2bb04e(long task_index, bool *completion)
 {
-    bool result;
+    bool result = false;
     *completion = false;
     if (g_475338 != NONE)
     {
         result = true;
-        if (qos_is_complete(g_475338))
+        bool found = qos_is_complete(g_475338);
+        bool const &kept = found;
+        if (kept)
             *completion = true;
     }
     else
     {
-        result = false;
         if (task_index != NONE)
         {
             s_type_9df9da *task = function_6b910(task_index);
@@ -5874,6 +5881,11 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // membership, feedback/offer, cancellation/removal, and the final membership phase
 // 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
 // NOT kept: these forms shorten the body and move the first difference before the friend query.
+// Session availability complement 134; origin complement 90; title-join restriction 118;
+// unavailable member/friend complements 211/90; origin after identity check 96;
+// separate membership request availability 89; known-contact exclusion 119.
+// NOT kept: the separate availability form ties and the other forms regress.
+// The query output stays displaced in the retail-length forms.
 // Session-presence name, player/change names, selection/request names, host/pending names,
 // addressed byte declarations after the dwords, pending false default, invalid-selection
 // guard with common completion, and immutable mute decisions: 89/89/89/89/89/353/89/89.
@@ -5886,6 +5898,14 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // emission 345; other-title join decision at emission 406; unmute decision at emission 328; both mute
 // decisions at their emissions 321; join, removal and promotion decisions at emission 420; all six
 // captured-input decisions at emission 454.
+// Online bit at the join test 443, origin calculated at admission 450, staged invitation 112,
+// removal permission reused for kick 275, shared roster/rank or complete management result
+// 374/361, shared mute eligibility 283, regular-friend result reused for removal 323.
+// All regress. The friend-query and later action byte homes still differ.
+// Matched in a full build with stand-in SDK headers (was 89): cancel_friend is one && chain (no `? : false`),
+// pending_member and change_member are two initialised bools (no if/else assigning both), and the joined-title test
+// is its own bool instead of a reassignment of can_join_title. The code was already retail's; these fix which bools
+// share a byte home and the order of the homes.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
@@ -5926,30 +5946,19 @@ PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
         bool allow_join = function_19a250();
         bool pending = list->value3a0 == 1 && !online_messages_find_flagged_from(xuid, controller) && (flags & 0x10);
         bool invite = (regular_friend || regular_player) && !self;
-        can_join_title = can_join_title && !self && allow_join;
-        bool join_other = !can_join_title && can_join && !self && allow_join;
+        bool join_title = can_join_title && !self && allow_join;
+        bool join_other = !join_title && can_join && !self && allow_join;
         bool remove_player = allow_remove && has_player && !protected_player;
         bool feedback = !self && (list->value3a0 == 3 || list->value3a0 == 4);
         bool offer = !has_player && !self && ((list->value3a0 == 4 && in_session) || (list->value3a0 != 3 && invite));
         bool promote = host && !self && (flags & 0x100);
         bool add_friend = !listed_friend && !self;
-        bool cancel_friend = listed_friend && (flags & 0x20) ?
-            (list->value3a0 == 1 || list->value3a0 == 3) : false;
+        bool cancel_friend = listed_friend && (flags & 0x20) && (list->value3a0 == 1 || list->value3a0 == 3);
         bool remove_friend = listed_friend && !(flags & 0x30) && list->value3a0 == 1;
         long rank = *(long *)(local_status.data + 0x1c);
         bool add_member = request_valid && !is_player && !self && rank >= 1 && list->value3a0 != 4 && list->value3a0 != 2;
-        bool pending_member;
-        bool change_member;
-        if (!add_member && is_player && !self && (flags & 0x800) && list->value3a0 == 2)
-        {
-            pending_member = true;
-            change_member = false;
-        }
-        else
-        {
-            pending_member = false;
-            change_member = regular_player && rank >= 2 && !self && list->value3a0 == 2;
-        }
+        bool pending_member = !add_member && is_player && !self && (flags & 0x800) && list->value3a0 == 2;
+        bool change_member = !pending_member && regular_player && rank >= 2 && !self && list->value3a0 == 2;
         bool remove_member = regular_player && rank >= 2 && !self && list->value3a0 == 2;
         bool mute = !muted && !self;
         bool unmute = !mute && muted && !self;
@@ -5957,7 +5966,7 @@ PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
         if (message) list_item_add(list, 0);
         if (pending) { list_item_add(list, 1); list_item_add(list, 2); }
         if (invite) list_item_add(list, 3);
-        if (can_join_title) list_item_add(list, 4);
+        if (join_title) list_item_add(list, 4);
         if (join_other) list_item_add(list, 5);
         if (remove_player) list_item_add(list, 6);
         if (offer) list_item_add(list, 8);
