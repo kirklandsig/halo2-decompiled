@@ -4442,6 +4442,14 @@ extern vector3f *g_4687bc;
 // 0x188180 call) 25 (the global loaded as a dword); the component bound through a `s_havok_component *const &` for the
 // 0x0b67a0 call and the element 8; the re-looked-up definition and the effect tag read as const 8; the model index
 // named ahead of the effect tag read 8 (the 8s the same code).
+// M3 lane 8 r207 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the node index through a file-local
+// forceinline helper taking the component (rigid-body index, element, node-count test, NONE result) 8 (same code); the
+// same helper as plain `inline` 114 (1057 B: it stays a call), with early returns 114. Compile-only screen (both sites
+// as the check; all the same code at both): the effect tag through a copy local, through a named masked model index,
+// through a named tag-table pointer, through a dword cast, the model index as a word cast; the rigid-body index as
+// dword; the element from the array's data by byte arithmetic with sizeof, through a reference to the data element,
+// non-const. Diagnostics (screen): without the 0x188180 call, without the damage block, without 0x1eb020's call, with
+// the strength a constant: the material still in DX and the element still data-in-EDX, so both choices are local.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

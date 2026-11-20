@@ -1151,6 +1151,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // M3 lane 16 r155 (fast with 0x1ecf50 and 0x26d100, both MATCH each time; control 26): the 0.1 offset products
 // constant-first 26; the 0.5 lift product constant-first 26; the collision marker as a typed short field at +0x24 of
 // the collision view 26; the offset reading the axis as `n[0..2]` 26, both sides as `n[0..2]` 26 (all the same code).
+// M3 lane 8 r207 (fast with 0x1ecf50 and 0x26d100, both MATCH each run; control 26, lane 12 r147's M re-measured 20): the 0.1
+// offset reading a `vector3f const` copy of the axis taken after the 0x26d100 call 163 (1115 B), on M 158 (1113 B); reading a
+// `point3f const` copy of the collision point 143 (1113 B), on M 138; on M `real const` sine and cosine 20, the 0.5 lift as
+// `point.n[c] = point.n[c] + ...` 20, a `real const` trace distance 20 (the 20s the same code as M).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
