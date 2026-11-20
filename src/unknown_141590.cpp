@@ -1599,6 +1599,10 @@ void function_143250(
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
 // NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// Separate third-band declarations for the up/forward pair, root-35/forward
+// component, both or both symmetric families 939/939/939/939.
+// Band-specific mixed names, root-35 axis names, both root axis families,
+// and all those role names 939/939/939/939. The scalar spill frame stays 0x2fc.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

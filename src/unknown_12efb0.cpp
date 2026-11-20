@@ -865,6 +865,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // separate remaining count and cluster cursor 607; cluster cursor compared with end 831;
 // cluster cursor stopped at end 806; cluster cursor while with end 1508.
 // NOT kept: The for countdowns tie. The other walks increase the length and leave the provider, sentinel and palette allocation unresolved.
+// Split cluster lookup into ordinal before table, table before ordinal,
+// displacement before table, or typed table before ordinal 606/606/606/606.
+// With the signed-byte slot 699/699/699/699. NOT kept: the short forms gain
+// one point and retain the cluster-base, provider and palette registers.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

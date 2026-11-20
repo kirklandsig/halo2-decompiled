@@ -863,6 +863,10 @@ struct s_object_damage_view
 // Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
 // fallback 358/358/416/416, with conditional code selection 358/358/416/416.
 // NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
+// Separate declaration and initialization for victim team, credit or event code
+// 353/353/353; pairs team/credit, team/code or credit/code 353/353/353;
+// all three or all with the credited team 353/353. The three homes and the
+// amount-biased history cursor stay in place.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
