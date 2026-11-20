@@ -675,6 +675,20 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // test 278/283/282/308. Selecting the complete scaled vector in the two arms on those forms
 // 311/319/310/306. NOT kept: all raise the score. The 0x20 frame, second displacement and coefficient
 // homes still differ.
+// M3 lane 11 r133 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221, aligned 249,
+// register-masked 154; body unchanged). Lane 8 r201's macro lead re-measured 252 (1136 B, frame 0x14, aligned 174, masked
+// 62). On it: the second offset loop first 249 (masked 65); the orthographic segment written into the second offset vector
+// 253 (masked 70), with the second offset first too 250 (73); the macro's scaled copy as three reals set to `scale * input`
+// under the test 297 (1176 B, masked 119); the two offset loops as six component statements with the second point first
+// 226 (1136 B, masked 67). On this body: those six statements with the second point first 220, the first point first 218
+// (1115 B; three points, under the keep bar). Reading: retail computes the second point's offsets first through one
+// register and stores x and y at once, never carries a second-point offset in a register through the first view (ours
+// holds its x in XMM0 from the opening to the second view's default copy and stores it last), loads the scale only after
+// the last origin use (XMM6, the origin z's register) and gives XMM7 to right.i, loaded once in the first view (`movaps
+// xmm1, xmm7` before its product) and used up by the second view's first x product; the second view's scaled x and z then
+// live in [esp+4] and [esp] with y in XMM0. Every first-view product loads its coefficient first, and in the second view
+// only the three x products do: the nine coefficients behave as values shared between the views, of which only right.i gets
+// a register.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

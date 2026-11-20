@@ -707,6 +707,23 @@ union s_185be7
 // scale 402; the parent object through a named pointer, through the shared header view, or the unit's object named 396
 // (same code: the scratch rotation stays one step off at the parent lookup). Still BLOCKED-BY 0x24590 (its file was on
 // the avoid list again).
+// M3 lane 11 r133 (fast with 0x24590, 0xc8880, 0x185ab0, 0x185b00, 0x185b30, 0x187b30, 0x1a4900 and 0x186ab0, all MATCH
+// throughout; control 396, aligned 138, register-masked 50; body unchanged). Held state (diagnostic `inline` on 0x24590's
+// definition, saved with the forms below as build/r133/held-0x185be0.patch): this body 836 (3772 B, aligned 101, masked 21);
+// with the else-arm default, the unit_get_current_weapon helper and the long mask local 76 (lane 15 r98's lead, 3774 B);
+// with the field_93 latch as `? 1 : 0` too 60 (retail's 3777 B, masked 12); with the input-record copy ahead of the two
+// angle conversions 57; with the else arm's two assignments in the order local_17, local_16 (retail loads +0x1c first) 55;
+// with the havok components bound by `s_havok_component *const &` to the pool's data (0xb8ca0's form: the pool load then
+// precedes the index scaling) 53 (aligned 75, masked 6). On the 55 form: the 0.64 sum written field_40 first 55 (same code);
+// the quotient written out at both uses in place of local_18 552 (3768 B); local_18 declared after local_19 and local_20
+// 77 (aligned 64: the quotient then loads late and other registers move); the second hold time as `arg_2 + field_7c` or
+// `field_7c + arg_2` 55 (same code). Left at 53: retail adds the argument to field_7c field first (ours argument first, though
+// field_78 is field first in both); the quotient in XMM3 and 1.0 in XMM4 (ours the other way round, 18 lines); the parent
+// object's pointer in EDX, reusing the header table's register, where ours takes ECX (one scratch step that carries through
+// the pool load and both vector copies); the 0.64 test squares field_44 first.
+// On main's state (no `inline`): the else-arm order 394; the pool reference 394; both 392; with the latch form 386; with the
+// record copy first too 385; with the else-arm default, weapon helper and long mask local as well 547. Not kept: the
+// statement orders and the reference are match-only forms and the latch form alone is 390. Still BLOCKED-BY 0x24590.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
