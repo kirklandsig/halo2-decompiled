@@ -2130,6 +2130,17 @@ void function_27dd10(void)
 // arm unnested 2 (same code each). Diagnostics (fast): `__assume(local_2 >= 0)` after the flags read 348 (1733 bytes,
 // every walk user regresses: the node tests no longer fold); with node_flags_test returning its expression 2 (0x281b60
 // 39, 0x288570 120, 0x289580 2), so a run-time assume flips the pair only together with the unfolded tests. All restored.
+// M3 lane 1 r140 (compile-only build of the file, exact here: this function 2, 0x281b60 2, 0x285750 0): the interpolation's three
+// frame-state saves as wrapper locals shared by the passes (by reference) 44 (0x281b60 42, 0x285750 46), the walk's output pointer
+// shared that way 329 (0x281b60 318); the second decode with its blend in a forceinline helper 2, the frame-state restore in one 2,
+// both 4 (0x281b60 4, 0x285750 2), the destination lookup with the mask test in one 2 (0x281b60 28); 150 random combinations of those
+// two helpers with the apply index named, the destination index declared at the group's top, the bit test as `!= 0`, the counters as
+// `+= 1`, the count declared first, the output and bit-flags selections as if/else and the saves declared ahead of the interpolation
+// test: 2 (115 forms) or 4 (35), the pair never moves. Diagnostics: the settings read as separate globals (every field, or the frame
+// trio, the blend-frame trio, the bit flags, the count, the inheritance, the mask or the decompressors alone) 2 each, so the pair does
+// not follow how many global symbols the function references; a statement under a constant-false test of the blend method at each of
+// 117 places in the walk and its helpers never moves the pair (it changes 0x285750's blend-3 registers at 89 of them); live probes at
+// the wrapper's start or end flip it only for `g = h << 2` and `g = h + k` (stores, `+= 3`, float work, `/ 3`, `& 7` do not).
 // @retail 0x27dff0
 void function_27dff0(void)
 {
