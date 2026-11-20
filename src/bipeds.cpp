@@ -4358,6 +4358,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // rotation helper 613 (2729 B), through rotate_direction 613 (re-measured); `bool special` from the direct compare 596
 // (2722 B); the planar turn with both rows named 635 (2743 B); the animation value read once into a named two-use local
 // at the top 658 (2740 B).
+// Multiway physics dispatch after the original result test 669/669; result initialized from entry mode
+// 651/651; ragdoll case sets false 656/657; split walking exclusions 632; animation guard in the
+// ordinary case 656. Reduced control 598. The full result byte and flight threshold homes remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4621,7 +4624,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // vector3f_scale 319, both 366; the if/else select alone 369 (1943 B). K = 1..16 dead longs on 308: 316 (K 1-2), 314
 // (K 11-12), else 308.
 // MiniMax I (11-19): no new form, no lower score (336): the first difference is still a stack home (this build's matrix receiver at [esp+0x60] against retail's [esp+0x50]), and the origin and the matrix shift together with it although the 0x12c frame and the body length agree.
-// score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// Earlier 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
 // MiniMax A (11-18): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and the matrix, placed-point and property homes shift together although the 0x12c frame agrees.
 // MiniMax E (11-17): no new form, no lower score (336): this build's locals still sit 0x10 higher in the frame than retail's (the matrix receiver at esp+0x44 against retail's esp+0x40, the argument block at esp+0x60 against esp+0x50), so the home sequence and the jumps after it land elsewhere.
 // MiniMax I (11-16): no new form, no lower score (336): the first difference is a stack home (this build's vector workspace at
@@ -4984,6 +4987,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // Direct matrix member for body, parent or both 336/336/336, matrix declared at its query 336, at direct query 336.
 // Origin pointer scoped to the setter 336, result declared after the setter 337, aggregate origin with direct queries 368.
 // NOT kept: direct queries leave the slots in place. The aggregate copy moves the divergence earlier and shortens the body.
+// Transform names in body/anchor/turn and rigid-body/support/alignment order 308/308; contact outputs
+// and pointer roles 308; projected pivots and target roles 308; displacement and rotation roles 308;
+// properties and pivot bounds 308; position and projected-pivot roles 308; all contact workspace roles
+// 308.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

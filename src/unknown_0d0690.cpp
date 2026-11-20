@@ -1931,6 +1931,10 @@ real function_30bf0(vector3f *vector);
 // unpacked lightmap first 446; with the mobile flag as a test-set (match-only) 430 (1870 B, first difference +0x57); the
 // bounds as `color3f const` locals 378 (same code); the mobile test written into the `k` ternary (no `mobile` local) 487
 // (0x3db00 drops to 12, 0x3dfe0 to 45).
+// Static lower bound 446, static upper bound 446, implicit zero-fill aggregate 464, chained bound
+// stores 378, reversed bound declarations 378, destination address table pins 641, member table pins
+// 648, destination table with input snapshot 648. Either static bound recovers frame 0x40 and 1870
+// bytes at a higher score. The input snapshot changes both checked callers in the reduced image.
 // MiniMax H (11-19): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, so the whole
 // prologue differs before the body starts; the forms tried by the earlier rounds are recorded above and none of them
 // brings the frame back to retail's size without losing 0x3db00 or 0x3dfe0.

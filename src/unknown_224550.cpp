@@ -97,6 +97,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
 // (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
+// score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
+// Earlier: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// Prior score history: 194 before.
 // MiniMax E (11-19): score 162 (was 162): no new form, no lower score. Read from the listing again: the first
 // difference is still at +0x29c, where the blend sits in XMM2 and retail keeps it in XMM5 from the sequence arm through
 // the aspect block; retail's flagged branch also reorders the bounds' four words into frame+0x60..frame+0x6c from the
@@ -771,6 +774,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // code); the width product after `inv_y` 173 (1951 B); both inverse next terms, then the width, then both sums (retail's
 // schedule) 170 (1950 B); the y inverse sum before the x one 162 (same code). Retail still keeps the blend in XMM5 from
 // the sequence arm through the aspect block and spills both a-reciprocals; ours spills the blend.
+// Both primary inverses after flip in vertical/horizontal and horizontal/vertical order 266/266; one
+// primary inverse before the secondary pair, the other after flip 176/176; one after the secondary
+// pair, the other after flip 176/176; split around the secondary pair before flip 162/162.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
