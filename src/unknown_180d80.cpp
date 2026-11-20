@@ -109,6 +109,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 
 // MiniMax C (11-19): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the
 // 0x17cfa0 call setup all still differ, and the callee that decides the last one lives in another file; the body stands.
+// MiniMax E (11-20): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the 0x17cfa0 call setup still differ, and the callee that decides the last one is in another file and does not match yet: BLOCKED-BY 0x17cfa0.
 // score 93 (was 93): BLOCKED-BY 0x17cfa0 (contributor, unmatched: ours passes the NONE first index in ECX and the
 // Round 127 (m3 lane 10, fast): dead initialised locals at the top for K = 8/10/12 216/216/261 and K = 14..32 (even)
 // 93 each, the transform rows never flip (diagnostic, removed); the count sum as a `short` without its two casts 93
