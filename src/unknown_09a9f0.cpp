@@ -957,6 +957,19 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // long result 64 (185 B: its test is not folded), on R 77 (folded before CSE, lookups shared); the object read through the
 // table's data field viewed as a typed header pointer (`*(s_object_header **)(table + 0x44)`) on the long result 49 and on
 // R 77 (same code each: the two data loads are merged whatever their type); R with a char or byte result 70 / 70 (176 B).
+// M3 lane 5 r215 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10 and 0xbb780, matched throughout; control 49; R =
+// retail's shape, bool false first, true after the attach, NONE stored in the flagged else, re-measured 77 at 160 B). On R:
+// the whole header address returned by value from an inline accessor as a one-pointer aggregate, at both lookups, at the
+// flag test only, at the object read only 77 / 77 / 77 (a computed address in an aggregate is scalar-replaced, unlike the
+// copied data pointer of the 42 form); the flag test through an inline predicate that tests NONE again inside, with a
+// result variable set under the flag test 77, with three returns 77; through an inline header getter that returns NULL
+// for NONE 77; through an inline "usable" predicate (false for NONE, false when flagged) 77; that predicate as the only
+// test with the flagged clear under `else if (object_index != NONE)` 77; the object read through the NULL-for-NONE header
+// getter 77 (all nine the same code as R: every join is folded before CSE). Diagnostics, reverted at once (an unreachable
+// call given a parameter's address keeps it memory-homed; not a keepable form): `f` so 78; `e` and `f` so 53 with the first
+// difference at +0x3a (retail's whole head, `xor bl, bl` and both arguments re-read from their slots; what is left is only
+// the one shared lookup, 16 bytes short); `entity` so 70; all five so 65. So the uncached `e`/`f` and the BL result follow
+// from the two separate lookups, not the other way round.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
