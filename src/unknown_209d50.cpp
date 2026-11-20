@@ -229,6 +229,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // pointer named `parameters` 95 and the result named `values` 95 (names do not decide the merge); the element ahead of the
 // test with `result = NULL` first in the arm 83 (277 B, the null-first shape); the type test nested under the count test
 // with the expression node named 95. Every form still gives the pointer and the result one web in EAX.
+// M3 lane 4 r231 (fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): `long *result = NULL;`
+// at the top with `result = arguments;` after the first allocation 95; that assignment after the third allocation, just before
+// the initialisation test 95; the frame reference as a `s_hs_macro_frame *&` bound to the thread's field, the initialisation
+// reading through it 95; the result copied through a `long *const &` binding of the pointer 95; the frame reference declared
+// after the result copy 95 (all 266 B: the pointer and the result still share EAX, no spill). All restored.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

@@ -829,6 +829,11 @@ void function_1537f0(s_profile_record *record);
 // links[3]`) 18 (base +0x5e: through the pointer the base follows the link stores' order, never +0x4c); the heads as two
 // chained pairs in retail's store order with the `entry->` links as chained pairs 49 (NONE now in EBP from the head stores),
 // with main's link pointer 18 (same code).
+// M3 lane 4 r231 (fast with 0x7f8b0, 0x1537f0 and 0x80490, all matched each time; control 18): the link pointer taken
+// as `&entry->next - 1` 18; the entry pointer `const` 18; the identity cleared as `memset(&record, 0, sizeof(record.identity))`
+// 18; the first link set to NONE and the other three copied from it through the pointer 18 (all the same code, base +0x5c);
+// the four link statements through the pointer in the order 1, 0, 3, 2 18 (base +0x5e, the second non-zero offset again).
+// All restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

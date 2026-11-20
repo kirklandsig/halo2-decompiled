@@ -656,6 +656,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // lower locals declared after the quad's start call 398 (2264 B), declared before 0x1cf50 382 (2258 B); the last quad's size as an
 // if/else 2 (same code); the alpha converted straight to a byte 2 (same code); the point read as `arg_0->x`/`arg_0->y`
 // at each use without the coordinate pointers 18 (the y fold returns). All restored.
+// M3 lane 4 r231 (screened with 0x254490 4 and 0x254200 matched; control 2): the colour pointer read through a
+// `color3f const *const &` binding 2 (same code); the colour components named red, green, blue after Begin 7 (first
+// difference +0x2da); named blue, green, red (the order retail reads them) 2 (same code); that with a named `real alpha = 1.f`
+// 466 (2159 bytes, first difference +0xe); the mip LOD bias stage value as a zero real read as a dword 443 (2271 bytes).
+// All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

@@ -280,6 +280,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // `cmp esi, -1; setne al` and its two `test al, al` remain, the request's zero bytes stored from AL); that bool declared at
 // the slot block's top 153 (537 B); the bool before the clamp also for the started test 117 (530 B); a plain `long` copy of
 // the object used only by the two early tests 116 (folds back into the parameter).
+// M3 lane 4 r231 (plain, with the five matched callers and 0x109220/0x189340/0x1892a0/0xb8d30; every form without the
+// reference, object reads plain; the reduced image builds this function differently, 94): the playback call, started test and
+// dispatch in a forceinline helper taking the object, tag, positioned flag, description, scale, label and slot 154 (528 bytes,
+// frame 0xa4, tag EDI); the started test inside a forceinline notify helper around 0x109220 116; `__assume(object_index !=
+// NONE)` at the top of the marker block 152, before the dispatch 152; `__assume(object_index == NONE)` in the request arm
+// 152 (535 bytes each). All restored.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

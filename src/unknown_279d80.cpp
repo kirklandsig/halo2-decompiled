@@ -2312,6 +2312,11 @@ void function_2818e0(void)
 // 0x288570 98); the bit flags as `dword` 5 (every walk user 3-5); screen only, the pair unchanged in all three: the
 // output pointer set ahead of the three frame-state sets, the bit flags as `unsigned long`, the saved frame index as
 // long (same code). All restored.
+// M3 lane 4 r231 (screened with 0x27dff0 and the four matched walk users): in function_288572 the outer loop bounded by a
+// `long const` copy of the count 95 (0x288570 120, 0x289580 2); the group end declared at the walk's top 2 (same code); the
+// destination-mask test as an if nested under the lookup 2 (same code); the interpolation test inverted with the plain apply
+// first 4 (0x27dff0 4, 0x285750 184, 0x28aaa0 2); in function_288571 pass 0 given the settings' node count directly, the local
+// for the later passes 397 (1681 bytes, every walk user 217-433). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
