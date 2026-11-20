@@ -1235,6 +1235,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // The reset cutoff or separate scopes with live table reads in scan two 549/549. One table snapshot
 // across both scans 623. NOT kept: the live table forms reach retail length but retain a short frame
 // and miss the candidate x store. The snapshot shortens the body, and the other forms tie or regress.
+// Nearest or opposite distance scratch at scan scope 418/418, projection scratch at scan scope 418,
+// offset declared before ordinal exclusion 418. Nearest cutoff, zero projection limit, or opposite cutoff
+// on the left of its comparison 418/418/418. Both opposite-scan scratch values at scan scope 418.
+// All tie. The 0x2c retail frame, second induction address and offset.i store remain unresolved.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

@@ -4189,6 +4189,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `first` loses EBP for another reason (pass 1 without `++first`, diagnostic), and loses it only with a (last, i) test
 // at the top of its body, kept (`last > i`) or folded away (`last >= i`). `while (true)` with `if (i > last) break;`
 // and the increment at the bottom grows (1335 B, compile-only), the break after the entry pointer more (1351 B).
+// Creation remaining count with front ordinal/cursor 850/821, original count 831/787,
+// inclusive last candidate 810/787. Remaining and original counts with both front and tail
+// cursors 814/789. NOT kept: the greater extent moves away from retail and the early
+// prefix/state allocation is unresolved.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

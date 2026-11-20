@@ -815,6 +815,10 @@ void function_3dd10(long object_index, bool force);
 // complementary admission 86/86/189/86 at the unequal bound. All four signed forms 645.
 // NOT kept: the signed bound unrolls the scan, and the other forms regress at retail length.
 // The ordinal zero, choice count and mask homes still differ.
+// Pre-guard bank ordinal with signed/unequal do-while latch 97/97, guarded ordinal with signed
+// do-while 77. Advance in latch 97, inclusive last bank ordinal 253, pretested unequal bank 97,
+// ordinal-based guard 97, nonzero bank guard 97. NOT kept: the pre-guard forms lose the native
+// object/tint register roles, and the inclusive bound shortens the body.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
