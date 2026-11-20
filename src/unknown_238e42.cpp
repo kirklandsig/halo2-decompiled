@@ -1370,6 +1370,10 @@ bool __stdcall function_2399da(long controller_index)
 // listed other-way-round shape, re-measured as a cleanup); the identity declared with a NULL initialiser 90; the identity
 // test with explicit `!= NULL` / `!= 0` and the own rank unsigned 90; the permission test with the member's rank on the
 // left 91; `own_rank >= rank` with `3 == rank` 90 (each 90 the same code). Identity ECX/rank EAX remain.
+// MiniMax R (11-20): score 90 (was 90): no new form; the identity still takes ECX and the requested rank EAX where retail
+// takes the identity EAX and the rank ECX, and that swap is the whole difference: the 64-bit id test and the member's rank
+// store then follow, and the copy into eax before the removal call still costs the two bytes that move every later jump.
+// The identity declared inside the block as a const pointer scores 90 as well (same code).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

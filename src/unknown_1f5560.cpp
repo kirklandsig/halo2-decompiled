@@ -1841,6 +1841,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // native desired vector with fast or planar normalization 237 each; both native vectors 257, with shared cosine
 // dot 257, and both with planar normalization and cosine dot 257. NOT kept: the first radius-register difference
 // stays at +0x4f, and the direction/desired cosine still does not recover retail's register allocation.
+// MiniMax R (11-20): score 226 (was 226): no new form; the first difference is still the radius in xmm4 where retail
+// loads it into xmm5 at +0x4f, and the cosine block keeps its own allocation of the direction, the desired vector and
+// the zero, so the whole body stays 223 instructions away from retail's.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

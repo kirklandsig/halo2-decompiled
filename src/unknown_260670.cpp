@@ -301,6 +301,10 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // flags in one declaration 439 (same code), declared after the best score 440, the evaluator loop's flag declared at the
 // function's top and set before the loop 439 (same code); on main's body the sorted index as `long index =
 // sorted_indices[i]` 619 (3085 bytes). The flags still take a dword each (+3 and +0xb against retail's +6/+7).
+// MiniMax R (11-20): score 440 (was 440): no new form; the frame stays 0x8a8 against retail's 0x8a0, the two flags still
+// take their own dwords eight bytes apart where retail packs them adjacently at 0x6/0x7, the result still takes the slot
+// above the actor where retail puts it at 0x8, and the source and settings still sit four bytes above retail's, so every
+// parameter offset moves with the frame.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

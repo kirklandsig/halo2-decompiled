@@ -1683,6 +1683,10 @@ void function_150820(dword *bits, bool local_only)
 // and at the 0xcd7b0 argument scores 18 (was 43) and gives the player ESI and the hand EDI, but it rereads a value the
 // player local already holds (kept only with a byte match), so the code is main's. What is left is the player address folded
 // into one LEA instead of retail's add and move, the unit index read a second time, and the policy byte in DL.
+// MiniMax R (11-20): score 43 (was 43): no new form; the player still takes edi and the hand esi where retail takes the
+// player esi and the hand edi, and the unit index still takes ecx where retail takes edx, so the whole body stays one
+// register rotation off; the only form that gives retail's registers (18) rereads the unit index through the player
+// getter and stays match-only.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

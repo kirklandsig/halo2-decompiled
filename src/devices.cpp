@@ -1758,6 +1758,10 @@ bool function_108530(long device_index, long name)
 // distance (XMM5), the final velocity (XMM7) and the 2.0 constant (XMM3) and reloads the ramp-down and the cruise velocity
 // from memory; ours keeps the ramp-down (XMM7) and the cruise velocity (XMM4) and reloads the distance.
 // MiniMax C (11-20): no new form, no lower score (116): the velocity still reaches the clamp on the stack, retail in xmm6.
+// MiniMax R (11-20): score 116 (was 116): no new form; the clamped duration, ramp-up and ramp-down still take xmm3, xmm7
+// and xmm2 where retail takes xmm5, xmm7 and xmm1, the ramp-down still stays in a register where retail reloads it from the
+// stack, and the initial velocity still reaches the clamp on the stack where retail passes it in xmm6 (the callee's own
+// link-time convention, which no form here moves).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2750,6 +2754,10 @@ bool function_0b6760(s_index_pair const *pair);
 // local for the test and the motion call 388 (1479 B; retail reads the group's value at both uses). Still
 // BLOCKED-BY 0xb6760 at the channel-1 sites.
 // MiniMax C (11-20): no new form, no lower score (61): the channel-1 call loads the device index into eax, retail into ecx.
+// MiniMax R (11-20): score 61 (was 61): no new form; the prologue still clears the result flag before the definition
+// pointer where retail stores the definition first, and the two channel-1 0xb6760 calls still load the device index into
+// eax where retail loads it into ecx (the callee's link-time convention is fixed in another file, so the body stays
+// BLOCKED-BY 0xb6760).
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
