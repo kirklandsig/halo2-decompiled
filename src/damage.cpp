@@ -1324,7 +1324,7 @@ void function_daa50(byte const *owner, byte const *target, word mask, word *bits
    +0x30/+0x38) each accumulator decays to zero over its decay time
    (+0x34/+0x3c); the timer stops at NONE once both are zero */
 // @retail 0xd8b50
-bool function_d8b50(real *recent_a, real *recent_b, char *timer, byte const *field_4_2, bool reset)
+bool function_d8b50(bool reset, real *recent_a, real *recent_b, char *timer, byte const *field_4_2)
 {
 	bool result = false;
 
@@ -4703,14 +4703,12 @@ bool function_d5de0(long object_index)
 						owner.player_index = current->owner_player_index;
 						owner.team = current->owner_team;
 
-						long permutation_index = pending & 7;
-
-						if (function_d9f70(i, permutation_index, info, object_index))
+						if (function_d9f70(i, pending & 7, info, object_index))
 						{
 							s_damage_region_accumulator accumulator;
 
 							memset(&accumulator, 0, sizeof(accumulator));
-							function_da110(permutation_index, info, object_index, &owner, i, &accumulator);
+							function_da110(pending & 7, info, object_index, &owner, i, &accumulator);
 							if (accumulator.unknown2c || accumulator.unknown2e)
 								function_dbc80(object_index, accumulator.unknown2c, accumulator.unknown2e);
 							if (accumulator.flags & 4)
@@ -4801,7 +4799,11 @@ bool function_d5de0(long object_index)
 					real recharge = g_510c54->rate * rate;
 
 					if ((1 << object->type) & 3)
-						recharge = function_1e9720(3, object->team) * recharge;
+					{
+						word team = object->team;
+
+						recharge = function_1e9720(3, team) * recharge;
+					}
 					if (TEST_FIELD_BIT(object->damage_flags.shield_depleted))
 					{
 						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_depleted_bit, false);
@@ -4817,15 +4819,17 @@ bool function_d5de0(long object_index)
 					}
 					word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, true);
 					object->shield_vitality += recharge;
-					if (!(object->shield_vitality > maximum_shield))
-					{
-						changed = true;
-					}
-					else
+					bool overcharged = object->shield_vitality > maximum_shield;
+
+					if (overcharged)
 					{
 						object->shield_vitality = maximum_shield;
 						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_recharging_bit, false);
 						word_flags_set(&object->damage_flags_word, _damage_object_flag_shield_damaged_bit, false);
+					}
+					else
+					{
+						changed = true;
 					}
 				}
 				else
@@ -4857,8 +4861,8 @@ bool function_d5de0(long object_index)
 			}
 			else
 			{
-				maximum_body = *(real *)((byte *)info + 0x38);
 				rate = *(real *)((byte *)info + 0xd4);
+				maximum_body = *(real *)((byte *)info + 0x38);
 			}
 			if (maximum_body > object->body_vitality && rate > 0.0f)
 			{
@@ -4869,7 +4873,11 @@ bool function_d5de0(long object_index)
 					real recharge = g_510c54->rate * rate;
 
 					if ((1 << object->type) & 3)
-						recharge = function_1e9720(3, object->team) * recharge;
+					{
+						word team = object->team;
+
+						recharge = function_1e9720(3, team) * recharge;
+					}
 					word_flags_set(&object->damage_flags_word, _damage_object_flag_body_recharging_bit, true);
 					object->body_vitality += recharge;
 					if (object->body_vitality > maximum_body)
@@ -4882,7 +4890,7 @@ bool function_d5de0(long object_index)
 						changed = true;
 					}
 				}
-				else if (!function_138880())
+				else if (stun_ticks != 0 && !function_138880())
 				{
 					object->body_stun_ticks = stun_ticks - 1;
 					changed = true;
@@ -4894,13 +4902,13 @@ bool function_d5de0(long object_index)
 		if (object->maximum_body_vitality > 0.0f && !TEST_FIELD_BIT(object->damage_flags.body_depleted))
 		{
 			long state_count = object->region_states_size / sizeof(s_object_region_state);
-			s_object_region_state *state = (s_object_region_state *)((byte *)object + object->region_states_offset);
+			s_object_region_state *states = (s_object_region_state *)((byte *)object + object->region_states_offset);
 
-			for (long i = 0; i < state_count; i++, state++)
+			for (long i = 0; i < state_count; i++)
 			{
-				if (state->unknown02 > 0)
+				if (states[i].unknown02 > 0)
 				{
-					if (state->damage_level_ticks == 0 && info->region_count > i)
+					if (states[i].damage_level_ticks == 0 && info->region_count > i)
 					{
 						s_damage_info_region *region = &info->regions[i];
 
@@ -4914,13 +4922,13 @@ bool function_d5de0(long object_index)
 								fld decay
 								fistp amount
 							}
-							if ((long)state->unknown02 > amount)
+							if ((long)states[i].unknown02 > amount)
 							{
-								state->unknown02 -= (byte)amount;
+								states[i].unknown02 -= (byte)amount;
 							}
 							else
 							{
-								state->unknown02 = 0;
+								states[i].unknown02 = 0;
 								continue;
 							}
 							changed = true;
@@ -4928,7 +4936,7 @@ bool function_d5de0(long object_index)
 					}
 					else
 					{
-						state->damage_level_ticks--;
+						states[i].damage_level_ticks--;
 						changed = true;
 					}
 				}
@@ -4937,8 +4945,9 @@ bool function_d5de0(long object_index)
 
 		/* retail passes the character's vitality properties ([esp+0x14] at
 		   0xd6598, NULL for a unit no actor drives), not the damage info */
-		changed |= function_d8b50(&object->unknownf8, &object->unknown100, (char *)&object->unknown109, bounds,
-			TEST_FIELD_BIT(object->damage_flags.body_depleted));
+		bool body_depleted = TEST_FIELD_BIT(object->damage_flags.body_depleted);
+
+		changed |= function_d8b50(body_depleted, &object->unknownf8, &object->unknown100, (char *)&object->unknown109, bounds);
 		if (TEST_FIELD_BIT(object->damage_flags.unknown11))
 		{
 			if ((char)object->unknown108 > 0)
@@ -4950,8 +4959,9 @@ bool function_d5de0(long object_index)
 		}
 		else
 		{
-			changed |= function_d8b50(&object->unknownf4, &object->unknownfc, (char *)&object->unknown108, bounds,
-				TEST_FIELD_BIT(object->damage_flags.shield_depleted));
+			bool shield_depleted = TEST_FIELD_BIT(object->damage_flags.shield_depleted);
+
+			changed |= function_d8b50(shield_depleted, &object->unknownf4, &object->unknownfc, (char *)&object->unknown108, bounds);
 		}
 	}
 	return changed;
