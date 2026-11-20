@@ -94,7 +94,16 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
 // score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// MiniMax E (11-19): score 162 (was 162): no new form, no lower score. Read from the listing again: the first
+// difference is still at +0x29c, where the blend sits in XMM2 and retail keeps it in XMM5 from the sequence arm through
+// the aspect block; retail's flagged branch also reorders the bounds' four words into frame+0x60..frame+0x6c from the
+// context flags, a step our body does not have, and the body is still 1947 bytes against retail's 1937. This round split
+// the four reciprocals and the four bounds spans into separate declarations, alone and together, and in the order that
+// puts the second bounds first; all four forms compile to the same 162, so neither the division order nor the choice of
+// the blend's register is set by the declarations' shape.
 // The bitmap path still allocates blend and aspect intermediates differently. The body is 1947 bytes against 1937.
 // Earlier scores 211 and 223.
 // M3 lane 14 r114 (fast with 0x2243c0, which matches throughout; control 162, aligned 127): retail keeps the blend in XMM5
@@ -728,6 +737,13 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // at the complement or late in two axis schedules: 260/241/241. Current products at the complement
 // with late next products: 313/313. Next products at the complement: 255. Both pairs there: 265/265.
 // NOT kept: Earlier weighting leaves the blend spill and changes the frame or grows the body.
+// M3 lane 7 r187 (fast with 0x2243c0, MATCH each time; control 162). Reading: at the point after the reciprocals retail
+// holds 1.0, ax, ay, bx, by, inv_bx, inv_by and the blend (XMM5) in the eight XMM registers and keeps inv_ax/inv_ay in
+// memory (+0x88/+0x18); ours holds inv_ax (XMM5) in the blend's place, so the blend is read from memory. Tried: the
+// bitmap arm reading the blend through a `real const &` bound at the arm's top 162 (same code); the second set's extents
+// declared by, bx 170 (1950 B); the extents and reciprocals declared `real const` 162 (same code); the extents through
+// the inverse sums in a nested block, with aspect, inverse sums and flip declared ahead 173 (1951 B); the flip computed
+// after the inverse sums, just ahead of the encodes 318 (1957 B, the entry changes).
 // M3 lane 10 r126 (fast with 0x2243c0, 0x23ed30, 0x246cd0, 0x246d80 and 0x173c10; control 162, aligned 127): the two
 // inverse sums without their named next terms 322 (1959 B, frame moves); the width product after the y inverse 173 (1951 B);
 // the flip read just before the two UV flips 318 (1957 B); blend declared beside the UV sets 497 (1953 B); `1.0f - blend`
@@ -742,6 +758,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Horizontal scale reused at width calculation, secondary-aspect join,
 // after inverse spans, or after encodes 162/170/173/423.
 // Scoped size workspace 162. Blend still spills at the bitmap join.
+// In-place geometry encode after/before the UV encodes with named corners 512/499, direct corner
+// stores 512/499, complete bounds assignment 519/571, or a projected center point 512/499.
+// NOT kept: the geometry-encoder forms change the frame or incoming register schedule and do not
+// recover the bitmap blend register.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

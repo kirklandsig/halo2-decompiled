@@ -2186,6 +2186,11 @@ void function_269250(long clump_index, long actor_index);
 // keeps the pool in memory, the selection in EDI and compares with comiss; the in-arm compare (126) and the selection taken
 // from the walk's datum index (128) each score worse alone, and the two walk helpers are shared with four matched functions,
 // so they stay as they are.
+// MiniMax G (11-19): no gain (89, body unchanged). Re-measured the in-arm compare (the score taken and compared only when
+// the team matches, with the selection stored before the best): it does reproduce retail's x87 compare and retail's exact
+// length (480 B), but the score rises to 126 because retail hoists the walk's pool into EBX and keeps the selection in memory
+// while ours keeps the pool in ECX (reloaded from its slot at each step) and the selection in EDI, so the block order around
+// the compare shifts and the paired listing diverges from the compare onwards.
 // DH406: Typed actor for latch 87; with clump latch, team-scoped score, or both 335/126/339; iterator-
 // result actor latch and the same three variants 87/335/126/339. NOT kept: the actor latch ties, the
 // team-scoped score restores x87 at higher cost, and the clump latch emits two copies of the step.
@@ -2231,6 +2236,20 @@ void function_269250(long clump_index, long actor_index);
 // parameter is copy-propagated, so the selection keeps EDI); on the in-arm form the actor index read into a local at the
 // top of the actor body 126 or after the walk 126 (same code), the actor's previous clump in a local for the post-loop
 // compare 126. Body unchanged.
+// M3 lane 3 r270 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0/0x268510/0x268c90/0x26ae30, all
+// matched each time; control 87, aligned 54, masked 45; the in-arm compare re-measured 126 at 480 B, the datum-index
+// selection on it 128). New on the in-arm form: a phase scan of one to seven unused initialised locals 126 at every count
+// (no symbol-count tie here); the selection as a local of a two-view overlay type 126 and as a one-element array 126 (both the same
+// code: still promoted to EDI); the selection's address passed to the score function as an extra, unread pointer
+// parameter 126, with the best score's address too 126 (same code, 0x268bb0 still matched: the dropped arguments leave
+// both locals register candidates). Diagnostic (removed): with the last call taking a constant in place of the selection
+// (three after-loop uses) the selection is memory-only with retail's immediate store, x87 compare and shared best store
+// (147, 461 B), but its home moves to +0x1c with best at +0x18 and the score at +0x14 (retail +0x14/+0x1c/+0x18, as the
+// in-arm form has them), the pool is still read from the walk at each use and the found block still trails. Reading:
+// retail's frame order ranks the selection first of the three homes, as when it holds a register here, yet retail gives
+// it none and gives the walk's pool EBX, reloading it after the bit scan takes EBX for the mask; this build gives that
+// one spilled register to the selection (EDI, reloaded at the loop top) and nothing to the pool. The matched 0x268840
+// has the same walk with pool EBX, index EDI, datum EBP; here retail leaves the index in memory as well.
 // The pool still spills through the scan and the selected handle uses EDI.
 // Actor index at the selected arm or its transfer test 87/87.
 // Created-arm index before creation, after creation or after its success test 87/87/87.

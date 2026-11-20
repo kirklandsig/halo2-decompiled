@@ -516,6 +516,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 }
 
 // score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// MiniMax E (11-19): score 238 (was 238): no new form, no lower score. Read from the listing again: retail walks the
+// node chain with the next pointer already in a register and tests the last node's type and entity, then scans the
+// entity's property list for the key 0x2001; our body reads the root's type straight from the node and compares it
+// with one, so the type's home and the compare's width differ. The frame stays 0x40 against retail's 0x44, the second
+// node stays at frame+0x08 against retail's frame+0x14, and the shape's data pointer is still read twice where retail
+// reads it three times and ends its test in a setne and a test pair. This round split the node-type guard five ways (the
+// two tests apart, the type in a named local, the entity test first, and both named) and every one of them compiles to
+// the same 238, so the load before the compare is not reached from the guard's spelling.
 // frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // frame 0x40 versus 0x44. The second node and shape share the wrong stack slot.
 // Retail keeps origin y/z in reused slots and has two unused dwords below the plane.
@@ -1039,6 +1047,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // data member: four at 238. Each with the short material output beside the input
 // snapshots reaches 230 and frame 0x44. NOT kept: the declaration moves the first
 // node out of its retail slot and does not recover the second-node and origin reuse.
+// M3 lane 7 r187 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238). Reading: the byte test at
+// +0x1e with `setne al; test al, al` occurs in retail only inline (here, 0x1c5400 and 0x1d4880; no standalone copy), and
+// matched 0x1c5400 loads the data word once for its zero test, clamp and byte test, where this body loads it three times.
+// Tried: the byte test through a file-local inline bool helper on the shape 238 (same code), the same helper `static`
+// without forceinline 238 (same code); the clamp's data bound to a `dword const &` 294 (1249 B, still one data load);
+// the exclusion's last three tests nested under `if (component != NONE && kind != 24)` 238 (same code); the clamp's
+// ternary written upper bound first 238 (same code).
 // M3 lane 10 r126 (fast with the file's seven matched functions, all MATCH; control 238, aligned 180). Compile-only
 // frame screen (the asm lists each local's home): ours puts origin (9 references) below hit (6), retail hit below a
 // 12-byte home that keeps only origin x, with y and z in shared 4-byte cells; origin by components (x, y, z or z, y, x),
@@ -1057,6 +1072,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // plane-arm signed distances 238; material receiver between snapshots 230;
 // exclusive result-count bound 307. NOT kept: The 230 form restores the frame size but shifts
 // both saved node homes and remains four bytes long.
+// M3 lane 5 r210 (fast with the file's seven other functions; control 238, register-masked 89): the dead second root walk
+// ahead of the property get 341 (1243 B); the key read ahead of the kind-4 test 251; the key adjust as `(data - 1) * 8`
+// 238 (same code); friction and restitution declared at function scope 238 (same code); the material output declared at
+// function scope 230 (frame 0x44 as retail, first difference +0x1a: second/first homes +0x14/+0x18 for retail's
+// +0x10/+0x20; a declaration moved by score, not kept); the 1..16 pin as a non-inline static function taking its bounds
+// 238 (inlined at compile time, same code), with the material at function scope 230.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

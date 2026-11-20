@@ -160,6 +160,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // score 846 (was 846): The 0x4e0 frame and 3327-byte extent agree. The entry zero uses EBP instead of ESI,
 // and the target count, primary source and query arrays receive different homes. The retail query keeps its
 // full-width count through the walk and reloads a sound entry before testing its tag.
+// MiniMax E (11-19): score 846 (was 846): no new form, no lower score. Read from the listing again: retail zeroes
+// ESI at the entry and keeps the primary at frame+0x18 while our body zeroes EBP and keeps the primary at frame+0x24,
+// retail's four query arrays start at frame+0xdc with the gains first and ours start at frame+0xe0 with the clusters
+// and the indices in the other two slots, and retail reads the query count as a full word from frame+0x00 where our
+// body narrows it. Reordering the four array declarations left every displacement unchanged, so the homes are not set
+// by the declaration order. This round made the query count and the choice count full words: 919 with the query count
+// alone, 964 with the choice count alone and 965 with both, all worse than 846, so retail's full-word count is not
+// reached that way. Read off the listing, the four array homes run gains, indices, portals, clusters in retail and
+// gains, clusters, portals, indices here, with the portals in the same slot in both.
 // Earlier score 846 (was 846): Frame 0x4e0 agrees. The entry zero uses EBP and the target count, primary source and query arrays have different homes.
 // entry zero, target-count, primary and query-array homes differ in the 0x4e0 frame.
 // unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
@@ -698,6 +707,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `&choices[choice_count++]` 972 (3287 B: the pointer becomes an induction variable), that with the stores in retail's order
 // (tag, source, decibels, cluster) and the three 1.0f defaults as statements 972; on main's body the four stores in retail's
 // order 846 (code changes, score ties).
+// M3 lane 7 r187 (fast with 0x18bb80 and 0x18ab70, both MATCH; control 846, difflib-aligned 1004). Reading: retail forms the
+// choice as `&choices[count]` from the incremented count (`inc esi; mov [esp+0x34], esi; lea esi, [esi+esi*4]; lea esi,
+// [esp+esi*8+0x10]`), stores tag, source, decibels, cluster through it, and reloads the count into ESI after the distance
+// call; the count is never an induction pointer. Tried: long query and choice counts with `choice = &choices[choice_count++]`
+// up front, stores in retail's order, the 1.0f defaults as three statements 972 (3287 B; the pointer is strength-reduced
+// into [esp+0x18]); the same with the pointer formed from the count and `choice_count++` after the distance 966 (3264 B,
+// ESI is then the entry zero as retail), that with the loops bounded by `count` directly 966 (same code); that with a
+// short choice count 938 (3280 B, aligned 986); with a short query count 965 (3264 B).
 // M3 lane 10 r126 (fast with 0x18bb80, MATCH throughout; control 846, aligned 1004): g_44a0b4 as `real const` at its
 // definition and both extern lines 846 (same code) and it loses matched 0x2197b0 (the read folds to an immediate, 15)
 // and raises 0x18d730/0x18dc90 287/315 -> 400/452; re-measured lane 15 r92's long counts 965, with
@@ -712,6 +729,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // shared neighbor gain 965; one post-distance repair-flags read 846;
 // primary published during conversion 953; shared neighbor record and gain 961.
 // NOT kept: The ESI count and the target, primary and query-array homes remain different.
+// M3 lane 12 r152 (fast with 0x18bb80/0x18ab70; control 846): the detail tag as a ternary initializer 845 (one point, not
+// kept); `bool inside` computed right after the query count 927; the override's logarithmic gain computed once ahead of
+// its loop 959 (3380 B); the pool global read at the function top 966 (3355 B); `primary` declared ahead of the target
+// count 846 (same code).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -1299,14 +1299,19 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
-// score 127 (was 127; 121 before the coordinator decision): coordinator decision (round 119): the plan block in the order that makes both callers match
+// score 116 (was 127): Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
+// Previously noted: Both denominator arms compute the cruise speed, then a shared
+// store publishes it at the join. The body is 523 bytes and both callers still match.
+// Duration and position use different XMM registers. The ramp-down clamp caches its value,
+// and deceleration keeps the cruise result in a register where retail reloads the field.
+// Earlier at 127 (was 127; 121 before the coordinator decision): the plan block in the order that makes both callers match
 // (0x108600 31 -> MATCH, 0x108670 13 -> MATCH; this body ret 0x14 with the initial velocity in XMM6 as retail), kept over
 // this body's 121: the cruise velocity through the motion field, velocity/deceleration/start/target stores first, the
 // half ramp-up, the acceleration zero, the half ramp-down, the denominator with the cruise time written out
 // (`duration - ramp_up_time - ramp_down_time`), then the position and cruise stores, distance declared at its fabs.
 // Still differs: the ramp-down time keeps a register through its clamps (retail compares its stack slot), 528 bytes
 // against 523.
-// score 127 (was 121): the initial velocity now arrives in XMM6 with `ret 0x14` as retail's (both callers match); the
+// Earlier at 127 (was 121): the initial velocity now arrives in XMM6 with `ret 0x14` as retail's (both callers match); the
 // duration/position registers are exchanged and the ramp-down is still cached in a register through its clamps.
 // MiniMax B (11-18, round 2): no new form, no lower score (121): retail takes the initial velocity in xmm6 and this
 // build passes it on the stack, and the six-float signature may not change, so the three float temporaries keep their
@@ -1691,7 +1696,17 @@ bool function_108530(long device_index, long name)
 // ramp-down, target, denominator, deceleration 75 at 523 B (retail's uncached clamp pair and tail, but the duration takes
 // XMM6, so the target becomes the register parameter instead; callers 26/28; a statement order, not kept); velocity,
 // position, cruise zero, target, halves, acceleration zero, start, denominator, deceleration 132 (527 B, `ret 0x18`).
-// Body unchanged.
+// Early cruise span 139; early span with staged additions 127; select distance and divisor
+// before one division 127 at 525 bytes; reuse cruise result for acceleration 116; duration
+// test, fallback or both from the stored field 127 each; cruise calculation scope 127.
+// Shared cruise store 116 (plain confirmed) with both phases reading the field. Scope the
+// result through acceleration, name both square differences, or select the result with a
+// conditional 116 each. The early span loses both callers. The retained source uses the
+// common store and preserves both formulations of the later field calculation.
+// Separate ramp-down floor 129, upper-limit default 122, scoped floor with explicit alternatives 129, both limit
+// intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
+// trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
+// form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1732,14 +1747,16 @@ void device_motion_start(s_device_motion *motion, real target, real duration, re
 			real denominator = duration - ramp_up_time - ramp_down_time + half_ramp_down_time + half_ramp_up_time;
 			motion->position = position;
 			motion->cruise_velocity = 0.0f;
+			real cruise_speed;
 			if (denominator != 0.0f)
 			{
-				motion->cruise_velocity = (delta - half_ramp_up_time * initial_velocity - half_ramp_down_time * final_velocity) / denominator;
+				cruise_speed = (delta - half_ramp_up_time * initial_velocity - half_ramp_down_time * final_velocity) / denominator;
 			}
 			else
 			{
-				motion->cruise_velocity = delta / duration;
+				cruise_speed = delta / duration;
 			}
+			motion->cruise_velocity = cruise_speed;
 			if (ramp_up_time > 0.0f)
 			{
 				real acceleration = (motion->cruise_velocity - initial_velocity) / ramp_up_time;
@@ -1948,6 +1965,19 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // channel reference with the time read before the animation 2. Diagnostic (reverted at once): any real branch between the
 // two flag-block sample calls (an integer parameter test) moves the time to SSE (`movss; mulss`, its store after all four
 // pushes), so retail's x87 time needs both calls in one block.
+// M3 lane 4 r225 (fast; control 2). Compile-only study of the schedule (small functions with `fld; fmul; fstp` ahead of a
+// call's loads and pushes): the fstp lands at a fixed slot counted from the start of its scheduling region, index 7 (the
+// eighth instruction) when the fld is the region's first or second instruction, else six after the fld. A call starts a
+// region as its index 0; a label or the fall-through of a conditional jump starts one with nothing counted; lea, register
+// moves, pushes, movsx loads and stack loads count one each (imul three); the prologue's frame push is not counted and a
+// string copy is no region start. Ours follows it (mov edx 0, fld 1, fstp 7); retail's fstp at index 8 fits only a block
+// that starts at the fld, so retail's render-model load was outside the scheduled block (round 120's reading). Trials:
+// the animation id through an inline getter returning it by value 2 (same code); a named copy of the render model with
+// `__assume(copy != 0)` at the block top 2 (same code). Diagnostics (reverted at once): the matrix copy moved into the
+// flag block 379 (x87 instructions cross the copy, fstp again at index 7); a second way into the flag block that holds
+// the render model in a register (`!render_model ||` ahead of the flag test) 421 (no load in the block, fstp at index 7
+// behind `push edi`); the samplers' unused third parameter as a one-member aggregate with a converting constructor 2
+// (same code: promoted to a long).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -2616,6 +2646,22 @@ bool function_0b6760(s_index_pair const *pair);
 // ebx, so the body follows one register rotation off and stays sixteen bytes short of retail's 1495; the only form
 // below 250 needs a one-use rate local, which the coordinator ruled out without a byte match, and dropping the volatile
 // on the definition alone measures 386.
+// Round 642 forms: absent state first with definition-first result 399, direct offset
+// test with state helper 235, shared signed state offset 246, actual position-channel
+// reference 61, nested state and validity tests 61, shared channel and index-pair
+// references 61, position activity before refresh 384, named device tag fields 61.
+// NOT kept: the two-point definition-first gain is below threshold. The remaining
+// manual state register and channel-1 call lifetimes stay different on the tied forms.
+// Round 438: The definition/result stores and channel-1 register lifetimes still differ. Position-group lvalues and the typed definition receiver were tried.
+// Bind the position-group field reads and updates to position 61.
+// Bind the position-group field reads and updates to position velocity 314.
+// Bind the position-group field reads and updates to group target 64.
+// Bind the position-group field reads and updates to position and position velocity 314.
+// Bind the position-group field reads and updates to position and group target 64.
+// Bind the position-group field reads and updates to position velocity and group target 316.
+// Bind the position-group field reads and updates to position and position velocity and group target 316.
+// Use the existing device definition as the saved receiver in both motion paths 61.
+// NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

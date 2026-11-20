@@ -1043,7 +1043,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871): the frame is 0xd0 versus 0xb4, the opening variant lookup expands,
+// score 871 (was 871): Frame 0xd0 versus 0xb4. The opening lookup expands and the upper-capacity selector remains a call.
+// Earlier score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// The 0xd0 frame exceeds retail by 0x1c, and the opening variant lookup expands.
+// Previously noted: Earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// selector remains a call (two stacked first lines merged in r108).
+// Earlier score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
+// the frame is 0xd0 versus 0xb4, the opening variant lookup expands,
 // and the upper-capacity selector stays a call. An earlier body scored 964.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
@@ -1628,10 +1635,26 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 876/885/885. With the shared availability test 875/905/903, direct pointer publication with the
 // shared test 885, complete nullable expression 871. NOT kept: the expression ties, and the other
 // forms regress. The opening lookup still expands and no trial reaches the retail frame.
+// M3 lane 12 r152 (fast with 0x73530, MATCH each time; control 871, both builds `ret 4`): the admission test as two `if`s
+// (summary, count and variant, then the two capacity calls) 871; `bool result = true;` declared first 871; the variant
+// declared, then assigned 871; 0x193300's result named for the second test 871 (all the same code); diagnostic, the output
+// memset after the admission test 934 (2716 B).
+// common countdown 871; common group size cursor 871; common countdown and cursor 871; dword cells with common
+// countdown 911; dword cells with common cursor 911; dword cells with common countdown and cursor 911; dword
+// cells with common traversal and two memset clears 936; scoped dword cells with common traversal and two
+// memset clears 987.
+// NOT kept: The shared word-cell traversal ties. Dword cells reserve 0xb0 and shorten the body. The scoped
+// dword form reaches 0xb4, but changes the session ingress to the stack and shortens to 2652 bytes. All nine
+// checked peers retain their opening measurements.
 // Variant/summary names, index/capacity names and two complete entry name orders,
 // each with word buckets 871/871/871/871 and dword buckets 911/911/911/911.
 // NOT kept: word forms tie. Dword forms reserve 0xb0, shorten to 2748 bytes and
 // raise the score. The opening lookup still expands.
+// First population count before clear 871, population count shared across scans 871, indexed scans with shared
+// count 885, dword cells with shared count 911, dword memset clears with shared count 936, machine IDs scoped
+// before dword cells 911, separate dword histogram scopes with shared count 917, shared group-size base with
+// dword cells 911. NOT kept: Changes to count lifetime tie or shorten the body. Dword cells bring the frame to
+// 0xb0 and the scores to 911 or higher. The opening lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
