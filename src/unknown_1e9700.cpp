@@ -868,6 +868,10 @@ struct s_object_damage_view
 // Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
 // fallback 358/358/416/416, with conditional code selection 358/358/416/416.
 // NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
+// Shared victim/credit/both full-width player slots across pool and counter uses
+// 439/357/434, word slots 418/360/438, both unsigned full-width 434, credit slot
+// assigned with the selected handle 477.
+// NOT kept: all raise the score. The 357 form retains frame 0x50 but grows to 1553 bytes.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -1210,7 +1210,8 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
-// score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// Earlier comparison 678 in the r718 fast check.
 // P622: a one-use caption-phase local at the division gives 671 (match-only, reverted); frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
 // M3 lane 4 r226 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): x as long 684; y as short 681; the width folded into x's
 // expression (no width local) 679 (same code: left is still read once); `panel->time` as one `flag1128 || score_to_win != 1`
@@ -1625,6 +1626,11 @@ PRIVATE inline long score_string_list_1608e0()
 // M3 lane 7 r199 (fast): the player's local user index named once and used at the four scroll-offset uses 697; the
 // scroll offset through a `real *` formed once 740 (2840 B), through a `real &` 740 (2840 B); the player pointer declared
 // after the scores pointer 713 (2888 B), just before the first scroll-offset use 717 (2888 B).
+// Height from the row total minus caption rows 708, full row total with inset 708,
+// full rows with conditional inset 709, body rows with full caption extent 708.
+// Shared signed team count with body/full rows 707/707. Explicit signed player/team
+// counts with body extent or conditional inset 707/708.
+// NOT kept: all retain 0x798 and raise the score.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

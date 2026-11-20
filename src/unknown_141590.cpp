@@ -527,6 +527,13 @@ static inline void quaternion_transform_vector(
 // All keep the 0x20 frame and miss the separate retail transform spill.
 // Coefficient local names in all six weight/projection orders, then cross-term names before
 // or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// Typed basis projection with quaternion/input first: scalar snapshot 178/212,
+// scalar doubled in place 170/212, caller-owned quadratic weight 311/304.
+// Typed-member forms 187/199 reproduce earlier projection leads.
+// Original projection with staged scalar square 151, shared scalar before doubling 154,
+// opening weight order 212, and original quadratic expression in retail order 259.
+// NOT kept: the shared dot changes the left-axis grouping. The staged square gains only
+// with both changes together, leaves frame 0x20, and changes the projection schedule.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1604,6 +1611,10 @@ void function_143250(
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
 // NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// Separate third-band copies of the second-band axial/horizontal mixed products
+// 1697/1721 and axial/horizontal squares 1751/1791. Both mixed sets 1792, both
+// square sets 1866, all products 1959, all immutable copies 1959.
+// NOT kept: the explicit copies shorten past retail and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
