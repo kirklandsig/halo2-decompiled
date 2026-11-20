@@ -2011,7 +2011,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // cross products (142, the same score and the same code).
 // M3 review (11-20, MiniMax R): the up vector read into three one-use locals before the cross products gave 140, under the
 // 8-point keep bar on a function above 30 (one-use locals are kept only on a byte match); code back to main (142).
-// score 140 (was 142): retail's length, frame 0x18 and result slot; the perpendicular's XMM register choices and case 3's late position offsets still differ. Earlier 142 (was 177).
+// score 142 (was 177): retail's length, frame 0x18 and result slot; the XMM register choices and case 3's late position offsets still differ (forms below).
 // MiniMax B (11-19): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18 and the result still shares the scale argument's home instead of the slot at +8, the reference vector still starts at +8 where retail's starts at +0xc, and the four cases still differ in their float schedule; an else that writes the zero result, a literal zero in the early returns, a declared copy of the result, an angle local, a scaled local and the declaration orders all give byte-identical code, and the 177 form needs the XMM7 clobber that raises the caller 0x2e9e0 from 492 to 572.
 // MiniMax D (11-14): no new form, no lower score (193): retail's four cases still compute their cross products with
 // their own temporaries - its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before
