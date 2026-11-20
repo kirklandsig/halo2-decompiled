@@ -577,6 +577,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // read without a definition local 156 each (same code); the flags through `seats[seat]` without the seat pointer 424
 // (2308 bytes, the load folds retail's add). Case 15/18 and later rotations (retail reuses the dying source register
 // for the `lea`) are on main too. Code back to main.
+// M3 lane 4 r234 (fast with 0x1e83c0, MATCH; control 117): the unit index read from the player at each use with no local
+// 117; `__forceinline` on entry_420_get 117; `__forceinline` on request_unit 117; case 23's test as `2 * loaded` 117; the
+// empty case 3/19 labels dropped 117 (the same code each). Case 23's scratch rotation starts at its first load (ours ECX,
+// retail EDX for the local index), downstream of case 4. The held 0xd0590 order was not re-measured: its definition's
+// file was on this round's avoid list. BLOCKED-BY 0xd0590 stands.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

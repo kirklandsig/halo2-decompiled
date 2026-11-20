@@ -1462,6 +1462,14 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // body with planar_scale in both arms, the false arm or the true arm 708 / 574 / 780; the same with `inline` on 0x2108a0
 // 737 / 726 / 751 (726 control). The patches are build/r207/lead-299460-w10.patch (108) and
 // build/r207/lead-299460-w9.patch (236) in the lane 6 worktree.
+// M3 lane 4 r234 (fast with 0x29a190, 0x298c30, 0x2108a0 and 0x210770, all MATCH; main's body 569, unchanged): lane 6
+// r207's 108 lead re-applied on current main 108 (the full image 106). The permuter (--fast, annealing) cannot search it:
+// its reduced image scores the lead 409. On the lead: the first obstacle difference in a pair of its own, the offset pair
+// declared after or before the rotation output 187 / 187 (3372 B; the 2-D normaliser after it loses retail's order); one
+// function-scope offset pair for the sweep rotations' output and both obstacle differences 108 (same code: the rotation
+// output keeps +0x18 and the offset +0x44 whichever variable holds them); the 3-D distance sum as `(z*z + y*y) + x*x`,
+// `x*x + (z*z + y*y)` and `z*z + y*y + x*x` 108 each (same code: the first side distance's square order is not the
+// source's).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

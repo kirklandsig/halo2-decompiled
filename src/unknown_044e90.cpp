@@ -588,6 +588,13 @@ struct s_visibility_bound_record
 // planes and the others in another order); the frustum address in two `lea`s; the two call arms laid out separately with
 // their own pushes; the part loop's counter and bit (retail ESI/EBX, ours EBX/ESI) and its scale products (retail `x *
 // scale` in place with the scale held in XMM3, ours `scale * x` with a reload); the bottom arm's first reads.
+// M3 lane 4 r234 (fast; 0x44720, 0x44c90, 0x45560, 0x458d0 and 0x45a80 MATCH throughout; control 430): the pointer-taking
+// geometry lookup of src/unknown_044720.cpp moved into include/unknown_044e90.h and called here with the entry and its first
+// word 449 (1760 B); on that, the entry formed from a `long` copy of the index first 449, 0x45560's opening exactly (the
+// lookup on the indexed element, then the entry) 440 (1751 B), the same without the `long` copy 443; header and both files
+// restored. On main's body, the part centre in 0x142570's shape (x, y, z reals, `scale * x` under the test, rows up,
+// left, forward, position) 432 (1744 B, first difference +0x12). Retail keeps the tag table in ESI from the head to the
+// bottom arm and the entry in EBX; ours still loads the table into ECX for the lookup only.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

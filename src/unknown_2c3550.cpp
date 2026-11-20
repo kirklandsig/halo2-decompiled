@@ -940,6 +940,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // prologue with flags, at +0x68) 700, after maximum_height and ahead of flags 701; `bool result` with it 773, alone 754
 // (NONE then takes EBX as retail, but a zero is cached in EDI and the state pointer moves to ESI); `bool result` with the
 // radius as one ternary 765 (2968 B; the radius is then stored once, as retail).
+// M3 lane 4 r234 (fast with 0x270930 and 0x2c4030, both MATCH; control 675): `flags` as a dword 675; `final_complete` as
+// a byte 675; `previous_node` initialised to NONE 731; the actor pointer through the existing actor_get 675; `previous_point`
+// declared ahead of `previous_node` 675 (the same code each, apart from the NONE initialiser). Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
