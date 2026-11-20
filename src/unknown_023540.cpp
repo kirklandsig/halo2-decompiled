@@ -3260,7 +3260,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // chains one slot earlier among the SSE ones than retail does (first difference +0x527); the helper's spellings and the
 // corner-call orders the earlier rounds measured all give 54 or worse.
 // MiniMax S (11-20): no new form, no lower score (54): the two corner blocks still differ in the x87 and SSE order, ours storing the x87 coordinate before the subtract where retail subtracts first, and the four scale products land in other XMM registers.
-// score 54 (was 54): r200 unchanged; earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
+// score 54 (was 54): r139 unchanged; r200 unchanged; earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
 // (first difference +0x527). Round 176 (m3 lane 5, fast = plain): the hand-written slot-12 shader call
@@ -3520,6 +3520,30 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // returned corner pair with named scale, bias 569;
 // returned corner pair with named rotation, scale, bias 569.
 // NOT kept: Returning the pair shrinks the frame to 0x40 and the body moves away from retail length. The corner instruction schedule still differs.
+// M3 lane 11 r139 (compile-only harness of this file, whose corner block is the fast and plain builds' exactly; counts are
+// the block's lines out of place against retail, control 54, aligned 27; h2m fast for the four forms marked fast): the
+// schedule moves with redundant parentheses inside the corner helper, which no earlier round measured. One to three extra
+// pairs at one place: around the first statement's difference (or its sum with 1.0) 52/82/89 (fast 54 for one pair: the
+// second set then starts as retail's, the first x87 store ahead of the cosine product, aligned 25); around its scale
+// product 61/81/91 (fast 63 for one pair); around its whole right side 57/81/91 (fast 59 for one pair); the second
+// statement's sum 82/94/94, its scale product 90/92/92, its right side 84/92/92; around one product of the second
+// statement 105 or 101 (other instructions). All 4096 combinations of zero to three pairs at those three places in both
+// statements: 245 distinct blocks, none retail's, one under 54 (the 52). A float cast around a whole right side gives the
+// pair's block (57); around the difference or the sum it changes nothing. Retail issues each x87 store four instructions
+// after its last multiply where ours takes three; only `0.5f + r * scale * 0.5f` (other instructions, fast 74, 2025 B)
+// reproduces retail's first-set x87 spacing. With the eight stores as separate one-coordinate helper calls, the 168
+// statement orders that keep retail's register reuse (coordinate 0 first, 1 ahead of 2 and 6, 2 ahead of 7, the x87
+// coordinates 3, 4, 5 in order anywhere) give 54 at best (19 of them main's block), so the x87 statements' place among
+// the SSE ones is not the cause. Other helper shapes: the bias as its own inline helper taking the scale 113, taking the
+// scaled value 54 (same code); the rotation halves as value-returning helpers 113; scale and bias applied to the stored
+// coordinate in place 109 and 112; named scaled u/v 108; reference outputs 108; sixteen scalar coordinates in place of
+// the arrays: the values are then computed at the vertex calls (no stored block). The back end's own option switches do
+// not turn the scheduler off, so its input order stays unseen. LEAD: with the one extra pair around the first statement's
+// difference every SSE instruction of both sets stands in retail's order, and all that is left is that each of the four
+// contested x87 stores comes three instructions after its last multiply where retail's comes four (the x87 steps behind
+// it one place early). On that form: `/ 2.0f`, `/ 2`, `+ 1`, the three commuted spellings: same code; a double 0.5 or 1.0:
+// all x87 (113 to 115); the finished value through a named local before its store, or through value-returning helpers:
+// same code or other instructions (102 to 108). Body unchanged.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
