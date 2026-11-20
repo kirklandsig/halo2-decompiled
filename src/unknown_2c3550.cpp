@@ -933,6 +933,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // steering forms, so it inlines with a spill); previous_node carried in ECX to one store after the value28 arms; the node
 // walk's parent read placed after the y copy. Positional counts only fall once every block has retail's row count, so the
 // next round should finish the alignment on that patch (the adds first), not on this body.
+// M3 lane 10 r133 (fast, control 675): first_output declared with the top-level defaults (retail stores its zero in the
+// prologue with flags, at +0x68) 700, after maximum_height and ahead of flags 701; `bool result` with it 773, alone 754
+// (NONE then takes EBX as retail, but a zero is cached in EDI and the state pointer moves to ESI); `bool result` with the
+// radius as one ternary 765 (2968 B; the radius is then stored once, as retail).
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

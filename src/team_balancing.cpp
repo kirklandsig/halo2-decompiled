@@ -1014,6 +1014,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // function's parameters arrive in follows the caller 0x7e210, which is in another file and outside this lane, so the
 // remaining difference in the body is not reachable from here; the forms tried by the earlier rounds are recorded
 // above and none of them moves this body.
+// M3 lane 10 r133 (fast with 0x91e30 MATCH and 0x7e210 871 each run; control 34): the entry named once (`long party =
+// party_indices[i];` for the test, the maximum and the copy) 73; next_party declared ahead of the total 34 (same code);
+// the clamp as `if (excess < 0) excess = 0;` 46; the clamp as `excess > 0 ? excess : 0` 43; each loop with its own
+// `long i` 34 (same code). First-pass (/Gd compile-only) screen: the player count stays in EBX (the maximum takes EAX
+// with cmovle) for the declaration order and the sum order; the named entry moves it to EDX and the party list to EDI.
+// Still BLOCKED-BY 0x7e210 (src/unknown_07a9a0.cpp, another lane's file this round).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

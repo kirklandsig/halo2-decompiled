@@ -2439,7 +2439,7 @@ dword __cdecl function_131fc0(real alpha);
 // width and the height once and multiplies the coordinates by the stored reciprocals, this build multiplies the
 // coordinates by named reciprocals and folds the other operand, so retail's reciprocal registers, its dimension
 // homes (the width at 0x10, the height at 0x14) and the bottom edge's v products still differ.
-// score 100 (was 140): 1733 bytes against 1729; everything up to the default rectangles now equals retail (the
+// score 14 (was 14; earlier 100, was 140): at 1733 bytes against 1729 everything up to the default rectangles equalled retail (the
 // flag loads, the short arm's reload and the two parameter-home writes included). Left: the order of the eight
 // default stores, the reciprocals' registers and the operand order of the UV products (see round 117 below).
 // Earlier reading (140): frame and length agree; left: retail keeps both rectangle parameters as memory
@@ -2739,6 +2739,17 @@ dword __cdecl function_131fc0(real alpha);
 // only a per-vertex helper taking the destination coordinates by value gave retail's split (top coordinate-first, bottom
 // reciprocal-first), with sixteen more instructions (the coordinates held in temporaries across the first call).
 // Body unchanged.
+// Round 133 (m3 lane 10, fast = plain, control 14, both builds `ret 0x34`): on the point2f size form (4, the r196 lead,
+// re-measured) the four texture-coordinate calls through the SDK header's member-form wrapper 697 (1957 B, the
+// library's push-buffer write expanded); the first vertex's v as `source[2] * (1.0f / size.y)` 77 (1725 B: the bottom
+// pair then loads the reciprocal first as retail, the first time a form moved it, but the first vertex loses its early
+// coordinate load); `real const inverse_height` 4; inverse_height declared above the defaults and assigned after the primitive is opened
+// 4. Compile-only screen (about 600 variants: each v site as named product, division, `* (1.0f / size.y)` or
+// `(1.0f / size.y) *`, a named inverse width before or after, named copies or references for the bottom pair, a dead
+// `(void)(1.0f / size.y)`, `source[2 + 1]`, an embedded assignment at the first vertex, a second named reciprocal for
+// the bottom pair): retail's pattern (first vertex coordinate-first in registers, second coordinate-first from the
+// home, bottom pair reciprocal-first, two homes) appears in none; every bottom flip needs a third home or changes the
+// first vertex.
 // @retail 0x2a8d0
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2904,7 +2915,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // is still compared with minus one where retail does that before the size is stored; re-measured at 330 (1591 bytes
 // in the reduced image, against retail's 1543). BLOCKED-BY 0x235a0.
 // MiniMax R (11-15): no new form, no lower score (330): the first difference is still at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; retail inlines the first 0x235a0 copy and calls the second one, while this build inlines both, and retail's dword rounding of the byte count (sub size, remainder; add size, 4) written out after the zero test measures 392 (1624 bytes), since the body is already misaligned there.
-// score 354 (was 330; earlier 364, was 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
+// score 354 (was 354; earlier 330, 364, was 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
 // made 0x4b5d0 175, long makes it 93); the structure global is read
@@ -3037,7 +3048,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // M3 lane 14 r116: 330 -> 354 with no change here: 0x22cf0 now takes the position pointer in EDX as retail's does, so
 // both calls gain retail's `mov edx, eax` (the only change in this function's code) and the body is 4 bytes longer.
-// score 354 (was 354): the render-memory allocation now rounds the byte count up to a dword boundary, keeps the
+// Earlier at 354: the render-memory allocation now rounds the byte count up to a dword boundary, keeps the
 // handle's NONE test and takes the output pointer through the masked handle, as retail does; the loop's pair
 // pointer, the level's table entry and the second 0x235a0 copy still differ.
 // MiniMax H (11-19): no new form below the committed score (249): the level's table entry was tried as a byte pointer
@@ -3046,6 +3057,22 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // local (253); the limit still comes down with a decrement where retail takes it with a lea, so the level's table
 // entry and the second 0x235a0 copy still differ.
 // NOT kept (coordinator screen, MiniMax H 11-19): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
+// Round 133 (m3 lane 10, fast, 0x22850 209 and 0x4b5d0 344 unchanged): the coefficient pointer after the clamp in one
+// expression 360; the sample flag initialised from the call 384; a cache-entry pointer for the key, order, count call
+// and handle 379. Inliner lead (steering, match-only, not kept): a redundant `if (0 < count)` around the bucket loop
+// halves both 0x235a0 sites' call frequency and the second copy is then called as in retail (364 at 1484 B). With the
+// allocation through render_memory_allocate and table_entry_data (both copies inlined: 423 at 1654 B) the guard gives
+// 236 at 1543 B (allocation block retail's); + the sample source computed before the `continue` test 177 (1544 B, loop
+// head and the first use_samples block retail's); the guard on the initialised index (`long bucket = 0; if (bucket <
+// count) for (; ...)`) also gives retail's loop entry (177); + both determinants through one inline helper 168.
+// On the allocator form these natural forms left both copies inlined: the admission exits as two gotos 423, the body
+// under `if (!found && g_5093e8 < 24)` 388, the bucket body under `if (available_samples > 0)` or as a while loop
+// 423/423, a `handle == NONE` early exit 439. Left on the 168 form: the six 0x143600 calls set up ESI, ECX, EAX where
+// retail sets ECX, EAX, ESI (0x22850's calls too: BLOCKED-BY 0x143600's parameter order, in another lane's file this
+// round); the prologue's ESI/EDI roles (retail: count and entry offset in EDI, object index, order and stride in ESI);
+// the level clamp (retail `lea edx, [eax - 1]` and the entry address formed then loaded; a named last level 303); the
+// first matrix copy's schedule; the determinants' factor orders (dead-local scans K = 1..16 flat; compile-only, each
+// term spelled in reverse gives retail's order for the first two terms only).
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
