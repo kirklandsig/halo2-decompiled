@@ -424,6 +424,10 @@ long g_55e6c0;
 // The per-level byte count named ahead of the loop 43, at the top 138/138. Diagnostics: a byte store of the height after its
 // store or after the zero stores 142/133 (retail's top block); the clamp with only its lower or upper arm 102/138 (the
 // upper-only clamp still takes EAX). A 900 s permuter run on the 29 header-pointer form: 96 tries, none below it.
+// M3 lane 16 r151 (fast with 0x1dc40/0x1db10, both MATCH): round 122's lead re-measured 31 (484 bytes); on it the height
+// store moved after the packing 159 (493 bytes); on main's body the same move 98 (480 bytes); the clamp's tests
+// constant-left (`0 > count ? 0 : 4 < count ? 4 : count`) 29, only the upper one 29, only the lower one 29 (all the
+// same code), the first spelling on round 122's lead 31.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

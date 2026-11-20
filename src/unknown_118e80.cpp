@@ -1229,6 +1229,14 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax D (11-20): no new form, no lower score (14, 1034 bytes): retail's block after the 0x119bc0 call still differs
+// in the tail (retail spills the 0x119bc0 result to a stack byte in the dead definition pointer's slot and pushes the
+// containing dword, this build keeps the result in al) and in the copy's load order (retail hoists the source's first
+// component above the stores through the object pointer, this build does not).
+// A typed vector member at the object's +0x88 (its unknown88, with the old value90 read rewritten as that member's k)
+// and the copy written through the member give byte-identical code (14, 1034 bytes), so the copy's spelling is not what
+// differs; the hoist needs the source local's address known not to escape, and the 0x1c4b00 call makes it escape.
+// Still BLOCKED-BY 0x1c4b00 (bool formal and its 14 declarations, in other lanes' files), 0x1ec690 and 0x1eb6f0.
 // score 14 (was 14; 43 before): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
 // and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still
@@ -1512,6 +1520,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // declared bare there 14; a named destination pointer for the +0x88 copy 14 (same code each); the 0x119bc0 result
 // compared `!= false` at its declaration 97 (1039 bytes). Still BLOCKED-BY 0x1c4b00 (its bool formal: declarations in
 // other lanes' files this round) and 0x1ec690 / 0x1eb6f0 (their file is another lane's this round).
+// M3 lane 1 r133 (fast with 0x119bc0, 0x1c4b00, 0x119020, 0x119c10 and 0x118e80, all matched each time; control 14):
+// the member store placed after the +0x88 copy 11 (the byte store then sinks past the force push; a statement order, 3
+// points, not kept); the flag local typed byte 14 (same code); the object's +0x88 as a typed vector member for the copy
+// 14 (same code); the member store after the 0x1c4b00 call 96 (1041 bytes: the flag is kept in a stack byte across the
+// call and read back twice); no member store 90 (re-measure). Still BLOCKED-BY 0x1c4b00's bool formal: three of its 14
+// declarations sit in files other lanes hold this round (src/bipeds.cpp, src/items.cpp, src/unknown_0a76b0.cpp), and by
+// 0x1ec690 (still a disabled draft behind its stub) for the copy's hoisted loads; lane 3 r258's held form (6) stands.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

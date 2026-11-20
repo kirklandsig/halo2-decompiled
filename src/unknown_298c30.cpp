@@ -95,6 +95,20 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 }
 
 // score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// MiniMax D (11-20): no new form, no lower score (305, 1732 bytes, retail 1732). The first difference is still the constant
+// 1.0f, which this build loads into XMM1 where retail loads it into XMM2; the reciprocal copy and the radius load then swap
+// with it, so the whole float register assignment of the function turns on that one constant. Four source-order trials moved
+// the negation of the radius ahead of the normalization (342, the negation materialised early), moved the endpoint block ahead
+// of it (368, the frame restructures and the first difference moves to +0x3), swapped the y row's addend order (305, identical
+// code, MSVC canonicalises the commutative add) and copied the facing vector's two components into locals (387, the frame
+// grows to 0x70). Swapping the two multiplications in the normalizing helper measures 307.
+// The near arm still differs in kind: this build keeps the cosine on the x87 stack and computes y*cos on x87 into a float
+// slot, while retail spills the cosine to a float slot and computes y*cos with mulss (the y row in SSE) and keeps the x row
+// on x87; the cosine's float rounding is what decides which of the two rows is evaluated in SSE.
+// The candidate count is a byte here (the count in BL, the endpoint index in BP) where retail has the count in BP and the
+// index in BX; as a short the count measures 469 at 1686 bytes (the length no longer matches retail and the caller
+// 0x29a190 regresses), as earlier rounds recorded. Body restored to the kept form.
+// score 305 (was 305): The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax B (11-14): no new form, no lower score (382): retail carries the constant at +0x57 in xmm2 where this build
 // carries it in xmm1, which then swaps the product registers, retail's counter is in BX where this build's is in BP, and
 // the body is still 40 bytes shorter than retail's (1692 against 1732); the normalizer's two products follow the source
@@ -610,6 +624,18 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
 // Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.
 // NOT kept: every signed-count form shortens the body and changes the matched caller.
+// M3 lane 8 r199 (fast with 0x29a190 and 0x298c30, both MATCH throughout): lane 1 r129's lead rebuilt (global count, near rows in
+// per-side arms, emitter storing angle and side first) 310 (1716 B, first difference +0x163, aligned 127, masked 89 against this
+// body's 260 / 159). On it: the wrapped angle as `x >= 0.0f ? x - 2pi : x + 2pi` 311 (aligned 117, masked 84); the angle element
+// read at each use 315 (1714 B, aligned 116, masked 79); both 314 (1717 B, aligned 104, masked 71); the near y row as
+// `local_11 * arg_3->y` or y term first 310 (same code); the loop root summed y-first 310, on both 314 (same code); no `(real)` on
+// the root 310 / 314 (same code). Diagnostic dead locals 1..7 on both: 314/316/314/314/314/314/313 (the loop head never moves).
+// Our loop head stores the root and reloads it for the radius compare (`fstp`, two pops, `fld`) where retail keeps it on the x87
+// stack (`fstp st(2); fstp st(0); fst`): one instruction more, shifting the near arm by a line.
+// Near direction point per candidate 372, at near-arm scope 372, at endpoint scope 372, or shared
+// with the far arm 370. Facing-copy point per candidate, per near arm, or shared 410/449/437.
+// Separate pre-sine and completed y values 305. NOT kept: The point workspaces grow the body and
+// some grow the frame. The separate y values tie and leave the cosine spill unchanged.
 // M3 lane 1 r129 (fast with 0x29a190 and 0x298c30, both MATCH unless noted; base 305, aligned 171/167 = unmatched instructions
 // ours/retail in an LCS-aligned diff; plain where said; nothing kept). Four retail-evidenced forms that work only together:
 // (a) the emitter's stores in retail's order (angle, side, facing test, direction) 314 (aligned 140/136; plain 314);
@@ -809,6 +835,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// MiniMax G (11-19): no new form, no lower score (569): the radius is still promoted into XMM5 at the entry and kept
+// for the whole body where retail loads it from its home in each block, and that follows from this build's link-time
+// register summary of 0x2108a0 and 0x210770, whose definitions are in another lane's file, so the radius, the pivot
+// home (+0xa0 against retail's +0x94) and the sweep arms' XMM registers stay open: BLOCKED-BY. Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (569): the pivot offset's negative arm, the pivot home, the sweep
+// arms' XMM registers and the three rotations in the loop are still open, and the forms tried on the scale
+// expressions, the direction's components and the named scales all score the same or worse. Body unchanged.
 // MiniMax R (11-16): no new form, no lower score (569): the body is still 39 bytes shorter than retail's, the three trace results still take the homes +0xf4 and +0xd0 against retail's +0xd0 and +0xf4, and the radius still comes from one read where retail re-reads the parameter nine times.
 // score 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
 // at first use (the third inside the sweep loop) and declared in the order local_13, local_12, local_14: same code (their

@@ -104,6 +104,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
 // score 949 (was 949): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain; earlier 949 (was 902), 902 (was 902).
 // Frame 0x1f0/0x1d4 (ours 28 bytes larger), entry argument/flags in EAX/ECX against retail ECX/EAX,
 // byte-flag homes and the record/vector homes still differ; the forms below were measured.
@@ -538,6 +539,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
 // the other way round), so every stack home below the top is out of step; the loop head's shape is decided by the callee
 // 0xbadc0, which lives in another file - BLOCKED-BY 0xbadc0.
+// M3 lane 5 r214 (fast; control 949, aligned 528): record bit 1 declared before bit 2 949 (aligned 521); local_2 and
+// local_3 declared ahead of the entry flags 956; the activity flag as `!bit13 && local_0` 997; the activity flag as a
+// copy of local_0 cleared when bit 13 is set 994 (retail's entry registers, first difference +0x9, but the flag takes
+// its own byte at +3); the record loop counter declared at block scope 949 (same code). Both builds are in asm
+// slot-ordering mode (inlined fistp helper, cvttss2si).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

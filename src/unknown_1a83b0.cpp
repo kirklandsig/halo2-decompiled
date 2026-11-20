@@ -697,6 +697,10 @@ s_1a8a10 g_4453c0[] =
 // value computed ahead, as in round 115's perpendicular); round 115's frame-transform lead rebuilt 31 (every instruction
 // retail's; xmm numbering i 1, j 2, zero 3, copy 4, x 5, y 6 against retail's zero 1, i 2, j 3, x 4, y 5, copy 6; main's body
 // has retail's numbering), without the initialisation reorder 33.
+// M3 lane 16 r151 (fast with 0x1a8c30, MATCH): the left sum as `(0 - copy.j) * x + actor.i * y` with the forward sum
+// from the copy 38; that with the forward sum's j read from the actor 47; the left sum entirely from the copy with the
+// forward sum's i from the actor 30; the first form with the left terms written i * y first 38; the table pointer (a
+// constant initialiser) declared at the function's top 17 (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

@@ -451,11 +451,14 @@ bool function_1a334a(long index, XUID const *xuid)
 	if (function_18ffc3(index, &block) && *(long *)&block.data[0x1c] == 3 && g_global_4acf62.field_8_2)
 	{
 		s_list_item_iterator iterator;
+		/* set up through a reference, as friends_list_contains and players_list_contains do; with
+		   it, callers re-read memory after this call, as retail's 0x2b24ff does */
+		s_record_pool_iterator &data_iterator = iterator.iterator;
 
 		result = true;
-		iterator.iterator.index = NONE;
-		iterator.iterator.datum_index = NONE;
-		iterator.iterator.data = g_global_4acf62.field_8_2;
+		data_iterator.index = NONE;
+		data_iterator.datum_index = NONE;
+		data_iterator.data = g_global_4acf62.field_8_2;
 		while (function_2b2327(&iterator))
 		{
 			byte *player = iterator.item;
