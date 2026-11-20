@@ -499,12 +499,9 @@ struct s_1af5c4
 	byte *field_30;
 };
 
-struct s_1af5c6
-{
-	long field_0;
-	point3f field_4;
-	point3f field_10;
-};
+short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
+ point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+
 
 // MiniMax H (11-19): no new form, no lower score (5): the hit product still loads the hit fraction first where retail loads the distance, and the ignore index still loads after the first ray difference where retail loads it before; the product's order needs a one-use field copy and the early load needs the two-point probe inlined, so neither is kept.
 // MiniMax I (11-19): no lower score (5, as before): retail's hit product loads the magnitude out of its slot into
@@ -680,8 +677,11 @@ struct s_1af5c6
 // classification result 189.
 // NOT kept: the existing two-point collision call remains out of line, the dedicated ray grows the frame,
 // and the classification variants tie or regress. Opening body restored.
+// Matched in a full build with stand-in SDK headers (was 5): retail inlines function_1c8df0 here and nowhere else,
+// so this is a plain call of it and function_1c8df0 loses its noinline prototype; the point copy lives in its own
+// block so that its slot is shared with the inlined body's vector (frame 0x80).
 // @retail 0x1af5c0
-long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
+short function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
 	s_actor_view *local_0 = actor_get(arg_0);
 	s_prop_node_view *local_1 = prop_node_get(arg_1);
@@ -691,11 +691,10 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 	s_ai_object *local_4 = local_3->field_8;
 	s_1af5c0 local_7;
 	long local_8;
-	s_1af5c6 local_9;
-	point3f &local_5 = local_9.field_10;
-
-	local_9.field_0 = NONE;
-	local_5 = *arg_2;
+	point3f position;
+	long cluster_index = NONE;
+	{
+	point3f local_5 = *arg_2;
 
 	function_2640c0(local_19, (s_object_motion_view *)&local_7);
 	local_19 = local_1->object_index;
@@ -706,32 +705,15 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 		local_8 = function_baf40(local_19);
 	if ((short)arg_3 == 0)
 	{
-		local_9.field_4 = local_5;
-		local_9.field_4.z += 0.05f;
+		position = local_5;
+		position.z += 0.05f;
 	}
 	else
-		function_1e3b00(local_0->unknown018, arg_3, &local_5, NULL, NULL, &local_9.field_4);
-	long local_10 = function_14a280(g_4e033c, 0, &local_9.field_4);
-	if (local_10 != NONE)
-		local_10 = *(short *)(((s_1af5c4 *)g_4e0348)->field_30 + local_10 * 8);
-	else
-		local_10 = local_9.field_0;
-	bool local_11 = local_0->unknown26c != NONE;
-	short local_15 = local_2->field_2c;
-	if (!clusters_visible_11c010(local_10, local_15))
-		return 4;
-	local_7.field_24 = NONE;
-	long local_12 = 0x15808c2f;
-	if (local_11)
-		local_12 = 0x15808c0f;
-	vector3f *local_13 = (vector3f *)&local_5;
-	vector3d_from_points3d(&local_9.field_4, &local_2->field_30, local_13);
-	if (!function_1697c0(local_12, &local_9.field_4, local_13, local_8, NONE, (s_collision_result_1697c0 *)&local_7))
-		return 0;
-	vector3f local_20;
-	vector3d_from_points3d(&local_9.field_4, &local_2->field_30, &local_20);
-	real local_14 = magnitude3d(&local_20);
-	if (1.0f > local_14)
-		return 4;
-	return 1.0f > local_14 * local_7.field_4 ? 2 : 4;
+		function_1e3b00(local_0->unknown018, arg_3, &local_5, NULL, NULL, &position);
+	}
+	long leaf_index = function_14a280(g_4e033c, 0, &position);
+	if (leaf_index != NONE)
+		cluster_index = *(short *)(((s_1af5c4 *)g_4e0348)->field_30 + leaf_index * 8);
+	return function_1c8df0((short)cluster_index, local_2->field_2c, &local_2->field_30, local_8, &position, 0, false,
+		local_0->unknown26c != NONE, true, NULL);
 }
