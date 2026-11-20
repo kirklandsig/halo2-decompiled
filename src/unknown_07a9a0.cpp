@@ -1684,6 +1684,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `*out = s_matchmaking_ratings();` 862 (2800 B, but through a 0x364-byte temporary copied with `rep movsd`, frame 0x434,
 // aligned 1020 against 1016: not kept); the player loop bounded by the summary's count 883 (0x73530 8); adding_group
 // declared beside result 881.
+// Dword bucket updates by explicit first/second/both assignments 911/911/911. Named first/second/both
+// bucket indices 928/911/928. First or both bucket addresses 911/911. NOT kept: all shorten the
+// body and increase the score. The frame reaches 0xb0 and the first variant lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

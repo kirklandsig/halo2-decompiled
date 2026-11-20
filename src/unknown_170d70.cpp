@@ -337,6 +337,9 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Plain while traversal 125, player-state reference 125, rotation group first 376, deadline advance
 // beside the target advance 158, or side-vector aggregate 125, all with the independent deadline.
 // NOT kept: the 125 forms recover the first 0x2b8 bytes but grow the correction at 1413 bytes.
+// Linear coefficient advanced in the loop step, after the constant, or by capturing the
+// next pointer at the latch or width read: indexed deadline 347/68/92/92, independent
+// deadline 367/144/140/140. NOT kept: the spill order still differs and all scores rise.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -945,6 +948,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // indexed count clear 123 or indexed index store 129. Between-clear bind with short record subscript,
 // retained map cell, or preincremented signed count 129/129/129.
 // NOT kept: the indexed count clear gains six. It still creates the cluster before traversal.
+// Publish the traversal pointer after both clears through the created pointer, reference,
+// checked-count indexing or checked-count pointer: 129/129/124/129. Shared capacity result:
+// 125/125/118/125. NOT kept: the 118 form restores EBX and BP but puts the cluster creation
+// before traversal and spills the traversal pointer after clearing the heads.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1735,6 +1742,10 @@ struct s_pool_view_172840
 // Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
 // NOT kept: the 55 form grows to 870 bytes with the key scheduled late and a five-byte
 // sentinel. Keeping the reservation index for rollback removes a retail pointer reload.
+// Independent failure stores with the link after the first cluster read and key after/before
+// short selection, branch/conditional: 133/57 and 133/57. Link before the read: 60/60 and
+// 129/60. NOT kept: the 57 forms grow to 870 bytes. The 60 forms recover the short sentinel
+// at 868 bytes but publish the link and cluster ahead of their retail positions.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
