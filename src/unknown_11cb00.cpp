@@ -523,6 +523,8 @@ real function_11e6f0(
 	}
 }
 
+// score 112 (was 126, r924 stand-in image): `e2_0` reads the table entry again (`e2[indices[0]]`) instead of using the
+// `i0` local at that one use; instruction distance unchanged (123), frame +4 as before.
 // @retail 0x11e800
 bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v)
 {
@@ -554,7 +556,7 @@ bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point
 		long i1 = indices[1];
 		real w1 = w[i1];
 		real e2_1 = e2[i1];
-		real e2_0 = e2[i0];
+		real e2_0 = e2[indices[0]];
 		real w0 = w[i0];
 		real ca = w1 * e2_0 - e2_1 * w0;
 
