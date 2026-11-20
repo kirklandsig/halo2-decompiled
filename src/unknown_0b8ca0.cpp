@@ -944,6 +944,18 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // contributor's and takes a short), the second offset block's scratch rotation (ours ECX/EDX/EAX, retail
 // EAX/ECX/EDX), atan2's operands reloaded radius first (retail magnitude, radius, fxch) and the latch's global load
 // after the NONE test with the datum product in ECX (retail EDX).
+// M3 lane 16 r150 (fast with 0xbf2c0, 0x268c90, 0xb8a80, 0xb8b20, 0xb8d30 and 0xc8880, all MATCH; control 76, aligned 21,
+// register-masked 10). The latch stepping through `g_4e8c24` itself with `players = g_4e8c24;` moved after the step 50
+// (aligned 22: retail's global load ahead of the NONE test and retail's size/data registers, but the start index is
+// then formed in ECX and copied to EDX; a copy-and-global mix, kept only with a match); the pool copy read once for the
+// whole loop (no refresh in the latch) 76 (the global is reloaded after the compare instead). Diagnostic, every piece
+// match-only: the root object pointer for the two flag reads, the cluster table through a pointer read ahead of the
+// first query, the zoom call through an inline wrapper taking the level as a long, `(real)atan2(...) + pi/4` and the
+// latch above, all together 41 at 895 bytes (aligned 10, masked 7). Left on it: the definition pointer in EDX (retail
+// EAX; with no definition local the same code), the radius spill reloaded ahead of the magnitude store (retail stores
+// and loads the magnitude, then the radius, then `fxch`) and the latch's start index in ECX copied to EDX (retail
+// forms it in EDX). On it, the step helper's start index as `next = 0; if (index != NONE) next = ...` 67 (the NONE
+// test then loads the index into EAX).
 // M3 lane 10 r129 (fast with 0xbf2c0/0x268c90 and the callees; base 76): round 149's lead (root pointer, cluster-table
 // pointer, `long` zoom level, `(real)atan2`, g_4e8c24 at each use, named call result) re-measured 2 (895 B; only the
 // object definition pointer in EDX, retail EAX). A one-object LTCG screen is exact here only with 0x100880's file and the
@@ -2205,6 +2217,14 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // with the byte activity bit `(header->flags & 4) != 0` 327; the ancestry walk alone through OBJECT_GET 328; the walk
 // through OBJECT_GET with the header through OBJECT_HEADER_GET and `index` not volatile 324 (1203 bytes); the node
 // copied into a long local 288 (1228 bytes). All restored.
+// M3 lane 16 r150 (fast with this body's 15 matched callees and 0xb8ee0, all MATCH; control 285, aligned 215, register-
+// masked 126). The parent's node-matrix base formed by hand ahead of the link stores on this body (0xb8bd0's body written
+// out, diagnostic) 362 (1285 bytes, the head changes); `index` declared plain with volatile reads only at the first
+// half's uses (diagnostic) 303 (1215 bytes, aligned 203: retail keeps `index` in ESI from the 0xb7430 setup on and
+// re-reads it from the stack only before the link stores); the forward vector rotated through a private copy of the
+// rotate that reads the vector at each use (diagnostic) 315 (1206 bytes: retail re-reads the forward vector per row and
+// loads the up vector once, but its rows take k, j, then i where this build takes i, j, k), with its sums written up
+// first 315 (same code); `allowed` initialised from the first two tests 317 (1246 bytes). Restored.
 // M3 lane 10 r129 (fast with 0xb8ee0/0xb8bd0/0x141590/0x142570; base 285, 1240 B): a pool-data local read after the walk
 // for both the parent and the header 318 (1224 B); the same local read from g_4e0300 300 (1228 B); only the header from
 // g_4e0300->data 298 (1241 B); the `allowed` test ahead of the ancestry walk 314 (1238 B); the walk's match clearing

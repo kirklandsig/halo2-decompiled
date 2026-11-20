@@ -842,6 +842,19 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // timer flag as a bool 191 (1888 B: timer -0xe, tutorial -0xd, scripted still packed at -2 beside the split-screen byte,
 // where retail has -0xf/-0xe/-0xd below `origin`), with `origin` declared ahead of the split-screen flag 191 (same
 // code); `origin` scoped to its own block around the top/left computation 115, with the bool timer 191 (same code each).
+// M3 lane 16 r150 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, all MATCH each run; control 115, 31 lines
+// with the frame offsets masked): the flash scalar passed by value to an inline setter of the vertex procedure and its
+// parameter 383 (1892 bytes); the tutorial colour from an inline function with three returns (a4, a8, a4) 442 at 1859
+// bytes when the compiler leaves it out of line, forced inline 115 (same code); the tutorial colour as an if/else of two
+// unpack calls, the second holding the bit ternary 214 (1890 bytes; the 1.0 loads move); the nested ternary with its first
+// arm read through the global and the others through the local 115 (same code); the player taken from the HUD state
+// local declared ahead of it 246 (1891 bytes). With the offsets masked the body differs from retail only in the left word
+// store, the timer byte, the tutorial colour's block order (retail: flag test, the a4 load, the bit test jumping back
+// to it, the a8 load) and the argument order at the 0x24ce9d and 0x1fa30 calls; every other line is a home. Retail's
+// homes from EBP down: split flag, origin and bounds, scripted, tutorial, timer, line height, flash with the row counter,
+// total height, text bounds, colour, top, left, player, view, count, row height, font; ours: split flag, scripted, origin
+// and bounds, tutorial, timer with flash and the row height, line height, total height, colour, view, text bounds,
+// player, top, row counter, count, font, left.
 // MiniMax A (11-19): no new form, no lower score (114; 115 on this build's reduced image): what is left is the
 // frame homes and two widths - retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd
 // where this build writes the scripted flag as a dword at -0x14, the tutorial flag as a byte at -0xd and the

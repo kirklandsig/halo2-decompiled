@@ -1216,6 +1216,10 @@ __forceinline long vehicle_round(real value)
 // of its uses (248, 8-10 flips); a named side scale, named dot and mode local with the parens (256); 1-7 dead locals
 // at the top or in the side block with the parens (diagnostic, 448); `strength = strength * rate` / `rate * strength`
 // and `(-2.0f)` with the parens (96).
+// M3 lane 16 r151 (fast), at 4: the mode byte in a named local for the three mode tests 122; the projection's dot named
+// (`real speed = dot3f(...)`) 13; the side scale named after the side cross 94 (735 B); the clamp bounds in named locals
+// read twice each 93; the eleven other combinations of those four 92-169; `up` as a const reference 4 (same code); the
+// up pointer scoped to the first-cross branch with the rate on vehicle->up.k 6.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2311,6 +2315,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // one to three pairs around overlay 1's quotient (a float operation ahead of the sum) 9/9/9 (no effect: the sum's
 // grouping and the i term do not follow these parens); the eight callbacks through a reference-bound vehicle index 17;
 // `state` bound by const reference 46.
+// M3 lane 16 r151 (fast), at 9: matched 0xeec90's shape (a forward pointer beside the lookups, overlay 1's cross through
+// it, the forward speed as dot3f(&linear_velocity, forward)) 17; the forward speed's i term forward-first 9 (same code);
+// overlay 1's dot as `left.k * v.k + left.j * v.j + left.i * v.i` 308; the engine-overlay tests as `0.0f < period` 9;
+// the speed-fraction helper's three tests as `0.0f < x` 9.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -5034,7 +5042,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
-// score 22 (was 46): the marker total is truncated to 16 bits at the sum, so the loop's bound compares as in
+// score 22 (was 22): the marker total is truncated to 16 bits at the sum, so the loop's bound compares as in
 // retail, but the second fill's set-up still scales the marker offset into EBX where retail keeps the array base
 // there and scales into EDX, and the markers array sits four bytes above retail's.
 // MiniMax I (11-19): the marker sum written as a short cast (the form the 11-17 review left as next) reaches 22
@@ -5144,6 +5152,14 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // short cutoff and capacity input 52, indexed end-distance bound 167, indexed end-pointer comparison
 // 143, split pointer supplying the short cutoff 155, aggregate effect clear 46, tag read before owner
 // stores 46. NOT kept: none puts the native signed total in EDI with a lower score.
+// M3 lane 16 r151 (fast with 0xf62f0/0xf6010, MATCH): the plain sum re-measured 46 (every set-up instruction retail's,
+// the sum in EAX); a redundant `if (0 < count)` guard around the loop on the plain sum 142 (the vehicle index then takes
+// EDI at entry), `if (count > 0)` 142, the guard on the current body 23. LEAD: a running count (`long count =
+// primary_count; count += function_b8d30(..., &markers[count], 16 - primary_count, false);`) 126 at 637 bytes gives
+// retail's sum exactly (`movsx ecx, ax; add edi, ecx`), but the counter's zero is then loaded into EAX ahead of the
+// guard (`xor eax, eax; cmp edi, eax`, the zero store from EAX) where retail tests EDI and stores an immediate, so the
+// loop top loses its padding jumps; that with `16 - count` 136, with `&markers[primary_count]` 46, with an
+// `if (count > 0)` guard 126.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {

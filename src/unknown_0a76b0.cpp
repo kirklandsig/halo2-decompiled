@@ -4398,6 +4398,11 @@ extern vector3f *g_4687bc;
 // leave both register choices: 0-3 pairs on the perpendicular's i with 0-3 of the impulse products 8 each (16 builds); 0-3
 // pairs around the definition re-lookup's and the model lookup's masked indices 8 each (15 builds); the node-count test
 // as `>= 1` 25 (1099 B); the impulse products constant-first 8; the impulse as an aggregate initializer 8 (same code).
+// M3 lane 16 r151 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the Havok block's five integer tests
+// constant-first 8 (same code); the shove normalize test as `0.0f != function_30bf0(&shove)` 151; the direction's
+// `0.0f != function_30bf0(&direction)` 9 (only the ucomiss operands flip); the facing test as `0.0f < dot` 8; the default
+// material built ahead of the definition re-lookup 40 (1099 B), between the re-lookup and the effect tag read 35 (1099
+// B); re-measured: round 247's typed object-type test (with a byte cast) 8.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

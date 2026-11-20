@@ -1655,6 +1655,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // before dword cells 911, separate dword histogram scopes with shared count 917, shared group-size base with
 // dword cells 911. NOT kept: Changes to count lifetime tie or shorten the body. Dword cells bring the frame to
 // 0xb0 and the scores to 911 or higher. The opening lookup still expands.
+// M3 lane 16 r152 (fast with this file's functions, 0x193300's file, 0x73530, 0x71730, 0x6fa60, 0x63220, 0x631f0,
+// 0x72330, 0x705f0 and 0x73360; control 871 with 63 others matched; plain confirmed). Kept: the clamp's call passing the
+// group's highest rating, `function_1931a0(highest, rating_variant)`, 871 at 2780 bytes (one `mov ecx, eax` more, the
+// same count): retail's call at 0x7e4a9 has that rating in ECX and the matched 0x63220, whose body this loop is, passes
+// it too, so the earlier `lower` argument was a behaviour difference (lane 7 r172's reading), not a form. Tried: the
+// balance result as `if (!balance_teams_by_count(...)) result = false;` 905 (2752 B); grouped case labels in 0x193300's
+// own selector 925 (2896 B: the selector then expands here as retail's table, but 0x193300 itself shrinks to 26 bytes
+// against retail's 52 and 0x72330, 0x73530, 0x1931d0 and 0x193250 change with it, so retail's selector has its five
+// separate cases); 0x193250 with the upper-place selector written in both of its cases instead of the shared exit 868
+// (2848 B: 0x193250 shrinks to 72 bytes against retail's 100 and this function then expands it, so not kept); the add
+// loop's minimum as retail's three-way (`type <= 3 ? 1 : type == 4 ? field_5fc : height`, the arms behind retail's `cmp
+// edx, 3` at 0x7eaea and `cmp edx, edx` at 0x7eaef) 872 (2784 B, register-masked aligned 269 against the body's 267).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1703,7 +1715,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 				{
 					long lower = highest;
 					while (lower > 0 && rating_variant->field_51c[lower - 1] >= highest) lower--;
-					if (adjusted <= lower) adjusted = function_1931a0(lower, rating_variant);
+					if (adjusted <= lower) adjusted = function_1931a0(highest, rating_variant);
 				}
 			}
 		}
