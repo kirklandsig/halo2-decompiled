@@ -3470,6 +3470,7 @@ s_cached_input_list g_5234e8[4];
 // MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
+// MiniMax A (11-20): no new form, no lower score (146 on the fast check, 108 differing instructions in the full build); caching the list pointer in a local scores 136 on the fast check's reduced image but 127 in the full build, so it was dropped - the two builds disagree here.
 // MiniMax B (11-19): no new form kept, no lower score (113 on the full image, 146 on the reduced one):
 // the call to 0x31590 still takes the index in edi where retail keeps it in ebx - that callee is matched, so its
 // argument register preference is fixed - and the frame is still 0x9c against retail's 0xa0, where retail spills the
@@ -6252,6 +6253,12 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
     return NONE;
 }
 
+// MiniMax A (11-20), held (47 stands): the entry's key and value read into one-use locals before the
+// 0xb8d30 call, which puts the radius in eax and the group field copies in ecx/edx as retail has
+// them; the only difference left is 0x494b0's argument setup order (ours ecx-then-eax, retail
+// eax-then-ecx), which needs the callee's parameters in the other order in src/unknown_0494b0.cpp:
+// BLOCKED-BY 0x494b0. That form scores 2; one-use locals are kept only with a byte match, so it was
+// reverted at review: try it again together with 0x494b0's parameter order.
 // MiniMax B (11-19): no new form tried this round, no lower score (47): the 0x494b0 call's arguments are still set
 // up ecx-then-eax where retail sets eax-then-ecx, the entry's radius still goes to edx where retail uses eax, and
 // the three group fields are still loaded into eax and ecx where retail uses ecx and edx; the callee's own
@@ -6479,6 +6486,7 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // inclusive-range arm first 111, short cull result 187, requested cull then disable 243, two consecutive bound decisions 175.
 // table cull modes 111, table cull and targets 111, table group/cull/target 111, table-driven mode traversal 649.
 // NOT kept: the first branch and constant table forms tie. Single-result cull forms raise shared-user scores. The mode loop removes the retail pass expansions.
+// MiniMax A (11-20): no new form, no lower score (111); the clear call still needs 0x14b60's real body (BLOCKED-BY 0x14b60) and the cull arm order is the shared header's (BLOCKED-BY include/selected_source_pass.h).
 // MiniMax A (11-18): no new form, no lower score (111); the shared pass helper and the pass list stay as they are, because
 // retail's clear call passes its flags in EAX and needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched
 // 0x14ac0's frame and realigns this function); what still differs is that call's argument setup and the cull arm order.
@@ -6556,6 +6564,7 @@ extern dword g_4b843c;
 // camera bit through the mask setter 212, joined clear mask 197, shared two-bit decision 212, sibling bit-mask tests 214.
 // joined flag result with two clears 215, carried flags with two clears 215.
 // NOT kept: the 197 form uses a computed clear mask where retail clears separate constants. The two forms preserving the retail clears score 215.
+// MiniMax A (11-20): no new form, no lower score (212); the 0x4a1e0 argument registers, the first mask publication and the late flag reads still differ (BLOCKED-BY 0x4a1e0, whose declaration is in src/unknown_03fdf0.cpp).
 // MiniMax A (11-18): no new form, no lower score (212); what still differs is the 0x4a1e0 argument registers, the first mask
 // publication and the late flag reads, and the body stays fourteen bytes short of retail because no spelling of the bit-0 and
 // bit-1 steps reproduces the store retail keeps before the branch.
@@ -6743,6 +6752,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // One-based payload 233; end cursor 198; separate index base 101; fog mask bit 100;
 // mask set in both arms 113; first record before flag reset 104; direct group fields 100;
 // flags restored before first-record reset 100.
+// MiniMax A (11-20): no new form, no lower score (100); the five passes match retail's inlined 0x44370 apart from the clear call, which needs 0x14b60's real body (BLOCKED-BY 0x14b60).
 // MiniMax A (11-18): no new form, no lower score (100); the five passes equal retail's inlined 0x44370 apart from the clear
 // call, and that call needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched 0x14ac0's frame and realigns
 // this function), so its argument setup stays different.
@@ -6826,6 +6836,7 @@ bool function_13630();
 //   (0x2c25c, 0x2c260) where this build loads it into eax and dereferences eax; retail stores the byte return of 0x3ba90
 //   in a stack slot and reloads it (0x2c10e, 0x2c125) where this build keeps the long return in a register; the
 //   0x14b60 call takes its first argument in eax in retail and on the stack here.
+// MiniMax A (11-20): no new form, no lower score (269); the cull test's branch order is the shared header's (BLOCKED-BY include/selected_source_pass.h), the clear call is the stub's (BLOCKED-BY 0x14b60) and 0x3ba90 returns a long where retail keeps a byte (BLOCKED-BY its declaration).
 // MiniMax H (11-18): score 269 (was 269): no new form kept, no lower score. The permuter's variant (205) swaps the
 // two arguments of the second 0x25dc0 call, but retail passes the first flag in cl and the constant 1 in dl
 // (0x2c1c1, 0x2c1c9), so the swap is wrong and the call was restored. A one-use `bool` holding
@@ -7226,6 +7237,7 @@ PRIVATE __forceinline real absolute_32350(real value)
 // staged light and box crosses 528, or renamed query and result locals 437.
 // NOT kept: the full shape gives frame 0xb3c, still four bytes short, and the best variant
 // gains one. The original 0x74-byte buffer remains, against the initializer's 0x7c-byte clear.
+// MiniMax A (11-20): no new form, no lower score (437); the frame is still 0xb34 against retail's 0xb40 because the shape initializer clears 0x7c bytes against the 0x74-byte buffer the source reserves, and the box center's one shared displacement stays.
 // MiniMax A (11-18): no new form, no lower score (437); what still differs is the frame (0xb34 against retail's 0xb40), where
 // the shape initializer clears 0x7c bytes against the 0x74-byte buffer the source reserves, and the box center's one shared
 // displacement; the typed shape and the extents-first records gain one point each and are not kept.
