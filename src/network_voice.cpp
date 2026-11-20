@@ -1552,6 +1552,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
+// MiniMax E (11-20): no new form, no lower score (60): retail holds the player bit in EBP and the entry size in EBX,
+// this build holds the bit in EBX and the size in EBP, and retail's size is a compare and setne on the mask byte where
+// this build loads the declared bool parameter with a movzx; the compare and setne needs a mask value whose range is
+// unknown, which the bool parameter does not give. The head order kept, capacity, size, written scores 143 (the kept
+// mask in EAX and the capacity in EBP), so the head stands.
 // MiniMax C (11-16): no new form, no lower score (60): the head still keeps the player bit in ebx where retail keeps
 // it in ebp, makes the entry size in ebp where retail makes it in ebx, shifts before the word load instead of after it,
 // tests include_mask after the entry copy instead of before it, and ends with an extra zero-return exit block.
