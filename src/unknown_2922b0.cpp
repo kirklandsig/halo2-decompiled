@@ -761,6 +761,20 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Paired cursors, ordinal from point or hit with countdown 659/517.
 // Paired cursors, ordinal from hit with do-end or for-end test 639/639.
 // NOT kept: The best form is four points lower at 2865 bytes and leaves the success byte at +0x13.
+// M3 lane 2 r121 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521, aligned/masked 274/165). Slot map from the
+// listings (main-body offsets, retail / ours): point cursor 0x14 / 0x18, success byte 0x1b / 0x17, ray index 0x1c / 0x24,
+// minimum 0x20 / 0x20, hit flags 0x24 / 0x28, cross vector 0x28 / 0x2c, hit cursor 0x34 / 0x38, range 0x38 / 0x1c; from
+// 0x3c up the two agree. Lane 2 r113's 331 lead rebuilt on this source 331 (2896 B, 131/45): its slot map equals retail's
+// at every offset. New forms: the early return kept with no `else`, the rest of the body at function level (no
+// declaration moved) 648 (2865 B, 223/148); that with the four crosses through cross3f_staged and the second output as
+// `local_4 / local_6` 631 (2887 B against 2886, 140/51: head and slot map are retail's; left at the head are the inline
+// exit block, where retail jumps to an exit after the main return, and the range's second read); that with the range
+// named ahead of the test 636 (2886 B, 143/55); the lead with one shared `return local_0;` 411 (first difference +0x1d,
+// the success flag in BL); the lead with the range named ahead of the test in place of first in the block 340 (132/46);
+// the lead with the second angle declared first 327 (129/44, re-measure). Reading of the lead's listing: the second cross
+// loads the global axis component into a fresh register for all six products, where this build multiplies the dying
+// local component by the memory operand in two of them; the first two rays' root products are limit x root with the
+// limit copied ahead of the square root and the last two root x limit, this build root x limit in all four.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
