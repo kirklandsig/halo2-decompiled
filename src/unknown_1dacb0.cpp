@@ -1565,14 +1565,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // with reset at lookup 932, reset on a missing name 998, and a persistent empty identifier for the
 // selection and latch 978. NOT kept: the for forms reach retail length with a larger frame. The class,
 // resolved outputs and candidate still have different homes.
+// score 812 (was 828, r924 stand-in image): the search runs inside `if (weapon_class != NONE) { ... return result; }`
+// with the final `return result;` kept for the NONE path (size 2825 = retail's); a plain nested block without the inner
+// return is 1040.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
 {
 	c_type_709360 result;
 
-	if (weapon_class == NONE)
-		return result;
+	if (weapon_class != NONE)
 	{
 		s_graph_weapon_type_iterator iterator;
 		long iterator_mode = NONE;
@@ -1621,6 +1623,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 			graph_resources_request(this, mode, weapon_class, weapon_type, true, false);
 			graph_resources_request(this, iterator_mode, iterator_weapon_class, iterator_weapon_type, true, false);
 		}
+		return result;
 	}
 	return result;
 }
@@ -2088,14 +2091,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // opening weapon_class test 828 (same code). Re-measured, the named urgent flag (lead above) 801 at 2791 B: it moves the first
 // request's kind blocks (retail jumps back to the next kind after each type loop), not a source shape.
 // MiniMax A (11-20): no new form, no lower score (828); the frame and the whole stack layout differ, the post-loop test still loads the result's index as a dword and shifts it where retail reads the word from memory, and the earlier rounds' forms (the candidate grouped into a resolved array, the three outputs declared after the iterator's stores, the iterator's store order) all measure 826 or more.
+// score 812 (was 828, r924 stand-in image): the search runs inside `if (weapon_class != NONE) { ... return result; }`
+// with the final `return result;` kept for the NONE path (size 2825 = retail's); a plain nested block without the inner
+// return is 1040.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
 {
 	c_type_709360 result;
 
-	if (weapon_class == NONE)
-		return result;
+	if (weapon_class != NONE)
 	{
 		s_graph_weapon_type_iterator iterator;
 		long iterator_mode = NONE;
@@ -2144,6 +2149,7 @@ c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon
 			graph_resources_request(this, mode, weapon_class, weapon_type, true, false);
 			graph_resources_request(this, iterator_mode, iterator_weapon_class, iterator_weapon_type, true, false);
 		}
+		return result;
 	}
 	return result;
 }
