@@ -1144,13 +1144,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// score 529 (was 529): Frame 0x2c versus retail 0x28. The selection byte spills across the lighting calls, and the block and query ingress registers are swapped.
 // MiniMax A (11-19): no new form, no lower score (529 plain, 602 on the reduced image): retail takes the block in
 // EAX, the type in ECX and the query in EDX, and this build takes the block in EDX and the query in EAX, so the
 // entry's register roles, the frame (0x2c against retail's 0x28) and every later register differ; the parameter
 // order is fixed by the rules, so retail's order is reported here. The base and lightmap arguments exchanged at
 // the definition and at the call compile to the same bytes, so the exchange cannot be measured from this file;
 // the body is unchanged.
-// score 529 (was 529): The 0x2c frame has an extra word. The selection result spills and the block and query use exchanged registers.
+// Earlier detail: The 0x2c frame has an extra word. The selection result spills and the block and query use exchanged registers.
 // Previously noted: frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax I (11-17): no new form, no lower score (529): the reduced build of this function is not faithful on its
 // own - a single-address reduced image reads 602 and 2139 bytes where the wider reduced image and the full image
@@ -1165,6 +1166,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // parameter order that would fix the swap is retail's and the callers' declarations are in files this lane
 // may not edit.
 // MiniMax C (11-19): no new form, no lower score (529): the frame is 0x2c against retail's 0x28, the selection result still spills where retail keeps it in a register, and the block and the query still arrive swapped (ours block EDX and query EAX, retail EAX and EDX); retail's own parameter order is (type, query, block), which this lane may not change.
+// Earlier score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // Earlier status line, merged in r127 (529, was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
 // MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
@@ -1621,6 +1623,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // early failure or late success assignment: do 569/580/583/580, while
 // 529/566/568/573. NOT kept: the 569 form recovers frame and length but
 // regresses. Late success changes the matched upstream caller.
+// Success default true at entry or after selection, present or missing arm first,
+// 563/565/564/568. Failure default false in the same forms 589/574/575/569.
+// NOT kept: entry success default recovers frame 0x28 but the native register setup still differs.
 // M3 lane 13 r127 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/275; the
 // second stacked score line above merged into the note). Lane 5 r182's retail-order lead rebuilt on this tree (its 0xd37f0
 // part, the in-place colour-scale helper, the rotation reading the axis through the pointer and (type, query, block) with

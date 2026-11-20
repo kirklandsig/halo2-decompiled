@@ -2613,6 +2613,10 @@ __forceinline char unit_action_round(real value)
 // getter 297/297/297. A stable entry pool and a fresh final pool with
 // the shared displacement 311, or 325 with the short hand getter.
 // NOT kept: the stable entry pool forms move the first difference to +0x7.
+// Shared switch input and selected melee name with conditional, default/update,
+// explicit arms or Boolean bit 234/234/234/249. With the signed-short getter
+// 297/297/297/302. NOT kept: the shared name does not recover the pool,
+// hand result or completion-byte homes.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

@@ -1040,6 +1040,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // NOT kept: the tag spill stays displaced or the aligned frame changes, and all scores rise.
 // Ordinary inline on plane decode, angle and rotation (all seven nonempty combinations) 535 each;
 // local definitions for all three 535. Tag and count homes remain displaced. Original declarations restored.
+// Physical mode field reference or pointer, through the tag byte pointer or tag entry, each
+// with primary or secondary count initialized first: eight at 779.
+// NOT kept: each materializes the field offset, keeps the old spill homes and shortens to 3630 bytes.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

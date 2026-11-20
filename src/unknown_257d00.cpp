@@ -2035,6 +2035,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // Earlier 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // Earlier note. r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// Earlier note: r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
 // r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
@@ -2643,6 +2644,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // The dispatch bounds branch still reaches a later completion block.
 // Early pending assignment, joined or split motion exits, motion-result clear with nested or early guards,
 // inactive animation guard, named admission and switch-joined release 431 each. NOT kept: all tie.
+// One completion result through the sole return, byte/bool/short/long 708/708/672/669;
+// the same result guarding the whole pending tail 708/708/672/669.
+// NOT kept: every form lengthens the callback and loses the agreeing dispatch prefix.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

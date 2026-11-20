@@ -1624,6 +1624,7 @@ static __forceinline void query_restore_pending()
         }
 }
 
+// score 703 (was 703): The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // MiniMax B (11-19): no new form, no lower score (703): retail's users loop takes the user record itself as its cursor
 // (the valid flag at +0, the identity at +1, the slot count at +0x10 and the 0x90 property bytes at +0x14) and keeps it
 // at +0x18, while ours takes the property bytes as the cursor and keeps it at +0x14, so the flag, the identity and the
@@ -1637,6 +1638,7 @@ static __forceinline void query_restore_pending()
 // [esp+0x18] where we keep it at [esp+0x14]; the users loop's own body (the valid test, the XUID copy, the properties copy
 // and the slot test) matches retail's shape apart from those homes.
 // score 663 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
+// Earlier detail: The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
@@ -2180,6 +2182,10 @@ bool function_1900a5(long index);
 // the same code); the properties copied ahead of the identity re-measured 705. The slot test's cmovne still needs the
 // SSE file flag (a build-flag question). All restored.
 // MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
+// Indexed player or state, reference or pointer before descriptor lookup, 703 each. Indexed player or
+// state pointer after lookup, 703 each. Advancing player cursor under ordinal or pointer-end bound,
+// 702/805. The ordinal-bound form moves one address setup and gains one point. The pointer-end
+// form adds 32 bytes. The user flags load uses +9 from the user record in both listings.
 // Shared logon task index 703; queried-or-absent status selected, initialized or assigned in separate arms 703/703/703.
 // Offline cleanup first with selected or initialized status 800/800; assigned connection result 819;
 // offline cleanup first with a short-circuit task query 703.

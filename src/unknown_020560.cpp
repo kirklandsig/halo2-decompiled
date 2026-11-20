@@ -834,8 +834,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// score 418 (was 439): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
 // score 418 (was 418, 439 earlier):
+//
 // Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
 // offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
 // Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
@@ -1286,6 +1288,8 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // without the repeated test, but `opposite` then takes ESI through the remainder loop where retail keeps it at +0x10);
 // `fraction` ahead of `first` 418 (same code); `second` as an if/else 418 (same code), with `first` and `fraction` ahead
 // of it 439. The threaded tail needs nothing between `second` and its test.
+// Search-role names for the vectors, winning ordinals and pass counters in all seven subsets,
+// then all with both cutoffs renamed: 418 each. These names leave the frame and second induction unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

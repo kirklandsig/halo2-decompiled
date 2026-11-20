@@ -452,6 +452,9 @@ void function_3dd10(long object_index, bool force);
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
 // Earlier header 77 (merged in r284): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// score 77 (was 97): The 0x54 frame agrees. The ordinal zero sinks past the bank guard. Choice-count and mask homes still differ.
+// Earlier detail: The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
+// Earlier score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
 // and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
 // blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
 // Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
@@ -883,6 +886,9 @@ void function_3dd10(long object_index, bool force);
 // [42], main 86 [37]; the variant written through an inline helper's `long *` rolled 186 (same code); `last = j;
 // eligible |= 1 << j;` through an inline helper taking both addresses rolled 186 (same code). Inline pointer helpers do
 // not take `last` or the variant out of the count/mask register fight.
+// Initialize the bank ordinal before object lookup, tag lookup, output resolution or bank count, 245 each.
+// All four with a separate stored-color quotient also score 245. The pre-guard store uses the retail
+// stack home relative to entry, and the earlier saved-register setup changes.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

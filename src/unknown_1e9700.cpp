@@ -900,6 +900,10 @@ struct s_object_damage_view
 // 439/357/434, word slots 418/360/438, both unsigned full-width 434, credit slot
 // assigned with the selected handle 477.
 // NOT kept: all raise the score. The 357 form retains frame 0x50 but grows to 1553 bytes.
+// Separate declaration and initialization for victim team, credit or event code
+// 353/353/353; pairs team/credit, team/code or credit/code 353/353/353;
+// all three or all with the credited team 353/353. The three homes and the
+// amount-biased history cursor stay in place.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

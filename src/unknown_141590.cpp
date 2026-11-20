@@ -1639,6 +1639,10 @@ void function_143250(
 // 1697/1721 and axial/horizontal squares 1751/1791. Both mixed sets 1792, both
 // square sets 1866, all products 1959, all immutable copies 1959.
 // NOT kept: the explicit copies shorten past retail and raise the score.
+// Separate third-band declarations for the up/forward pair, root-35/forward
+// component, both or both symmetric families 939/939/939/939.
+// Band-specific mixed names, root-35 axis names, both root axis families,
+// and all those role names 939/939/939/939. The scalar spill frame stays 0x2fc.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

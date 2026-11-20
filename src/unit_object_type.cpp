@@ -7685,7 +7685,7 @@ public:
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
 // MiniMax E (11-20): no new form, no lower score (508): the frame agrees (0x3c) and the body is 1799 bytes against retail's 1785, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, so the frame homes differ (+0x38/+0x40/+0x14 against +0x28/+0x2c/+0x24); the call to 0x106030 (src/weapons.cpp, another file) is expanded here where retail calls it out of line: BLOCKED-BY 0x106030.
 // MiniMax A (11-20): no new form, no lower score (508): the head still loads the object pool into EAX and the table into ECX where retail loads the pool into ECX and keeps it in that register, the unit's pointer goes to EBP and a frame slot where retail keeps it in EDX, and the 0x106030 call boundary and the frame's flag bytes still differ.
-// score 508 (was 492): Frame 0x3c agrees, with 1799 bytes against 1785.
+// score 508 (was 508; Codex M455's 493 not kept at review, see below): Early object and tag homes differ.
 // Early object/tag spills, magazine flags, later register/slot choices and the
 // expanded 0x106030 call remain. The ordinary whole-file check confirmed the
 // indexed pass and native countdown at 492 (530 before), then at retail length.
@@ -7765,6 +7765,13 @@ public:
 // it into ECX, and the first unit's row pointer into EBP where retail uses EDX, so the frame homes and the two
 // induction registers follow; the call to 0x106030 is still expanded inline here while retail calls it out of line:
 // BLOCKED-BY src/weapons.cpp.
+// Tag-only cursor, state-only cursor, then equality latches 494/508/494/508.
+// Inclusive last tag or state ordinal 508/510; paired advancing cursors with
+// one remaining count 493; both indexed with equality latch 508. Kept the
+// paired cursors. One scan admission, both steps and the DL/BL flag roles
+// agree with retail. Early spills and the expanded refill query remain.
+// Review (m3, 11-20): the 493 not kept: a countdown with two cursors stepped by hand at the end of the body is
+// a comma loop in separate statements (match-only, as on 0x29e0f0 11-20). Code back to main's indexed loop.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {

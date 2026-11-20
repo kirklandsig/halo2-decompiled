@@ -1550,7 +1550,8 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
-// score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
+// score 60 (was 60): Frame 0x14 agrees. The membership load uses EAX and the insufficient-capacity path has its own zero exit.
+// Earlier detail: the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // MiniMax E (11-20): no new form, no lower score (60): retail holds the player bit in EBP and the entry size in EBX,
 // this build holds the bit in EBX and the size in EBP, and retail's size is a compare and setne on the mask byte where
@@ -2027,6 +2028,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // 84 [2] (471 B). Reading of the kept-first ternary listing: the bit takes EBX first and the kept mask EBP, so the size's
 // setne has only DL left, which moves the cursor to EDI (arriving in EAX) and the player to the stack (`ret 0x10`); in
 // retail the bit is in EBP, EBX serves as the kept scratch and then holds the size, and the result's zero stays in EAX.
+// Retained set carried in exclusion polarity, inverted initialization at dword/word width with
+// reconstruction at each use or once, 134/129 and 134/129. Shifted initialization in the same forms
+// 154/115 and 167/125. NOT kept: all regress, and inverted initialization changes the matched caller.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

@@ -967,6 +967,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Named flags byte bound as an lvalue 338; with effect reacquisition, separate impact settings, sibling particle indexing,
 // particle lvalue, child lvalue, or all record lvalues 338 each; all lvalues with separate impact settings 335.
 // The gate still folds the effect address, and the gate and settings spill slots remain displaced. Body restored.
+// Entry declarations with original assignments: allocation handle, record, both, reused sample,
+// handle/sample, record/sample, all three, or those plus settings, each 334.
+// NOT kept: the folded gate address, AL and the two stack slots are unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
