@@ -7243,6 +7243,16 @@ done:
 // 207. Left on the 171 form: the scale block's x multiply (`movaps xmm3, xmm0; mulss xmm3, [x]`), the first weapon index
 // in a frame slot with the unit looked up again for the second, the state pointer's home (+0x14), the dead base `add`
 // after the animation flag, and unit_index in ESI from the bit-1 test to the facing call.
+// Dedicated current, pointer-based next, mixed, separate record and explicit short slot forms 187 each.
+// Shared planar normalization with the current, next or both accessors 181/181/181.
+// NOT kept: the scale sequence matches but gains six. The weapon lookups still merge and the flag
+// bytes and state slot differ.
+// shared planar scaler 181; scoped toward point with shared scaler 181; source-vector toward with shared
+// scaler 181; component-initialized toward with shared scaler 240; turn assigned from action-state result
+// with shared scaler 218; default side before angle bounds with shared scaler 182; point setter for all
+// rotations with shared scaler 220; state flag updates through byte helper with shared scaler 181.
+// NOT kept: the shared planar scaler recovers the reciprocal and both multiplies at retail length but gains
+// only six. The direction branch span, flag-result bytes, state home and weapon reloads still differ.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8947,6 +8957,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // 57 (masked 11), fraction + owner order 121 (1598 bytes, masked 8), globals + owner order 89 (1606 bytes); the cap's
 // upper test as `cap > 1.0f` 116 (other code, masked 15). The low counts are positional; only the owner order (a
 // statement order, kept only with a match) and the fraction's stun multiply order move masked lines.
+// MiniMax E (11-19): no new form, no lower score (62, baseline): the owner's two fields are still read in the opposite
+// order (ours +0xc8 then +0xc4, retail +0xc4 then +0xc8), the shake's fields are still named locals where retail
+// re-reads them from memory (dropping both names measures 383, re-reading only the divisor measures 116), the 0xc98a0
+// call still sets its pointer argument after the other three pushes where retail sets it first, and a 300 s permuter
+// run over the body found nothing below 62.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -9538,6 +9553,15 @@ struct s_unit_melee_collision
 // 476; read-only tags 484; conditional damage pair 519; staged fan sum 486; separate fan ordinals and
 // reversed trace workspace order 484. NOT kept: the 476 form shortens to 2215 bytes with frame 0x180.
 // The conditional pair recovers the 0x17c frame at 2233 bytes but increases the score.
+// Live range with row, column or both fan weights 531/530/531, shared basis scalers 531,
+// staged cross 531, positive hit-publication guard 531, positive boarding admission 520,
+// and conditional damage values 494. NOT kept: seven forms recover the 0x17c frame at shorter
+// extents and higher scores. The conditional pair shrinks the frame to 0x178.
+// range reference 533; range address 533; range reference with shared scaled addition 480; aim and range
+// references 533; range reference at fan entry 533; chained index defaults 483; candidate trace time shared
+// by test and publication 484; collision classification by tests 486.
+// NOT kept: the live range forms recover the 0x17c frame but shorten the body. The scaled-add form gains
+// four at 2201 bytes, and chained defaults gain one at 2229. Retail's unit and fan counter homes remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

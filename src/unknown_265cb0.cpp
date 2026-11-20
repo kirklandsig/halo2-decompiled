@@ -954,6 +954,9 @@ real function_30bf0(vector3f *vector);
 // fraction test 153, named motion squared 150, condition-local intersection status 84.
 // NOT kept: the narrowed scopes tie and the initialized output grows the body.
 // The result slot and the clip output’s spill partner still differ.
+// M3 lane 13 r126 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84): the clip amount, the squared
+// distance, the delta or the seat count declared at the top of the function (or of the facing block for the count) 84
+// each (same code: scope does not move these homes); the settings lookup ahead of the actor pointer 310 (1308 B).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

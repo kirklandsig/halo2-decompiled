@@ -1717,6 +1717,27 @@ bool function_108530(long device_index, long name)
 // intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
 // trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
 // form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
+// M3 lane 8 r201 (fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, difflib-aligned 54,
+// register-masked 19). The score is positional; by aligned lines the kept shared-store body is further from retail than
+// the earlier one: the cruise velocity stored in each arm of the denominator test with every later read through the
+// field 127 (528 B, aligned 41, masked 13: 2.0 held in XMM3, the acceleration square in place and the deceleration reads
+// from the motion are then retail's; a score rise, not kept). What both leave: the ramp-down time holds a register from
+// its zero clamp to its minimum and again from the plan block to the end (retail never gives it one), the duration and
+// the position sit in XMM3/XMM5 (retail XMM5/XMM3), the distance is reloaded at the end (retail keeps it in XMM5) and the
+// final velocity takes XMM5 (retail XMM7). Reading of retail's plan block: its stores come out target, position, start
+// (each forced early because its register is reused) and then acceleration, deceleration, velocity, cruise at the block's
+// end, the order of the eight reset stores, so retail's source has the velocity store after both distance stores (ours
+// has it first). `delta` declared after the reset stores 109 (523 B, aligned 56; a moved declaration, not kept).
+// Compile-only screens (the first pass, with the XMM6 conversion check): 1500 random bodies (plan stores in the reset
+// order or shuffled, the cruise time, halves and denominator at any gap, each cruise, velocity and distance read as the
+// local or the field, the cruise time and halves named or written out, delta before or after the reset) give 7 that
+// keep XMM6 for the velocity (the nearest 75 aligned lines) and none with retail's duration/ramp-up/velocity registers;
+// 680 bodies with the plan stores in the reset order and the three computations at every gap: none keeps XMM6; 1200
+// one-to-three-step neighbours of the kept body: none under 41 aligned (the 127 form above); 1500 neighbours of the 127
+// form: none under 41. On the 127 form, same code each: the ramp-down zero clamp or minimum through a `real &`, a
+// `real const &`, an inline helper taking `real &` or `real *`, and both as if-statements; `<=`/`>=` if-forms 43
+// aligned, `<`/`>` 46. Diagnostics (reverted): the half ramp-down from another value puts the duration in XMM6; dropping
+// the ramp-down from the deceleration test or divide changes nothing in the clamps.
 // Positive input split 141, positive remaining split 141, nested bound selection 148, and a separate
 // lower-bound branch 145. Zero rate for absent acceleration, deceleration, or both 116 each. Accumulate
 // the half ramps into the remaining span 131. NOT kept: rate forms tie, and the other forms lose
@@ -1725,6 +1746,9 @@ bool function_108530(long device_index, long name)
 // 141/141, carried request predicate as statements or values 156/156, span accumulator 141, clamp within a
 // positive span 145. NOT kept: all lengthen the body and lose the incoming velocity register. The ramp-
 // down slot and duration and position registers remain displaced.
+// MiniMax B (11-20): no new form, no lower score (116): the initial velocity still reaches the clamp on the stack
+// where retail passes it in XMM6, so the clamp's own convention keeps the ramp-down slot and the duration and
+// position registers displaced; every form that moves the velocity off the stack loses a matched caller.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
