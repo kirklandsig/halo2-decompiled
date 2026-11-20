@@ -983,14 +983,6 @@ void impact_orientation_get(
 }
 
 
-/* a rigid body's angular velocity */
-static __forceinline void havok_component_rigid_body_angular_velocity_get(s_havok_component const *component, long rigid_body_index, vector3f *velocity)
-{
-	s_havok_component_rigid_body const *rigid_body = &component->rigid_bodies.data[rigid_body_index];
-
-	*velocity = rigid_body->angular_velocity;
-}
-
 /* Squared length of a vector, with its components summed in the order k, i, j. */
 static inline real squared_length_kij(vector3f const *v)
 {
@@ -1060,7 +1052,8 @@ void impact_type_update(
 	rotation_threshold = physics_type ? 0.5f : 1.0f;
 
 	vector3f const *body_angular_velocity;
-	havok_component_rigid_body_angular_velocity_get(component, rigid_body_index_a, &angular_velocity);
+	s_havok_component_rigid_body const *rigid_body_a = &component->rigid_bodies.data[rigid_body_index_a];
+	angular_velocity = rigid_body_a->angular_velocity;
 	real rotation_speed = impact->unknown8c;
 	strength = 0.0f;
 	if (impact->component_b != NONE)
