@@ -4374,6 +4374,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 }
 
 // MiniMax G (11-20): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this build's locals and register plan differ from the start.
+// MiniMax I (11-20): no new form, no lower score (486): the first difference is the frame, 0x60 here against retail's 0x38; retail keeps one 12-byte home for the previous camera position and one per element.
 // score 486 (was 486): frame 0x60 versus 0x38, stored velocity reloads and projection homes.
 // MiniMax S (11-17): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
 // keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from
@@ -6647,6 +6648,7 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // file: BLOCKED-BY 0x14b60.
 // MiniMax C (11-14): no new form, no lower score (111): the pass helper's late `enabled` store and 0x14b60's
 // first argument (retail passes it in eax) still differ.
+// MiniMax I (11-20): no new form, no lower score (111): 0x14b60's first argument is pushed here, retail passes it in eax, and the pass helper's late `enabled` store differs: BLOCKED-BY 0x14b60.
 // score 111 (was 165): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based 2/8 gate, two
 // 0x15680 calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool
 // stipple_enabled` (96; kept only with a match, coordinator 11-08) all six inlined passes equal retail; only the 0x14b60 call differs (`push 1` against retail's `mov eax, 1`): BLOCKED-BY 0x14b60 (its real body
@@ -6820,6 +6822,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // convention belongs to the callee's own file: BLOCKED-BY 0x14b60.
 // MiniMax C (11-14): no new form, no lower score (100): 0x14b60's first argument still goes on the stack here
 // where retail passes it in eax, and the jump-table bytes it shifts still differ.
+// MiniMax I (11-20): no new form, no lower score (100): 0x14b60's first argument is pushed here, retail passes it in eax and the jump-table bytes it shifts differ: BLOCKED-BY 0x14b60.
 // score 100 (was 138): r136 lane 7: the shared pass helper now follows 0x44370's own body (the 2/8 gate taken by mode,
 // the two 0x15680 calls for the cull, the late `case 3: case 16: enabled = true;`). With the cull test in a one-use
 // `bool stipple_enabled` (91; kept only with a match, coordinator 11-08) the five passes equal retail's inlined 0x44370 (dead g_485898 loads and pass 3's late stores included); only the 0x14b60
@@ -7046,6 +7049,7 @@ bool function_13630();
 // folds it to setle, and the two-call form duplicates the call (421); retail stores the byte return of 0x3ba90
 // in a stack slot and reloads it (0x2c10e, 0x2c125) where this build keeps the long return in a register (the
 // byte form, 266, is under the keep gate).
+// MiniMax I (11-20): no new form, no lower score (269): retail's branch diamond for the second 0x25dc0 call, the weapon lookup's tag read through esi, 0x3ba90's byte return reloaded from a slot and 0x14b60's first argument in eax still differ: BLOCKED-BY 0x14b60 and the pass helper's file.
 // score 269 (was 331): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based gate, two 0x15680
 // calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool stipple_enabled`
 // (260; kept only with a match, coordinator 11-08) passes 1, 3, 5, 8 and 20 now
