@@ -355,7 +355,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Advancing the required index at the row latch brings the entry frame to 0x42c.
 // Earlier scores were 315 and 354.
 // Earlier 315 (was 354). Advancing the required index at the row latch brings the entry frame to 0x42c.
-// score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Earlier at 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // (A second header line, "score 305 (was 354)" with the same text, merged here in m3 lane 14 r124.)
 // Frame 0x42c versus 0x428. The starting cluster is in EBX and both BSP table bases stay live through the walk.
 // Prior score history: 315 before r118, 354 before that.
@@ -547,6 +547,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // order 305/305; walking record roles alone and with candidate arrays 305/305; distance and order
 // declarations first or last 305/305; distinct traversal/fill/output ordinals 305, with path
 // measurement names 305.
+// Rank-fill cursor 321, distance-fill cursor 321, both 337, ordinal from rank pointer 339.
+// Rank storage first declared at the fill with rank/key/both cursors 321/321/337.
+// Both fill cursors with the two-row condition in the output loop 334. All keep the 0x42c
+// frame and the cached BSP bases.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
