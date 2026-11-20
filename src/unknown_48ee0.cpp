@@ -42,7 +42,7 @@ extern real g_4c9798[36];
 // MiniMax A (11-18): no new form, no lower score (174): the five source variants tried this round score 250, 280, 264, 258
 // and 258; the frame's homes still run mode, maximum, extent, size, distance, aspect, border where retail's start with
 // the size, and the mode bit still loads the flags into EDX where retail uses EAX.
-// score 174 (was 174): the far plane's near distance goes into a named local so the three
+// score 174 (was 174): r275 unchanged. The far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // The earlier score was 178.
@@ -391,6 +391,11 @@ extern real g_4c9798[36];
 // the point's rows read from it 337 (1469 B, entry changes at +0x2); the rows written origin first 174 (same code).
 // Still BLOCKED-BY 0x48e70's link-time register summary (machine 1's file): with our build keeping the size
 // and the aspect in XMM registers across its two calls, the true second-plane form moves the parameters' registers.
+// M3 lane 3 r275 (fast with 0x48e70/0x1ddd0/0x1cf50 MATCH; control 174): the border written `w / maximum * 0.75f` and
+// `0.75f * w / maximum` 174/174 (same code: the compiler divides first either way); `(real)((real)w * 0.75f) / maximum`
+// 180 (1491 B): retail's multiply-then-divide, and the second point's direction rows then load into xmm2/xmm3/xmm4
+// as retail's do, but the second plane's tail grows; that with the second plane's dot through the plane 337 (1463 B,
+// entry changes at +0x2); the near distance named ahead of the depth scale and used in it 189 (1484 B).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
