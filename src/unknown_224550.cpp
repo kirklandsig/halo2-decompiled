@@ -782,6 +782,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Both primary inverses after flip in vertical/horizontal and horizontal/vertical order 266/266; one
 // primary inverse before the secondary pair, the other after flip 176/176; one after the secondary
 // pair, the other after flip 176/176; split around the secondary pair before flip 162/162.
+// M3 lane 16 r153 (fast with 0x2243c0, MATCH throughout; control 162, aligned 127): the pivot products written
+// pivot-coordinate first (`first->pivot.x*(1.0f-blend)+next->pivot.x*blend`) 162 (same code); flip computed ahead of the
+// extents 217 (1948 B); width computed after both inverse rows 173 (1951 B); width computed ahead of both inverse rows 170
+// (1950 B); the aspect test as `ay<ax` 162 (same code). Diagnostic (behaviour change, reverted): the blend assigned without
+// its 0x20 test 332 (1959 B), so the conditional store and reload is not what keeps it out of XMM5.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

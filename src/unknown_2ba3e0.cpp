@@ -923,6 +923,11 @@ real g_55e618;
 // the positive or negative distance test score 231/225. A saved hit with a joined failure
 // store at the tail or before the response scores 141/141. Both guards with a query-local
 // hit record score 274. NOT kept: sweep and collision homes remain displaced and scores rise.
+// M3 lane 2 r116 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): perpendicular and tangent declared at the
+// countdown block's top beside displacement and sweep 102 (same code); displacement and sweep declared at the function's
+// top beside the cache 110; keep computed just ahead of the final rows 138 (1534 B, frame changes); the velocity copy as
+// three scalar reals 102 (same code); the final rows as a plain component loop 102 (unrolled, same code). Ours still
+// spills perp.j (+0x48) and tangent.i (+0x100), retail tangent.i/j (+0x38/+0x3c) and perp.k (+0xac).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

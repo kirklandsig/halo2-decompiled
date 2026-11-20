@@ -398,7 +398,7 @@ inline real item_real_random_range(real lower, real upper)
 {
 	dword *seed = &g_4e7408->unknown0;
 	*seed = *seed * 0x19660d + 0x3c6ef35f;
-	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f))) + lower;
+	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f)) + lower);
 }
 
 // score 2 (was 2): frame 0x14 and retail length agree; the final x87 add
@@ -437,6 +437,8 @@ inline real item_real_random_range(real lower, real upper)
 // scoped to filling its packet 2. The integer draw, object lookups, bound pair and packet scope preserve the
 // same two instructions. The normalized draws move other instructions, and the full range helper grows the
 // body. Opening executable source restored.
+// Matched in a full build with stand-in SDK headers (was 2): item_real_random_range returns its sum inside one pair
+// of parentheses, which puts the delay's last fadd before the field load as in retail.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
@@ -900,6 +902,10 @@ struct s_item_collision_bsp
 // Overlapping left products before normal-row completion, next-row/first-pair/early first sums/early last sums:
 // 191/191/198/193 through plane fields, 191/191/191/191 through scalar sums. NOT kept: every schedule
 // raises the score at 1366 bytes and frame 0xa0. The normal and contact XMM homes and pending spin factor remain.
+// MiniMax E (11-19): no new form, no lower score (190, baseline): the plane transform still differs in its register
+// assignment (the two component loads at [esp+0x30] and [esp+0x34] land in xmm3 and xmm4 here and in xmm2 and xmm4 in
+// retail, and every row's product and sum then differs by one register), the body is still 1366 bytes against retail's
+// 1361, and the branches inside the function still reach their blocks at other offsets.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1199,6 +1205,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // with setter / staged output axis with setter: 130/248/207/160/130/130/133/117/281/130/117.
 // NOT kept: the two 117 forms recover the 0xb4 frame but spill the intermediate axis k to the
 // result k home before its final store. Retail keeps that intermediate in a register.
+// Scaled-axis scalars 130; forward scalars 130; separate shared-scale output 204; cross numerators
+// staged together 130; reciprocal before cross 205; doubled half-root before projection 184;
+// conditional point selections 130; normalized vector value 246.
+// NOT kept: the scalar forms that tie retain frame 0xc0. The separate scaled vector, reciprocal and
+// vector value grow the body, and the earlier doubled half-root regresses.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1679,6 +1690,9 @@ struct s_item_flags_view_10b850
 // Separate lateral/longitudinal/both fluid response writebacks and existing scaled-add output:
 // 905/901/894/884 through fabs, 903/902/899/890 through scalar absolute value. NOT kept: all grow
 // past 4096 bytes and raise the score. The fluid response frame stays above 0x12c.
+// MiniMax E (11-19): no new form, no lower score (824, baseline): the frame is still 0x154 against retail's 0x12c, so
+// every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes (esp+8) where this
+// build holds them in registers and shifts one of them right by eight.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

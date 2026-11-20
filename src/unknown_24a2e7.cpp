@@ -358,6 +358,13 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // 67/67/67/67/67. Early plain exit with indexed clear 84, with advancing comparison cursor 67.
 // Entry range with indexed clear and shared exit 64. NOT kept: the range groups base and
 // count and gains three points at 207 bytes.
+// M3 lane 16 r153 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; main 67, aligned 26). Reading:
+// with the terminator through `buffer`, i is dead before the calls, so it stays in ECX and EBX becomes a zero register
+// (`cmp byte [ebp+0xc], bl`, `mov word [edi+0x62], bx`); any indexed terminator shares `entries + i*0x248` (or the
+// product) with the found entry across the calls, where retail keeps i in EBX and forms the address again. New: `result`
+// assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
+// count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
+// 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

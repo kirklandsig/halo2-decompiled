@@ -918,6 +918,19 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // declared mode, class, type 549 (first difference +0xf9); the graph local as a const pointer 348 (same code); bool success
 // with the request's graph through the const reference 478; the request's graph fetched again from graph_get() 633
 // (`this` stays live and the head changes).
+// M3 lane 14 r126 (fast with 0x1cd070 210, 0x1cccd0, 0x1ddd00, 0x1ddc70, 0x1ddb90, 0x1db120 and 0x1dc8c0 MATCH unless noted;
+// control 348 at 1782 B, aligned 53, 42 with registers masked; body unchanged). Diagnostic (the one compiler-setting
+// trial): the real 0x1ddd00 called here with its file built without /Ob1 is expanded by the compiler itself, 348 and the
+// same code as the forced-inline copy, with 0x1ddd00, 0x1ddc70, 0x1ddb90 and 0x1dc8c0 still MATCH: so retail's expansion
+// is the plain function, and the copy is not what holds the graph in a register. Forms: the real 0x1ddd00 called under
+// the real flags 1896 (469 B: it stays a call; 0x1cccd0 68 and 0x1cd070 337), with bool success 1902; the request on
+// `graph_tag_get(result->graph_index)` 502 at 1766 B (first difference +0x1e, aligned 113); the found record read
+// through one const pointer for the request 348 (same code); the mode read through a pointer to the found field 348
+// (same code); `if (!success) return false;` ahead of the request with `return true` after it 671 (1695 B); the
+// request's graph from graph_get() again 633 (re-measure: 0x1cccd0 lost at 59, and 0x1cd070 27 at retail's 1133 B with
+// it, a lead for that function only). What is left is unchanged: retail loads the graph for `graph + 0x34` before the
+// last found-name read and adds in place (EBX), then reloads the graph into EBP at each loop, as a value that has no
+// register of its own across the request; this build gives the graph one register for the whole request.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

@@ -570,6 +570,10 @@
 // written back into its wave's cell and reloaded, and the three factors are still saved with `fst`); both bound by
 // non-const references to separate locals 645 (same code); s1 alone through the reference 629 (2656 B); s0 alone 614
 // (2627 B). The frame stays 0x58 in all of them.
+// Perspective direction after the waves, after the reciprocal, or in the perspective arm mutable/const
+// 633/659/633/633. Special direction from the selected up vector at entry or in the perspective arm
+// 541/635. Vertical axis before the origin or before the up vector 658/555. NOT kept: The early vertical
+// copy reaches frame 0x58 and lengthens the body. All eight raise the score.
 // Split vector declarations in retail order (shape/reciprocal initialization together or split) 536/536.
 // Split cross workspace and late axes (shape/reciprocal initialization together or split) 536/536.
 // Split late axes and cross workspace (shape/reciprocal initialization together or split) 536/536.
@@ -901,6 +905,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // 0x131e50 and its own asm homes come with it (the alpha at +0x84, the red at +0x94, the green at +0x9c, the blue at
 // +0xa0, the scale at +0x98 and the colour pointer at +0x88, stored and reloaded), which this file's front-end inlined
 // ribbon_pixel copy does not reproduce, so the frame stays four bytes short at 0xa8 against retail's 0xac.
+// MiniMax H (11-19, round 95): no new form, no lower score (351): the residual is still the link-time inlined colour
+// packer 0x131e50, whose own asm homes (the colour pointer at +0x88, the alpha at +0x84, the red at +0x94, the scale at
+// +0x98, the green at +0x9c and the blue at +0xa0) this file's front-end inlined copy does not reproduce, so the frame
+// stays four bytes short at 0xa8 against retail's 0xac; that helper's declaration is fixed in another file, which this
+// lane may not change: BLOCKED-BY 0x131e50.
 // score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
 // declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:

@@ -130,6 +130,8 @@ void __stdcall function_2c790(byte const *source)
 
 typedef void (__stdcall *t_aux_view_callback)(void *context);
 
+// Matched in a full build with stand-in SDK headers (was 3): the source pointer is chosen in an if (!position) / else
+// instead of a default followed by an override.
 // @retail 0x2ca00
 void function_2ca00(point3f const *position, t_aux_view_callback callback, void *context)
 {
@@ -146,8 +148,9 @@ void function_2ca00(point3f const *position, t_aux_view_callback callback, void 
     s_frame_view_2c560 frame;
     memset(&frame, 0, sizeof(frame));
     frame.mode = 0;
-    point3f const *source = g_468718;
-    if (position) source = position;
+    point3f const *source;
+    if (!position) source = g_468718;
+    else source = position;
     frame.position = *source;
     frame.location = 1;
     function_2f800((s_2f800_view *)frame.view, 0, 0, 0);
