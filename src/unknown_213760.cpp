@@ -1956,6 +1956,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // directly, at the write, 5 (the 5 form's code: it is substituted back and the handle loads after the zero). On the
 // by-value write helper form: the close's handle test through either accessor's result with the unnamed argument 114
 // (same code), test and argument both through the accessor 114.
+// Query handle aggregate 43, resize handle aggregate 43, write handle aggregate 35, close handle aggregate 40,
+// query and write aggregates 32, resize and write aggregates 32, write and close aggregates 33, all aggregates 39.
+// NOT kept: The query-and-write and resize-and-write forms reach 32 at retail length. Both retain the first stack-
+// slot difference and use one-use handle copies, so the one-point gain is excluded. The other six tie or raise the
+// score.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -6026,6 +6026,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Immutable normalized axis by copy/component initialization 258/225; typed header reference 153;
 // common header accessor 79; absolute-index word 123. NOT kept: the accessor ties, and the index word
 // reaches 887 bytes with a different frame and a sibling regression. The complement spill and final cross remain.
+// Cosine at forward 201, cosine at up 248, cosine at both 248, sine at forward 175, sine at up 152, sine at both
+// 155, both trig arguments at forward 231, both trig arguments at both 250. NOT kept: Every call-site trigonometric
+// form grows the body and moves the first difference earlier. The lowest of these trials is 152 at 898 bytes.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
