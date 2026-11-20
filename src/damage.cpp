@@ -2970,6 +2970,11 @@ struct s_unit_event
 // (192/192, masked 36/36: each scan then reads its array after the count guard as retail, the score does not move); the
 // player block pointer named ahead of the controller read 420 (same code), with both scans 420; one to eight unused
 // locals 420 each (not a symbol-count tie).
+// m3 lane 12 r156 (fast with 0xdaaa0, 0xdae60, 0xdb760, 0xd5de0, 0xd9d60; control 420): the permutation pointer read
+// through a const reference bound to it 420 (same code); the object pointer the same way 420; the region pointer the
+// same way 420; the region index read once through its address into a const local used for the permutation lookup,
+// 0xa8360 and the region-state update (no region pointer) 558 (1852 B, the dead add gone); the region array named
+// before the region pointer 425. The cycle (region index EBX, permutation pointer EBP) does not move.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4657,6 +4662,14 @@ bool function_138880();
 // 16-bit variable, where 0xd5d20 and 0xd5d80 sign-extend a short one.
 // MiniMax R (11-17): no new form, no lower score (194): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
 // MiniMax S (11-17): no new form, no lower score (194): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
+// m3 lane 12 r156 (fast with 0x192950, 0xd9f70, 0xd8b50, 0xda110 and 0x138880; control 194, aligned 196): the body
+// recharge test as nested ifs (maximum, then rate) 194, the body block's guard as nested ifs 194, both 194 (same code
+// each: the second 0x138880 stays inlined, so its site frequency does not follow `&&` against nested tests); one `word
+// team` local at the top of the info block for both recharge calls 354, the same as `short` 354. Diagnostics (one-use
+// locals and a score-picked arm order, reverted): one-use `word team` locals at both calls 159 at 2172 B but aligned 194
+// (the positional gain is the length); the clamp arm first with bool locals for both 0xd8b50 flags 244 at 2170 B; those
+// three together 165 at 2170 B (aligned 165; left: the `& 7` copy order, a zero's register, and the body block from the
+// inlined 0x138880 on).
 // @retail 0xd5de0
 bool function_d5de0(long object_index)
 {
