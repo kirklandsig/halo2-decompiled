@@ -270,6 +270,16 @@ static inline void font_copy_wait(bool volatile *done)
 			SwitchToThread();
 }
 
+static __forceinline long font_table_language_121b00(void)
+{
+	if (g_4687f8 == NONE)
+	{
+		char name[256];
+		font_table_get_name(name, sizeof(name));
+	}
+	return g_4687f8;
+}
+
 // score 4 (was 4): the three font file arrays sit in the frame in another
 // order: retail puts the old directory's files first, then the source's,
 // ours puts the source's first and the old ones in the middle.
@@ -285,6 +295,8 @@ static inline void font_copy_wait(bool volatile *done)
 // 252; copy result formed after the two guarded opens 178. The indexed byte forms tie at four and leave the
 // same slot exchange. The advancing displacement gains no slot and adds two differences. The extent bounds
 // and joined copy result regress. Opening executable source restored.
+// Matched in a full build with stand-in SDK headers (was 4): the language read with its lazy name load is one
+// file-local helper used at both sites, and the name buffer of the path lives in its own block.
 // @retail 0x121b00
 bool function_121b00(void)
 {
@@ -294,7 +306,6 @@ bool function_121b00(void)
 	s_type_acf665 output;
 	s_type_acf665 source_files[11];
 	s_type_acf665 destination_files[11];
-	char name[256];
 	char path[256];
 	char table_name[256];
 	char text[0x800];
@@ -318,8 +329,7 @@ bool function_121b00(void)
 			memcpy(&saved_time, global_preferences_globals.current.unknown24, sizeof(saved_time));
 			if (CompareFileTime(&saved_time, &time) == 0)
 			{
-				if (g_4687f8 == NONE) font_table_get_name(name, sizeof(name));
-				if (language == g_4687f8) return result;
+				if (language == font_table_language_121b00()) return result;
 			}
 		}
 		if (global_preferences_globals.current.unknown1c != NONE)
@@ -342,9 +352,12 @@ bool function_121b00(void)
 			}
 			else function_1367d0(&destination);
 			path[0] = 0;
-			font_table_get_name(name, sizeof(name));
-			csstrncpy(path, g_4687f0, sizeof(path));
-			function_122810(path, name);
+			{
+				char name[256];
+				font_table_get_name(name, sizeof(name));
+				csstrncpy(path, g_4687f0, sizeof(path));
+				function_122810(path, name);
+			}
 			function_x454397(&output);
 			function_x73bce5(&output, path);
 			async_create_file_blocking((file_reference_data *)&output, 2, 2, 4, 7, &input);
@@ -373,8 +386,7 @@ bool function_121b00(void)
 				function_1a1550(target, 7, 6, &done);
 				font_copy_wait(&done);
 			}
-			if (g_4687f8 == NONE) font_table_get_name(name, sizeof(name));
-			global_preferences_globals.current.unknown1c = g_4687f8;
+			global_preferences_globals.current.unknown1c = font_table_language_121b00();
 			memcpy(global_preferences_globals.current.unknown24, &time, sizeof(time));
 			global_preferences_globals.dirty = true;
 			return result;
