@@ -354,6 +354,16 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // counts, the cursor bound before normalization, and checked-count reuse with a short
 // ordinal/remaining count: 583/285/660/583/603/637/284/604. NOT kept: the entry load stays late and
 // the cursor forms disturb the loop and frame slots.
+// M3 lane 11 r128 (fast with 0x180b60 MATCH; control 93, aligned 63 by a sequence-aligned diff, 38 with registers masked;
+// row state = how many of the four inlined transforms have retail's x-row and y-row operand forms, 0 of 4 throughout):
+// one to seven unused long locals re-measured 168/169/169/169/169/213/216 (aligned 87 to 97, the rows never move); live
+// named float locals in the helpers, counted per expansion: a named result in the random-fraction helper 169, a named x
+// output in the transform helper 169, x and y 169, x, y and z 213, the fraction result with x 169, with x and y 216, with
+// all three 216 (the same states as the unused locals, rows unmoved); the transform helper's accumulator through a `real &`
+// 307 (2689 B, aligned 327), for the x row only 298 (2669 B); one accumulator per row 169; the x row's left product in a
+// named local 297 (2661 B); the two `+=` of the left terms written `local_4 = local_4 + ...` 93 (same code). Retail's rows
+// keep every product in its spelled operand order and statement order; ours evaluates the x row's left product ahead of
+// its up product and commutes three products, at every symbol count tried. Still BLOCKED-BY 0x17cfa0 for the call setup.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

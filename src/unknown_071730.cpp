@@ -372,6 +372,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (1589 bytes, aligned 215); the two missing-input tests as one `||` 412; the second and third exits as an else-if chain
 // around the body 387 (same code); the +0x3c pointer read before the clock 377 (1589 bytes but aligned 214, and retail
 // reads it after the clock: a positional gain only).
+// M3 lane 11 r128 (fast with 0x72140/0x71ff0/0x71e00/0x5b060/0x5b080, all MATCH; control 376 at 1589 B, aligned 190 by a
+// sequence-aligned diff, 113 with registers masked): the +0x3c pointer read ahead of the first elapsed time 419 (aligned
+// 213); the data pointer named and then read through a `byte *const &` 376 (same code); the surface description the same
+// way 376 (same code); the second missing-input test as an `else if` 376 (same code); the second session pointer declared
+// after the type test 437 (aligned 203); the +0x3c pointer declared at its first test 427 (aligned 209). Still BLOCKED-BY
+// the build's inline calibration for 0x5b080 (expanded here, called in retail) and by 0x75890 for the two elapsed reads.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

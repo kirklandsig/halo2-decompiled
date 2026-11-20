@@ -1367,6 +1367,15 @@ bool c_projectile_type::v8(long a, long b)
 // the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the
 // matched 0xa1f70 offset form with that group offset 12, on it the call's mask from `b` and the flags local declared
 // after the call 12; the 0x400 arm's result bit set before its store 14. Word-read body kept (5).
+// M3 lane 11 r128 (fast with 0xa5e70, matched each time; word read 5, mask control 12), all with the full-width mask: the
+// definition copy without `volatile`, as a one-member aggregate (initialised, member-assigned, or declared after the flags),
+// a one-element array, or a plain local whose address goes to an unused pointer, 53 each (the dead store is removed: no
+// `push ecx`); the base v27 called inline passing `c`, passing the unmasked flags, or a constant size 51 each (its copy
+// takes the incoming slot of `a`; flags ESI, object EDI); the call's result through a `long &` to a named local 12, read
+// through a `long const &` into the result 12, the result declared first and assigned at the call 12, the call's mask in
+// a named local 12, the state through a `byte *` local passed to the call 12. Diagnostics (semantics changed, not kept):
+// the object mask 0xfffe together with the 0x800 arm setting 0x801, 2 (object ESI: breaking both constant pairs does not
+// swap back, so it is no parity effect); the call's mask changed to 0xffff (three uses of that constant) 13, still swapped.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
