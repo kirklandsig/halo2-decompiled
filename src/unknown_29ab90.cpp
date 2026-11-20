@@ -547,6 +547,9 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // through the existing planar_normalize (include/vector2f_normalize.h) 286; the velocity dot through local_1->velocity
 // at each use instead of its pointer local 286; the magnitude helper returning a ternary 393 (1877 B). Site 1 stays
 // BLOCKED-BY 0x2b400 (its noinline declaration sits in another lane's file this round).
+// M3 lane 3 r277 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286): the 0x1f9760 out-parameters declared
+// at function scope 286; local_6 copied from local_5 286; local_27, local_31 or local_22 declared at the top of the
+// `if (local_2)` block 286/286/286 (same code each). Site 1 still needs 0x2b400's parked zero path inline (BLOCKED-BY 0x2b400).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

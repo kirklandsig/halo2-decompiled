@@ -2187,6 +2187,11 @@ long function_1fa7f0(void);
 // body inline (same-index test first, `mulss xmm0, xmm0` on z), and round 169 saw the entry zero move to EBX when it
 // expands here; our build keeps 0x210a30 out of line unless its definition is marked inline, which loses 0x1f45c0:
 // BLOCKED-BY 0x210a30.
+// M3 lane 16 r154 (fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): `copied_last` declared
+// first of the block's locals 400 (same code); the first conversion of the distance block in 0x210850's nested shape
+// 452 (1765 B); the outer loop as a `for` advancing `index = next` in its header, `next` declared ahead of it 400 (same
+// code); the outer loop as `do { } while (index < count)` (it always runs once: count > 1) 467 (1735 B); the edge
+// declared and set to 0xffff inside the untyped arm 481 (1769 B). Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
