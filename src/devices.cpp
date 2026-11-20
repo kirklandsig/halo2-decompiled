@@ -1319,6 +1319,7 @@ bool function_108530(long device_index, long name)
 // the body is retail's length and the ramp-down minimum written as an if-statement measures 121 in every arrangement
 // tried, so the clamp's XMM homes stand.
 // MiniMax B (11-18): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6; an early use of it (squared 142, copied 121) does not promote it, and the ramp-down minimum written as an if-statement measures 121 in every arrangement tried, so the clamp's XMM homes stand.
+// Earlier score 121 (was 121): Frameless at retail length. Retail keeps ramp-down in memory and takes
 // Earlier 121 (was 121; a second stacked first line, merged in r108): Frameless at retail length. Retail keeps ramp-down in memory and takes
 // Earlier at 121: Frameless at retail length. Retail keeps ramp-down in memory and takes
 // initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.
@@ -1673,6 +1674,11 @@ bool function_108530(long device_index, long name)
 // nearest 75 aligned lines from retail), about 480 leave the ramp-down uncached as retail does (the nearest 53), none
 // does both with retail's body. A diagnostic with the cruise time's ramp-down term dropped gives retail's exact
 // uncached clamp pair, so the ramp-down sits one reference from losing its register.
+// On the caller-matching body, separate positive time with parameter limit 136, separate final
+// limit 138, separate clamp results 138, explicit branches in either or both clamps 138/138/138,
+// one named time through both clamps 141, and first conditional write with named final limit 138.
+// NOT kept: every form demotes both callers. The ramp-down comparison still needs its stack slot
+// while preserving the incoming initial velocity in XMM6.
 // M3 lane 2 r108 (fast with both callers, which stay MATCH only on the first two): on the kept 127 body, the ramp-down
 // zero clamp as `if (!(ramp_down_time > 0.0f)) ramp_down_time = 0.0f;` 127 (same code); its minimum as `if
 // (!(remaining > ramp_down_time)) ramp_down_time = remaining;` 127 (same code); the denominator from `remaining -
@@ -1963,6 +1969,19 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // channel reference with the time read before the animation 2. Diagnostic (reverted at once): any real branch between the
 // two flag-block sample calls (an integer parameter test) moves the time to SSE (`movss; mulss`, its store after all four
 // pushes), so retail's x87 time needs both calls in one block.
+// M3 lane 4 r225 (fast; control 2). Compile-only study of the schedule (small functions with `fld; fmul; fstp` ahead of a
+// call's loads and pushes): the fstp lands at a fixed slot counted from the start of its scheduling region, index 7 (the
+// eighth instruction) when the fld is the region's first or second instruction, else six after the fld. A call starts a
+// region as its index 0; a label or the fall-through of a conditional jump starts one with nothing counted; lea, register
+// moves, pushes, movsx loads and stack loads count one each (imul three); the prologue's frame push is not counted and a
+// string copy is no region start. Ours follows it (mov edx 0, fld 1, fstp 7); retail's fstp at index 8 fits only a block
+// that starts at the fld, so retail's render-model load was outside the scheduled block (round 120's reading). Trials:
+// the animation id through an inline getter returning it by value 2 (same code); a named copy of the render model with
+// `__assume(copy != 0)` at the block top 2 (same code). Diagnostics (reverted at once): the matrix copy moved into the
+// flag block 379 (x87 instructions cross the copy, fstp again at index 7); a second way into the flag block that holds
+// the render model in a register (`!render_model ||` ahead of the flag test) 421 (no load in the block, fstp at index 7
+// behind `push edi`); the samplers' unused third parameter as a one-member aggregate with a converting constructor 2
+// (same code: promoted to a long).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -2631,6 +2650,22 @@ bool function_0b6760(s_index_pair const *pair);
 // ebx, so the body follows one register rotation off and stays sixteen bytes short of retail's 1495; the only form
 // below 250 needs a one-use rate local, which the coordinator ruled out without a byte match, and dropping the volatile
 // on the definition alone measures 386.
+// Round 642 forms: absent state first with definition-first result 399, direct offset
+// test with state helper 235, shared signed state offset 246, actual position-channel
+// reference 61, nested state and validity tests 61, shared channel and index-pair
+// references 61, position activity before refresh 384, named device tag fields 61.
+// NOT kept: the two-point definition-first gain is below threshold. The remaining
+// manual state register and channel-1 call lifetimes stay different on the tied forms.
+// Round 438: The definition/result stores and channel-1 register lifetimes still differ. Position-group lvalues and the typed definition receiver were tried.
+// Bind the position-group field reads and updates to position 61.
+// Bind the position-group field reads and updates to position velocity 314.
+// Bind the position-group field reads and updates to group target 64.
+// Bind the position-group field reads and updates to position and position velocity 314.
+// Bind the position-group field reads and updates to position and group target 64.
+// Bind the position-group field reads and updates to position velocity and group target 316.
+// Bind the position-group field reads and updates to position and position velocity and group target 316.
+// Use the existing device definition as the saved receiver in both motion paths 61.
+// NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

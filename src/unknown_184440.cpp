@@ -181,6 +181,8 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
+// score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc (the two cached axis shorts), the head's registers and the
+// record and surface pointers' homes differ (retail keeps both in memory); earlier rounds below, this round's at the end.
 // MiniMax H (11-18): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, and the
 // record and surface records still sit in each other's stack homes where retail keeps the record pointer at +0x98 and
 // the surface list at +0xe0/+0xe4 from the start; dropping the two cached axis indices gives retail's frame and
@@ -211,7 +213,7 @@ __forceinline bool function_184448(long arg_0)
 // two type changes retail's bytes show (the axis values reloaded from g_440b94 and the full-width vertex counters)
 // were measured at 976 last round, above the score here, so they were not taken again; the length is retail's 4590
 // bytes, so only the block layout and the stack homes differ.
-// score 965 (was 977): the frame is 0x11d4 versus retail 0x11cc, and the scene and surface homes differ.
+// Earlier 965 (was 977): the frame is 0x11d4 versus retail 0x11cc, and the scene and surface homes differ.
 // A statement walk found no behaviour difference. Every condition, field,
 // callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
 // reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in
@@ -442,11 +444,27 @@ __forceinline bool function_184448(long arg_0)
 // bytes). Read in the entry block: retail takes the start face (arg_3) in EDI, clears the record's home with an
 // immediate store and never holds the record or the list in a callee-saved register, where ours takes the face in
 // ESI and keeps the record in EDI and the list in EBX; none of the five forms moves that.
+// M3 lane 6 r203 (fast with the callers 0x9cca0/0x184060, both MATCH throughout; control 965, aligned 711/705): dead-local
+// scan after the early return, K = 1, 2, 3, 5, 7 ... 31 (diagnostic, removed): the frame stays 0x11d4 (first difference +0x7)
+// at every K, so the 8 extra bytes are not a symbol-count state; lengths 4557-4595 B, scores 964 (K = 7, 29) to 991. Tried:
+// the two plane offsets through the existing dot3f in place of the private dot helper 984 (4573 B); the six clamps through
+// the existing PIN_126660 965 (same code); the start face through a pointer local for local_7 (retail forms that address
+// with its own lea) 965 (same code: folded); the record and list chosen by two conditional expressions 998 (4608 B).
 // M3 lane 13 r117 (fast, control 965): everything after the definition lookup as a new forceinline inner function
 // taking the looked-up pointers 965 (same code); the same split right after the record/list choice 976 (4575 bytes);
 // the entry surface through an element pointer (retail forms its address with a lea and reads +6 through it) 965;
 // the block count named before its compare (retail loads it into EBX first) 965; both 965; the group entry through
 // its own element address 965 (the four are the same code: the pointers are folded away). Body unchanged.
+// m3 lane 4 r224 (one-object LTCG screen linking the reduced build's objects and the ballast: 0 rows from the full
+// build, 709 aligned from retail, masked 277): the record and surface pointers held in one local aggregate 712 (masked
+// 274; each alone the same code: they are still enregistered); the axes read from g_440b94 at each use (frame 0x11cc as
+// retail) 974 at 4595 bytes (aligned 682, masked 251); the flag word read once into a long for the index and the flip
+// test 974 (4590 B, aligned 711); with the axes at each use 970 (aligned 688); the axes plus the per-face projected
+// bounds initialised at the top of the face loop 987 (4595 B, aligned 675); all three 986 (4590 B, aligned 681; 670 in
+// the screen); full-width vertex counters alone 721 aligned in the screen, with the axes 684, with the axes and bounds
+// 683, all four 681. Every evidence form lowers the aligned count but raises the positional one (the head's registers
+// stay: arg_3 in ebx/esi where retail takes edi, g_4e0348 in ecx where retail uses edx, the record and surface
+// pointers kept in edi/ebx where retail keeps them in their stack homes). Body unchanged.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

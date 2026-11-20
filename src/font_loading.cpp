@@ -924,6 +924,16 @@ static inline long font_character_pixel(long alpha, long color)
 // and color before upper opacity 203, Compose upper opacity and parity as a word 222. NOT kept: The byte parity
 // split ties. The full-width variants shorten the decoder to 444 bytes and move the run out of EBX. The word
 // opacity variant scores 222 at 456 bytes. The original helper and body are restored.
+// Share the case 2/3 opacity, case 5/7 color, both, or both with case 1 setting
+// the run between color and opacity. Byte parity 183/183/183/184; dword parity
+// 240 each. Typed helper parity, expanded alpha, both, or typed parity with
+// shared cases 265/265/265/276. NOT kept: dword parity and typed alpha shorten
+// the body, and the shared cases change the opening register allocation.
+// Conditional opacity increment, byte parity set, or selected parity 224/216/240.
+// Unsigned or signed parity remainder 240/187. Descending packed bit offset
+// with byte parity 163, wide parity 181, or short offset and wide parity 226.
+// Parity still narrows in the opening packed stores, and the two-byte
+// literal assembly and EBX run are unresolved.
 // Packed input class 59/203, packed upper and lower opacity fields with the fresh header observation
 // retained 157/201, both views 157/201, both views and the ordinary six-bit count 157/201, using the
 // existing byte parity and then dword parity. NOT kept: the parity width still differs on the tied form,
@@ -932,6 +942,23 @@ static inline long font_character_pixel(long alpha, long color)
 // and an opaque predicate 222. With dword parity 224/244/215/236. NOT kept: the
 // shared opaque pixel reaches 504 bytes but changes cursor allocation. The dword
 // parity forms shorten both fill paths and leave the packed run and literal gaps.
+// common long command count 165, common word command count 151, shared run count 172, shared run count and
+// default span 135, long command count with full parity 170, word command count with full parity 162, shared run
+// count with full parity 174, shared run count and default span with full parity 152. NOT kept: A separate word
+// count reaches 504 bytes at 151. The other forms change the extent, and all eight raise the score.
+// MiniMax H (11-19): no new form, no lower score (59): retail masks the alpha's parity in thirty-two bits at all
+// three decode sites (xor ecx, ecx; mov cl, al; and ecx, 1) where this build masks it in sixteen (and cl, 1; movzx cx,
+// cl), so the shared pixel helper was changed in place (it has no other caller) to drop the byte cast on the low alpha
+// bit: the parity then matches retail exactly, but the allocator moves the type 3 run from EBX to EBP and the body
+// shortens to 444 bytes (203); the same change with the count update shared after the branch, with the length
+// hoisted above it (152 at retail's 504 bytes but a frame of 0x10 against retail's 0xc) and with the length defaulted
+// at the loop head (203) were all measured, and the two arm's twin of the helper (45) is not kept because a twin of a
+// shared helper is not kept. The colour literal was built as a word, as two word halves, as a shifted byte, as a byte
+// cast shift or, low byte first and as two statements (103 in each, the body then has retail's 504 bytes but the
+// literal is one byte shorter than retail's four instructions, so the rest of the body pairs against the wrong
+// instruction). The colour literal is still built with a shift and an add where retail keeps its two bytes in
+// separate registers, and the run of two is still folded into the count as an immediate where retail adds the
+// register; the original helper and body stand.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
