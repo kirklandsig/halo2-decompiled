@@ -3728,6 +3728,11 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // definition and EBX the barrel offset in the prologue and the effect loop (retail: EBX the weapon index up to the 0xa7cd0
 // call, EDI the barrel offset, the definition never in a register), and the magazine pointer is not materialized (retail
 // spills it to [esp+0x34]).
+// Holder retained through recoil, notification, effects and player 571 fast/608 plain;
+// through notification 570; through redirected effects 636; notification and redirect only 637.
+// Redirected holder restored after the effect 640; with ordinary owner query 572;
+// ordinary owner query with separate effect target 640. Nested magazine admissions 639/639.
+// NOT kept: the shared holder reaches retail length on the plain check but retains frame 0x1c64 and raises the opening score.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4167,6 +4172,11 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // bodies this round: a bitfield returned through a bool-returning inline function gives retail's `mov; shr; test 1` (a
 // direct test of a narrow bitfield gives `test byte [mem], mask`), and a bool with two definitions that is tested at once
 // keeps its store (retail's `shr al, 6; and al, 1; mov [esp + 0x1b], al; jne` at 0xfe7cf needs no qualifier). Body unchanged.
+// Tracked-target snapshot 1412; typed owner player read 1412; separate magazine activity
+// 1416, or seeded from prior activity 1415; call-first logical OR 1425; wide magazine
+// accumulator 1412; narrow pre-magazine activity 1449; named animation receiver 1412.
+// NOT kept: the entry pool/offset roles and the dual spill remain. The Boolean
+// activity forms give no gain.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

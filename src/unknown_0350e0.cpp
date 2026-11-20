@@ -2298,7 +2298,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // product operand sides, the loop's XMM numbering (lead at the end of this note).
 // MiniMax I (11-19): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10 and the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order.
 // Earlier (492, was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
-// score 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
+// Earlier 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // Earlier 492 (was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // MiniMax S (11-17): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still
 // 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at
@@ -2674,6 +2674,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // vertex value through PIN 504. Left on the lead: the camera forward's first load (ours i, retail j) and the k
 // products' sides in the forward and both camera sums (ours global first, retail delta first in all three), the
 // projection's i product, the loop's amount/size registers (ours 1/4, retail 2/1).
+// Camera axis in scalars/vector 422/542. Running forward sum 487, or interleaved with delta 487.
+// Attenuation initialized by animated tint 503; distance read between named reflection terms 503.
+// Draw point accumulated from decoded position 544, or from reflected components 294.
+// NOT kept: none improves the opening body. The reflected-component draw point keeps the 0x94 frame and length but still loads the X product differently.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
