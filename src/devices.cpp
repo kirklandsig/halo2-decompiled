@@ -1701,6 +1701,10 @@ bool function_108530(long device_index, long name)
 // intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
 // trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
 // form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
+// Positive input split 141, positive remaining split 141, nested bound selection 148, and a separate
+// lower-bound branch 145. Zero rate for absent acceleration, deceleration, or both 116 each. Accumulate
+// the half ramps into the remaining span 131. NOT kept: rate forms tie, and the other forms lose
+// both callers through the initial-velocity convention. Ramp-down still occupies an XMM register.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

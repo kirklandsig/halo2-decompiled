@@ -938,6 +938,9 @@ struct s_1f8a70_actor
 // and 4 386, shared reference for 5 and 6 with conditional movement 398, shared forced-route tail through frame
 // reference 451. NOT kept: Sharing the forced-route tail scores 244 and still leaves the dispatch after case 7.
 // The other case pairs and the frame reference raise the score further.
+// Mode-six route conditional 312, shared override assignment 402, one selected route update 415,
+// and separate fallback search and direct-bit result 393. The same with mode-seven node before radius
+// 364/402/412/393. NOT kept: all regress. The route dispatch remains after the mode-seven block.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

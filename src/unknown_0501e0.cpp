@@ -633,6 +633,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // NOT kept: the pointer and reference forms tie with the default copy and in-place scale.
 // A separate raw snapshot or branch-owned copy raises the score and grows past retail length.
 // The original 0x20 frame, raw displacement homes and coefficient schedule remain.
+// First depth limit before the second transform 268, with both first lateral squares 274,
+// first cone predicate 265, first depth sign 250, independent first lateral predicates 262,
+// complete first visibility 274, paired cone predicates 264, and paired visibility 276.
+// NOT kept: all regress and preserve the extra frame space. The depth-sign form reaches retail length.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

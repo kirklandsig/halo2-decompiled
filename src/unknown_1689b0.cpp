@@ -1555,8 +1555,8 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 551 (was 551; earlier 580): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
 // score 551 (was 580): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
+// The projected and first point now have retail's stack homes.
 // Count, clearance and prism-index homes differ. The square precedes the nonempty branch.
 // The axis reload and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
 // MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
@@ -2089,6 +2089,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // named projection products 565, early nearest reset and common projection scale 564,
 // prism ordinal before the query 553. NOT kept: grouping moves the sum slots, and cached
 // plane components eliminate retail coefficient reloads and move the prism cursor.
+// Shared count reciprocal 598, with common clearance store 598, selected sum with split clearance
+// 567, selected sum and clearance 591, early sum selection 589, selected sum through point setter
+// 591, selected coordinates 619, and class-specific assignments for all three inputs 603.
+// NOT kept: shared output selection shortens the function and displaces the pre-query stack homes.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
