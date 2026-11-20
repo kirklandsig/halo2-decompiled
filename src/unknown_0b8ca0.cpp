@@ -1930,7 +1930,7 @@ void __stdcall function_b93b0(long parent_index, long index, short node)
         function_b7300(index);
         if ((bool)((*(dword *)(object + 4) >> 8) & 1)) function_b87b0(index);
         if ((bool)((*(word *)(object + 0xc0) >> 6) & 1) && !((1 << header->type) & 0x80)) function_b8840(index);
-        transform4x3f const *node_matrices = object_node_matrix_bdef0((byte const *)OBJECT_GET(parent_index));
+        transform4x3f const *parent_matrices = object_node_matrix_bdef0((byte const *)OBJECT_GET(parent_index));
         *(long *)(object + 0x14) = parent_index;
         short node_index = node;
         object[0x18] = (byte)node_index;
@@ -1941,7 +1941,7 @@ void __stdcall function_b93b0(long parent_index, long index, short node)
         *(short *)(object + 0x2c) = NONE;
         *(short *)(object + 0x2e) = g_4686c4;
         transform4x3f inverse;
-        function_141590(&node_matrices[node_index], &inverse);
+        function_141590(&parent_matrices[node_index], &inverse);
         point3f position;
         vector3f forward, up;
         object_attachment_point(&inverse, (point3f *)(object + 0x64), &position);
