@@ -1550,6 +1550,11 @@ void function_143250(
 // through XMM7 where retail has XMM6; that follows from s7_s105 being scheduled earlier here, a
 // schedule difference like the others (the block is scheduled as a whole, so every remaining difference moves the rest).
 // Body unchanged.
+// The sqrt(21) home and inter-band spill schedule still differ.
+// first mixed-root accumulation 939, later mixed-root accumulation 939, both mixed-root accumulations 939,
+// four root-product accumulations 939, weighted component and square accumulations 939, root-product names 939,
+// separate root assignments 939, axial squares and cubic accumulations 1848.
+// NOT kept: The axial accumulations shrink the frame to 0x2f8 and raise the score. The other forms retain 0x2fc.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -570,6 +570,11 @@
 // written back into its wave's cell and reloaded, and the three factors are still saved with `fst`); both bound by
 // non-const references to separate locals 645 (same code); s1 alone through the reference 629 (2656 B); s0 alone 614
 // (2627 B). The frame stays 0x58 in all of them.
+// The primary shape, separate rounded-wave homes and first cross spills still differ.
+// scoped origin updates 536, short wave outside cross scope 536, mixed wave scoped to first update 536,
+// ordinary cross receiver setter 601, compound cosine addition 578, compound third-factor product 577,
+// compound half amplitude 576, compound modulation and cosine 577.
+// NOT kept: All forms tie or raise the score. The frame remains 0x54.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
