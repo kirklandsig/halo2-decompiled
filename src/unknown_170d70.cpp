@@ -945,6 +945,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // indexed count clear 123 or indexed index store 129. Between-clear bind with short record subscript,
 // retained map cell, or preincremented signed count 129/129/129.
 // NOT kept: the indexed count clear gains six. It still creates the cluster before traversal.
+// Slot/index lexical orders and immutable reservation/entry 129 each. Return the last
+// signed capacity comparison after a break or a positive arm, with or without immutable
+// entry/volume addresses: 126 each. NOT kept: the three-point gain leaves creation inline
+// and shortens the body to 425 bytes.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

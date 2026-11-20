@@ -521,6 +521,8 @@ static inline void quaternion_transform_vector(
 // Weighted cross/input/quaternion terms named in all rows 280/201/199, pairs 257/250/262,
 // all terms 244, left-associated partial sums 244 at retail length.
 // NOT kept: the two-point gain leaves the frame mismatch.
+// Coefficient local names in all six weight/projection orders, then cross-term names before
+// or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

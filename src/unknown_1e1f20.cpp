@@ -1000,6 +1000,9 @@ void swarm_leader_detach(long actor_index);
 // against the cached actor 208 at 958 B but aligned 113, masked 86 (the prop walk hoists the pool's data address; one shifted
 // region re-syncs, so not a real gain), the same through the existing prop_node_get at each use 208 (same code); bool with the
 // re-read 255; bool with the cached compare 327 (926 B, aligned 105, masked 63). Still BLOCKED-BY 0x26ed40.
+// Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
+// fresh entry from byte distance, element distance, short index or advanced byte
+// displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

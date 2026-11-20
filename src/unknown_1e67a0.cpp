@@ -1307,6 +1307,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 580 (it stays out of line, 988 B here), forced inline 199 at 1382 B (first difference +0x2). With lane 1's preset
 // moved-away flag: on the by-value setter 94 (the lead's own code), on the direction local 176, on the goal copy 244
 // (1431 B). 1 to 7 unused (never referenced) locals on the flag form 145 each (dropped before they count). Nothing kept.
+// Calculate sine, cosine, sine then cosine, or cosine then sine before copying
+// forward: 125/136/163/166. The same with the shared axis-rotation helper:
+// 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

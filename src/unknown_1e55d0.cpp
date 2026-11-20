@@ -363,6 +363,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // flag in shift form 318 (aligned 306), the rate read once 318 (aligned 312), the shape match as `compound ? a || b : a` 349
 // (1204 B, aligned 223, masked 123), all four 346 (1208 B, aligned 202, masked 115: the non-compound arm, rate and flag test
 // then as retail; the extra 44 bytes are 0x1c4a80 and the capsule destructor expanded where retail calls both).
+// Shared case payload 317, with countdown snapshot, separate state scopes, or both 317 each.
+// Mode read before decrement 341, separate state scopes with or without countdown snapshot
+// 319 each, shared payload with scoped state and countdown declared in the test 318.
+// NOT kept: the shared payload reaches 1164 bytes with at most a two-point gain and
+// keeps the entry register exchange.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
