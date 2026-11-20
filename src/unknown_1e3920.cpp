@@ -1589,7 +1589,7 @@ void function_1e2a90(long actor_index);
 bool function_1e35f0(long actor_index);
 void function_1e3b60(long actor_index);
 
-// score 25 (was 26): round 183 (m3 lane 6, plain) enabled 0x1f38c0's written body (#581's last named double, in
+// score 25 (was 25; 26 before round 183): round 183 (m3 lane 6, plain) enabled 0x1f38c0's written body (#581's last named double, in
 // 0x1f9e70, became a PIN_126660 clamp), so its call now passes the actor in EAX as retail. Left: retail passes the actor index
 // to function_262ba0 in EAX, ours pushes it, because 0x262ba0's body keeps it as a stack argument.
 // Earlier at 26: retail passes the actor index to function_262ba0 and to
@@ -1714,6 +1714,11 @@ void function_1e3b60(long actor_index);
 // still expands 0x25c820 while case 1's arm calls it, so that expansion is not a budget effect of the missing
 // 0x2641c0 expansion. Lead for 0x262ba0: only the label that three gotos reach is expanded; the two release calls
 // written in each failing arm (no label) would make each site as cold as case 1's, which stays a call.
+// M3 lane 12 r162 (fast with 0x262ba0, control 404; 25 here in every form): in 0x262ba0 `update && sample` in the 0x264b50
+// test 402 (1620 B); `update` as a short 408 (1628 B); `update` read through a const reference at that test 404 (same
+// code); case 1's 0x25c820 call jumping to the release block's call (one call site) with a short `old_state` 452 (1600 B,
+// frame 0xa0); that with `update && sample` 431 at retail's 1616 B. The actor index stays a stack argument in each.
+// Still BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

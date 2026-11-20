@@ -1370,6 +1370,11 @@ bool __stdcall function_2399da(long controller_index)
 // listed other-way-round shape, re-measured as a cleanup); the identity declared with a NULL initialiser 90; the identity
 // test with explicit `!= NULL` / `!= 0` and the own rank unsigned 90; the permission test with the member's rank on the
 // left 91; `own_rank >= rank` with `3 == rank` 90 (each 90 the same code). Identity ECX/rank EAX remain.
+// M3 lane 12 r162 (fast with 0xac050/0xac360/0x2399da, all MATCH; control 90; each 90 with the same code): the identity
+// test read through a pointer to the identity local; the member's rank store read through a pointer to the rank parameter;
+// every rank use (NONE test, over-rank test, rank-3 test, store) through that pointer; the identity declared first, and
+// last, among the locals. Diagnostic (reverted): the identity test without the id read 105 (422 B, the identity then
+// loaded only at the removal). Identity ECX/rank EAX remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -869,6 +869,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // (retail's 1616 B); `motion` and `context` declared at function scope 404 (same code); the first `next` read from the
 // `actor` local instead of a second actor lookup 442 (1616 B). Blockers unchanged: the release site's 0x25c820
 // expansion and 0x2641c0's noinline declaration (dropping it expands 0x264210's call too).
+// M3 lane 12 r162 (fast with 0x1e34e0, 25 throughout; control 404 at 1624 B): `update && sample` in the 0x264b50 test
+// 402 (1620 B); `update` as a short 408 (1628 B); `update` read through a const reference at that test 404 (same code);
+// case 1's 0x25c820 call jumping to the release block's call with a short `old_state` 452 (1600 B, frame 0xa0); that with
+// `update && sample` 431 at retail's 1616 B. The actor index stays a stack argument in each. Body unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
