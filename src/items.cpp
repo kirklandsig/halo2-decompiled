@@ -897,6 +897,9 @@ struct s_item_collision_bsp
 // Left axis value 271, three independent axis values 350, embedded rotation reference or value 190/338.
 // NOT kept: aliases and coefficients tie. Axis copies grow the body. The transformed-plane XMM homes
 // and pending x87 spin scale still differ.
+// Overlapping left products before normal-row completion, next-row/first-pair/early first sums/early last sums:
+// 191/191/198/193 through plane fields, 191/191/191/191 through scalar sums. NOT kept: every schedule
+// raises the score at 1366 bytes and frame 0xa0. The normal and contact XMM homes and pending spin factor remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1673,6 +1676,9 @@ struct s_item_flags_view_10b850
 // point with scalar adds, the point setter, both point setters or shared scaled addition
 // 817/825/894/817. Named bounce displacement vector 870. NOT kept: the 821 and 817
 // gains are below eight, and the 817 forms are three bytes past retail with frame 0x154.
+// Separate lateral/longitudinal/both fluid response writebacks and existing scaled-add output:
+// 905/901/894/884 through fabs, 903/902/899/890 through scalar absolute value. NOT kept: all grow
+// past 4096 bytes and raise the score. The fluid response frame stays above 0x12c.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
