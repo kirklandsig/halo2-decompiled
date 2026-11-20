@@ -2645,6 +2645,15 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // is twelve bytes out of step; moving a local to another scope or declaration order to shape the frame is a form the
 // machine's review drops, and the forms tried by the earlier rounds are recorded above and none of them moves this
 // body.
+// M3 lane 15 r113 (fast with both callers and all sixteen callees, all MATCH; control 542): the first arm's lightmap and
+// material sample coordinates renamed so they sort the other way 542 (same code: no home moves; no asm is in the body,
+// so the address-taken homes follow reference density, not names). On the three-statement scaling form (27 calls as
+// retail, re-measured 657 at 3057 B: there the dynamic length's call is scheduled ahead of the base length's, the base
+// normal's scaled components stay in registers where retail stores them, and the dynamic normal's are stored where
+// retail keeps them in registers): the dynamic normalisation written ahead of the base one 653 (3063 B); the base scaling
+// through the existing vector3f_scale 657; the final rescale through vector3f_scale 657; the dynamic-first form with
+// per-format sample pointers formed from each vertex index (one-use pointers, match-only) 619 (3081 B, aligned 269 and
+// register-masked 246 against the control's 974/855).
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

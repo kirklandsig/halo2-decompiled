@@ -219,6 +219,13 @@ __forceinline long portal_path_gain(real distance, real range)
 // arrays 373 (1348 B); the seed through its own `start` pointer with the loop's pointer declared after it 382; a short
 // other index 250; the nearest distance declared ahead of the cluster pointer 250; the portal looked up before the
 // short index is named 334. Restored to main.
+// M3 lane 15 r111 (fast with 0x14b240; main 287; held form rebuilt on this tree as build/r111/held-0x18dc90.patch, 250 at
+// 1364 B): see 0x18dc90's note for the measured cause of the EBX/EBP pair. On the held form, each 250 with the pair
+// unchanged: the side bit as `(encoded & 0x8000) != 0` (same code as the shifted cast); the nearest test nested; the
+// guard as two continues with the destination resolved first; the seed bit written out with the index evaluated twice;
+// `__assume(cluster->sound_path_index != NONE)` after the lookup; the limit as if/else. Diagnostic (wrong code): one more
+// cluster field read ahead of the path lookup flips the pair to retail's, and then only the four output stores' base and
+// index order is left (aligned), which one named local more or fewer swaps. Restored to main.
 // Two seed-index pairs 303, first pair 303, portal/bitmap pair 287, short seed plus
 // bitmap index 372. Decode ordinal at stores 287, derive it from portal position 410.
 // Packed entry read at both decodes 287, direct seed and search pointer 368. Computing
@@ -327,6 +334,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
+// score 305 (was 315): Earlier 315 (was 354). Advancing the required index at the row latch brings the entry frame to 0x42c.
 // score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // (A second header line, "score 305 (was 354)" with the same text, merged here in m3 lane 14 r124.)
 // Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
@@ -459,6 +467,35 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Signed fill-count scratch 350; scoped unsigned sort-count scratch 375; row ordinal scratch 371;
 // output bound scratch 311; two bounds at the latch 361. NOT kept: the 311 forms
 // recover 0x428 but gain four and leave the BSP table spills.
+// M3 lane 15 r111 (fast with 0x18d730 and 0x14b240; main 305). Lane 13's r111 held form rebuilt on this tree
+// (build/r111/held-0x18dc90.patch: 21 fast at 1363 B, 0x222150 MATCH without its volatile reads, 0x18ae80 846 -> 911);
+// not kept, it needs a match. What is left is only the pair: cluster pointer EBX / widened portal index EBP, retail the
+// other way round. Measured with counted diagnostic reads (wrong code): the pair is a use-count contest among the
+// values that cross the two calls, registers handed out ESI, EDI, EBP, EBX by count, and the two tie with the tie going
+// to the portal index. One more cluster field read ahead of the seed test or of the path lookup gives retail's pair
+// with every other row of the head equal; a read after the loop or before the sort does not count. One more
+// portal-index use (a store into a local array that kills no load) needs this many more cluster reads to flip back:
+// 4 at the loop top, ahead of the calls, after them, in the destination block and in the deep update block (a use
+// there counts 3, before or after the block's own use); 3 at the join after the nearest block and at the bit test
+// (2); 2 in the nearest block (1). Nothing that emits no code adds a count. On the held form (21 unless given, pair
+// unchanged):
+// the seed bit written out with the index evaluated twice 25 (the four output stores swap base and index: one symbol
+// more or fewer flips those); the side bit as `(encoded & 0x8000) != 0` 21 (same code as the shifted cast), as a
+// conditional 21, with a short entry 21, as a named bool 21, as `(encoded >> 15) & 1` 22; a long portal index 325 (no
+// movsx), a short masked value copied to a long 325, an inline accessor returning the short index into a short 21,
+// into a long 325 (three spellings); `bsp->portals + portal_index` 21; a short other index 21; an element pointer for
+// the packed entry 25; the distance summed in a second statement 21; the portal distance named 25; the nearest test
+// nested 21, as `!(nearest < distance)` 305, as `distance <= nearest` 21, with `NONE !=` 21; the test-bit helper in the
+// fill loop or the output loop 21/21; a redundant `if (0 < paths->count)` guard 22; a while loop 21; the limit as
+// if/else 21; the guard nested 21, as two continues 21, as `== 0` 21, with its compare operands swapped 22, as one
+// negated or 21; a long copy of the portal index for both stores (declared after the index, or after the distance)
+// 25/25, for the nearest store only 25, for the lookup only 25; `__assume(cluster != NULL)` at three places 21;
+// `__assume` on the path index (not NONE 21, in range 23); the cluster pointer declared NULL then assigned 21, as the
+// base then `+=` 21, as `bsp->clusters + cluster_index` 21, declared at the top and assigned later 21; a discarded read
+// or an empty test of the path index ahead of the lookup 21/21 (both removed before allocation); the seed test as an
+// empty arm with an else 21, as `!(== NONE)` 21, on a long cast 21, as `NONE !=` 21, against `(short)NONE` 21; an
+// unused cluster argument on an inline forwarder of 0x249d60 21 (dropped early) and on an out-of-line one 20 (the
+// forwarder folds; pair unchanged); one or two more values held across the sort call 266/291 (pair unchanged).
 // M3 lane 16 r146 (one-file LTCG harness on lane 13's held r111 form with the callee files, positional/aligned; the held
 // form reproduces at 15/16, 1363 B, 0x18d730 244/17): only the cluster pointer in EBX and the widened portal index in EBP
 // are left. No flip from: the cluster as `bsp->clusters + cluster_index` 15/16; the nearest test as `distance <=

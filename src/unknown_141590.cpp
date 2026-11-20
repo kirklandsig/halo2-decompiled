@@ -1510,6 +1510,25 @@ void function_143250(
 // s21_s2, and the copies move behind it). s21_s2 declared after s7_s2_s21 1104 (10780 B); right after s105_s2_s21 1021
 // (10775 B); beside s21_s35 1299 (10774 B); band three's r6_r3/r6_r0 as `r3 * r6`/`r0 * r6` 939 (same code); band two's r6_r3
 // and r6_r0 written into their four uses 1718 (10752 B). Body unchanged.
+// M3 lane 15 r111 (fast with 0x143250 matched in every form; control 939, `ret 4` on both sides, 214 rows differ once the
+// stack offsets are masked). A symbolic trace of both listings (m3-lane15 build/r111/trace.py and order.py: every xmm
+// and home value as a product of r0..r8 and the roots) gives the row at which each band-three local is first defined:
+// 139 of the 154 are defined in the same order on both sides. The 15 that are not: around band three's copies of
+// band-two products retail defines r4_r2, r6_r4, r3_r2, s105_s2, r6_r5, s7_s105, s105_s2_s21, r6_r1, r6_r2 ... r8_r8, s21_s2
+// (its copies r6_r4 and r6_r5 go through XMM7 ahead of s7_s105, the later ones through XMM6 once s105 is spent), where
+// ours loads s7 into XMM7 twelve rows early, defines s7_s105 first and s21_s2 thirteen rows early; r6_r3_r8 comes after
+// s21_r5 in ours (before it in retail); and retail's order r7_r7_r0, r0_r0_r0, r3_r3_r0, r4_r4_r0 is r0_r0_r0, r7_r7_r0,
+// r4_r4_r0, r3_r3_r0 in ours. Declaration moves taken from that (each kept only with a match, so all restored):
+// r6_r5 declared right after s105_s2 880 (10776 B; masked rows 216); on it s105_r0_r0_r6 after r1_r0_r7 807 (frame
+// 0x300, first difference +0x3b, masked 217), r7_r7_r0 after r0_r0_r0 892, r3_r3_r0 after r1_r1_r0 868, r2_r1 after
+// r5_r4 881, those four together 797 (masked 223), r3_r3_r0 ahead of r4_r4_r0 900, r6_r1 ahead of s105_s2_s21 1484,
+// r6_r4 ahead of s7_s105 1424. On the control: r3_r3_r0 ahead of r4_r4_r0 955; r6_r4 and r6_r5 both ahead of s105_s2
+// 1422; r6_r4 after r4_r2 with r6_r5 after r3_r2 1422; r6_r4 after r4_r2 with r6_r5 after s105_s2 1424; r6_r4 after
+// r4_r2 alone 1423; r6_r4 ahead of r3_r2, r6_r5 after s105_s2 and r6_r1 ahead of s105_s2_s21 1556. The positional
+// count falls with these moves while the masked count does not (214 at best on the control), so they move the homes,
+// not the schedule. 0x143250's parameters in the orders its three call setups could imply, definition, declaration
+// and calls together, the callee matching in each: (n, out, a, b) 939, (n, a, out, b) 936, (a, b, n, out) 935,
+// (a, out, n, b) 936, (out, a, n, b) 939, (a, n, out, b) 936. Body unchanged.
 // First-band matrix carries r0/r1/r4 into the higher-band computations:
 // singles 1736/1739/1657, pairs 1770/1732/1750, all 1782 before or after
 // the order guard. NOT kept: the reloads regress and retail uses independent scalar homes.

@@ -1307,6 +1307,20 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // timer division 126/126/147; the plane length written out j, k, i without dot3f 397 (1700 B: left.j hoisted as retail, but
 // the normal's i/k registers swap and left.k is read off the camera pointer), with 1-3 pairs around its first product
 // 398/398/392 or its leading pair 397/397/391; written out i, j, k 397, with the same pairs 398/398/392 and 397/397/393.
+// M3 lane 15 r113 (fast with all eleven callees and 0x23d090; control 126): the yaw distance dot with its operands
+// swapped 126 (every product then loads the forward first; retail loads the position first for i only); the animation
+// arm's two zero stores chained 126; the field-of-view test as `target != 0.0f` 149 (1700 B: the target is loaded for
+// the test as retail, but the reached arm reloads it where retail copies the register). Leads, not kept (gains under 8):
+// the inlined quaternion normalise sums w, k, j, i in the shared helper's source order in retail, where this build sums
+// j, k, w, i; the helper's terms in natural i, j, k, w order (or j, k, w, i) give retail's order 124, and the shared
+// header in natural order keeps 0xa9b40 matched (fast); 0x142d10's parameters as (out, forward, up), its only caller,
+// the order retail's ECX up / EDX forward / EAX out setup implies, 124 (0x142d10 still matched), both together 122.
+// The field-of-view tail takes retail's exact shape (target loaded once for the test and copied in the reached arm, the
+// interpolation re-reading the field after the clamp, the start read after the clamp) only with a target local at the
+// test and reached arm and the field read in the interpolation (a mix) 395 (1700 B), with the local at all three uses
+// 396 (no re-read); with the two leads 396, and every xmm0/xmm1 role in the function then swapped against retail
+// (zero XMM1 for retail XMM0). Diagnostic phase scan of 1 to 8 dead locals on that combination: 396/395/395/400/400/145/
+// 145/396 (145 at 6 and 7: aligned 94 against the control's 103, the zero still XMM1 everywhere).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
