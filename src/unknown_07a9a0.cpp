@@ -1684,6 +1684,17 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `*out = s_matchmaking_ratings();` 862 (2800 B, but through a 0x364-byte temporary copied with `rep movsd`, frame 0x434,
 // aligned 1020 against 1016: not kept); the player loop bounded by the summary's count 883 (0x73530 8); adding_group
 // declared beside result 881.
+// M3 lane 12 r159 (fast with 0x73530; control 871 at 2780 B, 0x73530 MATCH): the player value through the matched 0x63220
+// re-measured 1012 (2608 B, 0x63220 stays a call); the single exit (opening test sets `result = false`, the type-5 scan and
+// the rest under `if (result)`) with the player value through 0x63220 and `long histogram[16]` 844 (2852 B, frame 0xb4;
+// 0x63220 inlines with its nested lookup, 0x631f0 and first 0x1931a0, but the top 0x192e60 inlines too and 0x73530 drops to
+// 8); that with the top lookup after the summary and capacity reads 851 at retail's 2828 B (0x73530 1: the session then
+// arrives in ECX, since no call sits at the entry); that with the capacity bounds in an `else if` 851 (same code); the
+// original body with the loop's variant through 0x192e60 at the loop body's top level 949 (2700 B: the loop call stays out
+// of line, the top inlines, the reverse of lane 2 r76's result on the older body). Diagnostics (restored at once): this
+// file without /arch:SSE plus the 0x63220 call 1013 (no change in the inline set); the disabled 0x6d4c0 draft linked in
+// place of its stub (with 0x6e910 listed so its file is in the image) 871 (no change). Retail's EAX session follows from
+// the top call staying out of line (EAX carries its argument); every form above that expands it moves the session.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

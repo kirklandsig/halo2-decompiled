@@ -994,6 +994,11 @@ struct s_collision_result_buffer_1697c0
 // clear carrier, each with unpublished result or positive fraction first at fallback 344/335 each.
 // NOT kept: all raise the score at retail length and change the matched caller. The 344 forms
 // also shrink the 0xa8 frame.
+// M3 lane 12 r158 (h2m fast with 0x297660 (stays matched) and 0x297d30 (stays 23 unless noted); control 270): the
+// header's shared normalize3d in place of the file-local normalizer at the three uses 282 (1437 B); the file-local normalizer
+// in that helper's single-return shape (zero set in an else arm) 282 (1437 B); the rotate helper's dot as `dot3f(axis,
+// vector)` 282 (1437 B; 0x297d30 144); its cross terms with the axis as the left operand of each product 270 (same code);
+// its output rows with the cosine product written `cosine * vector->i` 270 (same code).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

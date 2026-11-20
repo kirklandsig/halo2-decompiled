@@ -862,6 +862,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 0x264210 still expands it, 116; restored); the motion and context records at function scope 404, at the loop-body top 404
 // (same code each); the prop's fields through the typed s_prop_datum members (all but the short at +0xc) 404 (same code). Body
 // unchanged.
+// M3 lane 12 r159 (fast with 0x1e34e0 (25 throughout); control 404 at 1624 B): the release block's two calls under a
+// redundant `if (index != NONE)` (the loop already guarantees it; a frequency diagnostic) 439 (1620 B, retail's frame
+// 0xa0, but 0x25c820 still expands at the release site and the actor index stays stacked); only the release's 0x25c820
+// call under that test 449 (1640 B); the last block's view lookup through `node` instead of a second prop lookup 430
+// (retail's 1616 B); `motion` and `context` declared at function scope 404 (same code); the first `next` read from the
+// `actor` local instead of a second actor lookup 442 (1616 B). Blockers unchanged: the release site's 0x25c820
+// expansion and 0x2641c0's noinline declaration (dropping it expands 0x264210's call too).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

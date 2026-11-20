@@ -1707,11 +1707,17 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // the delta/bounded homes, retail +0xc/+0x14, ours +0x14/+0xc); the input as a `vector3f const &` in place of the pointer 234
 // (same code); the general arm without the step flag (gravity cleared in the fallback arm and under `if (flying)` in the
 // bounded arm) 549 (3049 B).
+// M3 lane 12 r159 (fast, control 234 at 3047 B): the flags read through a `dword const &` bound to the field 484 (3053 B);
+// the damping bit named and read through a `bool const &` 484 (3053 B); a redundant `gravity = false;` at the top of the
+// first arm as well as at its end 234 (same code: the store is dropped); kept: the flying bit through the existing
+// forceinline 0x1f1462 mode-bit helper (re-measured on this body; 590 on round 48's) 234, same code, in place of its body
+// written out; that without the `!= 0` 234 (same code). Left as before: the damping bit's first extraction in ECX (retail
+// EDX), the crosses' operand sides, the expanded input length, and the general arm's k row in XMM2.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
     vector3f const *input = &state->input;
-    bool flying = ((*(dword *)state->settings >> 3) & 1) != 0;
+    bool flying = function_1f1462(*(dword *)state->settings) != 0;
     bool damping = ((state->flags >> 4) & 1) != 0;
     bool direct = ((state->flags >> 2) & 1) != 0;
     bool gravity = ((state->flags >> 3) & 1) != 0;

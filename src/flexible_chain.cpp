@@ -884,6 +884,13 @@ void __stdcall function_1160c0(real dt)
 // the loop bound as `i <= definition->segment_count` 286 (1368 B: the guard becomes a compare, the rest unchanged).
 // Diagnostic: the segments base read through a file-local forceinline accessor 144 (same code: the base stays in EDI,
 // so the one-step scratch rotation is not set by a temporary at the base's own load).
+// M3 lane 12 r159 (fast, control 144 at 1371 B), re-measured on the 144 body: the redundant `if (0 < count + 1)` loop
+// guard 153; `segment = definition->segments; segment += index` 272 (1369 B: the segment then takes EDX and every later
+// scratch register and the i == 0 / node-copy registers are retail's, but the base load sits ahead of the branch and the
+// add folds into the stiffness load); the index computed into a local first, then base, then `+=` 144 (same code: the
+// base copy is propagated); the ternary of two element addresses 304 (1387 B). New: the selected pointer read through a
+// `s_chain_segment *const &` binding 144 (same code). Reading: retail's segment variable takes EDX with ECX free; ours
+// takes ECX unless the variable is already live where ECX holds the count.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
