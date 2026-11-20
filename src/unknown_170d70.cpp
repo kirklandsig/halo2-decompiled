@@ -351,6 +351,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Linear coefficient advanced in the loop step, after the constant, or by capturing the
 // next pointer at the latch or width read: indexed deadline 347/68/92/92, independent
 // deadline 367/144/140/140. NOT kept: the spill order still differs and all scores rise.
+// Separate corrected up vector through placement, shared, or staged cross with j/k/i stores
+// 70/70/70, or whole vector publication 234. With independent deadline 130/130/130/201.
+// NOT kept: The separate component stores leave the swapped deadline and group homes in the
+// original loop. The independent form grows to 1413 bytes and differs in the basis correction.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -973,6 +977,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // checked-count indexing or checked-count pointer: 129/129/124/129. Shared capacity result:
 // 125/125/118/125. NOT kept: the 118 form restores EBX and BP but puts the cluster creation
 // before traversal and spills the traversal pointer after clearing the heads.
+// Assignments at map hit, signed capacity test, unlinked-entry test, or projection: 129 each.
+// With a shared capacity result: 125 each. NOT kept: The shared result restores EBX and BP
+// and advances the first difference to +0xe. The gain is four and creation stays inline.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1791,6 +1798,10 @@ struct s_pool_view_172840
 // short selection, branch/conditional: 133/57 and 133/57. Link before the read: 60/60 and
 // 129/60. NOT kept: the 57 forms grow to 870 bytes. The 60 forms recover the short sentinel
 // at 868 bytes but publish the link and cluster ahead of their retail positions.
+// Separate x/y overlaps, four independent edges, leading edge guard, or trailing edge guard:
+// 134 each. With independent failure stores and signed cluster publication: 55 each.
+// NOT kept: The 55 forms restore the flag and traversal homes but grow to 870 bytes,
+// publish the key late and retain the five-byte sentinel load.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

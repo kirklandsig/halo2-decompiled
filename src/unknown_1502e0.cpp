@@ -1665,6 +1665,9 @@ void function_150820(dword *bits, bool local_only)
 // directions (here retail gives the entry-level player ESI and the hand EDI; in 0x151b80 it gives the entry-level
 // unit index EDI and the slot ESI), so no single rule of "first value takes ESI" or of reference counts with one
 // weight for nested blocks fits both; the unit index's scratch register (EDX in retail, ECX in ours) moves with it.
+// Assignment in the admission test for initial unit, player, both, held slot, weapon, both
+// inventory indices, unit receiver plus slot, or unit and inventory indices: 43 each.
+// NOT kept: All eight tie at 210 bytes and keep the player and hand in the exchanged registers.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
