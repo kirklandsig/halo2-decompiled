@@ -1739,6 +1739,12 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // to the zero register. Retail reaches the same final return from the type exit but past its reload, i.e. it still holds
 // the result in XMM0 from `movaps xmm0, xmm1` at its definition; the `goto done` form (260, retail's 1173 bytes) lacks
 // exactly that copy and reloads.
+// M3 lane 7 r191 (fast with 0x29a190/0x29cbb0; control 239): on the `goto done` type exit (260 re-measured, 1173 B) the
+// normalize block takes XMM0, which retail keeps for the result copy made at its definition (`movaps xmm0, xmm1`); retail's
+// type exit is the only exit that skips the final reload. Forms: that exit as `{ result = 0.0f; goto done; }` 265 (1178 B);
+// with a `real const &` bound to the result and returned at done 260 (same code); the reference alone on the return form 239
+// (same code); the 0x26ccb0 hit as `return result;` with no done label 271 (1191 B); the type exit as `return 0.0f;` 239 (same
+// code). Re-measured round 188's listed forms: the result assigned zero right before the type chain 281, with `goto done` 289.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
