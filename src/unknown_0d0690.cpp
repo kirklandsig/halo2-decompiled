@@ -1762,7 +1762,7 @@ real function_30bf0(vector3f *vector);
 // MiniMax G (11-19): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the normal
 // copy and the limited, rotation and colour homes are still in other slots; the permuter over 300 s made ten tries and
 // reached no lower score than its own 370, and the test-set mobile flag measures 362 (kept only with a byte match).
-// score 356 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
+// score 378 (was 378; MiniMax B's 356 not kept at review, see below): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).
 // Round 52 (lane 13, fast; structural = LCS count with registers and offsets masked, base 212): in-place
@@ -1971,6 +1971,9 @@ real function_30bf0(vector3f *vector);
 // prologue differs before the body starts; the forms tried by the earlier rounds are recorded above and none of them
 // brings the frame back to retail's size without losing 0x3db00 or 0x3dfe0.
 // MiniMax B (11-20): the mobile flag is now a false store followed by a true store in the three comparisons, and the squared length's terms are spelled (k, i, j), so the squares are emitted i, k, j as retail does: 378 -> 356. What still differs: the frame is 0x4c against retail's 0x40, and the flag's blocks are not laid out as retail lays them.
+// Review (m3, 11-20): not kept: the flag started false and set under the test, and the squared length's terms in another
+// order, are both match-only forms (a flag set by a test; operand order chosen by score). Code back to main's; a lead
+// for a match only.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -1980,9 +1983,9 @@ void function_d4080(long type, s_effect_color_query const *query, long flag, s_l
 	byte *context = (byte *)g_4e0350;
 	vector3f const *input_normal = (vector3f const *)query;
 	real length = magnitude3d(input_normal);
-	bool mobile = false; if (type == 0 || type == 1 || type == 2) mobile = true;
+	bool mobile = type == 0 || type == 1 || type == 2;
 	vector3f normal = *input_normal;
-	record->length = lighting_normalize_ordered(&normal, (normal.k * normal.k + normal.i * normal.i) + normal.j * normal.j);
+	record->length = lighting_normalize_ordered(&normal, (normal.i * normal.i + normal.k * normal.k) + normal.j * normal.j);
 	color3f base, lightmap;
 	unpack_color3f(query->color_a, &base);
 	unpack_color3f(query->color_b, &lightmap);
