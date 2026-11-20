@@ -865,6 +865,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // M3 lane 11 r126 (fast with 0xe4bd0): the +0x10a clear written out as `flags_10a = flags_10a & ~4` 13; one to three
 // redundant pairs around the +0x33e word address 13 each; the word clear written out as an assignment 13 (all the same
 // code). Still BLOCKED-BY 0xe4bd0 (EAX convention, tail jump), itself BLOCKED-BY 0xe5930 (expanded inside 0xe4bd0).
+// score 10 (was 13) with stand-in SDK headers: the +0x33e word flag is cleared with word_flags_set.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -874,7 +875,7 @@ void function_caf00(long unit_index)
 	function_b8b70(unit_index);
 	function_bb950(unit_index, false, NONE);
 	function_db5c0(unit_index);
-	*(word *)((byte *)unit + unit->unknown33e) &= ~4;
+	word_flags_set((word *)((byte *)unit + unit->unknown33e), 2, false);
 	if ((1 << unit->type) & 1)
 	{
 		function_e4bd0(unit_index);
