@@ -235,6 +235,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // 136 (454 B); `1.0f != arg_0->scale` in the rotate helper 103 (474 B: the scale load moves, the pair stays); `NONE !=
 // arg_0` 19 (same code). Diagnostics (reverted at once): one extra store of the point's y into the record 52 (481 B, the
 // transform still in EBX); the else arm's forward from a global, so the transform has fewer uses, 111 (still EBX).
+// M3 lane 16 r155 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the loaded transform
+// bound once as `transform4x3f const *const &` for both arms 113 (453 B); the rotate helper's scale bound by const
+// reference 19; the address local itself const 19; the node arm's forward from the parameter directly 19; the else
+// arm's forward from the parameter directly 19 (the 19s the same code).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

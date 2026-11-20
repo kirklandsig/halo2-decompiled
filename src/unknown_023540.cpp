@@ -4134,6 +4134,14 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // reloads follows the order of offset's and maximum's declarations; `inverse_span` declared bare between them 9 and as
 // `real inverse_span = 1.0f;` there 9 (same code each: the span never moves ahead of the constant). Diagnostic: every 1.0f
 // literal ahead of the floor of `fixed` changed to another constant 1167 (4864 B), the reloads still constant first.
+// M3 lane 16 r156 (fast, control 9): the two packed fraction/whole constants through the SDK's colour-packing macro 9
+// (same code); no shifted input local with small read through a `bool const &` for both selectors 939; no shifted local
+// with the alpha selector written at its store (`(small ? 4 : 24) << 24`) 947 (4840 B); no shifted local, alpha selector
+// first as `alpha_input = 24; if (small) alpha_input = 4;` 949 (a branch); a non-shared constant initialiser for the
+// span declared after `offset` 9 (diagnostic, dead store; the reload pairs stay constant first). Re-measured: no shifted
+// local with the alpha selector before input 19 (small in AL copied to CL, alpha in ECX; retail small in CL, alpha in
+// EAX) and with the alpha selector before whole 19 (small in CL as retail, but alpha computed in EDX before the whole
+// split, where retail computes it in EAX after fraction's move to EBP).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

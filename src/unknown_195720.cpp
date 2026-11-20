@@ -195,6 +195,12 @@ bool function_1946f0(s_bitstream *stream)
 // index expression written in the address with no earlier use gives index-first (`add idx, data`, as 0x194830); once
 // the same value is used earlier (the bound test), every spelling gives data-first in both the RMW and the clear LEA,
 // with the data read in its block; only a data value defined before the index reverses them.
+// M3 lane 16 r156 (fast with 0x1957d0/0x195820, both MATCH each time): a data local read before the index for the clear
+// with a block-local data local for the mask 40 (the clear's data then held in EDI from the top); the mask as
+// `~(byte)(0xff << (saved % 8))` 4; the index and the data field bound to `long const &` / `byte *const &` and used at
+// every site 2; the explicit read-modify-write with one `count >= 0 && count > 0` test and the clear from
+// `&data[byte_index + 1]` 2; a block-local byte mask with the count as `size - 1 - byte_index` and the clear from
+// `&data[1] + byte_index` 2 (the 2s the same code: both LEAs data first).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

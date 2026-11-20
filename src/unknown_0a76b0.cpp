@@ -4427,6 +4427,12 @@ extern vector3f *g_4687bc;
 // named for the lookup, after the material 8; the impulse declared at the top of the physics-tag block 8; the strength
 // passed as `(long)strength` 8 (all the same code); the node-count and first-node tests joined, the node read again
 // inside 105 (1101 B).
+// M3 lane 16 r155 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): an unused `char` copy of the
+// component's +0x18 index after the lookup (the shape the matched 0x0b67a0 callers in another file carry) 8 (same code,
+// diagnostic); the material as a plain `short` local (its address to 0x1eb020, `c_type_47f957(material_index)` at the
+// 0x188180 call) 25 (the global loaded as a dword); the component bound through a `s_havok_component *const &` for the
+// 0x0b67a0 call and the element 8; the re-looked-up definition and the effect tag read as const 8; the model index
+// named ahead of the effect tag read 8 (the 8s the same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

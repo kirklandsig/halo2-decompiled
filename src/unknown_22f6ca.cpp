@@ -266,6 +266,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // 23 (same code); the model's value0a store ahead of the start, re-measured, 11 at 414 B (the model then stays in EAX
 // and is tested with `test eax, eax`; retail stores after the call); the model array named before its loop (`models =
 // pane->models`) 38 (407 B), the text array so 41 (415 B), both 57 (406 B).
+// M3 lane 16 r156 (fast with 0x22facd, 0x230427, 0x22f6ca; control 23): the text loop's test written
+// `pane->text_count > i` 25 (check.py --fast agrees); the model's animation start reading the screen through a
+// `c_class_1473c9 *const *` to the parameter 23 (same code, the EAX copy stays); a `continue;` after the model's value0a
+// store 23 (same code). Diagnostics (not kept): the block-18 loop deleted 229 (327 B; the copy appears in the bitmap,
+// block-24 and model loops), the bitmap loop deleted with the block-24 loop starting from the shared zero 194 (353 B; the
+// model reset becomes `mov` as retail, but its EAX copy of the screen stays).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

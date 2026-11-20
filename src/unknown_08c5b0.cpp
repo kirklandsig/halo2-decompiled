@@ -289,6 +289,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // fields read by memcpy 4 (same code); the index read first with the memcpy kind 5; plain reads: the kind test as `kind > 0
 // && kind < 2` 32 (103 B, both compares survive), `(word)(kind - 1) == 0` 12 (96 B); an out-of-range kind reset to 0 ahead
 // of the test 45 (111 B, the range compares survive).
+// M3 lane 16 r155 (fast with 0x8c5b0/0x8c660, both MATCH each time; control 4): `bool changed = setting !=
+// old_setting;` with the existing read 25 (91 B: the flag is built with setne); the selector's parameter `short const`
+// 4; the selector `__forceinline` with the existing read 4; the existing read through the parameter's own address
+// (`request_reference`) 4 (same code); a plain read of both fields through one read of the parameter's address 32
+// (95 B, folded compare).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

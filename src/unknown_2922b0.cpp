@@ -745,6 +745,17 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // and the listing runs four rows off from +0x91); that local declared ahead of the basis vectors 373 (2896 B), at the
 // function top 658, after the input copy 599, used for the up fallback as well 582 (same code); the forward pointer set
 // ahead of the crosses and passed to them 598 (2879 B). Body unchanged (the lead is not applied).
+// M3 lane 16 r157 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521; "lead" = lane 2 r113's 331 form, re-measured
+// 331 at 2896 B, aligned/masked 131/43). On the lead: rays 1 and 2 accumulated with `+=` and `-=` 331 (same code); the root
+// assigned inside the product (`limit * (*root = sqrt(...))`) 378 (the root leaves the sqrt argument's slot, still root x
+// limit); 1/2/3 redundant paren pairs around a constant 331 each (same code), around the ray's first product 331/584/572
+// (three pairs give retail's 2886 B with no loop-entry pad, aligned 134, but the second cross then multiplies every product
+// local-first where retail is global-first in all six); the tail's first transform as vector3f_assign arguments 582 (2886 B,
+// aligned 131, the same second-cross state as three pairs; on the kept body 516, under the bar, not kept); the rotation rows
+// as vector3f_assign arguments 450 (2913 B). The lead's aligned differences by block (exact/masked): second cross 10/9, root
+// products 4/2, angle initialisers 2/0, first rotation 25/0 (a pure XMM permutation: retail's i, j, k in XMM1/2/3, ours
+// XMM3/1/2), second rotation 30/7, tail 57/23. The paren count and the tail form move only the second cross and the loop
+// pad; nothing here moved the rotations' registers or the root products.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
