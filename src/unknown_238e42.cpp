@@ -1314,6 +1314,12 @@ bool __stdcall function_2399da(long controller_index)
 // the identity test, as a declaration 90 and as an assignment to a function-scope local 90; the redundant block
 // around the membership call and its tests removed 90; the own rank declared const 90; the over-rank refusal tested
 // before the set-rank arm (`rank > own_rank` first) 90.
+// M3 lane 5 r212 (fast with 0xac050/0xac360/0x2399da, all MATCH): rotation probes, a one-step global copy (diagnostic,
+// reverted) after may_change 133, after the member name copy 119, before the membership query 115, right before the identity
+// test 111 (444 B each): the identity stays in ECX at every position, so no scratch-rotation step is missing and the rank owns
+// EAX. Forms: `long const rank` 90 (same code); the over-rank refusal as an `else if (own_rank < rank)` arm ahead of the
+// rank-3/set arm 90; `3 == rank` 90; the member's privileges bound to `long const &member_rank` for the permission test 90;
+// the last three together 90. Identity ECX/rank EAX remain.
 // M3 lane 7 r189 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e, 0x239a3d and the three callers 0x2c69b3,
 // 0x2b5f9b, 0x2b5d3b, all MATCH in every trial; control 90, nothing kept): the rank parameter's address discarded at the
 // top (the idiom that keeps 0x2078f0's parameters in memory) 90 (same code); the rank read at the NONE test through a
@@ -1325,6 +1331,14 @@ bool __stdcall function_2399da(long controller_index)
 // still takes ECX and the rank EAX, so the length of the identity's range is not what loses it EAX. Reading: three
 // cross-block values pick the lowest free of EAX, ECX, EDX in the order rank, identity, own rank here and identity, rank,
 // own rank in retail; the expression temporaries (the 64-bit test, the team address) then take the lowest free one.
+// M3 lane 2 r114 (fast with 0xac050/0xac360/0x2399da/0x23955e; control 90): one pointer to the team identity named
+// ahead of the dispatch and passed to both the removal and the rank calls 90 (same code: the lea is rematerialised in
+// each arm). Re-measured listed forms, all as listed: the task index at function scope 90, the validity test inverted
+// with the 0x5c dialog first 90, the permission denial first 90, `own_rank >= rank` 90, own rank read at each use 90,
+// the dispatch as `switch (rank)` 95 (437 B). New: the 0x1487c3 follow-up written in both the removal and the rank arms
+// 90 (same code: the two calls are cross-jumped back into one block); the identity bound by a const reference for the
+// removal call 90; the rank read through a const reference in the whole dispatch 90; the removal under an implied
+// `if (xuid)` with the task index preset to NONE 90 (all the same code).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

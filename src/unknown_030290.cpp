@@ -227,6 +227,13 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 }
 
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
+// score 195 (was 195): one note (the stacked score lines merged, r184); r155 unchanged.
+// MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
+// inverse defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the
+// transformed points still take the opposite component order. The shared point transform at the origin,
+// displaced, both and reversed sites was measured at 423/376/529/359/538/536/718 in an earlier round, all worse,
+// and the in-place displaced transform and the perspective-only inverse locals measure 263 and 261. No form
+// found this round.
 // score 195 (was 195): one note (the stacked score lines merged, r184).
 // Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
@@ -685,6 +692,11 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // first 195/195, direct inverse factors 207/207, reversed input reusing displacement
 // 195/195. NOT kept: the depth return folds to the existing transform. Direct use of
 // the inverse factors shortens the body to 974 bytes and shrinks the frame to 0x1c.
+// M3 lane 12 r155 (fast with 0x30bf0/0x30710; control 195). The displaced sums' load sides follow the parameters' index
+// (the held reorder above moves them), so non-reorder probes: the displaced point as a copy of `*a` plus `+=` per
+// component 315 (1029 B); `d` through a `vector3f const *const &` alias in the sums 257 (981 B); `a` through such an alias
+// 231 (976 B); the displaced point transformed before the origin 250 (924 B); the two inverse defaults as one point2f
+// 195 (same code). 0x142570's file (src/unknown_141590.cpp) was on another lane's list this round. All restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

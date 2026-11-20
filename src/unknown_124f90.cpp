@@ -1787,6 +1787,16 @@ long function_2197f0(real gain);
 // attack gains with attack index read at the join 119; post-release gain bits supply both late outcomes 161; post-
 // release gain bits with attack index read at the join 161.
 // NOT kept: separate release and attack returns recover the 678-byte extent at 119 and split off the initial gain return. Every form raises the score.
+// M3 lane 12 r153 (fast with 0x1251e0, 0x221810, 0x1295e0 and 0x128ca0; aligned exact / register-masked 56 / 20 at 87):
+// the clamp value computed before the test, `real t = time / ducking->fade_in_time; if (!(1.0f > time * inverse)) t =
+// 1.0f;` re-measured 143 (681 B, 54 / 11: retail's division ahead of the compare and its `ja` over `t = 1.0f`); retail's
+// three missing bytes are arm 1's gain add, `movss xmm1, [gain]; addss xmm1, xmm0` (the gain loaded and the
+// interpolation added into it) where every form here adds the gain from memory. On the eager clamp: arm 1 as `gain +=`
+// 143 (same code); as `s_decibels(gain.value + ....value)` 143 (same code); as a named interpolation with
+// `gain.value = gain.value + fade.value` 143 (same code); written interpolation first, `... + gain`, 103 (685 B, 54 / 11:
+// the gain's by-value copy goes from EDI through a new stack slot, frame 0x10, where retail loads the gain home into
+// XMM1). Still differs on all of them: elapsed in XMM2 (retail XMM3, the reciprocal formed first in XMM2), fade_out
+// multiplied from memory (retail keeps the test's XMM1), and `ambience_fade - elapsed` loaded ahead of the product.
 // M3 lane 8 r196 (fast with 0x221810; control 87): the fade-out time bound by const reference to the field for the test,
 // the sum and the product 87, with the product written `(elapsed - hold) * inverse * fade_out` 87 (same code: still
 // multiplied from memory); arm 1's clamp value divided by the fade-in copy 155 (687 B), the clamp test as `time /
@@ -3679,6 +3689,7 @@ struct s_animation_state
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
 // MiniMax C (11-19): no new form, no lower score (8): the pool reload is still placed right after the body's last call; retail loads the pool after the next-index ternary, and every other instruction is retail's.
+// MiniMax D (11-19): no new form, no lower score (8): the pool reload stays ahead of the next-slot selection in every form tried this round (the reload inside the search call's argument, the seed computed as its own statement ahead of the reload, and both pool uses reading through the global), so the reload is still six bytes ahead of retail's and the branch into the loop advance still differs at +0x6b.
 // score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
 // advance differs at +0x6b.
 // Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
@@ -4297,6 +4308,7 @@ struct s_128ca0
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
 // for the count's default).
 // Earlier at 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
+// [r153: see the m3 lane 12 r153 entry at the end of this note]
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
 // The second pending test through a one-use low-byte view scores 50. That alias was reverted.
 // MiniMax I (11-19): no new form, no lower score (81): both gain pins still trade scratch registers, the controller compares still use an immediate and the second flag3 test still shares a word load with the flag6 store; the one-use low-byte view that reaches 50 was reverted, so the body is unchanged.
@@ -4599,6 +4611,16 @@ struct s_128ca0
 // unclamped bits held through the pin 81, post-pin channel indices 81, nullable controller 130,
 // update-before-start dispatch 144, pinned decibel round-trip 81. NOT kept: the tied pin
 // forms retain the register exchange and the controller and dispatch forms regress.
+// M3 lane 12 r153 (fast with 0x1293f0 and the callees, all matched; aligned exact / register-masked 67 / 21 at 81):
+// lane 2 r104's lead re-measured 64 (57 / 18): flag6 set through the low byte as 0x1293f0 sets the fading bit, and the
+// stream bit through the existing 0x12a420 (main's line is that function's body written out; the call alone is 83).
+// Reading of the first difference: in both pins the two scratch temporaries (the permutation-gain byte and the copy of
+// the gain bits into operator+'s by-value operand) take the next registers in the opposite order from retail (pin one:
+// retail byte EDX, copy EAX after the bit-9 test's ECX; ours byte EAX, copy EDX; pin two: retail byte EAX, copy ECX;
+// ours byte EDX, copy ECX), as if this build allocates the operand copy first. On the lead, each the same code (64):
+// the copy named first and the sum written `local = s_decibels((real)gain) + local;`; one `s_decibels gain =
+// s_decibels((dword)local_6);` ahead of the bit-9 test used by both pins; the byte converted through `(real)(long)`;
+// the operand passed as `*(s_decibels *)&local_6`; the stream bit through a named channel-state pointer.
 // M3 lane 8 r196 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 81): lane 2
 // r104's lead rebuilt 64 (diagnostic). The pin sums with the bits as the left operand, both 210 (1102 B), the first only
 // 182 (1079 B); the permutation gain through an inline accessor taking the permutation (both pins) 81, the started bit
@@ -4769,10 +4791,13 @@ void function_1293f0(void)
 }
 
 long function_155760(long arg_0);
+bool function_14ddc0(long local_player_index);
+long function_14de70(long local_player_index);
 void function_caf60(long arg_0, point3f *arg_1);
 void function_11d6a0(quaternionf *arg_2, vector3f const *arg_0, vector3f const *arg_1);
 void function_11d950(quaternionf const *arg_0, quaternionf const *arg_1, quaternionf *arg_2, real arg_3);
 extern quaternionf *g_4687cc;
+extern const s_sound_driver_reverb g_44a2a0;
 void function_220790(s_sound_listener const *arg_0);
 
 struct s_127401
@@ -4815,9 +4840,14 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// score 484 (was 535): one note; the older score lines below now read "Earlier (535)". Still different: the
+// 0x155760 result is spilled (frame 0xec against retail's 0xe8, every slot 4 off) while this build keeps NONE in EBX
+// through the loop head, where retail keeps that result in EBX and compares with immediates; the expanded rotate
+// block's term order and XMM homes; the two fallback copies' shared tail; and the scale test ahead of the velocity
+// rows, which retail keeps and this build folds.
 // MiniMax H (11-19): no new form, no lower score (535): the frame stays 0x134 against retail's 0xe8 because the fallback reverb is copied to the stack here while retail reads the existing const, and 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line.
 // MiniMax I (11-19): no new form, no lower score (535): our frame is still 0x134 against retail's 0xe8 and our null test of the global still comes before the register saves where retail's comes after, so the rest of the rows follow from that frame; 0x16f3a0, 0x1420f0 and 0x11c120 still have to stay out of line and live in other files. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
-// score 535 (was 535): MiniMax I (11-16, round 2): no new form, no lower score: our frame is 0x134 against retail's
+// Earlier (535): MiniMax I (11-16, round 2): no new form, no lower score: our frame is 0x134 against retail's
 // 0xe8, so 0x4c bytes of locals are ours alone, and our null test of the global comes before the register saves where
 // retail's comes after; the rest of the rows follow from that frame. Body unchanged.
 // MiniMax E (11-15): no new form, no lower score (535): the call boundaries agree with retail's (0x155760 twice, 0xcaf60, 0x11d6a0, 0x11d950, 0xba1d0, 0x11bed0 and 0x220790), so what is left is the frame (0x130 against retail's 0xe8) and the native rotation, environment and listener-index homes. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120, which have to stay out of line and live in other files.
@@ -4826,7 +4856,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // MiniMax C (11-14): no new form, no lower score (535): the frame is still 0x134 against retail's 0xe8 and
 // 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line; keeping them out of line
 // needs declarations in other files, which this lane may not edit.
-// score 535 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
+// Earlier (535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
 // MiniMax E (11-16): no new form, no lower score (535); the frame is 0x130 against retail's 0xe8 and the native
 // rotation, environment and listener-index homes stay ours; the fallback reverb's constant lives in another file and
 // the three callees have to stay out of line.
@@ -4928,14 +4958,28 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // MiniMax A (11-18): no new form tried this round, no lower score (535): the frame is still 0x130 against retail's
 // 0xe8, and 0x16f3a0, 0x1420f0 and 0x11c120 still have to stay out of line; their noinline declarations live in
 // other files: BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
-// score 535 (was 535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
+// Earlier (535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
 // MiniMax G (11-18): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8 and 0x16f3a0,
 // 0x1420f0 and 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
 // BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
-// score 535 (was 535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their
+// Earlier (535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their
 // noinline declarations live in other files.
 // MiniMax A (11-17): no new form tried this round, no lower score (535): the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line; their noinline declarations live in other files. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
+// M3 lane 13 r124 (fast, plain at the kept steps; the 22 functions of src/unknown_21e330.cpp, 0x14ddc0, 0x14de70,
+// 0x126df0 and 0x220790 MATCH throughout): the loop head through the existing 0x14ddc0/0x14de70 pair (both expand here)
+// 604 (2389 B); plus the fallback reverb read from the existing const g_44a2a0 (external at its definition) 617
+// (2178 B); plus retail's two fallback copies with the state pointer formed in each arm (the success flag gone) 499;
+// plus the state pointer in 0x16f3a0's own if-form (retail's cmovne) 505; plus the 0x1fc short read at its two uses
+// 500 (plain 500); plus the velocity rows through a `transform4x3f const *` view of the listener (the file's idiom)
+// 514 (retail's scale test then survives); plus the transform's stores through the same view 484 (kept, plain 484;
+// the test folds again). Also: the player index fetched ahead of the 0x14ddc0 test 579. Diagnostics on the spilled
+// result (none gives it a register): on the 514 form, the else arm's NONE stores replaced 576 (the state cursor then
+// takes EBX), the result as long 541, declared ahead of the player record 514; on the 484 form, read twice 557, passed
+// through an inline predicate 734. On the 484 form: the rotate helper written with 0x11cb00's rotate-point terms 503;
+// the helper's factor 2 placed as retail computes it (`w * w * 2`, `(...) * 2`, `w * 2`) 484 (same code); the transform
+// view declared at the top of the listener block 519; the state pointer as the old ternary 521; one state pointer at
+// the block top for both arms 566.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {
@@ -4944,28 +4988,28 @@ void function_127400(bool arg_0)
 	for (long local_0 = 0; local_0 < 4; local_0++)
 	{
 		s_sound_listener *local_1 = &SOUND_SYSTEM->listeners[local_0];
-		long local_2 = g_4e8c20->entries[local_0];
-		if (local_2 != NONE)
+		if (function_14ddc0(local_0))
 		{
+			long local_2 = function_14de70(local_0);
 			long local_3 = *(long *)(g_4e8c24->data + (local_2 & 0xffff) * 0x21c + 0x2c);
 			short local_4 = (short)function_155760(local_0);
-			s_127401 const *local_6 = g_4686c4 != NONE ? (s_127401 const *)&g_4e9bd4[local_0].state : NULL;
 			vector3f local_7;
 			vector3f local_8;
 			point3f local_9;
 			vector3f local_10;
 			s_location local_11;
-			bool local_12 = false;
 			if (local_3 != NONE && ((1 << function_155760(local_0)) & 3))
 			{
 				byte *local_13 = *(byte **)(g_4e0300->data + (local_3 & 0xffff) * 12 + 8);
 				long local_14 = *(long *)(local_13 + 0x14);
-				short local_15 = *(short *)(local_13 + 0x1fc);
-				if (local_14 != NONE && local_15 != NONE && local_4 != 0)
+				s_127401 const *local_6 = NULL;
+				if (g_4686c4 != NONE)
+					local_6 = (s_127401 const *)&g_4e9bd4[local_0].state;
+				if (local_14 != NONE && *(short *)(local_13 + 0x1fc) != NONE && local_4 != 0)
 				{
 					byte *local_16 = *(byte **)(g_4e0300->data + (local_14 & 0xffff) * 12 + 8);
 					byte *local_17 = g_4e3b44[*(long *)local_16 & 0xffff].bytes;
-					byte *local_18 = *(byte **)(local_17 + 0x1cc) + local_15 * 0xb0;
+					byte *local_18 = *(byte **)(local_17 + 0x1cc) + *(short *)(local_13 + 0x1fc) * 0xb0;
 					point3f local_20;
 					function_caf60(local_3, &local_20);
 					real local_19 = *(real *)(local_18 + 0x40);
@@ -4984,11 +5028,21 @@ void function_127400(bool arg_0)
 					function_11bed0(&local_11, &local_9);
 					if (local_11.cluster_index == NONE)
 						local_11 = local_6->field_c;
-					local_12 = true;
+				}
+				else
+				{
+					local_7 = local_6->field_20;
+					local_8 = local_6->field_2c;
+					local_9 = local_6->field_0;
+					local_10 = local_6->field_14;
+					local_11 = local_6->field_c;
 				}
 			}
-			if (!local_12)
+			else
 			{
+				s_127401 const *local_6 = NULL;
+				if (g_4686c4 != NONE)
+					local_6 = (s_127401 const *)&g_4e9bd4[local_0].state;
 				local_7 = local_6->field_20;
 				local_8 = local_6->field_2c;
 				local_9 = local_6->field_0;
@@ -4998,26 +5052,27 @@ void function_127400(bool arg_0)
 			local_1->active = true;
 			bool local_22 = location_point_in_zone_inline(&local_11, &local_9, NULL);
 			local_1->unknown07 = local_22;
-			local_1->velocity_scale = 1.0f;
-			local_1->forward = local_7;
-			local_1->left.i = local_8.j * local_7.k - local_8.k * local_7.j;
-			local_1->left.j = local_8.k * local_7.i - local_8.i * local_7.k;
-			local_1->left.k = local_8.i * local_7.j - local_8.j * local_7.i;
-			local_1->up = local_8;
-			local_1->position.x = 0.0f;
-			local_1->position.y = 0.0f;
-			local_1->position.z = 0.0f;
-			local_1->position = local_9;
-			if (local_1->velocity_scale != 1.0f)
+			transform4x3f *local_23 = (transform4x3f *)&local_1->velocity_scale;
+			local_23->scale = 1.0f;
+			local_23->forward = local_7;
+			local_23->left.i = local_8.j * local_7.k - local_8.k * local_7.j;
+			local_23->left.j = local_8.k * local_7.i - local_8.i * local_7.k;
+			local_23->left.k = local_8.i * local_7.j - local_8.j * local_7.i;
+			local_23->up = local_8;
+			local_23->position.x = 0.0f;
+			local_23->position.y = 0.0f;
+			local_23->position.z = 0.0f;
+			local_23->position = local_9;
+			if (local_23->scale != 1.0f)
 			{
-				real local_27 = 1.0f / local_1->velocity_scale;
+				real local_27 = 1.0f / local_23->scale;
 				local_10.i *= local_27;
 				local_10.j *= local_27;
 				local_10.k *= local_27;
 			}
-			local_1->velocity.i = local_1->forward.j * local_10.j + local_1->forward.k * local_10.k + local_10.i * local_1->forward.i;
-			local_1->velocity.j = local_1->left.i * local_10.i + local_1->left.j * local_10.j + local_1->left.k * local_10.k;
-			local_1->velocity.k = local_1->up.j * local_10.j + local_1->up.k * local_10.k + local_1->up.i * local_10.i;
+			local_1->velocity.i = local_23->forward.j * local_10.j + local_23->forward.k * local_10.k + local_10.i * local_23->forward.i;
+			local_1->velocity.j = local_23->left.i * local_10.i + local_23->left.j * local_10.j + local_23->left.k * local_10.k;
+			local_1->velocity.k = local_23->up.j * local_10.j + local_23->up.k * local_10.k + local_23->up.i * local_10.i;
 			local_1->leaf_index = local_11.leaf_index;
 			local_1->cluster_index = local_11.cluster_index;
 		}
@@ -5029,15 +5084,11 @@ void function_127400(bool arg_0)
 	}
 	if (arg_0)
 	{
-		s_sound_driver_reverb local_28 = {
-			{0, 0, 0, 0, 0, 0x80, 0, 0},
-			-100.0f, -100.0f, 0.0f, 1.0f, 1.0f, -100.0f, 0.0f, -100.0f, 0.0f, 1.0f, 1.0f, 5000.0f
-		};
 		s_127402 local_29[2];
 		for (long local_30 = 0; local_30 < 2; local_30++)
 		{
 			s_sound_environment *local_31 = &SOUND_SYSTEM->environments[local_30];
-			local_29[local_30].field_0 = local_31->index == NONE ? &local_28 : (s_sound_driver_reverb *)g_4e3b44[local_31->index & 0xffff].bytes;
+			local_29[local_30].field_0 = local_31->index == NONE ? &g_44a2a0 : (s_sound_driver_reverb *)g_4e3b44[local_31->index & 0xffff].bytes;
 			local_29[local_30].field_4 = *(s_sound_driver_occlusion *)&local_31->unknown0c;
 			local_29[local_30].field_14 = local_31->fade;
 		}

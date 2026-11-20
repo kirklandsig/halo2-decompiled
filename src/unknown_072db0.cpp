@@ -2127,6 +2127,12 @@ bool function_1900a5(long index);
 // 791, copied key/player array 776, cached key/player array 776, all three 776, cached owner and team
 // destinations 703. NOT kept: the ties leave the first difference in place and the other forms add
 // sixteen bytes. The status branch, user cursor and slot selection still differ.
+// M3 lane 12 r153 (fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x647a0, 0x647d0, 0x18fd94, 0x1900a5, all
+// matched; aligned exact / register-masked 475 / 325 at 703): the poll delay as `long delay = g_50c460 <= 3 ? 2000 :
+// 300000;` with the busy-session override after it 774 (2926 B); the property loop with a signed `long` index against
+// `record->count` 703 (same code); the property read through the record at each use (no property pointer) 703 (same
+// code); `if (received != 6) failed = true;` in place of the `failed || received != 6` line 731 (2894 B, 470 / 321); the
+// received count as `dword` 703 (same code). The slot test's cmovne still needs the SSE flag (a file-flag decision).
 // M3 lane 3 r270 (fast with the file's 41 functions; control 703, aligned 500, masked 327). Build-flag lead, measured as
 // this function's one compiler-setting diagnostic and not kept (the flags line is the user's decision): with `/arch:SSE`
 // added to this file's flags line, retail's `mov ecx, 0; cmovne ecx, eax` appears at the slot test and every other

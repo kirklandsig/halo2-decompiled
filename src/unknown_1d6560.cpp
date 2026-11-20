@@ -556,6 +556,17 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // for ESI). On it, the same code each: the type local const 24 [0], the object-index local const 24 [0], case 11 as one
 // nested ternary 24 [0], the rigid body as a reference 24 [0]; the kind-7 route as `if (type != 1) return 1; return
 // 0xc;` 94 [0]; the object index as a const reference to the component's field 96 [208]. Body unchanged.
+// M3 lane 13 r123 (fast with the caller 0x1d5bf0, caller in brackets; control 96 [0], difflib-aligned 53). Round 118's
+// one-read form rebuilt (object index, absolute index, rigid body, headers, byte type; case 0 through `headers[component->
+// object_index & 0xffff]` with main's shift spelling) 28 at 256 B [0] (aligned 23, masked 12). Diagnostic: 1-12 initialised
+// dead locals at the top of it 28 each (flat: the object index EDX / headers ESI / rigid body ECX rotation of retail's ECX /
+// EDX / ESI is not a symbol-count phase). A compile-only first-pass screen (the incoming register of each parameter is
+// the one its first load takes there) agrees with the grids above: the 28 order loads the index into ECX, the header-first
+// orders (h,r,o,a,t; h,o,r,a,t; o,h,r,a,t) into EAX, because the pool pointer takes EAX and the owner ECX first. With a
+// named body-array local (b) or model local (m), 17 orders screened; five keep component EAX / index ECX / kind EDI there
+// and were built: h,b,o,a,rigid body from b,t 118 (268 B) [155]; b,h,o,a,R,t 115 [155]; the same with a long type 116
+// [155]; o,b,h,a,R,t 118 [194]; o,h,b,a,R,t 116 [194]. The screen does not predict these (the body-array local moves the
+// LTCG convention by itself). Body unchanged.
 // M3 lane 2 r111 (fast with the file and the caller 0x1d5bf0, caller in brackets; control 96 [0]): five entry orders of the
 // one-read form (oarht, hrt with the mask inline, horat, ohrat, hroat; byte type) x ten parameter orders of this function
 // (definition, the caller's declaration and call together, owner before level on the stack): oarht 28 [0], hrt and hroat

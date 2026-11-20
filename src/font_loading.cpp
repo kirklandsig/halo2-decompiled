@@ -270,6 +270,16 @@ static inline void font_copy_wait(bool volatile *done)
 			SwitchToThread();
 }
 
+static __forceinline long font_table_language_121b00(void)
+{
+	if (g_4687f8 == NONE)
+	{
+		char name[256];
+		font_table_get_name(name, sizeof(name));
+	}
+	return g_4687f8;
+}
+
 // score 4 (was 4): the three font file arrays sit in the frame in another
 // order: retail puts the old directory's files first, then the source's,
 // ours puts the source's first and the old ones in the middle.
@@ -285,6 +295,8 @@ static inline void font_copy_wait(bool volatile *done)
 // 252; copy result formed after the two guarded opens 178. The indexed byte forms tie at four and leave the
 // same slot exchange. The advancing displacement gains no slot and adds two differences. The extent bounds
 // and joined copy result regress. Opening executable source restored.
+// Matched in a full build with stand-in SDK headers (was 4): the language read with its lazy name load is one
+// file-local helper used at both sites, and the name buffer of the path lives in its own block.
 // @retail 0x121b00
 bool function_121b00(void)
 {
@@ -294,7 +306,6 @@ bool function_121b00(void)
 	s_type_acf665 output;
 	s_type_acf665 source_files[11];
 	s_type_acf665 destination_files[11];
-	char name[256];
 	char path[256];
 	char table_name[256];
 	char text[0x800];
@@ -318,8 +329,7 @@ bool function_121b00(void)
 			memcpy(&saved_time, global_preferences_globals.current.unknown24, sizeof(saved_time));
 			if (CompareFileTime(&saved_time, &time) == 0)
 			{
-				if (g_4687f8 == NONE) font_table_get_name(name, sizeof(name));
-				if (language == g_4687f8) return result;
+				if (language == font_table_language_121b00()) return result;
 			}
 		}
 		if (global_preferences_globals.current.unknown1c != NONE)
@@ -342,9 +352,12 @@ bool function_121b00(void)
 			}
 			else function_1367d0(&destination);
 			path[0] = 0;
-			font_table_get_name(name, sizeof(name));
-			csstrncpy(path, g_4687f0, sizeof(path));
-			function_122810(path, name);
+			{
+				char name[256];
+				font_table_get_name(name, sizeof(name));
+				csstrncpy(path, g_4687f0, sizeof(path));
+				function_122810(path, name);
+			}
 			function_x454397(&output);
 			function_x73bce5(&output, path);
 			async_create_file_blocking((file_reference_data *)&output, 2, 2, 4, 7, &input);
@@ -373,8 +386,7 @@ bool function_121b00(void)
 				function_1a1550(target, 7, 6, &done);
 				font_copy_wait(&done);
 			}
-			if (g_4687f8 == NONE) font_table_get_name(name, sizeof(name));
-			global_preferences_globals.current.unknown1c = g_4687f8;
+			global_preferences_globals.current.unknown1c = font_table_language_121b00();
 			memcpy(global_preferences_globals.current.unknown24, &time, sizeof(time));
 			global_preferences_globals.dirty = true;
 			return result;
@@ -938,6 +950,10 @@ static inline long font_character_pixel(long alpha, long color)
 // retained 157/201, both views 157/201, both views and the ordinary six-bit count 157/201, using the
 // existing byte parity and then dword parity. NOT kept: the parity width still differs on the tied form,
 // and dword parity moves the run out of EBX and shortens the two fills.
+// Share the opaque pixel 172, carry selected opacity 229, zero-default opacity 185,
+// and an opaque predicate 222. With dword parity 224/244/215/236. NOT kept: the
+// shared opaque pixel reaches 504 bytes but changes cursor allocation. The dword
+// parity forms shorten both fill paths and leave the packed run and literal gaps.
 // common long command count 165, common word command count 151, shared run count 172, shared run count and
 // default span 135, long command count with full parity 170, word command count with full parity 162, shared run
 // count with full parity 174, shared run count and default span with full parity 152. NOT kept: A separate word
@@ -955,6 +971,9 @@ static inline long font_character_pixel(long alpha, long color)
 // instruction). The colour literal is still built with a shift and an add where retail keeps its two bytes in
 // separate registers, and the run of two is still folded into the count as an immediate where retail adds the
 // register; the original helper and body stand.
+// Compare with packed run 59, run to pair end 163, pair class arity 193, shared packed prefix arity 171.
+// With full-width parity 203/213/191/219. NOT kept: the run comparison ties, and the other forms raise the
+// score. Packed parity width, run register reuse and literal byte assembly still differ.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

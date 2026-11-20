@@ -1295,6 +1295,14 @@ void function_2118c0(void)
 // M3 lane 13 r119 (fast with 0x212100 and 0x211fd0, both MATCH): `word k` 10 (same code); `long row = b; row *= 8;` 150;
 // `unsigned long` knot indices `(k + n) & 7` with `long row = b * 8` 185 (751 B); `long row = b * 8` with the knot subscripts
 // `(dword)(row + w)` 150, with `(dword)row + w` 150 (unsigned sums still reduce every row).
+// M3 lane 14 r124 (fast with 0x212100 and 0x211fd0, both MATCH; screens on a compile-only harness of this file, exact
+// here, aligned counts against its 5): the band loop as `while (b < 3)` 10 (same code); the three components written out
+// with no component loop 10 (same code), with `long row = b * 8` 150 (aligned 105, every row reduced); a redundant
+// `b < 3` guard around the band body with `b * 8` 185 (748 B); a redundant `w3 < 8 && w2 < 8 && w0 < 8` guard ahead of
+// the band loop with `b * 8` 155. Screen only, diagnostics: the knot indices in a `long [3]` array whose address escapes
+// to an external call before the loops 111, in a function-static array 119, in a local aggregate 116 (all with `b * 8`:
+// every row still reduces, so an aliasable index home is not it); a redundant `row >= 0` guard 151; a conditional knot
+// pointer under `row < 24` 185.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

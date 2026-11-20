@@ -199,6 +199,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // accessor's copy does not take a use from the transform); the address local and the branch in their own block ending
 // before the record fill 19 (same code). Both builds give the transform and the point's y the same uses, so the pair is
 // a tie-break the source has not reached.
+// M3 lane 11 r129 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the whole function as a
+// member of the record (`this` the record, the tail through `this`) 19 (same code); that member without the address
+// local 33 (464 bytes, the transform arrives in ECX and goes to EBX as on the plain no-local body). Diagnostic on the
+// no-local body: 1-12 unused initialised locals at the top 33 each except K = 2 and K = 10 (124, 447 bytes); the
+// transform never stays a stack argument, so no symbol count puts it in EBP in the first pass. Also: the rotate helper
+// `static __forceinline` 19; every parameter declared `const` (the address local unchanged) 19; the transform parameter
+// non-const 19 (all the same code).
 // M3 lane 4 r223 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the node arm rotating
 // into a fresh vector then copied to the forward local 110 (494 bytes); the point call writing a fresh point then
 // copied 131 (470 bytes: the initial copy of the global point is then dead and dropped); the angle pair computed into

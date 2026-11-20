@@ -86,10 +86,10 @@ static inline void transform4x3f_apply_point(transform4x3f const *matrix, point3
   y = matrix->scale * y;
   z = matrix->scale * z;
  }
- real result_x = matrix->up.i * z;
- result_x += matrix->left.i * y;
- result_x += matrix->forward.i * x;
- result->x = result_x + matrix->position.x;
+ real term_a = matrix->up.i * z;
+ real term_b = matrix->forward.i * x;
+ real term_c = matrix->left.i * y;
+ result->x = term_a + term_b + term_c + matrix->position.x;
  result->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
  result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
@@ -111,6 +111,8 @@ static inline void transform4x3f_apply_vector(transform4x3f const *matrix, vecto
 // score 9 (was 123): in the point's x row retail multiplies forward first
 // and adds up last ((left + forward) + up); every order of the three
 // products tried keeps left.i in xmm0 only in up-left-forward order
+// Matched in a full build with stand-in SDK headers (was 9): in transform4x3f_apply_point the x result's three
+// products are named locals summed as up, forward, left.
 // @retail 0x1eff40
 bool function_1eff40(s_lookup *lookup, long flags, const point3f *point,
  const vector3f *direction, s_lookup_ray_result *result)

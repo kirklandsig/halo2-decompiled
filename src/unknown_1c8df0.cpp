@@ -23,8 +23,7 @@ real function_30bf0(vector3f *v);
 real magnitude3d(vector3f const *v);
 extern vector3f *g_4687bc;
 
-__declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4,
- long arg_0, point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+
 
 // score 20 (was 20): round 96 (26 -> 20) typed the origin parameter `point3f const *` everywhere and read it directly (no
 // renaming copy): only the mode-1 positive x row is left (retail adds the centre x as the memory operand, ours
@@ -339,6 +338,13 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // first: all load); the mode-2 x row likewise folds with the target parameter at index 0..2 or 7..9. The y row folds at
 // every index. No body form reaches the row: it follows the centre parameter's index, and 0x1b0400's retail call
 // (compare on the actor in EBX before `mov ebx, eax`) needs the target and arg_0 ahead of arg_7.
+// M3 lane 4 r228 (fast with 0x1e55d0; control 20 at 1176 B): a local copy of the target pointer read everywhere in place of
+// arg_4, declared first or after the top locals, 20/20 (same code); copies of both points (centre declared first) read
+// everywhere 30 (1175 B: the mode-1 x and y rows then load and the z row folds, and two mode-2 rows move); the centre x
+// named once for both mode-1 x rows 45 (1175 B); the three scaled side offsets named as one vector for both mode-1 points
+// 35. Compile-only screen of the copies (build/r228/grid1c.py: each use group of arg_1 and arg_4 read through a copy or
+// not, scored against this body with the x row folded): all 255 centre-copy subsets, all 127 target-copy subsets and 800
+// random joint subsets in both declaration orders: none folds the mode-1 x row with the rest unchanged.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)
