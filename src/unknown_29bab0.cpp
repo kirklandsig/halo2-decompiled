@@ -74,14 +74,14 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
 // MiniMax I (11-17): no new form, no lower score (489): the body is 3503 bytes against retail's 3499 and the slot homes still differ (local_8 at +0x8c against retail's +0x80, with local_14 the other way round), which needs the declarations moved; the normaliser still squares k, j, i where retail has i, k, j, and the retail grouping through normalize_inline for local_9 scores 775; the body is unchanged.
-// Earlier score 489 (was 489): Frame 0x88 agrees. Position is at +0x8c for retail's +0x80,
+// Earlier: Frame 0x88 agrees. Position is at +0x8c for retail's +0x80,
 // and the normalization squares and steering allocation differ. At 679, the target was
 // changed to a vector3f from the existing
 // Earlier at 489: m3 lane 4 r203 (plain, starting at 679) kept the target point local_14 as a vector3f from the existing
 // Earlier score history (679 before m3 lane 4 r203).
 // Earlier at 489: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
-// Earlier score 489 (was 489): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
-// Earlier score 489 (was 489; 679 before m3 lane 4 r203): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// Earlier: The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // Earlier: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
 // vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
 // frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
@@ -704,6 +704,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // after planar normalization or at the collision split, scoped/entry declaration:
 // 790/790, 791/791, 790/790, 794/794. NOT kept: collision-split seeding reaches
 // 3499 bytes and position +0x80, but drops the early vector copy and shifts the heading spills.
+// Shared heading fallback, with the no-settings arm or the settings-present arm first. Direct
+// fallback test 753/764, named fallback result 762/762, direct steering test 753/764, named steering
+// result 753/769. NOT kept: Every shared-call form grows the frame and raises the score.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

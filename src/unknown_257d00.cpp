@@ -2032,7 +2032,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 
 // score 433 (was 433): The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
-// Earlier score 433 (was 433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
+// Earlier: The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
 // MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
 // MiniMax H (11-18): score 433 (was 479): the switch's cases now sit in retail's order and case 13 returns 1;
 // what still differs is the shared return-1 block, which this build keeps at the end of the function where retail
@@ -2503,7 +2503,6 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI, state EBX); on it one, two or three unused locals in the case 611 each (same code: the exchange is not a
 // symbol-count tie), the case 2 vector written as three member copies from the actor 611; `default:` joined to case
 // 13's `return 1` 613 (2416 B).
-// score 433 (was 433):
 // Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
 // busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
 // fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
@@ -2513,6 +2512,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // order with direct acknowledgement exit 477, Unsupported selector exits as completed 433. NOT kept: The selector
 // orders and unsupported-selector return tie. The direct acknowledged return shortens the body to 2400 bytes at
 // 477. The checked callee stays at 164.
+// Early pending returns for a busy actor 586, disabled delayed facing 565, or both 590. Timer and
+// turn-start exits 588 with nested admission, 567 with admission guards. Separate mode guards 566.
+// Conditional settled or pending facing 599/618. NOT kept: All scores rise. The shortest form
+// leaves the dispatch and planar transfer different.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

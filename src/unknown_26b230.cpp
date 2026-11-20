@@ -2228,6 +2228,9 @@ void function_269250(long clump_index, long actor_index);
 // parameter is copy-propagated, so the selection keeps EDI); on the in-arm form the actor index read into a local at the
 // top of the actor body 126 or after the walk 126 (same code), the actor's previous clump in a local for the post-loop
 // compare 126. Body unchanged.
+// Raw actor, raw clump or both step conditions 87/87/87. Raw actor or both raw steps with read-only
+// views 87/87. Typed read-only actor with raw clump 87, raw actor with typed read-only clump 87,
+// raw clump with per-use view 87. NOT kept: All tie. Pool, selection and score transport still differ.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

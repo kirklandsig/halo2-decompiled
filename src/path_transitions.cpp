@@ -1102,6 +1102,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // long 262/262. Word index at each address, position/direction first 266/219.
 // Direction vertex reference 265, both vertex references 271.
 // NOT kept: all scores rise and the early root copy and actor load remain unresolved.
+// Parent then combined, paired or individual corner guards 218/218/218. Parent and first-edge
+// guard then second edge 218. Positive parent before corner guard 218. Positive parent and first
+// edge before second-edge guard 218. Parent guard before positive corners 218. Combined parent
+// and corner guard 218. NOT kept: All tie at retail length and leave the entry loads different.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

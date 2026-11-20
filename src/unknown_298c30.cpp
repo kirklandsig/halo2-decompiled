@@ -597,6 +597,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
 // Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.
 // NOT kept: every signed-count form shortens the body and changes the matched caller.
+// Near direction point per candidate 372, at near-arm scope 372, at endpoint scope 372, or shared
+// with the far arm 370. Facing-copy point per candidate, per near arm, or shared 410/449/437.
+// Separate pre-sine and completed y values 305. NOT kept: The point workspaces grow the body and
+// some grow the frame. The separate y values tie and leave the cosine spill unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
