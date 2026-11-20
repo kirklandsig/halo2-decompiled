@@ -1770,6 +1770,10 @@ bool function_108530(long device_index, long name)
 // stack slots close up, so the choice follows use and not the declared position). Forms: the reset-order body
 // re-measured 144 (509 B, the ramp-down passed in XMM7; callers 26/28), with the cruise time after the seven stores 144
 // (same code); the deceleration distance as `distance -= ...; motion->deceleration_distance = distance;` 116 (same code).
+// MiniMax R (11-20): score 116 (was 116): no new form; the clamped duration, ramp-up and ramp-down still take xmm3, xmm7
+// and xmm2 where retail takes xmm5, xmm7 and xmm1, the ramp-down still stays in a register where retail reloads it from the
+// stack, and the initial velocity still reaches the clamp on the stack where retail passes it in xmm6 (the callee's own
+// link-time convention, which no form here moves).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2770,6 +2774,10 @@ bool function_0b6760(s_index_pair const *pair);
 // definition (called from five other files), a bool in the matched 0x1cd070 that keeps one 0xb6760 call out of line, the
 // position test in a bool here, the unit byte tested `<= 0`, and 0x107cc0's state ahead of its channel. Body is main's.
 // MiniMax B (11-20): no new form, no lower score (61): the entry registers are still one rotation off from retail's and the body is sixteen bytes short of retail's 1495; what is left sits at the two channel-1 0xb6760 calls, whose convention is fixed in another file.
+// MiniMax R (11-20): score 61 (was 61): no new form; the prologue still clears the result flag before the definition
+// pointer where retail stores the definition first, and the two channel-1 0xb6760 calls still load the device index into
+// eax where retail loads it into ecx (the callee's link-time convention is fixed in another file, so the body stays
+// BLOCKED-BY 0xb6760).
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

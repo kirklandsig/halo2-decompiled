@@ -1704,6 +1704,10 @@ void function_150820(dword *bits, bool local_only)
 // selection 88, complementary policy arms 77, command-mode assignment in the test 80, conditional command
 // result 95, captured eligibility index with sequential results or conditional declaration 105/43. NOT kept:
 // the declaration forms tie at 210 bytes; the other forms regress or change extent.
+// MiniMax R (11-20): score 43 (was 43): no new form; the player still takes edi and the hand esi where retail takes the
+// player esi and the hand edi, and the unit index still takes ecx where retail takes edx, so the whole body stays one
+// register rotation off; the only form that gives retail's registers (18) rereads the unit index through the player
+// getter and stays match-only.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

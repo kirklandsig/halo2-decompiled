@@ -2012,6 +2012,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // spring statements 188; the look pointer and the flags copy declared at their assignments 188; the weapon counter
 // declared in the for statement 188; no channel pointer (the +0xb8 channel written out at its test and clear) 188 (same
 // code each).
+// MiniMax R (11-20): score 188 (was 188): no new form; the frame stays 0x30 against retail's 0x2c (the look pair still
+// needs an aggregate slot of its own), the unit and mode still take each other's slot against retail, and esi and edi are
+// still saved ahead of the unit test where retail saves them after it, so the body stays BLOCKED by the stand-in.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

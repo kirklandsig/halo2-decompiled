@@ -1391,6 +1391,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // as the copied normal's own dot (`dot3f(&plane.n, &plane.n)`, no left loads) 177; `t` started at zero at its declaration
 // with no else arm 454; the length test as `== 0.0f` with the zero arm first 136; t as one ternary 126 (same code); the
 // squared length between the normal copy and the plane constant 399 (1700 B).
+// MiniMax R (11-20): score 126 (was 126): no new form; the plane block still preloads the normal's z into xmm1 where
+// retail preloads its y, so the squared length lands in xmm0 where retail keeps it in xmm1 and the divide and the zero
+// copy that follow stay exchanged with it; the shared dot helper's term order is fixed in a header this lane may not
+// touch, so no spelling reaches retail's preload.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

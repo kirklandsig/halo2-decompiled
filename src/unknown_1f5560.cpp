@@ -1868,6 +1868,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // predicate 198, in-place radial scale 206, shared opposite radius 242, destination and shared subtraction 231, in-
 // place side scale 294. NOT kept: the complementary predicate reverses the stored side and loses the shared radial
 // tail. In-place radial scaling shortens below retail. The radius register still differs.
+// MiniMax R (11-20): score 226 (was 226): no new form; the first difference is still the radius in xmm4 where retail
+// loads it into xmm5 at +0x4f, and the cosine block keeps its own allocation of the direction, the desired vector and
+// the zero, so the whole body stays 223 instructions away from retail's.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

@@ -1385,6 +1385,10 @@ bool __stdcall function_2399da(long controller_index)
 // ECX, this build keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call, which costs
 // two bytes and shifts every later jump. Fixing it needs 0xac050's parameter order changed in src/online_teams.cpp, a file
 // this lane may not edit.
+// MiniMax R (11-20): score 90 (was 90): no new form; the identity still takes ECX and the requested rank EAX where retail
+// takes the identity EAX and the rank ECX, and that swap is the whole difference: the 64-bit id test and the member's rank
+// store then follow, and the copy into eax before the removal call still costs the two bytes that move every later jump.
+// The identity declared inside the block as a const pointer scores 90 as well (same code).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
