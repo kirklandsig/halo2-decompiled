@@ -2030,6 +2030,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // score 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
 // r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still

@@ -782,6 +782,7 @@ long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
 // MiniMax H (11-20): no new form, no lower score (43): the datum iterator's data pointer takes EBX where retail takes EDI; its register use comes from include/data_iterator.h and src/unknown_0bad50.cpp.
+// MiniMax S (11-20): no new form, no lower score (43): the unit and its parent stay in EAX and ECX where retail keeps the unit in EBX and the parent in EAX, and the walk's step object is copied twice where retail reloads it; the pinned 0xbaf80 in another file decides the register choice.
 // score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
 // walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
 // place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
@@ -2602,6 +2603,7 @@ static __forceinline long player_round_ticks(real value)
     return result;
 }
 // MiniMax H (11-20): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and 0xccd20 and the first 0x151b80 call are still expanded here.
+// MiniMax S (11-20): no new form, no lower score (701): the frame is 0x4c against retail's 0x74, so retail's larger set of locals is missing and the actions, the flags word and the request copies sit at other offsets.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
 // still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
@@ -3226,6 +3228,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 }
 
 // MiniMax H (11-20): no new form, no lower score (103): retail materialises NONE in EDX after loop 1's call and reuses it; ours uses immediates and loads the last unit into EBP.
+// MiniMax S (11-20): no new form, no lower score (103): retail keeps the globals pointer in ESI and the countdown in EAX from one global load where ours loads a second global and keeps the last unit in EBP; the 0xb8540 and 0xb7b40 stubs still hide the writes to g_4e8c20.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
 // function where retail loads it into ESI and reloads it after the busy check and again before the
 // final store, and the two loops swap the datum and unit registers with it; the reduced image
