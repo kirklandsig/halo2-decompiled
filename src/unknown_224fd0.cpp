@@ -60,29 +60,32 @@ void function_1cf50();
 PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real cosine, matrix3x3 *out)
 {
 	vector3f axis_squared, axis_sine;
-	axis_squared.k=axis->k*axis->k;
-	axis_sine.k=axis->k*sine;
 	axis_squared.i=axis->i*axis->i;
-	axis_sine.j=axis->j*sine;
-	axis_sine.i=sine*axis->i;
-	real ij=(1.0f-cosine)*axis->j*axis->i;
-	out->left.i=ij-axis_sine.k;
-	out->forward.j=axis_sine.k+ij;
 	axis_squared.j=axis->j*axis->j;
-	real ik=(1.0f-cosine)*axis->k*axis->i;
+	axis_squared.k=axis->k*axis->k;
+	vector3f_scale(axis,sine,&axis_sine);
 	out->forward.i=(1.0f-axis_squared.i)*cosine+axis_squared.i;
+	real t=1.0f-cosine;
+	real tij=(axis->j*t)*axis->i;
+	out->left.i=tij-axis_sine.k;
+	out->forward.j=tij+axis_sine.k;
 	out->left.j=(1.0f-axis_squared.j)*cosine+axis_squared.j;
-	out->up.i=axis_sine.j+ik;
-	out->forward.k=ik-axis_sine.j;
+	real tk=t*axis->k;
+	real tki=tk*axis->i;
+	out->up.i=tki+axis_sine.j;
+	out->forward.k=tki-axis_sine.j;
 	out->up.k=(1.0f-axis_squared.k)*cosine+axis_squared.k;
-	real jk=(1.0f-cosine)*axis->k*axis->j;
-	out->up.j=jk-axis_sine.i;
-	out->left.k=axis_sine.i+jk;
+	real tkj=tk*axis->j;
+	out->up.j=tkj-axis_sine.i;
+	out->left.k=tkj+axis_sine.i;
 }
 
 // MiniMax C (11-20): no new form, no lower score (219): a permuter run with annealing over this body (27 tries, 242 s, no
 // confirming build) found nothing below 219, and the jump table still sits four bytes earlier than retail's.
-// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
+// score 21 (was 219): both rotation cases, the frame and the tables now agree but for: the second rotation case multiplies the i-j
+// term by j then i (retail i then j); in the three basis cases the first cross product copies the up component where retail copies the
+// other operand, and the first case loads up's j ahead of its k and stores forward.j ahead of up.i. Earlier first line (219): frame
+// 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax I (11-19): no new form, no lower score (219): retail's two rotation copies take their complement products' operands on
 // different sides, which one shared helper cannot produce, and the jump table still sits four bytes earlier than retail's.
 // MiniMax G (11-19): no new form, no lower score (244): retail's two inlined copies of the rotation helper still put the
@@ -453,6 +456,32 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Row aggregate assignment in the same orders 716/719 and 713/718.
 // NOT kept: the setter forms retain +0xe7 and shorten the body, while
 // row aggregate stores move the first difference to the prologue and grow it.
+// M3 lane 7 r202 (fast with 0x173ba0, 0x246cd0, 0x30bf0, 0x11d000, 0x142eb0, all MATCH, and 0xc1d90 290 unchanged; control 219,
+// aligned 225, masked 161; kept form confirmed plain). Kept: the rotation helper in the statement text of the matched 0x1544e0
+// (squares, sine products, forward.i, t, tij, left.i, forward.j, left.j, tk, tki, up.i, forward.k, up.k, tkj, up.j, left.k) with the
+// squares in a vector local and the sine products through the existing vector3f_scale, the i-j term as `(axis->j * t) * axis->i`,
+// and the first basis case's forward through the existing `(in, out)` negate helper, moved from src/unknown_0bffa0.cpp into
+// vector_products.h (0xc1d90 unchanged): 219 -> 21. The steps: the 0x1544e0 text with vector3f_scale and `(t * axis->i) * axis->j`
+// 254 at 1836 B (aligned 68: second rotation case exact, first with a cached cosine load); the i-j term as `(axis->j * t) *
+// axis->i` 237 at 1840 B (aligned 58: first case exact, second with its two multiplies swapped); the three spellings that pair t
+// with i first give the 254 code, the three that pair t with j first the 237 code, i * j first 245 / 357; on the 237 form the
+// negate helper for the first basis case 21 (the three direct `basis.forward.x = -...` statements were what flipped the cross
+// products: direct mentions of the local basis' fields re-rank them). Not kept: the up copy ahead of the negation 20 (one point,
+// a statement moved; retail's stores do have up.i ahead of forward.j); that with `real position_z = position->z;` named ahead of
+// the third vertex-data call 2 (a one-use local, the permuter's find, 50 tries in 612 s: only the second rotation case's
+// multiply order is then left); position y named 4, x 20 (same code), y and z 18, z with any colour component 2, all three
+// named at the top 142; on the 2 form: `(t * axis->i) * axis->j` 67, `t * (axis->i * axis->j)` 35, the squares ordered i, k, j
+// 2 (same code), k, j, i 408 (1788 B), j, i, k 311, the scale call ahead of the squares 410, the i-j term through a named
+// `axis->j * t` or as a compound `*=` 2 (same code), through named axis components 366 (1824 B), started from t with two `*=`
+// 85; the second axis held in a named pointer used by its rotation and its basis copy 349 (1840 B) / 444; the last basis case's
+// up through three field statements 393 or the by-value setter 396 (1780 B), its crosses reading the global axis 256 / 272.
+// Other measured forms: the old k-first order with named t / tk 242 (1808 B), that with sine and cosine by const reference 242,
+// main's order with forward.i moved up and a shared k term 368, scalar squares with a sine vector 453 (1752 B), the cosine by
+// const reference on the 254 form 254 (same code), t named ahead of forward.i 350, both by reference 316; the staged cross
+// helper for all or the first two crosses 21 (same code: the cross text is canonicalised); the first basis case's up copied per
+// field before / after the negation 310 / 310, its cross reading the global's up 242 (1844 B); 1 to 8 dead locals 21 each
+// (no symbol-count phase: the named position_z acts as a float leaf's rank, not as a count). The kept form with 0x1544e0's own
+// `(t * axis->i) * axis->j` 85: retail's first rotation case loads j, multiplies by t, then by i, which is the kept spelling.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
@@ -488,9 +517,7 @@ void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache 
 	switch(definition->orientation)
 	{
 	case 0:
-		basis.forward.i=-g_485618.forward.i;
-		basis.forward.j=-g_485618.forward.j;
-		basis.forward.k=-g_485618.forward.k;
+		vector3f_negate_ab(&g_485618.forward,&basis.forward);
 		basis.up=g_485618.up;
 		cross3f(&basis.up,&basis.forward,&basis.left);
 		break;

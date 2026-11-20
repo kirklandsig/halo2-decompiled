@@ -4393,6 +4393,19 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // count advanced through an inline function taking their addresses, at the tail or at the head too (the count started at
 // zero), on the guarded, cursor and indexed loops 160, 160, 164, 164, 139, 139 (same code: neither stays in memory for it).
 // Body unchanged.
+// M3 lane 7 r202 (fast with 0x564c0, matched each time; control 139): the packet-cursor form with the head ordered
+// size, stride, consumed, cursor re-measured 167 (478 B, the member in EBP, the channel in no register). Diagnostics on
+// it (each one conditional store to a spare byte, removed at once): an extra conditional block inside the member's live
+// range, after the members test 166 and ahead of the bit clear 155 (frame 0x14; the member keeps EBP, so the member's
+// block span is not what ranks it); a `channel->index` compare in the entry block 159 (the channel is loaded into ESI for
+// that test and dropped, so an entry-block reference does not earn it EBP here); lane 8's compare after the plain arm's
+// submit call re-measured 73 (491 B: channel EBP from entry, member in its frame slot). So the pair flips only for a
+// channel reference that follows a submit call; references ahead of the calls and block-count changes do not move it.
+// Source forms on the cursor form: the plain arm as its own `if (!relay)` (no else) 167 (same code); the member's bit
+// cleared ahead of the talker calls 152 (469 B, frame 0xc, channel EBP); the channel's index named once per pass at the
+// loop top 195 (445 B); the data parameter itself advanced with the count read through a `header` copy 163 (494 B;
+// 0x564c0 lost, 13: the data then arrives in EAX); the relay arm's three failure tests in one condition with the members
+// word read first 167 (same code). Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -1640,6 +1640,27 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // copies it to ECX for the normal); direction0 as `0.0f - normal.i` per component (retail's form) 478 (2162 B) [348/182];
 // one to four unused locals at the top 488, 487, 489, 489 (first difference +0x19; no count gives retail's j/k normalize
 // sides). Body unchanged.
+// M3 lane 7 r202 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21; control 529, aligned 527, masked 281). New lever: the
+// three colour scalings through an in-place `lighting_scale_color(color3f *, real)` on the plain scan loop (`for (i = 0; i <
+// block->count; i++)` with the mask in the test), `bool result = false;` declared after the parameters pointer, `result =
+// true` last and (type, query, block): record's direct uses drop, it is homed in EBP and stays a stack argument, and the
+// entry is retail's instruction for instruction (`mov ebp, [record]; mov ebx, eax; mov edi, edx; mov edx, [ebx]; xor esi,
+// esi; xor al, al`), 0x3db00 still MATCH: 565 at 2231 B (aligned 467, masked 177; 0xd4080 380). Without the helper the same
+// body gives 585 (record arrives in ESI, block homed EDI, query EBX, parameters EBP); the declared order (type, block,
+// query) or (block, query, type) on it 585 / 585 (the order sets the incoming registers only). On main's `0 < count` loop
+// the retail-order rewrite 605 (result in CL, type on the stack, 0x3db00 lost), `return true` closing the block 592, the
+// result declared after the count 603, no result variable 593, the found block nested in the count test 605, a walked entry
+// pointer 610, a flags local 599. On the 565 form: the mask written first in the test 565 (same code); the normal's square
+// as (j*j + k*k) + i*i 566 (aligned 455: retail's k, j, i x87 order); the bias local named right after the lightmap copy
+// (where retail loads it into XMM2) 579 (frame 0x24, block ECX / query EAX; 0xd4080 455); the shared rotation reading its
+// axis through the pointer 518 at 2191 B (aligned 422; 0xd4080 493 at 1830 B). Normalize spellings on main: j and k as `*=`
+// or through n[] 529 / 529 (same code), through references 574. A 110-form grid of loop, result, copy, pin-order, helper
+// (one or both functions), live-axis and parameter-order options: best 500 at 2170 B (plain loop, result variable,
+// per-field copies with the bias at each use, retail pin order, helper, live axis; 0xd4080 493 / 479), then 505, 518; at
+// 2189 B 526 and 532; without the live axis 554 at best. A second grid of 0xd4080's own options on the two best forms
+// (direction2 in place, the square after the negate, three normalize orders, select stores): 0xd4080 445 to 496 (445 at
+// its retail 1870 B). Every form under 521 raises 0xd4080 above 378, so none is kept; leads saved as
+// build/r202/lead-0xd37f0-500.patch and build/r202/lead-0xd37f0-entry-565.patch. Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
