@@ -1172,6 +1172,16 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // stored at entry, retail stores the result copy at entry and final_matrices after the definition loads; a declaration
 // move, not kept). Diagnostic: K = 0 to 33 (0, 1 and odd) dead initialised longs at the top 240 at every K (aligned
 // 182 each: the entry roles and the frame are not a symbol-count tie).
+// M3 lane 1 r132 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): lane 4 r225's lead
+// rebuilt (single exit, awake test through 0xbfc90, bit 30 cleared through 0xbfe20, bit 29/+0x34b through header->object)
+// 170 (826 B). It now has retail's separate result copy (EDI) but swaps the other two entry values: object_index in EDX
+// and the parameter in ESI where retail has ESI and EDX, so `definition` keeps EDX across the mask copy where retail
+// stores it at once. On 170: result declared ahead of the header 170 (same code); final_matrices declared at the top
+// without an initialiser and assigned late 170 (same code); final_matrices as the first statement of the model block 169
+// (a declaration move); `object` from header->object 296 (818 B); final_matrices declared and initialised at the top 283
+// (837 B, first difference +0xa: object_index then takes ESI, the +0xb3 byte BL with EBX pushed before it and
+// `definition` is stored at once, as retail, but final's home is stored at entry from EAX where retail stores it late
+// from EDX). Diagnostic: the object-type test through a fresh definition lookup 170 (merges with `definition`).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

@@ -405,6 +405,12 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // earlier notes say: what makes the calls that come from the inlined 0x14de90 lose the callee's summary in retail.
 // One compiler-setting diagnostic, reverted: the aliasing-across-calls optimize pragma around the helper, or around
 // this function, 128 (no reload).
+// M3 lane 1 r131 (fast with 0x103b10, MATCH each time; control 110, register-masked aligned 9/13): the sound helper
+// `static inline` instead of forceinline 165 (315 B: it stays out of line); the player-index helper forceinline 110
+// (same code); the user entry's two stores through `g_4ed284->entries[user_index]` with no entry pointer 112 (357 B);
+// the entry as a reference local 110 (same code); the sound call behind `if (sound_index == NONE) return;` 110 (same
+// code). Retail also threads the weapon arm's NONE sound straight to the exit (`cmp edi, -1; je` at 0xc87f3) where
+// ours sets EAX to -1 and tests it. Still BLOCKED-BY 0xbadc0.
 // M3 lane 6 r204 (fast with 0x103b10, 0x14de90, 0xbadc0, 0xcbd50 and 0x100f70, all MATCH each run; control 110, register-masked
 // aligned 13; nothing kept). Round 117's three forms re-measured 128 (348 bytes, aligned 28); with the file's own inline copy
 // of the player-index getter replaced by a declaration of the real 0x14de90 (another file, later in link order, as in retail)

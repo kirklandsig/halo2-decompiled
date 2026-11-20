@@ -1005,6 +1005,15 @@ bool function_e4050(long object_index);
 // the unit on that path, so the unit dies at the walk) 181 (391 B); a redundant `if (unit != NONE)` around the walk 171
 // (same code); the unit object's parent named after the walk for the test, the 0xbaf40 argument and the exit store 174
 // (402 B).
+// M3 lane 1 r133 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43): a grid
+// of 48 forms of the NONE-root walk from the unit (the order of the walk variable, the root and the unit-object lookup x
+// long unit with a dword walk variable or the reverse x the unit object looked up through the unit or the walk variable x
+// the unit object's parent at each use or named after the walk x the step object named or not): the walk variable and
+// the root both ahead of the unit-object lookup 81 each (433 B, 32 forms: the frame is back and the entry test stays, but
+// the unit keeps EAX, the root takes ESI and the step object EDX), the lookup ahead of either 171 each (405 B, 16 forms).
+// Reading of the 405-byte family: retail gives EAX to the unit object's parent (0xbaf40's argument, read after the walk)
+// and to the 0xaa byte, so its unit goes to EBX and the walk's step object is free to take EAX; ours gives EAX to the
+// unit first and puts the parent and the byte in ECX. BLOCKED-BY 0xbaf80 stands (its pin is in an avoid file this round).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2791,6 +2800,21 @@ static __forceinline long player_round_ticks(real value)
 // request); the tick scale read at each use as well 736 (2702 B). Diagnostic, reverted at once: a file-local inline copy of 0xe68c0
 // at the last site 804 at 2842 B, frame 0x6c, the same instructions as two function-scope requests (the listed 804), and the first
 // 0x151b80 call is still expanded, so that expansion does not follow from the caller's size.
+// M3 lane 1 r133 (fast with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0, 0x14e970; control 701; aligned = difflib count of equal
+// rows with registers masked, 552 at the control). Retail evidence at the six flag sets: `or byte ptr [eax + edi + 2], N`
+// is followed by `add eax, edi` (the player pointer formed, unused at the four 0x10 sets), and at the two 0x20 sets the
+// expanded 0x1520f0 body reads the user index through that pointer (`mov ax, [eax + 0x28]`) with no second load of the
+// pool's data. Ours forms a dead `lea eax, [.. + edi + 2]` and reloads the data for the view clear. Not kept (no gain in
+// the count while the frame and the expansions stand): each flag set through a named player pointer in its own block
+// (`s_player *flagged = player_get(player_index); flagged->flags_word |= N;`) 702 (2732 B; retail's `or`/`add` pairs at
+// the four 0x10 sets; aligned 552); that with the view-clear helper taking the pointer at the 0x20 sets 701 (2720 B: no
+// reload, as retail, but the view lookup then reads +0xa2 ahead of forming the view address as 0x1520f0 itself does;
+// aligned 531); that with the candidate written `input + 0x28` at each call 705 (2722 B, aligned 556, the closest
+// opening so far); the function-scope `player` reassigned at each set 725 (2746 B); the candidate at each call alone
+// 708 (2742 B, re-measure, aligned 554). With those forms ours is 18 to 20 bytes short of retail, so the present equal
+// length hides that many bytes owed to the blockers (0x151b80 and 0xccd20 expanded here, 0xe68c0 not). Left in the
+// opening on the 705 form: retail keeps the unit's scaled index in EBX (pushed at entry, stored to its own home) and the
+// 0xfffd mask in ESI; ours keeps the mask in EBX. BLOCKED-BY 0x151b80, 0xccd20 and 0xe68c0 as before.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3466,6 +3490,13 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // MiniMax C (11-19): no new form, no lower score (103): retail's loop 1 steps the pool itself, with the pool in EBX, the
 // index in EBP and no store of the iterator's data field before it, while ours keeps the shared iterator; writing that
 // step into the loop does not reach retail's shape either (the reduced image 214 against 193, the plain check 103).
+// M3 lane 1 r133 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40, every listed callee as in the baseline; control
+// 103): retail stores the iterator's data field once, in loop 2's set-up; ours stores it ahead of loop 1 and again there.
+// Diagnostic, not kept: loop 1 stepping the pool local with an index local of its own through a second inline step
+// helper (pool, index, iterator), storing only the datum and the datum index, 141 (611 B: the store ahead of loop 1 goes
+// and the last unit's NONE store takes its place as in retail, but the globals pointer keeps EDI and the rows shift).
+// Same code as the body: the final store under `if (!failed)`; the iterator declared ahead of the last unit and its
+// position; `globals->unknown9e == false`; loop 2's set-up with the data field stored last. BLOCKED-BY 0xb8540 stands.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

@@ -666,6 +666,15 @@ extern "C" void _ReadWriteBarrier(void);
 // barrier, the 20 form's step): the release through `pool` 118 (475 B), with the file's getter 118, through the global
 // 120; the old step with a pool local for the step and the release 140; the 118 form mixes the global and the pool
 // local (match-only), so it is not kept either.
+// M3 lane 1 r131 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, all MATCH; lane 11 r115's 20 form rebuilt at 20, and it is
+// register-masked identical to retail: 156 of 156 rows, so only the EDI/EBP/EBX permutation is left). On the 20 form:
+// `bool finished` declared at its assignment 20 (same code); the lookup result kept as `bool has_unit = ... != 0` 107
+// (the datum index moves to EBX and the pool to EBP, the header stays in EDI); the flags-8 block as one `&&` test with
+// the object index read before it 168 (491 B); the scan from `pool` and the element from `iterator.data` (roles
+// swapped) 22 (the two home reads swap, rotation unchanged); `pool` assigned before the iterator's two stores 23 (the
+// prologue stores reorder, rotation unchanged). Re-measured: data_datum_iterator_next_inlined with a `pool` local for
+// the iterator and the release and main's arms, no barrier, 150 (register-masked 16/15: one pool value serves the scan
+// and the element, where retail reads two homes); with the 20 form's arms 153.
 // M3 lane 6 r204 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, 0x1fb360 and 0x7b430, all MATCH each run; control 122; lane 11
 // r115's 20 form re-applied, 20 at 473 bytes, register-masked aligned 0: saved whole as build/r204/lead-1fb510-20.full.cpp in
 // worktree m3-lane6; body here unchanged). What sets the 20 form's rotation, by diagnostics on it (each reverted): without
