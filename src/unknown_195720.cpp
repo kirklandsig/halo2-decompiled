@@ -184,6 +184,10 @@ bool function_1946f0(s_bitstream *stream)
 // M3 lane 11 r132 (fast with 0x1957d0/0x195820; compile-only LEA screen): the pop through a file-local inline helper 2; the mask and
 // clear as a forceinline (stream, position) helper with its own byte index 2; both data reads through a const view of the stream 2;
 // `saved` and the index as `long const` 2 (all the same code); the mask as `(byte)~(-1 << (saved % 8)) & 0xff` 4.
+// M3 lane 6 r210 (fast): a block-local data local read through a `byte *const &` in the mask block 35, in the clear's
+// `count > 0` block 2 (same code); the bound test as `stream->size_in_bytes > byte_index` 4; `byte_index` declared ahead
+// of the counter stores and assigned after them 2 (same code). Diagnostic: both addresses through a byte-array pointer
+// cast of the data (`(*(byte (*)[1])data)[i]`) 2 (same code, both LEAs data-first).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

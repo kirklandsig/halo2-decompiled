@@ -865,6 +865,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // M3 lane 11 r126 (fast with 0xe4bd0): the +0x10a clear written out as `flags_10a = flags_10a & ~4` 13; one to three
 // redundant pairs around the +0x33e word address 13 each; the word clear written out as an assignment 13 (all the same
 // code). Still BLOCKED-BY 0xe4bd0 (EAX convention, tail jump), itself BLOCKED-BY 0xe5930 (expanded inside 0xe4bd0).
+// score 10 (was 13) with stand-in SDK headers: the +0x33e word flag is cleared with word_flags_set.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -874,7 +875,7 @@ void function_caf00(long unit_index)
 	function_b8b70(unit_index);
 	function_bb950(unit_index, false, NONE);
 	function_db5c0(unit_index);
-	*(word *)((byte *)unit + unit->unknown33e) &= ~4;
+	word_flags_set((word *)((byte *)unit + unit->unknown33e), 2, false);
 	if ((1 << unit->type) & 1)
 	{
 		function_e4bd0(unit_index);
@@ -5480,6 +5481,12 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Squared horizontal radius, component squares, both stages, and radius before vertical projection.
 // Separate and paired view-angle homes: 169/169/169/169/169/169/169/169.
 // NOT kept: All eight forms tie at 768 bytes with frame 0x50. The first cross still preloads up.i and the final row consumes the forward scale.
+// Basis left, forward, or up in the final transform 205/173/190; separate
+// three-axis basis 209, with projection in its forward member 205, or with
+// a separate left vector 177; transform forward and up 173; forward copy
+// from memcpy directly to the first cross 169.
+// NOT kept: the forward member delays up.i but shrinks the frame to 0x44.
+// The direct memcpy result keeps the early up.i load. The x87 lifetime remains.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -8905,9 +8912,8 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // MiniMax E (11-14): the shake's minimum (the definition's +0x5c) named as a local and read twice: 116 -> 62 (1602 bytes,
 // retail's length); the stun block then follows retail's instructions; left is the shake's own load order (retail reloads
 // the definition's +0x58 for its division), the owner and damage store orders and the 0xc98a0 call's register roles.
-// score 62 (was 116; earlier 129, 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
-// score 116 (was 129; earlier 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
-// score 129 (was 383; earlier 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
+// score 62 (was 116): Retail interleaves owner-field reads and the grenade tag lookup. Earlier scores 129, 383, 399.
+// Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the
 // definition and uses ebx and edi as temporaries, so the prologue order, the stack slots (retail: definition 0x10,
 // total 0x18, unit 0x1c, hard 0x20) and the byte re-load of flags for the sign test differ. Retail passes the bit of
@@ -8965,6 +8971,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // 57 (masked 11), fraction + owner order 121 (1598 bytes, masked 8), globals + owner order 89 (1606 bytes); the cap's
 // upper test as `cap > 1.0f` 116 (other code, masked 15). The low counts are positional; only the owner order (a
 // statement order, kept only with a match) and the fraction's stun multiply order move masked lines.
+// Interleaved owner and grenade-tag reads 64, early player before both
+// tag reads 64, tag before player and object 62, one owner-unit receiver 141,
+// separate grenade handle 64, library owner copy 64, returned center for both
+// event fields 389, and distinct event/center names 64. The 64 forms reach
+// +0xd8 at retail length and delay the owner object-index load.
 // MiniMax E (11-19): no new form, no lower score (62, baseline): the owner's two fields are still read in the opposite
 // order (ours +0xc8 then +0xc4, retail +0xc4 then +0xc8), the shake's fields are still named locals where retail
 // re-reads them from memory (dropping both names measures 383, re-reading only the divisor measures 116), the 0xc98a0

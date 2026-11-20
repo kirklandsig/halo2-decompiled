@@ -230,6 +230,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax E (11-20): no new form, no lower score (144): the frame is still 0x18 against retail's 0x14 because the
+// departure flag is a dword local here and a byte in retail's dead indices home (our hull count then takes a dead
+// argument home at +0x34 where retail has its own slot at +0x10), and the count stays in EBX across the candidate scan
+// where retail re-reads it from its home before the index store. The body stands.
 // score 144 (was 144): earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
 // hull count still live in their own homes where retail keeps them in the dead argument homes. One note, the rounds' entries below.
 // M3 lane 14 r112 (fast with 0x239d50; control 144, aligned 137, masked 65): retail's pass loop is the hull count itself,
