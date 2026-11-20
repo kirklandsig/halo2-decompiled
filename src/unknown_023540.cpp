@@ -1275,6 +1275,9 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
 // return true; goto failed` 9; `if (mode == 1) return true; return false;` and `if (mode != 1) return false; return
 // true;` 8 (but `cmp; sete al` with a private false exit for default, not retail's jne form); `return mode == 1` 16;
 // the strength test inverted (`if (strength == 0.0f) {...}` first, then the block) 48. No change kept.
+// Matched in a full build with stand-in SDK headers (was 9): the cases break to ONE return true behind the switch.
+// Retail's mode-1 tail (cmp esi,1; jne) falls into its own return-true block, i.e. the original return-true block is
+// the last one in source order; the other returns are epilogue copies at fall-through ends.
 // @retail 0x298f0 standard
 bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -1284,7 +1287,7 @@ bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real
     {
     case 0:
         function_350e0(bounds, t, out, g_509400);
-        return true;
+        break;
     case 2:
         if (g_4b99b0[0x41] && g_4b99b0[1])
         {
@@ -1292,7 +1295,7 @@ bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real
             out[1] = 0.0f;
             out[2] = t[0] * 640.0f;
             out[3] = 0.0f;
-            return true;
+            break;
         }
     case 3:
         if (g_4b99b0[0x41] && g_4b99b0[1])
@@ -1301,7 +1304,7 @@ bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real
             out[1] = *(real *)(g_4b99b0 + 0x28);
             out[2] = t[1] * 480.0f;
             out[3] = 0.0f;
-            return true;
+            break;
         }
     case 1: case 4:
         {
@@ -1319,15 +1322,16 @@ bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real
                 real inverse_y = y > 0.0f ? 1.0f / y : 0.0f;
                 out[0] = (bounds[1] - bounds[0]) * (1.0f - inverse_x) * 0.5f + out[0] * inverse_x;
                 out[1] = (bounds[3] - bounds[2]) * (1.0f - inverse_y) * 0.5f + out[1] * inverse_y;
-                return true;
+                break;
             }
             if (mode != 1) goto failed;
-            return true;
+            break;
         }
     default:
     failed:
         return false;
     }
+    return true;
 }
 
 extern D3DPIXELSHADERDEF g_484f68;
