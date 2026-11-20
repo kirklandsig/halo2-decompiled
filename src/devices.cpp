@@ -2662,6 +2662,10 @@ bool function_0b6760(s_index_pair const *pair);
 // Bind the position-group field reads and updates to position and position velocity and group target 316.
 // Use the existing device definition as the saved receiver in both motion paths 61.
 // NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
+// score 58 (was 61): MiniMax H (11-19): the result local is declared after the saved definition, the speed is a
+// running sum and the unit byte is tested as `<= 0`; what still differs sits at the two channel-1 0xb6760 calls,
+// whose convention is fixed in another file.
+// MiniMax H (11-20), NOT kept: 58 (was 61), a 3-point gain, under the 8-point bar for a function above 30.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
