@@ -852,6 +852,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // the loop's first index named before the loop, and the declarations as definition, section, range, result 133 each (same
 // code). In the 133 form EBP is pushed only before the loop, at its first use, so range never holds EBP in the head as in
 // retail.
+// MiniMax D (11-20): no new form, no lower score (172): the frame 0x58 still agrees, but retail keeps the BSP in EBX and the
+// section in its own stack home where this build keeps the BSP in EBP and the section in EBX; the range and plane homes rotate and
+// the four pointers of the 0x11e800 call sit in another register order, and the permuter's 35 variants found nothing below it.
 // score 172 (was 172): frame 0x58 agrees; the BSP in EBX against EBP and the section in its own home against EBX,
 // the range and plane homes, and the four pointers of the 0x11e800 call in another register order.
 // @retail 0x14ac60

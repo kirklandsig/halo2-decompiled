@@ -935,6 +935,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // stays four bytes short at 0xa8 against retail's 0xac; that helper's declaration is fixed in another file, which this
 // lane may not change: BLOCKED-BY 0x131e50.
 // MiniMax S (11-20): no new form, no lower score (351): the frame is 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes and 0x131e50 is declared noinline in its own file.
+// MiniMax D (11-20): no new form, no lower score (351): the frame stays 0xa8 against retail's 0xac and the first-edge Y, half-width,
+// cursor and colour homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes and
+// 0x131e50 is declared noinline in its own file: BLOCKED-BY 0x131e50.
 // score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
 // declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:

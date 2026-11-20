@@ -230,6 +230,11 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the transformed points
 // still take the opposite component order.
 // MiniMax S (11-20): no new form, no lower score (195): the frame is 0x30 against retail's 0x2c, so every local home sits four bytes higher; retail's caller 0x4f7e0 sets the arguments up as three pushed values, then ECX = camera, EDX = a, ESI = the displacement vector and EBX = the output point.
+// MiniMax D (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, retail keeps both inverse
+// defaults at [esp+4] and [esp+8] with the displaced point at +0xc/+0x10/+0x14 where this build keeps the inverses at +0xc and in
+// the dead scale slot and spills the second transform's scaled x and z; the written operand order of the three displaced sums is
+// ignored by the compiler, and a helper taking the three components as scalars (with the reversed point as three locals, as
+// retail's third transform reads) shrinks the frame to 0x24 but reorders the sums and the scale block (214), so the pointer form stands.
 // score 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
 // MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
