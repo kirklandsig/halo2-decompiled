@@ -593,6 +593,7 @@ void __stdcall function_508d0(void *payload_data)
 // against retail's self-aligned 0x1474, and retail still keeps its static limits in xmm7 and xmm4 across the
 // 0x1420f0 call where this build re-reads them at each use; retail's only caller has no source, so the calling
 // convention cannot be coordinated from here.
+// MiniMax H (11-20): no new form, no lower score (626); this build still stacks the mode argument where retail takes it in CL and returns ret 0x1c against retail's ret 0x18, and the frame is 0x1468 against retail's 0x1474 (BLOCKED-BY 0x508d0).
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

@@ -602,6 +602,7 @@
 // compound depth reciprocals with named denominators 535;
 // compound perspective reciprocals initialized before crosses 536.
 // NOT kept: The one-point gain is below the retention threshold. The 0x54 frame and retail inverse allocation remain unresolved.
+// MiniMax H (11-20): no new form, no lower score (536); the frame is still 0x54 against retail's 0x60, and the primary shape slot, the rounded wave storage and the x87 factor lifetimes still differ.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

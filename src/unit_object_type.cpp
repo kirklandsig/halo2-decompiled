@@ -2613,6 +2613,9 @@ void function_cfec0(long unit_index)
 // spelling the test as an equality gives retail's je but VC folds the NONE exit's register copy into
 // the constant (2, 258 bytes); a copy returned by all four exits keeps the copy alive but the test moves to EAX,
 // which loses retail's `mov ebx, eax` prologue (47, 247 bytes). The body stands.
+// MiniMax H (11-20): no new form, no lower score (1): the entry branch is still jle where retail has je.
+// return at the end, so the NONE exit holds a merged value instead of the parameter copy, merges the four
+// lazy-push epilogues into one and moves the pushes into the prologue (97).
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -4896,6 +4899,10 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // comes from the cone helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax G (11-20): no new form, no lower score (2): the one difference left is the order of the x87 spill and
 // the cone helper's forward-pointer step, and that helper's convention belongs to another file: BLOCKED-BY 0x146320.
+// MiniMax H (11-20): no new form, no lower score (2): the order of the x87 spill.
+// and the cone helper forward-pointer step; the helper convention is in another file.
+// A max-angle local and a forward-pointer local keep the same two differences (2); moving the speed
+// computation later scores 40. BLOCKED-BY 0x146320.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {

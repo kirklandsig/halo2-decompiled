@@ -2758,6 +2758,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // equality-first with helper or bound arms 496/507; bound selected raw ratio or conditional
 // input 417/418; named distance span and numerator with helper or bound arms 487/501.
 // The distance result still does not bring the unity store forward with the three tint stores.
+// MiniMax H (11-20): no new form, no lower score (417); the delta and reflection XMM allocation and the unity store schedule still differ.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4250,6 +4251,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // lock 387. Both admission passes 418, removal and decay 410, all masks 415, shifted paired
 // bytes 419. NOT kept: the word-based predicates grow the body, and the retained-prefix
 // and state registers still differ.
+// MiniMax H (11-20): no new form, no lower score (317); the state and prefix registers and the ordinal homes are still exchanged, and the body stays longer than retail's.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -6708,6 +6710,7 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // MiniMax A (11-18): no new form, no lower score (111); the shared pass helper and the pass list stay as they are, because
 // retail's clear call passes its flags in EAX and needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched
 // 0x14ac0's frame and realigns this function); what still differs is that call's argument setup and the cull arm order.
+// MiniMax H (11-20): no new form, no lower score (111); the clear call still needs 0x14b60's real body (BLOCKED-BY 0x14b60) and the cull arm order comes from the shared pass header.
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {
@@ -6786,6 +6789,7 @@ extern dword g_4b843c;
 // MiniMax A (11-18): no new form, no lower score (212); what still differs is the 0x4a1e0 argument registers, the first mask
 // publication and the late flag reads, and the body stays fourteen bytes short of retail because no spelling of the bit-0 and
 // bit-1 steps reproduces the store retail keeps before the branch.
+// MiniMax H (11-20): no new form, no lower score (212); the 0x4a1e0 argument registers, the first mask publication and the late flag reads still differ (BLOCKED-BY 0x4a1e0).
 // @retail 0x31170
 void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool enabled, real scale)
 {
@@ -6985,6 +6989,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // MiniMax A (11-18): no new form, no lower score (100); the five passes equal retail's inlined 0x44370 apart from the clear
 // call, and that call needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched 0x14ac0's frame and realigns
 // this function), so its argument setup stays different.
+// MiniMax H (11-20): no new form, no lower score (96); the clear call's first argument is stacked where retail passes it in eax (BLOCKED-BY 0x14b60).
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
@@ -7135,6 +7140,7 @@ bool function_13630();
 // non-2 result before pass selection 432.
 // non-2 result at first world phase 292.
 // NOT kept: The cleanup label, nested guards and selected arm first tied. Other forms raised the score. Original admission and pass structure restored.
+// MiniMax H (11-20): no new form, no lower score (269); the second 0x25dc0 call's flag diamond, the weapon tag read and the clear-call transport still differ (BLOCKED-BY 0x44370 and 0x14b60).
 // @retail 0x2bcd0
 void __stdcall function_2bcd0(long frame_mode, bool draw_ui, bool world_effects, bool finish,
     long context_mode, long filter_mode, real transition)

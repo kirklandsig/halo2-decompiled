@@ -994,6 +994,13 @@ static inline long font_character_pixel(long alpha, long color)
 // 59/171/172/59 with byte parity; 203/240/240/203 with dword parity.
 // NOT kept: The defaults reach 504 bytes with byte parity but move the cursor registers. Dword parity
 // shortens the fills and changes run allocation. The original helper and body were restored.
+// MiniMax H (11-20): no new form, no lower score (59): the alpha parity is still masked in sixteen bits where retail
+// masks it in thirty-two (dropping the byte cast in the shared helper gives retail's parity exactly but moves the type 3
+// run from EBX to EBP and shortens the body to 444 bytes, 203); the colour literal is still built with a shift and an
+// add (the word, two-word-half, low-byte-first and two-statement forms all reach retail's 504 bytes but keep the
+// literal two bytes short of retail's four instructions, 103); the type 3 count and the type 2 advance are still
+// immediates where retail adds the run register (a loop-carried run, a split fill run, a merged count update and a goto
+// out of the switch were measured at 182 to 228).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

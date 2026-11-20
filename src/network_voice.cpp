@@ -2017,6 +2017,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Word reduction using indexed for/while, entry cursor or captured count 170/170/170/172.
 // Dword reduction using those four walks 159/159/159/155.
 // NOT kept: The local reduction shrinks the native frame and changes the matched caller.
+// MiniMax H (11-20): no new form, no lower score (60); retail keeps the kept mask and the written count in stack bytes while this build keeps them in registers, so the cursor, player, size and bit take other registers; a permuter run over the whole body found no variant below the baseline.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
