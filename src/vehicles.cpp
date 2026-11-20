@@ -1747,6 +1747,10 @@ long function_10f5f0(long object_index);
 // vertical scalar 565, or height sample 556. Complete radial velocity 599.
 // NOT kept: the altitude pair can reach frame 0x1988, but none meets the score threshold
 // or recovers retail's repeated height reads and 0x1984 frame.
+// Physics state matrix 573, returned state matrix 581, each with separate integration velocity 573/581,
+// boundary velocity 549/581 or falling velocity 573/581. NOT kept: The separate boundary velocity lowers
+// the count but drops the frame to 0x195c and grows the body to 2276 bytes. Retail uses a separate
+// transform.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4708,6 +4712,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Lateral subtotal, compound subtotal, separate lateral/axial contributions and all three terms named.
 // Existing scale call 193/220/213/202; aggregate projection 193/220/213/202. NOT kept: the first pair fixes
 // the i product but loses the forward j/k preloads. Cross and trig homes remain.
+// Default-axis dot after publication 211, before publication 148, complete projection before publication
+// 152, default-axis reference 211, returned projection 211, early dot with returned projection 150, staged
+// subtraction 206, shared scaled add with negative projection 167. NOT kept: The default-axis receiver
+// loses retail's entry frame or publication schedule and none lowers the score.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

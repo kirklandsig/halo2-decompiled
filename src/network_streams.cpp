@@ -1199,6 +1199,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 88, Byte pending bit with separate sent and pending admissions 86. NOT kept: The bitfield update emits the byte
 // OR, including at 225 bytes, but changes the opening register allocation and raises the score. The original
 // message layout and body are restored.
+// Read-only or mutable message record references across the local slot lookup or the shared message
+// lookup: saved word 35 in all four forms, in-place bit update 89 in all four. NOT kept: The in-place
+// forms emit the byte OR but lose retail query and scan allocation.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

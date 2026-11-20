@@ -867,6 +867,10 @@ void function_245400(s_source_245400 const *source, long index,
 // Rotation reads a copied edge scaled in place 231. NOT kept: The pointer-selected rotation inputs recover frame
 // 0x2c but grow the body to 820 or 822 bytes and raise the matched caller 0x245aa0 to 6 in the reduced image. All
 // other forms keep frame 0x24 and lengthen the body. The original caller and transform shape are restored.
+// Material word references 211, primary index field reference 163, resolved plane address comparison 222,
+// with late plane table 215 or late edge 210, endpoint member references 212, with late position pointer
+// 164 or codes extended ahead of the endpoints 205. NOT kept: The primary field reference gains one point.
+// None recovers the native frame and side homes.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
