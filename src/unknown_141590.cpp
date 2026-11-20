@@ -120,6 +120,7 @@ static inline void quaternion_transform_vector(
 /* the rotation that takes one unit vector to another */
 // score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Stacked status lines merged in r192.
+// MiniMax G (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four, and the cosine half stays in XMM5 where ours swaps the two.
 // MiniMax B (11-19): no new form, no lower score (201): the permuter over this body tried three rewrites in 359 s and
 // left the baseline at 195. Retail still keeps five 4-byte cells below the quaternion where ours keeps four, and computes
 // s = 2w*w - 1 above the identity copy while w2 comes after it; writing s as a helper parameter regresses to 302 with
