@@ -951,6 +951,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // score 286 (was 286): frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
 // count compared as a dword where retail compares it as a word, and the node depth read at one address here and
 // through a lea there.
+// Link-target reference before capacity, inside capacity, shared with step metadata, or with scoped edge admission:
+// long count 286/286/286/357; short count 359/359/359/356.
+// The short forms recover 0xe4, with the scoped admission at retail length, and all raise the score. Body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

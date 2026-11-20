@@ -860,6 +860,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // separate remaining count and cluster cursor 607; cluster cursor compared with end 831;
 // cluster cursor stopped at end 806; cluster cursor while with end 1508.
 // NOT kept: The for countdowns tie. The other walks increase the length and leave the provider, sentinel and palette allocation unresolved.
+// Condition-declared record, cached-record initializer, cache-miss scenario receiver, and conditional scenario entry:
+// short slot 607/683/683/705; signed-byte slot 700/700/700/607.
+// The last form ties in 3830 bytes with the provider, sentinel and palette registers displaced. Body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
