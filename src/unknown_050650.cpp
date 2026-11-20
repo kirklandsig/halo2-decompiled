@@ -1576,6 +1576,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // instructions in the full image; the reduced image cannot score this function at all, as it builds it 36
 // bytes shorter there). The two 0xcafc0 blocks now match again.
 // MiniMax A (11-19), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
+// M3 lane 10 r131 (coordinator, 11-20): MATCH. Retail's failure-block stores (`result = false;` before the trailing
+// `goto done` of cases 2 and 1, `point_valid = result = false` at entry) plus one read of the actor_index parameter
+// through its address for the 0x1ffbd0 argument, which retail reloads from its home there.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1583,7 +1586,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	s_actor_looking_view *actor = actor_looking_get(actor_index);
 	bool result;
 	bool point_valid;
-	result = point_valid = false;
+	point_valid = result = false;
 	point3f point;
 	s_prop_datum *reference;
 	s_type_5cfb45 *state;
@@ -1646,6 +1649,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
 			goto aim_at_point;
 		}
+		result = false;
 		goto done;
 
 	case 1:
@@ -1676,6 +1680,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
 			goto aim_at_point;
 		}
+		result = false;
 		goto done;
 
 	case 3:
@@ -1725,7 +1730,8 @@ aim_at_point:
 		if (weapon_index != NONE)
 		{
 			function_1fc710(actor_index, &origin);
-			result = function_1ffbd0(actor_index, weapon_index, 0, &origin, &point, false, direction,
+			// One volatile read of the parameter: retail reloads actor_index from its stack home for this argument.
+			result = function_1ffbd0(*(long const volatile *)&actor_index, weapon_index, 0, &origin, &point, false, direction,
 				NULL, NULL, NULL, NULL);
 			if (!result)
 			{
