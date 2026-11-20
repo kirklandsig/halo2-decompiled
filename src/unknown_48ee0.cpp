@@ -428,6 +428,10 @@ extern real g_4c9798[36];
 // extent, later the width limit, at +0x14; ours has the mode, the converted limit and the extent one cell lower each and the
 // size at +0x14, because retail's size lives in memory across the two 0x48e70 calls and ours in XMM0. Still BLOCKED-BY
 // 0x48e70 (machine 1's file).
+// M3 lane 14 r128 (fast with 0x48e70 and 0x1ddd0, both MATCH): the border as `0.75f * (real)width / maximum` 174,
+// `(real)width / maximum * 0.75f` 174, `0.75f * width / maximum` 174 (all the same divide-then-multiply code); the border
+// scaled in one statement and divided in the next 227 (1489 B); the mode defaulted to 0 at its declaration with the two
+// set arms 180. Still BLOCKED-BY 0x48e70 (its file is machine 1's again this round).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

@@ -562,6 +562,14 @@ static inline real interpolate_linear(real a, real b, real t)
 // && type == 0) { dispose = true; break; }`, no per-pass reset) 1; the restarts without the inner parentheses 1; both boundary
 // restarts as `if (...) restart = true; else restart = false;` 1; the frame store under `if (!restart) ... else break;` 1 (the
 // four the same code); the loop's identical switch arms merged (`case 0: case 2:` low, `case 2: default:` high) 199 (676 B).
+// M3 lane 14 r127 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): the loop as `for (; time >= next_time; next_time
+// += frame_time)` with the other two updates in the body 1 (same code); restart typed `long` 230 (661 B); an in-range arm
+// `else { restart = false; }` after the high boundary 153 (663 B); restart cleared again at each pass top, beside dispose, 206
+// (661 B); the low boundary as `0 > frame` 1 (same code). All restored.
+// M3 lane 14 r130 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): the loop test as `next_time <= time` 5;
+// dispose declared ahead of restart 1; the loop test as `!(time < next_time)` 1; no per-pass disposal reset, an
+// `else { dispose = false; }` after the high boundary instead 1 (same code each); both loop restart expressions with
+// the flag tests ahead of the type test 216 (654 B).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

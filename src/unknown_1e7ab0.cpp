@@ -577,6 +577,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // read without a definition local 156 each (same code); the flags through `seats[seat]` without the seat pointer 424
 // (2308 bytes, the load folds retail's add). Case 15/18 and later rotations (retail reuses the dying source register
 // for the `lea`) are on main too. Code back to main.
+// M3 lane 14 r129 (fast with 0x1e83c0, which stays matched; control 117): the table getter `__forceinline` 117; the getter
+// reading g_510c94 at each use (no table local) 117; the entry test as `entry != NULL` with `(flag & 1) == 0` 117; the entry
+// local typed const 117; case 4's iterator declared at the top of the case 117 (all five the same code). Retail's case 4
+// keeps the parent in ESI and sets up 0xd0590's arguments iterator first (`lea ecx` then `mov edx, esi`), ours keeps it in
+// ECX and must move it to EDX first: still BLOCKED-BY 0xd0590 (its file is held this round).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

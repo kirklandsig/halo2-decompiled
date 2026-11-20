@@ -550,6 +550,12 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // M3 lane 3 r277 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286): the 0x1f9760 out-parameters declared
 // at function scope 286; local_6 copied from local_5 286; local_27, local_31 or local_22 declared at the top of the
 // `if (local_2)` block 286/286/286 (same code each). Site 1 still needs 0x2b400's parked zero path inline (BLOCKED-BY 0x2b400).
+// M3 lane 14 r128 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286): the history weight named
+// once (`real local_33 = local_2->field_64;`) for the three blend rows and the complement 320 (1866 B), the same
+// weight read ahead of the sums 320; the sums written into the blend rows without local_31 288; the two planar
+// copies as `*(vector2f const *)` reads 286 (same code), with the third planar copy too 310 (1864 B). Retail loads
+// the weight once into XMM6 for the rows and re-reads it for the complement; ours folds it from memory in every
+// row. Site 1 is still BLOCKED-BY 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

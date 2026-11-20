@@ -4582,6 +4582,17 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // success;` 227, `return success;` 243; the false edge and the reason-9 arm sharing a `return result;` inside the block
 // with the true edge jumping to a label after the block or at the final return 119 each (the two returns merge and the
 // test goes); `if (!result) goto` a second final `return result;` 48 (the 48 form again).
+// M3 lane 14 r129 (fast with 0x5e3f0, MATCH each run; body unchanged at 295). Round 208's 96 body re-applied 96. Retail's
+// state-8 `result = true` block (store, reload, epilogue) is also the target of the channel-7 exit and of the
+// acknowledgement block's end when the state is not 7; the kept arms and the post-disconnect test enter its epilogue
+// behind the reload. On the 96 body: the result declared `volatile` (diagnostic) 96 (the same code: our result is already
+// re-read at every exit); the kept arms as `return true;` 100 or `return result;` 100 (both a `mov al, 1` return block of
+// their own at the end); `result = true` set with `acknowledge` at the two sender sites and the acknowledgement under
+// `if (result && acknowledge)` 325 (retail's acknowledgement block does end in `result = true`); after the disconnect,
+// a test through `bool const &kept = result;` as `if (kept) goto received_done; return result;`, `if (!kept) return
+// result;` or `if (!kept) return kept;` 48 each (retail's read, test and `jne`, but `xor al, al` on the false edge and
+// the result byte at +9); the same two tests through `bool *const result_address = &result;` 48 each (the address-taking
+// folds away).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

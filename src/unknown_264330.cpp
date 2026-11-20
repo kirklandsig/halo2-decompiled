@@ -1159,8 +1159,8 @@ void __stdcall function_263210(long actor_index)
 }
 
 long function_baf40(long object_index);
-short __stdcall function_1c8df0(short source_cell, short target_cell, point3f const *target,
-	long object_index, point3f const *source, long mode, bool narrow, bool attached, bool alternate,
+short __stdcall function_1c8df0(short source_cell, point3f const *source, point3f const *target,
+	short target_cell, long object_index, long mode, bool narrow, bool attached, bool alternate,
 	long *hit_object);
 short function_25c9d0(long actor_index, long prop_ref_index, bool player, short sight,
 	void *point, byte *sample, long reported);
@@ -1261,8 +1261,8 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 			root = function_baf40(*(long *)(unit + 0x14));
 		else
 			root = function_baf40(reference->object_index);
-		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), *(short *)((byte *)motion + 0x28),
-			&motion->field_0, root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
+		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), (point3f const *)sample,
+			&motion->field_0, *(short *)((byte *)motion + 0x28), root, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 			current ? (long *)(actor + 0x348) : NULL);
 		if (*(long *)(actor + 0x7c) != NONE && prop->unknown25 && 25.0f > reference->unknown28 &&
 			(sight == 0 || sight == 1))
@@ -1280,8 +1280,8 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 				if (!view->unknown88)
 				{
 					short other_sight = function_1c8df0(*(short *)((byte *)sample + 0x28),
-						*(short *)((byte *)state + 0x2c), (point3f const *)((byte *)state + 0x30),
-						root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
+						(point3f const *)sample, (point3f const *)((byte *)state + 0x30),
+						*(short *)((byte *)state + 0x2c), root, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 						current ? (long *)(actor + 0x348) : NULL);
 					view->unknown8c = (short)other_sight;
 					view->unknown8a = function_263810((point3f const *)sample, actor_index, (point3f const *)((byte *)state + 0x30), NULL, 2, (short)other_sight, true, NULL);

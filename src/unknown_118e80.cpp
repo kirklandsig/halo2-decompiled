@@ -519,6 +519,15 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // const *` cast in the i product 2; the object through object_header_get(...)->object 2; the agreement sum parenthesized
 // as (k + j) + i, with the i product in parentheses, or both, 4/4/6 (the parentheses move one of the left cross products
 // instead; the i product still loads facing first). Still BLOCKED-BY 0x1faf80.
+// M3 lane 14 r130 (fast with 0x118700, 0x11f0d0, 0xc60c0, 0x11ce20, 0x11d180, 0x118e80, 0x1faf80, 0xe01d0, 0x109290,
+// 0xbba20; control 25): the tail's up and forward copied into two locals before the stores 49 (1035 B: all six values
+// load into six registers first, where retail pipelines three); `vector3f new_forward, up;` 25; the field pointers
+// declared forward first 25; the dispatch callee taking pointer parameters converted to `long` only at the callback
+// call (all three callers updated) 25 (same code each); the position, dispatch and tail at function scope 74 (1042 B).
+// Diagnostics: the callee passing 0 for forward and up to the callback (LTCG then drops both from our call) keeps the
+// sequential tail copies (79), so the barrier is the address taken at our call, not the callee's use of it; 0 for the
+// forward only at our call (70) lets the forward loads rise above the up stores but not the up loads, and the forward
+// dot's i product stays object-first, so that product's order is not the escape.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

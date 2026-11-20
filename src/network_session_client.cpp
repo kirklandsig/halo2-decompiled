@@ -929,6 +929,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // The player loop through a copy of src/unknown_054fe0.cpp's present-player getter (pointer or NULL from the mask, then
 // `player && player->unknown14 != NONE`, the call taking `player`) 110 (487 B), with a `for` copy 98 (483 B), on the getter
 // opening 117 (487 B), on the getter opening with a `for` copy 107 (callers lost on the getter opening only).
+// M3 lane 14 r127 (fast with 0x6e500 and 0x72700; control 22): a redundant `result = false;` at the top of the state arm
+// 22; the opening as `!(flag && &machines && &players)` 22; the NULL-preset pair declared at the function top ahead of
+// `result` 46; on the preset pair the first pointer read through a `const &` bound to it 46; the variant as a
+// `const byte *const &` bound to the field 22 (the 22s the same code; both callers lost in each 46).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

@@ -709,6 +709,12 @@ struct s_visibility_object_header
 // declared ahead of the filter 4 (all four the same code); the outer test with the global stamp on the left 200.
 // Permuter (600 s, 48 tries, annealing): best 2 only by passing behind first and in_front last to the packer (the two
 // bits exchanged: wrong values, not kept), which again shows the slot going to whichever output is read first.
+// M3 lane 14 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): 0x132fd0's two outputs as `bool &`
+// parameters (definition and all three calls) 4; in_front read for the packer through a `bool const &` bound ahead of the
+// plane call 4; `register` on in_front 4; both outputs declared in the outer block ahead of the three flags 4, after them
+// 4 (all the same code). This function's register parameter `data` declared second, third, fourth or last (definition and
+// the four calls) 4 each; 0x132fd0's stack radius declared first, second, third or fourth (definition and its three calls) 4
+// each, 0x132fd0 MATCH (all the same code here).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

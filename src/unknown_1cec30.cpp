@@ -1844,6 +1844,13 @@ PRIVATE __forceinline real const &component_time_step()
 // binding (465 B, 104/6; stop-first 105/29: then only the XMM2/XMM3 swap and `add eax, 4` differ). Dead locals after
 // the binding never give it; a named base or power in the body counts one each, locals inside the inline helpers and
 // bare declarations count nothing. A pointer with a second, live definition in the low-step arm still folds both reads.
+// M3 lane 14 r130 (fast with 0x1d87b0, 0x1d06c0, 0x1d0400, 0x181db0, 0x1d24a0; control 26): the acceleration scale in
+// the body with the power's base and the power named 26 (same code); that with the stop-first test 43; the stop ticks
+// and per-tick travel named 26; `(velocity / step + 1.0f) * velocity * delta_time * 0.5f` 138 (462 B); the base and
+// power names plus the time-step reference bound through a `game_time` globals pointer local 105 (467 B, the head
+// retail's but no `add eax, 4`, every later line one off). Diagnostics: base and power plus one dead local 105, three
+// dead locals ahead of the scale 105, the first with the stop-first test 106: any third symbol ahead of the binding
+// gives the head; the pointer step still has no cause.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2943,6 +2950,12 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // Native scalar lanes 8, packed lane store 284, assigned four-lane value 284, copy of the three scaled
 // lanes 176. Contact decision before normalization/scale/after scale 173/151/8. Ordinary inline on
 // the typed setter 8. NOT kept: packed forms also break the material-sample provider in the preview.
+// M3 lane 14 r130 (fast with 0x1d06c0, 0x1d0400, 0x181db0; control 8): the result's x stored by hand, then a compiler
+// memory barrier intrinsic, then y, z, w (diagnostic) 12: only the other-contacts load moves below the x store, the j
+// and k products stay ahead of it, so the boundary retail has is a real block boundary, not a memory fence. The
+// setter's word copied first re-measured 5 (match-only); on it: `vector3f_scale` as a statement with
+// `set(velocity.i, velocity.j, velocity.k)` 276; `havok_from_vector3d(result, scaled)` 5; the scale's return value
+// passed to `havok_from_vector3d` 249 (1402 B); `speed_sum = speed_sum + ...` 5; a named flag weight 5.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
