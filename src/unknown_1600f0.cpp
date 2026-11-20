@@ -1210,6 +1210,11 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
+// score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// P622: a one-use caption-phase local at the division gives 671 (match-only, reverted); frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
+// M3 lane 4 r226 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): x as long 684; y as short 681; the width folded into x's
+// expression (no width local) 679 (same code: left is still read once); `panel->time` as one `flag1128 || score_to_win != 1`
+// 701 (2888 bytes); the row total written into the fade count's initialiser (no total local) 710 (2888 bytes). Body unchanged.
 // score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and origin slots,
 // scroll-limit conversion and initial divisor spill still differ. Earlier fast check 678.
 // One-use caption phase at the division 671 (requires a match, reverted).
@@ -1595,6 +1600,18 @@ PRIVATE inline long score_string_list_1608e0()
 // advance late 690; only the three types 640; one width test, late advance and types 731; loops, late advance and
 // types 700. Not kept: the 636 form rests on the lead's match-only pieces (the score-width test written twice and
 // statements placed in retail's block order).
+// Two-word origin at coordinate producers 693, from completed coordinates 693, row copy after title
+// 690, original origin through caption bounds 693. Score-source selection first 713, fade phases on
+// the row counter 679, published team-count test 681, one displayed-player count for traversal and
+// publication 675.
+// NOT kept: the displayed-player count recovers frame 0x79c at 2879 bytes and gains four, with viewer
+// still in EDI and the independent origin missing.
+// The top edge stays live across the scroll bounds, with the viewer and origin homes
+// still displaced. Retained short top 679, long top 691, short top and height 693,
+// retained left 692, retained top and left 692, vertical origin advance 691,
+// early horizontal cursor with retained top 677, named scroll pixels 679.
+// NOT kept: the early horizontal cursor gains two at retail length and leaves
+// the 0x798 frame. The widened viewport forms grow nine bytes.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

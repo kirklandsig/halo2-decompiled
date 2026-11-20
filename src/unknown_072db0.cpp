@@ -2127,6 +2127,12 @@ bool function_1900a5(long index);
 // 791, copied key/player array 776, cached key/player array 776, all three 776, cached owner and team
 // destinations 703. NOT kept: the ties leave the first difference in place and the other forms add
 // sixteen bytes. The status branch, user cursor and slot selection still differ.
+// M3 lane 12 r153 (fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x647a0, 0x647d0, 0x18fd94, 0x1900a5, all
+// matched; aligned exact / register-masked 475 / 325 at 703): the poll delay as `long delay = g_50c460 <= 3 ? 2000 :
+// 300000;` with the busy-session override after it 774 (2926 B); the property loop with a signed `long` index against
+// `record->count` 703 (same code); the property read through the record at each use (no property pointer) 703 (same
+// code); `if (received != 6) failed = true;` in place of the `failed || received != 6` line 731 (2894 B, 470 / 321); the
+// received count as `dword` 703 (same code). The slot test's cmovne still needs the SSE flag (a file-flag decision).
 // M3 lane 3 r270 (fast with the file's 41 functions; control 703, aligned 500, masked 327). Build-flag lead, measured as
 // this function's one compiler-setting diagnostic and not kept (the flags line is the user's decision): with `/arch:SSE`
 // added to this file's flags line, retail's `mov ecx, 0; cmovne ecx, eax` appears at the slot test and every other
@@ -2142,6 +2148,14 @@ bool function_1900a5(long index);
 // 737 (2894 B). Reading of retail's request loop: the identity is held by value in three registers and saved to the
 // first loop's identity home only in the type-5 arm, whose scan counts an index kept in memory against the record
 // count and leaves for the next player on a duplicate.
+// M3 lane 7 r193 (fast with the file's 41 functions, 0x641a0, 0x8df50, 0x1900a5 and 0x192e60; control 703). Retail's
+// property fill is a rolled loop through the properties pointer kept in a register (`lea edi, [ecx + 1]; mov word [eax],
+// di; mov [eax + 4], edx; add eax, 0x10; inc ecx; cmp ecx, esi`, ESI = 6 shared with the count store and the used-count
+// add); ours unrolls it and re-reads `record->properties` before each store. Forms with a `properties` pointer named where
+// it is computed and used for the record field and the fill: literal bound 771 (2814 B); bound `record->count` with
+// `properties_used += record->count` ahead of the fill 731 (2846 B); the same with `+= 6` ahead of it 731 (2846 B); bound
+// `record->count` with `+= 6` after the fill 718 (2862 B: retail's rolled loop, but the frame grows from 0xc0 to 0xc8);
+// with `+= record->count` after it 718 (same code). Body unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -24,6 +24,7 @@
 // the default arm and the PIN calls), which is a form the coordinator rejects, so it is not kept; the frame stays 0x54 against
 // retail's 0x60 and the wave's three dead x87 factors stay behind retail's product.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// MiniMax E (11-20): no new form, no lower score (536): retail keeps the first cross's three products and two of its components in stack cells across the two sines and gives the cross result and w the same home, so retail's homes run v1, v2, w, v3, v4 against v1, v2, w, v4, v3 here and its frame is 0x60 against 0x54; spelling both crosses with matching product operands (650), the products as a local vector (650), the staged cross helper with the adds written out (663) and the adds written out alone (663) all leave the products in registers and shorten the body.
 // and late x87 factor lifetimes remain, at retail length 2622.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
@@ -1415,6 +1416,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // picked by score, not kept: lead only); case 4's first.z written product first 351 (same code); case 4's three rows
 // first edge first 423 (frame 0xa0), its x and y rows only 424; case 1/2's y row first-first with case 4's z row 341.
 // Body unchanged.
+// M3 lane 1 r132 (fast with 0x42c50/0x42b20/0x43740, all matched; control 351): retail's top of frame is the V end at
+// +0xac, a dead slot at +0xa8 and the u step at +0xa4, then the packer's blue/green/scale/red homes, the V at +0x90 and the
+// colour pointer and alpha at +0x88/+0x84; ours has blue/green/V/red/V end/alpha/u step/scale/colour pointer from the top.
+// The u step as one negated ternary 608; the V end as one ternary plus V 599; the V end in its own local (`v_end`, the
+// width left as v_width) 351; the negated step in its own local 351 (same code each). Diagnostics on ribbon_pixel's locals
+// (no change to slots or code, 351 each): renamed blue/green/red/alpha, renamed out of alphabetical order, the four
+// channel longs declared after scale and pixel. The slot order follows neither names nor declaration order here.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

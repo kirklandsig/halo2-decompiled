@@ -827,6 +827,11 @@ static inline bool teams_enabled_19e1c0()
 // switch-side `result = remaining` 431 (1398 B) [205/119]. Reading (retail): the token is never held in a register (a
 // scratch reload per compare and again for the fallback copy, the last compare's reload landing in ESI), `remaining` holds
 // EBP from the entry, the team cases jump to the shared return when the team is NONE and re-read it for the call.
+// Shared integer format call for the two local-player tokens, lives and the side timer,
+// all three, or all three with a direct normalized return. Existing result 450/488/522/471.
+// Ordinary result 682/702/746/694.
+// NOT kept: the ordinary result gets frame 0x204 and merges the name paths. The other
+// forms still reserve 0x208. None recovers the token preload.
 // M3 lane 13 r119 (fast with 0x19e0f0; control 390): the plain result with `remaining` renamed through a `long const &`
 // local 691, through a local copy 691, `token` through a local copy 691, both copies 691 (1170 B each, same code as the
 // plain result); the volatile result with the `remaining` copy 390 (same code). Copies of a parameter fold away before

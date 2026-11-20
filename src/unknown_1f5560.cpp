@@ -1784,6 +1784,20 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // positional: left and side arms y first 196). On the kept body: the not-left centre as `target - perpendicular *
 // radius` 200 at 1173 B (another computation, aligned 96); the type-zero arms swapped with `!left` 242; perpendicular
 // at function scope 290.
+// M3 lane 7 r191 (fast with 0x29a190/0x29cbb0; control 239): on the `goto done` type exit (260 re-measured, 1173 B) the
+// normalize block takes XMM0, which retail keeps for the result copy made at its definition (`movaps xmm0, xmm1`); retail's
+// type exit is the only exit that skips the final reload. Forms: that exit as `{ result = 0.0f; goto done; }` 265 (1178 B);
+// with a `real const &` bound to the result and returned at done 260 (same code); the reference alone on the return form 239
+// (same code); the 0x26ccb0 hit as `return result;` with no done label 271 (1191 B); the type exit as `return 0.0f;` 239 (same
+// code). Re-measured round 188's listed forms: the result assigned zero right before the type chain 281, with `goto done` 289.
+// Separate float cosine limit branch 264, double clipped cosine 239, direct clipped expression at the
+// arc helper 239, unsigned angle before result publication 262. Positive or negative initial side
+// radius 243/279, planar side vector 239, shared outgoing cosine dot 239. The zero and radius
+// registers remain different. The radius branches move the extent past retail to 1160 and 1157 bytes.
+// XMM2 still holds zero and XMM7 the radius. The compared lower bound is already
+// reused in XMM6. Named lower bound 239, fraction default one 271, explicit
+// fraction arms 239, named span 239, named excess 239, both 239, named upper
+// bound 239, early lower-range return 283. Default one reaches 1173 bytes at 271.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

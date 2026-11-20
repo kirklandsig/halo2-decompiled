@@ -893,7 +893,7 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax I (11-19): no new form, no lower score (237): the -1 sentinel still sits in edi where retail keeps it in esi, and this
 // build still reads the squad entry index into esi after the first call where retail reloads it into ecx; the query output homes
 // and the loop's entry block still sit at other frame offsets.
-// score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
+// score 222 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // MiniMax E (11-16): no new form tried this round, no lower score (237): the frame and the length agree with retail's and the squad
@@ -1305,6 +1305,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Shared present/missing squad test after settings 245/245, before settings 267/267.
 // Shared signed/unsigned low-half selector before/after settings 237 each.
 // NOT kept: the tests add a materialized flag and the selector forms tie with NONE in EDI.
+// M3 lane 11 r128 (fast with 0x1e4990/0x2036c0/0x203900/0x1e02f0/0x1e0160/0x1e04a0, all MATCH; control 237, aligned 249 by
+// a sequence-aligned diff): the squad index used through a `long const &` bound to the parameter 237 (same code, folded); a
+// second named squad pointer for the query's mode read 237 (same code); the squad bit as `bool flag = false; if (squad) flag
+// = (bool)(... & 1);` 238 (aligned 246), with the entry index masked `& 0xffff` 253; retail's loop shape with the squad bit
+// in that form 411 (1319 B), with the masked entry index 420, with the parameter reference as well 420 (0x1e4990 expands in
+// the loop each time; with that shape and the mask the head is retail's line for line up to the loop, NONE in ESI and the
+// squad index reloaded into ECX). Re-measured: the mask alone 252, retail's loop shape alone 411.
 // M3 lane 14 r120 (fast; control 237, 364 instructions both sides; cut at the 26 calls and masked, 262 differ, 206 of them
 // the creation arm's place). Retail's order reads as a straightened jump: the swarm arm falls into the actor test, that
 // test's chain runs on through the placement switch's case 2 to its `jmp`, then comes the creation arm, which ends
@@ -1318,6 +1325,21 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Shared direction at actor/settings/entry scope 237/237/237, aggregate direction 237,
 // component setter and shared setter 237/237, two named facing parts with separate/shared vector 237/237.
 // The EDI sentinel and the squad and query homes still differ.
+// M3 lane 3 r274 (fast with 0x1e4990, plain with the file, 0x203780, 0x256bd0 and the callees; control 237): kept 222, the
+// substitution loop on a `replace` flag in its condition (`while (replace && next != NONE)`, the replace as a ternary, the
+// advance under `if (replace)`) under the unchanged three-part guard, the squad entry index as `(squad_index & 0xffff)`
+// and the squad bit as `squad ? (bits >> 10) & 1 : false`: entry and loop as retail's (NONE in ESI, the index reloaded
+// into ECX, top-tested loop) with 0x1e4990 still a call. Without the mask 335, without the ternary bit 298. Screens:
+// `if (substitute && squad) while (squad_index != NONE && next != NONE)` 411 (0x1e4990 expands in the loop), the same with
+// the character accessor for the tag reads 411, the guard's index test repeated in the while 347 (the same loop as the
+// kept form), every condition in the while 434 (expands). On 222: the creation arm first with the bit test negated 304
+// (stays in place); the squad bit started false and set under `if (squad)` 296; the palette count at each use 344; the
+// grenade tests at full width 347, both 350; the query bools and probability declared in other orders or outside the
+// loop 222/222/222 (same code). Left: retail parks the creation arm after case 2's jump (the swarm arm falls into the
+// actor test); a compile-only build of this file lays it out as here, and an `else if`, early returns in either arm, a
+// goto to the actor test, a smaller arm or the swapped cleanup arm do not park it. Matched 0x132e60 parks its else arm
+// only because that arm threads past the join test. Then the squad home (0x1c here, retail 0x10 shared with the bit
+// and the actor) and the query bytes' homes.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1326,23 +1348,27 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 		byte *definition = g_4e3b44[character_index & 0xffff].bytes;
 		long unit_index = NONE, perception_index = NONE;
 		byte *flags = (byte *)function_1e4990(character_index);
-		byte *squad = squad_index == NONE ? NULL : *(byte **)((byte *)g_4e0350 + 0x164) + (word)squad_index * 0x74;
+		byte *squad = squad_index == NONE ? NULL : *(byte **)((byte *)g_4e0350 + 0x164) + (squad_index & 0xffff) * 0x74;
 		if (substitute && squad && squad_index != NONE)
-			while (*(long *)(definition + 0x28) != NONE)
+		{
+			bool replace = true;
+			while (replace && *(long *)(definition + 0x28) != NONE)
 			{
 				bool enabled = false, forced = false;
 				real probability = 0.0f;
 				function_2036c0(character_index, *(short *)(squad + 0x30), &enabled, &forced, &probability);
-				bool replace = enabled;
-				if (forced) replace = function_203900((short)squad_index, probability);
-				if (!replace) break;
-				character_index = *(long *)(definition + 0x28);
-				definition = g_4e3b44[character_index & 0xffff].bytes;
-				flags = (byte *)function_1e4990(character_index);
+				replace = forced ? function_203900((short)squad_index, probability) : enabled;
+				if (replace)
+				{
+					character_index = *(long *)(definition + 0x28);
+					definition = g_4e3b44[character_index & 0xffff].bytes;
+					flags = (byte *)function_1e4990(character_index);
+				}
 			}
+		}
 		if (flags)
 		{
-			bool flag = squad && ((*(dword *)(squad + 0x20) >> 10) & 1);
+			bool flag = squad ? (*(dword *)(squad + 0x20) >> 10) & 1 : false;
 			byte const *data = (byte const *)placement;
 			if (*flags & 1)
 			{
@@ -2339,6 +2365,15 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // all five draws 302 (1199 B); the options probability read once into a named local for its clamp 256; the two-weapon
 // loop as `for (short i = 0; i < 2; i++)` 251 (same code); the raised probability kept by `if (probability <=
 // increased)` 253.
+// M3 lane 11 r128 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0, all MATCH; control 251, aligned 183 by a sequence-aligned
+// diff, 74 with registers masked): both slot queries through one inline pair helper writing a `long *` 365 (1166 B), that
+// helper with result-first queries and a fresh lookup for each 323 (1165 B); the two query results in named locals ahead of
+// the weapons[] stores 267 (1200 B); the grenade type in a named short ahead of the settings call 251 (same code); the
+// secondary query stored first 251 (aligned 183, masked 75). Diagnostic on the callee, reverted at once: 0x1e53e0 written
+// as a tail recursion over the parent 303 here (1242 B, aligned 175, masked 56: the pool global is then held and the unit
+// re-read after the call, as with the earlier store diagnostics), but 0x1e53e0 itself becomes 82 bytes with the key in DX,
+// and 0x1e5380 2, 0x1e04a0 6 and 0x2758b0 56 lose their code: retail's 0x1e53e0 is a real loop, so recursion is not
+// what makes it look impure to its callers.
 // M3 lane 14 r120 (fast unless said; control 251). Diagnostic, plain check, body replaced by one comparison of each
 // global before and after each callee: only the out-of-line draw 0x259a0 (its file is built without LTCG) and the tail
 // 0x1e1a00 are taken to write the pool or the seed global; 0x1e1f20, 0x1e5280, 0xcbd50, 0x259d0, 0x1469f0, 0xc6f80,

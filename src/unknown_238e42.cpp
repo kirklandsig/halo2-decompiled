@@ -1314,6 +1314,12 @@ bool __stdcall function_2399da(long controller_index)
 // the identity test, as a declaration 90 and as an assignment to a function-scope local 90; the redundant block
 // around the membership call and its tests removed 90; the own rank declared const 90; the over-rank refusal tested
 // before the set-rank arm (`rank > own_rank` first) 90.
+// M3 lane 5 r212 (fast with 0xac050/0xac360/0x2399da, all MATCH): rotation probes, a one-step global copy (diagnostic,
+// reverted) after may_change 133, after the member name copy 119, before the membership query 115, right before the identity
+// test 111 (444 B each): the identity stays in ECX at every position, so no scratch-rotation step is missing and the rank owns
+// EAX. Forms: `long const rank` 90 (same code); the over-rank refusal as an `else if (own_rank < rank)` arm ahead of the
+// rank-3/set arm 90; `3 == rank` 90; the member's privileges bound to `long const &member_rank` for the permission test 90;
+// the last three together 90. Identity ECX/rank EAX remain.
 // M3 lane 7 r189 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e, 0x239a3d and the three callers 0x2c69b3,
 // 0x2b5f9b, 0x2b5d3b, all MATCH in every trial; control 90, nothing kept): the rank parameter's address discarded at the
 // top (the idiom that keeps 0x2078f0's parameters in memory) 90 (same code); the rank read at the NONE test through a
