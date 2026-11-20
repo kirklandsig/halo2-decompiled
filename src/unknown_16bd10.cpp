@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 126 (was 126): Frame 0x48 and extent agree. The projection preloads k in this build and j in retail.
+// score 126 (was 126): Frame 0x48 and extent agree. The projection preloads k in this build and j in retail (round 196's forms at the end of this note).
 // Earlier (126, was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
 // MiniMax E (11-19): score 126 (was 126): no new form, no lower score. Read from the listing again: the case-2 plane
 // length still preloads the camera point's left.k into XMM1 where retail preloads left.j, so the length's accumulator
@@ -1330,6 +1330,23 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Plane distance from zero-offset vector aggregate, component aggregate or separate
 // stores 126/435/126. Vector aggregate with scoped length or initial factor 126/126.
 // The direction preload and the squared-length and zero registers still differ.
+// M3 lane 7 r196 (fast with all eleven callees, 0x13cb40 and 0x23d090; control 126, aligned 88, register-masked 23; body
+// unchanged). Read from retail: its yaw block computes `0 - distance` into XMM2 and loads forward i/j/k into XMM3/4/5
+// together, multiplies all three by the distance and only then negates them (ours interleaves rows and keeps the
+// distance in XMM2); its animation arm stores the shared zero directly where ours copies it to XMM0 first. Tried: one
+// variable for the plane length and the scale, with the zero else arm 126 (same registers), without it 378; the
+// yaw offset through the existing vector3f_scale and three negations, distance store after or before it 129/129 (the
+// helper reads forward through its pointer, [eax+4]/[eax+8], where retail reads the fields directly); three scale rows,
+// the distance store, three negations 129 (forward in XMM2/3/4, the distance sum now in XMM0 with temporaries in
+// XMM2: retail's yaw block with XMM0/XMM1 exchanged); the distance store first, then the rows and negations 126
+// (aligned 86, masked 18; a statement order, same score, not kept); the distance store first with the three direct rows
+// 127; a named negated distance ahead of the rows 395 (1700 B, forwarded to its store). Re-measured: a direction
+// pointer for the copy, the length dot and the scaled add 393 (1700 B: left.j preloads, but the length then sums
+// (i + j) + k). Diagnostics (removed at once): the pan arm's three zeros replaced by another constant 159 (the point
+// arm's zero stays XMM1, so the pan arm's XMM0 return value does not pin it); the animation arm's zero stores dropped
+// 163, the timer's zero arm dropped 345, the last zero store changed 146, the field-of-view block dropped 296 (zero
+// XMM1 in the plane block each time); only the yaw block without its zeros moves it (469: the plane block's zero
+// becomes a local XMM6 and the timer's XMM0), so the zero is one register from the plane arm through the yaw block.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
