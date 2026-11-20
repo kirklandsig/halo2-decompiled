@@ -3411,6 +3411,11 @@ real magnitude3d(vector3f const *v);
 // current length 267 (1033 B); the sine, the projection dot, the cosine and then `projection *= 1.0f - cosine` 170
 // (same code); the rotated rows stored straight into `current` with the size computed first 196 (1038 B). Body
 // unchanged.
+// Current reciprocal before target measurement 233. Complete current unit before the
+// target 243, with initializer 243, paired scale calls 247, or separate reciprocal scopes 243.
+// One root in the current, target, or both direction phases 251/309/324.
+// NOT kept: the phased forms move the first difference to +0x14, and the single-root
+// forms shorten the body. The separate raw-length home and real dot reload still differ.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

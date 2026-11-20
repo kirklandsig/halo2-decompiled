@@ -337,6 +337,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Plain while traversal 125, player-state reference 125, rotation group first 376, deadline advance
 // beside the target advance 158, or side-vector aggregate 125, all with the independent deadline.
 // NOT kept: the 125 forms recover the first 0x2b8 bytes but grow the correction at 1413 bytes.
+// Linear, low-order, whole polynomial, or delta cursor names 64 each. Read-only target,
+// derivative, or polynomial cursors 64 each. Shared unit-length checks 64. Separate target-copy
+// cursors 326, with independent deadline 316. Independent deadline with polynomial names
+// or shared unit-length checks 125 each. NOT kept: both 125 forms recover the traversal
+// through +0x2b7 but change the basis correction and grow to 1413 bytes.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -945,6 +950,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // indexed count clear 123 or indexed index store 129. Between-clear bind with short record subscript,
 // retained map cell, or preincremented signed count 129/129/129.
 // NOT kept: the indexed count clear gains six. It still creates the cluster before traversal.
+// Early missing-cluster capacity guard 137, guarded miss first 159, guarded local postincrement
+// 137. Immutable reservation counts, preincrement in count publication, separate count advance,
+// immutable entry and volume addresses, or record selected by signed count 129 each.
+// NOT kept: the guarded creation forms shorten away from retail. The register exchange
+// and inline cluster creation persist.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1765,6 +1775,11 @@ struct s_pool_view_172840
 // Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
 // NOT kept: the 55 form grows to 870 bytes with the key scheduled late and a five-byte
 // sentinel. Keeping the reservation index for rollback removes a retail pointer reload.
+// With independent failure stores and signed publication, dequeued-entry, selected-cluster,
+// projection, or both traversal references 55 each. Implicit cluster narrowing 55. Direct widened
+// ring subscript 226, retained portal count 230, shared portal bit tests or tests and set 55 each.
+// NOT kept: the 55 forms still grow to 870 bytes and keep the long sentinel load and
+// displaced key store.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
