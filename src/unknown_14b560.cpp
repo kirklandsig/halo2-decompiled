@@ -1725,6 +1725,13 @@ static inline s_players_globals *players_globals_14f2e0()
 // test is no longer threaded). Compile-only scan with the outputs in the mode block (it reproduces that form's `mov eax,
 // 0xffffffff`): 0 to 12 dead initialised locals at the function top, and 1 to 8 inside the mode block ahead of the
 // outputs, all `mov` (the -1's form is not a symbol-count tie).
+// M3 lane 5 r217 (fast; control 5; B = the outputs in the mode block, re-measured 43 at 1031 B, its one differing
+// instruction `mov eax, 0xffffffff` for retail's `or`). Diagnostics on B, reverted at once: the 0xb8540 stub writing
+// EAX in full before it returns 43 (still `mov`); the delete call through a probe stub returning long 44, returning
+// bool 44 (both `mov`: neither what the callee leaves in EAX nor a result held there frees the byte temp from AL).
+// Forms on B: the options pointer named and read through a const reference for the mode test 43 (same code); a
+// redundant `result = false;` at the top of the result block 66 (1031 B, first difference at +0x0). No retail caller
+// of 0xb8540 (65 of them) reads a value after the call.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

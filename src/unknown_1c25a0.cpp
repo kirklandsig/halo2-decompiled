@@ -1603,6 +1603,9 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // increment (`local_0 = ++i;`) 1; the index declared ahead of the loop with the mirror initialised from it and a
 // `while` 1; the array element read into a `long const` 1; one function-scope index shared by the fill loop and the
 // main loop 1 (all the 1s the same code). Still BLOCKED-BY 0x1d1160.
+// M3 lane 5 r216 (fast screen; 0x1d1160's file on this round's avoid list again): the loop tested `i != count` 3;
+// `indices[0] = index;` ahead of `count = 1;` 3; `long i = 0; volatile long local_0 = i; while (i < count)` 1 (same code);
+// the fill loop as a while over its own counter 1 (same code); the loop test `0 < count - i` 18 (870 B). Still BLOCKED-BY 0x1d1160.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
