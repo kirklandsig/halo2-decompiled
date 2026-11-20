@@ -185,7 +185,7 @@ __forceinline bool function_184448(long arg_0)
 // the head's registers differ (retail: base in EDX, local_6 in ECX, arg_3 in EDI; ours: base in ECX, local_6 in
 // EBX, arg_3 in ESI) and the record and surface pointers' stack homes are exchanged.
 // MiniMax A (11-20): no new form, no lower score (965); the frame is still 0x11d4 against retail's 0x11cc, so the worklist array and every later slot sit at another offset, and retail carries the start surface in edi where this build carries it in esi; the 0x48e70 call sets the rest (BLOCKED-BY, its definition is in another machine's file).
-// score 965 (was 965): the frame is 0x11d4 against retail's 0x11cc (the two cached axis shorts), the head's registers and the
+// Earlier score line: 965 (was 965): the frame is 0x11d4 against retail's 0x11cc (the two cached axis shorts), the head's registers and the
 // record and surface pointers' homes differ (retail keeps both in memory); earlier rounds below, this round's at the end.
 // MiniMax H (11-18): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, and the
 // record and surface records still sit in each other's stack homes where retail keeps the record pointer at +0x98 and
@@ -503,6 +503,16 @@ __forceinline bool function_184448(long arg_0)
 // where retail takes EDI (then the group table in ESI and its count in EBX; ours EDI/ESI). The 8 bytes the structural
 // form lacks are retail's homes for the inverse spacing and the clamp constants it reloads after each 0x48e70 call:
 // BLOCKED-BY 0x48e70.
+// M3 lane 7 r200 (fast with 0x9cca0/0x184250/0x184060, all MATCH throughout; control 965): the worklist scan as a for
+// loop with a break on a hit 965 (same code); the start face bound by a const reference for the entry lookup and the
+// seed 965 (other code); the face and plane arrays read into per-face locals at the face-loop top (retail loads both
+// there into EBX/EDI) with the face array also in the neighbour test 965 (other code); the axis row through one
+// `short const *` pointer at all four uses 999 (4572 B, frame 0x11cc as retail, first difference +0x1c); that with the
+// sign named as a bool 1001 (4598 B). BLOCKED-BY 0x48e70 as above.
+// M3 lane 15 r116 (fast with the callers 0x9cca0/0x184060, both MATCH; control 965): the flipped plane negated with unary
+// minus 965 (same code); the plane copied first and negated in place under the flip test 987 (4602 B), with unary minus 987;
+// the else arm's copy written field by field 1017 (4544 B); the three magnitudes through fabsf 965 (same code), computed
+// k, j, i 965 (same code).
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

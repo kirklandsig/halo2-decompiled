@@ -11,6 +11,7 @@ static __forceinline long real_to_long(real value);
 #include "unknown_2551c0.h"
 #include "swarm.h"
 #include <string.h>
+#include "vector2f_products.h"
 
 /* the command a command script runs (0x2c bytes, at +0x4 of a command
    script): its type, a per-type selector, two values and two references
@@ -2030,6 +2031,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// score 431 (was 433): r137 case 2's turn-test dot through the existing dot_product2d; r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
+// MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // score 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
 // r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
@@ -2534,6 +2537,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // selector orders tie at 433, the direct acknowledged return gives 477, and the case 2 turn vector as an
 // aggregate copy with case 4's facing read from the state at each use measures 624 (2400 bytes, masked 84 in an
 // earlier round). No form found this round.
+//
 // Further forms (433 base):
 // Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
 // busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
@@ -2566,6 +2570,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // `case 13: default:` through the shared exit 645 (2372 B); `case 13: default: break;` 478 (2400 B, aligned 178); only the
 // post-switch test as a plain `return 1;` 478 (2400 B, aligned 154); case 7/8 breaking early when bit 4 is clear and
 // falling into case 0 (case 13 kept) 480 (aligned 153). All restored.
+// The dispatch bounds branch still targets a late completion block. Signed type guard 671;
+// direct active-search completion 494, also with inactive-target guard 494; shared publication
+// for 18/21 604, 21/14 609, or all four request cases 626; shared dispatched type 626;
+// pending assigned on request admission 433. NOT kept: the shared requests shorten past
+// retail and move the dispatch or entry. The other forms tie or raise the score.
 // M3 lane 2 r116 (fast with 0x110ab0, 0x258cf0 and 0x25a130; control 433): case 6 through a typed slot-0x4c record (the
 // layout the slot-0x4c setters elsewhere use: element, seat, flags byte at +0x22, two reals) 433 (same code: the two
 // ORs still fold to `or 0x69`), with the 0x29 set ahead of the two 1000.f stores 433; case 20's first arm as a
@@ -2573,6 +2582,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // through the shared exit with the result cleared after it 502 (2432 B); its else arm as a conditional clear 537
 // (2440 B). Retail compares the actor field first in cases 9 and 11 only (`cmp [ebx + 0x18], reg`; cases 5, 6, 7/8
 // compare arg_1 first); listed above at 432. All restored.
+// M3 lane 11 r137 (fast with the file and 0x110ab0, plain-confirmed; control 433, aligned 152): kept, 433 -> 431: case 2's
+// turn test through the existing dot_product2d in place of the 2-D dot written out (either operand order, same code). On
+// it: the turn vector as an aggregate copy through `turn_facing` 611 (2404 B); case 4 as `dot3f(&displacement,
+// &local_2->field_c)` with no facing copy 611 (2400 B); both 623 (2384 B, register-masked 120 against 137: each is
+// retail's code there, but the actor takes EDI and the state EBX); both with case 6's flags through a named byte and two
+// stores 623 (masked 118); both with `long local_30` 623.
 // M3 lane 5 r217 (fast with 0x258cf0, 0x25a130, 0x258a00; control 433 at 2416 B, aligned 151 rows, 130 with registers
 // masked; each form given as score / bytes / masked rows). Read from retail, block by block: case 7/8's flag is a
 // conditional (`jne; mov al, [actor + 0x264]; jmp; mov al, 1`, no normalising test); the turn-side byte at +0x465 is
@@ -2640,7 +2655,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				{
 					point2f local_6 = *(point2f *)((byte *)local_0 + 0x4d8);
 					if (normalize2d(&local_6) > 0.f &&
-						local_0->unknown290.j * local_6.y + local_6.x * local_0->unknown290.i < 0.984f)
+						dot_product2d((vector2f const *)&local_6, (vector2f const *)&local_0->unknown290) < 0.984f)
 					{
 						vector3f const *turn_facing = (vector3f const *)((byte *)local_0 + 0x4d8);
 						vector3f_assign(&local_0->unknown424.vector, turn_facing->i, turn_facing->j, turn_facing->k);

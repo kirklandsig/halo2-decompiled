@@ -1583,7 +1583,7 @@ void function_bba20(long index);
 transform4x3f *function_b8bd0(long object_index, short node_index);
 void function_0bfe20(dword *flags, long bit, bool value);
 
-// score 192 (was 285): the three volatiles are gone. Left: the parent's node-matrix base (retail takes it ahead of the
+// score 192 (was 192; 285 before m3 lane 7 r195): the three volatiles are gone. Left: the parent's node-matrix base (retail takes it ahead of the
 // link stores and indexes it at the 0x141590 call; with a local for it there the count is 166, a one-use local
 // evaluated early, so match-only), the first vector rotation (retail reads the object's forward from the object again
 // for each row, ours copies its three components to frame slots first, 16 bytes), the table pointer's and the
@@ -1644,7 +1644,7 @@ void function_0bfe20(dword *flags, long bit, bool value);
 // reached here, so the first difference is the jump target at +0x76; the marker pointer retail inlines belongs to
 // 0xb8bd0 in another file, which is /Ob1, so LTCG keeps the call here and it cannot be changed from this lane.
 // MiniMax E (11-17): no new form, no lower score (285): the permuter's best variant (283) came from an argument swap and a constant local, which the rules rule out, so the body stands.
-// MiniMax H (11-18): score 285 (was 285): no new form, no lower score: the prologue and the frame now agree with
+// MiniMax H (11-18): at 285 (was 285): no new form, no lower score: the prologue and the frame now agree with
 // retail's (the index read before the frame, the 0x64 frame, the pool in ebx and the pool's data in edi), and the
 // first difference is still the jump target at +0x76, retail's shared epilogue at 0xb987a against our duplicated
 // one; behind it retail keeps the pool in ebx and the object's data in edi where this build reloads the pool's
@@ -1894,6 +1894,19 @@ void function_0bfe20(dword *flags, long bit, bool value);
 // in registers, which is what the shared rotate helper's three copies give when they get no register and are read
 // back from their source; ours spills them to the frame instead. BLOCKED-BY 0x142570 as before (/Ob1, inlined by
 // retail; this file's attachment-point helper writes that body).
+// MATCH (r924 stand-in image) on top of the nested `if (allowed) { ... }`: `header` declared before `parent`, the parent's
+// node matrices taken into a local ahead of the link stores (retail loads the parent's +0x116 there), and the bit-vector
+// test reading the root header's unknown04 again (retail re-loads it after the NONE compare).
+// M3 lane 1 r136 (fast with 0xb8ee0/0xbe760, both MATCH each run; control 192, lead 166): the forward vector through the
+// existing in-place rotate helper (`&inverse.rotation`) 280 (1262 B: its aliasing copy branch stays, frame 0x70); a
+// `data` local for `pool->data` after the walk, for the parent and the header, 332 (the parent load then takes retail's
+// `[edi + ebx + 8]` order, but the local merges with the entry's data load and the head changes); the parent through
+// `((s_object_header_view *)pool->data)[...].object` 192 (same code); the root tail through OBJECT_HEADER_GET(root) at each
+// use 291; on the 166 lead the two vectors declared ahead of `position` 166 (same code). Reading: retail stores each forward
+// row before the next one and reloads the object's components per row, so its rotate's output is treated as possibly
+// aliasing the source (ours defers the three stores and spills the copies). Body unchanged.
+// score 67 (was 192, r924 stand-in image): the body runs inside `if (allowed) { ... }` (one return at the end) instead
+// of `if (!allowed) return;` before it; 1240 bytes (retail 1236). The BLOCKED-BY note above still describes the rest.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, long index, short node)
 {
@@ -1906,50 +1919,53 @@ void __stdcall function_b93b0(long parent_index, long index, short node)
     if (((1 << object[0xaa]) & 0x1c) && (object[0x12c] & 1) && *(long *)(object + 0x154) != parent_index) allowed = false;
     for (long ancestor = parent_index; ancestor != NONE; ancestor = *(long *)(*(byte **)(pool->data + (ancestor & 0xffff) * 12 + 8) + 0x14))
         if (ancestor == index) return;
-    if (!allowed) return;
-    byte *parent = *(byte **)(pool->data + (parent_index & 0xffff) * 12 + 8);
-    s_object_header_view *header = (s_object_header_view *)(pool->data + offset);
-    bool was_active = (bool)((header->flags >> 2) & 1);
-    if ((bool)((*(dword *)(object + 4) >> 7) & 1))
+    if (allowed)
     {
-        function_0bfe20((dword *)(object + 4), 7, false);
-        if (!(bool)((*(dword *)(object + 4) >> 8) & 1) && g_4de2f4 && *(byte *)g_4de2f4) function_b8600(index, 0);
-    }
-    function_b7300(index);
-    if ((bool)((*(dword *)(object + 4) >> 8) & 1)) function_b87b0(index);
-    if ((bool)((*(word *)(object + 0xc0) >> 6) & 1) && !((1 << header->type) & 0x80)) function_b8840(index);
-    *(long *)(object + 0x14) = parent_index;
-    short node_index = node;
-    object[0x18] = (byte)node_index;
-    *(long *)((byte *)OBJECT_GET(index) + 0xc) = *(long *)(parent + 0x10);
-    *(long *)(parent + 0x10) = index;
-    header->flags |= 0x80;
-    *(long *)(object + 0x28) = NONE;
-    *(short *)(object + 0x2c) = NONE;
-    *(short *)(object + 0x2e) = g_4686c4;
-    transform4x3f inverse;
-    function_141590(&object_node_matrix_bdef0((byte const *)OBJECT_GET(parent_index))[node_index], &inverse);
-    point3f position;
-    vector3f forward, up;
-    object_attachment_point(&inverse, (point3f *)(object + 0x64), &position);
-    matrix_transform_vector(&inverse, (vector3f *)(object + 0x70), &forward);
-    matrix_transform_vector(&inverse, (vector3f *)(object + 0x7c), &up);
-    function_b91d0(index, &forward, &up);
-    function_b7430(index, &position, &forward, &up, 0, true, true, false, false);
-    function_b9b90(index, true);
-    if (function_b9d20(parent_index)) function_bef30(index, 0, 1, 0, false);
-    function_bd020(index);
-    header->flags |= 0x20;
-    long root = function_baf80(index);
-    s_object_header_view *root_header = OBJECT_HEADER_GET(root);
-    if (!(root_header->flags & 1) && root_header->unknown04 != NONE &&
-        bit_vector_test((dword const *)((byte *)g_4e6948 + 0x11b8), root_header->unknown04)) function_b7290(root);
-    if (was_active && !(root_header->flags & 4)) function_bba20(root);
-    function_b7360(parent_index);
-    function_b7360(index);
-    if (*(long *)(object + 0xb4) == NONE)
-    {
-        function_146bf0(); function_1c36f0(index, index); function_278f00(); function_146bf0();
+        s_object_header_view *header = (s_object_header_view *)(pool->data + offset);
+        byte *parent = *(byte **)(pool->data + (parent_index & 0xffff) * 12 + 8);
+        bool was_active = (bool)((header->flags >> 2) & 1);
+        if ((bool)((*(dword *)(object + 4) >> 7) & 1))
+        {
+            function_0bfe20((dword *)(object + 4), 7, false);
+            if (!(bool)((*(dword *)(object + 4) >> 8) & 1) && g_4de2f4 && *(byte *)g_4de2f4) function_b8600(index, 0);
+        }
+        function_b7300(index);
+        if ((bool)((*(dword *)(object + 4) >> 8) & 1)) function_b87b0(index);
+        if ((bool)((*(word *)(object + 0xc0) >> 6) & 1) && !((1 << header->type) & 0x80)) function_b8840(index);
+        transform4x3f const *parent_matrices = object_node_matrix_bdef0((byte const *)OBJECT_GET(parent_index));
+        *(long *)(object + 0x14) = parent_index;
+        short node_index = node;
+        object[0x18] = (byte)node_index;
+        *(long *)((byte *)OBJECT_GET(index) + 0xc) = *(long *)(parent + 0x10);
+        *(long *)(parent + 0x10) = index;
+        header->flags |= 0x80;
+        *(long *)(object + 0x28) = NONE;
+        *(short *)(object + 0x2c) = NONE;
+        *(short *)(object + 0x2e) = g_4686c4;
+        transform4x3f inverse;
+        function_141590(&parent_matrices[node_index], &inverse);
+        point3f position;
+        vector3f forward, up;
+        object_attachment_point(&inverse, (point3f *)(object + 0x64), &position);
+        matrix_transform_vector(&inverse, (vector3f *)(object + 0x70), &forward);
+        matrix_transform_vector(&inverse, (vector3f *)(object + 0x7c), &up);
+        function_b91d0(index, &forward, &up);
+        function_b7430(index, &position, &forward, &up, 0, true, true, false, false);
+        function_b9b90(index, true);
+        if (function_b9d20(parent_index)) function_bef30(index, 0, 1, 0, false);
+        function_bd020(index);
+        header->flags |= 0x20;
+        long root = function_baf80(index);
+        s_object_header_view *root_header = OBJECT_HEADER_GET(root);
+        if (!(root_header->flags & 1) && root_header->unknown04 != NONE &&
+            bit_vector_test((dword const *)((byte *)g_4e6948 + 0x11b8), OBJECT_HEADER_GET(root)->unknown04)) function_b7290(root);
+        if (was_active && !(root_header->flags & 4)) function_bba20(root);
+        function_b7360(parent_index);
+        function_b7360(index);
+        if (*(long *)(object + 0xb4) == NONE)
+        {
+            function_146bf0(); function_1c36f0(index, index); function_278f00(); function_146bf0();
+        }
     }
 }
 

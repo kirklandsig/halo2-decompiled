@@ -1042,6 +1042,7 @@ static __forceinline long real_to_long(real value);
 // then the prediction, the dot in the k, j, i order with the length after the sum, and the half applied last), so
 // what still differs is the false exit's place, the facing pointer that retail forms late through the view pointer
 // in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
+// MiniMax E (11-20): no new form, no lower score (382): the false exit still lands after the main exit instead of at 0x1aac35 and 0x25d740 stays expanded here where retail keeps it out of line; 0x25d740 lives in src/unknown_25d690.cpp, which this lane may not edit, so the difference is not reachable from this file.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
 // M3 lane 4 r230 (fast with 0x25d740/0x25d690, both MATCH; control 382, difflib-aligned 155, register/offset-masked 86).
 // On today's tree the early `return false` for the three flags keeps 0x25d740 out of line (still a call) but folds the
@@ -1423,6 +1424,10 @@ static __forceinline long real_to_long(real value);
 // through the existing tracking_get 508, with named locals for every step 508. So our link's choice follows the getter's
 // compiled size, and retail's 37-byte copy stays out of line at this site, so the difference is on the caller's side
 // (the site's weight), not in the getter. Body unchanged; still BLOCKED-BY 0x25d740's expansion.
+// M3 lane 13 r129 (fast with 0x25d740, 0x25d690, 0x1a9d80 and 0x1a9e00, all matched; control 382): the game time read
+// inside the timeout arm that uses it 447 (1912 B); the near-stop timeout compare as `0.5f < ...`, the speed magnitude
+// test as `0.0f < local_12`, the alignment test as `dot < local_26`, the planar length test as `0.0f < normalize2d(...)`
+// 382 each (same code). All restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

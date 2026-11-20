@@ -893,7 +893,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax I (11-19): no new form, no lower score (237): the -1 sentinel still sits in edi where retail keeps it in esi, and this
 // build still reads the squad entry index into esi after the first call where retail reloads it into ecx; the query output homes
 // and the loop's entry block still sit at other frame offsets.
-// score 222 (was 222): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
+// score 199 (was 222): Squad and query homes still differ. The perception actor at the shared creation
+// join puts the unit-creation arm after request case 2, with the jump back to the common actor test.
+// Earlier 222 (was 222): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // MiniMax E (11-16): no new form tried this round, no lower score (237): the frame and the length agree with retail's and the squad
@@ -1346,6 +1348,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // 334 (1272 B), after both arms' success blocks 348 (1283 B); a `goto` to a label before the actor test at the arm's end 222
 // (same code). Retail's order is the chain from the actor test through case 2 moved up behind the perception arm, which needs
 // the creation arm to end in a jump; no form found that keeps one.
+// Common no-creation return in unit/perception order 304/304. Positive common creation guard in both
+// orders 222/222. Perception actor at the join 199 (kept), unit actor at the join 222. Those two
+// joins with a no-creation return 308/304. The early-return forms disrupt the register allocation.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1379,8 +1384,6 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 			if (*flags & 1)
 			{
 				perception_index = function_28dab0(character_index, (s_28dab2 const *)placement);
-				if (perception_index != NONE)
-					actor_index = function_1e02f0(squad_index, character_index, NONE, perception_index, flag);
 			}
 			else
 			{
@@ -1409,6 +1412,8 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 					actor_index = function_1e0160(squad_index, character_index, unit_index, flag);
 				}
 			}
+			if (perception_index != NONE)
+				actor_index = function_1e02f0(squad_index, character_index, NONE, perception_index, flag);
 			if (actor_index != NONE)
 			{
 				s_actor_view *actor = actor_get(actor_index);
@@ -1691,6 +1696,13 @@ void function_1e3b60(long actor_index);
 // iterator and the update flag kept in memory and the 0x25c820 call kept out of line gives MATCH here (0x262ba0 545
 // at 1496 B); any two of the three without the third 25 (see 0x262ba0's note for the forms and counts).
 // BLOCKED-BY 0x262ba0 (0x25c820 expanded inline there; iterator and flag homes).
+// M3 lane 11 r137 (fast with 0x262ba0, 0x263210, 0x265680, 0x264330, 0x26be00, 0x26be30; 25 here in every form; 0x262ba0
+// control 404 at 1624 B): in 0x262ba0, the walk through the existing 0x26be00/0x26be30 re-measured on today's body 443 at
+// 1616 B (aligned 301 against the control's 317); the three release gotos as a `release` flag tested after the switch 442
+// (1644 B: 0x25c820 is still expanded at that single site, 35 calls against retail's 34); the walk with that flag 445; the
+// walk with sample/update declared ahead of the loop 443 (same code); the walk reading `iterator.index` at every use 443
+// (same code). Diagnostic, restored: 0x2641c0's noinline declaration dropped 509 (1696 B; 0x25c820 still expanded and one
+// of the four 0x25c230 calls merged; 0x264210 114). Still BLOCKED-BY 0x262ba0.
 // M3 lane 5 r217 (fast with 0x262ba0, 0x2641c0, 0x264210, 0x1be120, 0x1fba10, 0x25c230, 0x25d020, 0x265680; 25 here in
 // every form; 0x262ba0's file was another lane's this round, so nothing there was tried): 0x2641c0's noinline
 // declaration dropped: 0x262ba0 509 (1696 B, expanded there as retail), 0x264210 114 (139 B), and the five other
@@ -2425,6 +2437,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // store in 0x1e53e0 is a steering form in a matched function and raises this count. Left on the 265 base: the pool in
 // EBP for retail's EDI with the options the other way round, the seed pointer reloaded around the 0x259a0 call
 // (BLOCKED-BY 0x259a0's file flags, as recorded above), retail's 32-bit weapon index with its own cell.
+// MiniMax A (11-20): no new form, no lower score (251); the pool and the options sit in EDI and ESI where retail keeps ESI and EBP, and the seed pointer must stay in EBX across the opaque 0x259a0 call (BLOCKED-BY 0x259a0).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
