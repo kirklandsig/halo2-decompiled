@@ -2769,6 +2769,7 @@ bool function_0b6760(s_index_pair const *pair);
 // M3 review (11-20, lane 14 r134): a MATCH was found and is held for the user's ruling: it needs `inline` on 0xb6760's
 // definition (called from five other files), a bool in the matched 0x1cd070 that keeps one 0xb6760 call out of line, the
 // position test in a bool here, the unit byte tested `<= 0`, and 0x107cc0's state ahead of its channel. Body is main's.
+// MiniMax B (11-20): no new form, no lower score (61): the entry registers are still one rotation off from retail's and the body is sixteen bytes short of retail's 1495; what is left sits at the two channel-1 0xb6760 calls, whose convention is fixed in another file.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

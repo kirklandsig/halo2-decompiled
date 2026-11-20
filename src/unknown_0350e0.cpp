@@ -6839,6 +6839,7 @@ extern dword g_4b843c;
 // MiniMax A (11-18): no new form, no lower score (212); what still differs is the 0x4a1e0 argument registers, the first mask
 // publication and the late flag reads, and the body stays fourteen bytes short of retail because no spelling of the bit-0 and
 // bit-1 steps reproduces the store retail keeps before the branch.
+// MiniMax B (11-20): no new form, no lower score (212): 0x4a1e0's register mapping is fixed by a declaration shared with another file, and the extra mask store, the twice-read flag and the 0x14b60 argument still differ.
 // @retail 0x31170
 void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool enabled, real scale)
 {

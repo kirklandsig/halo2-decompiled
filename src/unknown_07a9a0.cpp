@@ -1733,6 +1733,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // retail). Loop frequency decides the loop's set: the player value through 0x63220 stays a call with the opening
 // test as returns (also with two of its five conditions) and expands with everything else when the test is a value
 // or sets `result`; a test at 0x71730's call changes nothing.
+// MiniMax B (11-20): no new form, no lower score (871): the frame is 0xd0 against retail's 0xb4 and retail calls 0x192e60 out of line where ours expands it; the histogram as a long array reads 911 and as a memset read 936, both worse than the kept body.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
