@@ -60,6 +60,8 @@ bool function_29d740(vector3f *arg_0, s_pathfinding_data const *arg_1, long arg_
 
 #include "unknown_25fc30.h"
 
+// score 108 (was 117, r924 stand-in image): the facing test's first product written `local_direction.j * edge_normal.j`
+// (operand order of that product only). Other term / product / argument orders of that dot product: none below 108.
 // @retail 0x29d7b0
 bool function_29d7b0(long index, s_pathfinding_data *pathfinding, s_type_d4fbfa *definition,
 	vector3f const *direction, point3f *point, vector3f *normal, char *side)
@@ -75,7 +77,7 @@ bool function_29d7b0(long index, s_pathfinding_data *pathfinding, s_type_d4fbfa 
 			if (direction)
 			{
 				function_210770(definition->unknown0c, direction, &local_direction);
-				if (0.0f > edge_normal.j * local_direction.j + edge_normal.i * local_direction.i + edge_normal.k * local_direction.k)
+				if (0.0f > local_direction.j * edge_normal.j + edge_normal.i * local_direction.i + edge_normal.k * local_direction.k)
 					facing = false;
 			}
 			if (facing)
