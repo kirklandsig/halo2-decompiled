@@ -2361,6 +2361,10 @@ struct s_unit_motion
 // position, velocity, or both accumulators 89/89/69; named displacements 89; inactive exit with
 // position or both accumulators 89/69. NOT kept: the 69 forms inline into the caller and lose its
 // matched caller 0x1faf80.
+// MiniMax G (11-20): no new form, no lower score (104): the body is still 265 bytes against retail's 227 with the
+// first difference at +0x5, so retail's register inputs and its four-byte return are not recovered yet; the forms
+// that recover them (separate output accumulators, in or out of line) make the matched caller 0x1e5af0 lose its
+// match, so the body stands.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -2605,6 +2609,10 @@ void function_cfec0(long unit_index)
 // tested and returned on its own gives the test on EAX (47). One exit at the end merges the four epilogues
 // into one and moves retail's lazy pushes into the prologue (113). Retail's exit block has a single
 // predecessor, so no merge can restore the copy there.
+// MiniMax G (11-20): no new form, no lower score (1): the entry branch is still jle where retail has je;
+// spelling the test as an equality gives retail's je but VC folds the NONE exit's register copy into
+// the constant (2, 258 bytes); a copy returned by all four exits keeps the copy alive but the test moves to EAX,
+// which loses retail's `mov ebx, eax` prologue (47, 247 bytes). The body stands.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -4886,6 +4894,8 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // run (5 plain tries and then 13 annealing tries over the whole body, 373 s) found no variant below 2: the
 // annealing walk's variants scored 2 eight times, 6, 15 and 90 once each and two failed to build. The order
 // comes from the cone helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x146320.
+// MiniMax G (11-20): no new form, no lower score (2): the one difference left is the order of the x87 spill and
+// the cone helper's forward-pointer step, and that helper's convention belongs to another file: BLOCKED-BY 0x146320.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
@@ -7721,6 +7731,10 @@ public:
 // NOT kept: shared per-pass slot index 496 moves length to 1802/1785.
 // Signed short rounds 467 tests AX where retail tests EAX. Frame 0x3c
 // agrees, but early pointer homes and the refill query call remain.
+// MiniMax G (11-20): no new form, no lower score (508): the pool global is still loaded into EAX where retail loads
+// it into ECX, and the first unit's row pointer into EBP where retail uses EDX, so the frame homes and the two
+// induction registers follow; the call to 0x106030 is still expanded inline here while retail calls it out of line:
+// BLOCKED-BY src/weapons.cpp.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -8769,6 +8783,10 @@ real function_50650(real cosine);
 // 563, shared i-k-j dot in both phases 563 (2480 bytes), untransformed arm
 // first 572. The frame immediate and motion argument delivery still differ.
 // MiniMax R (11-17): no new form, no lower score (563): the frame is 0x8c against retail's 0x80 and this build zeroes two xmm registers into stack slots where retail keeps the first vector in xmm0, xmm1 and xmm2; the inlining of 0xc7750's callee is what the rest of the body rides on: BLOCKED-BY 0xc7750.
+// MiniMax G (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 and the two
+// calls to 0xc7750 still pass position, velocity and time on the stack where retail keeps them in XMM5, XMM4 and
+// XMM3; giving 0xc7750 retail's own convention (28 at 227 bytes) makes LTCG inline it into this function and the
+// score goes to 995, so the two functions cannot both improve: BLOCKED-BY 0xc7750's convention.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
