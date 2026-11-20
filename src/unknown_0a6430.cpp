@@ -45,6 +45,7 @@ PRIVATE byte *update_object_0a6430(long index)
 // takes EDX where retail takes ECX; the lookup through the object header's typed element form needs another header in this file
 // and the plain forms give the same code, so the body is as it was.
 // MiniMax I (11-17): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it ECX (retail loads the pool into EAX after the index, and the object into EDX), the 0x100 call's pushed state pointer takes EDX where retail takes ECX, and the two call and jump targets differ only because the reduced image lays the callees out elsewhere; a named slot in the getter, a named masked index, the header form, a named data pointer, a named tag and a slot-taking getter all give the same 14 bytes, and the permuter (14 tries in 319 s) found no variant under the 13 differing instructions of the full image.
+// MiniMax A (11-20): no new form, no lower score 14: the 0x200 head still loads the object pool before the masked index and keeps the object in EAX, where retail computes the index first and keeps it in EDX; the getter, the header form and the inline masked index all compile the same bytes, and the 0x100 call still pushes the state pointer in EDX where retail uses ECX.
 // score 14 (was 16): round 173 reads the 0x100 block's count through the existing 0xba690, which
 // LTCG inlines: its object now takes EAX as retail. Left: the 0x100 call's pushed state pointer
 // takes EDX (retail ECX), and the 0x200 block loads the object pool before the index (retail after
