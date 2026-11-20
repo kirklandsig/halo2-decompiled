@@ -1594,6 +1594,16 @@ void function_150820(dword *bits, bool local_only)
 // Integer player address and separate unit-index lookup 73, Integer player and unit-header addresses 43. NOT
 // kept: The separated player lookup recovers the saved registers but folds the player address into LEA and raises
 // the score. The other seven address forms preserve the original allocation and tie.
+// M3 lane 10 r131 (fast with 0x151b80 (17 throughout), 0x151940, 0x151c10, 0x14f820, 0xcd7b0, 0xa8f80, 0xcd4e0; control
+// 43). Reading: retail triples the object index into a fresh register (`lea ecx, [eax + eax*2]`) and chains the pool
+// base through EAX where ours triples in place and chains the base through EDX; both follow from which scratch
+// registers are busy (retail: unit index EDX, primary CL, hand EAX copied to EDI at once), so the entry allocation is
+// the one cause. Diagnostic, reverted: the object lookup's mask as 0xfffe 43 with the same registers (the pair is not
+// tied by the two identical 0xffff masks). `long hand = !primary;` after the result and ahead of the unit-index test
+// 61 (202 B); the lookup's unit index through `s_tail_player *const &owner = player` 43; the hand assigned through a
+// reference bound to it 43; the weapon and 0xcd7b0 tests in a named bool read through a const reference 43; the
+// held-slot and weapon arrays through named pointers 43 (all four the same code); the unit index through `long const
+// &unit_index = player->unit_index` for the lookup and the 0xcd7b0 argument 73 (214 B).
 // conditional hand enumerator 43; paired hand enumerator assignments 43; primary hand enumerator default 45;
 // secondary hand enumerator default 45; conditional hand enumerator with captured eligibility unit 43; paired
 // hand enumerator assignments with captured eligibility unit 43; primary hand enumerator default with captured

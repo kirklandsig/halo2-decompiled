@@ -510,6 +510,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
@@ -912,6 +913,12 @@ real g_55e618;
 // AC597: Typed placement output; surface construction at call, construction before position, and copy
 // before position; typed output with call construction or early copy; initialization before position
 // with call or early construction: 102/102/242/242/102/242/102/242.
+// M3 lane 12 r155 (fast; control 102): the dot through the existing basis_dot_xzy (i, then k, then j, retail's order)
+// on the velocity copy 103 (same length); on a `vector3f const *velocity = &particle->velocity` pointer (tangent read
+// through it) 194 (1541 B); with the position through real_point3d_set 188 (1536 B); on the copy with the setter 245 (1570 B);
+// the perpendicular through the existing vector3f_scale with the dot as its argument (no named dot): basis_dot_xzy on the
+// pointer 108 (1538 B, frame 0x118: the perpendicular loses its home), with the setter 188 (dot3f the same 188), on the
+// copy 103. All restored.
 // Miss guard, distant-hit guard and both guards score 231/196/225. Miss-first chains with
 // the positive or negative distance test score 231/225. A saved hit with a joined failure
 // store at the tail or before the response scores 141/141. Both guards with a query-local

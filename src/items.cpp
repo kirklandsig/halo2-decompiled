@@ -398,7 +398,7 @@ inline real item_real_random_range(real lower, real upper)
 {
 	dword *seed = &g_4e7408->unknown0;
 	*seed = *seed * 0x19660d + 0x3c6ef35f;
-	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f))) + lower;
+	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f)) + lower);
 }
 
 // score 2 (was 2): frame 0x14 and retail length agree; the final x87 add
@@ -437,6 +437,8 @@ inline real item_real_random_range(real lower, real upper)
 // scoped to filling its packet 2. The integer draw, object lookups, bound pair and packet scope preserve the
 // same two instructions. The normalized draws move other instructions, and the full range helper grows the
 // body. Opening executable source restored.
+// Matched in a full build with stand-in SDK headers (was 2): item_real_random_range returns its sum inside one pair
+// of parentheses, which puts the delay's last fadd before the field load as in retail.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
@@ -886,11 +888,17 @@ struct s_item_collision_bsp
 // 311/322 for compound or aggregate rows and 343/353 when copying the input normal first.
 // NOT kept: every form grows the body, and early publication also grows frame 0xa0 to 0xa4.
 // The transformed normal and contact position registers and pending x87 spin scale still differ.
+// Queried normal coefficients carried through all rows, i/j/k and ordered pairs jk/kj/ji/ki/ik,
+// 190 each. NOT kept: the first coefficient loads, contact-point home and pending spin factor remain.
 // Left-axis products as a vector 192, all scalars 195, or row-local scalars 195;
 // output carrying left products into the row sums 196 or all sums before forward 194;
 // separate paired-product vector 193; separate left and up vectors 194; all three basis
 // vectors 246. NOT kept: all regress. The transformed plane's j input still misses its
 // retail XMM home through the three rows.
+// Shared left coefficient 190, left and up coefficients 190. Basis field references or pointers 190/190.
+// Left axis value 271, three independent axis values 350, embedded rotation reference or value 190/338.
+// NOT kept: aliases and coefficients tie. Axis copies grow the body. The transformed-plane XMM homes
+// and pending x87 spin scale still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1171,6 +1179,7 @@ void function_10ca80(long object_index, long owner_index)
 void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward, vector3f const *up);
 void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f const *new_parent);
 
+// MiniMax E (11-20): no new form, no lower score: our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the inverted threshold test with a split dot scores 199.
 // score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
 // depth one 130; size preference 277; complete rotated vector 207; fallback vector initializer 130.
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
@@ -1180,6 +1189,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Named reciprocal with half-root update 204. Separate axial contribution with and without the
 // magnitude update 267/268. Final shared vector sum with and without it 194/194.
 // NOT kept: frame remains 0xc0 and the scaled axis i still spills in the tied forms.
+// Staged fallback side/up/both 130/130/130; fallback first with both staged 163.
+// Named rotation cross numerators 130; named two-term rotation sums 130; named
+// forward-projection products 130; sqrtf 130. The extra vector-sized frame region
+// and the first alignment-product order remain.
 // Staged cross / returned cross / output axis with aggregate / in-place fallback / common branch cross
 // workspace / item dot / native rotation / output axis with setter / returned fallback / separate axis
 // with setter / staged output axis with setter: 130/248/207/160/130/130/133/117/281/130/117.
@@ -1312,7 +1325,8 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
-// score 824 (was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
+// score 824 (was 813): Frame 0x154 versus 0x12c. The entry Boolean and motion workspaces still differ.
+// Earlier (824, was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
 // stack homes still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so
 // forty bytes of frame are unaccounted for and every stack home sits further out than retail's; the entry flags are
@@ -1653,6 +1667,14 @@ struct s_item_flags_view_10b850
 // helper on the original collision origin 824, Point-difference helper on the shared collision origin 823. NOT
 // kept: Paired fields cut the frame to 0x148 but score 904 at 4051 bytes. The ray helper with the shared origin
 // saves one difference, below the retention threshold. The opening body is restored.
+// Lateral response scope 824, correction step after lateral projection 845, shared reversed step 850,
+// shared lateral magnitude and correction sign 878, branch-local lateral step 859, longitudinal step
+// 892, or both 883, shared carrier addition 824. The 0x148 forms fall short of retail extent and raise
+// the score. The motion frame remains 0x154.
+// Point setter for pre-impact, bounce or both nudges 904/821/911. Bounce on the copied
+// point with scalar adds, the point setter, both point setters or shared scaled addition
+// 817/825/894/817. Named bounce displacement vector 870. NOT kept: the 821 and 817
+// gains are below eight, and the 817 forms are three bytes past retail with frame 0x154.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1932,7 +1954,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // clears it with one byte read-modify-write, and the return bytes, the event-point homes and the location-call setup remain; that call
 // setup follows the allocation callee 0xba300's own convention (retail takes the object in ecx and the location in eax), whose body is
 // in another file: BLOCKED-BY 0xba300; the permuter (annealing, 420 s, 15 tries) found no variant below 140.
-// score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
+// score 140 (was 140): frame 0xac agrees; the returned byte sits at +0xe and the result byte at +0x12 where retail has
+// +0xf and +0x13, the release byte is cleared by a load, an and and a store where retail clears it with one memory
+// read-modify-write, and our one shared release call stands where retail computes the impulse twice and shares a tail.
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,
 // the tail, the event-point homes and the location-call setup are unchanged, and

@@ -1081,6 +1081,11 @@ struct s_device_machine_view
 // [eax + 2]` (the masked byte is a one-use temporary, so the pointer wins EAX); the same with a word local and an unmasked
 // byte copy 121 (byte load, pushed ESI); a `word` bits local `group->flags & 3` 117 (657 B, `movzx eax, byte; and eax,
 // 3`); the machine flags read before that pointer 129 (658 B). Body unchanged.
+// Matched in a full build with stand-in SDK headers (was 2): the group is a pointer local and its two flag bits are
+// tested on the field, with the second bit also tested through a reference-bound local that holds the flags (read
+// after the first bit's test). The extra test leaves no code; it adds a reference of the flags before registers are
+// chosen. With bit 2 tested once (the reference-bound local alone, read there or before the test) 122; with the local
+// declared ahead of the machine flags 3 (the word load rises above the machine test's `je`).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1106,14 +1111,19 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			function_value = 1.0f;
 		if (device->type == 7 && device->power_group_index != NONE)
 		{
-			word group_flags = DEVICE_GROUP_GET(device->power_group_index)->flags;
+			s_device_group *group = DEVICE_GROUP_GET(device->power_group_index);
 			dword machine_flags = ((s_device_machine_view *)device)->flags;
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			byte group_flag_bits = (byte)(group_flags & 3);
-			if ((group_flag_bits & 1) && (group_flag_bits & 2))
-				function_value = 1.0f;
+			if (group->flags & 1)
+			{
+				word flags = group->flags;
+				word const &kept = flags;
+
+				if ((kept & 2) && (group->flags & 2))
+					function_value = 1.0f;
+			}
 			if (device->power == 1.0f || (machine_flags & 0x10))
 			{
 				function_value = 0.0f;
@@ -1707,6 +1717,14 @@ bool function_108530(long device_index, long name)
 // intermediates scoped 129, separate bounded phase times 135, floor and explicit parameter selection 129,
 // trimmed-time local after floor store 137, named cruise span after separate floor 129. NOT kept: The closest
 // form scores 122. Other forms lose both matched callers by moving initial velocity out of XMM6.
+// Positive input split 141, positive remaining split 141, nested bound selection 148, and a separate
+// lower-bound branch 145. Zero rate for absent acceleration, deceleration, or both 116 each. Accumulate
+// the half ramps into the remaining span 131. NOT kept: rate forms tie, and the other forms lose
+// both callers through the initial-velocity convention. Ramp-down still occupies an XMM register.
+// Separate request paths as statements or values 141/141, positive span first as statements or values
+// 141/141, carried request predicate as statements or values 156/156, span accumulator 141, clamp within a
+// positive span 145. NOT kept: all lengthen the body and lose the incoming velocity register. The ramp-
+// down slot and duration and position registers remain displaced.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2662,6 +2680,10 @@ bool function_0b6760(s_index_pair const *pair);
 // Bind the position-group field reads and updates to position and position velocity and group target 316.
 // Use the existing device definition as the saved receiver in both motion paths 61.
 // NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
+// score 61 (was 61): MiniMax H (11-19): the result local is declared after the saved definition, the speed is a
+// running sum and the unit byte is tested as `<= 0`; what still differs sits at the two channel-1 0xb6760 calls,
+// whose convention is fixed in another file.
+// MiniMax H (11-20), NOT kept: 58 (was 61), a 3-point gain, under the 8-point bar for a function above 30.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

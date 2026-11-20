@@ -805,9 +805,32 @@ struct s_object_flags12c_ab
     word : 12;
 };
 
-// score 49 (was 101): retail saves ESI only after the early return for a unit with a player,
-// so that return gets its own epilogue; ours saves ESI in the prologue and shares it.
-// Tried: returning early with `if (result) return result;` after the parent walk (118).
+bool __stdcall function_beb30(long object_index);
+
+static __forceinline bool object_relative_has_player_ab(byte *object)
+{
+    long index = *(long *)(object + 0x10);
+    while (index != NONE)
+    {
+        byte *child = object_bytes_ab(index);
+        if (function_beb30(index)) return true;
+        index = *(long *)(child + 0xc);
+    }
+    index = *(long *)(object + 0x14);
+    while (index != NONE)
+    {
+        byte *parent = object_bytes_ab(index);
+        byte *parent_unit = (byte *)function_badc0(index, 3);
+        if (parent_unit && *(long *)(parent_unit + 0x13c) != NONE) return true;
+        index = *(long *)(parent + 0x14);
+    }
+    return false;
+}
+
+// Matched in a full build with stand-in SDK headers (was 49): the two relative walks are an inline
+// helper that returns true from inside its loops, and the body sets result instead of returning, with
+// the type-mask and flag tests nested. That gives retail's late save of ESI and its three exit blocks
+// in order (result, true, early); one `&&` condition for the last test swapped two of them.
 // @retail 0xbeb30
 bool __stdcall function_beb30(long object_index)
 {
@@ -818,23 +841,13 @@ bool __stdcall function_beb30(long object_index)
     bool result = player != NONE;
     if (!result)
     {
-        long index = *(long *)(object + 0x10);
-        while (index != NONE)
+        if (object_relative_has_player_ab(object))
+            result = true;
+        else if (((1 << object[0xaa]) & 0x1c))
         {
-            byte *child = object_bytes_ab(index);
-            if (function_beb30(index)) return true;
-            index = *(long *)(child + 0xc);
+            if (TEST_FIELD_BIT(((s_object_flags12c_ab *)(object + 0x12c))->flag3))
+                result = true;
         }
-        index = *(long *)(object + 0x14);
-        while (index != NONE)
-        {
-            byte *parent = object_bytes_ab(index);
-            byte *parent_unit = (byte *)function_badc0(index, 3);
-            if (parent_unit && *(long *)(parent_unit + 0x13c) != NONE) return true;
-            index = *(long *)(parent + 0x14);
-        }
-        if (((1 << object[0xaa]) & 0x1c) && TEST_FIELD_BIT(((s_object_flags12c_ab *)(object + 0x12c))->flag3))
-            return true;
     }
     return result;
 }

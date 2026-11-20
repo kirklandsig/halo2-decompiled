@@ -9,6 +9,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "projection_storage.h"
 #include "normalize3d.h"
+#include "vector_products.h"
 #include "unknown_11cc90.h"
 
 /* limits read by the range checks below (zero in the retail image; set at run time) */
@@ -311,6 +312,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // named copy decision 142, existing placement cross for left 68 or with explicit deadline cursor 125.
 // NOT kept: the explicit cursor restores the traversal at 1413 bytes, and the other forms leave the
 // deadline and group homes exchanged.
+// Complete forward/up/both snapshots for correction on the inferred walk
+// 232/234/408, on the explicit walk 204/190/399. Both snapshots used during
+// validation and correction 433/434. NOT kept: all shorten away from retail
+// and regress. The two-vector forms also change the matched caller. The
+// inferred deadline and signed group ordinal still exchange stack slots.
 // Direct j/k/i up reconstruction 137, or with independent deadline 133.
 // Six named cross products 126, or with independent deadline 125.
 // Independent deadline with captured up components 134, one orientation
@@ -909,6 +915,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // both count field bindings 129, reserved volume name 129, named projection result 129.
 // NOT kept: the cluster array changes extent, and the projected slot changes the prologue.
 // The other forms leave the opening register exchange.
+// With a shared capacity exit, skip linked entries, refused projections,
+// or both before advancing at the test 125 each. Direct count increment,
+// postincrement as reservation, and positive capacity arm 125 each. Signed
+// successor with either increment form 122. NOT kept: the best gains seven
+// at 431 bytes. Cluster creation still precedes the volume loop.
 // Shared capacity result with a loop break 125, with joined cluster address 139,
 // early camera key 118, camera base 125, common plane store 118, signed
 // successor 122, widened volume slot 125, paired group cells 125,
@@ -1227,6 +1238,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // with a component local 354; scalar squares with a diagonal loop 403; both loops 365;
 // complement loop before or after cosine 370/373; three loops 382; in-place diagonal loop 406.
 // NOT kept: the new forms all change the 0x50 frame and raise the score.
+// One-argument vertical field arctangent 351. Explicit denominators at
+// horizontal/vertical/both scaled angles 373/373/368. With the one-argument
+// vertical field these score 377/377/372. Naming that vertical ratio on
+// the combined form gives 339. NOT kept: seven points, with unity in XMM2
+// at entry against XMM5 and FLD1 replacing the vertical unity memory load.
 // Unity still starts in XMM3. Forward-field pointer through deviation or only the rotations 355/357.
 // Up-field pointer at first rotation or entry 362/361. Both pointers early or up bound later 360/360.
 // Both field references or both pointers at first rotation 361/359. NOT kept: all regress, and six
@@ -1711,6 +1727,10 @@ struct s_pool_view_172840
 // Selected exclusion mask 217, traversability conditional 207, one state read with independent limit results 249.
 // Chained narrow publication then signed index 134, signed index first 86, with independent limits 243/241.
 // NOT kept: the 86 form shrinks to 860 B and retains the displaced flag homes. Independent limits recover 868 B at 241.
+// Pool/queue/projection failures as bytes 134/134/134, all unsigned or signed failure bytes 134/134,
+// widened cluster producers and independent result tests 145, signed ring entry with original result
+// tests 134, shared pool entry base 266. The widened form restores the result and flag byte homes, then
+// grows to 873 bytes and changes the cluster select.
 // Separate queue result store 146; separate pool result store 150; return the failure complement
 // 241. With independent failure stores and signed list index: signed current cluster 145;
 // select the cluster field before its signed read 128; published entry reference 145;
@@ -1722,6 +1742,11 @@ struct s_pool_view_172840
 // branch before increment 90.
 // NOT kept: The 55 forms recover the flag homes at 870 bytes, with a different cluster store schedule and five-
 // byte sentinel load.
+// With independent failure stores and a signed destination: reserved index for success,
+// rollback or both 142/135/255. Reserved address for success or both 149/260.
+// Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
+// NOT kept: the 55 form grows to 870 bytes with the key scheduled late and a five-byte
+// sentinel. Keeping the reservation index for rollback removes a retail pointer reload.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -2006,11 +2031,29 @@ struct s_camera_reference_171830
 // long displacement ordinal gains one at retail length. The long and byte sample counts, quotient and
 // remainder, and pair comparison recover the 0xb8 frame while preserving the EBX point ingress and moving
 // away from retail length.
+// File-local resolver 270, byte ray mode 306, separate ordinal/axis and ray mode names 270, center and
+// winning sample names 270, near/far bracket names 270, split plane sides with zero on the left 270,
+// short sample polarity 301, side cross before the center query 309. The 0xbc frame and point in EBX
+// remain.
 // Word axis index at selection 270; wrapping displacement cursor 288; integral sample sign 268;
 // separate refinement outcomes 291; named fraction difference 270; winning fraction at center trace
 // return 270; post-tested refinement count 273; clear the narrow-ray mask bit 270.
 // NOT kept: integral sign gains two at retail length. The point still occupies EBX and the
 // 0xbc frame still has the sample spill.
+// Shared inline zone test 267, with the location scoped 267. Typed cluster and zone tables with
+// unsigned snapshot 270, signed snapshot 270 or global bases at use 270. Signed cluster field at each
+// test 261. Winning fraction declared beside center fraction 270, refinement fraction read at each use
+// 284.
+// NOT kept: repeated zone reads shorten to 1215 bytes and keep the 0xbc frame and EBX point. Retail
+// loads the cluster byte once. The shared zone test gains three and shortens to 1213 bytes.
+// The point still arrives in EBX and the sample ordinal spills in the 0xbc frame.
+// Sample and midpoint ray declaration order 270/270, sample endpoint scope 270,
+// midpoint collision workspace first 270, point query home name 270, sample and
+// midpoint ray home names 270/270, midpoint hit fraction home name 270.
+// Stand-in image 270 -> 155 (dist 46): offsets[0] is copied before the cross product (this gives retail's register
+// convention: forward ECX, up EAX, point on the stack), the cluster is a pointer whose reference byte is re-read,
+// the blend is chosen in each arm, loop 2 builds its target point first, and the centre goes through a negated
+// scaled forward vector. Left: the float zero's load placement and the depth * forward->i operand order.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2023,14 +2066,14 @@ void function_171830(point3f const *point, vector3f const *forward,
 	{
 		byte *geometry = (byte *)g_4e0348;
 		s_camera_cluster_171830 *clusters = *(s_camera_cluster_171830 **)(geometry + 0xa0);
-		byte reference = clusters[location.cluster_index].reference;
-		if (reference != 0xff)
+		s_camera_cluster_171830 *cluster = &clusters[location.cluster_index];
+		if (cluster->reference != 0xff)
 		{
 			s_camera_reference_171830 *entry =
-				&(*(s_camera_reference_171830 **)(geometry + 0x68))[reference & 0x7f];
+				&(*(s_camera_reference_171830 **)(geometry + 0x68))[cluster->reference & 0x7f];
 			if (entry->index != NONE)
 			{
-				if (!(reference & 0x80) ||
+				if (!(cluster->reference & 0x80) ||
 					entry->plane.k * point->z + entry->plane.j * point->y + point->x * entry->plane.i - entry->plane.d < 0.0f)
 					narrow = true;
 			}
@@ -2043,21 +2086,25 @@ void function_171830(point3f const *point, vector3f const *forward,
 	   a vehicle's camera marker into the vehicle, and the follow camera was
 	   pulled in to the hood */
 	real depth = *distance + offset;
+	vector3f back;
+	back.i = 0.0f - depth * forward->i;
+	back.j = 0.0f - depth * forward->j;
+	back.k = 0.0f - depth * forward->k;
 	point3f center;
-	center.x = point->x + (0.0f - depth * forward->i);
-	center.y = point->y + (0.0f - depth * forward->j);
-	center.z = point->z + (0.0f - depth * forward->k);
+	center.x = point->x + back.i;
+	center.y = point->y + back.j;
+	center.z = point->z + back.k;
 	function_171d00(point, &center, &center_fraction, narrow);
 	vector3f const *best_offset = NULL;
 	real best_sign;
-	vector3f side;
-	side.i = up->j * forward->k - forward->j * up->k;
-	side.j = forward->i * up->k - up->i * forward->k;
-	side.k = forward->j * up->i - up->j * forward->i;
 	real best_fraction = center_fraction;
 	real radius = *distance * 0.174f;
 	vector3f offsets[2];
 	offsets[0] = *up;
+	vector3f side;
+	side.i = up->j * forward->k - forward->j * up->k;
+	side.j = forward->i * up->k - up->i * forward->k;
+	side.k = forward->j * up->i - up->j * forward->i;
 	offsets[0].i *= radius;
 	offsets[0].j *= radius;
 	offsets[0].k *= radius;
@@ -2099,12 +2146,14 @@ void function_171830(point3f const *point, vector3f const *forward,
 			bool hit = false;
 			s_segment_collision collision;
 			collision.material = NONE;
+			point3f target;
+			target.x = best_offset->i * middle + center.x;
+			target.y = best_offset->j * middle + center.y;
+			target.z = best_offset->k * middle + center.z;
 			long flags = 0x808c0f;
 			if (narrow) flags = 0x808c0d;
 			vector3f direction;
-			direction.i = best_offset->i * middle + center.x - point->x;
-			direction.j = best_offset->j * middle + center.y - point->y;
-			direction.k = best_offset->k * middle + center.z - point->z;
+			vector3d_from_points3d(point, &target, &direction);
 			real found_fraction;
 			if (function_1697c0(flags, point, &direction, NONE, NONE,
 				(s_collision_result_1697c0 *)&collision))
@@ -2126,9 +2175,11 @@ void function_171830(point3f const *point, vector3f const *forward,
 			direction = lower;
 		else
 			direction = (real)(upper >= 0.0f);
-		real blend = upper_fraction > lower_fraction ? lower : upper;
-		if (direction == 0.0f)
-			blend = 0.0f - blend;
+		real blend;
+		if (direction != 0.0f)
+			blend = upper_fraction > lower_fraction ? lower : upper;
+		else
+			blend = 0.0f - (upper_fraction > lower_fraction ? lower : upper);
 		fraction = (1.0f - blend) * best_fraction + blend * center_fraction;
 	}
 	else
@@ -2144,15 +2195,14 @@ double g_45e4c8 = -3.4028234663852886e+38;
 /* the point (or vector) scaled by the matrix's scale, when it is not 1, then carried by its axes */
 PRIVATE __forceinline void follow_matrix_point(transform4x3f const *matrix, point3f *point)
 {
-	real z = point->z;
-	real y = point->y;
 	real x = point->x;
-	real scale = matrix->scale;
-	if (scale != 1.0f)
+	real y = point->y;
+	real z = point->z;
+	if (matrix->scale != 1.0f)
 	{
-		x = scale * x;
-		y = scale * y;
-		z = scale * z;
+		x = matrix->scale * x;
+		y = matrix->scale * y;
+		z = matrix->scale * z;
 	}
 	point->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
 	point->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
@@ -2267,16 +2317,32 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // 388. Addressed view for the cluster lookup only 357. NOT kept: The view reference restores the opening EBX
 // state base and delays the first difference to +0x2c, but shortens the body by 96 bytes and raises the
 // score. The indexed state reference ties. The other receiver scopes regress.
+// Declared array element 295, follow-distance and output-axis names 295, separate input/output axis
+// names 295, view receiver for projection 384, view receiver for clamps and location 371, same receiver
+// through final depth 461, follow-distance clamp macro 295, sampled field-of-view clamp 434. The state
+// stays in EBP and the collision point in EBX.
 // Up copy between derivative stores 295; aspect after both scales 295; typed player read 295;
 // user-cluster table read once 295; scoped location publication 295; derivative vector setter 295;
 // view receiver for calibration and derivative transform 313; shared clamp destination 370.
 // The collision point stays in EBX. Keeping the view receiver shortens the body and sharing
 // the clamp destination lengthens it.
+// Published location receiver 295, combined changed-cluster guard 325, nested user-cluster bounds 295,
+// typed cluster count 295. Direct input-up address 363, later normalization-through-copy forward
+// pointer 379, output-axis pointers at normalization 446, adjusted projection depth snapshot 295.
+// The point still uses EBX with the 0x20 frame.
+// The sweep point in EBX still displaces the state to EBP. Separate sweep distance from explicit
+// bounds, a conditional, a mutable request copy or an upper selection 385/385/391/385.
+// With separate distance, const starting point view 385, starting point assignment 385, distance
+// before all coordinate clamps 420 or before the vertical clamp 413. Each stays at 2142 bytes.
+// Stand-in image 295 -> 6: products with the matrix field first (follow_matrix_point's locals in x, y, z order, the
+// vector calls passing &state->matrix), the translation added with vector3f_add, both struct copies written relative
+// to state, and function_171830's retail convention (see its note). Left: one operand order at 0x17161b, pop esi.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
 	s_motion_channels_1701f0 *state = (s_motion_channels_1701f0 *)g_4e9bd4 + user_index;
 	point3f position = *(point3f *)&state->current[0];
+	transform4x3f const *matrix = &state->matrix;
 	real distance;
 	if (0.0f > state->current[8]) distance = 0.0f;
 	else if (state->current[8] > 3.4028235e38f) distance = 3.4028235e38f;
@@ -2309,27 +2375,25 @@ void __stdcall function_170fd0(long user_index)
 	position.y = state->current[3] * direction.j - state->current[4] * direction.i + position.y;
 	position.z = state->current[5] + position.z;
 	vector3f *view_forward = &state->view.forward;
-	vector3f *view_up = &state->view.up;
-	*view_forward = *forward;
-	*view_up = *up;
+	state->view.forward = *(vector3f *)&state->current[10];
 	state->view.unknown14.i = 0.0f - state->first_derivative[0];
 	state->view.unknown14.j = 0.0f - state->first_derivative[1];
 	state->view.unknown14.k = 0.0f - state->first_derivative[2];
+	vector3f *view_up = &state->view.up;
+	state->view.up = *(vector3f *)&state->current[13];
 	state->view.field_of_view = field_of_view;
-	state->view.aspect = 1.33333337f;
 	state->view.scale_x = state->current[6];
 	state->view.scale_y = state->current[7];
+	state->view.aspect = 1.33333337f;
 	function_171d90(&state->view);
 	if (state->follow_matrix)
 	{
-		transform4x3f const *matrix = &state->matrix;
 		follow_matrix_point(matrix, &position);
-		follow_matrix_vector(matrix, &state->view.unknown14);
-		follow_matrix_vector(matrix, view_forward);
-		follow_matrix_vector(matrix, view_up);
-		state->view.unknown14.i += state->translation.i;
-		state->view.unknown14.j += state->translation.j;
-		state->view.unknown14.k += state->translation.k;
+		follow_matrix_vector(&state->matrix, &state->view.unknown14);
+		follow_matrix_vector(&state->matrix, view_forward);
+		follow_matrix_vector(&state->matrix, view_up);
+		vector3f const *translation = &state->translation;
+		vector3f_add(&state->view.unknown14, translation, &state->view.unknown14);
 	}
 	if (!(state->flags & 0x10) && distance != 0.0f)
 		function_171830(&position, view_forward, view_up, &distance, 0.02f);

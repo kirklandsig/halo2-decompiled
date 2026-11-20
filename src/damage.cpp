@@ -552,6 +552,8 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 	return result;
 }
 
+/* the material word is stored through a pointer to its field: as a plain field store the NONE
+   constant is scheduled ahead of that store (retail stores it first, then loads the bsp index) */
 // score 3 (was 3): with the callers' image, only the schedule differs: ours puts `or eax, -1` right after the
 // load of g_47d8e0 (before that value's store at +0x7c); retail stores it first, loads g_4686c4, then does the
 // `or`. Tried: unknown22 assigned right after unknown7c (11), g_4686c4 in a local (3, same code), both globals
@@ -618,6 +620,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // g_47d8e0 load above the definition store): unknown18 ahead of the +0x22 copy 5; unknown14 after the location stores 7; the
 // owner's team stored first 6; unknown18 after the three 1.0f stores 7; the +0x22 copy ahead of the leaf and cluster stores 6. Each
 // moves only the stores (they follow source order); `or eax, -1` stays right after the g_47d8e0 load.
+// M3 lane 3 r273 (fast, and a one-object link-time screen that reproduces this listing): every NONE written `-1` 3; the word
+// fields as `(short)NONE` 3; screen: `(short)0xffff`, `0xffff`, `-1` for the word fields, `0xffffffff` for the owner object, the
+// memset size as 0x88, the +0x7c copy as a word copy, with a cast or through a `long` local, the definition index through a
+// local, 3 each (same code). Diagnostic bodies with stores removed: one NONE store before the +0x22 copy and at most one after
+// it gives retail's order; two before it, or three in all, gives ours, so the `or` takes the slot because eight stores use it.
 // M3 lane 11 r126 (fast with 0xd8cb0): the owner copied from the default-owner pointer (`*g_467420`) 49 (121 B); the owner,
 // unknown14 and the leaf/cluster NONEs as two chained assignments in store order 3 (same code); the material global read into
 // a short local ahead of the memset 28 (105 B, the bsp load then hoists above the definition store); the same local read
@@ -628,7 +635,8 @@ void function_d6660(s_type_1e6529 *data, long definition_index)
 {
 	memset(data, 0, sizeof(*data));
 	data->definition_index = definition_index;
-	data->unknown7c = g_47d8e0;
+	short *material = &data->unknown7c;
+	*material = g_47d8e0;
 	data->owner.object_index = NONE;
 	data->owner.player_index = NONE;
 	data->owner.team = NONE;
@@ -2419,6 +2427,20 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // place 190 (873 B), inside an (info, accumulator) guard 190, inside an (info, entry) guard 225 (878 B); the 23 form with
 // the flags test through the field as well 178 (860 B). So with the entry read in the info test's block, the flip follows
 // `info` being 0xdb090's register argument, not the use count.
+// M3 lane 3 r273 (fast; a one-object link-time screen of this file reproduces every state here in about a second): the flip is
+// a link-time convention change, `definition` kept in EBX through the guard and passed in EAX; a compile-only first pass
+// reloads `definition` in every form, so only a link-time screen shows it. `long region_index;` declared first 3 (same code);
+// an inline guard taking only the accumulator and reading info through `accumulator->field_4_2` 226 (857 B: the field read is
+// not merged with the entry-time load); round 114's guard called with both fields 227; on round 114's guard K = 0..20 dead
+// locals stay flipped (screen). Re-measured: round 98's guard 2, the entry read ahead of the ternary with round 114's guard 9.
+// HELD (needs the owner's OK; r273 build/r273/held-d8cb0.patch): `function_d5d20(object_index, false) * body_vitality` in the
+// vitality test, with 0xd5d20's definition made `inline` so the link expands it here with its constant `false`, in place of
+// that function's body written out; 3 -> 3 with the same bytes, 0xd5d20 and 0xd5d80 still match, 0xd82e0 stays 203 (fast and
+// plain); 0xd5d20 is a contributor's function, so its definition is left as it is. Screen lead (about 620 combinations): with round
+// 114's guard (any parameter order or return form) only the notify written through a named handle (or two fresh lookups)
+// with `object` declared ahead of `info` keeps retail's guard allocation (aligned 35: the guard, its hoisted load and the
+// flags address all retail's; left the prologue's load order, the notify's pointer in ECX and the scratch rotation after it);
+// with the notify through `damaged` (retail's code there) every combination flips.
 // M3 lane 11 r126 (fast with 0xd6660): on the entry local read in the guard's block (228, the flip), the variables renamed
 // (object as damage_object; info and entry renamed as diagnostics) 228 each, so symbol names do not decide the flip; the
 // entry read ahead of the 0xd5d20 call 218 (874 B); between that call and the inverse ternary 10 (re-measured: every
@@ -2426,6 +2448,13 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // New: the plain entry local in the guard's block with 0xdb090's first argument as `accumulator->field_4_2` 24 (871 B;
 // the load and every register are then retail's; left the [edx + eax + 4] address and that argument, `mov ecx,
 // [edi + 4]` for retail's `mov ecx, ebx`), so on the plain body too the flip follows `info` being that call's argument.
+// M3 lane 13 r125 (fast with 0xd6660 and the five matched callees): no `info` local, the field read at each of its uses
+// 248 (851 B), the same with the entry read into a local ahead of the guard 248; `info` declared in the damage block just
+// above the guard 158 (860 B: its read then follows the two calls); the index defaulted to NONE and set under `if (entry)`
+// inside `if (info)` 3, and defaulted to NONE, set under `if (info && entry)` with the range test after it 3 (both the same
+// code: the NONE path is threaded straight to the join, the entry load stays below the je). After 0xd6660 matched by
+// storing through a pointer to its field: the entry read through a two-use pointer to the accumulator field, declared at
+// the guard 3 or at the top 3, and `info` read through a pointer to its field 3 (all three the same code).
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2691,6 +2720,10 @@ struct s_unit_event
 // MiniMax I (11-16): no new form, no lower score (513): the first difference is the schedule of the argument loads - retail pushes
 // the saved registers first and reads the arguments from the shifted slots, this build reads one argument
 // before the pushes.
+// MiniMax G (11-19): no new form tried this round, no lower score (420): the region index, the datum offset and the
+// permutation are still in a cycle against retail's EBP/EBX/ESI, the region index is still read through its own
+// address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
+// where retail reads it after.
 // score 420 (was 513): Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
 // permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
 // the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.
@@ -3848,27 +3881,6 @@ enum
 	k_maximum_damage_parents = 16
 };
 
-/* the damage info of an object's model (as 0xd5b60), which retail writes out inline in 0xd7b80's loop */
-PRIVATE inline s_damage_info *damage_object_model_info(long object_index, s_damage_object const *object)
-{
-	s_damage_info *info = NULL;
-
-	if (object_index != NONE)
-	{
-		byte *definition = g_4e3b44[object->tag_index & 0xffff].bytes;
-		long model_index = *(long *)(definition + 0x38);
-
-		if (model_index != NONE)
-		{
-			byte *model = g_4e3b44[model_index & 0xffff].bytes;
-
-			if (*(long *)(model + 0x60) > 0)
-				info = *(s_damage_info **)(model + 0x64);
-		}
-	}
-	return info;
-}
-
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
 // score 470 (was 661): close to retail's size (1907 bytes, retail 1880); what is left is the frame layout
@@ -3883,21 +3895,23 @@ PRIVATE inline s_damage_info *damage_object_model_info(long object_index, s_dama
 // 544 tree (but it shares the tag lookup, which retail recomputes); i/object/info hoisted to function scope
 // 544; body/shield declared in the other order 544; the damage-info walk taking the datum index instead of
 // the object 666.
+// Stand-in image 552 -> 371: the parent walk is a while loop, so the function_d5b60 call behind it stays a call as in
+// retail (0xd7c2b; a for loop there raises the site's static frequency and LTCG inlines it); the pass loop keeps the
+// current object index in a local and calls function_d5b60, which LTCG inlines there.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
 {
-	s_damage_effect_definition *definition =
-		(s_damage_effect_definition *)(g_4e3b44[data->definition_index & 0xffff].bytes + 0x10);
 	bool shield_children = true;
 	bool body_children = true;
+	s_damage_effect_definition *definition =
+		(s_damage_effect_definition *)(g_4e3b44[data->definition_index & 0xffff].bytes + 0x10);
 	bool friendly = false;
 	real amount = function_d9b60(data, (byte const *)definition, object_index, &friendly);
 	real damage = amount;
 	long objects[k_maximum_damage_parents];
 	long object_count = 0;
 	bool reported = false;
-	s_damage_info *local_9127e6 = (s_damage_info *)function_d5b60(object_index);
 
 	if ((data->flags & 5) || (data->flags & 0x200))
 	{
@@ -3906,10 +3920,15 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 	}
 	else
 	{
-		for (long index = object_index; index != NONE; index = DAMAGE_OBJECT(index)->parent_object_index)
+		long index = object_index;
+		while (index != NONE)
+		{
 			objects[object_count++] = index;
+			index = DAMAGE_OBJECT(index)->parent_object_index;
+		}
 	}
 
+	s_damage_info *local_9127e6 = (s_damage_info *)function_d5b60(object_index);
 	if (local_9127e6)
 	{
 		body_children = !((local_9127e6->flags >> 4) & 1);
@@ -3918,8 +3937,9 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 
 	for (long i = object_count - 1; i >= 0; i--)
 	{
-		s_damage_object *object = DAMAGE_OBJECT(objects[i]);
-		s_damage_info *info = damage_object_model_info(objects[i], object);
+		long current_index = objects[i];
+		s_damage_object *object = DAMAGE_OBJECT(current_index);
+		s_damage_info *info = (s_damage_info *)function_d5b60(current_index);
 		byte *object_definition = g_4e3b44[object->tag_index & 0xffff].bytes;
 		s_damage_region_accumulator accumulator;
 
@@ -3945,18 +3965,18 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 			accumulator.field_4_2 = info;
 			if (node_index >= 0 && node_index < info->unknownc4)
 				accumulator.unknown08 = *(short *)(info->unknownc8 + node_index * 0x10);
-			if (objects[i] == object_index)
+			if (current_index == object_index)
 			{
-				if (region_entry_index != NONE)
+				if (region_entry_index == NONE)
+				{
+					data->unknown7c = info->unknownce;
+				}
+				else
 				{
 					byte *entry = *(byte **)(model + 0x5c) + region_entry_index * 0x14;
 
 					data->unknown7c = *(short *)(entry + 0x10);
 					accumulator.unknown00 = entry;
-				}
-				else
-				{
-					data->unknown7c = info->unknownce;
 				}
 			}
 			else if (data->flags & 1)
@@ -3991,8 +4011,8 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 
 			if (damage > 0.0f || data->in_unknown_radius || data->unknown58 > 0.0f)
 			{
-				s_damage_object *current = DAMAGE_OBJECT(objects[i]);
 				bool kill = (data->flags >> 2) & 1;
+				s_damage_object *current = DAMAGE_OBJECT(current_index);
 
 				current->owner_object_index = data->owner.object_index;
 				current->owner_player_index = data->owner.player_index;
@@ -4006,10 +4026,10 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 				}
 
 				if (i == 0 && object->parent_object_index == NONE && !(data->flags & 0x200) &&
-					definition->side_effect == 2 && function_cc010(objects[i], &data->direction) &&
+					definition->side_effect == 2 && function_cc010(current_index, &data->direction) &&
 					!TEST_FIELD_BIT(object->damage_flags.unknown7))
 				{
-					s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[objects[i] & 0xffff];
+					s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[current_index & 0xffff];
 
 					if (!((1 << datum->type) & 3) || function_1df560(data->owner.team, datum->object->team))
 					{
@@ -4019,15 +4039,15 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 				}
 
 				if (i + 1 < object_count)
-					accumulator.damage = function_dc230(objects[i], objects[i + 1], data) * damage;
+					accumulator.damage = function_dc230(current_index, objects[i + 1], data) * damage;
 
 				if (!(info->flags & 0x80) && !TEST_FIELD_BIT(object->damage_flags.unknown14) && kill &&
 					!TEST_FIELD_BIT(object->damage_flags.body_depleted))
 				{
 					object->shield_vitality = 0.0f;
-					function_d6a70(objects[i]);
+					function_d6a70(current_index);
 					object->body_vitality = 0.0f;
-					function_d6800(objects[i], &data->owner, !((data->flags >> 7) & 1), false);
+					function_d6800(current_index, &data->owner, !((data->flags >> 7) & 1), false);
 					accumulator.flags |= 0x41;
 				}
 
@@ -4035,21 +4055,21 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 					object->maximum_shield_vitality > 0.0f)
 				{
 					if (i == 0 || shield_children && (info->flags & 1))
-						function_d9110(objects[i], definition, data, &accumulator);
+						function_d9110(current_index, definition, data, &accumulator);
 				}
 
 				if (g_4e6948->mode != 4 &&
-					((1 << ((s_damage_object_datum *)g_4e0300->data)[objects[i] & 0xffff].type) & 2) && i == 0 &&
+					((1 << ((s_damage_object_datum *)g_4e0300->data)[current_index & 0xffff].type) & 2) && i == 0 &&
 					accumulator.field_4_2 && (!(data->flags & 0x1000) || (info->flags & 0x100)))
 				{
-					function_db210(data, objects[i]);
+					function_db210(data, current_index);
 				}
 
 				if (!(definition->flags & 0x40) && (i == 0 || body_children && (accumulator.field_4_2->flags & 2)))
 				{
 					if ((data->flags & 1) || (data->flags & 0x100))
-						function_d82e0(data, accumulator.damage, objects[i], &accumulator);
-					function_d8cb0(objects[i], definition, data, &accumulator);
+						function_d82e0(data, accumulator.damage, current_index, &accumulator);
+					function_d8cb0(current_index, definition, data, &accumulator);
 				}
 
 				if (!reported &&
@@ -4064,7 +4084,7 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 					{
 						data->unknown78 = PIN(object->body_vitality, 0.0f, 1.0f);
 					}
-					function_b7360(objects[i]);
+					function_b7360(current_index);
 					reported = true;
 				}
 			}
@@ -4075,12 +4095,12 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 
 		s_damage_report report;
 
-		function_d9490(data, &accumulator, &report, objects[i]);
+		function_d9490(data, &accumulator, &report, current_index);
 		if (g_4e6948->mode == 4)
 			report.flags &= ~1;
-		function_d9640(&report, objects[i]);
+		function_d9640(&report, current_index);
 		if ((accumulator.flags & 4) && g_4e6948->mode != 4)
-			function_b8540(objects[i]);
+			function_b8540(current_index);
 		damage = accumulator.damage;
 	}
 }
@@ -4602,6 +4622,7 @@ bool function_138880();
 // second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
 // MiniMax I (11-15): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
 // MiniMax S (11-15): no new form, no lower score (194): the 0xda110 permutation still arrives in EAX where retail keeps its convention, the flag pairs still merge into one word test and the second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
+// MiniMax E (11-20): no new form, no lower score (194): the flag pairs still merge into one word test at three sites, the 0xda110 permutation still arrives where retail keeps its own convention, and the second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
 // score 194 (was 229): 229 before m3 lane 7 r155's 0xda110 convention; 400, 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three
@@ -5257,9 +5278,11 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
-// score 178 (was 146): The section bound and primary mask exchange registers, and the bitmap zero precedes node-scan admission.
+// score 167 (was 167): The section bound and primary mask exchange registers, which rotates the later scratch registers;
+// the node loop's head then sits one byte early and loses retail's alignment pad, and the search lacks retail's NONE start.
+// Earlier header 178 (was 146): the bitmap zero preceded node-scan admission.
 // m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
-// score 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
+// Earlier header 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // the scan) gives 166 with retail's EAX/EDI section-loop registers; a one-use local is match-only, so not kept. With it
@@ -5529,6 +5552,15 @@ struct s_damage_object_creation
 // Scoped const damage record, immutable count, int scan, early/late bound names,
 // secondary-test continue and body increment 178 each. Both section decisions before the writes 200.
 // NOT kept: the decision locals move the datum-offset spill and spill the section count.
+// m3 lane 11 r130 (fast with 0xdb810/0xdbb40, control 167 at 795 B): the cause of the shift from the node loop on is one
+// byte: the inlined node-state lookup loads g_4e0300 into EAX (the 5-byte form) where retail uses EDX, so the node loop's
+// head needs 8 pad bytes and VC drops the 7-byte pad retail has; the rotation starts in the section loop (ours count EDI,
+// mask EDX, bit EAX; retail EAX, EDI, EDX). Codex F429's one-use `dword` first-mask local re-measured on this body 112
+// (811 B: retail's section registers, the node-loop pad and the piece loop's jmp/pad layout; left the zero-extension ahead
+// of the count guard, the search's NONE start and the later rotation; one-use local, not kept). On it: the for/break search
+// 247 (777 B, frame 0x13dc, the mask takes ESI); with the root node named 247; with a piece-loop copy of the mask 232
+// (792 B, object_index loses ESI to the node count); the while search then `if (i < node_count) first_node = i;` 215
+// (810 B). On this body: the section tests written mask first 167 (same code).
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

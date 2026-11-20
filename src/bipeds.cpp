@@ -1846,19 +1846,25 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // reference 640. NOT kept: The saved animation offset reproduces the unity-load schedule and moves the first
 // difference to +0x4e at retail length, but scores 645. The byte animation receiver ties. The other flag and
 // velocity receivers regress.
+// Whole tag reference 175, movement section reference 193, unit section reference 193, both section
+// references 193, animation names record 175, names record with a shared turning key 193, component
+// acquired after the state observations 193, rigid body acquired before the position query 683. NOT kept:
+// The unit load and definition, animation flags and point homes remain displaced.
+// score 158 in a full build with stand-in SDK headers (was 175): `state` is declared after `animation_flags` and
+// `speed_scale` after `position` (declaration order only).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
 	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	s_havok_component *component = havok_component_get(biped->havok_component_index);
-	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	word const *animation_flags = (word const *)((byte *)biped + biped->unknown33e);
+	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	bool airborne = *(long *)(state + 0x7c) == 0xe0000c2;
-	real speed_scale = 1.0f;
 	long material = 0;
 	real boost;
 	point3f position;
+	real speed_scale = 1.0f;
 	vector3f velocity;
 	vector3f facing;
 
@@ -3101,7 +3107,7 @@ void function_e0c70(long arg_159e6d)
 		long settled;
 
 		if (rigid_body != NONE &&
-			function_1d5120(component, rigid_body, 9, (long)definition->biped.physics.pill_shapes.address + 0x20, g_510c54->rate * 0.15f,
+			component->function_1d5120(rigid_body, 9, (long)definition->biped.physics.pill_shapes.address + 0x20, g_510c54->rate * 0.15f,
 				&settled, steps))
 		{
 			biped->unknown3aa = settled;
@@ -4358,6 +4364,13 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // rotation helper 613 (2729 B), through rotate_direction 613 (re-measured); `bool special` from the direct compare 596
 // (2722 B); the planar turn with both rows named 635 (2743 B); the animation value read once into a named two-use local
 // at the top 658 (2740 B).
+// Multiway physics dispatch after the original result test 669/669; result initialized from entry mode
+// 651/651; ragdoll case sets false 656/657; split walking exclusions 632; animation guard in the
+// ordinary case 656. Reduced control 598. The full result byte and flight threshold homes remain.
+// Turn side produced in both facing branches, direct/complete arms/branch-local sines 641/641/650.
+// Named sine only in planar/wall 641/632. False-default in both, wall only, or planar only 644/665/665.
+// NOT kept: all regress against reduced 598 with the 0x7c frame. Full 537 (0x78) retained. The changed
+// byte and flight-threshold slot still differ. Original body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4621,7 +4634,8 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // vector3f_scale 319, both 366; the if/else select alone 369 (1943 B). K = 1..16 dead longs on 308: 316 (K 1-2), 314
 // (K 11-12), else 308.
 // MiniMax I (11-19): no new form, no lower score (336): the first difference is still a stack home (this build's matrix receiver at [esp+0x60] against retail's [esp+0x50]), and the origin and the matrix shift together with it although the 0x12c frame and the body length agree.
-// score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// Earlier 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// Earlier score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
 // MiniMax A (11-18): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and the matrix, placed-point and property homes shift together although the 0x12c frame agrees.
 // MiniMax E (11-17): no new form, no lower score (336): this build's locals still sit 0x10 higher in the frame than retail's (the matrix receiver at esp+0x44 against retail's esp+0x40, the argument block at esp+0x60 against esp+0x50), so the home sequence and the jumps after it land elsewhere.
 // MiniMax I (11-16): no new form, no lower score (336): the first difference is a stack home (this build's vector workspace at
@@ -4984,6 +4998,15 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // Direct matrix member for body, parent or both 336/336/336, matrix declared at its query 336, at direct query 336.
 // Origin pointer scoped to the setter 336, result declared after the setter 337, aggregate origin with direct queries 368.
 // NOT kept: direct queries leave the slots in place. The aggregate copy moves the divergence earlier and shortens the body.
+// Transform names in body/anchor/turn and rigid-body/support/alignment order 308/308; contact outputs
+// and pointer roles 308; projected pivots and target roles 308; displacement and rotation roles 308;
+// properties and pivot bounds 308; position and projected-pivot roles 308; all contact workspace roles
+// 308.
+// Placed-coordinate results held through the stores and displacement 308, with the setter 308.
+// Displacement before point stores 306, per-coordinate calculation before the setter 306,
+// point constructed only on the ray path 320, per-coordinate publication 308, displacement before
+// the setter 306, aggregate after displacement 306. NOT kept: the 306 forms grow to 1946 bytes,
+// a two-point gain, and do not move the matrix or origin slots. Original body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -6029,6 +6052,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Cosine at forward 201, cosine at up 248, cosine at both 248, sine at forward 175, sine at up 152, sine at both
 // 155, both trig arguments at forward 231, both trig arguments at both 250. NOT kept: Every call-site trigonometric
 // form grows the body and moves the first difference earlier. The lowest of these trials is 152 at 898 bytes.
+// Common object getter 79; copy up before forward normalization 176; both
+// rotations before forward normalization 270; up rotation first 273. Reversed
+// side and final crosses with ordinary/staged final output 98/91. Both rotations
+// before normalization with staged side 270; initialize the up copy before
+// normalization 176. The first complement spill and final forward load remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -7797,6 +7825,11 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
    (NONE for none): the one inside the grab window (function_e63b0), and when
    both are, the one with the smaller yaw when both are close, else the
    nearer; NONE when neither is */
+// score 55 (was 112) in a full build with stand-in SDK headers: the result lives in object_index's argument home
+// and the candidate in a copy (`candidate_index`), with no result local, as retail keeps them. Left: retail keeps
+// the pool pointer in esi and reloads [esi+0x44] for the weapon lookup of the inlined 0x1012c0 where ours caches
+// the data pointer, and retail calls 0xe63b0 on the candidate first.
+// Before:
 // score 112 (was 112): walked against retail block by block, no behaviour difference: the weapon slot byte at
 // +0x212 and the +0x218 table (0xe5be1-0xe5bfd), the flag inlined from function_cbd50 and function_1012c0
 // (definition byte +0x12f, bit 0; 0xe5c04-0xe5c34), previous == NONE at 0xe5c37, both function_e5d50 calls (object
@@ -7815,17 +7848,19 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index)
 {
 	s_biped *unit = BIPED_GET(unit_index);
-	long result = NONE;
+	long candidate_index = object_index;
 	bool flag = function_1012c0(function_cbd50(unit_index, *((char *)unit + 0x212)));
+
+	object_index = NONE;
 
 	if (previous_index == NONE)
 	{
 		vector3f measurement;
 
-		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&measurement);
+		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&measurement);
 		if (function_e63b0(&measurement, flag))
 		{
-			result = object_index;
+			object_index = candidate_index;
 		}
 	}
 	else
@@ -7835,7 +7870,7 @@ long __stdcall function_e5bc0(long unit_index, long object_index, long previous_
 		bool candidate_inside;
 		bool current_inside;
 
-		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&candidate);
+		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&candidate);
 		function_e5d50(unit_index, previous_index, &unit->unknown168, (point3f *)&current);
 		candidate_inside = function_e63b0(&candidate, flag);
 		current_inside = function_e63b0(&current, flag);
@@ -7850,31 +7885,31 @@ long __stdcall function_e5bc0(long unit_index, long object_index, long previous_
 
 					if (candidate_yaw < current_yaw)
 					{
-						result = object_index;
+						object_index = candidate_index;
 					}
 					else
 					{
-						result = previous_index;
+						object_index = previous_index;
 					}
 				}
 				else if (candidate.k < current.k)
 				{
-					result = object_index;
+					object_index = candidate_index;
 				}
 				else
 				{
-					result = previous_index;
+					object_index = previous_index;
 				}
 			}
 			else
 			{
-				result = object_index;
+				object_index = candidate_index;
 			}
 		}
 		else if (current_inside)
 		{
-			result = previous_index;
+			object_index = previous_index;
 		}
 	}
-	return result;
+	return object_index;
 }
