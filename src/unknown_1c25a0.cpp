@@ -1582,6 +1582,10 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // `_mm_store_ss` into the quad's components: MATCH here, 0x1d1160 43 (204 B: a `lea` per store into the stack quad);
 // read with `_mm_load_ss(...).m128_f32[0]` into set(): MATCH here, 0x1d1160 83 (231 B). Retail stores the components
 // with plain `movss [esp+..]`, so its write mark on the velocity is not a store intrinsic on a local. BLOCKED-BY 0x1d1160.
+// M3 lane 7 r194 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300, all MATCH; control 1): the index reload moved from
+// the impulse arm to the end of every iteration 150 (862 B); the mirror typed `volatile int` 1 and `volatile dword` 1 (same
+// code); `local_0 = i + 1;` ahead of `++i` 11 (870 B); no mirror with a plain saved copy of the index around the impulse
+// call 126 (858 B, the copy folds away). Still BLOCKED-BY 0x1d1160 (its file was on this round's avoid list).
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
