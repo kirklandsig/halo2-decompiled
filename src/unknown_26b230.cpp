@@ -2186,6 +2186,11 @@ void function_269250(long clump_index, long actor_index);
 // keeps the pool in memory, the selection in EDI and compares with comiss; the in-arm compare (126) and the selection taken
 // from the walk's datum index (128) each score worse alone, and the two walk helpers are shared with four matched functions,
 // so they stay as they are.
+// MiniMax G (11-19): no gain (89, body unchanged). Re-measured the in-arm compare (the score taken and compared only when
+// the team matches, with the selection stored before the best): it does reproduce retail's x87 compare and retail's exact
+// length (480 B), but the score rises to 126 because retail hoists the walk's pool into EBX and keeps the selection in memory
+// while ours keeps the pool in ECX (reloaded from its slot at each step) and the selection in EDI, so the block order around
+// the compare shifts and the paired listing diverges from the compare onwards.
 // DH406: Typed actor for latch 87; with clump latch, team-scoped score, or both 335/126/339; iterator-
 // result actor latch and the same three variants 87/335/126/339. NOT kept: the actor latch ties, the
 // team-scoped score restores x87 at higher cost, and the clump latch emits two copies of the step.
@@ -2211,6 +2216,9 @@ void function_269250(long clump_index, long actor_index);
 // the created arm assigning the loop's `group` instead of declaring a second one 89; the clump walk record declared at
 // function scope 89; the selection and best score declared at function scope and set at the top of each actor 89; the
 // score set by an if/else (`else score = best;`) 128 (484 B).
+// The pool still spills and the selected handle is kept in EDI. Handle lookup at each win 141/141,
+// at the join from the clump pool 131/136, from the guarded walk pool 125/130, and by restoring the
+// iterator's current datum 130/114 (common/team-local comparison). The opening body is restored.
 // M3 lane 1 r125 (fast; this body 89 fast, 87 plain): on the in-arm compare with the selection from
 // `groups.iterator.datum_index` (128, 480 B): the selection stored before the best 128; plus the best declared before the
 // selection 128; plus the post-loop test written `actor->unknown07c != selected` 128 (all the same code); a file-local walk
@@ -2242,6 +2250,11 @@ void function_269250(long clump_index, long actor_index);
 // it none and gives the walk's pool EBX, reloading it after the bit scan takes EBX for the mask; this build gives that
 // one spilled register to the selection (EDI, reloaded at the loop top) and nothing to the pool. The matched 0x268840
 // has the same walk with pool EBX, index EDI, datum EBP; here retail leaves the index in memory as well.
+// The pool still spills through the scan and the selected handle uses EDI.
+// Actor index at the selected arm or its transfer test 87/87.
+// Created-arm index before creation, after creation or after its success test 87/87/87.
+// Separate indices at transfer/success, arm entry, or transfer/after creation 87/87/87.
+// NOT kept: All capture lifetimes tie and retain the SSE score comparison and pool reloads.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

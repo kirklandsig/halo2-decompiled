@@ -845,6 +845,11 @@ void function_245400(s_source_245400 const *source, long index,
 // XMM4-6 against XMM3-5); that with the edge as three member differences 211 at 783 B [97/53]; the side bits through
 // a forceinline helper taking the long code by const reference 232 (752 B, folds as the shifted sides); select,
 // member differences and `(local_2 >> 15) & 1` sides together 237 (746 B). Body unchanged.
+// Secondary index before material table 163; secondary record retained for extension 211;
+// both codes reread by index 210; table after widened codes 204, with bound vertex records 204;
+// late table with shifted orientation bits 199; per-plane decoding 200, with equal-code guard 200.
+// NOT kept: the one-point gain leaves frame 0x24 and the side homes displaced. The late
+// table with signed sides changes the caller. Retail still keeps the source in ESI.
 // M3 lane 1 r126 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH each time; control 164, aligned 134): on the single
 // condition, sides as `(code & 0x8000) != 0` 232 (752 B) and as `((dword)code >> 15) & 1` 232 (752 B: the two tests merge
 // into one jump). The edge rotation through an inline vector form of this file's point transform (copy the components,
@@ -860,6 +865,10 @@ void function_245400(s_source_245400 const *source, long index,
 // 214; cross dot running sum 227; cross dot named products 213.
 // NOT kept: reversing the material comparison ties. The scoped plane forms regress and disturb the caller in the
 // reduced image. The alternatives keep the frame short of 0x2c.
+// Round 436. Plane side by raw-code/ordinal inequality, lower bound, equality and bias
+// 207/207/207/212; late table with inequality or lower bound 209/209; with native short
+// inputs 207, and late-table complementary order 209. NOT kept: these leave the frame
+// at 0x24 or 0x28; the late table also disturbs 0x245aa0. Original body restored.
 // Separate scaled rotation input with an explicit unscaled arm 247, Separate rotation input with the unit-scale
 // arm first 251, Conditional rotation input from the scale helper result 240, Rotation input changes only on the
 // scaled branch 239, Explicit scaled input with one matrix scale observation 247, Conditional helper result with
@@ -897,6 +906,12 @@ void function_245400(s_source_245400 const *source, long index,
 // two or three lines with period 8 and nothing else; steps 2 to 5 in main's statement order 236 (751 B). Diagnostics,
 // reverted: the function returning the second vertex pointer at the facing failure 214 (the pointer then takes ESI, the
 // homes appear); the dot written edge-first on main's body 207 at 783 B (aligned 157: retail's in-place products).
+// The 0x24 frame still lacks the separate code and side homes. The matrix already loads at its test.
+// Edge/cross names in both orders 164/164; edge/point names in both orders 164/164;
+// endpoint and plane receiver names in both orders 164/164; all geometry names 164;
+// all geometry names with the plane table after the edge 166. NOT kept: the late
+// table still reserves 0x24 and raises caller 0x245aa0 to 3.
+// MiniMax C (11-19): no gain (164, baseline; body restored). Retail reads the second surface index (field_0a) before the first (field_08) and homes the two decoded material codes as dwords at +0x14 and +0x18 with the first index at +0x1c, which is the 0x2c frame; ours has two homes and the 0x24 frame. Reading the two material codes in retail order measures 163, a gain of one and under the bar.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

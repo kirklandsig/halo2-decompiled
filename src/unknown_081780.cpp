@@ -69,8 +69,8 @@ struct s_stream_window_storage
 
 static __forceinline void stream_window_construct(s_stream_window_storage *window, long capacity)
 {
-	window->size = capacity;
-	window->head = window->count = 0;
+	window->head = 0;
+	window->count = 0;
 	window->valid = false;
 	window->capacity = capacity;
 }
@@ -83,7 +83,9 @@ public:
 
 	__forceinline c_reliable_stream_storage()
 	{
+		m_acknowledgement_window.size = 0x80;
 		stream_window_construct(&m_acknowledgement_window, 0x80);
+		m_message_window.size = 0x80;
 		stream_window_construct(&m_message_window, 0x80);
 		m_active = false;
 		m_owner = 0;
@@ -105,7 +107,9 @@ public:
 
 	__forceinline c_unreliable_stream_storage()
 	{
+		m_message_window.size = 0x200;
 		stream_window_construct(&m_message_window, 0x200);
+		m_fragment_window.size = 0x200;
 		stream_window_construct(&m_fragment_window, 0x200);
 		m_active = false;
 		m_owner = 0;
@@ -291,6 +295,9 @@ static __forceinline void network_memory_track(void *block, long size)
 	g_4d87c4 += size;
 }
 
+// score 1 in a full build with stand-in SDK headers (was 22): each stream window's size is stored by the storage
+// constructor ahead of the shared window construct (which then stores head, count, valid and capacity), and the
+// connection count is assigned to both globals in one statement in each arm.
 // @retail 0x81780
 // score 22 (was 74): in the first allocation the size and the block take edi
 // and esi the other way round, and the two stream constructors store each
@@ -302,18 +309,16 @@ void __stdcall function_81780(long stage)
 
 	if (stage <= 1)
 	{
-		g_4d87d0 = 15;
+		g_4d87e0 = g_4d87d0 = 15;
 		g_4d87f4 = g_4cf760;
 		g_4d87e4 = 1;
 	}
 	else
 	{
 		g_4d87f4 = g_4cf764;
-		g_4d87d0 = 1;
+		g_4d87e0 = g_4d87d0 = 1;
 		g_4d87e4 = 0;
 	}
-	g_4d87e0 = g_4d87d0;
-
 	size = g_4d87d0 * sizeof(s_link_connection);
 	g_4d87d4 = physical_memory_malloc_fixed(size, PAGE_READWRITE);
 	network_memory_track(g_4d87d4, size);

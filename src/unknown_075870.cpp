@@ -740,65 +740,8 @@ void network_samples_reset(s_network_samples *samples);
 
 static inline void observer_statistics_reset(s_network_statistics *statistics);
 
-// score 170 (was 170): The stack-held observer loads before the stride multiply here. Retail saves EDI and loads it afterward.
-// Lead not kept (AC579, register steering without a match): one observer snapshot local read for the
-// dispatch plus a reload of the volatile parameter before the registration loop reaches 134 at retail length (plain
-// confirmed); the first save and register allocation still differ (observer in ESI where retail uses EDI).
-// At 170, the logic walk found no difference (state/close-reason dispatch, flag handling, the reset stores and
-// the -1.0f at 0x45dbcc all agree). What differs is the calling convention: retail takes channel_index in ebx and observer
-// on the stack, loaded once into edi (0x76ffc); without the volatile ours takes observer in ebx and channel_index on the
-// stack (score 177, and the callers 0x78880 0x76a40 0x75da0 stop matching), with it observer is reloaded from the stack at
-// each use (+12 bytes). Tried: dropping volatile (177), swapping the parameters (177), reading the volatile argument once
-// into a local (198), the same through *(T volatile *)&argument (198), channel->x spelt observer->channels[channel_index].x
-// (208), owner pointers walked in both loops (177 / 208). The volatile stays only because the callers need the convention.
-// Permuter (25 min on r663): 38 below its own baseline, only with network_observer_channel_forget_address's last two
-// arguments swapped (a behaviour change); not kept.
-// Dispatch and two explicit owner cursors 135; dispatch-only snapshot 239; invalidation cursor only 226;
-// active-channel snapshot through invalidation 211; indexed invalidation and registration cursor 133.
-// Native state or connection-index local 170; conditional connection pointer 293; two separately named snapshots 134.
-// Unqualified argument with owner cursors 176 (caller losses); entry connection initialization 137;
-// one observer snapshot with a registration reload and indexed owners 134 (retail length, plain confirmed).
-// m3 lane 5 r202 (fast with 0x75da0, 0x76a40, 0x785d0, 0x78880, 0x78900, 0x784a0, 0x77330; control 170, aligned 55):
-// the plain parameter read once through its address into an observer local 245 (833 B, ret 8: both parameters on the
-// stack, observer EBX, channel index EDI; callers lost), with the parameters swapped 245, with the address read only at
-// the channel lookup 245, with a second read through the address before the registration loop 245 (propagated);
-// `(void)&observer;` without the volatile 177 (aligned 36: observer passed in EBX, channel index on the stack); the
-// plain parameters swapped 177 (same code). Lead re-measured, not kept (a copy plus parameter reads): the volatile
-// parameter copied once for the dispatch and the invalidation loop and read again in the registration loop 124 at
-// 821 B with every caller matching (masked 13): left the copy in ESI and the zero/loop counter in EDI (retail EDI/ESI),
-// the load ahead of `push edi` and the 64-bit subtraction's high dword in ESI. On it: the copy assigned again before the
-// registration loop 134, the connection local declared at the top 126, one owner index for both loops 124; one or two
-// set-state calls given the parameter (fewer copy uses) 176/221 without flipping ESI/EDI.
-// Round 140 (m3 lane 9, fast with 0x78880, 0x76a40, 0x75da0, 0x785d0): with the volatile dropped (177) ours homes the
-// index in EDI and observer in EBX, retail homes observer in EDI (split by the owner cursor and the memset, then re-read
-// from its stack home) and the index in EBX. Volatile dropped and observer read once through `s_network_observer *const
-// *` to itself 245 (833 B, both arguments on the stack, callers lost); the same with the parameters (index, observer)
-// everywhere 245; the two owner-notify loops as one two-caller inline helper 333 (705 B), the same without the volatile
-// 359 (701 B); volatile dropped with one function-scope loop counter 177 (callers lost).
-// M3 lane 3 r269 (fast with 0x75da0, 0x76a40, 0x785d0, 0x78880, 0x78900, 0x784a0, 0x77330): with the volatile dropped
-// (177) the body is retail's instruction for instruction with the parameters' roles mirrored (observer EBX, index from
-// the stack into EDI and pushed from its home in both loops), so only LTCG's register choice differs. Volatile dropped
-// with 1..7 unreferenced locals 177 each (no tie); with owner cursors in both loops 177 (same code); with the index
-// `dword` 177 (same code); the snapshot-copy lead re-measured 124 (821 B, callers matched) and with 1..7 unreferenced
-// locals, plain or initialised, 124 each (copy ESI / zero EDI never flip).
-// A compile-only /Gd listing of the plain body (no volatile) reproduces the cause: the first pass keeps the observer in a
-// callee-saved register and re-reads the index from its home in both loops (retail's LTCG result implies the reverse).
-// Screened there (index still re-read in every one): parameters swapped, `observer->channels + channel_index`, an owner
-// cursor in loop 1, in loop 2, in both, an element pointer per loop, the state in a local, the connection declared first
-// (with and without both cursors), the sequence named before loop 2 (one loop's re-read left).
-// M3 lane 5 r206 (fast with the seven callers/callees): a compile-only /Gd pass predicts the split: the parameter
-// that pass reloads from its home stays on the stack, one held in a register throughout is passed in one. Without the
-// volatile it reloads channel_index in both owner loops (observer EBP, channel_index EDI), so observer is passed in EBX;
-// retail needs the reverse (observer evicted, as by the rep stosd's EDI, and reloaded before the second loop). Forms,
-// volatile dropped: an owner cursor in both loops 177 (loops then retail's, the two parameters' roles swapped; callers
-// lost); in the first loop only 177; an owners-array local in the state block 222 (neither parameter reloaded there, so
-// both arrive in registers, callers lost). Volatile kept: that owners local 236; an owners local at the top 238.
-// Entry invalidation ordinal or one ordinal for both passes 243/243, inactive-channel guard 170, missing connection first 296.
-// Fixed-count post-test owner loops 321, owner skip guard 170, established-state break 170.
-// Shared retry increment 213, close-reason fallthrough 170.
-// NOT kept: entry ordinals add a spill. The post-test loops and shared increment change matched callers.
 // @retail 0x76ff0
-void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
+void network_observer_update_connection(s_network_observer *observer, long channel_index)
 {
 	s_network_observer_channel *channel = &observer->channels[channel_index];
 	if (channel->state)
@@ -892,9 +835,8 @@ void network_observer_update_connection(s_network_observer *volatile observer, l
 			*(long *)((byte *)channel + 0x470) = observer_time_get() - 1000;
 			long refresh = g_485ac0;
 			if (refresh <= 0) refresh = 60;
-			union { s_connection_counter parts; __int64 value; } counter;
-			counter.parts = g_4e6398;
-			*(__int64 *)((byte *)channel + 0x478) = counter.value - refresh;
+			/* the counter read as one 64-bit value (unknown_12b070.cpp's view of it) */
+			*(__int64 *)((byte *)channel + 0x478) = *(__int64 *)&g_4e6398 - refresh;
 			channel->flags |= 6;
 			channel->unknown10 = connection->local_sequence;
 			for (long i = 0; i < MAXIMUM_OBSERVER_OWNERS; i++)

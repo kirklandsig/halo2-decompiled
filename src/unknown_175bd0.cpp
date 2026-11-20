@@ -417,7 +417,7 @@ long __stdcall function_177040(long particle_system_index, long effect_index);
 void __stdcall function_174990(real dt);
 void function_156b60(s_effect_beam *beam, real progress, transform4x3f const *matrix);
 void function_248c60(s_particle_location_datum *particle_location, s_particle_system_datum *particle_system, transform4x3f const *matrix, bool field_b4);
-void function_17e670(s_effect_source *source, point3f const *point, long tag_index, vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2);
+void function_17e670(point3f const *point, s_effect_source *source, long tag_index, vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2);
 void __stdcall function_b7880(long object_index, long node_index, point3f const *point, vector3f const *impulse, vector3f const *angular_impulse); /* stubs/damage.cpp */
 
 /* unknown_0259d0's inline matrix and vector helpers */
@@ -1883,6 +1883,19 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 }
 
 // score 128 (was 128): The frame is still 0x40 versus retail 0x44, and the early color-A spill and ESI system are missing.
+// MiniMax B (11-19): no new form, no lower score (128): retail spills colour A to frame+0x00 and keeps the particle
+// system in ESI and colour B in EDI across the two indirect calls, while this build re-reads colour A from the effect
+// and keeps the particle system in EDI; measured and reverted: colour A in a named local assigned after the
+// set_location call gives retail's frame (0x44) and retail's 552 bytes with colour A at frame+0x00, but the particle
+// system stays in EDI and the score is 130; the same with colour B a local as well spills colour B (all four
+// callee-saved registers are taken) and measures 186; the location index in a local of its own measures 135; the two
+// virtual calls written as the arguments of the colour call give retail's 552 bytes but measure 146; a permuter run
+// over the body from the colour A form was stopped at its time limit with no result. The sibling 0x177040's own shape
+// tried here too, and all of it measures worse: colour A and colour B read early as locals with the multiplied query
+// written as the colour call's argument 178 (572 bytes); colour A alone with that argument 146; colour B alone read
+// early as a local 187 (572 bytes); each of them takes a stack home for a colour and leaves the particle system in
+// EDI, where retail keeps it in ESI and takes colour B into EDI, so the frame grows past retail's 0x44. A permuter run
+// over the committed body (540 s, 67 tries) found nothing below the baseline - its best was the baseline.
 // MiniMax A (11-18): no new form, no lower score (128): the frame is 0x40 against retail's 0x44 and the first colour lacks its retail spill (colour A in a named local measures 188 at 572 bytes, and the multiplied argument passed straight from the query measures 135), so the body stands.
 // MiniMax I (11-15): no new form kept: reading colour B into a local ahead of the spawn stores measures 187 (was 128), so the body stands.
 // MiniMax G (11-18): no new form, no lower score (128): the frame is still 0x40 against retail's 0x44 with colour A packed
@@ -3242,6 +3255,14 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // velocity, location) re-measured 40 (the arm is a byte shorter, so ten branch targets move); the record renamed `sound` 23;
 // the node index passed straight in the call 23 (r102's form again); the compressed field bound as a `dword &` with retail's
 // order 40; the velocity field bound as a `vector3f &` with retail's order 40.
+// M3 lane 16 r146 (fast with 0x189060, 0x1895f0, 0xc0350, 0x177d10, 0x17a380, all matched each time): baseline 23 at 1328
+// bytes, first difference +0x24f (0x17e670's register arguments, contributor); 0x189060's file is on this round's avoid
+// list, so the held order could not be applied. Detached record with a compress local: declared first, retail's record
+// order 29; after the point copy, velocity, then the compressed store, location 14 (round 117's form: point copy and
+// store order left; a one-use local, not kept without a match); after the point copy, location, compressed store,
+// velocity 37; retail's order re-measured 40. Body unchanged.
+// Coordinator 11-19: 0x17e670 is now declared (point, source, ...) for 0x23aad0's match; that gives 21 here (first
+// difference at +0x472), so the call's register pair no longer blocks this function.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3284,7 +3305,7 @@ void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_
 			vector3f velocity;
 
 			function_177d10(effect, &random->seed, forward, &direction, &velocity, part->velocity_lower, part->velocity_upper, part->velocity_cone_angle, part->a_scales, part->b_scales);
-			function_17e670(g_510c78, point, part->tag_index, &velocity, function_259d0(&random->seed, __FILE__, __LINE__, part->radius_lower, part->radius_upper), 0, NONE, 0);
+			function_17e670(point, g_510c78, part->tag_index, &velocity, function_259d0(&random->seed, __FILE__, __LINE__, part->radius_lower, part->radius_upper), 0, NONE, 0);
 		}
 		break;
 	}
@@ -3929,6 +3950,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // the address-taken home no longer holds the tint byte: frame 0x50, 352 B, system EDI and the definition in EBX); with the
 // system index read so 128 [19]. A compile-only first pass loads each index once in both mode forms, so it does not
 // predict this convention (a one-object link with the colour and type callees' objects gives EAX/ECX for both forms).
+// MiniMax B (11-19): no new form, no lower score (93): retail keeps the particle system in ESI and next_index in EDI and
+// re-reads definition->location_mode from the spilled definition on each call, where this build keeps them in EDI/ESI and
+// caches the mode in a word local; the live-mode form gives retail's frame 0x54 but measures 108, with the swapped
+// declarations 119 and 114, and the two parameters declared at the definition and the 0x176f60 call measure 93 on the
+// cached-mode body, 120 with the per-call mode; a permuter run (64 tries, 306 s) found nothing below the 92 differing
+// instructions of the baseline.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

@@ -428,42 +428,10 @@ s_surface_description *function_192e60(long index);
 long function_193300(s_surface_description *variant);
 long network_session_get_maximum_players(c_class_58d20 *session);
 
-// score 33 (was 33): frame agrees; final helper calls reverse and retain the variant in EBP,
-// adding four bytes. Earlier named call result and reversed comparison both 33.
-// Complete final result 35; admitted comparison result 33; outer default-return guard 11
-// (139/134 bytes, NOT kept: extent moves away); direct final return 57; success-default
-// result 39; explicit failed-comparison arm 33; sole-exit admission goto 33; nested
-// index/pointer result 33. Unchanged reduced image matches; full image remains the judge.
-// P405 fast: inner readiness/type, peer readiness, final validity/index/pointer early rejections, direct success return, comparison rejection; scores 1, 2, 60, 68, 69, 69, 43, 68.
-// Inner readiness rejection is 34 at 138 bytes in the plain check (fast 1/134): final calls still reverse.
-// NOT kept: full score regresses; original body and all callee interfaces restored.
-// P432: source observation, peer/primary field reads, primary type admission, joined peer gate,
-// decision through admissions, validity result, pointer-first validity;
-// plain scores 42/71/33/49/71/118/41/33.
-// NOT kept: no permitted confirmed gain; original executable body restored.
-// P434: signed-byte/byte/short/word/long/dword result storage 50/50/56/56/54/54;
-// every failed admission producing the bool/full-width result 58/54. NOT kept: all regress;
-// original bool body restored. Unchanged reduced match is a context difference (full 33).
-// P462: Complementary rejection bool/char/signed-char/byte/short/word/long/dword
-// outcomes 58/58/58/58/63/63/61/61. NOT kept: each regresses and grows beyond
-// native extent; original success-only result and complete call graph restored.
-// Round 240 (m3 lane 3, plain checks): the comparison reversed 33 (the full image still calls 0x5b180 first, jl in
-// place of jg, so the order of the two pure calls is the compiler's, not the source's); the comparison nested in its
-// own if under the index/variant test, reversed, 33; the 0x193300 result named there 33; the peer re-read from
-// `source->other_game` for the 0x5b180 call 71; the variant tested before the index 33.
-// P464: Incoming readiness observation bool/byte/short/long, actual byte/char/signed-char
-// readiness field and read-only source field all reproduce reduced 0. Byte field plain 33
-// at 138 bytes; all file/provider controls unchanged. NOT kept: reduced-only equality;
-// original field declarations, observations and complete body restored.
-// P466: Index/variant/peer/primary identities and their independent read-only
-// bindings: eight reduced 0s; primary binding plain 33 at 138/134 bytes.
-// NOT kept: unchanged full-image helper order and EBP save; original body restored.
-// P547: Uninitialized native primary/peer, index and variant declaration phases, seven subsets
-// then complete reverse declaration order: eight reduced 0s; full reverse-order graph 33/138.
-// NOT kept: reversed pure helpers and extra EBP remain in the full image; original body restored.
-// P608: Both capacities initialized/assigned, upper/lower clamp tests, strict-or-equal/
-// complement predicate, direct result/explicit arms: fast 0/0/17/17/17/0/33/33.
-// Initialized capacity pair plain 33 at 138/134. NOT kept: full helper order and extra EBP remain.
+// Matches in the full image since 0x64d70, which also calls 0x5b180, moved out of src/unknown_054fe0.cpp into
+// src/unknown_064d70.cpp; this body is unchanged. Before the move the full image called 0x5b180 ahead of 0x193300 and
+// kept the variant in EBP (33, 138 bytes against 134) while the reduced image matched. The move alone does it: a full
+// check with 0x64d70's old body and flags in the new file already matched this function.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1656,6 +1624,18 @@ static __forceinline void query_restore_pending()
         }
 }
 
+// MiniMax B (11-19): no new form, no lower score (703): retail's users loop takes the user record itself as its cursor
+// (the valid flag at +0, the identity at +1, the slot count at +0x10 and the 0x90 property bytes at +0x14) and keeps it
+// at +0x18, while ours takes the property bytes as the cursor and keeps it at +0x14, so the flag, the identity and the
+// count are all read 0x14, 0x13 and 4 bytes before the cursor. Retail's logon test is a dec against 1 where ours is a
+// cmp, and retail sets the two bases and jumps to the loop head while ours runs the loop in place.
+// MiniMax G (11-19): no new form, no lower score (703), body unchanged. Binding the user record in a local so that the
+// cursor is the record base (the valid flag at +0, the XUID at +1, the unknown10 at +0x10 and the properties at +0x14, as
+// retail has them) instead of the XUID pointer with negative displacements scores 777 (the compiler then keeps the base in
+// EBX and the frame grows), so it is not kept. The first difference is still at the top: retail tests the logon status with
+// `dec eax` (the status minus one, then a jump) where we compare against the immediate 1, and retail keeps the users base at
+// [esp+0x18] where we keep it at [esp+0x14]; the users loop's own body (the valid test, the XUID copy, the properties copy
+// and the slot test) matches retail's shape apart from those homes.
 // score 703 (was 703): The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
 // Previous 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
