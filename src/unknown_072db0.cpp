@@ -2174,6 +2174,11 @@ bool function_1900a5(long index);
 // check 0x193560 (another function's body, restored at once): its rating loop through a char pointer, and its result through a
 // reference to a local (the callee then summarised as writing) 746 / 784, and each loses most of the hopper check's matched
 // callers in the reduced image, so retail's reloads around 0x1934f0 are not that callee's write summary.
+// M3 lane 13 r129 (fast with 0x73a10, 0x749b0, 0x75790, 0x1900a5 and 0x192e60, all matched; control 703): `team`
+// declared before `valid` 703; the identity copied with memcpy 703; the group's values pointer declared after the two
+// bools 703; the owner compare and copy through `&values->owner` 703; the reset arm's test as `valid == false` 703 (all
+// the same code); the properties copied ahead of the identity re-measured 705. The slot test's cmovne still needs the
+// SSE file flag (a build-flag question). All restored.
 // MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
 // @retail 0x74aa0
 void function_074aa0(void)
