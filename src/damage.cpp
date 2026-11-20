@@ -1126,6 +1126,10 @@ PRIVATE inline long damage_object_root(long object_index)
 // value (the flags' bit 2 as 3 or 0) is still computed after the four argument pushes where retail computes it before them,
 // and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
 // MiniMax R (11-17): no new form, no lower score (206): retail's frame is 0x1b4 against this build's 0x1a4 (the objects array sits at the same address in both), retail keeps the player index in a stack slot and the data pointer in edi where this build keeps the index in edi and spills the data, and the inlined index helper lives in include/data_array.h, which is not this lane's.
+// MiniMax E (11-19): no new form, no lower score (206, baseline): the frame is still 0x1a4 against retail's 0x1b4 and
+// the first stack home is still [esp+0x1c] where retail keeps it at [esp+0x10]; the call to the object lookup that
+// another file holds as a noinline copy is still the one that costs the match (206 -> 80 needs that copy), so the
+// blocker stands.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -2970,6 +2974,11 @@ struct s_unit_event
 // (192/192, masked 36/36: each scan then reads its array after the count guard as retail, the score does not move); the
 // player block pointer named ahead of the controller read 420 (same code), with both scans 420; one to eight unused
 // locals 420 each (not a symbol-count tie).
+// m3 lane 12 r156 (fast with 0xdaaa0, 0xdae60, 0xdb760, 0xd5de0, 0xd9d60; control 420): the permutation pointer read
+// through a const reference bound to it 420 (same code); the object pointer the same way 420; the region pointer the
+// same way 420; the region index read once through its address into a const local used for the permutation lookup,
+// 0xa8360 and the region-state update (no region pointer) 558 (1852 B, the dead add gone); the region array named
+// before the region pointer 425. The cycle (region index EBX, permutation pointer EBP) does not move.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3378,6 +3387,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // same order or score worse), so the difference is the compiler's block layout; a permuter run over this body
 // (30 tries, 305 s) found nothing below the five.
 // MiniMax R (11-17): no new form, no lower score (5): the two cold returns still hold this build's order (the stack reload before the xmm1 copy) where retail copies xmm1 first, and the source order of the two returns does not decide it (an early return, an explicit else and a merged tail all keep the order or score worse).
+// MiniMax E (11-19): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload
+// before the xmm1 copy) where retail copies xmm1 first; four return shapes were measured (an early return for the
+// not-enemy case 16, the enemy test with an else return 5, a merged single return 24, and the outer return in an else
+// of the team test 5 with byte-identical code), so the order of the two returns does not decide the block order.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -4657,6 +4670,14 @@ bool function_138880();
 // 16-bit variable, where 0xd5d20 and 0xd5d80 sign-extend a short one.
 // MiniMax R (11-17): no new form, no lower score (194): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
 // MiniMax S (11-17): no new form, no lower score (194): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
+// m3 lane 12 r156 (fast with 0x192950, 0xd9f70, 0xd8b50, 0xda110 and 0x138880; control 194, aligned 196): the body
+// recharge test as nested ifs (maximum, then rate) 194, the body block's guard as nested ifs 194, both 194 (same code
+// each: the second 0x138880 stays inlined, so its site frequency does not follow `&&` against nested tests); one `word
+// team` local at the top of the info block for both recharge calls 354, the same as `short` 354. Diagnostics (one-use
+// locals and a score-picked arm order, reverted): one-use `word team` locals at both calls 159 at 2172 B but aligned 194
+// (the positional gain is the length); the clamp arm first with bool locals for both 0xd8b50 flags 244 at 2170 B; those
+// three together 165 at 2170 B (aligned 165; left: the `& 7` copy order, a zero's register, and the body block from the
+// inlined 0x138880 on).
 // @retail 0xd5de0
 bool function_d5de0(long object_index)
 {
@@ -5281,6 +5302,7 @@ struct s_damage_object_creation
 // score 167 (was 167): The section bound and primary mask exchange registers, which rotates the later scratch registers;
 // the node loop's head then sits one byte early and loses retail's alignment pad, and the search lacks retail's NONE start.
 // Earlier header 178 (was 146): the bitmap zero preceded node-scan admission.
+// MiniMax B (11-20): no new form, no lower score (167): the section loop still rotates retail's EAX bound, EDI first mask and EDX bit into our EDI bound, EDX mask and EAX bit, and that one rotation is the whole 13-byte difference - the pad it drops misaligns every later row; this round's spellings of the section loop (condition reversed, or-assign, both, nested tests, operands reversed, cast dropped, store as or) all measure 167, the bound read straight from info->unknowne0 179 and as an int local 179, an int count local 167, a short count local 171, the piece search as a for/break and as a while/break 223 each, a two-use dword mask local (the loop test and the later guard) 173, and the one-use mask local that gives 166 with retail's EAX/EDI registers is match-only; what still differs is that rotation, the zero store ahead of the states call, the piece search entry and the last two lookups' scratch registers.
 // m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
 // Earlier header 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of

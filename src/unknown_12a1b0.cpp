@@ -336,6 +336,7 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax G (11-20): no new form, no lower score (93): 0x11bed0 is still expanded here where retail calls it out of line.
 // MiniMax H (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
 // MiniMax I (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its definition is in src/unknown_11bed0.cpp, which this lane may not edit; the one form that reaches 0 needs the redundant `&& data && sound` pointer tests, which the redundant-test ruling rejects. BLOCKED-BY 0x11bed0.
 // MiniMax E (11-15): no new form, no lower score (93): the call boundaries agree with retail's except that 0x11bed0 is expanded here where retail calls it out of line, and its definition is in src/unknown_11bed0.cpp. BLOCKED-BY 0x11bed0.
@@ -2129,6 +2130,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax S (11-16): score 305 (was 305): no new form; the length 1923 agrees but this build's frame is 0x11c
 // against retail's 0x128, so every stack slot is off by 0xc from the first store on; the missing locals are what
 // keep the two apart.
+// Earlier 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier at 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // score 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
@@ -2564,6 +2566,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // use, where this build hoists the datum index and the track index into EBX/EBP and holds &sounds[i] in EDI with the
 // active bit spilled; the listed forms (the count in each for-init, the pitch bounds pointer, the per-use reads) all
 // measure 305 or more.
+// Track/datum/track-tag/class/pitch-bound references 305 each; activity bit updated with the mask 305;
+// current range handle carried through both admissions 412; full request with both track bindings 305.
+// NOT kept: the range handle reduces the frame to 0x11c and loses the indexed loads. Complete request
+// storage reaches 0x12c while retail reserves 0x128.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3240,6 +3246,7 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
+// MiniMax B (11-20): no new form, no lower score (597): the entry still hoists the flags byte into BL where retail masks it with 1 after the pushes (reading `alternate` inside the definition guard reproduces retail's entry but measures 615) and the track loop still holds the index in ESI, the track definition in EBP and NONE in EBX where retail keeps the index in memory, the track in EBP and NONE in ESI; what still differs is that entry mask, the creation arm's compare order and the track loop's register roles.
 // score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record

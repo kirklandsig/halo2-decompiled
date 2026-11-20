@@ -226,7 +226,17 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): r200 unchanged (r123 too). The entry saves EBP instead of EBX for the byte result. The header flag and object reads
+// MiniMax H (11-19, round 95): no new form, no lower score (8): the store between the header test and the object read is what
+// makes this build reload the table's data pointer, and every copy of the index is forwarded, so the two lookups keep sharing
+// one address. The second store removed measures 71 with the word cast and 77 without it (the header test loses its EBP window
+// and the frame changes), the object read through the entity's field or through a copy of the index measures 42 each, and the
+// flagged arm joined into a retest of the stored index measures 55; all restored.
+// MiniMax H (11-20): the false result is now set before the creation call and the true one at the attachment, the entity's index is
+// stored again between the header test and the object read, and the object read's index is a word, so the two addresses are formed
+// independently; the second store is one more than retail makes and the object read masks with movzx where retail masks with and.
+// score 8 (was 49): the entry saves EBX for the byte result as retail does, and the header flag and object addresses are now formed
+// independently with the table's data pointer reloaded. The object read masks its index with movzx where retail masks with and,
+// and the index is stored once more than retail stores it.
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
@@ -957,19 +967,34 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // long result 64 (185 B: its test is not folded), on R 77 (folded before CSE, lookups shared); the object read through the
 // table's data field viewed as a typed header pointer (`*(s_object_header **)(table + 0x44)`) on the long result 49 and on
 // R 77 (same code each: the two data loads are merged whatever their type); R with a char or byte result 70 / 70 (176 B).
+// M3 lane 5 r215 (fast with 0xa5a00, 0xa5b10, 0xa5b40, 0xa5b80, 0x108e10 and 0xbb780, matched throughout; control 49; R =
+// retail's shape, bool false first, true after the attach, NONE stored in the flagged else, re-measured 77 at 160 B). On R:
+// the whole header address returned by value from an inline accessor as a one-pointer aggregate, at both lookups, at the
+// flag test only, at the object read only 77 / 77 / 77 (a computed address in an aggregate is scalar-replaced, unlike the
+// copied data pointer of the 42 form); the flag test through an inline predicate that tests NONE again inside, with a
+// result variable set under the flag test 77, with three returns 77; through an inline header getter that returns NULL
+// for NONE 77; through an inline "usable" predicate (false for NONE, false when flagged) 77; that predicate as the only
+// test with the flagged clear under `else if (object_index != NONE)` 77; the object read through the NULL-for-NONE header
+// getter 77 (all nine the same code as R: every join is folded before CSE). Diagnostics, reverted at once (an unreachable
+// call given a parameter's address keeps it memory-homed; not a keepable form): `f` so 78; `e` and `f` so 53 with the first
+// difference at +0x3a (retail's whole head, `xor bl, bl` and both arguments re-read from their slots; what is left is only
+// the one shared lookup, 16 bytes short); `entity` so 70; all five so 65. So the uncached `e`/`f` and the BL result follow
+// from the two separate lookups, not the other way round.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
     long value = d;
+    bool result = false;
     long object_index = v29(b, info, &value, e, f);
     entity->object_index = object_index;
-    long result = object_index != NONE;
-    if (result)
+    if (object_index != NONE)
     {
         if (!(OBJECT_HEADER(object_index)->flags & 0x10))
         {
-            OBJECT(object_index)->field_d4 = entity->field0;
+            entity->object_index = object_index;
+            OBJECT((word)object_index)->field_d4 = entity->field0;
             object_dispatch_attach_simulation_entity(object_index);
+            result = true;
             if (value)
             {
                 v31(entity->object_index, value, e, f);
@@ -978,7 +1003,6 @@ bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info
         else
         {
             entity->object_index = NONE;
-            result = false;
         }
     }
     return result;

@@ -51,7 +51,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has [esp+0x38]..[esp+0x48], and site 1's
 // planar normalize still keeps its own zero path where retail uses the shared 0x2b400 helper in
 // include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
-// score 286 (was 286): r209 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// score 286 (was 286): r275 unchanged. The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
 // magnitude), the working-vector group is still a rotation off retail's, site 1's planar normalize still keeps its own
@@ -542,6 +542,11 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // numerator kept 286 (aligned 233, masked 186: not kept, no gain); the blend rows with the history product written
 // first 286 (same code); the complement computed ahead of the sums 316. Retail loads the history weight once into
 // XMM6 ahead of the sums and re-reads the field for the complement; site 1 is still BLOCKED-BY 0x2b400.
+// M3 lane 3 r275 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286): the zero-length test after
+// 0x2922b0 as `0.0f == function_30bf0(...)` 286 (same score); the override test as `0.0f != field` 288 (1869 B); site 1
+// through the existing planar_normalize (include/vector2f_normalize.h) 286; the velocity dot through local_1->velocity
+// at each use instead of its pointer local 286; the magnitude helper returning a ternary 393 (1877 B). Site 1 stays
+// BLOCKED-BY 0x2b400 (its noinline declaration sits in another lane's file this round).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

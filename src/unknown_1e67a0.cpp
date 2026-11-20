@@ -1290,6 +1290,23 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // further, so retail's memory operands do not come from the vector being address-exposed); no `animation` cast local
 // (cast at each use, a symbol-count diagnostic in the direction the dead-local scan never took) 145 (1397 B); no
 // `state` cast local 145 (1397 B).
+// M3 lane 14 r126 (fast with 0x24590, 0x1cd6c0, 0x1ecf50 and 0x1e5af0, all MATCH; control 114 at 1389 B, aligned [exact,
+// stack masked, registers masked] 89/88/55; body unchanged; rotate_direction's file is held again this round). Reading
+// of the two exits: the copies at the function's entry are interleaved in retail too (`state->control = *control` and
+// the rest), so the exits' load-all-then-store through ESI/EDX/EAX is another source form, and it is the same three
+// registers at both exits: one vector local set in each path and stored once, which the compiler then duplicates into
+// both. Forms: a direction local set from the rotated vector after the rotation, overwritten with the goal in the snap
+// path (no early return), one store at the end 180 (1388 B, 152/149/115: the snap exit loads all three before storing,
+// with the flag update between, but the copy from the rotated vector is read early and stays live across the turn test);
+// that with the flag update ahead of the goal copy 166 (1383 B); the direction set in the snap path with a `snapped`
+// flag and from the rotated vector under `if (!snapped)` 145 at retail's 1382 B (153/155/115: both exits are then
+// retail's but for the i and j registers, ESI and EDX the other way round, yet the two new locals turn every rotation
+// product); the snap exit through a goal copy with the flag update between the copy and the store 134 at 1382 B
+// (142/143/111); both exits through an inline setter taking the vector by value, by const value and by const reference
+// 114 each (same code: the parameter folds away); the whole turn test in an inline helper returning the vector by value
+// 580 (it stays out of line, 988 B here), forced inline 199 at 1382 B (first difference +0x2). With lane 1's preset
+// moved-away flag: on the by-value setter 94 (the lead's own code), on the direction local 176, on the goal copy 244
+// (1431 B). 1 to 7 unused (never referenced) locals on the flag form 145 each (dropped before they count). Nothing kept.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -238,6 +238,11 @@ __forceinline long portal_path_gain(real distance, real range)
 // bitmap parts 287, nonnearest arm first 287, separate output bounds 287, separate comparison distance 287.
 // NOT kept: The gain and ordinal forms improve by one point. Separate bounds tie at 1364 bytes. The starting-
 // cluster register and BSP base loads still differ.
+// Required index advanced after its store 287, after the gain 302, after the portal 301, or
+// after the cluster 294. Required cursor position 339, cursor end 352, position at the
+// latch 343. Named gain range 288; gain range through a sound pointer 288. NOT kept: the
+// position and end forms shrink the frame to 0x424 and move the length away from retail.
+// The starting-cluster register and both table reloads still differ.
 // M3 lane 14 r124 (fast with 0x18dc90, 0x14b240, 0x249d60, 0x18ae50; main's callee, so both table bases still hoist):
 // `long encoded` with a `short portal_index` and the side bit as `((dword)encoded >> 15) & 1` together 360 (1369 B); the
 // nearest test with the NONE test first 292; the deep block's two range tests as one `!valid || distances >= distance`
@@ -347,6 +352,8 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // score 305 (was 305): The 0x42c frame, starting cluster in EBX and cached BSP table bases still differ.
 // Earlier comparisons were 315 and 354. Advancing the required index at the row latch brought the
 // entry frame to 0x42c.
+// Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Earlier scores were 315 and 354.
 // Earlier 315 (was 354). Advancing the required index at the row latch brings the entry frame to 0x42c.
 // score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // (A second header line, "score 305 (was 354)" with the same text, merged here in m3 lane 14 r124.)
@@ -527,6 +534,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // portal ordinal 305, early short side 305, early logical side 356, pointer sort scratch 305, cap-first count
 // 305.
 // NOT kept: The 0x42c frame and two cached BSP bases persist.
+// Independent blocked flag bits 320; portal lookup before named ordinal 305; both distance declarations
+// at the iteration entry 305; named path eligibility 305. Shared squared power 305; separate curve
+// terms 305; curve subtraction assignment 305; pinned curve initializer 305. The 0x42c frame, starting
+// cluster in EBX and two cached table bases persist.
 // M3 lane 14 r124 (fast with 0x18d730, 0x14b240, 0x249d60, 0x18ae50; main's callee): `long encoded` with a `short
 // portal_index` and the side bit as `((dword)encoded >> 15) & 1` together 356; the nearest test with the NONE test first
 // 310; the deep block's two range tests as one `!valid || distances >= distance` condition 306; the distance sum written

@@ -76,9 +76,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 }
 
 // score 521 (was 521; 558 before round 111): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
-// score 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// Earlier at 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // MiniMax C (11-19): no new form, no lower score (558): the success byte still sits at +0x13 where retail has +0x17, the four hit flags sit at 0x20..0x23 against retail's 0x1c..0x1f, the collision copy lands at 0x3c against retail's 0x40, and the comiss operand order and the exit layout still differ.
-// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// Earlier at 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// Earlier at 558 (was 558). earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // M3 lane 10 r119 (fast; control 558): `*arg_5 = 0.0f;` ahead of the minimum's initializer 559; the hit flags as `{ 0 }`
 // 689 (2819 B, block store); the success flag declared after the hit flags 552 (first difference +0x2e; the success store
@@ -702,6 +703,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // two angle initialisers in the other order; `(1/range) * minimum` computed twice; the root helper's product as limit x
 // root for rays 1 and 2; the rotated component registers; the tail's first transform (retail multiplies the forward's
 // k, j, i by the first amount before any add).
+// Definition/field-pointer signed offset in the point helper 642/644.
+// definition/field-pointer width per component 552/662.
+// definition/field-pointer assignment with guarded negation 505/505.
+// definition/field-pointer subtraction from zero 642/644.
+// Written-differs at 521. NOT kept: The 505 forms still share the negative width between the last two
+// points and move the range spill to +0x1c instead of retail’s +0x38. The success slot stays four bytes
+// low. The opening body and helper are restored.
 // M3 lane 2 r113 (fast with 0x1e5450/0x30bf0/0x1697c0, all matched; aligned/masked = difflib count / with registers and
 // offsets masked, control 521 [274/86]). LEAD 331 at 2896 B [131/39], plain-confirmed (callers 0x29ab90 286 and 0x29bab0
 // 489 unchanged), patch build/r113/lead-0x2922b0-331.patch in the lane 2 worktree; not kept: it rests on a moved declaration
@@ -722,6 +730,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // loads the global's component into a fresh register each time), the ray loop's padded entry (a length effect of that
 // block), the root clamp's product limit x root for rays 1 and 2, the rotation components' XMM colouring and the tail's
 // schedule (retail computes the tail cross after the column transform and spills its k at +0x5c).
+// M3 lane 6 r209 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 521): the range named at the test (`real
+// local_6 = field_48;` read once for the test and every later use) 667 (2852 B); the same with the positive test and the
+// block ending in the common return 664 (2863 B); the output cleared through vector3f_assign 521 (same code); `*arg_5 = 0.0f`
+// after the hit flags 521 (same code); the minimum declared after the hit flags 522. Stacked score lines merged into this note.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

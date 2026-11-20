@@ -224,6 +224,15 @@ static inline void *function_xc5914d(long thread_index, short size)
 // `mov esi, [eax + ecx + 0x10]` ahead of the reference's lea and gives EAX to the merged pointer/result, where retail loads
 // the frame through the reference into EAX, so its result copy can take EAX only after the frame dies. A permuter run from
 // the volatile-free body (180 tries, 2100 s) found nothing below 70 (full-image baseline 86).
+// M3 lane 15 r114 (fast with 0x2099f0, 0x2084c0, 0x208570; volatile-free forms, testing whether a CSE copy
+// (two locals with one initialiser) keeps the result and the pointer apart): the result taken from a frame-top
+// read (`frame->data + frame->size`) ahead of the allocation 120 (303 bytes: the two size loads are not merged,
+// both pointers spill, `ret 0xc` with the thread index in EAX, and 0x2084c0/0x208570 lose their matches in the
+// reduced image); that read written through the allocator's size pointer 120 (same code); the allocator taking its
+// result from that read 85 (284 bytes, still two size loads); the first allocation written out in 0x207cf0's
+// `short size` form with the pointer and the result both initialised from `data + size` 94 (264 bytes: CSE merges
+// the two into one lea, which goes to EAX for both, no copy, no spill), with the result declared first 94 (same
+// code). The 16-bit size loads are never merged, and a merged register initialiser is coalesced like a named copy.
 // M3 lane 7 r192 (fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): the element pointer
 // computed ahead of the count/type test 95; `result = NULL` between the expression update and the index increment 95; the
 // pointer named `parameters` 95 and the result named `values` 95 (names do not decide the merge); the element ahead of the
