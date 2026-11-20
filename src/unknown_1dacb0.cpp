@@ -1549,6 +1549,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // outputs declared together and set by one chained assignment 828 (same code); the early return as one guarded block
 // (`if (weapon_class != NONE) { ... } return result;`) 1040 at 2857 B (aligned 125, masked 74: most homes after the
 // search then agree with retail's, but the exit code grows; not kept, a rise).
+// Conditional packed candidate 978, with positive iterator guard 978, condition-scoped entry 1031, cursor loop
+// 1044, chained defaults after iterator setup 826, with conditional candidate 978, guarded single return
+// 1043, no-result return after the optional outputs 1028.
+// NOT kept: the late chained defaults gain two without changing the entry difference. The conditional
+// candidates enlarge the frame. Identifier and output homes and the later zero carrier remain.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
