@@ -1150,6 +1150,17 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // orient in place then copy 530, near/far/both field stores 394/135/395,
 // immutable source and oriented aggregates 571. NOT kept: the far field stores keep
 // the late coefficient load, and the other forms move the frame away from retail.
+// M3 lane 8 r201 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115, difflib-aligned 73). Lane 12 r123's
+// match-only 18 form rebuilt 18 (aligned 25): three sites are left and each is the same shape with one choice swapped.
+// The classification remainder loop sums (z*n.k + x*n.i) + n.j*y where retail has (x*n.i + z*n.k) + n.j*y. The clip
+// deltas: both builds compute the first two denominator terms as a copy of the delta times the normal in memory and the
+// third as the normal loaded times the delta, give the x delta XMM5 and build its row on a copy of the ratio, so the
+// product form follows the term's position and not whether the delta is named; retail's terms run x, z, y, the 18 form's
+// y, z, x. The projection set-up loads `total` into ECX where retail uses EAX, which moves its store ahead of the
+// `culled` clear. On the 18 form: the denominator terms x, z, y (x still the named delta) 32 (the named delta's
+// product then loads the normal first, and the z delta and the denominator swap XMM1/XMM3); the five set-up statements
+// (culled, source pointer, out, total, cursor) in the orders c-s-o-t-u 18, s-c-o-t-u 18 (same code as the 18 form),
+// c-s-t-o-u 19, s-o-c-u-t 18 (aligned 28), s-c-t-o-u 19: `total` stays in ECX in each. Nothing kept; body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
