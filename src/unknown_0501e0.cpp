@@ -655,6 +655,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // NOT kept: the pointer and reference forms tie with the default copy and in-place scale.
 // A separate raw snapshot or branch-owned copy raises the score and grows past retail length.
 // The original 0x20 frame, raw displacement homes and coefficient schedule remain.
+// First depth limit before the second transform 268, with both first lateral squares 274,
+// first cone predicate 265, first depth sign 250, independent first lateral predicates 262,
+// complete first visibility 274, paired cone predicates 264, and paired visibility 276.
+// NOT kept: all regress and preserve the extra frame space. The depth-sign form reaches retail length.
 // M3 lane 5 r211 (fast with 0x30290, 0x30bf0, 0x142640, all MATCH; control 221). Slot count: ours uses +0x1c (the first
 // view's k spilled to the first offset's home) and keeps the second view in the second offset's home; retail's first
 // view never gets a home (XMM3/5/1 through the second view) and its 0x14 frame is the second offset at +8..+0x10 plus two

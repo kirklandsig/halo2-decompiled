@@ -6046,6 +6046,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Cosine at forward 201, cosine at up 248, cosine at both 248, sine at forward 175, sine at up 152, sine at both
 // 155, both trig arguments at forward 231, both trig arguments at both 250. NOT kept: Every call-site trigonometric
 // form grows the body and moves the first difference earlier. The lowest of these trials is 152 at 898 bytes.
+// Common object getter 79; copy up before forward normalization 176; both
+// rotations before forward normalization 270; up rotation first 273. Reversed
+// side and final crosses with ordinary/staged final output 98/91. Both rotations
+// before normalization with staged side 270; initialize the up copy before
+// normalization 176. The first complement spill and final forward load remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

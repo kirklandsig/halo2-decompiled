@@ -727,7 +727,8 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// score 126 (was 126): Frame 0x48 and extent agree. The projection preloads k in this build and j in retail.
+// Earlier (126, was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
 // MiniMax E (11-19): score 126 (was 126): no new form, no lower score. Read from the listing again: the case-2 plane
 // length still preloads the camera point's left.k into XMM1 where retail preloads left.j, so the length's accumulator
 // stays in XMM0 against retail's XMM1 and the zero that follows stays in XMM1 against retail's XMM0; the plane distance
@@ -1325,6 +1326,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // 396 (no re-read); with the two leads 396, and every xmm0/xmm1 role in the function then swapped against retail
 // (zero XMM1 for retail XMM0). Diagnostic phase scan of 1 to 8 dead locals on that combination: 396/395/395/400/400/145/
 // 145/396 (145 at 6 and 7: aligned 94 against the control's 103, the zero still XMM1 everywhere).
+// Plane aggregate from the vector, components or complete offset 126/435/172.
+// Plane distance from zero-offset vector aggregate, component aggregate or separate
+// stores 126/435/126. Vector aggregate with scoped length or initial factor 126/126.
+// The direction preload and the squared-length and zero registers still differ.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

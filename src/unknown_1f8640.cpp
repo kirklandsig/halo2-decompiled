@@ -973,6 +973,9 @@ struct s_1f8a70_actor
 // 39); the node test held in a named bool ahead of the test 182 (same code); case 7's node and radius read into named
 // values in retail's order (node first) 360 (1640 B), with case 6's `route_mode = 1` as the else arm 366 (1624 B, aligned
 // 29: case 6 then shares case 5's tail, the dispatch still follows case 7).
+// Mode-six route conditional 312, shared override assignment 402, one selected route update 415,
+// and separate fallback search and direct-bit result 393. The same with mode-seven node before radius
+// 364/402/412/393. NOT kept: all regress. The route dispatch remains after the mode-seven block.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

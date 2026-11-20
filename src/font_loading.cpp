@@ -938,6 +938,10 @@ static inline long font_character_pixel(long alpha, long color)
 // retained 157/201, both views 157/201, both views and the ordinary six-bit count 157/201, using the
 // existing byte parity and then dword parity. NOT kept: the parity width still differs on the tied form,
 // and dword parity moves the run out of EBX and shortens the two fills.
+// Share the opaque pixel 172, carry selected opacity 229, zero-default opacity 185,
+// and an opaque predicate 222. With dword parity 224/244/215/236. NOT kept: the
+// shared opaque pixel reaches 504 bytes but changes cursor allocation. The dword
+// parity forms shorten both fill paths and leave the packed run and literal gaps.
 // common long command count 165, common word command count 151, shared run count 172, shared run count and
 // default span 135, long command count with full parity 170, word command count with full parity 162, shared run
 // count with full parity 174, shared run count and default span with full parity 152. NOT kept: A separate word

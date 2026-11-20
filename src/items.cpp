@@ -1186,6 +1186,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Named reciprocal with half-root update 204. Separate axial contribution with and without the
 // magnitude update 267/268. Final shared vector sum with and without it 194/194.
 // NOT kept: frame remains 0xc0 and the scaled axis i still spills in the tied forms.
+// Staged fallback side/up/both 130/130/130; fallback first with both staged 163.
+// Named rotation cross numerators 130; named two-term rotation sums 130; named
+// forward-projection products 130; sqrtf 130. The extra vector-sized frame region
+// and the first alignment-product order remain.
 // Staged cross / returned cross / output axis with aggregate / in-place fallback / common branch cross
 // workspace / item dot / native rotation / output axis with setter / returned fallback / separate axis
 // with setter / staged output axis with setter: 130/248/207/160/130/130/133/117/281/130/117.
@@ -1318,7 +1322,8 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
-// score 824 (was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
+// score 824 (was 813): Frame 0x154 versus 0x12c. The entry Boolean and motion workspaces still differ.
+// Earlier (824, was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
 // stack homes still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so
 // forty bytes of frame are unaccounted for and every stack home sits further out than retail's; the entry flags are
@@ -1663,6 +1668,10 @@ struct s_item_flags_view_10b850
 // shared lateral magnitude and correction sign 878, branch-local lateral step 859, longitudinal step
 // 892, or both 883, shared carrier addition 824. The 0x148 forms fall short of retail extent and raise
 // the score. The motion frame remains 0x154.
+// Point setter for pre-impact, bounce or both nudges 904/821/911. Bounce on the copied
+// point with scalar adds, the point setter, both point setters or shared scaled addition
+// 817/825/894/817. Named bounce displacement vector 870. NOT kept: the 821 and 817
+// gains are below eight, and the 817 forms are three bytes past retail with frame 0x154.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

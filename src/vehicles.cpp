@@ -6736,6 +6736,12 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Separate product with shared contact/current/state and memcpy 1021. Three reused matrix homes
 // with flip memcpy, inverted selection, state memcpy and both memcpy calls score 1089/1088/1089/1089.
 // NOT kept: the consumed flip forms reach 0xdc but shorten the body and raise every score.
+// Lateral vector after query or with the matrix confined to its query 1199/1199;
+// scoped lateral coordinates 1049; vector or coordinates captured at drift/strafe
+// 1109/1050. Scoped relative output with the lateral vector or coordinates
+// 1156/1082, frames 0xe4/0xdc. Scoped lateral vector setter 971 at 5094 bytes.
+// NOT kept: the seven-point gain is below the gate, and the 0xfc frame and
+// exchanged vehicle index and header displacement remain.
 // M3 lane 14 r120 (fast; control 978, 1183 instructions against retail's 1179; with stack offsets masked and the code
 // cut at its 15 calls 985 instructions differ, with registers masked too 500). Retail's first 0x142eb0 call passes
 // the desired matrix, the current one and a third output address, [esp+0xc4], the flipped matrix's home: the product
