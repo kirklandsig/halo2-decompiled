@@ -1023,6 +1023,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // using the secondary guard 533/533, flag then while 532/532, flag early exit 532/532,
 // or transfer before phase admission 537/537.
 // NOT kept: score gains are at most three and the definition spill stays at +0xb4.
+// M3 lane 13 r129 (plain each; base 535): the component scale as `inverse * axis.n[component]` 535; the length test as
+// `0.0f < length` 535; the angle as `sign * angle` 535 (all three the same code); the short-axis test as
+// `fabs(length) >= 0.0001f` 552; the sign as `real sign = 1.0f;` cleared to -1 by an `if (dot >= 0.0f)` 661 (first
+// difference +0x7). All restored.
 // The tag still spills at +0xb4 against retail's +0x94. Signed mode field through a typed
 // tag pointer or reference 535/535, with mode locals at the face calls, the limit tests,
 // or both 570/620/631 for either type.

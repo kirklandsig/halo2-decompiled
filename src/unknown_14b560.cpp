@@ -1731,6 +1731,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // test is no longer threaded). Compile-only scan with the outputs in the mode block (it reproduces that form's `mov eax,
 // 0xffffffff`): 0 to 12 dead initialised locals at the function top, and 1 to 8 inside the mode block ahead of the
 // outputs, all `mov` (the -1's form is not a symbol-count tie).
+// M3 lane 11 r137 (fast with 0x14f040 and 0x14ef00; control 5, the outputs in the mode block re-measured 43 at 1031 B,
+// `mov eax, 0xffffffff`): on that form the test as `== 4` with an empty arm and the outputs in the else 43, the mode read
+// into a long local in the result block 43, the test as `!(mode == 4)` 43, the result test as `if (result) {} else` 43
+// (each the same code), `result` typed long 105 (1030 B).
 // M3 lane 5 r217 (fast; control 5; B = the outputs in the mode block, re-measured 43 at 1031 B, its one differing
 // instruction `mov eax, 0xffffffff` for retail's `or`). Diagnostics on B, reverted at once: the 0xb8540 stub writing
 // EAX in full before it returns 43 (still `mov`); the delete call through a probe stub returning long 44, returning

@@ -1725,6 +1725,13 @@ void function_1e3b60(long actor_index);
 // iterator and the update flag kept in memory and the 0x25c820 call kept out of line gives MATCH here (0x262ba0 545
 // at 1496 B); any two of the three without the third 25 (see 0x262ba0's note for the forms and counts).
 // BLOCKED-BY 0x262ba0 (0x25c820 expanded inline there; iterator and flag homes).
+// M3 lane 11 r137 (fast with 0x262ba0, 0x263210, 0x265680, 0x264330, 0x26be00, 0x26be30; 25 here in every form; 0x262ba0
+// control 404 at 1624 B): in 0x262ba0, the walk through the existing 0x26be00/0x26be30 re-measured on today's body 443 at
+// 1616 B (aligned 301 against the control's 317); the three release gotos as a `release` flag tested after the switch 442
+// (1644 B: 0x25c820 is still expanded at that single site, 35 calls against retail's 34); the walk with that flag 445; the
+// walk with sample/update declared ahead of the loop 443 (same code); the walk reading `iterator.index` at every use 443
+// (same code). Diagnostic, restored: 0x2641c0's noinline declaration dropped 509 (1696 B; 0x25c820 still expanded and one
+// of the four 0x25c230 calls merged; 0x264210 114). Still BLOCKED-BY 0x262ba0.
 // M3 lane 5 r217 (fast with 0x262ba0, 0x2641c0, 0x264210, 0x1be120, 0x1fba10, 0x25c230, 0x25d020, 0x265680; 25 here in
 // every form; 0x262ba0's file was another lane's this round, so nothing there was tried): 0x2641c0's noinline
 // declaration dropped: 0x262ba0 509 (1696 B, expanded there as retail), 0x264210 114 (139 B), and the five other
