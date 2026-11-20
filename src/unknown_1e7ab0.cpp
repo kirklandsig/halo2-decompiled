@@ -171,6 +171,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // with early returns, as a guard returning NULL then `table->entries + index`, and as one ternary 117 each (same code);
 // case 4's child test as `continue` on the seat/unit tests then the flag test 117 (same code); the child loop as `while
 // (!blocked && function_d05c0(&iterator))` setting the flag without `break` 509 (2288 bytes).
+// MiniMax D (11-20, run 131): no new form, no lower score (117): the gap is still the inlined entry getter's register rotation at +0x31 (this build loads the table global into EAX and the result into ECX, retail loads the table into ECX and the result into EAX), and case 4's parent still sits in ECX where retail holds it in ESI; the rotation is settled by 0xd0590's parameter order in src/unit_object_type.cpp: BLOCKED-BY 0xd0590.
 // MiniMax B (11-19): no new form, no lower score (117): the first difference is still the inlined entry getter's
 // register rotation at +0x31 (ours loads the table global into EAX and the result into ECX, retail loads the table
 // into ECX and the result into EAX), and the getter spellings earlier rounds measured all give the same code. The

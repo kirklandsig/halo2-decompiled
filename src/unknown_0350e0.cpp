@@ -70,6 +70,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax D (11-20, run 131): no new form, no lower score (334, 1781 bytes against retail's 1779): the frame is retail's 0x90, but retail loads the axis as i, j and k into XMM0, XMM7 and XMM3 and squares them in that order, where this build loads j, k and i into XMM4, XMM5 and XMM6 and squares j first, and the sine products and the square spills still differ; the earlier rounds' square and phase orders, named sine products and helper receiver forms are all measured.
 // MiniMax G (11-19): no new form, no lower score (334): retail computes each axis's sine and cosine inside the builder
 // (fsin before fcos) and keeps both angles live on the x87 stack, while this build computes them in the caller and passes
 // them to the helper; the forms that compute the trig inside the helper measured 355-357 and lost the matched caller
@@ -3612,7 +3613,9 @@ extern s_record_pool *g_4e030c;
 void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, long count);
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
+// MiniMax D (11-20): no new form, no lower score (113): the total as an int measures 148 in the reduced image, the list read from g_547f98 at each use measures 132 in the reduced image and 130 in the full one, and the loop counter declared at function scope is the same code.
 // MiniMax S (11-15): no new form, no lower score (113).
+
 // MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills
 // the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the cursor in
 // EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590, whose body is

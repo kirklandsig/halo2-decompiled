@@ -65,6 +65,7 @@ void function_2232a0(void)
 }
 
 // score 47 (was 47): The terminal record gets its base before the stores, and the dispatch stub carries the count in EDX.
+// MiniMax D (11-20, run 131): no new form, no lower score (47): retail folds the record base into the six stores' displacement and forms the pointer with a lea after them, where this build materializes the base early, and the tail's 0x2b5d0 call takes its count in another register and lacks the `mov eax, edx` that retail has before the fstp: BLOCKED-BY 0x2b5d0 (its stub is in src/stubs/lane_k.cpp).
 // MiniMax A (11-20): no new form, no lower score (47); retail folds the record base into the six stores' displacement and materializes it with a lea after them, where this build folds every use of the address into the displacement, and the tail's 0x2b5d0 call takes its count in another register (BLOCKED-BY 0x2b5d0, whose stub is in src/stubs/lane_k.cpp).
 // Earlier measurement 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // m3 lane 4 r224: a one-object LTCG screen (this file plus the real objects of 0x223080, 0x2f800, 0x2c8a0, 0x13f10,
