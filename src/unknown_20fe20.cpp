@@ -1314,6 +1314,12 @@ void function_2118c0(void)
 // as `noise[b * 8 + k]` 105; `word row = (word)(b << 3)` 40 (the shift kept per band plus a movzx); `long row = (long)(b << 3)`
 // 5 (same code); the band counter `dword` or `long` with the `b << 3` row 24 each, `byte`, `char` or `unsigned char` 5 each.
 // Permuter (600 s, annealing, seed 21616, 53 tries): nothing below 10.
+// M3 lane 6 r213 (fast with 0x212100 and 0x211fd0, both MATCH; control 10): p1 and out from one named `long cell = b * 8 +
+// k` 10 (same code); `long row = b * 8` with the three knot sums named (`long row3 = row + w3;` ...) 150; `long row = b * 8`
+// with p1 and out from `row + k` as well 150; an `unsigned short` band counter 10 (same code); p1 as `noise[k + row]` from
+// `(long)b << 3` with out as `&p1[m]` 200 (735 B). Reading of retail: p1 and out are reduced to pointers at every loop level
+// (k, m and band), the knot rows at none, though only the knot index is non-affine in k; the code ahead of the band loop
+// (the byte-op wraps, their movzx and stack homes) is already identical, so the cause sits in the band body's knot sums.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

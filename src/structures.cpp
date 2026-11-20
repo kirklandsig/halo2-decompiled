@@ -830,6 +830,12 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // result and a break 247 (741 B). Diagnostics on the lead: one more read of the range ahead of the section test 239
 // (739 B), the loop's first index read there 242 (741 B): the range still does not take EBP (the triangle parameter
 // does). Nothing kept: no form gains on the control, and the lead needs an exact match.
+// M3 lane 6 r212 (fast with 0x14a8e0/0x14af40/0xd47d0, all MATCH; aligned [exact, stack masked, registers masked]): lane
+// 7 r123's lead re-measured 208 at 726 B [19, 19, 15] and its definition/section/result order 133 at 733 B [75, 68, 25];
+// on each, the loop bound written `range->count + range->first` 208/133 (same code); on 133 the range as a const pointer,
+// the loop's first index named before the loop, and the declarations as definition, section, range, result 133 each (same
+// code). In the 133 form EBP is pushed only before the loop, at its first use, so range never holds EBP in the head as in
+// retail.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

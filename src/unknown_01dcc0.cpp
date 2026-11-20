@@ -438,6 +438,11 @@ long g_55e6c0;
 // `if (count < 0)` / `if (count > 4)` field overwrites 133 (485 bytes); the entry as a reference 29 (same code); the format
 // call's linear argument from the stored flag field 29 (forwarded); the loop's per-level bytes from the stored width and
 // height fields 152. Re-measured: round 122's header-pointer form 28 (484 bytes, a gain of one, not kept).
+// M3 lane 6 r211 (fast with 0x1dc40/0x1db10, both MATCH; base: round 122's lead re-measured 31 at 484 bytes, the pitch part
+// scheduled ahead of the height part): on it the clamp as `count < 0 ? 0 : count >= 4 ? 4 : count` 32; as `count <= 0 ? 0 :
+// count >= 4 ? 4 : count` 33; as if / else-if / else with the `<= 0` and `>= 4` bounds 33; upper bound first (`count > 4 ? 4 :
+// count < 0 ? 0 : count`) 153 (495 bytes); the level loop bounded by the levels local 158 (506 bytes: levels spills to the
+// count's home and the height then takes EAX at the top as retail, so a longer clamp range is what lowers its rank).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

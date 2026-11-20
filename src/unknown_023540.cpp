@@ -3063,7 +3063,6 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // 63 bytes); the level entry through a pointer local 354 (same code: the load still folds); the sample source computed
 // ahead of the `continue` test 369 (1603 B); `long last_level = layout->level_count - 1` used for the clamp 373 (ESI/EDI
 // swap at the entry); that with the coefficient base read after the clamp 374.
-// score 354 (was 354): the render-memory allocation now rounds the byte count up to a dword boundary, keeps the
 // Earlier at 354: the render-memory allocation now rounds the byte count up to a dword boundary, keeps the
 // handle's NONE test and takes the output pointer through the masked handle, as retail does; the loop's pair
 // pointer, the level's table entry and the second 0x235a0 copy still differ.
@@ -3089,6 +3088,12 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // the level clamp (retail `lea edx, [eax - 1]` and the entry address formed then loaded; a named last level 303); the
 // first matrix copy's schedule; the determinants' factor orders (dead-local scans K = 1..16 flat; compile-only, each
 // term spelled in reverse gives retail's order for the first two terms only).
+// M3 lane 6 r212 (fast with 0x22850 as control 209; 354 at 1595 B): the level's table record copied into a local for
+// retail's lea/load pair 386 (1608 B); the allocation through render_memory.h's render_memory_allocate and table_entry_data
+// re-measured 423 (1654 B), with the record copy 467 (1670 B); the bucket pair as a `short const *` cursor advanced with the
+// loop 369, indexed per bucket with `real` source arithmetic 354 (same code); the allocator form with the cursor 423.
+// Retail's six 0x143600 calls set up ECX, EAX, ESI (ours ESI, ECX, EAX), the order 0x143600's own parameter list gives
+// under LTCG; its file was on another lane's list this round: BLOCKED-BY 0x143600.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3479,6 +3484,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // XMM1, XMM6, so the four corners are not computed in the same order; the helper's spellings, both sets' 24 call orders and
 // the eight separate statements were all measured earlier without a lower score.
 // MiniMax I (11-19): no new form, no lower score (54): the corner block holds the same 111 instructions in the same registers as retail's and only the schedule differs (first at +0x527, where we store the x87 coordinate 3 before `subss xmm1, [esp+0x90]` and retail does the sub first); our first set's stores still come out 0,3,4,6,7,1,2,5 against retail's 0,3,4,7,1,6,2,5, and the helper's spellings, both sets' 24 call orders and the eight separate statements were tried earlier without a lower score.
+// M3 lane 6 r212 (fast; control 54): 1 to 8 dead initialised long locals at the top (diagnostic) 54 each (same code: the
+// schedule does not follow symbol numbering); the corner helper writing through two output pointers 54 (same code); both
+// trig pairs first with the two sets' corners interleaved 284 (2069 B); the helper returning a point2f by value 463
+// (1936 B); the corner signs passed as `long` 54 (same code); the scale passed to the helper by const pointer 54 (same code).
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

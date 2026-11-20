@@ -280,6 +280,13 @@ void function_254200(void)
 // M3 lane 3 r278 (single-address fast, control 4): the vertex 4f calls through the member wrapper for vertex 3 only 4,
 // vertex 4 only 4, vertices 1 and 4 4, vertices 3 and 4 4, vertices 1 and 2 4 (all the same code; the wrapper's extra
 // inline level does not move the constant / y + size reload pair).
+// M3 lane 6 r213 (fast, control 4): 48 random combinations (2 to 13 at once) of thirteen same-code natural forms: each
+// vertex's 4f call in member form (four separate choices), the colour helper's 4f call in member form, each render-state
+// call in member form (two choices), the closing call in member form, the size as `arg_2 * 2`, the bitmap choice as if/else, the
+// dimension locals as `int`, the readiness test as nested ifs, the colour helper taking `color3f const &`: all 48 give
+// 4 with the same aligned code, so the extra inline levels and their argument temporaries never reach the reload pair.
+// Also r213: the four vertices through a file-local forceinline position helper (x, y) issuing the far-depth 4f call 8
+// (the colour helper's spills swap, the pair stays).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -669,6 +676,13 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // difference +0x2da); named blue, green, red (the order retail reads them) 2 (same code); that with a named `real alpha = 1.f`
 // 466 (2159 bytes, first difference +0xe); the mip LOD bias stage value as a zero real read as a dword 443 (2271 bytes).
 // All restored.
+// M3 lane 6 r213 (fast with 0x254490 4 and 0x254200 matched; control 2): a file-local forceinline position helper (x, y)
+// issuing the far-depth 4f call, used by the first quad's first two vertices 2, also used by 0x254490's four vertices 2
+// (0x254490 8: its colour spills swap); a forceinline texture-coordinate helper (u, v) for the first two 2f calls 2; both
+// helpers 2; the texture helper with the first two vertices' 4f calls in member form 2 (all the same code). Reading: a
+// helper that evaluates the coordinates before the depth constant does not reverse the pair either, so the pair does not
+// follow the order the values are first computed; the swapped reloads sit on the reservation call's edge only (the
+// skip branch lands after them), and the unmatched 0x3a5c0, 0x185be0, 0x217c40 and 0x4e260 show the same kind of swap.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
