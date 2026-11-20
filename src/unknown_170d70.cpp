@@ -1223,6 +1223,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Axis reference, matrix output reference, immutable original forward, symmetric matrix
 // with signed corrections, and the builder returning its output pointer: 370/364/346/346/346/346/395/346.
 // NOT kept: Two first-axis squares still spill across the half-angle tangent and unity starts in XMM3.
+// Unity and the first-axis squares still have different registers. Indexed axis squares 414,
+// with a component local 354; scalar squares with a diagonal loop 403; both loops 365;
+// complement loop before or after cosine 370/373; three loops 382; in-place diagonal loop 406.
+// NOT kept: the new forms all change the 0x50 frame and raise the score.
 // Unity still starts in XMM3. Forward-field pointer through deviation or only the rotations 355/357.
 // Up-field pointer at first rotation or entry 362/361. Both pointers early or up bound later 360/360.
 // Both field references or both pointers at first rotation 361/359. NOT kept: all regress, and six

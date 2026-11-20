@@ -993,6 +993,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // the selection test with the candidate's distances on the left 535, the sign test as `0.0f > dot` 535, the length test as
 // `0.0001f > fabs(length)` 535 (the last three the same code). The spill homes of the tag, edge base and outer index
 // (stored once, reloaded once or twice each) still come out in the opposite order to retail's.
+// Shared pending-face count with secondary count declared first or second,
+// using the secondary guard 533/533, flag then while 532/532, flag early exit 532/532,
+// or transfer before phase admission 537/537.
+// NOT kept: score gains are at most three and the definition spill stays at +0xb4.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

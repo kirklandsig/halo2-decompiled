@@ -1176,6 +1176,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
 // The square's products come out i, k, j whatever their source order; retail's j, i, k come only
 // from a separate statement for the dot product, which then folds facing loads into mulss: 173-175.
+// Square-to-root, root through half-root and doubled magnitude, and all four stages each score 130.
+// Named reciprocal with half-root update 204. Separate axial contribution with and without the
+// magnitude update 267/268. Final shared vector sum with and without it 194/194.
+// NOT kept: frame remains 0xc0 and the scaled axis i still spills in the tied forms.
 // Staged cross / returned cross / output axis with aggregate / in-place fallback / common branch cross
 // workspace / item dot / native rotation / output axis with setter / returned fallback / separate axis
 // with setter / staged output axis with setter: 130/248/207/160/130/130/133/117/281/130/117.

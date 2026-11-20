@@ -675,6 +675,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // MiniMax H (11-19): no new form, no lower score (920): retail lays the join out of source order, with the type 0
 // other-actor branch followed by the join and the remaining arms jumping back to it, and no form tried here changes
 // that layout; the plain and the fast score are the same (920), so the body is as it stands.
+// Scoped motion 926 reduced, scoped priority and enabled 926 reduced, scoped physics indices 926 reduced, scoped
+// object flags 926 reduced, scoped motion and priority 926 reduced, scoped motion and flags 926 reduced, scoped
+// early classification 926 reduced, all separate scopes 926 reduced. NOT kept: All eight scope forms tie the
+// reduced control at 926, with the same 0x2cb4 frame and 3718-byte extent.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

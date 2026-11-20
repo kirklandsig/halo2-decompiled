@@ -623,7 +623,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // unchanged: retail loads the i coefficient into xmm4 before the copy and reads the copied i back from the stack, so the
 // negation's zero sits in xmm4, while we keep the copied i in xmm4 and read the coefficient into xmm3 late; every XMM role
 // after that point is swapped with it.
-// score 115 (was 115; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// Earlier m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115.
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
 // Earlier: coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
@@ -1150,6 +1151,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // orient in place then copy 530, near/far/both field stores 394/135/395,
 // immutable source and oriented aggregates 571. NOT kept: the far field stores keep
 // the late coefficient load, and the other forms move the frame away from retail.
+// Near camera component array 115, near normal component array 115, both near component arrays 115, both far
+// component arrays 115, all near and far component arrays 115, indexed near dot 173, indexed far dot 171, both
+// indexed dots 326. NOT kept: The five component-array forms tie. Indexed accumulation raises the score and moves
+// the first difference earlier, and indexing both dots adds sixteen bytes.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

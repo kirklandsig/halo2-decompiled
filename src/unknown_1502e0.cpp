@@ -1625,6 +1625,10 @@ void function_150820(dword *bits, bool local_only)
 // output pointer after the call 43, nested query with selected output pointer before the call 43. NOT kept: The
 // field aliases fold the unit field address into LEA and leave the saved registers exchanged. The header forms
 // lengthen the body and the query output forms tie.
+// Typed player remainder 43, player byte-displacement remainder 43, typed remainder with shared unit index 43, byte
+// displacement with shared unit index 43, both typed remainders 43, both byte displacements 43, named typed
+// remainder 43, named byte-displacement remainder 43. NOT kept: All eight forms preserve the full-width mask and
+// tie at 210 bytes. The player, hand and initial unit index keep their opening registers.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

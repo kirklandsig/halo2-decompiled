@@ -918,6 +918,10 @@ real g_55e618;
 // the perpendicular through the existing vector3f_scale with the dot as its argument (no named dot): basis_dot_xzy on the
 // pointer 108 (1538 B, frame 0x118: the perpendicular loses its home), with the setter 188 (dot3f the same 188), on the
 // copy 103. All restored.
+// Miss guard, distant-hit guard and both guards score 231/196/225. Miss-first chains with
+// the positive or negative distance test score 231/225. A saved hit with a joined failure
+// store at the tail or before the response scores 141/141. Both guards with a query-local
+// hit record score 274. NOT kept: sweep and collision homes remain displaced and scores rise.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
