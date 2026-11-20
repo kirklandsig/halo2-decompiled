@@ -2301,6 +2301,13 @@ void function_269250(long clump_index, long actor_index);
 // 146, team-local score with optional attach 112.
 // The optional attachment with a team-local score recovers EBX, the x87 compare and the slot at +0x14. The
 // found-block and transfer schedule still differ.
+// M3 lane 1 r138 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0, all matched each run; control 87):
+// the in-arm compare re-measured 126 (480 B); the team mismatch and the no-improvement case each as `continue` (score
+// taken only for the team, improvement assigned straight after) 128 (480 B); the in-arm form with the post-walk test
+// turned round (`selected == NONE` creates first, then `else if (selected != actor->unknown07c)`) 130 (480 B); the walk
+// loop's clump declared in the while condition (`while (s_clump_activity_view *group = ...)`) on the in-arm form 126 and on
+// this body 87 (same code each); the in-arm form with the walk record declared once ahead of the actor loop and the
+// activity flag read from the global at each step, no local, 126. All restored.
 // M3 lane 3 r278 (fast with the ten matched callees and walk users in the image; a single-address fast image builds
 // 0x269580 with the other register convention and shows this function's two 0x269580 calls with their arguments
 // reversed, which the full build does not: keep the callees in the image): the in-arm compare re-measured 126; on it the
