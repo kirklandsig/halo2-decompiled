@@ -842,6 +842,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // re-measured 1624 (5990 B, frame 0x590), so retail's extra length is elsewhere. The helpers' bodies as the existing
 // shared ones: the cross product as cross3f_staged 1357; the in-place add as vector3f_add(a, b, a) 1346 (same code); the
 // scale as vector3f_scale 1412 (6238 B, retail's length); the normalize as normalize3d 1470 (6131 B).
+// Round 499: entry object index, common zero-vector source, ray-admission component read, point pulse clock, named
+// excess slip, normalized direction scope, impact-position scope, and contact-velocity scope.
+// Fast scores in order 1370/1370/1447/1346/1370/1346/1346/1346.
+// NOT kept: Four forms tie at 1346. The named object index, common zero-vector source, ray admission and excess-
+// slip forms raise the score.
+// The excess magnitude snapshot storage, 0x58c frame and retail component and velocity homes remain.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

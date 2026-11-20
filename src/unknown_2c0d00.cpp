@@ -2222,6 +2222,12 @@ long function_1fa7f0(void);
 // `while (end < count && points[end].type == NONE) ++end;` then `if (end < count)` 475 (1765 B); `candidate + 1 == count` 400
 // (same code); no data as an early return at the top 457 (1747 B, 285/188/67); the `count <= 1` arm first 467 (1754 B);
 // `short type = step->type;` at the loop top with no store in the typed branch 456 at 1746 B (304/183/57).
+// Round 499: terminal address at path/search scope, one-past address at path/search scope, forward scan with the
+// terminal/one-past address, candidate and terminal pointers, and terminal status from scan end.
+// Fast scores in order 492/486/499/488/480/439/486/543.
+// NOT kept: All eight retain the 0x114 frame and raise the score. The one-past forward bound is closest at 439 and
+// 1744 bytes. All four matched controls stay exact.
+// The extra two frame words and the count, edge and opposite-orientation homes remain unresolved.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
