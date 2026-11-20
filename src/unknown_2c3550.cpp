@@ -898,6 +898,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // loop head, and holds the flag pointer in EDI and NONE in EBX from the prologue on. `last` as `final_complete && step == count -
 // 1` 762 (2948 bytes, the frame changes); the out-count test as `!(*out_count < 4)` 675 (same code); `count - 1` named once as
 // a short for `last` and the failure path's test 733 (2976 bytes); `object_index != NULL` 675 and `actor != NULL` 675 (same code).
+// M3 lane 3 r273 (fast): the two obstacle-list clears through a file-local inline clear helper 675 (same code); the two
+// centre-transform loops through a file-local inline helper 1099 (2632 bytes: called out of line), `__forceinline` 846 (2867
+// bytes); both helpers 1099 / 846.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
