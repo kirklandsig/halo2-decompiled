@@ -1573,6 +1573,12 @@ PRIVATE inline long score_string_list_1608e0()
 // Named score-buffer member and typed receiver 679/679, typed conditional 719, native team offset 681,
 // player score record 691, native team/player records 693, early player record 687, named player fields 691.
 // The 0x798 frame and viewer in EDI remain in the retail-length forms.
+// The top edge stays live across the scroll bounds, with the viewer and origin homes
+// still displaced. Retained short top 679, long top 691, short top and height 693,
+// retained left 692, retained top and left 692, vertical origin advance 691,
+// early horizontal cursor with retained top 677, named scroll pixels 679.
+// NOT kept: the early horizontal cursor gains two at retail length and leaves
+// the 0x798 frame. The widened viewport forms grow nine bytes.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

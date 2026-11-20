@@ -1751,6 +1751,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // to the zero register. Retail reaches the same final return from the type exit but past its reload, i.e. it still holds
 // the result in XMM0 from `movaps xmm0, xmm1` at its definition; the `goto done` form (260, retail's 1173 bytes) lacks
 // exactly that copy and reloads.
+// XMM2 still holds zero and XMM7 the radius. The compared lower bound is already
+// reused in XMM6. Named lower bound 239, fraction default one 271, explicit
+// fraction arms 239, named span 239, named excess 239, both 239, named upper
+// bound 239, early lower-range return 283. Default one reaches 1173 bytes at 271.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

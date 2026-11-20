@@ -1711,6 +1711,11 @@ struct s_pool_view_172840
 // separate head capture and increment 145; read-only projection 145. NOT kept: the field
 // selection gains six, grows by one byte and loads through the selected address where retail
 // selects the short value before extending it.
+// With independent failure stores and a signed destination: reserved index for success,
+// rollback or both 142/135/255. Reserved address for success or both 149/260.
+// Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
+// NOT kept: the 55 form grows to 870 bytes with the key scheduled late and a five-byte
+// sentinel. Keeping the reservation index for rollback removes a retail pointer reload.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -2000,6 +2005,10 @@ struct s_camera_reference_171830
 // return 270; post-tested refinement count 273; clear the narrow-ray mask bit 270.
 // NOT kept: integral sign gains two at retail length. The point still occupies EBX and the
 // 0xbc frame still has the sample spill.
+// The point still arrives in EBX and the sample ordinal spills in the 0xbc frame.
+// Sample and midpoint ray declaration order 270/270, sample endpoint scope 270,
+// midpoint collision workspace first 270, point query home name 270, sample and
+// midpoint ray home names 270/270, midpoint hit fraction home name 270.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2261,6 +2270,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // view receiver for calibration and derivative transform 313; shared clamp destination 370.
 // The collision point stays in EBX. Keeping the view receiver shortens the body and sharing
 // the clamp destination lengthens it.
+// The sweep point in EBX still displaces the state to EBP. Separate sweep distance from explicit
+// bounds, a conditional, a mutable request copy or an upper selection 385/385/391/385.
+// With separate distance, const starting point view 385, starting point assignment 385, distance
+// before all coordinate clamps 420 or before the vertical clamp 413. Each stays at 2142 bytes.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
