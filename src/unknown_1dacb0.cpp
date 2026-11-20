@@ -1534,6 +1534,12 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // ours reloads the result after the output stores. In the first request retail frees EBP after the fourth kind request,
 // zeroes it for the fifth and reloads the mode from its argument home for the inheritance loop, so each inlined call
 // keeps its own copy of the mode where ours keeps the argument in EBP throughout.
+// M3 lane 5 r213 (fast with the twin 0x1dbc80, 0x1dc790, 0x1dc8c0 and 0x1dd9d0; control 828, aligned 314, registers and
+// offsets masked 76): the per-pass candidate renamed (three names sorting before, between and after the outputs and the
+// result), the result renamed, the outputs renamed two ways: 828 each (same code; name order sets no home here); the
+// outputs declared together and set by one chained assignment 828 (same code); the early return as one guarded block
+// (`if (weapon_class != NONE) { ... } return result;`) 1040 at 2857 B (aligned 125, masked 74: most homes after the
+// search then agree with retail's, but the exit code grows; not kept, a rise).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
