@@ -965,6 +965,33 @@ real g_55e618;
 // 0x169510 passing the record to itself. A compile-only build of this file orders the position stores first too, so an
 // unknown callee is the pessimistic case. Retail's 0x169510 also pushes its own record parameter at the recursive call,
 // so what frees retail's block is still open. BLOCKED-BY 0x169510 (a contributor's) and 0x244980.
+// M3 lane 16 r162 (fast with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102). LEAD 42 (1537 B, first difference +0x2e7,
+// aligned 26; match-only; build/r162/lead-0x2b9060-42.patch in m3-lane16's worktree): lane 1 r130's 61 form rebuilt from
+// its note (velocity pointer, normal components in locals, the dot written at each product with its first term read as
+// particle->velocity.i, named position sums stored after impact.index), then (a) the normal locals declared k before j
+// (orders kji/kij/ikj 59, ijk/jik/jki 61: n.k takes retail's XMM2), (b) the final rows stored as `particle->velocity.x =`
+// (59, aligned 32 -> 28: retail's [ebp + 0x2c] stores and the hoisted 0x34 product), (c) the flags word read at each of
+// its 14 uses as `*(word *)((byte *)particle + 2)` with no `flags` pointer (42: the `test byte ptr [ebp + 2], 2` then
+// hoists above the rows as retail; a pointer local blocks it). (c) alone on this body 99. Left on 42: the dot's
+// association (ours (j + k) + i, retail (i + k) + j), the value argument's load at the block top with the position
+// stores after impact.index, one `mov word ptr [esp + 0xec], bx` slot earlier in the collision setup. Diagnostics:
+// the five other dot term orders and both operand orders 61 each (same code); 1..8 dead initialised longs ahead of the
+// normal pointer 42/42/42/47/47/47/47/47 (from 4 on the i term goes first); with the normal locals declared j, k, i and
+// 4 dead longs 47 at aligned 18: retail's whole dot/perpendicular/tangent block (only the load order of v.i, the value
+// load and the position sums' order differ; build/r162/diag-0x2b9060-47-retail-dot.patch); other declaration orders
+// with 4 dead longs 44/42/44/42; `real x, y, z;` and/or `vector3f perpendicular, tangent;` declared at the block top
+// in place of the dead longs 44/44/44 (k, i, j: 42); keep/velocity/normal declaration orders 59 each; the value
+// argument copied into a local at the block top 210 (on the 47 diagnostic) / 218 (a word load, as lane 3 r263 found).
+// Later, LEAD 39 (1537 B, first difference +0x36a, aligned 24; build/r162/lead-0x2b9060-39.patch): on 42,
+// `collision.value.unknown24 = NONE;` ahead of `start.x -= displacement.i;` (the collision setup's word store then
+// schedules as retail's); the same store ahead of the displacement block 79, after the first sweep row 75, after the
+// second displacement row 74. On 39 with the normal locals j, k, i and 4 dead longs (diagnostic) 44, aligned 16: only
+// v.i's load order, the value argument's load at the block top and the position stores after impact.index left. The
+// value copied into a local ahead of the block: with the word-sized value type 208 (1545 B, word load into a temporary);
+// with a made-up second short member (four bytes) 59 (1535 B): the dword load and the position stores then sit where
+// retail has them, but the value takes EAX for retail's EDX, later scratch registers rotate one step and the miss arm's
+// flag store tail-merges with the countdown arm's (two bytes short); that copy moved after the velocity pointer, among
+// the normal locals, ahead of the perpendicular or of impact 59 each (same code), ahead of the coefficient loop 250.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

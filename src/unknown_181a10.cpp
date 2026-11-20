@@ -1121,6 +1121,19 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the frame); the preset 1..16 clamp with 0 to 7 dead longs 320 x7, 321 at 5 (the compare stays value-first);
 // origin copied member-wise x, y, z from the transform 308 (1245 B), with the hit member-wise too 361 (1258 B);
 // the decode's top bits in a named `kind` 238 (same code, the shift still folds into the mask compare).
+// M3 lane 16 r162 (fast with 0x1829b0, 0x1821d0, 0x182800, all MATCH; control 238). Diagnostic (reverted, a compiler
+// memory barrier is not a source form): the exclusion as a bool helper on the shape (zero test, barrier, preset clamp read
+// from the field, barrier, byte test) 295 (1253 B) gives retail's three data loads, the `mov ecx, 1` / `mov ecx, 0x10`
+// preloads and `setne al; test al, al`, but still compares value-first (`cmp eax, ecx; jl` for retail's `cmp ecx, edx;
+// jg`); on it 1..8 initialised dead longs at the top of the helper or of the body 295 (one 296): the compare operand order
+// is no symbol-phase effect; the clamp as a const-left ternary 331, through a pin(value, lower, upper) helper written
+// `lower > value ? ...` 331 (both canonicalised to immediates); the preset on a named value declared after or before
+// `limited` 258/258 (the equality keeps the source operand order, the two relational tests stay value-first). Real forms:
+// the same two named-value helpers without the barrier 320/320; the body nested under `if (root->type == 1 &&
+// root->entity)` as matched 0x1c5400 writes it 238 (same code); the entity through `entity = NULL; if (type == 1) entity
+// = root->entity; if (!entity) return;` 238 (same code). Matched 0x1c5400 compiles the root test as `cmp dword ptr
+// [eax + 0x18], 1` and immediate clamps, so this body's register load of the type, kept dead walk and unpropagated
+// clamp bounds all point to one shape no natural form here reproduces.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
