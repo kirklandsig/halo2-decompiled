@@ -508,6 +508,10 @@ static inline void quaternion_transform_vector(
 // computed ahead of the copy from the shared 2.0 and stored twice, where retail computes it after the copy with a fresh
 // 2.0); m first, then the dot and the cross terms, w2 last 245 (1312 B); `real w = q->w;` read once for w2 and m 201 (same
 // code), with m first 247 (1317 B); m first with the helper `__forceinline` 247.
+// Round 444: Persistent forward/up/left destination pointers 243/243/209, paired forward/up,
+// forward/left, up/left 204/204/199; all three pointers/references 248/248 (reduced control 201).
+// NOT kept: the two-point up/left gain reaches 1317 bytes, but the frame stays 0x20 and the
+// quadratic coefficient still lacks its separate retail spill.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1551,6 +1555,11 @@ void function_143250(
 // through XMM7 where retail has XMM6; that follows from s7_s105 being scheduled earlier here, a
 // schedule difference like the others (the block is scheduled as a whole, so every remaining difference moves the rest).
 // Body unchanged.
+// The sqrt(21) home and inter-band spill schedule still differ.
+// first mixed-root accumulation 939, later mixed-root accumulation 939, both mixed-root accumulations 939,
+// four root-product accumulations 939, weighted component and square accumulations 939, root-product names 939,
+// separate root assignments 939, axial squares and cubic accumulations 1848.
+// NOT kept: The axial accumulations shrink the frame to 0x2f8 and raise the score. The other forms retain 0x2fc.
 // Second-band axial weight named at first use, with the other products, or by compound multiplication
 // 1231/1296/1231. With named transverse products, transverse accumulations, or named up products
 // 1095/1095/1095. With all four products or the diagonal half-square terms 1226/1226. NOT kept: All

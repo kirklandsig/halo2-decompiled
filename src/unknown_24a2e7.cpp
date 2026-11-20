@@ -358,6 +358,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // 67/67/67/67/67. Early plain exit with indexed clear 84, with advancing comparison cursor 67.
 // Entry range with indexed clear and shared exit 64. NOT kept: the range groups base and
 // count and gains three points at 207 bytes.
+// On the per-iteration entry and indexed clear form, a copied bound 75,
+// scoped out-count 75, native wide suffix 75, array extent for all limits 75,
+// end-pointer bound 73, shared plain/copy name 93, count and suffix names 75,
+// and result before indexed clear 75. The end bound restores the 0x28 frame
+// and base spill at 213 bytes but holds the search pointer in ESI across the loop.
 // M3 lane 16 r153 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; main 67, aligned 26). Reading:
 // with the terminator through `buffer`, i is dead before the calls, so it stays in ECX and EBX becomes a zero register
 // (`cmp byte [ebp+0xc], bl`, `mov word [edi+0x62], bx`); any indexed terminator shares `entries + i*0x248` (or the
