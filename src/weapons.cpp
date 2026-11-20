@@ -4186,6 +4186,11 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // accumulator 1412; narrow pre-magazine activity 1449; named animation receiver 1412.
 // NOT kept: the entry pool/offset roles and the dual spill remain. The Boolean
 // activity forms give no gain.
+// The fixed-scale producer still does not recover the dual byte in BL.
+// Nested dual branches or one scale selection 1412/1412, zero or unity default
+// within the override 1438/1438, numeric Boolean scale 1442, distinct holder scale
+// with conditional or exhaustive output 1435/1435, holder-first branches 1462.
+// NOT kept: all retain frame 0x34 and the two branches and selection tie.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

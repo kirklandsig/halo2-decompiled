@@ -1268,6 +1268,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Separate sine conversion 364 or delayed past cosine 365. Component-first sine products 337.
 // Signed pair accumulators 349; sine products at diagonal boundaries 343.
 // NOT kept: two axis squares still spill. The separate sine conversions also demote the view initializer.
+// The ratio publication and projected slope still do not recover the unity register.
+// Named tangent before/after ratio 385/385, named slope before/after ratio 363/363,
+// compound aspect correction with ratio before tangent or between stages 385/385,
+// ratio store after projected angle 337 reduced, and retained ratio through slope 392.
+// NOT kept: the best ties the 337 reduced control at retail length, still spills
+// two squares, and leaves unity in XMM7. The other forms shorten the body.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
