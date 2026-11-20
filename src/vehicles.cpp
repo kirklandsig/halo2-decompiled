@@ -1234,6 +1234,12 @@ __forceinline long vehicle_round(real value)
 // vector3f_scale of the side by `0.0f - forward.k` then vector3f_add (side, axis) / (axis, side) 32/32; the projection's dot
 // through the header's basis_dot_xzy (forward, velocity) / (velocity, forward) 8/10; `side` declared at the function's top 4
 // (same code); the side scale named (`real down = 0.0f - forward.k;`) ahead of the side cross 78.
+// M3 lane 4 r233 (h2m fast; picked with a compile-only product screen), at 4: the strength constants as floats 141 (retail
+// loads doubles); the rate clamp as one conditional chain 4 (same code); `strength * rate` passed to the angular scale 93
+// (759 B); the flag bit tested and cleared through 0xefc30's writable bit view 162; re-measured: the up pointer at the side
+// cross too 94 (735 B), the dot named 13. Compile-only (2 flips each, the same products): a typed definition view for the
+// three definition fields, the tick compare reversed, `up` declared first in the arm, `rate` or `side` declared with the
+// vectors, `strength = rate * strength`; a named side correction 4 flips.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2342,6 +2348,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // (velocity, forward) 11/11; the kind loop on its own for-scoped counter 13; `linear_velocity` declared first, ahead of
 // the lookups, 9; the model lookup folded into the graph's (no model local) 9; the forward speed grouped (i + j) + k,
 // (j + k) + i and (i + k) + j 9/9/9 (all four the same code: the sum is reordered whatever the source grouping).
+// M3 lane 4 r233 (h2m fast), at 9: overlay 1's left vector through cross3f_staged 9; overlay 1's dot through the header's
+// basis_dot_xzy(&left, &linear_velocity) 378 (2007 B); cross3f_staged there with the forward speed as dot3f(&linear_velocity,
+// &vehicle->forward) 11, as basis_dot_xzy(&vehicle->forward, &linear_velocity) 11; the final overlay loop bounded with `!=`
+// 9; `i` declared ahead of the overlay channel 9. Reading: retail's reloads after the update block come in the order of
+// the values' next uses (state for the channel test, then graph and the index as the callback's arguments are pushed).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -5195,6 +5206,20 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // guard (`xor eax, eax; cmp edi, eax`, the zero store from EAX) where retail tests EDI and stores an immediate, so the
 // loop top loses its padding jumps; that with `16 - count` 136, with `&markers[primary_count]` 46, with an
 // `if (count > 0)` guard 126.
+// M3 lane 4 r233 (h2m fast; permuter 600 s on the 5 form, 19 tries, nothing better), at 22: lane 16's running count
+// re-measured 126 (set-up and sum retail's; the loop's zero is then shared in EAX by the entry compare, the index store and
+// the loop register); on it `i` declared before the `+=` 126, the second count in a short local first 126, `count` declared
+// then assigned 126, `i` declared in the for 126, `count = fill(...) + count` 126, `count > i` 126, `long count = 0;` then
+// two `+=` 126, `short i = 0;` after the `+=` with `for (; i < count; i++)` 126, a while loop 233 (776 B). LEAD (match-only,
+// a declaration moved): the running count with `short i = 0;` declared between `long count = primary_count;` and the `+=`
+// and `for (; i < count; i++)` 10 (653 B: only the index's zero store sits before the second call where retail stores it
+// after the entry test, plus the colour constant); `short i = 0;` before the first fill 23. With the two colour stores
+// ahead of the source store as well 5 (the colour then takes ECX and the definition reload moves above the colour
+// stores, as retail); colours ahead of the four zero fields 49; the colour order on the running count alone 126. Sum in the
+// loop condition (`i < primary_count + secondary_count`, colours first): short second count 46 (the entry and the zero
+// store retail's, the sum in EAX); long second count 44 (sum in EDI; from the extension on every scratch register is one
+// step behind retail's); on that, `i` or the second count declared elsewhere, an `int` second count or the operands
+// swapped 44 each. The plain sum or a named long first count with colours first 47.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {

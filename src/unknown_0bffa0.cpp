@@ -1313,6 +1313,9 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // (2877 B, the copy changes the prologue), vector first 623, with the scaled scalars gathered into a vector initialiser 606
 // (2778 B); the left cross through the shared cross3f with the forward cross through cross_product_c1a80(up, left, forward)
 // 554 (2817 B, masked 176); the left cross through cross3f alone 532 (2796 B).
+// M3 lane 4 r233 (h2m fast), at 290: one matrix pointer for every matrix use in the sphere arm 588 (2788 B); the two true
+// flags as one chained assignment 290 (same code); the reference axis as an if/else of the two copies 574 (2822 B);
+// `orthogonal = (short)shape->kind == 1` 599 (2778 B); the cone depth from `entry->plane_offset` 291.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
