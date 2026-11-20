@@ -1236,6 +1236,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the flags local declared at function scope with the in-place update 89, with the saved-word update 35 (same code); the
 // found test through an inline predicate on the flags with either update 89/35, on the message with the in-place update
 // 89; the in-place update between the first and second output stores 90.
+// MiniMax E (11-19): no gain (35, baseline; body restored): the message pointer is still in EAX where retail keeps it
+// in ECX (and the flags word in CX against retail's AX), and the update is still a full-word store where retail ORs
+// the resend bit in the message; the in-place update reaches retail's byte OR (or byte ptr [ecx+0xe], 2) but frees the
+// flags word and changes the whole allocation (89), the ternary message pointer with the in-place update is 90, and
+// the ternary alone keeps retail's registers but lays the arms out with the address in the fall-through (45).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

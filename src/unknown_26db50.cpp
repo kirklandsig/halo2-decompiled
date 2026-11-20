@@ -1129,6 +1129,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 0x29b6c0 rotation (angle in, sine and cosine inside) 223 (1098 B); the existing forced-inline weapon emission rotation
 // (angle in) 235 (1108 B); cosine computed ahead of sine 45; the direction passed through a pointer local 26 (same code);
 // the axis copied by value into a loop-invariant local for the rotation and the 0.5 lift 264 (1104 B).
+// M3 lane 6 r209 (fast with 0x1ecf50/0x26d100, both MATCH each run; control 26): the trace endpoint as a component loop 45; the
+// endpoint and the lift in one component loop as two statements 196 (1082 B), as one expression 101 (1085 B); the collision
+// record, marker and entry pointer ahead of that merged loop 198 (1082 B); the entry pointer formed at the top of the success
+// block 24 (a moved declaration). Diagnostics: a probe global stored from the axis's j, k or i after the 0x14a280 call 92/92/91
+// (1102 B, rotation ours), so a later axis read does not rank the dot; lane 12 r147's M re-measured 20, M with the offset x, z,
+// y 6 (left: the offset computed in that order).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
