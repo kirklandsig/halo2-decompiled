@@ -638,14 +638,6 @@ struct s_device_machine_view
 	dword flags;
 };
 
-PRIVATE __forceinline word device_group_flags_kept_106d70(s_device_group const *group)
-{
-	word flags = group->flags;
-	word const &kept = flags;
-
-	return kept;
-}
-
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
 // score 2 (was 2): the group's flags still load through the combined address
@@ -1090,8 +1082,10 @@ PRIVATE __forceinline word device_group_flags_kept_106d70(s_device_group const *
 // byte copy 121 (byte load, pushed ESI); a `word` bits local `group->flags & 3` 117 (657 B, `movzx eax, byte; and eax,
 // 3`); the machine flags read before that pointer 129 (658 B). Body unchanged.
 // Matched in a full build with stand-in SDK headers (was 2): the group is a pointer local and its two flag bits are
-// tested on the field, with the second bit also tested through a getter that holds the flags in a reference-bound
-// local. The extra test leaves no code; it adds a reference of the flags before registers are chosen.
+// tested on the field, with the second bit also tested through a reference-bound local that holds the flags (read
+// after the first bit's test). The extra test leaves no code; it adds a reference of the flags before registers are
+// chosen. With bit 2 tested once (the reference-bound local alone, read there or before the test) 122; with the local
+// declared ahead of the machine flags 3 (the word load rises above the machine test's `je`).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1122,8 +1116,14 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			if ((group->flags & 1) && (device_group_flags_kept_106d70(group) & 2) && (group->flags & 2))
-				function_value = 1.0f;
+			if (group->flags & 1)
+			{
+				word flags = group->flags;
+				word const &kept = flags;
+
+				if ((kept & 2) && (group->flags & 2))
+					function_value = 1.0f;
+			}
 			if (device->power == 1.0f || (machine_flags & 0x10))
 			{
 				function_value = 0.0f;
