@@ -165,6 +165,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax D (11-20, run 131): no new form, no lower score (117): the gap is still the inlined entry getter's register rotation at +0x31 (this build loads the table global into EAX and the result into ECX, retail loads the table into ECX and the result into EAX), and case 4's parent still sits in ECX where retail holds it in ESI; the rotation is settled by 0xd0590's parameter order in src/unit_object_type.cpp: BLOCKED-BY 0xd0590.
 // MiniMax B (11-19): no new form, no lower score (117): the first difference is still the inlined entry getter's
 // register rotation at +0x31 (ours loads the table global into EAX and the result into ECX, retail loads the table
 // into ECX and the result into EAX), and the getter spellings earlier rounds measured all give the same code. The

@@ -1273,6 +1273,7 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax D (11-20, run 131): no new form, no lower score (14, 1034 bytes): removing the move output's byte member store measures 90 and moving it after the +0x88 copy measures 11, and that one is a statement order kept only with a byte match, so both spellings are restored; retail hoists the copy's source component above the stores through the object pointer and spills the 0x119bc0 result to a stack byte that it pushes as a dword, where this build keeps the result in al and the tail needs 0x1c4b00's bool formal: BLOCKED-BY 0x1c4b00 (src/unknown_1c25a0.cpp).
 // MiniMax H (11-20): no new form, no lower score (14): retail spills the 0x119bc0 result to a stack byte and pushes the dword; this build keeps it in AL; that needs 0x1c4b00's bool formal in other files.
 // MiniMax D (11-20): no new form, no lower score (14, 1034 bytes): retail's block after the 0x119bc0 call still differs
 // in the tail (retail spills the 0x119bc0 result to a stack byte in the dead definition pointer's slot and pushes the

@@ -183,6 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax D (11-20, run 131): no new form, no lower score (603, 2885 bytes against retail's 2881): retail keeps q (the fourth stack argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and retail's fallback for the missing pointer is a conditional move where this build branches and reloads; the named pointer fallback, the fallback at each component and the field-by-field position copy measure 666, 649 and 648.
 // score 603 (was 603): m3 lane 14 r105 put the settling align through the existing dot3f
 // The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,

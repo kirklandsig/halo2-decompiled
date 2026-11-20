@@ -1027,6 +1027,7 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax D (11-20, run 131): no new form, no lower score (382): the else arm spelled as `return false;` folds the result byte away and shrinks the frame to 0x54 (508), so the shared exit with the result byte in its stack slot stays; the false exit still lands after the main exit instead of at 0x1aac35, and the helper retail keeps out of line (0x25d740, in another file) is expanded here: BLOCKED-BY 0x25d740.
 // MiniMax G (11-20): no new form, no lower score (382): the false exit still lands after the main exit instead of at 0x1aac35, and 0x25d740 stays expanded here where retail keeps it out of line.
 // MiniMax G (11-18): no new form, no lower score (382): our false exit already has retail's own epilogue (xor al, al;
 // pop ebp; add esp, 0x58; ret 8), but it is emitted after the true exit instead of at 0x1aac35; giving the else
