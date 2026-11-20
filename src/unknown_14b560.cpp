@@ -782,6 +782,7 @@ long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
 // MiniMax H (11-20): no new form, no lower score (43): the datum iterator's data pointer takes EBX where retail takes EDI; its register use comes from include/data_iterator.h and src/unknown_0bad50.cpp.
+// MiniMax S (11-20): no new form, no lower score (43): the unit and its parent stay in EAX and ECX where retail keeps the unit in EBX and the parent in EAX, and the walk's step object is copied twice where retail reloads it; the pinned 0xbaf80 in another file decides the register choice.
 // score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
 // walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
 // place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
@@ -1725,6 +1726,13 @@ static inline s_players_globals *players_globals_14f2e0()
 // test is no longer threaded). Compile-only scan with the outputs in the mode block (it reproduces that form's `mov eax,
 // 0xffffffff`): 0 to 12 dead initialised locals at the function top, and 1 to 8 inside the mode block ahead of the
 // outputs, all `mov` (the -1's form is not a symbol-count tie).
+// M3 lane 5 r217 (fast; control 5; B = the outputs in the mode block, re-measured 43 at 1031 B, its one differing
+// instruction `mov eax, 0xffffffff` for retail's `or`). Diagnostics on B, reverted at once: the 0xb8540 stub writing
+// EAX in full before it returns 43 (still `mov`); the delete call through a probe stub returning long 44, returning
+// bool 44 (both `mov`: neither what the callee leaves in EAX nor a result held there frees the byte temp from AL).
+// Forms on B: the options pointer named and read through a const reference for the mode test 43 (same code); a
+// redundant `result = false;` at the top of the result block 66 (1031 B, first difference at +0x0). No retail caller
+// of 0xb8540 (65 of them) reads a value after the call.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2613,6 +2621,7 @@ static __forceinline long player_round_ticks(real value)
     return result;
 }
 // MiniMax H (11-20): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and 0xccd20 and the first 0x151b80 call are still expanded here.
+// MiniMax S (11-20): no new form, no lower score (701): the frame is 0x4c against retail's 0x74, so retail's larger set of locals is missing and the actions, the flags word and the request copies sit at other offsets.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax C (11-19): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 and this build
 // still expands the 0xccd20 call and the first 0x151b80 call that retail keeps out of line; both callees live in
@@ -3243,6 +3252,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 }
 
 // MiniMax H (11-20): no new form, no lower score (103): retail materialises NONE in EDX after loop 1's call and reuses it; ours uses immediates and loads the last unit into EBP.
+// MiniMax S (11-20): no new form, no lower score (103): retail keeps the globals pointer in ESI and the countdown in EAX from one global load where ours loads a second global and keeps the last unit in EBP; the 0xb8540 and 0xb7b40 stubs still hide the writes to g_4e8c20.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
 // function where retail loads it into ESI and reloads it after the busy check and again before the
 // final store, and the two loops swap the datum and unit registers with it; the reduced image

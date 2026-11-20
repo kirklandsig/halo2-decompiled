@@ -699,6 +699,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // inside that inlined helper (its source is in src/unknown_1eb8a0.cpp, which this lane may not edit): retail copies the
 // vector's component with `movaps` and multiplies the axis from memory, ours loads the axis and multiplies by the vector's
 // register, and that swap moves the whole rotation block's register roles.
+// MiniMax I (11-20): no new form, no lower score (114): the first difference is still inside the shared rotation helper, whose source lives in another file, so the block copies and the side crosses are not this file's to change.
 // score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // M3 lane 11 r123 (compile-only screen with the rotation helper pasted in, which reproduces this body's rotation; the
 // axis products' sides as a signature, retail j/k-with-j/k copy-first, ours load-first): no-code reads of the rotated

@@ -723,6 +723,7 @@ struct s_1f9762
 // and the count through a one-use local minus one 3 which also rotates the two dot products), while every
 // spelling that keeps the index in EAX decrements the count instead; the committed body (score 1) stands.
 // MiniMax B (11-20): no new form, no lower score (1): the entry test is still the only difference (`dec edx` where retail has `inc eax`); this round's spellings of it - `index + 1 >= count` 4, `count <= index + 1` 4, `index + 1 > count - 1` 131, the same with one side widened 4, the count or the index through a one-use local 6 each and the same with a long local 6 - all leave the increment in EDX, and the permuter (34 tries) found nothing below the baseline.
+// MiniMax I (11-20): no new form, no lower score (1): the entry test is still the only difference - this build decrements the count where retail increments the index; the path-pointer spelling that matches retail's entry test flips the second dot product's i term (score 2).
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
@@ -1483,7 +1484,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // the direction's x with both in registers where this build copies the direction's x and takes the facing's y from
 // memory; the side vector's y replaced by the direction's x gives 256, the facing's x and y read into named locals
 // before the test 270, and the helper's multiply order and temporaries 239.
-// score 239 (was 239): since m3 lane 2 r115 the entry (zero XMM1, result copied to XMM0), the three exits and the
+// score 226 (was 239): since m3 lane 2 r115 the entry (zero XMM1, result copied to XMM0), the three exits and the
 // 0x3c frame are retail's at 1176 bytes against 1173; left are the XMM numbers (radius XMM4 for XMM5, the direction
 // XMM6/XMM2 for XMM2/XMM3), the type-zero arms' shared tail, the lateral spill and the trace call's radius temporary.
 // Before r115: the zero and radius had different XMM homes, and unsupported types used a separate return path.
@@ -1832,6 +1833,14 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // 224 (same code), the difference copied into the centre first 230..295; 370 more samples over those spellings, the
 // arm orders, the normalizer's product order and pairs: best 123 (1167 B), best aligned 60, none with the type-one
 // arm's register loads, no match.
+// First difference is the radius in XMM4 versus retail XMM5. Side displacement in a point,
+// twin scalars, planar scaler, or scaled center initializer 226 each. Type-zero/type-one
+// radial scaling 256/252, both radial arms 257, all displacements 248.
+// The shared planar displacement moves both center additions to their common continuation.
+// Native direction vector with fast normalization 248, aggregate direction 248, planar scaling normalizer 248;
+// native desired vector with fast or planar normalization 237 each; both native vectors 257, with shared cosine
+// dot 257, and both with planar normalization and cosine dot 257. NOT kept: the first radius-register difference
+// stays at +0x4f, and the direction/desired cosine still does not recover retail's register allocation.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
@@ -1845,8 +1854,8 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
     point2f direction;
     vector2d_from_points2d(local_1, target, &direction);
     movement_normalize2d(&direction);
-    point2f side = { 0.0f - direction.y, direction.x };
-    bool left = facing->y * side.y + facing->x * side.x > 0.0f;
+    vector2f side = { 0.0f - direction.y, direction.x };
+    bool left = facing->y * side.j + facing->x * side.i > 0.0f;
     point2f center;
     if (type == 0)
     {
@@ -1870,23 +1879,20 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
         center.y = target->y + difference.y * (0.0f - radius);
     }
     else goto done;
+    vector2f adjustment;
     if (left)
-    {
-        center.x += side.x * (0.0f - radius);
-        center.y += side.y * (0.0f - radius);
-    }
+        planar_scale(&side, 0.0f - radius, &adjustment);
     else
-    {
-        center.x += side.x * radius;
-        center.y += side.y * radius;
-    }
-    real lateral = center.y * side.y + center.x * side.x - (local_1->y * side.y + local_1->x * side.x);
+        planar_scale(&side, radius, &adjustment);
+    center.x += adjustment.i;
+    center.y += adjustment.j;
+    real lateral = center.y * side.j + center.x * side.i - (local_1->y * side.j + local_1->x * side.i);
     real forward = center.y * direction.y + center.x * direction.x - (local_1->x * direction.x + local_1->y * direction.y);
     if (forward > radius * 0.11f)
     {
         real fraction = forward > radius * 1.3f ? 1.0f : (forward - radius * 0.11f) / (radius * 1.189999938f);
         real offset = (fraction * 1.5f - 1.0f) * lateral;
-        point2f desired = { center.x + offset * side.x - local_1->x, center.y + offset * side.y - local_1->y };
+        point2f desired = { center.x + offset * side.i - local_1->x, center.y + offset * side.j - local_1->y };
         real distance = movement_normalize2d(&desired);
         vector3f local_direction = { desired.x, desired.y, 0.0f };
         point3f local_origin = { local_1->x, local_1->y, actor->position.z };

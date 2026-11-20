@@ -285,6 +285,17 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // the actor from the saved index offset); `*has_path = false` ahead of the random pick 449. Diagnostic (removed): the
 // owner lookup through a file-private copy of the find-and-copy helper 663 (3191 B: 0x13e2d0 is then expanded here,
 // where the matched 0x140b20 keeps it a call with the same helper shape).
+// M3 lane 1 r137 (H2M_FAST with 0x2605d0/0x2613d0 MATCH, 0x1af160 12): the two flags declared and cleared just before the
+// main loop 772 (3081 bytes, frame 0x8a4: they then pack into one dword at retail's 0x6/0x7, swapped, and the offset and
+// best score take retail's homes; the late clears are positional misses); the sort scratch word in its block 440 (same
+// code); `possible` declared with the flags at the top 491 (3113 bytes); the flags declared after the sort scratch 441;
+// that with selected and best score assigned after them 440. Retail's low frame: a temporary at 0x0, the flags at 0x6/0x7,
+// the result at 0x8; ours a flag at 0x3, the temporary at 0x4, the other flag at 0xb.
+// M3 lane 6 r211 (fast with 0x2605d0/0x2613d0/0x2600a0/0x1af160/0x1e1f20; all matched but 0x1af160, which stays 12;
+// control 440): re-measured the sort scratch in a block of its own around the sort call 439 (frame 0x8a4); on it the two
+// flags in one declaration 439 (same code), declared after the best score 440, the evaluator loop's flag declared at the
+// function's top and set before the loop 439 (same code); on main's body the sorted index as `long index =
+// sorted_indices[i]` 619 (3085 bytes). The flags still take a dword each (+3 and +0xb against retail's +6/+7).
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

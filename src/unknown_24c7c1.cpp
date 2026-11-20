@@ -876,6 +876,15 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 191; the count declared after `left` 191; all three 191; `left`, the tick count, `top` in that order 191 (six forms,
 // all the bool timer's code: `left` is still stored as a dword at -0x4c and no short is packed with it; the homes do not
 // follow where the shorts are declared).
+// M3 lane 7 r197 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
+// 102). On the bool timer (191, 1888 B): the four flags renamed so that their names sort in each of four orders 191 each
+// (same code: the byte homes do not follow names); the three message flags declared without initialisers after the
+// split flag, after `origin`, after `text`, at the top of the block, and in reverse order after the split flag and at the
+// top 191 each (same code). On the kept body: the message height declared ahead of the message loop 114, the row counter
+// declared ahead of it 114, both 114, the flash value declared at the top of the timer arm 114 (same code each). Retail
+// shares the flash value's home with the row counter (-0x18) and gives the message height its own (-0x4c); ours shares
+// the timer, flash and message height (-0x14): the packing follows the lifetimes, not the declarations.
+// MiniMax C (11-20): no lower score (114): the frame homes and the left coordinate word store differ; a word for left scores 482.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

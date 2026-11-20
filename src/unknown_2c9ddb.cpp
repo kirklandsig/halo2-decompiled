@@ -56,6 +56,7 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
 // score 61 (was 61): retail has one 0x212bc0 call and one copy in each second-half arm and calls the name copy out of line; this body has one call and a spilled byte; rounds below.
+// MiniMax I (11-20): no new form, no lower score (61): retail keeps two 0x212bc0 call sites, one per arm, and calls the name copy out of line at 0x13fac0 with the count in a register, where this build keeps one call site with the choice in a byte slot and expands the copy in place; the two-arm form measures 174, a named count for the copy 88 and a re-tested condition in place of the stored flag 77, so the body stands.
 // MiniMax D (11-19): no new form, no lower score (61): retail still keeps two 0x212bc0 call sites with their own g_54e49c stores and their own copy into g_54e4a0, calls the name copy out of line at 0x13fac0 and passes the controller index in ECX to 0x238c69, while ours keeps one call site with the choice in a byte slot, the copy in place and five stack arguments; the out of line copy lives in a file this lane may not edit.
 // MiniMax G (11-20): no new form, no lower score (61): retail has two 0x212bc0 call sites and calls the name copy out of line at 0x13fac0; ours has one call site and expands the copy in place.
 // MiniMax G (11-19): no new form, no lower score (61): retail's second half still has two 0x212bc0 call sites (the
@@ -435,6 +436,13 @@ extern long g_55c154;
 // 88 (same code); two arms with the named destination 179 (580 B; 66/41: `this` ESI with a spill, EBX the constant 0, then
 // `saved`, then &g_54e4a0), with the count named too 179, with the name at the second half's top 179 (same code). Body
 // unchanged.
+// M3 lane 4 r233 (h2m fast), at 61: two load arms re-measured 174 (595 B; there EBX holds the constant 1 through the first
+// half, the bit test, the flag_c store, the three controller masks and the dialog's 1, then `saved`, then the variant's
+// address, while `this` takes EDI and is spilled); two arms with all three copies as memcpy (0x2c4e9c's spelling) 174; two
+// arms ending in one shared request call with a mode local and a goto to the failure call (diagnostic) 92 (578 B); one load
+// with the create-default test straight after the load and the index store and copy in each arm 167 (576 B); that with the
+// ternary in the load's argument and `selected == NONE` tested again 173 (567 B); one load with `selected` set to `saved`
+// when it is NONE 76 (577 B).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
