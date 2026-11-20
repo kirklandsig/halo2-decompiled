@@ -975,6 +975,10 @@ static inline long font_character_pixel(long alpha, long color)
 // Compare with packed run 59, run to pair end 163, pair class arity 193, shared packed prefix arity 171.
 // With full-width parity 203/213/191/219. NOT kept: the run comparison ties, and the other forms raise the
 // score. Packed parity width, run register reuse and literal byte assembly still differ.
+// Ordinary alpha in both assignment arms, transparent default, opaque default or opaque predicate:
+// 59/171/172/59 with byte parity; 203/240/240/203 with dword parity.
+// NOT kept: The defaults reach 504 bytes with byte parity but move the cursor registers. Dword parity
+// shortens the fills and changes run allocation. The original helper and body were restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

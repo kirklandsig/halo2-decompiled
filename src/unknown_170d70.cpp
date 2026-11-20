@@ -337,6 +337,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Plain while traversal 125, player-state reference 125, rotation group first 376, deadline advance
 // beside the target advance 158, or side-vector aggregate 125, all with the independent deadline.
 // NOT kept: the 125 forms recover the first 0x2b8 bytes but grow the correction at 1413 bytes.
+// Separate corrected up vector through placement, shared, or staged cross with j/k/i stores
+// 70/70/70, or whole vector publication 234. With independent deadline 130/130/130/201.
+// NOT kept: The separate component stores leave the swapped deadline and group homes in the
+// original loop. The independent form grows to 1413 bytes and differs in the basis correction.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -945,6 +949,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // indexed count clear 123 or indexed index store 129. Between-clear bind with short record subscript,
 // retained map cell, or preincremented signed count 129/129/129.
 // NOT kept: the indexed count clear gains six. It still creates the cluster before traversal.
+// Assignments at map hit, signed capacity test, unlinked-entry test, or projection: 129 each.
+// With a shared capacity result: 125 each. NOT kept: The shared result restores EBX and BP
+// and advances the first difference to +0xe. The gain is four and creation stays inline.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1765,6 +1772,10 @@ struct s_pool_view_172840
 // Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
 // NOT kept: the 55 form grows to 870 bytes with the key scheduled late and a five-byte
 // sentinel. Keeping the reservation index for rollback removes a retail pointer reload.
+// Separate x/y overlaps, four independent edges, leading edge guard, or trailing edge guard:
+// 134 each. With independent failure stores and signed cluster publication: 55 each.
+// NOT kept: The 55 forms restore the flag and traversal homes but grow to 870 bytes,
+// publish the key late and retain the five-byte sentinel load.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
