@@ -966,6 +966,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Word-count reconstruction with a retained edge index 396, signed flag 396, joined edge predicate 384,
 // early parent read 396; completed-step count 390, nested long 394, nested short 343, short guard first 345.
 // NOT kept: seven forms recover frame 0xe4, but all grow and score higher.
+// Link-target reference before capacity, inside capacity, shared with step metadata, or with scoped edge admission:
+// long count 286/286/286/357; short count 359/359/359/356.
+// The short forms recover 0xe4, with the scoped admission at retail length, and all raise the score. Body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

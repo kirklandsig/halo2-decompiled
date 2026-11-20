@@ -1702,6 +1702,12 @@ struct s_item_flags_view_10b850
 // 821/842/822/821. Copied origin and point difference, loop/scaled add 913/882;
 // direct scaled add with ray initializer/point difference 885/877.
 // NOT kept: the tied-length gains are below eight, and the helper forms change extent and regress.
+// Separate local normal vector plus sum at impact/bounce/both 911/870/862.
+// Shared scale plus sum at impact/bounce/both 904/855/863.
+// Ray storage for both offsets 885, also with the shared scaler 885.
+// Ray storage for bounce only 879, impact only 860. The local-sum forms
+// reach frame 0x148, while the reused-ray forms stay above retail’s 0x12c.
+// All score higher and the original position and ray expressions are restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

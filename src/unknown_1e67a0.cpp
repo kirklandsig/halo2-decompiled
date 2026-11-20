@@ -1313,6 +1313,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // rotation keep this build's operand sides at every count; the angle scaled in place without the rotation local 186
 // (1365 bytes); the velocity scale read at each use 206 (1395 bytes); the axis copied into a local vector 230 (1406
 // bytes); `angle` declared before `movement` 114 (same code). Still BLOCKED-BY the rotation helper in src/unknown_1eb8a0.cpp.
+// Calculate sine, cosine, sine then cosine, or cosine then sine before copying
+// forward: 125/136/163/166. The same with the shared axis-rotation helper:
+// 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
 // M3 lane 2 r118 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114; the first difference is still in the
 // rotation helper, whose file is another lane's this round): initial_cross's j row as `b->i * a->k - a->i * b->k`,
 // `b->i * a->k - b->k * a->i` and `a->k * b->i - b->k * a->i` 114 each (same code: the product operands are

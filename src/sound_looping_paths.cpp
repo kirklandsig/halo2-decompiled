@@ -805,6 +805,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // declared at the loop top 879 (same code); the sound read through a const reference to a named element 885; the sounds base
 // in a named local 879 (same code). Diagnostic (a behaviour change, reverted): one read of the sound after the 0x14b240 call
 // 816 (3280 B) with the tag still in EDI, so a longer life alone does not give the sound EBP. None moves the tag out of EDI.
+// Signed query ordinal with advancing gains/portals/clusters 929/918/929;
+// gains and portals/gains and clusters/portals and clusters 853/931/853;
+// all auxiliaries 904 or all four streams 910. Every form recovers the ESI zero,
+// but the target and primary stores still differ and all scores rise.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

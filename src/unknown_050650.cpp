@@ -2420,8 +2420,9 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// score 442 (was 442): Frame 0xcc versus retail 0xc8. The inlined combat test and actor-slot and animation-state homes differ.
 // MiniMax A (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the first difference is at the entry, where retail loads the actor table into ECX, keeps the actor index in ESI and the scaled index in EAX (stored to a home at +0x30) and holds the animation state in DI, while this build loads the table into EDX, reloads it into EAX, keeps the actor index in EDI and the animation state in DX; that is the allocator's choice for the values live across the 0x297600 and 0x2973f0 calls, and 0x1fdd90 is still expanded here where retail calls it out of line.
-// score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
+// Earlier score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
 // of the call keeps it out of line (r131, below), which still leaves the valid flag's type and the per-path publications.
 // MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
 // 0xc8 and the local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines
@@ -2463,7 +2464,7 @@ struct s_actor_looking_turn_request
 // MiniMax C (11-17): no new form, no lower score (442, was 442): the frame is still 0xcc against retail's 0xc8, and 0x1fdd90 is still inlined here where retail calls it from its only call site (only /Ob1 on its own file keeps it out of line, a build-flag lead): BLOCKED-BY 0x1fdd90.
 // Earlier 442: frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // MiniMax E (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the body keeps its own length; the entry's argument order follows 0x1fdd90's convention, which does not match yet, so the call setup cannot be had from this file: BLOCKED-BY 0x1fdd90.
-// score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
+// Earlier score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn
 // block's planar vectors built from members (no `&actor->forward` cast) 450 (2032 B), that with the 0xe70b0
@@ -2650,6 +2651,9 @@ struct s_actor_looking_turn_request
 // this build inlines the matched predicate 0x1fdd90 where retail calls it at +0x198, and the later signed-angle
 // call still takes the horizontal inputs in the opposite order (our comiss xmm1,xmm0 against retail's comiss
 // xmm0,xmm1, with esi and edi swapped): BLOCKED-BY 0x1fdd90's own file.
+// Share the masked long actor slot through the looking, movement, or prop lookup 534/534/534.
+// Word slot with those lookups 523/523/523. Shared byte displacement, direct or named bases 442/442.
+// NOT kept: both slot types recover frame 0xc8 and the displacement home but shorten and raise the score.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

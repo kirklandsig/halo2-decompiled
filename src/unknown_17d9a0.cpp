@@ -1038,6 +1038,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Separate face/plane arrays, face record, or encoded plane argument 566 each; retained face array 715,
 // plane array 752, both 749; traversal edge and vertex arrays 655, with both decode arrays 767.
 // NOT kept: the tag spill stays displaced or the aligned frame changes, and all scores rise.
+// Ordinary inline on plane decode, angle and rotation (all seven nonempty combinations) 535 each;
+// local definitions for all three 535. Tag and count homes remain displaced. Original declarations restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

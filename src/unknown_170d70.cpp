@@ -1000,6 +1000,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // symbol-count effect); the slot read again from the map for the volume's cluster store 151 (410 bytes); the entry
 // address as `pool->entries + entry_index` 129, the head cell through a short pointer 129 and `++collection->volume_count`
 // 129 (all the same code).
+// Slot/index lexical orders and immutable reservation/entry 129 each. Return the last
+// signed capacity comparison after a break or a positive arm, with or without immutable
+// entry/volume addresses: 126 each. NOT kept: the three-point gain leaves creation inline
+// and shortens the body to 425 bytes.
 // Early missing-cluster capacity guard 137, guarded miss first 159, guarded local postincrement
 // 137. Immutable reservation counts, preincrement in count publication, separate count advance,
 // immutable entry and volume addresses, or record selected by signed count 129 each.

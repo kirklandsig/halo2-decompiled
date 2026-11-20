@@ -522,11 +522,18 @@ static inline void quaternion_transform_vector(
 // Weighted cross/input/quaternion terms named in all rows 280/201/199, pairs 257/250/262,
 // all terms 244, left-associated partial sums 244 at retail length.
 // NOT kept: the two-point gain leaves the frame mismatch.
+// Coefficient local names in all six weight/projection orders, then cross-term names before
+// or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
 // Named double cosine/sine radicands 217/217, both independently or together 201/201.
 // Named double cosine/sine roots 258/258, both 215, and both radicands and roots 210.
 // All keep the 0x20 frame and miss the separate retail transform spill.
-// Coefficient local names in all six weight/projection orders, then cross-term names before
-// or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// Basis dot with quaternion first, vector first, quadratic first, between weights, named square,
+// ordinary cross, staged cross and staged cross with quadratic first.
+// Scores 236/226/258/199/219/265/264/265.
+// On the form with the basis dot between weights, quaternion first, cross order j/k/i, ordinary
+// construction cross and ordinary repair crosses.
+// Scores 187/199/236/199.
+// NOT kept: The 187 form restores the 0x24 frame but changes the last projection’s grouping. The 199 form falls below the gain threshold.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1605,6 +1612,11 @@ void function_143250(
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
 // NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// Direct accumulation into the matrix, third-band rows 1 through 7 independently, then all seven
+// rows.
+// Scores 1472/1380/1608/1324/1632/1220/1203/1611.
+// NOT kept: Row 1 reaches retail length and row 2 restores frame 0x300. Both raise the score. The
+// previous scalar spills remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

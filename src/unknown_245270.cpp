@@ -966,6 +966,9 @@ void function_245400(s_source_245400 const *source, long index,
 // Secondary material record with late edge and split rejection 210; named side relation 231;
 // selected acceptance test 207; shared dot 212 or staged cross 210; unsigned codes 210;
 // signed sides or secondary widening first 209 each. NOT kept: the frame is 0x28 and the scores rise.
+// Direct/primary-early/secondary-early/both-early/both-scoped normal addresses 206/202/203/164/206;
+// paired ordinal-normal-side 203; shifted sides with scoped normals and direct/staged cross 234/234.
+// The native 0x2c frame and separate side home still differ. Body restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

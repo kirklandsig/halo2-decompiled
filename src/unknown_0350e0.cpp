@@ -5766,6 +5766,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // 164/161/65), that with each offset's y stored before its x 377 (166/163/65); all four offsets written first, then
 // the four in-place calls, with the colour 388 (1826 B). The compiler forwards every in-place store (no y store
 // survives), so this is not retail's shape either. Body unchanged.
+// Two offset lifetimes split after corner 0, 1 or 2, or reused by diagonal:
+// scalar alpha 231/231/231/231; initialized four-channel color 400/400/400/400.
+// NOT kept: color restores the 0xe0 frame but moves away from retail length to
+// 1794 bytes and leaves the radius at +0xc. The scalar-alpha bodies compile identically.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

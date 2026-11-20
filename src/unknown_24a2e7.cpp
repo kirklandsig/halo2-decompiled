@@ -408,6 +408,15 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // index (the entry formed inside, after the append test) and returning whether it built, with the indexed terminator
 // and plain name in the caller's if/else, 84, the same with one result variable in the helper 84 (the returned flag
 // is threaded before the sharing too); `register` on the index, on the lead, 39 (same code). Body unchanged.
+// Guarded last ordinal with indexed/selected-entry formatting 73/75;
+// guarded exact end ordinal with indexed/selected-entry formatting 67/38;
+// guarded last address 79/79 and guarded exact end address 74/74.
+// NOT kept: the 38 form restores the base spill and final ordinal multiply
+// but adds a second count test, uses inequality at the latch and retains
+// the scan cursor in ESI where retail reforms the entry after the append test.
+// Separate nonpositive-count return with selected entry and inclusive/exact end
+// 73/70, both 211 bytes. The base slot returns, but the save order differs and
+// the exact end still adds a count test.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

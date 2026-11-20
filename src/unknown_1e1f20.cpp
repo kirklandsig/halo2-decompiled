@@ -1006,6 +1006,9 @@ void swarm_leader_detach(long actor_index);
 // with `inline` on 0x26ed40 301/319 (1006 bytes), 0x1bead0 and 0x26ef70 then expanding it too and losing their match;
 // its file without the inline-depth flag (diagnostic, flags unchanged) the same three expansions; `value != 0` 236 and
 // `memory + memory_index` 236 (same code). Retail keeps the call at all eight other sites. Still BLOCKED-BY 0x26ed40.
+// Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
+// fresh entry from byte distance, element distance, short index or advanced byte
+// displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
 // M3 lane 2 r118 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236): the
 // memory walk's entry through the existing element_502424_get 236 (same code); the prop walk's node through the existing
 // prop_node_get view (next_index, view_index) 236 (same code); both 236; the slot loop with a slot pointer local as

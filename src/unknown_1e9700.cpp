@@ -886,6 +886,11 @@ struct s_object_damage_view
 // Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
 // fallback 358/358/416/416, with conditional code selection 358/358/416/416.
 // NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
+// Fixed-range tail tests for selection, assists, both, selection with long ordinal, assists with
+// short ordinal, selection end ordinal, assists end ordinal and both end ordinals.
+// Scores 509/353/509/509/353/509/353/509.
+// NOT kept: Assist-only tails tie. Selection tails allocate 0x54, move the object argument to EAX
+// and break the matched caller.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

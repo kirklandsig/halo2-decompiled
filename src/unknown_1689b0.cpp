@@ -2175,6 +2175,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // initialisation 551 (same code); the radius minimum tests as `available < radius` 551 (same code); `++face_count` ahead
 // of the face radius minimum 566 (2885 B); the averages' reciprocal as `1.0f / (real)count` 551 (same code). The
 // averages multiply `inverse * sum` from memory where retail loads each sum and multiplies by the inverse, x, y, z in order.
+// Prism while, ordinal before the fill, square at prism entry or clearance, edge while, both while
+// loops, and both with the square at prism entry or clearance 551/553/548/543/551/551/548/543.
+// Last-index prism bound with square at entry 573. Named square at clearance with the original for
+// loop 543 reduced and 543 ordinary.
+// NOT kept: the clearance-local square was already rejected as a moved one-use local without a
+// match. Its alternate loop forms produce the same score and square slot. The count and clearance
+// homes still differ.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

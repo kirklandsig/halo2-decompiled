@@ -709,6 +709,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // sums 228 (1198 B); the cross taken as heading x axis and subtracted with its sine scale folded into each row 199 (1219
 // B), that with sine and cosine taken first 197 (1219 B); the helper taking sine and cosine from the caller (named, sine
 // first, right before the call) with its body otherwise unchanged 230 (frame 0x120).
+// Published forward as rotation source with direct/staged cross at tilt or entry
+// 235/235, 256/256, 295/295, 271/271. The launch velocity field as the cross
+// workspace with scale at the producer or at the sums 276/276 and 252/252.
+// Completing the rotation in the same field scores 282/282 and 263/263.
+// NOT kept: the velocity-field forms lengthen and keep different frame and trig homes.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
