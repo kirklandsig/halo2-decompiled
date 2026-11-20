@@ -934,6 +934,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // edge shift 344.
 // The 0xe4 prologue returns with indexed fill, but the completion flag still uses +0xf and the body grows.
 // The opening short scan and long link ordinal are restored.
+// M3 lane 8 r204 (fast with 0x270930, MATCH): m3 lane 16's saved two-flag lead re-applied to today's file 2 again (the same
+// back-edge pair). On it: one `short i` shared by the fill loop and the scan loop, declared before the fill loop or at the
+// top 2/2 (same code); the scan index renamed (six names) 2 each (same code); an element pointer for the two-step arm's
+// `steps[node->depth - 1]` 264 (1366 B), for `steps[node->depth]` 299 (1372 B), both 389 (1358 B). Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
