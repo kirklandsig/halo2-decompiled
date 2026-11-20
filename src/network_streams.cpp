@@ -1291,6 +1291,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // publication with the ordinary result at the sole exit 112 or split empty and exhausted
 // outcomes 74. Separate window-count admission with byte OR 86. The compiled prologue or
 // found tail differs in every form, including the byte-test form at retail length.
+// Split result with shared lookup 10, available-first or missing-first conditional lookup
+// 34/32, separate eligibility rejections or nested word tests 10/10. Joint admission with
+// a separate result 28. Early admission exits with the result set before or after publication
+// 80/80. Direct found return under common or nested admission 129/129, scan-local result
+// return 80. NOT kept: the 10-point forms repeat the ordinary-result assignment and
+// exchange the two late exits. The combined admission shortens to 214 bytes.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

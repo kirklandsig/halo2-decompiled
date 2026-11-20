@@ -880,6 +880,11 @@ void function_3dd10(long object_index, bool force);
 // 189, ordinal-based bank guard 197, shared choice array and pre-guard bank ordinal 197, choice read
 // at each use 77, shifted eligibility test at selection 194. The ordinal store and count and mask
 // homes remain unresolved.
+// Shared supplied/eligibility mask 77, with pre-guard bank ordinal 97, signed weight scan
+// 189, explicit nonzero and positive tests 77, or advancing weight cursor 162. Selection bounded
+// by last eligible or one past last 243/246. Renamed count and mask 77. Shared eligibility bit
+// operations with unequal or signed weight bound 298/298. NOT kept: the helpers expand the
+// frame and scan. The pre-guard ordinal and scan count and mask homes still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

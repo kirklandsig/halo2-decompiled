@@ -994,6 +994,11 @@ static inline long font_character_pixel(long alpha, long color)
 // 59/171/172/59 with byte parity; 203/240/240/203 with dword parity.
 // NOT kept: The defaults reach 504 bytes with byte parity but move the cursor registers. Dword parity
 // shortens the fills and changes run allocation. The original helper and body were restored.
+// The twelve-byte frame agrees. The packed parity mask still narrows and the pair count folds.
+// Count after each conditional packed store 186, count on the store/absent paths 174, count by
+// written extent or endpoint 210/210, separate packed range/exact admissions 192/185. Dword
+// parity with store-path count or exact admissions 198/232. NOT kept: both dword forms shorten
+// the two fills and change the packed run allocation. Literal assembly still differs.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

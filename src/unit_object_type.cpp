@@ -7150,7 +7150,7 @@ done:
 // addresses. The side bit cannot have both halves: every form that keeps retail's sete/test/je (a bool local, with
 // either the compound or the assignment form in the branches, or a signed char state pointer) makes the compiler merge
 // the two arms into one load of the byte, one register update and one store.
-// score 125 (was 187; 33 with the reverted helper): the normalizer's operand order, the face switch's table, the timing's duration and the side bit are retail's now; the definition-flag bytes, the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
+// score 125 (was 187): the normalizer's operand order, the face switch's table, the timing's duration and the side bit are retail's now; the definition-flag bytes, the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
 // Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
@@ -7339,6 +7339,11 @@ done:
 // definition gate 181, conditional side selector 181, named weapon eligibility 208.
 // NOT kept: the scale sequence agrees at 181 and retail length, but gains six. Flag bytes, state home and
 // independent weapon lookups remain.
+// The direction span first differs at the spilled definition-test result. The frame and scale agree.
+// Condition-scope complementary flags 229, late flag alone 235, typed animation byte setter 125,
+// paired animation/state setters 125, shared setters for all bits 121, separate side-arm setters 130,
+// nested early animation gate 125, typed animation object 129. NOT kept: all shared setters gain
+// four at retail length. The byte results and the side and animation memory updates still differ.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
