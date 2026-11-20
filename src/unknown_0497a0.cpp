@@ -24,6 +24,7 @@
 // the default arm and the PIN calls), which is a form the coordinator rejects, so it is not kept; the frame stays 0x54 against
 // retail's 0x60 and the wave's three dead x87 factors stay behind retail's product.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// MiniMax E (11-20): no new form, no lower score (536): retail keeps the first cross's three products and two of its components in stack cells across the two sines and gives the cross result and w the same home, so retail's homes run v1, v2, w, v3, v4 against v1, v2, w, v4, v3 here and its frame is 0x60 against 0x54; spelling both crosses with matching product operands (650), the products as a local vector (650), the staged cross helper with the adds written out (663) and the adds written out alone (663) all leave the products in registers and shorten the body.
 // and late x87 factor lifetimes remain, at retail length 2622.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.

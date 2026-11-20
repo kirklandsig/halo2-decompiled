@@ -625,6 +625,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // after that point is swapped with it.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115.
+// score 115 (was 115; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// MiniMax E (11-20): no new form, no lower score (115): retail copies t for the intersection's x and scales y and z in place, and that form (`t * delta.i + p0->x`, `delta.j * t + p0->y`, `delta.k * t + p0->z`) matches the intersection block exactly here but scores 119, because the first plane's dot then keeps the copied normal's i in xmm4 and reads view->vector_e4.i late where retail loads the coefficient into xmm4 before the copy; a permuter run (34 tries) found nothing below 115.
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
 // Earlier: coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
