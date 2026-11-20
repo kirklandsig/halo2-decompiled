@@ -1696,6 +1696,24 @@ void function_1e3b60(long actor_index);
 // iterator and the update flag kept in memory and the 0x25c820 call kept out of line gives MATCH here (0x262ba0 545
 // at 1496 B); any two of the three without the third 25 (see 0x262ba0's note for the forms and counts).
 // BLOCKED-BY 0x262ba0 (0x25c820 expanded inline there; iterator and flag homes).
+// M3 lane 11 r137 (fast with 0x262ba0, 0x263210, 0x265680, 0x264330, 0x26be00, 0x26be30; 25 here in every form; 0x262ba0
+// control 404 at 1624 B): in 0x262ba0, the walk through the existing 0x26be00/0x26be30 re-measured on today's body 443 at
+// 1616 B (aligned 301 against the control's 317); the three release gotos as a `release` flag tested after the switch 442
+// (1644 B: 0x25c820 is still expanded at that single site, 35 calls against retail's 34); the walk with that flag 445; the
+// walk with sample/update declared ahead of the loop 443 (same code); the walk reading `iterator.index` at every use 443
+// (same code). Diagnostic, restored: 0x2641c0's noinline declaration dropped 509 (1696 B; 0x25c820 still expanded and one
+// of the four 0x25c230 calls merged; 0x264210 114). Still BLOCKED-BY 0x262ba0.
+// M3 lane 5 r217 (fast with 0x262ba0, 0x2641c0, 0x264210, 0x1be120, 0x1fba10, 0x25c230, 0x25d020, 0x265680; 25 here in
+// every form; 0x262ba0's file was another lane's this round, so nothing there was tried): 0x2641c0's noinline
+// declaration dropped: 0x262ba0 509 (1696 B, expanded there as retail), 0x264210 114 (139 B), and the five other
+// callers keep the call and their match, so the one site our link expands against retail is 0x264210's unconditional
+// call. With the declaration dropped: two dead constant locals in 0x2641c0 114 there; eight dead computed locals 114;
+// the swarm flag, swarm index and sample block through three forceinline accessors 114 (0x2641c0 still matches): the
+// decision does not follow the callee's statement count. 0x264210 as an early return 114; its result in a named bool
+// 114; its position pointer named ahead of the call 114. Listing with 0x2641c0 expanded in 0x262ba0: the release label
+// still expands 0x25c820 while case 1's arm calls it, so that expansion is not a budget effect of the missing
+// 0x2641c0 expansion. Lead for 0x262ba0: only the label that three gotos reach is expanded; the two release calls
+// written in each failing arm (no label) would make each site as cold as case 1's, which stays a call.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -2419,6 +2437,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // store in 0x1e53e0 is a steering form in a matched function and raises this count. Left on the 265 base: the pool in
 // EBP for retail's EDI with the options the other way round, the seed pointer reloaded around the 0x259a0 call
 // (BLOCKED-BY 0x259a0's file flags, as recorded above), retail's 32-bit weapon index with its own cell.
+// MiniMax A (11-20): no new form, no lower score (251); the pool and the options sit in EDI and ESI where retail keeps ESI and EBP, and the seed pointer must stay in EBX across the opaque 0x259a0 call (BLOCKED-BY 0x259a0).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

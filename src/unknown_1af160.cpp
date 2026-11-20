@@ -227,6 +227,23 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // `const &` at its two late uses 12; a second actor pointer local for the three flag tests 12; the saved +0x418
 // reference copy read ahead of the node lookup 27; the bool output declared at the top with its address named there 12;
 // the result flag stored true again at the top of the non-equal arm 124 (978 bytes).
+// M3 lane 15 r118 (fast with 0x1e1f20, MATCH; control 12): the bool output declared ahead of the entry aggregate and the
+// long output 12; the rounding input declared at the function's top 12; the long output declared at the function's top
+// 12; the bool output declared just before the scratch fetch 12; the short array declared ahead of the marker array 12
+// (all the same code). Lead for next rounds: round 141's diagnostic (0x260670 storing the flag pointer to a global moved
+// the bool output's home) is the callee-summary lever that matched 0x1c4c50 this round (a reference binding in its
+// callee); 0x261280 already writes the flag directly, so look for how retail's 0x260670 lets the flag pointer escape.
+// M3 lane 1 r137 (H2M_FAST with 0x1e1f20, control 12): the rounding through the existing `real_to_long` (slot_handler.h)
+// stored straight to the record's short 25 (the helper's result takes its own home; retail's fistp writes the long output's
+// home, so the asm form stays); `local_13 = real_to_long(local_20);` 134 (981 bytes); `local_13 = real_to_long(...)` on the
+// product with no real local 134 (981 bytes); the rounding product written `field_2_3 * random` 12; the bool output through
+// a `bool *const` local for the 0x261280 call and the 0x2626b0 argument 12 (both the same code).
+// M3 lane 6 r211 (`--fast 0x1af160 0x1e1f20`, control 12): the rounding through the existing x87 rounding helper of
+// slot_handler.h assigned to the long output 134 (981 bytes), stored straight to the record's short 25 (974 bytes, masked 0:
+// the helper's own result takes a new home and the small cells rotate further); the asm block writing a fresh block-local
+// long 25 (same layout as the helper); the saved reference copy declared const 12 (same code). On 0x260670's chain (with
+// that function's five trials of this round: the sort scratch in its own block, the two flags in one declaration, the flags
+// declared after the best score, the evaluator-loop flag declared at the top, a long sorted index) this function stays 12.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

@@ -998,6 +998,11 @@ struct s_collision_result_buffer_1697c0
 // Fast scores in order 270/270/270/270/270/270/270/270.
 // NOT kept: All eight trials tie at 270 and 1431 bytes. Every control keeps its opening score.
 // The frame stays 0xa8 on the opening body. The zero register, pitch-axis j preload and shared random/trig transfer word still differ.
+// M3 lane 12 r158 (h2m fast with 0x297660 (stays matched) and 0x297d30 (stays 23 unless noted); control 270): the
+// header's shared normalize3d in place of the file-local normalizer at the three uses 282 (1437 B); the file-local normalizer
+// in that helper's single-return shape (zero set in an else arm) 282 (1437 B); the rotate helper's dot as `dot3f(axis,
+// vector)` 282 (1437 B; 0x297d30 144); its cross terms with the axis as the left operand of each product 270 (same code);
+// its output rows with the cosine product written `cosine * vector->i` 270 (same code).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2415,6 +2420,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax A (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the first difference is at the entry, where retail loads the actor table into ECX, keeps the actor index in ESI and the scaled index in EAX (stored to a home at +0x30) and holds the animation state in DI, while this build loads the table into EDX, reloads it into EAX, keeps the actor index in EDI and the animation state in DX; that is the allocator's choice for the values live across the 0x297600 and 0x2973f0 calls, and 0x1fdd90 is still expanded here where retail calls it out of line.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
 // of the call keeps it out of line (r131, below), which still leaves the valid flag's type and the per-path publications.
 // MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
@@ -2640,6 +2646,10 @@ struct s_actor_looking_turn_request
 // 637 (2132 B: the two 0x2967b0 calls no longer share their tail); both 667 (2136 B); both with bool valid 585 (2068 B);
 // the looking output as an if/else 579 (2080 B, re-measured); with bool valid and looking_valid 539 (2004 B). Diagnostic:
 // a second caller of 0x1fdd90 (in its own file or in this one) leaves this site inlined (442).
+// MiniMax G (11-20): no new form, no lower score (442): the frame is still 0xd0 against retail's 0xc8, because
+// this build inlines the matched predicate 0x1fdd90 where retail calls it at +0x198, and the later signed-angle
+// call still takes the horizontal inputs in the opposite order (our comiss xmm1,xmm0 against retail's comiss
+// xmm0,xmm1, with esi and edi swapped): BLOCKED-BY 0x1fdd90's own file.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

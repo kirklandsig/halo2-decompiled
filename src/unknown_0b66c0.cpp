@@ -563,6 +563,18 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // after the string) 49 [6], the string `char const *const` 49 [6] (names and const do not move the string/destination
 // contest for EBP); on main's body the clamp as `count = count + 1 > 0x200 ? 0x200 : count + 1;` 35 [104]; the length
 // declared at the top and assigned after the sign tests 21 [match] (same code). All restored.
+// M3 lane 12 r158 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the function as a const member
+// of the 512-byte text type (string = the object, destination as a text pointer, natural body, start tested first, the
+// source as `bytes + start` at the copy, both caller lines through the casts) 48 (93 bytes) [82] (the object arrives in
+// EBX, start in EDX, three register arguments; the destination is loaded at entry into EBP as retail); a plain string read
+// once through its own address (`char const *const *reference = &string;`): at the scan with the source at the copy 40 (104
+// bytes) [6], at the source with the scan plain 40 [6], at the scan with main's early source 49 (92 bytes) [6], in main's
+// early source with the scan plain 49 [6].
+// M3 lane 15 r117 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the compare as
+// `length - start >= count` 35 [35]; `count <= length - start` with `0x200 < count` 35 [35]; the length test assigned
+// to the result (`result = start + count <= length; if (result)`) with the volatile string 40 (104 bytes) [6]; the sign
+// and clamp tests as `count >= 1` and `count >= 0x201` 23 [match] (compares with immediates; the walk ECX / counter EDX
+// split unchanged); a plain string with one volatile read of its own address at the scan, the early source plain, 39 [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

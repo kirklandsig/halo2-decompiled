@@ -913,6 +913,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // The other forms raise the score or shorten the body.
 // The post-loop word mask still reloads separately for comparison and update. The present-mask OR/store schedule also
 // differs.
+// M3 lane 12 r158 (h2m fast with 0xb58c0 and 0x196780, both matched each time; control 23): the change test with both
+// compares' operands swapped (`old_playing_teams != playing_teams || old_team_mask != present_teams`) 24; the added mask
+// computed after the two field stores 23 (same code); an early return when neither mask changed, the change block
+// unindented 23 (same code); no team local, the team field read at each use 42 (382 B); the team mask as a `word &`
+// bound to the field in place of the pointer 23 (same code).
 // @retail 0x158140
 void function_158140(void)
 {
