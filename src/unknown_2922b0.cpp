@@ -76,6 +76,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 }
 
 // score 521 (was 521; 558 before round 111): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// score 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// MiniMax C (11-19): no new form, no lower score (558): the success byte still sits at +0x13 where retail has +0x17, the four hit flags sit at 0x20..0x23 against retail's 0x1c..0x1f, the collision copy lands at 0x3c against retail's 0x40, and the comiss operand order and the exit layout still differ.
+// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // M3 lane 10 r119 (fast; control 558): `*arg_5 = 0.0f;` ahead of the minimum's initializer 559; the hit flags as `{ 0 }`
 // 689 (2819 B, block store); the success flag declared after the hit flags 552 (first difference +0x2e; the success store
@@ -664,6 +667,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Mode-specific returns from the direction copy/projected output/both arms 558/554/558;
 // with inactive exit last 669/657/669; one range read with both returns and with
 // inactive exit last 661/651. NOT kept: projecting first gains four; the success slot stays at +0x13.
+// Success, hit flags and direction-copy homes remain displaced. The minimum and frame size agree. origin cursor
+// with countdown tail 561, origin and hit cursors with countdown tail 558, origin cursor with count head 559,
+// origin and hit cursors with count head 558, origin cursor with ordinal bound 708, origin and hit cursors with
+// ordinal bound 703, origin cursor with end bound 683, origin and hit cursors with end bound 658. NOT kept: Both
+// cursor-countdown forms tie at 2876 bytes and leave the success byte at +0x13. The ascending ordinal and origin-
+// end bounds change the prologue and regress.
 // M3 lane 11 r122 (fast with 0x1e5450, 0x30bf0, 0x1697c0; control 558, aligned/masked [491/208]): the active test
 // positive with `else return true;` 669 (2865 B, [486/200], re-measure); with the range read into its local ahead of the
 // test 651 ([485/201]: the range is then loaded once as retail, but the zero stays in XMM1 and the range's home moves),

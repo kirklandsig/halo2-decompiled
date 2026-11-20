@@ -172,7 +172,8 @@ It does not stop strength reduction of a loop counter (`0x2fe550`).
 
 ### Callee-saved registers follow weighted use counts
 
-Priority is roughly the number of uses, times three per loop level, divided by
+Priority is roughly the number of uses, times two per loop level (a block's
+weight is 2 to the power of its loop depth, measured in the back end), divided by
 the basic blocks the value spans; esi, edi, ebx, ebp are handed out in that
 order. Push order means nothing. Two consequences:
 

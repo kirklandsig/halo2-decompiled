@@ -90,6 +90,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // register colouring and the stack layout differ: 205 (1212 bytes, frame 0x118, the first difference at the
 // zero register and then at the heading's homes). NOT kept: the score rises from 173; the original helper
 // and body restored.
+// MiniMax C (11-19): no new form, no lower score (173): the frame stays 0x11c against retail's 0x118 (the helper gives its whole 12-byte cross vector a home where retail spills cross j and k as scalars at +0x20 and +0x28 with the sine at +0x24), and the rotation still takes the cosine with fcos before fsin where retail takes the sine first; every form that reaches retail's frame scores above 173.
+// score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
+// where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
+// first, stored after the dot) and colours the cross terms differently.
 // M3 lane 11 r113 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): own `{}` blocks (slot sharing) around
 // the flag-2 arm's axis cross and rotation 173, around the creation tail 173, around the flag-4 arm's transform 173, around
 // the heading copy plus rotation 173, axis and tail blocks together 173 (all the same code; the frame stays 0x11c).
@@ -598,6 +602,13 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // stages 221/233/233. Shared scaled add at the axis/cross stages 242/233. Axis scaled
 // add plus cross add 204, axis add plus cross scaled add 233, both scaled adds 254.
 // NOT kept: all regress and move away from retail length. The 204 form keeps frame 0x11c.
+// The creation request sits four bytes late. The third rotation cross component still has a stack home. cross in
+// axis with direct sums 241, axis with two shared sums 234, axis with scalar finish 231, axis with scaled add
+// 231, cross in heading with direct sums 209, heading with two shared sums 215, heading with scalar finish 211,
+// heading with scaled adds 164, heading cross with sine first 226, sine/dot/cosine 226, dot/sine/cosine 226. NOT
+// kept: The heading cross with two scaled adds restores the frame, request and transform homes at 164 and 1209
+// bytes, first +0xa9. Its gain depends on three scaled-heading stores where retail has two cross spills with the
+// sine between them. Sine-first and dot-first follow-ups restore the extra frame word and regress to 226.
 // M3 lane 10 r125 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): the rotation helper's angle as `real
 // const &` 173 (same code); the projection as a reference-bound two-step (`real &projection = local_2; projection *= 1.0f -
 // local_1;`) 230; the heading declared at function scope above the creation data 173 (same code); the outer cross moved

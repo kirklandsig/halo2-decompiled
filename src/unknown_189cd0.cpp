@@ -268,6 +268,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // request test alone 116; the description bit through a SET_FLAG-style conditional macro 116; the slot lookup outside the
 // tag test (`slot_index = NONE; if (tag_index != NONE) slot_index = ...;` then one slot test) 116, as a ternary 116 (all
 // the same code: tag EDI, object EBP, spatialization spilled to [esp+0x18]).
+// M3 lane 10 r130 (plain; control 11): the object index as a by-value one-member aggregate parameter (declarations and
+// the five calls through a maker, every read plain; diagnostic) 116 (531 bytes: promoted like a long, the plain-reads code;
+// callers 0x2760a0 58, 0x2a9e00 7, 0x2a9e60 5, 0x2a9ed0 10); every read plain with one real early object use at the top
+// (value-wrong diagnostic) 160 (535 bytes: the tag then takes EBP as retail, but the object holds ESI for the whole
+// function, so a longer object range alone does not demote it); every read plain with `__assume(tag_index != NONE)` before
+// the started dispatch 152, before the request arm's 0x189fe0 call 152, at both 152 (535 bytes each: tag EDI, object EBP).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

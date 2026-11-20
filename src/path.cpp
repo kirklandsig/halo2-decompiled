@@ -375,6 +375,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax A (11-19): no new form, no lower score (286): rebuilt the body on retail's own listing (the rep stosd fill, the
+// split link copy, the walkable bit as a byte local, the dword previous/count homes, the node-index loop variable and the
+// per-arm distance through vector3d_from_points3d/length_sq3f): the two fill loops and the flag form reach retail's frame
+// and its `movsx`/`shr`/`and` walkable bit but score 403 and 362 (the byte local and the flag home move the whole frame),
+// the dword previous/count homes with the split copy reach 343, and a `data` pointer at function scope changes the caller's
+// convention (state leaves EBX) - all worse than the body as it stands, so the body is unchanged.
 // MiniMax R (11-17): no new form, no lower score (286): the node pointer at function scope with the previous pointer's NULL
 // initializer dropped gives retail's frame (0xe4) and the same parameter homes, but the body grows by three bytes and the score
 // rises to 357, so the body is as it was.
@@ -400,7 +406,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // MiniMax G (11-12): no new form, no lower score (286): frame 0xe8 against retail's 0xe4; the acquisition, the flags
 // and the scalar homes remain, and the geometry now uses shared differences.
 
-// score 286 (was 286): frame 0xe8 against retail's 0xe4, and from there the link test, the flag homes and the
+// Earlier at 286 (was 286): frame 0xe8 against retail's 0xe4, and from there the link test, the flag homes and the
 // scan differ; the two-flag form of round 71 below (match-only) gives 2 at 1388 bytes, left: two reloads at the scan
 // loop's latch in the other order (`mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]`). Rounds follow, newest last.
 // MiniMax A (11-14): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4 (the extra dword
@@ -903,6 +909,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // named `long last = count - 1` 2, as `if (!(distance > 1600.0f)) continue;` then the index test 2 (same code each); `real const
 // margin` 2 (same code); the delta block as a call to the existing 0x210a30 with `inline` on its /Ob1 definition 428 (1307
 // bytes: it stays a call; 0x210a30 and its six matched callers were listed, its file restored). Body unchanged.
+// The extra link-cursor word and flag homes remain. Short count and two flags with nested
+// conversion fallbacks 398. Start, end or both conversion results taken from the conjunction
+// 400/400/398, guarded success 400/400/398, guarded fallback 414/414. Later surface test
+// 396, also with the widened edge bit 396, then with one transition type read 332.
+// NOT kept: the 0xe4 forms lose the matched caller. The single type read recovers that
+// caller and restores the extra frame word. None matches or improves the opening score.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

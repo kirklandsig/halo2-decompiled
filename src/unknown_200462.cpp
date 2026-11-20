@@ -247,6 +247,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // after it 14 (same code); the half width computed ahead of the pulse query 28; named top and bottom edges (`y - half
 // height`, `y + half height`) for the corners 32 (first difference +0x119); the running y or x held in a scalar local
 // copied out of the position 36/38 (first difference +0x5).
+// M3 lane 8 r197 (fast with 0x2008fc 0x200891, control 14): both half extents halved as `/ 2` 14; the second x step as
+// `x = product + x` 14; the right corners' x and the lower corners' y written half extent first 14 (all three the same
+// code); the pulse query after the half extents 55 (first difference +0x129); the vertical step as `y = y + 50.0f` 14.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

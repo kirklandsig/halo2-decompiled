@@ -494,6 +494,13 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 }
 
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// MiniMax E (11-19): score 535 (was 535): no new form, no lower score. Read from the listing again: the entry agrees
+// (the tag index from the stack into EAX, the table global into ECX, the tag's bytes into EBX, the output into EDI), so
+// the remaining offset is in the locals' homes and not in the call: the tag spills at frame+0xa8 against retail's
+// +0x88, the zero counter sits at frame+0x4c against retail's +0x54 and the one at frame+0x18 against retail's +0x20,
+// while the plane base at frame+0x1e8 and the 0x21dc frame agree. The first loop's count pointer therefore sits eight
+// bytes lower than retail's, which moves every later home that is placed next to it. The permuter over the function
+// tried a few forms of its own and kept none (535 unchanged).
 // MiniMax I (11-16): no new form, no lower score (535): the frame 0x21dc and the 3647-byte length agree and the first
 // difference is still the tag spill at +0x41; the later homes of the tag, the count and the plane still sit in other slots
 // than retail's, and the entry register roles are still the other way round (retail takes the object pointer in edx and
@@ -954,6 +961,21 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // 532; three `/= length` statements 560 (3631 B); three `*= inverse` statements 559 (3631 B, the 1.0 still divided in place);
 // the limits index named once as a short local 741. Diagnostic, reverted: 1..7 unused initialised locals
 // 535/570/568/699/702/533/533, so no symbol count fits and the frame order is not a symbol-count state here.
+// M3 lane 11 r124 (plain each, with the file's nine functions, the others unchanged; base 535, aligned 672, masked 355). The frame
+// order follows from the normalize and sign block, not the other way round: the aggregates sit by reference density (face count,
+// axis, then retail's selected plane +0x34 ahead of the first plane +0x44, ours first plane +0x30 and selected plane +0x60), and
+// retail references the selected plane's normal three more times (18 against 15) because its sign cross product reloads it for
+// every product (0x180406-0x18043a; cross j spilled at +0x150). It has to: retail loads 1.0f into XMM0 ahead of the reciprocal and
+// keeps it for the sign, loads axis j and k into XMM6/XMM7 before the divide and scales them there (`mulss xmm6, xmm1`), scales i
+// from a copy of the reciprocal (`movaps xmm5, xmm1; mulss xmm5, [esp+0x24]`), and keeps all three scaled components in XMM5-7 for
+// the sign's dot, so only XMM1/XMM3/XMM4 are free for the cross. Ours divides 1.0f in place, scales every component from a copy of
+// the reciprocal, keeps the selected normal in three registers and loads the quad's normal instead. Forms: the axis normalised
+// through the existing normalize_inline (the helper this block writes out) 650 (frame 0x21e4, tag +0x94 as retail, face count
+// +0x1c, masked 357; the cross then loads the selected normal first and multiplies from the quad, as retail, but the reciprocal
+// still destroys 1.0f); the scaling as three member statements 559 (3631 B, tag +0x90, masked 339; same cross order); cross3f_staged
+// for the sign 535 (same score, tag +0x90, aligned 669, masked 351; a tie, not kept); the two endpoint copies member by member 604
+// (3663 B, tag +0xac, face count +0x1c, secondary count +0x60). Diagnostic, reverted at once: an inline asm no-op in the body 804
+// (frame 0x21e4, other entry convention), so retail's layout is not the inline-asm frame order.
 // M3 lane 15 r106 (plain each with 0x17d9a0/0x17ef10; base 535, aligned 672, stack-masked 497, stack- and register-masked
 // 355): the rotation in matched 0x1544e0's order (sine products in a `sine_axis` vector after the squares, forward.i, then
 // one_minus_cosine, cosine_j_i, left.i, forward.j, left.j, `cosine_k = one_minus_cosine * axis.k` named for cosine_k_i and
@@ -1560,7 +1582,7 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
     point3f const *source, point3f *destination);
 
 // @retail 0x17e670
-void function_17e670(s_effect_source *source, point3f const *point, long tag_index,
+void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
 {
     if (!g_46dd48)

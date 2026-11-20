@@ -802,6 +802,10 @@ static inline bool teams_enabled_19e1c0()
 // names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
 // with an ordinary result. NOT kept: the minimum stays out of line and needs
 // a larger frame. The 415 form restores the opening extent, with the preload still missing.
+// First comparison before both locals 390/691; native comparison count 390/691; signed name
+// length published after the clamp 438/692; missing-index sentinel in dispatch 454/736
+// (existing result and ordinary result, respectively). The ordinary count recovers the
+// 0x204 frame while merging the name-copy paths. Token preload and capacity home still differ.
 // M3 lane 1 r125 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
 // `remaining` copied into a named `long capacity` used for every clamp, format and the fallback, on the plain result 691,
 // on the volatile result 390 (both the same code: the copy propagates); on the plain result the token parameter declared
@@ -823,6 +827,14 @@ static inline bool teams_enabled_19e1c0()
 // switch-side `result = remaining` 431 (1398 B) [205/119]. Reading (retail): the token is never held in a register (a
 // scratch reload per compare and again for the fallback copy, the last compare's reload landing in ESI), `remaining` holds
 // EBP from the entry, the team cases jump to the shared return when the team is NONE and re-read it for the call.
+// M3 lane 13 r119 (fast with 0x19e0f0; control 390): the plain result with `remaining` renamed through a `long const &`
+// local 691, through a local copy 691, `token` through a local copy 691, both copies 691 (1170 B each, same code as the
+// plain result); the volatile result with the `remaining` copy 390 (same code). Copies of a parameter fold away before
+// the allocator weighs token against remaining.
+// Zero-result terminators for player names, team names, scores, or all 467/413/433/487.
+// Ordinary result for player, team, score, or cause names 691/691/691/691.
+// NOT kept: the team-name form reaches retail length but keeps the 0x208 frame.
+// Ordinary results recover the 0x204 frame and merge the name-copy tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
