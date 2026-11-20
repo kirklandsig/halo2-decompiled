@@ -32,7 +32,7 @@ struct s_ai_capsule_view
 };
 
 // @retail 0x1c8940
-void function_1c8940(s_ai_capsule_view *capsule, long object_index, long value)
+void function_1c8940(long value, long object_index, s_ai_capsule_view *capsule)
 {
 	real height;
 	real radius;
@@ -1227,6 +1227,22 @@ PRIVATE __forceinline s_prop_node_view *actor_next_prop(s_actor_prop_iterator *i
 
 long function_25d810(long object_index, long actor_index, bool create);
 
+PRIVATE __forceinline void ai_capsule_fill_1c89b0(long value, long object_index, s_ai_capsule_view *capsule)
+{
+	real height;
+	real radius;
+	function_df5f0(object_index, &capsule->center, &height, &radius);
+	capsule->active = height == 0.0f ? 1 : 0;
+	capsule->value10 = 0.0f;
+	capsule->value14 = 0.0f;
+	real *capsule_height = &capsule->height;
+	*capsule_height = height;
+	capsule->radius = radius + 0.15f;
+	capsule->value1c = value;
+	capsule->object_index = object_index;
+}
+
+
 // score 17 (was 17): the player loop keeps the player record and the object headers in the
 // other of esi and edi, with minor instruction ordering there, and the prop capsule call loads
 // its arguments in another order.
@@ -1234,12 +1250,12 @@ long function_25d810(long object_index, long actor_index, bool create);
 // header workspace, its native-player pairing, complete player/header role names, native player
 // with role names and direct table with role names: 18 each on reduced control 18 (plain 17).
 // Original complete executable body restored; prop-call setup and player/header register split remain.
+// Matched in a full build with stand-in SDK headers (was 17), without the volatile read: retail's player loop tail
+// (0x1c8cb2..0x1c8d0d) is function_1c8940's body inlined, so the loop uses a private copy of that body; the copy stores
+// the height through a one-use pointer, and function_1c8940 takes (value, object_index, capsule).
 // @retail 0x1c89b0
 short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_capsule_view *capsules)
 {
- (void)&actor_index;
- (void)&maximum_count;
- (void)&capsules;
  s_actor_view *actor = actor_get(actor_index);
  long count = 0;
  if (actor->unknown07c != NONE)
@@ -1254,7 +1270,7 @@ short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_caps
    {
     long object_index = other->unknown018;
     if (((s_ai_object_header *)g_4e0300->data)[object_index & 0xffff].type == 0)
-     function_1c8940(&capsules[(short)count++], object_index, NONE);
+     function_1c8940(NONE, object_index, &capsules[(short)count++]);
    }
   }
  }
@@ -1271,7 +1287,7 @@ short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_caps
    if (((1 << object_get(object_index)->type) & 1) && (short)count < maximum_count)
    {
     /* retail keeps the current prop index in memory across prop_node_state */
-    function_1c8940(&capsules[(short)count], object_index, *(long const volatile *)&prop_iterator.index);
+    function_1c8940(prop_iterator.index, object_index, &capsules[(short)count]);
     ++count;
    }
   }
@@ -1302,18 +1318,7 @@ short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_caps
      continue;
    }
    long prop_index = function_25d810(object_index, actor_index, false);
-   object_index = player->unit_index;
-   s_ai_capsule_view *capsule = &capsules[(short)count];
-   real height;
-   real radius;
-   function_df5f0(object_index, &capsule->center, &height, &radius);
-   capsule->active = height == 0.0f ? 1 : 0;
-   capsule->value10 = 0.0f;
-   capsule->value14 = 0.0f;
-   capsule->height = height;
-   capsule->radius = radius + 0.15f;
-   capsule->value1c = prop_index;
-   capsule->object_index = object_index;
+   ai_capsule_fill_1c89b0(prop_index, player->unit_index, &capsules[(short)count]);
    ++count;
   }
  }
