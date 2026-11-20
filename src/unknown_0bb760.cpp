@@ -815,6 +815,10 @@ void function_3dd10(long object_index, bool force);
 // complementary admission 86/86/189/86 at the unequal bound. All four signed forms 645.
 // NOT kept: the signed bound unrolls the scan, and the other forms regress at retail length.
 // The ordinal zero, choice count and mask homes still differ.
+// Weight, selection or both read-only choice references 77/77/77. Shared choice array and both
+// references, at scan entry or positive-count admission 89/272. Immutable scan-entry array 89.
+// Signed weight bound with reference or shared array 636/582. NOT kept: the signed forms unroll.
+// The reference and array forms leave the ordinal, weight and mask homes unresolved.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

@@ -1235,6 +1235,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // The reset cutoff or separate scopes with live table reads in scan two 549/549. One table snapshot
 // across both scans 623. NOT kept: the live table forms reach retail length but retain a short frame
 // and miss the candidate x store. The snapshot shortens the body, and the other forms tie or regress.
+// Reused offset norm as square accumulation or grouped sum 646/646. Candidate setter with either
+// norm 649/649. Both setters with either norm 649/649. Anchor setter and accumulated norm 646.
+// Candidate setter with offset-first dot and accumulated norm 649. NOT kept: 2039-byte extent
+// and 0x1c frame, with the candidate-X store still missing.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
