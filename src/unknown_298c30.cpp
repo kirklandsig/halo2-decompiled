@@ -708,6 +708,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 316 (1740 B); the distance's y term ahead of its x term 305 (same code: retail subtracts x first, ours y first); the
 // differences as a point2f local then sqrt of their squares 431 (1775 B); that through magnitude2d 431. The first
 // difference is still the 1.0f/radius pair (ours 1.0f XMM1 and the radius XMM2, retail the reverse).
+// M3 lane 9 r146 (fast with 0x29a190/0x298c30, both MATCH unless noted; base 305): the facing x and y read into two
+// locals in each near emission 423 (1772 B); the facing point copied once at entry and read everywhere 435 (1728 B,
+// 0x29a190 351); the near rotated point built in a named point2f and stored as one aggregate 375 (1725 B); the near side
+// and hit flags stored right after the angle, ahead of the rows, 313; only the facing y named in each near emission 413
+// (1772 B). All restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

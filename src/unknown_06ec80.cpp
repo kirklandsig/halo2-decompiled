@@ -225,6 +225,11 @@ union s_6ec80
 // return NONE;` 229, as an if/else on its result 194 (entry registers retail's, block pointers EBX/EDI swapped from
 // +0x101), each of the three also unmatching the getter (27 B against 26); the bit or-ed as a full assignment 225; one
 // readiness test after the guard repeating the pointer tests (match-only) 226.
+// M3 lane 9 r146 (fast with 0x6ec10/0x5b120, both MATCH; base 5): the mask zeroed in the guard with the 0x49c8 NONE default
+// moved after the 0x18 read (retail's store position) 225; that move alone 7; the mask zeroed in the guard with the NONE
+// default ahead of the 0x4dac block (an earlier 18 lead) re-measured 33; mask and counter both declared among the top
+// declarations and both zeroed at the guard's top 225; mask and counter both zeroed just before the guard 87 (the entry
+// registers shift). All restored.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
