@@ -151,7 +151,7 @@ static inline bool device_iterator_next(s_device_iterator *iterator)
 
 void function_b7360(long object_index);
 void function_b58c0(long index, dword mask);
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction, long tag_index);
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale, long tag_index);
 void device_groups_initialize();
 void device_groups_dispose();
 
@@ -302,7 +302,7 @@ void function_107980(long object_index, long tag_index)
 			function_176780(object_index, &owner, device->power, tag_index, device->position, NULL, NULL);
 			break;
 		case 'snd!':
-			function_189060(object_index, NONE, 1.0f, g_468788, g_4687a8, tag_index);
+			function_189060(object_index, NONE, g_468788, g_4687a8, 1.0f, tag_index);
 			break;
 		}
 	}
