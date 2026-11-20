@@ -5478,6 +5478,12 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // schedule ignores operand order: all 64 product orders of either cross product through a pointer helper, written
 // out in place (35 or more), staged, statement orders, `left` at function scope, forward declared before up, and both
 // crosses in one inline helper all leave up.i preloaded.
+// Basis left, forward, or up in the final transform 205/173/190; separate
+// three-axis basis 209, with projection in its forward member 205, or with
+// a separate left vector 177; transform forward and up 173; forward copy
+// from memcpy directly to the first cross 169.
+// NOT kept: the forward member delays up.i but shrinks the frame to 0x44.
+// The direct memcpy result keeps the early up.i load. The x87 lifetime remains.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -7254,6 +7260,11 @@ done:
 // rotations with shared scaler 220; state flag updates through byte helper with shared scaler 181.
 // NOT kept: the shared planar scaler recovers the reciprocal and both multiplies at retail length but gains
 // only six. The direction branch span, flag-result bytes, state home and weapon reloads still differ.
+// Shared planar scaler with conditional length 493, nested action gate 181, type-first animation rejection
+// 185, named state and weapon roles 181, branch-local fallback duration 190, animation accessor and nested
+// definition gate 181, conditional side selector 181, named weapon eligibility 208.
+// NOT kept: the scale sequence agrees at 181 and retail length, but gains six. Flag bytes, state home and
+// independent weapon lookups remain.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -9567,6 +9578,11 @@ struct s_unit_melee_collision
 // by test and publication 484; collision classification by tests 486.
 // NOT kept: the live range forms recover the 0x17c frame but shorten the body. The scaled-add form gains
 // four at 2201 bytes, and chained defaults gain one at 2229. Retail's unit and fan counter homes remain.
+// Native per-ray range with sequential basis scales 511, shared across 511, shared up 511, shared across and
+// up 511, aim after center 531, factored biped preference 536, successful query around collision dispatch 531,
+// basis and ordinal names 531.
+// NOT kept: all recover 0x17c but shorten to 2205 bytes and raise the score. The early pool load and fan
+// register allocation remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

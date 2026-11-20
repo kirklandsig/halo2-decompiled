@@ -558,6 +558,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // `0 <= start && 0 < count` 21 [match]; the scan on `&string[0]` with the source as `&string[start]` 21 [match]; the string
 // parameter advanced in place (`string += start;` where the source is named) 47 (107 bytes) [6]; the source declared (not
 // assigned) after the result 21 [match], before it 21 [match]. The walk ECX / counter EDX split stands.
+// M3 lane 4 r231 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): with a plain string the
+// string renamed `buffer` (sorting before the destination) 49 (92 bytes) [6], the destination renamed `substring` (sorting
+// after the string) 49 [6], the string `char const *const` 49 [6] (names and const do not move the string/destination
+// contest for EBP); on main's body the clamp as `count = count + 1 > 0x200 ? 0x200 : count + 1;` 35 [104]; the length
+// declared at the top and assigned after the sign tests 21 [match] (same code). All restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -4564,6 +4564,27 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // Direct reason 3/5/8 returns 345/301/297, both timeout returns 299, all five policy returns 362.
 // Shared range rejection or admission 370/370, shared rejection with five direct returns 387.
 // The result byte at +0xb holds, but the first branch displacement and the return layout still differ.
+// M3 lane 11 r133 (fast with 0x5e3f0, MATCH each run; body unchanged at 295). Round 208's 96 body re-measured 96 (1264 B,
+// aligned 20: only the end of the received block differs). Reading of retail's end: the refused path (result still false)
+// and the accepted path with neither kept arm (result just set) meet at the disconnect, so the read, test and `jne` after
+// it is a real test of the result on merged paths; its true edge and the two kept arms all enter the state-8 exit's
+// epilogue behind its load with AL already holding the result (`mov al, 1; mov [result], al` ahead of the kept-arm tests,
+// which therefore go through CL), and its false edge returns the byte just read without `xor al, al`, so the false edge's
+// return is not a return that only that edge reaches. The acknowledgement block's two entries four bytes apart (one
+// reloads the sender) and this file's matched 0x5e3f0 (a `take` flag set in a chain and tested after it) fit the flag
+// form. Tried on the 96 body: the kept arms as `if (same) return result; if (better) return result;` with `if (result)
+// return result;` after the disconnect 150; the kept arms as one `return result;` with that test 123 (the kept arms get a
+// `mov al, 1` block of their own and the test folds away); `if (result) goto received_done; return result;` after the
+// disconnect 48 (retail's read, test and `jne`, but `xor al, al` on the false edge, the kept arms still through AL and
+// the result byte at +9: each added reference to the result moves its home); that with the kept arms returning 113; the
+// block as `for (; !result && proceed; proceed = false)` 389 or `while (!result && proceed)` 392 (1230 B: the layout
+// goes); the acknowledgement under `if (!result && acknowledge)` 96 (same code); `if (result) return result;` ahead of
+// the acknowledgement test 119; the block as an inline helper returning its own flag, called under `if` or assigned 908
+// to 921 (this file's inline depth of 0 keeps it out of line); a second flag `success` inside the block with `if
+// (success) result = true;` after it 239 (1273 B: the test is there but the two flags take two homes), `result =
+// success;` 227, `return success;` 243; the false edge and the reason-9 arm sharing a `return result;` inside the block
+// with the true edge jumping to a label after the block or at the final return 119 each (the two returns merge and the
+// test goes); `if (!result) goto` a second final `return result;` 48 (the 48 form again).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

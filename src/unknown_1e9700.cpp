@@ -382,6 +382,11 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax E (11-20): no new form, no lower score (353): the three small homes stay rotated (retail keeps victim_team at
+// +0x18, killer_team at +0x14 and the damage code byte at +0x1c, ours at +0x14, +0x1c and +0x18) and the pool record's base
+// is built as a +0x2f0 offset against retail's +0xc, so the body stays four bytes longer than retail. Measured and dropped:
+// the team test as a disjunction (`reported_player == NONE || !function_1df560(...)`) compiles to the same code (353), and
+// the three homes are not reachable from the expression's spelling.
 // MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join

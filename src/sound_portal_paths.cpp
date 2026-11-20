@@ -251,6 +251,11 @@ __forceinline long portal_path_gain(real distance, real range)
 // Destination array names 287; distance and bitmap names 287; four ranked table roles 287; destination
 // arrays before order 287, order before the distance array 287; source and destination record names
 // 287; distinct phase ordinals 287, with candidate array and bitmap roles 287.
+// Round 648: deferred seed portal 391; destination ordinal from its record 322; split flag predicates 311;
+// bitmap word shifted at reads 338; fallback-first range 344; short-circuited range tests 287;
+// defaulted output gain 286; common count update 288;
+// split flags with signed link decode 356; nested flag guards 311.
+// NOT kept: the 286 gain result improves one point and the 311 split flag forms keep both table spills.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -349,7 +354,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 305 (was 305): The 0x42c frame, starting cluster in EBX and cached BSP table bases still differ.
+// score 305 (was 315): Frame 0x42c versus 0x428. The starting cluster is in EBX and both
+// BSP table bases stay live through the walk.
+// The 0x42c frame, starting cluster in EBX and cached BSP table bases still differ.
 // Earlier comparisons were 315 and 354. Advancing the required index at the row latch brought the
 // entry frame to 0x42c.
 // Advancing the required index at the row latch brings the entry frame to 0x42c.
@@ -551,6 +558,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Rank storage first declared at the fill with rank/key/both cursors 321/321/337.
 // Both fill cursors with the two-row condition in the output loop 334. All keep the 0x42c
 // frame and the cached BSP bases.
+// Round 648: deferred seed portal 396; destination ordinal from its record 364; split flag predicates 320;
+// bitmap word shifted at reads 348; fallback-first range 346; short-circuited range tests 305;
+// defaulted output gain 308; common count update 305.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
