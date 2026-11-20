@@ -520,6 +520,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // node is stored at frame+0x14 where retail keeps frame+0x20, and the node's type is still compared in memory
 // where retail loads it into ECX and compares the register; a named local for the type measures the same 238, as
 // the earlier rounds record.
+// MiniMax S (11-20): no new form, no lower score (238): the frame is still 0x40 where retail has 0x44 and the second node's
+// home is frame+0x14 where retail keeps frame+0x20; retail's 1..16 classifier holds the constant in the result register and
+// compares it against the value register and re-reads the shape's data word three times, while ours folds the range check
+// into immediate compares and loads the data once.
 // score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax E (11-19): score 238 (was 238): no new form, no lower score. Read from the listing again: retail walks the
 // node chain with the next pointer already in a register and tests the last node's type and entity, then scans the
