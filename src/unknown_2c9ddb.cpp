@@ -64,6 +64,12 @@ extern long g_55c154;
 // src/unicode_strings.cpp, a file this lane may not edit, and the two pushed load-proc addresses cannot match in the
 // reduced image; the body stands.
 // score 61 (was 61): retail has one 0x212bc0 call and one copy in each second-half arm and calls the name copy out of line; this body has one call and a spilled byte; rounds below.
+// M3 lane 4 r230 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all MATCH; control 61, masked 44). The id and the variant
+// as two separate globals in place of the shared record (diagnostic, header and definition restored): one load 61 (same
+// code), two load arms 174 (the variant's address is still hoisted into EBX, so the record type is not why retail
+// re-materialises 0x54e4a0 at each use); two load arms with the default arm's copy through `variant_bytes` by memcpy 174;
+// two load arms with the default arm's name and count named once (0x13fac0 then out of line as retail) 179 (580 B,
+// masked 53); re-measured: two load arms 174, with memcpy copies 174, one load with memcpy copies 61. Body unchanged.
 // Round 192 (m3 lane 8, fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all matched; control 61): two load arms as
 // `if (entry->variant == NONE) { if (load(saved)) ... } else if (load(entry->variant)) ...` 174 (595 B); as two
 // separate `if (selected == NONE && load(saved))` / `if (selected != NONE && load(selected))` 174; nested
