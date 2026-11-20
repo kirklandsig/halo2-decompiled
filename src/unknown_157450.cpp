@@ -5886,6 +5886,12 @@ void __stdcall function_d6bc0(long object_index);
 // at the 0x15aad0 argument, for the whole countdown block or at the schedule test 172/172/172 (same code: the copy
 // folds into the parameter); the reset counter as `value06 = reset ? 0 : value06 + 1;` 182 (851 B); the schedule test
 // through `s_netgame_entry_state *const &kept = entries;` 172 (same code).
+// M3 lane 14 r125 (fast with 0x15c150, matched each time; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172
+// at 858 B): on the flag + field-test form, `schedule = false` at the declaration with the index test setting true 172 (same
+// code; on the local test 7, same code); the countdown on the field as `if (value04 > 0) { if (--value04 == 0)` 172 (same
+// code); case 1 as `schedule = bit;` 139 (869 B; `entries` still in EDI from the loop top, the timer in EBX); the object
+// left uninitialised and set NULL in the index test's arm 159 (869 B), on the local test 190 (870 B). A 1500 s permuter
+// run on the 7 form (62 tries) found nothing below 7.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

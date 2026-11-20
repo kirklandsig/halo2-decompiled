@@ -251,6 +251,14 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // scratch declared in the sort's block 440 (same frame, aligned 244/233); the two flags renamed so that their names sort
 // together 440 (aligned 246/237: names do not pack them); both 440; the selected index as a long 563 (3084 B); that with
 // the scratch in its block 561. The frame's two extra dwords and the two opposite expansion decisions remain.
+// M3 lane 14 r125 (fast with 0x2605d0, 0x2613d0 and 0x2600a0, all MATCH; control 440, aligned 292, frame 0x8a8): the sort
+// scratch in a block of its own around just the sort call 439 (aligned 291, frame 0x8a4: the scratch then takes retail's
+// dead actor-offset slot, `lea ecx, [esp + 0x2c]` as retail); the scratch declared first 440; the two flags declared the
+// other way round 440; on the tight-block form the flags as `char` 439 (same code). Diagnostic (a grouping form, match-only):
+// on the tight-block form the two flags as one two-element bool array 510 at 3081 B (frame 0x8a0 as retail, aligned 204,
+// first difference +0x2a): retail keeps the two flags as adjacent bytes of one cell (+6/+7), ours spreads them over two
+// cells (+3 and +0xb), which is the frame's last extra dword. Left there: the small-cell order (flags +0/+1 against +6/+7,
+// actor and result swapped) and the two opposite inlining decisions. Body restored.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

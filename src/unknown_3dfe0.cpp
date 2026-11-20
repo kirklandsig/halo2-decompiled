@@ -191,6 +191,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // stack slot is where update lives) 21; `(void)&update;` after its declaration 21; `(void)&priority;` 21 (same code each:
 // none takes update out of the allocator); the hidden bit read into a named bool ahead of force 237 (833 B); the object
 // read through a const reference to its header entry 21 (same code).
+// M3 lane 14 r125 (fast with 0x3d2c0 and 0xd1850, both MATCH; control 21; `bool update = false;` right after the zero-elapsed
+// return re-measured 216, aligned 26: entry block as retail, the sample/update timestamps in EDI/ESI, the late object index
+// in EDI, no force-arm reload): a redundant `update = false;` at the top of the not-force arm 222 (aligned 7), the same on
+// the update-first form 222; on update-first, the hidden test through a fresh lookup expression (no second named pointer)
+// 216 (same code), the force arm inverted as `if (!force) { hidden return } else update = true;` 216 (aligned 31), the
+// sample decision as `if (sample time == NONE) sample = true; else { thresholds }` 166 (aligned 26: positional only).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
