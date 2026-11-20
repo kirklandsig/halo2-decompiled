@@ -117,7 +117,7 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
-// score 287 (was 296): The 0x428 frame agrees. The starting-cluster register and both BSP base reloads still differ.
+// score 287 (was 287): The 0x428 frame agrees. The starting-cluster register and both BSP base reloads still differ.
 // Advancing the required index output restores gain-based output addressing.
 // Frame 0x428 agrees. The starting cluster stays in EBX and both BSP table bases are cached across the portal walk.
 // Earlier: Advancing the required index output restores gain-based output addressing.
@@ -257,6 +257,14 @@ __forceinline long portal_path_gain(real distance, real range)
 // defaulted output gain 286; common count update 288;
 // split flags with signed link decode 356; nested flag guards 311.
 // NOT kept: the 286 gain result improves one point and the 311 split flag forms keep both table spills.
+// M3 lane 16 r160 (fast with 0x18dc90, 0x14b240, 0x249d60, 0x18ae50; main 287 at 1367 B, difflib-aligned 166; twin 295
+// / 194): the seed stores as clusters, portals, distances 287 (aligned 165: the seed block is exactly retail's, the float
+// store alone forcing the index re-read; statements reordered by score, match-only); the range clamp as `if (!(range >
+// 0.001f)) range = 0.001f;` 287 (same code); the clamped range in a new local 287 at 1364 B (aligned 188, twin 303); the
+// three pins through the existing PIN_126660 macro, as the looping-path code does, 287 (aligned 162, twin 294). Lane 13's
+// summary form for 0x14b240 re-measured on main's bodies: this one 370 (1353 B), the twin 372 (1346 B), 0x222150, 0x12e960
+// and 0x18ab70 still matched (0x222150 without its volatile reads), 0x18ae80 846 -> 911. BLOCKED-BY 0x14b240's write
+// summary while 0x18ae80 rises on it.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
