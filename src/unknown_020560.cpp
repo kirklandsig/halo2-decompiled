@@ -1290,6 +1290,15 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // of it 439. The threaded tail needs nothing between `second` and its test.
 // Search-role names for the vectors, winning ordinals and pass counters in all seven subsets,
 // then all with both cutoffs renamed: 418 each. These names leave the frame and second induction unchanged.
+// One direction workspace for anchor and fallback 419, with scan-scope offset or a shared candidate
+// position 419/419. One candidate position with aggregate or shared setter offset 433/418. Shared
+// direction and aggregate or setter offset 433/419, or with a candidate read from the live table 550.
+// The aggregate recovers retail length and the candidate-X spill, with a 0x28 frame.
+// The aggregate recovers the candidate-X spill and retail length. Candidate offset named before
+// delta 433, reset distance limit 433, separate scan indices 433, named nearest/opposite ordinals
+// 433, named sample count 433, opposite scan state declared before delta 417, loop-top ordinal
+// skip 433, candidate point pointer 433. NOT kept: the best form gains one, keeps the 0x28 frame
+// and lacks retail's second induction address.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

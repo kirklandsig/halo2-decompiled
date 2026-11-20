@@ -777,6 +777,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // appears, but the new byte takes a home and every slot below moves) 663 at 3499 B; local_25 assigned y first 708
 // (3488 B, frame moves); that with the byte flip 718 (3481 B); y first with local_26 through the existing
 // vector2d_from_points2d 721 (3476 B). Body unchanged.
+// Branch-owned side Y 720, advancing the planar base 718, selecting full Y 693 or its
+// displacement 698, branch/selected radial Y 694/627, shared planar cross test 702,
+// and shared planar difference 719. NOT kept: full Y selection recovers the +0x80
+// position home and frame 0x88 but shifts the first difference to +0x60 and regresses.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

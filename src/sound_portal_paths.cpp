@@ -605,6 +605,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // ahead of the fill loop 318 [322]; the found arm's index store after the gain/portal/cluster/count stores 296 [289]; the fill
 // loop's order store after the distance reset 296 [290]; the seed bit set ahead of the seed stores 368 [375]. Still BLOCKED-BY
 // 0x14b240's write summary (0x18ae80's file held this round).
+// Shared ordinal for fill/output 295, walk/fill 295, walk/output 299, or all three 299.
+// Advance portal and cluster outputs at their stores 291, gain and portal outputs 286, all
+// optional outputs 318, or all with shared fill/output ordinal 318. NOT kept: the 291 form
+// gains four. The 286 form restores the 0x428 frame but grows to 1372/1363 bytes, advances
+// outputs at their stores and leaves the BSP base loads and starting-cluster register unresolved.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

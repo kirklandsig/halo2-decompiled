@@ -365,6 +365,8 @@ real function_30bf0(vector3f *vector);
 
 // score 84 (was 84): r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax H (11-20): no new form, no lower score (84): six source forms measured this round (the clip amount's scope, the facing pair's declaration order, the distance's scope, the delta as a point3f, and the scale and the facing maxima initialized at the top) leave the homes where they are, except the two top-init forms that rise to 90 and 208/212; retail's homes run result 0x8, facing maxima 0x14/0x18, clip amount 0x1c, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and delta 0x4c/0x50/0x54, and ours run result 0xc, clip amount 0x10, range 0x18, scale 0x1c, facing maxima 0x20/0x30, seat cursor 0x34 and delta 0x48/0x4c/0x50.
+// The 0x350 frame agrees. The initial result is four bytes above retail, and the clip output shares the later seat-count slot.
+// Earlier measurement 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax R (11-17): no new form, no lower score (84): the seat loop's two cross products load their operands in the
 // other order (retail multiplies a term with the vector's component in the register and this build with the memory
 // operand), and the shared header helper's spelling fixes that order, so the products cannot be moved from here; the
@@ -983,6 +985,11 @@ real function_30bf0(vector3f *vector);
 // (1312 B); the clip test `amount >= 0.0f` for `!(0.0f > amount)` 236. Diagnostic (a file-local copy of the cross helper
 // with the subtracted products written a first, not keepable): 84, the same code, so the seat-loop cross products' operand
 // sides do not follow the helper's spelling.
+// Common radius failure before the sole exit 239, late failure block 239; squared limits selected before classification 129.
+// Primary fallback before the secondary classification 84; clipped point setter 148, inner positive gate 184, positive arm clamp 252, point initializer 84.
+// NOT kept: the two ties keep the first result store and the clip slot. The remaining forms regress.
+// Unscaled-radius or scaled-radius guard to the sole exit 152/152; both guards 193.
+// NOT kept: these forms retain the displaced result store and raise the score.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2248,6 +2255,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
+// score 158 (was 168): The 0x80 frame agrees. The contact head reverses the base and index in its address.
 // MiniMax I (11-19): no new form, no lower score (168): the first difference is still the inlined 0x26be00's head load, whose
 // base and index are chosen inside that callee's own source in a file this lane may not edit; the object table's pointer still
 // takes ECX where retail keeps EAX, and the player search further down still keeps its counters in other registers.
@@ -2257,11 +2265,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // registers.
 // score 158 (was 158): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
 // score 158 (was 158; 168 before lane 2 r119): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
+// Earlier measurement 158 (was 168): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
 // the players iterator loads its table into ECX (retail EAX) and the direction is not held in XMM1..XMM3 across the two dots.
 // Earlier first lines: 158 (was 168); 168 (was 168): r200 unchanged.
 // MiniMax A (11-20): no new form, no lower score (168): the 0x80 frame agrees and the first difference is still the contact head's reversed base and index in the address encoding (ours `[eax + ecx + 0x58]`, retail `[ecx + eax + 0x58]`), which comes from the inlined 0x26be00's `object->value58` read of the clump table - that helper lives in src/unknown_26bda0.cpp, so the roles cannot be changed from this file; the rest of the gap is the players iterator's table pointer, which retail loads into EAX and stores at once (a five-byte load against this build's six-byte one into ECX, which moves the loop pad and every row after it), and the per-case scratch rotations; the two NONE stores in the other order measure 170 and the two player searches merged into one 829, so the two separate searches and the store order are retail's.
 // Earlier first line (merged into the note above): 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // Earlier stacked line, merged here: 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// Earlier measurement 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // M3 lane 8 r189 (fast with 0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 168): the first difference is the
 // inlined 0x26be00, whose head load retail addresses as [table + slot offset + 0x58] and ours as [offset + table + 0x58]
 // (the slot offset is shared with the actor lookup). Forms: the byte alias `data` dropped for `(byte *)actor` 168; the
@@ -2944,6 +2954,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // threshold);`) 201 (2882 B); the established block's approach bonus tested ahead of the distance bonuses 232. Reading:
 // every instruction ahead of the players loop is retail's, yet the loop's table pointer is one scratch-rotation step off
 // (ECX for retail's EAX); lane 2 r119's 377 form already gives the loop retail's registers behind that one-byte-longer load.
+// Prop-view head 158, with the sibling cursor 158; iterator seeded before the clear 690, typed head before the clear 690.
+// Winning handles read at publication 158; level stored after its handle 420; cached signed alert slot 499; unsigned slot check 526.
+// NOT kept: the typed iterator forms tie and the remaining forms regress. The player iterator and direction homes still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

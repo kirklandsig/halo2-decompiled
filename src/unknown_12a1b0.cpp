@@ -336,10 +336,11 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
-// score 80 (was 93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and the
+// score 80 (was 93): The frameless prologue saves the wrong index register. The spatial query expands and the loop carries an element pointer.
+// Earlier measurement 80 (was 93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and the
 // walk keeps the element pointer where retail keeps a packed datum index; a pool local with the typed stride, the
 // inlined next-used scan and a sign test on the slot index reaches 80 (222 bytes); no one-use local here.
-// score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
+// Earlier measurement 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax G (11-20): no new form, no lower score (93): 0x11bed0 is still expanded here where retail calls it out of line.
 // MiniMax H (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
 // MiniMax I (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its definition is in src/unknown_11bed0.cpp, which this lane may not edit; the one form that reaches 0 needs the redundant `&& data && sound` pointer tests, which the redundant-test ruling rejects. BLOCKED-BY 0x11bed0.
@@ -487,6 +488,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // element cursor 206/215/227/225; salted datum cursor 311/318/353/355.
 // NOT kept: the additional scan paths increase the score and leave the
 // location query expanded. Original traversal restored.
+// Absolute slot with signed or sentinel guard 88/90; sentinel guard with pool stride 92; element traversal with pool stride 78.
+// Signed audible interval or separate low and high nibble tests on the typed cursor 83/81, salted cursor 164/167.
+// NOT kept: the pool-stride form gains two points, and the spatial query still expands.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -2917,7 +2921,8 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
-// score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
+// score 339 (was 339): The aligned frame is 0x4b4 against 0x4bc. Retail holds two extra inputs before clearing the base and effects.
+// Earlier measurement 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
 // locals in a different order and the gap cannot be closed by padding;
@@ -3123,6 +3128,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // 552, inner gain addition through the existing helper 492, native in-place inner gain addition 469.
 // Primary before pitch 453, converted pitch limits 339, named scaled interval 339, primary between
 // limits and arithmetic 453, and one guarded current-chunk read 420.
+// Flags and clear payloads split 496; effect flag from the effect 346; split payloads with effect flag publication 479.
+// Controller sentinel in the base initializer 543; mixed gain in the property 341; pitch staged in the property 454.
+// Scaling gain before clearing 462; invalid permutation stop arm first 377. NOT kept: each form regresses and none recovers the missing frame words.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {

@@ -5793,6 +5793,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // scalar alpha 231/231/231/231; initialized four-channel color 400/400/400/400.
 // NOT kept: color restores the 0xe0 frame but moves away from retail length to
 // 1794 bytes and leaves the radius at +0xc. The scalar-alpha bodies compile identically.
+// Depth within the scale branch 242/224, lateral and depth within the branch 412/399,
+// reflected corner offsets 441/444, and shared corner translation pass 792/798
+// (scalar alpha/four-channel color). NOT kept: the 224 form recovers frame 0xe0 and
+// 1819 bytes but gains seven. The positive-radius, negative-radius and zero homes differ.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

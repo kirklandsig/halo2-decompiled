@@ -765,6 +765,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // vector first) 424 (0x29b990 48). Retail stores the first rotation's sine at +0x10 and its cosine in the dead
 // first-parameter home (+0x3c), ours the reverse (the second rotation agrees); the yaw clamp's zero copy (`movaps xmm5,
 // xmm1`) sits above retail's `ja` and below ours.
+// Second projection as a zero-depth aggregate or through the component setter 389/372, or from the XY
+// workspace 420. Alternate shared normalizer for the second projection or both 289/393. Shared approach
+// operation for yaw, pitch or both 298/280/291. All regress. The exchanged depth and XY stores, yaw zero
+// copy and the first rotation's product order and spill homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

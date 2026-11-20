@@ -893,6 +893,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // with its own bound, alone or with a signed-word candidate bound 250/250.
 // NOT kept: the copies fold, and the short pass keeps the extra frame word.
 // The result and departure homes remain.
+// Independent append increment with long or short pass 270/249, pass advanced from published length 144/263,
+// pass advanced from incremented length 242/237, short pass and short length incremented independently 249,
+// short feedback with fixed compaction prefix 249. NOT kept: the forms reaching frame 0x14 shorten the
+// function to 760–762 bytes and regress. The long published-length form ties at frame 0x18.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -64,8 +64,9 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)&g_47f0f8[0]);
 }
 
+// score 47 (was 47): The terminal record gets its base before the stores, and the dispatch stub carries the count in EDX.
 // MiniMax A (11-20): no new form, no lower score (47); retail folds the record base into the six stores' displacement and materializes it with a lea after them, where this build folds every use of the address into the displacement, and the tail's 0x2b5d0 call takes its count in another register (BLOCKED-BY 0x2b5d0, whose stub is in src/stubs/lane_k.cpp).
-// score 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// Earlier measurement 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // m3 lane 4 r224: a one-object LTCG screen (this file plus the real objects of 0x223080, 0x2f800, 0x2c8a0, 0x13f10,
 // 0x68290, 0x2f6b0, 0x2c490, 0x3f450 and the 0x2b5d0 stub) reproduces the full build's listing exactly (0 rows); against
 // retail it leaves 9 aligned rows: the terminal record's `add eax, base` before the six stores (retail folds the base into
@@ -459,6 +460,10 @@ void function_2232a0(void)
 // element pointer declared at the call 40, the stub's views as `g_47f0f8 + 1` 40; the count as `1 + local_2` 47 (40 after
 // the loop). The base still folds early. 0x2b5d0's parked body is in another lane's file this round and the stub takes
 // the count in EDX (retail EAX): still BLOCKED-BY 0x2b5d0.
+// Terminal as the final indexed visit, terminal first with saved address or ordinal 251/218,
+// player first with saved address or ordinal 239/216, shared record cursor 273.
+// One-based player slots with terminal from the cursor 175, also using that cursor as dispatch count 163,
+// and terminal address from its predecessor 47. NOT kept: the combined traversal moves the matching prefix.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

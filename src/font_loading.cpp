@@ -1002,6 +1002,11 @@ static inline long font_character_pixel(long alpha, long color)
 // low-first, split-byte or combined assembly: byte parity 61/61/61/119, dword parity
 // 207/207/207/204. NOT kept: the byte forms assemble into one register, while widening
 // parity still merges the fills and moves the packed run out of EBX.
+// The twelve-byte frame agrees. The packed parity mask still narrows and the pair count folds.
+// Count after each conditional packed store 186, count on the store/absent paths 174, count by
+// written extent or endpoint 210/210, separate packed range/exact admissions 192/185. Dword
+// parity with store-path count or exact admissions 198/232. NOT kept: both dword forms shorten
+// the two fills and change the packed run allocation. Literal assembly still differs.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
