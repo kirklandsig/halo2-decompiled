@@ -212,6 +212,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // (same code); the clamp ahead of `bool update = false;` with the not-force arm first (hidden return in braces, `else update
 // = true;`) 28; `bool update = false, force = ...;` 218 (the update-first code); update as `byte` 21 (same code); re-measured
 // update between update elapsed and the object 216.
+// M3 lane 15 r116 (fast with 0xd1850 and 0x3db00, both MATCH; control 21, aligned 16): diagnostic, 0 to 7 dead initialised
+// longs on `bool update = false;` right after the zero-elapsed return 216 each (the timestamps' ESI/EDI swap is not a
+// symbol-count tie); the tail's update test through a `bool const &` binding 21, on update-first 216; force through a
+// `bool const &` for its test 21 and for the 0xd1850 argument 21; the hidden test's object through a `byte *const &` 21, on
+// update-first 216 (same code each); update assigned in both arms re-measured 222 (aligned: only the false store's place in
+// the not-force arm and the missing force-arm reload differ); that with the object looked up again in the force arm 226 (813 B).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

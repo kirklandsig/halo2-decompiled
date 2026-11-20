@@ -570,6 +570,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // once through its own address (`char const *const *reference = &string;`): at the scan with the source at the copy 40 (104
 // bytes) [6], at the source with the scan plain 40 [6], at the scan with main's early source 49 (92 bytes) [6], in main's
 // early source with the scan plain 49 [6].
+// M3 lane 15 r117 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the compare as
+// `length - start >= count` 35 [35]; `count <= length - start` with `0x200 < count` 35 [35]; the length test assigned
+// to the result (`result = start + count <= length; if (result)`) with the volatile string 40 (104 bytes) [6]; the sign
+// and clamp tests as `count >= 1` and `count >= 0x201` 23 [match] (compares with immediates; the walk ECX / counter EDX
+// split unchanged); a plain string with one volatile read of its own address at the scan, the early source plain, 39 [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

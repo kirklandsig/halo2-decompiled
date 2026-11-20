@@ -953,6 +953,12 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // position-matrix, direction-matrix 371/355/359; all pointers or references 359/359.
 // Reduced control 334. NOT kept: regressions. The effect address remains folded and the
 // matrix receiver exchanges the opening EBX and ESI roles.
+// M3 lane 15 r116 (fast with 0x247fd0 and 0x248cc0, both MATCH; control 334, aligned 250): the in-loop lookup through the
+// existing particle_object_for_tag re-measured 371 (1696 B, aligned 215: placement and result slots sit low, so 4-byte
+// displacements); the child reciprocal's two tests as `0.f < x` 334 (same code: the zero still takes XMM2 for retail's XMM1);
+// the scale rows through the existing scale_particle_vector_2b 338 (aligned 275); the velocity pointer as an if/else 334
+// (same code), as `local_0 == NONE ? g_4687a4 : ...` 334 (aligned 266). Compile-only: `_mm_cvtt_ss2si(_mm_load_ss(&x))` and
+// `_mm_cvtt_ss2si(_mm_set_ss(x))` both give an `and esp, -16` frame, so no intrinsic replaces the asm truncation.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -299,6 +299,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // on that path) 116 (same code: folded); the clamp as two separate tests 116 (same code). Reading: the object's EBP win
 // follows its uses packed into the second half (fewer blocks than the tag spans); moving the started test to the join
 // lengthens the object's range but adds the request path's compare.
+// M3 lane 15 r117 (plain, with the five matched callers, all matched each time): the compare's operand side, on the
+// plain-read form (no reference): the started test `NONE != object_index` 116, the request test `NONE == object_index`
+// 116, the marker test `NONE != object_index` 116, all three 116 (531 B, the plain-reads code); on the kept form the
+// request and marker tests constant-first 11 (same code). The operand side does not move the object/tag contest for EBP.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
