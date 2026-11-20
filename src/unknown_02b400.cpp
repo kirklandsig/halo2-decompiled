@@ -9,6 +9,7 @@
 #include "unknown_0259d0.h"
 #include <math.h>
 #include "globals.h"
+#include "vector_products.h"
 
 struct s_masked_list;
 typedef void (__stdcall *masked_list_proc)(long value, short mask);
@@ -436,6 +437,8 @@ struct s_2fd90_projection
     real half_width, half_height;
 };
 
+// Score 221 in a full build with stand-in SDK headers (was 256): up is the shared cross3f of right and the forward
+// vector (retail loads each field and multiplies by a register), and the half sizes multiply size by scale.
 // @retail 0x2fd90
 void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out)
 {
@@ -447,9 +450,7 @@ void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out)
     right.i = view->up.k * f->j - view->up.j * f->k;
     right.j = f->k * view->up.i - view->up.k * view->forward.i;
     right.k = view->up.j * view->forward.i - f->j * view->up.i;
-    up.i = f->k * right.j - f->j * right.k;
-    up.j = f->i * right.k - f->k * right.i;
-    up.k = f->j * right.i - f->i * right.j;
+    cross3f(&right, &view->forward, &up);
     backward.i = 0.0f - view->forward.i;
     backward.j = 0.0f - view->forward.j;
     backward.k = 0.0f - view->forward.k;
@@ -464,8 +465,8 @@ void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out)
     transform4x3f *inverse = &projection->inverse;
     function_141590(&projection->camera, inverse);
     memcpy(projection->bounds, &scalars.left, 16);
-    projection->half_width = scalars.scale_x * scalars.width * 0.5f;
-    projection->half_height = scalars.scale_y * scalars.height * 0.5f;
+    projection->half_width = scalars.width * scalars.scale_x * 0.5f;
+    projection->half_height = scalars.height * scalars.scale_y * 0.5f;
     plane3f plane;
     if (view->near_distance == 0.0f)
     {
