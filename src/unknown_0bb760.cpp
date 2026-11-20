@@ -448,11 +448,12 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 97 (was 123): The object and tint entry exchange EDI and ESI.
+// score 77 (was 97): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
+// Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // The choice count, mask and blend use other homes. The first scan exits on inequality.
 // Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
 // the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
-// score 77 (was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
+// the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
 // spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
 // The late variant byte restores the output/delta registers and keeps retail length.
 // The blend store, weight-scan exits and fallback unity reload also differ.
@@ -784,6 +785,10 @@ void function_3dd10(long object_index, bool force);
 // 404 (0xd1a30 149, 0x131d60 52, 0xc0c80 319 lost); with a forceinline declaration of it in this file still a call 398;
 // the choices read through an inline element accessor with a signed `<` first scan 638 (unrolled, 1309 bytes); the
 // three clamps through a by-reference pin helper 197.
+// indexed current bank 311, second-bank cursor 98, cursor with bank-end bound 191, ordered cursor bound 191,
+// indexed bank-end bound 271, ordinal from cursor 278, unsigned bank ordinal 282, inclusive last choice 667.
+// NOT kept: The second-bank cursor keeps 1034 bytes at 98. Other bank forms raise the score or move the frame.
+// The inclusive last-choice bound unrolls the signed weight scan.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

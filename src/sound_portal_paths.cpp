@@ -116,7 +116,8 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
-// score 287 (was 296): Advancing the required index output restores gain-based output addressing.
+// score 287 (was 296): The 0x428 frame agrees. The starting-cluster register and both BSP base reloads still differ.
+// Advancing the required index output restores gain-based output addressing.
 // Round 192 (m3 lane 8; one-file harness, see 0x18dc90's note): on the r111 held form 244 positional, 17 aligned at
 // 1364 B, the same cluster/portal-index EBX/EBP swap as the twin plus the padding it shifts; the twin's ten forms
 // applied to both bodies give 244 here each, except a long portal index 323 and the cluster through a reference 244
@@ -224,6 +225,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // Packed entry read at both decodes 287, direct seed and search pointer 368. Computing
 // the ordinal from the table position recovers EBP but grows the body; both table
 // bases still need retail's per-visit loads.
+// default gain result 286, missing gain first 286, reused ordinal 287, count reset from ordinal 286, named
+// bitmap parts 287, nonnearest arm first 287, separate output bounds 287, separate comparison distance 287.
+// NOT kept: The gain and ordinal forms improve by one point. Separate bounds tie at 1364 bytes. The starting-
+// cluster register and BSP base loads still differ.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -322,8 +327,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
-// score 305 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// score 305 (was 305): The 0x42c frame, starting cluster in EBX and cached BSP table bases still differ.
+// Earlier comparisons were 315 and 354. Advancing the required index at the row latch brought the
+// entry frame to 0x42c.
 // Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
 // positional/aligned; on main 304/232): lane 13's r111 held form re-applied (lane 2's rebuilt patch) 15/16 at 1363 B,
 // the twin 244/17. Only the cluster pointer (ours EBX, retail EBP) and the widened portal index (ours EBP, retail
@@ -465,6 +471,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Selected sort key 681, cap-first empty arm 311, empty-first cap 310.
 // While with common latch 305, positive bound scope 310. The 0x42c frame and both
 // BSP table lifetimes remain.
+// widened link with short ordinal and logical shift 356, unsigned word link 356, endpoint by sign 355, unsigned
+// portal ordinal 305, early short side 305, early logical side 356, pointer sort scratch 305, cap-first count
+// 305.
+// NOT kept: The 0x42c frame and two cached BSP bases persist.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

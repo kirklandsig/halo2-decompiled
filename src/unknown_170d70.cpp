@@ -1628,7 +1628,9 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 134 (was 205): The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return still differ.
+// score 134 (was 205): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
+// The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return
+// still differ.
 // Earlier comparison at 221.
 // the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
 // (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
@@ -1715,6 +1717,11 @@ struct s_pool_view_172840
 // separate head capture and increment 145; read-only projection 145. NOT kept: the field
 // selection gains six, grows by one byte and loads through the selected address where retail
 // selects the short value before extending it.
+// flags before result 59, byte result 241, result before storage 55, conditional cluster selection 55,
+// allocation pointer before reservation 140, single queue-wrap store 235, head shared with guard 251, wrap
+// branch before increment 90.
+// NOT kept: The 55 forms recover the flag homes at 870 bytes, with a different cluster store schedule and five-
+// byte sentinel load.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
