@@ -512,6 +512,9 @@ static inline void quaternion_transform_vector(
 // forward/left, up/left 204/204/199; all three pointers/references 248/248 (reduced control 201).
 // NOT kept: the two-point up/left gain reaches 1317 bytes, but the frame stays 0x20 and the
 // quadratic coefficient still lacks its separate retail spill.
+// Named double cosine/sine radicands 217/217, both independently or together 201/201.
+// Named double cosine/sine roots 258/258, both 215, and both radicands and roots 210.
+// All keep the 0x20 frame and miss the separate retail transform spill.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

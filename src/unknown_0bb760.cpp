@@ -819,6 +819,9 @@ void function_3dd10(long object_index, bool force);
 // references, at scan entry or positive-count admission 89/272. Immutable scan-entry array 89.
 // Signed weight bound with reference or shared array 636/582. NOT kept: the signed forms unroll.
 // The reference and array forms leave the ordinal, weight and mask homes unresolved.
+// Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
+// alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
+// pre-guard zero store and the count/mask homes stay different at retail length.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

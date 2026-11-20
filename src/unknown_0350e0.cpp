@@ -472,6 +472,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Per-axis square/sine/diagonal scopes with immediate or grouped diagonal stores 378/374.
 // Separate unscoped axes 378/374. Shared axis capture 363/346. Sine products before
 // diagonals 349/341. NOT kept: all lose the 0x90 frame and shorten the body.
+// Const square, cross-coefficient and cosine-complement locals, alone or grouped,
+// and all three with const angle products 334 each. The 0x90 frame agrees and the
+// axis and square registers and their early spills still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2731,6 +2734,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Coordinate deltas as scalars in original/XYZ order or const XYZ 519/519/519.
 // Position scalars then subtraction 518. Vector at camera angle in original/XYZ order 519/519.
 // Vector at reflection exit via setter/aggregate 519/519. NOT kept: all lose the 0x94 frame and shorten the body.
+// Camera displacement, reflection and animated tint local renames, alone and in pairs
+// or together, and forward-distance rename 281 each. The 0x94 frame agrees and the
+// delta/reflection XMM allocation and unity-store schedule stay unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
