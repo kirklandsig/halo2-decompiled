@@ -2459,6 +2459,10 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // code: the NONE path is threaded straight to the join, the entry load stays below the je). After 0xd6660 matched by
 // storing through a pointer to its field: the entry read through a two-use pointer to the accumulator field, declared at
 // the guard 3 or at the top 3, and `info` read through a pointer to its field 3 (all three the same code).
+// M3 lane 3 r278 (fast): the entry read ahead of the inverse ternary with `object` declared ahead of `info` 45 (870 B),
+// that with the end notify through a named handle local 69; the entry local in the guard's block with `object` first and
+// the notify through a handle 61; the entry ahead of the ternary with the notify through a handle 45; the inverse as an
+// if/else with the entry local in the guard's block 228; `info` declared `s_damage_info *const` with that local 228.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
