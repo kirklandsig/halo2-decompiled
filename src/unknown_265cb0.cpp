@@ -958,6 +958,7 @@ real function_30bf0(vector3f *vector);
 // M3 lane 13 r126 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84): the clip amount, the squared
 // distance, the delta or the seat count declared at the top of the function (or of the facing block for the count) 84
 // each (same code: scope does not move these homes); the settings lookup ahead of the actor pointer 310 (1308 B).
+// MiniMax A (11-20): no new form, no lower score (84); the clip amount and the squared distance still take separate cells where retail packs them into one, so delta and the probe outputs sit four bytes low and the motion cell sits four high; the earlier rounds' reused-variable and dead-local forms measure 81 or more.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

@@ -2061,6 +2061,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Direct found identifier with graph-index-only missing-name reset, found-first/missing-first/change-only/before-found:
 // 1008/1008/990/990 with whole value, 985/985/983/983 with field stores. NOT kept: every form raises
 // the score at 2807 bytes. The candidate slot, resolved output slots and class/NONE allocation still differ.
+// MiniMax A (11-20): no new form, no lower score (828); the frame and the whole stack layout differ, the post-loop test still loads the result's index as a dword and shifts it where retail reads the word from memory, and the earlier rounds' forms (the candidate grouped into a resolved array, the three outputs declared after the iterator's stores, the iterator's store order) all measure 826 or more.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

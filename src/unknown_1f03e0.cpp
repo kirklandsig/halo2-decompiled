@@ -1702,6 +1702,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // f d i m g 230 (the r184 best's code: damping in EDX, first difference +0x31, the first arm's two `up.k` products and
 // its last scale row still load the other side first), f d m i g 262; the first arm's scale reading `&state->input` in
 // place of the pointer 486 (3055 B), that on f d i m g 482. Body unchanged.
+// MiniMax A (11-20): no new form, no lower score (234); the first arm's cross still differs in one product's operand order (retail reads facing.j * up.k where ours reads up.k * facing.j), and writing the six products out gives 529.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

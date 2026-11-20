@@ -2414,6 +2414,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // store in 0x1e53e0 is a steering form in a matched function and raises this count. Left on the 265 base: the pool in
 // EBP for retail's EDI with the options the other way round, the seed pointer reloaded around the 0x259a0 call
 // (BLOCKED-BY 0x259a0's file flags, as recorded above), retail's 32-bit weapon index with its own cell.
+// MiniMax A (11-20): no new form, no lower score (251); the pool and the options sit in EDI and ESI where retail keeps ESI and EBP, and the seed pointer must stay in EBX across the opaque 0x259a0 call (BLOCKED-BY 0x259a0).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

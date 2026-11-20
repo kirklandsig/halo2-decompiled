@@ -6378,6 +6378,7 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
     return NONE;
 }
 
+// MiniMax A (11-20): no new form, no lower score (47 in the nine-address fast set); the entry's key and value read into one-use locals before the 0xb8d30 call would put the value in eax and the key in ecx as retail has them (7 with the key local declared first, 2 with the value local declared first), but one-use locals are kept only with a byte match, so the form is left out; the 0x494b0 call's argument setup order (ours lea-ecx-then-mov-eax, retail mov-eax-then-lea-ecx) needs that callee's parameters in the other order in src/unknown_0494b0.cpp: BLOCKED-BY 0x494b0.
 // MiniMax A (11-20), held (47 stands): the entry's key and value read into one-use locals before the
 // 0xb8d30 call, which puts the radius in eax and the group field copies in ecx/edx as retail has
 // them; the only difference left is 0x494b0's argument setup order (ours ecx-then-eax, retail
@@ -7312,7 +7313,9 @@ PRIVATE __forceinline real absolute_32350(real value)
 //   exits at entry and reads it back from memory, so it has five epilogue copies where this build folds the exits
 //   together; retail's |x| > |y| keeps both absolute values and re-evaluates the winner in each arm (a ja/jbe
 //   diamond) where this build selects with a move; 0x4a1e0 takes its three arguments in eax/ecx/edx in retail.
-// score 437 (was 445): frame 0xb34 versus 0xb40, and the false result and second query still use different homes.
+// score 416 (was 445): frame 0xb34 versus 0xb40, and the false result and second query still use different homes.
+// MiniMax A (11-20): score 416 (was 437): the special flag is initialised to false before the 0x3d7f0 call, which
+// stores the zero retail stores; retail's zero byte sits at +3 and its special flag at +0xb, ours at +7.
 // Earlier 445 (was 448): r136 lane 7: only through the shared draw_light_source_pass change (pass 11's stipple cull and
 // late enable); the notes below were written at 491.
 // Earlier 491 (was 492, 623, 506; 491 since 0x31170 sets g_4ba014 bits through bit_vector_set): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
@@ -7372,7 +7375,7 @@ bool __stdcall function_32350(long index, real input_alpha)
     byte *object = ((s_scalar_object_header *)g_4e0300->data)[index & 0xffff].object;
     bool result = false;
     real alpha = 0.0f;
-    bool special;
+    bool special = false;
     bool eligible = function_3d7f0(index, &alpha, &special);
     alpha *= input_alpha;
     if (!eligible || *(long *)(object + 0x14) != NONE || !g_4ba020) return result;
