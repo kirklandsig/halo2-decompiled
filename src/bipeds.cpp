@@ -505,6 +505,7 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax I (11-20): no new form, no lower score (118): the reset dispatch 0xe5930 is still expanded at this call site (413 bytes against retail's 343) where retail keeps the call out of line, and that helper's declaration is in src/unknown_0e57e0.cpp: BLOCKED-BY 0xe5930.
 // MiniMax B (11-19): no new form tried this round, no lower score (118): the reset dispatch 0xe5930 is still expanded
 // at this call site (413 bytes against retail's 343) where retail keeps the call out of line, and retail's 0x1f0 test
 // shifts the dword before its bit test where the field is a byte here, so the test folds to a byte test:
@@ -741,6 +742,7 @@ struct s_biped_flags_10a_view
 	word bit7 : 1;
 };
 
+// MiniMax I (11-20): no new form, no lower score (222): the frame 0x16c agrees and retail still computes the state pointer at the top of the body and spills it where this build reads it at its one use, the 0x111650 call still takes its names in eax where retail pushes both arguments (that callee's declaration is in another file) and the type-0 bit is still read as `and al, 4` where retail shifts first: BLOCKED-BY 0x111650.
 // MiniMax B (11-19): no new form tried this round, no lower score (222): the frame 0x16c agrees, and the remaining
 // differences are structural - retail computes the state pointer at the top of the body and spills it where this build
 // reads it at its one use, the 0x111650 call still takes its names in EAX where retail pushes both arguments (that
@@ -3540,6 +3542,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // MiniMax B (11-20): no new form, no lower score (324): retail's prologue still reads the +0x34b state byte with movsx
 // where this build reads it with movzx (the signed local measures 323 again, under the keep bar), and the frame is still
 // 0x48 against retail's 0x4c: BLOCKED-BY 0xe16b0.
+// MiniMax I (11-20): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c, the +0x34b state byte is still zero-extended where retail sign extends it (323, under the keep bar) and the 0xe16b0 call still passes the biped index on the stack where retail passes it in a register: BLOCKED-BY 0xe16b0.
 // MiniMax B (11-19): no new form tried this round, no lower score (324): the frame is still 0x48 against retail's 0x4c
 // (retail's dead flag byte before the 0xe16b0 call needs a local whose address is taken, a form this lane may not
 // use), the +0x34b state byte is still zero-extended where retail sign extends it (the signed view measures 323,
@@ -5445,6 +5448,7 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax I (11-20): no new form, no lower score (91): the reset dispatch 0xe5930 is still expanded at this call site (113 bytes against retail's 61) where retail keeps the call out of line, and that helper's declaration is in src/unknown_0e57e0.cpp, which this lane may not edit: BLOCKED-BY 0xe5930.
 // MiniMax B (11-19): no new form tried this round, no lower score (91): the reset-mode dispatch 0xe5930 still expands
 // at this straight-line call site (113 bytes against retail's 61) and retail keeps the index in ESI where this build
 // takes it from the argument register; the callee's own file (src/unknown_0e57e0.cpp) is not this lane's and a new

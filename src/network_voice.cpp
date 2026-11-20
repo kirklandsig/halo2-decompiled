@@ -2175,6 +2175,10 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax I (11-20): no new form kept, no lower score (64): with the muted word's test first in the inner loop the body is
+// retail's 427 bytes but scores 85, because the outer body then loads the second ready byte after the first test and holds
+// the remote mask in edx, and the second port-flag query is still called out of line where retail expands it; the
+// flags-first order stands.
 // MiniMax G (11-20): no new form, no lower score (64): the outer body matches retail instruction for instruction with the
 // flags-first order (both ready bytes read up front, the remote mask in esi, the mode in ecx), and the muted-word-first order
 // with plain ready-byte reads in the two port-flag queries reproduces retail's inner loop exactly up to the last query, which

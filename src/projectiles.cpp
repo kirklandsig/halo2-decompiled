@@ -1016,6 +1016,9 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax I (11-20): no new form, no lower score (232): our frame is 0x28 against retail's 0x30 and the SSE registers
+// differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7), and the forced-speed and
+// time-scale parameters are still read through pointers to themselves, which the rules only allow with a match.
 // MiniMax B (11-19): no new form tried this round, no lower score (232): our frame is 0x28 against retail's 0x30 and
 // the SSE registers differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7); the
 // forced-speed and time-scale parameters are still read through pointers to themselves, which the rules only allow
@@ -1388,6 +1391,8 @@ extern vector3f *g_4687ac;
 // MiniMax A (11-12): no new form, no lower score (163): our frame is still 0x48 against retail 0x34, and the last argument of the 0x1697c0 call rides in ebp here and in edx in retail, so the pushed arguments and the returned point slot differ; that callee lives in src/bipeds.cpp, which this lane may not edit, so its register convention cannot be moved from here. BLOCKED-BY 0x1697c0.
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax I (11-20): no new form, no lower score (163): our frame is still 0x48 against retail's 0x34 and the three ray
+// queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040.
 // MiniMax B (11-19): no new form kept, no lower score (163): our frame is still 0x48 against retail's 0x34 and the three ray
 // queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040. The permuter ran 112 tries in
 // 1233 s (--fast --anneal --jobs 1) and its best was 159 in both the reduced and the full image, but that variant swaps the
@@ -1879,6 +1884,9 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
+// MiniMax I (11-20): no new form, no lower score (296): retail still expands the matched speed setter 0xfbfd0 inline after
+// the 0xfbd40 call and keeps index * 12 in ebp, so this body is 66 bytes short of retail's 1261 and the pool, tag and
+// seat-bit homes behind that expansion differ: BLOCKED-BY 0xfbfd0.
 // MiniMax I (11-19): no new form, no lower score (296): retail still expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call (this body is 66 bytes short of retail's 1261) and holds index * 12 in ebp where this build keeps it in eax, so the pool, tag and seat-bit homes behind that expansion differ.
 // MiniMax R (11-16): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, so this body is 66 bytes short of retail's 1261 and the pool, tag and seat-bit homes behind that expansion differ.
 // MiniMax A (11-14): no new form, no lower score (296): retail expands 0xfbfd0 into this body while this build calls
@@ -2142,6 +2150,9 @@ real function_17c900(short function_type, real input);
 // MiniMax A (11-12): no new form, no lower score (348): the frame of 0x30 agrees but retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile in esi where we keep the index in esi and the projectile in ebx on the stack, so the aim point stack home sits four bytes higher; the declaration and the call contract may not change, so the body stands.
 /* where a guided projectile aims: its target's point, led by the target's
    velocity, then wobbled around the line to it or wandering */
+// MiniMax I (11-20): no new form, no lower score (348): retail's callee takes only the index on the stack and writes the
+// aim point through ebx, a register the callee never sets and no C signature can pass, so the transport, the entry
+// allocation and the rotation's register homes stay as they are.
 // MiniMax I (11-19): no new form, no lower score (348): the body is still four bytes longer than retail's and the salt local stays where retail re-reads the index; the entry allocation still differs (retail takes the index off the stack and forms the entry address itself), and the aim point's stores and the drift and wander arms' outputs still differ.
 // MiniMax R (11-16): no new form, no lower score (348): the body is still four bytes longer than retail's and the salt local stays where retail re-reads the index; the aim point's stores and the drift and wander arms' outputs still differ, and dropping the salt for the re-reads only reaches 328 while the caller 0xf8eb0 rises from 947 to 982.
 // MiniMax A (11-14): no new form, no lower score (348): the frame agrees (0x30) but the entry register allocation
