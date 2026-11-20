@@ -502,6 +502,14 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 }
 
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// M3 lane 4 r230 (plain each; base 535, aligned 672, register/offset-masked 355). Retail keeps 1.0f (XMM0), 0.0f and the
+// three scaled axis components (XMM5-7) live from the normalize through the sign and the angle clamp: its equal-normals
+// path jumps past the reloads that follow the arccosine call, so the sign's cross product has only XMM1/XMM3/XMM4 and
+// reloads the selected normal per product. Forms aimed at that block's pressure: the quad normal named once as a
+// pointer for the cross and the angle 561 (3631 B, masked 345); the quad plane named once as a pointer for the two edge
+// distances, the cross and the angle 623 (frame 0x21d4, 3599 B, aligned 555, masked 354; the secondary count then takes
+// retail's +0x54); that pointer for the two edge distances only 566 (3631 B, aligned 680, masked 344); the selected
+// normal named as a pointer for the cross and the angle 535 (same code); both normals named 559 (3631 B). Body unchanged.
 // MiniMax E (11-19): score 535 (was 535): no new form, no lower score. Read from the listing again: the entry agrees
 // (the tag index from the stack into EAX, the table global into ECX, the tag's bytes into EBX, the output into EDI), so
 // the remaining offset is in the locals' homes and not in the call: the tag spills at frame+0xa8 against retail's

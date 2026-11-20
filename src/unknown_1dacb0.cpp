@@ -1549,6 +1549,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // outputs declared together and set by one chained assignment 828 (same code); the early return as one guarded block
 // (`if (weapon_class != NONE) { ... } return result;`) 1040 at 2857 B (aligned 125, masked 74: most homes after the
 // search then agree with retail's, but the exit code grows; not kept, a rise).
+// Conditional packed candidate 978, with positive iterator guard 978, condition-scoped entry 1031, cursor loop
+// 1044, chained defaults after iterator setup 826, with conditional candidate 978, guarded single return
+// 1043, no-result return after the optional outputs 1028.
+// NOT kept: the late chained defaults gain two without changing the entry difference. The conditional
+// candidates enlarge the frame. Identifier and output homes and the later zero carrier remain.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2053,6 +2058,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // test as `!(result == c_type_709360())` 991 (2825 B); the first request keyed by `iterator.mode`, `iterator.weapon_class`
 // and `iterator.weapon_type` 1016 (2839 B); the candidate dropped for `result = named ? named->animation_id :
 // animation_id` 951; the output stores after the requests 1009 (2849 B).
+// Direct found identifier with graph-index-only missing-name reset, found-first/missing-first/change-only/before-found:
+// 1008/1008/990/990 with whole value, 985/985/983/983 with field stores. NOT kept: every form raises
+// the score at 2807 bytes. The candidate slot, resolved output slots and class/NONE allocation still differ.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

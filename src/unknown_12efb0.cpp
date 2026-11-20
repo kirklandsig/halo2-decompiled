@@ -136,6 +136,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
+// MiniMax G (11-20): score 607 (was 607): no new form, no lower score; the palette slot's declared type is the
+// only lever left at the loop head and none of the three spellings pays: a char local gives retail's byte load
+// (mov bl/cl, no sign extension at the load) but NONE then lands in ECX with the result still in EAX and the
+// whole tail after the loop breaks, 700; a byte local zero-extends into EBX, 653; the plain short keeps the
+// sign-extended word, 607. Retail still keeps the 0x130f60 result in EDX, the slot byte in CL, NONE in EAX, the
+// zero in XMM7 and the palette record in EBX; ours keeps the result in EAX, the slot in BX, NONE in ECX, the zero
+// in XMM5 and the record in ESI, so the sign-extended slot is materialised into the record register itself.
 // score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
 // Earlier (607, was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
 // loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in

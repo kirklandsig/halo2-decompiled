@@ -420,6 +420,14 @@ extern real g_4c9798[36];
 // border product in parentheses as well 265; the border product in parentheses alone 180 (1491 B: the multiply then
 // comes first, as retail); that with the height limit as a long (retail's dword) 243 (1481 B); the mode as one nested
 // ternary 174 (same code).
+// M3 lane 11 r133 (fast; control 174, aligned 89, register-masked 77; body unchanged). The fixed-size test named once as a
+// bool for both limits and the later branch 333 (1489 B, the entry changes at +0x2); that with the height limit as a long
+// 295 (1461 B); both limits set in one if/else 346 (1458 B); the two rounded sizes as a call statement and a rounding
+// statement each 174, with both calls ahead of both roundings 174 (same code each); the border test as `mode != 0` 175.
+// Frame reading (two pushes down): retail has the size at +8, the mode at +0xc, the converted width limit at +0x10 and the
+// extent, later the width limit, at +0x14; ours has the mode, the converted limit and the extent one cell lower each and the
+// size at +0x14, because retail's size lives in memory across the two 0x48e70 calls and ours in XMM0. Still BLOCKED-BY
+// 0x48e70 (machine 1's file).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
