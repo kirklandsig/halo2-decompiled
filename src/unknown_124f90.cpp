@@ -1361,6 +1361,9 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax H (11-19, round 95): no new form, no lower score (87): the permuter over this function's forms made no gain either
+// (best was the baseline), and the fade block still keeps 1.0f/fade_in_time in xmm2 where retail keeps it in xmm3, so the join
+// with the (elapsed - hold) * inverse * fade_out term stays in other registers than retail's.
 // score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
 // MiniMax I (11-19): no new form, no lower score (87): the fade block still keeps 1.0f/fade_in_time in xmm2 and joins (ambience_fade - elapsed) with the (elapsed - hold) * inverse * fade_out term in other registers than retail, and the body stays 684 bytes against retail's 678.
 // Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
@@ -4312,6 +4315,10 @@ struct s_128ca0
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
 // for the count's default).
+// MiniMax H (11-19, round 95): no new form, no lower score (81): an annealing permuter over this function's forms made no
+// gain either (39 tries, its best was the baseline), and what is left is the same: both gain pins trade scratch registers,
+// the controller compares use an immediate where retail has one in the second block only, and the second flag3 test shares
+// a word load with the flag6 store.
 // Earlier at 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
