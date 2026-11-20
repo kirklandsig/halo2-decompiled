@@ -8591,10 +8591,9 @@ static void unit_vector_to_frame(vector3f *out, transform4x3f const *frame, vect
 
 static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, vector3f const *v)
 {
-	real i=v->i, j=v->j, k=v->k;
-	out->i = frame->up.i * k + frame->left.i * j + frame->forward.i * i;
-	out->j = frame->up.j * k + frame->left.j * j + frame->forward.j * i;
-	out->k = frame->up.k * k + frame->left.k * j + frame->forward.k * i;
+	out->i = frame->up.i * v->k + frame->left.i * v->j + frame->forward.i * v->i;
+	out->j = frame->up.j * v->k + frame->left.j * v->j + frame->forward.j * v->i;
+	out->k = frame->up.k * v->k + frame->left.k * v->j + frame->forward.k * v->i;
 }
 
 real function_50650(real cosine);
