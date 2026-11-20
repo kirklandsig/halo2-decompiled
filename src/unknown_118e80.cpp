@@ -1282,6 +1282,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // and the copy written through the member give byte-identical code (14, 1034 bytes), so the copy's spelling is not what
 // differs; the hoist needs the source local's address known not to escape, and the 0x1c4b00 call makes it escape.
 // Still BLOCKED-BY 0x1c4b00 (bool formal and its 14 declarations, in other lanes' files), 0x1ec690 and 0x1eb6f0.
+// MiniMax S (11-20): no new form, no lower score (14): the tail differs only in the force flag, ours keeping the 0x119bc0 result in al and pushing it zero extended where retail spills it to a byte home and pushes the containing dword, which needs the last parameter of 0x1c4b00 to be a bool in its definition and in its declarations, and those live in other files.
 // score 14 (was 14; 43 before): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
 // and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still

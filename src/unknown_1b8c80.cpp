@@ -1638,6 +1638,7 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax S (11-20): no new form, no lower score (123): retail keeps the iterator entry in EBX and spills the raw mask byte to its own stack byte where ours keeps the normalised mask in BL and the entry in a stack slot, and the frame is 0x10 against retail's 0x14.
 // score 123 (was 123): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
 // MiniMax H (11-20): no new form, no lower score (123): the flag bytes take AL and ECX where retail takes CL and EDX, the frame is 0x10 against retail's 0x14, and the default block sits before the final tests.
 // score 123 (was 134): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the

@@ -3259,6 +3259,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax E (11-20): no new form, no lower score (54): inside both corner sets the scheduler places the x87 coordinate
 // chains one slot earlier among the SSE ones than retail does (first difference +0x527); the helper's spellings and the
 // corner-call orders the earlier rounds measured all give 54 or worse.
+// MiniMax S (11-20): no new form, no lower score (54): the two corner blocks still differ in the x87 and SSE order, ours storing the x87 coordinate before the subtract where retail subtracts first, and the four scale products land in other XMM registers.
 // score 54 (was 54): r200 unchanged; earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
