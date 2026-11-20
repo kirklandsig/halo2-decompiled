@@ -846,6 +846,9 @@ void __stdcall function_1160c0(real dt)
 // explicit sine or cosine 144/172, completed constrained point 336.
 // NOT kept: the node array forms reach retail length with a 0xa8 frame. The best forms tie
 // and leave the selected segment in EDI/ECX and at +0x20.
+// Reserve segment, node and stiffness in solver scope, seven subsets and a reordered
+// full declaration, 144 each. NOT kept: the segment stays in EDI/ECX and spills at
+// +0x20, while retail uses EDX and +0x14.
 // M3 lane 5 r210 (fast with 0x116750, 0x116010, 0x1160c0, 0x73360, 0x54590; control 144, register-masked 54): the
 // rest offset rotated by a trial copy of 0x146320's file-private rotation taking the axis as three reals (projection
 // k, j, i first, cross_j and cross_k named, cross_i in row i) 221 (1368 B); with sine and cosine named before the call

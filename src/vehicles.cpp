@@ -3554,6 +3554,11 @@ real g_47ff30 = 2.5f;
 // the generated reciprocal lands after the first clamp like retail's but is the first operand of each product, where
 // retail multiplies the bounded value by it, the named-local form); that with the mass-field forms 704. Retail's
 // `mass * fraction^2` copies the mass and multiplies by the dying square (ours multiplies the square in place).
+// Directional mass before the up stores, after i, after j, or scoped to its three products,
+// with named final masses or shared vector scales: 748/748, 688/688, 710/710, 710/710.
+// NOT kept: the after-i form preserves 3244 bytes but still has frame 0x100. The after-j
+// and scoped forms recover frame 0xfc and retail length but score 710. The acceleration
+// spill and velocity homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

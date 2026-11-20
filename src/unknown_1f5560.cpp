@@ -1761,6 +1761,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // arc helper 239, unsigned angle before result publication 262. Positive or negative initial side
 // radius 243/279, planar side vector 239, shared outgoing cosine dot 239. The zero and radius
 // registers remain different. The radius branches move the extent past retail to 1160 and 1157 bytes.
+// XMM2 still holds zero and XMM7 the radius. The compared lower bound is already
+// reused in XMM6. Named lower bound 239, fraction default one 271, explicit
+// fraction arms 239, named span 239, named excess 239, both 239, named upper
+// bound 239, early lower-range return 283. Default one reaches 1173 bytes at 271.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

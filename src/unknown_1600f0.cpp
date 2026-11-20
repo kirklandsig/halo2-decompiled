@@ -1584,6 +1584,12 @@ PRIVATE inline long score_string_list_1608e0()
 // publication 675.
 // NOT kept: the displayed-player count recovers frame 0x79c at 2879 bytes and gains four, with viewer
 // still in EDI and the independent origin missing.
+// The top edge stays live across the scroll bounds, with the viewer and origin homes
+// still displaced. Retained short top 679, long top 691, short top and height 693,
+// retained left 692, retained top and left 692, vertical origin advance 691,
+// early horizontal cursor with retained top 677, named scroll pixels 679.
+// NOT kept: the early horizontal cursor gains two at retail length and leaves
+// the 0x798 frame. The widened viewport forms grow nine bytes.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

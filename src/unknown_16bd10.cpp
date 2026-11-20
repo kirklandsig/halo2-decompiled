@@ -1302,6 +1302,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // ordered fraction clamp, staged angle accumulation, named angular delta, branch-local command
 // field stores, and a role-named projection scale: 126/141/390/126/126/395/154/126.
 // NOT kept: The direction-k preload and length/zero register split remain.
+// Normal fields in ikj/jik/jki/kij/kji order 435/435/436/435/436, direct indexed
+// coordinates 435, ascending/descending copies 441/441. NOT kept: the field forms
+// remove the native dword normal copy, and all shorten to 1668 bytes. The length
+// and persistent zero registers remain reversed.
 // M3 lane 12 r152 (fast with 0x16c6f0/0x13cb40/0x142d10, all MATCH; control 126): redundant parentheses (no grouping
 // change) around the field-of-view lerp product 1-3 pairs 126/126/126, around the case-2 division 126/126/147, around the
 // timer division 126/126/147; the plane length written out j, k, i without dot3f 397 (1700 B: left.j hoisted as retail, but
