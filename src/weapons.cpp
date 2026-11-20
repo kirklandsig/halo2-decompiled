@@ -3194,6 +3194,7 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // MiniMax A (11-18, run 94): no new form, no lower score (190): the permuter's annealed run (300 s) again stops at
 // 190 with the prologue's saved registers as its first difference (retail saves ebx, ebp, esi and holds the
 // destination weapon in ebp and the other weapon's definition index in edi, ours saves ebx, esi, edi, holds the
@@ -3232,11 +3233,15 @@ struct s_ammo_conversion_entry
 // transfer's two accumulators as long 214, the goto body as it stands 206, `int` for the loop index 278 (785 bytes), the
 // transfer's accumulators as int 191 and the acquisition flag with retail's polarity 211; a 300 s permuter run found
 // nothing below 190, and the frame, the length and every other function in this file are unchanged.
-// MiniMax A (11-19): score 190 (was 190): no new form, no lower score; retail opens with `push ebp` and keeps the
+// MiniMax A (11-19) remained at 190. Retail opens with `push ebp` and keeps the
 // definition pointer in EBP, without a frame pointer, where this build pushes esi and edi, keeps EBP as the frame
 // pointer and leaves the definition pointer in EDI, and retail reads the definition table after the weapon lookup
 // where this build reads it before, so the saved-register set and the destination home differ before the first
 // case body; the frame size and the length still agree.
+// MiniMax R (11-20): no new form, no lower score (190, 731 bytes, retail 731): the frame and the length agree, and what
+// is left is the register colouring and one test - retail keeps the destination weapon in EBP and the other weapon in
+// EBX, sets the acquisition flag with setg on the clamped count and reaches the conversion entry without a nullable
+// test, while this build holds the destination in EDI, spills the other and tests the entry for null.
 // score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
@@ -3439,6 +3444,17 @@ struct s_ammo_conversion_entry
 // the count, a short pointer or reference to the unloaded count, `acquired = true` ahead of the conversion clamp (the cmov
 // becomes a branch), the leftover-rounds flag as an `||` chain (gives retail's loop-head registers but reads the flag).
 // Permuter on the 52 form (600 s, 43 tries): best 52.
+// Residues captured after both stores or one at a time 190/190 with sequential tests,
+// 191/191 with both predicates evaluated, 189/189 with sticky accumulation. Calculated
+// residues carried into both stores or published as calculated 209/209. NOT kept: one-point
+// gain at 189, with destination and conversion search register homes unchanged.
+// Paired weapon references, source tag reference and magazine tag reference 190 each.
+// Source selected at capacity 208, reserve field reference 207, removal predicate 188,
+// shared weapon-kind predicate 214, shared type mask 190. NOT kept: the removal predicate
+// gains two with the same extent and saved-register divergence.
+// Rounds clear before the lookups or after the destination object/tag or source object 215/221/220/211.
+// Early declarations for the retained/acquisition/both flags 190 each. Source tag deferred until acquisition 211.
+// NOT kept: the early clear changes load order, the declaration forms keep EDI, and the deferred tag shrinks the frame to 0x1c.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3552,6 +3568,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax I (11-20): no new form, no lower score (636): the prologue keeps the barrel index in EBX where retail keeps the weapon index, reads the barrel's flag byte into CL where retail tests it in memory, and the definition sits at [esp+0x28] where retail has it at [esp+0x14], so the copy-out loop and the rest of the body differ as well.
 // score 603 (was 603): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
 // where the volatile home is read at each use here; weapon/barrel and definition/holder homes remain.
 // MiniMax B (11-18): no new form, no lower score (643 in the fast check, 607 in the plain one): retail keeps the weapon index in ebx, the barrel offset in edi and the definition spilled to [esp+0x14], where this build keeps the barrel offset in ebx, the definition in edi and the weapon index in a stack slot, so the prologue and every later home differ; dropping the volatile on the unit index measures 657.
@@ -3738,6 +3755,11 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // with promoted debit, or with named fallback minimum 639/639/639. Reduced control 636.
 // NOT kept: ties and regressions. The early magazine tag and post-heat rounds still occupy separate
 // spill homes in the full build, with the 0x1c64 frame and swapped weapon/barrel registers.
+// Typed holder-header accessor 636; unsigned type mask 636; typed Boolean type bit 632;
+// conjunctive holder rejection 636; negated ammunition shortage 636; short debit store 636;
+// negated heat exemption 636; ammunition/heat gate before the loaded-minimum gate 639.
+// NOT kept: four-point best reduced gain against 636, with no length improvement. The full build
+// still gives the magazine definition and post-heat rounds separate homes in frame 0x1c64.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4191,6 +4213,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // within the override 1438/1438, numeric Boolean scale 1442, distinct holder scale
 // with conditional or exhaustive output 1435/1435, holder-first branches 1462.
 // NOT kept: all retain frame 0x34 and the two branches and selection tie.
+// Trigger/trigger tag/barrel/barrel tag lvalues 1412 each, paired trigger or barrel lvalues 1412 each;
+// trigger cursor with separate ordinal 1584, barrel cursor with separate ordinal 1413.
+// NOT kept: the trigger cursor recovers frame 0x38 but shortens the code by 168 bytes and still
+// spills the dual-wield result. The barrel cursor leaves the entry allocation and frame different.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4665,7 +4691,7 @@ struct s_weapon_projectile_creation
 // them, and the projectile code is a dword narrowed at the store. Not kept: a creation block twelve bytes smaller (the
 // frame stays over), the complement and the owner result held in variables, the average loop rewritten, the game mode
 // helper inlined, the marker select spelled as a bool.
-// Earlier score 1143 (was 1161): walked statement by statement against retail 11-05 (w1B). Behaviour fixes: the shot spread is
+// Earlier 1143 from 1161 after comparing each statement with retail (11-05, w1B). The shot spread is
 // computed only while it is still 0 (0x104dbe-0x104dcb: ucomiss, lahf, test ah 0x44, jp past the block) and low/high fall
 // back to +0x74/+0x78 when +0x5c/+0x60 are 0, writing `spread` itself (0x104e4a; the cone call at 0x104e8b reads it);
 // function_1fddd0 gets (average-or-origin, direction) (0x1048a9-0x1048da; the source passed the average as the direction);
@@ -4779,6 +4805,27 @@ struct s_weapon_projectile_creation
 // Not kept: the forms that are acceptable without a match taken alone (in-place rotation, existing random functions,
 // if/else arms, field re-reads, the actor call in both arms, markers by index, long target type, short code) measure
 // 1191 (5156 bytes, frame 0x1e9c), a rise, and the rest are match-only forms; the body is main's.
+// Shared rotation for the axis only 1140, direction only 1143. In-place rotation with all direction
+// components captured or just the first two 1205/1205, with both vectors captured 1229. Projection
+// before trig 1121, with in-place direction snapshots 1204. Separate range and turn scopes 1121.
+// The in-place snapshots recover the 0x1e98 frame and move the first difference to +0x79,
+// but finish 93-97 bytes short. The original separate clipping workspace remains.
+// Ordinary-case exclusion 1138, synchronized-only first 1143, exhaustive ordinary-first conditional
+// 1140, default network case first 1153; independently computed synchronization 1143 and independent
+// synchronization/network results 1157. Switch with case 2 first or default first 1121 each.
+// NOT kept: the conditionals lengthen the body, and neither switch order changes the 0x1ea4 frame.
+// Typed barrel tag, named projectile field, native barrel flags and aggregate placement owner 1121
+// each. Owner presence branch 1122 at 5199 bytes, admitted motion 1121, tracer from the two tests
+// 1119 at 5212 bytes, complete damage initializer 1121. NOT kept: tracer gains two and retains the
+// 0x1ea4 frame. The owner branch shortens the body and regresses.
+// Shared marker position 1154, marker origin/direction setters 1122/1149, i-k-j inherited/perpendicular
+// dot products 1144/1121, actor speed scale-add 1121, synchronized point setter 1136, inherited velocity setter 1121.
+// NOT kept: the marker direction setter grows the frame to 0x1eac and the remaining forms keep 0x1ea4.
+// Round 452: Creation up through a setter or an aggregate in each case 1136/1299.
+// Join component outcomes before a setter, field stores, or an aggregate 1143/1143/1171.
+// Repeated-direction setter on capture, restore, or both 1142/1139/1137.
+// The grouped result assignments expand the 0x1ea4 frame, and neither separate
+// component publication nor repeat transfer recovers retail's 0x1e98.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

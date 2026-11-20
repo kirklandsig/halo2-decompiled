@@ -699,6 +699,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // inside that inlined helper (its source is in src/unknown_1eb8a0.cpp, which this lane may not edit): retail copies the
 // vector's component with `movaps` and multiplies the axis from memory, ours loads the axis and multiplies by the vector's
 // register, and that swap moves the whole rotation block's register roles.
+// MiniMax I (11-20): no new form, no lower score (114): the first difference is still inside the shared rotation helper, whose source lives in another file, so the block copies and the side crosses are not this file's to change.
 // score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // M3 lane 11 r123 (compile-only screen with the rotation helper pasted in, which reproduces this body's rotation; the
 // axis products' sides as a signature, retail j/k-with-j/k copy-first, ours load-first): no-code reads of the rotated
@@ -1310,6 +1311,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // Calculate sine, cosine, sine then cosine, or cosine then sine before copying
 // forward: 125/136/163/166. The same with the shared axis-rotation helper:
 // 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
+// M3 lane 2 r118 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114; the first difference is still in the
+// rotation helper, whose file is another lane's this round): initial_cross's j row as `b->i * a->k - a->i * b->k`,
+// `b->i * a->k - b->k * a->i` and `a->k * b->i - b->k * a->i` 114 each (same code: the product operands are
+// canonicalised); both crosses through the existing cross3f 114 (same code); a second pointer name for the facing goal
+// used by the snap copy 140 at retail's 1382 B (the snap exit shortens, every rotation product turns); `rotated`
+// declared as the function's first local and assigned in place 114; the movement, angle and rotated locals all
+// declared at the function top 114 (same code).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

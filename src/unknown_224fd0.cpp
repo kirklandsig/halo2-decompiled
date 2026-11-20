@@ -80,6 +80,8 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// MiniMax C (11-20): no new form, no lower score (219): a permuter run with annealing over this body (27 tries, 242 s, no
+// confirming build) found nothing below 219, and the jump table still sits four bytes earlier than retail's.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax I (11-19): no new form, no lower score (219): retail's two rotation copies take their complement products' operands on
 // different sides, which one shared helper cannot produce, and the jump table still sits four bytes earlier than retail's.
@@ -436,11 +438,21 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // once in the kept order 452 (1756 B); the output parameter first in the helper and both calls 219 (same code); the
 // squared and sine vectors as one two-element array (bound by reference) 471 (1740 B); diagnostic, reverted: the rotation
 // switch without its `__assume(0)` default 228 (1836 B, first difference +0x56 at the added bounds test).
+// M3 lane 13 r128 (screened, control 219): ij as `axis->j * (1 - cosine) * axis->i` (retail's first-case operand order)
+// 219; ik/jk as `axis->k * (1 - cosine) * axis->i/j` 219; the sine product i as `axis->i * sine` 219 (all the same code:
+// the operand sides are canonicalised); forward.i moved right after the sine products (retail's first case) 357 (1820 B),
+// with the three operand orders above as well 357. The jump tables' four-byte offset is code length: ours ends at +0x700
+// with no padding, retail at +0x701 with a 3-byte `lea ecx, [ecx]` ahead of the tables (one byte of encoding).
 // The squared-k spill still follows the sine products. Complements, cosine corrections and
 // complete diagonals beside their square producers 204/204/219, together after the final square
 // 204/204/219, or corrections and diagonals after both products of each axis 204/219.
 // NOT kept: the table moves to its retail address but only two executable rows improve,
 // and the first rotation arm still lacks retail's early squared-k spill.
+// Complete rows through the vector setter, forward/left/up or forward/up/left
+// 445/449 from direct expressions and 450/449 from named component results.
+// Row aggregate assignment in the same orders 716/719 and 713/718.
+// NOT kept: the setter forms retain +0xe7 and shorten the body, while
+// row aggregate stores move the first difference to the prologue and grow it.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

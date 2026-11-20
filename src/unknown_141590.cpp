@@ -118,6 +118,7 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax E (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four (frame 0x20 against 0x24) and the cosine half stays in xmm5 where ours swaps the two; the difference follows the three inlined quaternion_transform_vector calls, and writing that helper's body out is not allowed. The helper written with retail's own term orders (the dot as i,k,j; the i row (cross*2w + v*s) + q*dot; the j/k rows (v*s + q*dot) + cross*2w) compiles to the same 1324 bytes and the same listing, so the compiler reassociates the sums and the source's grouping does not choose them.
 // score 201 (was 201): frame 0x20 versus 0x24 (retail spills s to a fifth 4-byte cell and computes it above the identity
 // copy, w2 after it; ours the reverse) and the later transforms' schedules remain. Stacked status lines merged in r192.
 // MiniMax G (11-20): no new form, no lower score (201): retail keeps five cells below the quaternion where ours keeps four, and the cosine half stays in XMM5 where ours swaps the two.
@@ -523,6 +524,9 @@ static inline void quaternion_transform_vector(
 // NOT kept: the two-point gain leaves the frame mismatch.
 // Coefficient local names in all six weight/projection orders, then cross-term names before
 // or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// Named double cosine/sine radicands 217/217, both independently or together 201/201.
+// Named double cosine/sine roots 258/258, both 215, and both radicands and roots 210.
+// All keep the 0x20 frame and miss the separate retail transform spill.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1579,6 +1583,18 @@ void function_143250(
 // Input/output/both slices advanced after the calls 1625/1725/1701.
 // Shared coefficient offset advanced after admission or the calls 1231/1231.
 // NOT kept: The advancing forms retain the 0x2fc frame and do not recover the displaced scalar homes.
+// Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
+// 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
+// NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
+// The third-band scalar homes still leave the frame one word short. Running sums for paired mixed axial,
+// transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
+// outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
+// NOT kept: the accumulations leave the frame at 0x2fc and either tie or raise the score.
+// capture with matrix store for r1 1740; capture with matrix store for r4 1721;
+// capture with matrix store for r1, r4 1748; capture with matrix store for r0 1717;
+// capture with matrix store for r0, r1 1766; capture with matrix store for r0, r4 1742;
+// capture with matrix store for r0, r1, r4 1788; capture with matrix store for r0, r1, r3, r4, r8 1832.
+// NOT kept: The early matrix stores displace the capture and spill schedule, miss the retail frame and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
