@@ -1635,6 +1635,12 @@ long function_1fa7f0(void);
 // +0x4 and the next at +0x10 against +0xc, and retail's order (distance, sector, index, direction) is ours' (sector,
 // edge, distance, index, direction) with the edge in a stack slot where retail holds it in EBX; retail keeps the count
 // in SI and re-reads it from its parameter home in the scan loops, while ours keeps it in BX for the whole function.
+// MiniMax E (11-20): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so every home
+// sits low, and retail still keeps the zero in EBX at the head and the count in SI while this build keeps the zero in
+// EDX and the count in BX; the difference follows from the loop's own locals, whose slots MSVC lays out by liveness and
+// not by declaration order (the step pointer last, the edge after the link and the edge first all compile to the same
+// code), and from retail's inlined 0x210a30 in src/path.cpp, which has to stay inline or 0x1f45c0 loses its match:
+// BLOCKED-BY that file. The body stands.
 // MiniMax D (11-19): no new form, no lower score (400): every block's own arithmetic agrees with retail (the x87 chain of
 // the candidate loop, the corner calls, the attempt loop and the emit block are the same code, only their stack homes
 // differ), and what is left is MSVC's own allocation of the loop's locals: retail keeps the zero in EBX at the head, puts

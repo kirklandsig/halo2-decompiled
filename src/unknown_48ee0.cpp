@@ -18,6 +18,13 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax E (11-20): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail shifts
+// them in EAX (`mov eax, [0x4c1a80]`, `shr eax, 0xa`, `not al`, `test al, 1`), and the size still stays in a register
+// across the two rounding calls where retail reloads it from the lowest slot, and that reload is what sets the frame's
+// slots: BLOCKED-BY 0x48e70 (its xmm clobber set is set in src/unknown_02b400.cpp, another lane's file, where it is
+// held). Retail's own slots were read off its listing - the size in the lowest slot, the mode above it, the maximum and
+// the extent above those and the aspect next - while ours keeps the mode lowest and the size in the extent's old place,
+// and the declaration order does not move them. The body stands.
 // MiniMax G (11-19): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail uses
 // EAX, and the homes are still permuted (ours keeps the mode in the lowest slot at 0x8 and the offset at 0x14 where
 // retail keeps the mode at 0xc and the offset at 0x10). This round the declaration order was tried with the mode
