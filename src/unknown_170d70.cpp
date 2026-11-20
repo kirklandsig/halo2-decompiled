@@ -980,6 +980,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // Assignments at map hit, signed capacity test, unlinked-entry test, or projection: 129 each.
 // With a shared capacity result: 125 each. NOT kept: The shared result restores EBX and BP
 // and advances the first difference to +0xe. The gain is four and creation stays inline.
+// Slot/index lexical orders and immutable reservation/entry 129 each. Return the last
+// signed capacity comparison after a break or a positive arm, with or without immutable
+// entry/volume addresses: 126 each. NOT kept: the three-point gain leaves creation inline
+// and shortens the body to 425 bytes.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

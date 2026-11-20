@@ -525,6 +525,8 @@ static inline void quaternion_transform_vector(
 // Named double cosine/sine radicands 217/217, both independently or together 201/201.
 // Named double cosine/sine roots 258/258, both 215, and both radicands and roots 210.
 // All keep the 0x20 frame and miss the separate retail transform spill.
+// Coefficient local names in all six weight/projection orders, then cross-term names before
+// or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
