@@ -79,6 +79,11 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax B (11-20): no new form, no lower score (125): the result, kind and bitmap homes are still eight bytes
+// above retail's and the early across-axis product still has no retail spill at [ebp-8]; this build sinks the two
+// across products into the side computation, so they never get a stack home and the frame slots stay high. The
+// corner sums written with the other operand first give the same code, and `back + (up + origin)` grows the body
+// to 749 bytes (137). No form found this round.
 // score 125 (was 125): The result home remains eight bytes high, and the early across-axis product still lacks its retail spill.
 // Positive corners before negative corners, all upper vertices first, origins first, or separate components by side:
 // in-place negation 149/149/149/154. Separately initialized negative displacement 149/146/148/148.

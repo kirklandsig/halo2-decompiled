@@ -228,6 +228,13 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
 // score 195 (was 195): one note (the stacked score lines merged, r184); r155 unchanged.
+// MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
+// inverse defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the
+// transformed points still take the opposite component order. The shared point transform at the origin,
+// displaced, both and reversed sites was measured at 423/376/529/359/538/536/718 in an earlier round, all worse,
+// and the in-place displaced transform and the perspective-only inverse locals measure 263 and 261. No form
+// found this round.
+// score 195 (was 195): one note (the stacked score lines merged, r184).
 // Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
 // defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills

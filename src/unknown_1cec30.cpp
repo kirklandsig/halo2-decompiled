@@ -3632,6 +3632,16 @@ struct s_1cf531
 // the correction in place in local_13 measures 23 (the store goes to 0x30 but the reload after 0x183dc0 is a separate
 // movaps, never folded), the correction as a named hkVector4 and the correction declared earlier both give the same 2,
 // the final product's operands swapped 19, and a plain correction sharing local_13's slot grows the frame to 0x64 (94).
+// MiniMax B (11-20): no new form, no lower score (2): the corrected vector still spills to 0x40 and the final
+// mulps folds that slot, where retail keeps the corrected vector in the argument vector's own slot (0x30) and
+// folds its reload. The cause is now pinned: in retail the copy of local_7, the corrected vector and the scaled
+// vector all live in the one slot at 0x30, so the argument vector is corrected in place and MSVC folds the
+// reload of that slot into the mulps; in this build the in-place form (23, and 19 with the operands swapped)
+// makes MSVC reload the vector right after the get_inverse_scale call instead, because the argument's address
+// escapes and the x87 store of the scale factor may then alias it. A plain __m128 for the corrected vector folds
+// the way retail does but takes its own slot (94 with a named argument, 93 with a materialized temporary whose
+// slot MSVC does not share with the plain one), and the copy-propagation spelling (94) grows the frame. The two
+// remaining differences are the spill address and the folded operand address.
 // score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
 // uses the saved impulse slot at 0x30.
 // Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and
