@@ -1157,6 +1157,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // component arrays 115, all near and far component arrays 115, indexed near dot 173, indexed far dot 171, both
 // indexed dots 326. NOT kept: The five component-array forms tie. Indexed accumulation raises the score and moves
 // the first difference earlier, and indexing both dots adds sixteen bytes.
+// MiniMax B (11-20): no new form, no lower score (115): retail keeps the clip deltas in the order x, z, y and ours
+// keeps them x, y, z, so the three product rows and the plane normal loads still differ; the form that reorders them
+// needs the delta helper written out by hand, which is only allowed on an exact match.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

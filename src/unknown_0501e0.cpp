@@ -675,6 +675,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // test 278/283/282/308. Selecting the complete scaled vector in the two arms on those forms
 // 311/319/310/306. NOT kept: all raise the score. The 0x20 frame, second displacement and coefficient
 // homes still differ.
+// MiniMax B (11-20): no new form, no lower score (221): the frame stays 0x20 against retail's 0x14 because the first
+// offset vector still needs a stack home (its address reaches the view helper); writing the offsets as explicit
+// component assignments reaches 218 (under the 8-point bar) and a by-component view helper 265, both kept out.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

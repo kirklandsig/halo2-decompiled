@@ -1975,6 +1975,8 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // if/else on the unit and weapon guard 188 (same code); the look pair as two scalars clamped by if/else-if chains 204 (frame
 // 0x28); the weapon-active flag typed byte 387 (2197 B). Slot map (masked listing): retail packs zoom with unit (-0x1c) and the
 // active byte with spring_d (-0x14), ours the other way round; the ESI/EDI saves stay BLOCKED by the build's stand-in caller.
+// MiniMax B (11-20): no new form, no lower score (188): the channel pointer still differs at every channel use and
+// the look pair still needs an aggregate slot of its own, so the frame stays 0x30 against retail's 0x2c.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
