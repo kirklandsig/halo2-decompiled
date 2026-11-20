@@ -1856,6 +1856,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // x (5), facing x (6), side x (7): the same order except that direction x is handed out fourth where retail hands it
 // out first, and side x and facing x trade. Retail also loads 1.0 into the dead radius register in both arms of the
 // fraction (one register value from `fraction = 1.0` to the second normalize's reciprocal); ours loads it after the join.
+// M3 lane 8 r208 (h2m fast with 0x210690, 0x210770, 0x26ccb0 and 0x29a190, all MATCH; control 226 at 1176 B): the side
+// offset as one planar_scale call with a ternary scale 241 (1164 B); the type-zero centre copied from the target and the
+// two scaled terms added in place 317 (1210 B); the side vector set member by member 226 (same code); the type-one centre
+// copied from the target and its scaled difference added in place 275 (1200 B); both arms' centres so 340 (1226 B).
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

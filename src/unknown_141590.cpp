@@ -1595,6 +1595,12 @@ void function_143250(
 // capture with matrix store for r0, r1 1766; capture with matrix store for r0, r4 1742;
 // capture with matrix store for r0, r1, r4 1788; capture with matrix store for r0, r1, r3, r4, r8 1832.
 // NOT kept: The early matrix stores displace the capture and spill schedule, miss the retail frame and raise the score.
+// M3 lane 8 r207 (fast with 0x22850 209 and 0x23690 354 unchanged each run; control 939 at 10777 B, `ret 4`, rotation in
+// EAX): of 1766 listing lines 600 differ only in a stack offset and 352 in the instruction; the matrix and everything
+// above it sit 4 bytes lower than retail's, the scalar homes from +0x48 to +0x240 are permuted. The matrix declared after
+// the nine rotation reads 939; r0..r8 renamed (diagnostic: slot order does not follow these names) 939; `s5_s15` as
+// `s15 * s5` 939; every band temporary but the accumulator `real const` 939 (all the same code); the third band's
+// accumulated diagonal sum as one expression stored to matrix[8] 1333 (10752 B).
 // Third-band coefficient-local cubic products of r6 times r0 or r3, or both pairs 1560/1559/1537.
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.

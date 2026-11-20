@@ -1383,6 +1383,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // M3 lane 4 r237 (fast with 0x16c6f0, 0x13cb40 and 0x142d10, all MATCH; control 126): the yaw distance dot with its arguments
 // the other way round 126; the distance dot ahead of the atan2 126; the field-of-view tail as `start + (target - start) * t`
 // 126 (same code each); the tail's clamp into a named fraction local 395 (1700 B); the tail's range in a named local 396.
+// M3 lane 8 r208 (h2m fast with 0x16c6f0, 0x13cb40, 0x142d10 and 0xa9b40, all MATCH; control 126): case 2's squared length
+// as the copied normal's own dot (`dot3f(&plane.n, &plane.n)`, no left loads) 177; `t` started at zero at its declaration
+// with no else arm 454; the length test as `== 0.0f` with the zero arm first 136; t as one ternary 126 (same code); the
+// squared length between the normal copy and the plane constant 399 (1700 B).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

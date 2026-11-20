@@ -86,6 +86,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // [mem]`, and the game-time load keeps this build's registers.
 // score 76 (was 76): Retail reloads enable after the player statistics write and carries the maximum in ECX.
 // The existing getter and setter live in a separate /Ob1 translation unit. The global layout affects alias analysis.
+// MiniMax I (11-20): no new form, no lower score (76): reading the enable byte at each use point instead of through the bool local gives 103 (the reload then lands where retail has it), the old maximum as a nested ternary 108, and the increment before the row pointer 107 with the direct enable read and 85 alone (it swaps the EBP and EDI roles); what still differs is the old maximum's home (ECX there, EAX here), the 15-bit value read (a zeroed 16-bit move there, movzx here) and the row pointer's register order.
 // MiniMax B (11-20): no new form, no lower score (76): the enable byte's raw reload needs one address-taken object that src/unknown_1967d0.cpp holds (BLOCKED-BY 0x196960/0x1968b0); what still differs is that reload, the old maximum's home (EAX here, ECX in retail), the 15-bit value read (movzx against retail's xor/mov) and the row pointer's register order.
 // Earlier score 76 (was 76): BLOCKED-BY 0x196960/0x1968b0 (retail inlines both here; their file is /Ob1 and was on
 // this round's avoid list) and the enable reload's aggregate; earlier notes below.
@@ -328,6 +329,19 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // default 85/113, upper default 95/121, lower-bound admission with nested
 // upper comparison 86/109. NOT kept: all regress. The 434-byte long forms
 // still keep enable across the statistics write and the old maximum in EAX.
+// M3 lane 8 r207 (src/unknown_1967d0.cpp open again; fast with 0x196960, 0x1969a0, 0x1968b0, 0x1ea770, 0x1e9ce0,
+// 0x1e9df0, 0x15ca10, all MATCH each run; control 76). Lane 4 r225's held lead re-measured: `inline` on 0x196960's
+// definition with both maxima as `if (g_510ca0) x = function_196960(...)`, the increment through the statistics
+// address first, the row formed after it and the setter's own clamp (long limits, counter pointer, nested conditional)
+// 96 (420 B: the getter now expands as retail's, `mov eax, -1`, `xor eax, eax; mov ax`, old maximum in ECX; left: the
+// enable byte held in BL where retail reloads it into CL after the increment and into DL in the team block, then the
+// clamp's registers). One object for 0x510ca0..0x511000 (every global of that range folded in as a field, the old
+// names as macros; a header trial, check --fast over the 47 users of these globals, all 46 others MATCH): main's body
+// 76 (same code), the inline-getter form 86 (426 B, first difference +0xa1, the enable still in BL): an object whose
+// address other files take does not make this function reload the enable byte; lane 12 r78's reload needs the
+// counters in the same object, which brings in g_511000 (lane 10 r120: 0x196470 then loses its match). On the
+// inline-getter form the setter's enable test read through a const address cast 86 (426 B: the reload appears right
+// after the increment, in BL, and the team block reuses it), the team test too 86 (same code); match-only forms.
 // MiniMax S (11-20), NOT kept: 72 (was 76), a 4-point gain, under the 8-point bar for a function above 30.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)

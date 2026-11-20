@@ -863,6 +863,13 @@ void function_1537f0(s_profile_record *record);
 // the top of the body 14; `entry->` links as chained pairs 46, as four statements 46 (NONE hoisted). No `entry` local
 // at all (view, link pointer and tail from the element, the links in retail's pairs) 44. The base still follows the
 // link pointer.
+// M3 lane 8 r206 (h2m fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): each link through its own
+// one-use pointer in retail's store order 43 (folded: base +0x4c, NONE hoisted into EBP); a named source pointer for the
+// record initializer and the builder 18 (same code), with the `entry->` chain in retail's store order 49 (hoisted); the
+// loop as `do ... while (++index < 350)` 18 (same code); the link pointer taken at `previous_other` with the stores in
+// retail's order at offsets 0, -2, +1, -1 18 (base +0x5e: the base is that pointer's second non-zero offset, as listed);
+// the link pointer as the entry itself cast to `short *` with retail's four indices 49 (it folds into `entry`, hoisted).
+// So the hoist ends only with a link pointer at a non-zero offset from the entry, and that pointer then sets the base.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -201,6 +201,11 @@ bool function_1946f0(s_bitstream *stream)
 // every site 2; the explicit read-modify-write with one `count >= 0 && count > 0` test and the clear from
 // `&data[byte_index + 1]` 2; a block-local byte mask with the count as `size - 1 - byte_index` and the clear from
 // `&data[1] + byte_index` 2 (the 2s the same code: both LEAs data first).
+// M3 lane 8 r210 (fast with 0x1957d0/0x195820, both MATCH each time): `long const saved` 2; a const stream parameter 2;
+// memset's count cast to `size_t` 2 (all the same code); the index computed between the two accounting stores 54; the
+// bound test as `byte_index + 1 <= size_in_bytes` 53 (143 B). Compile-only diagnostics: an unused field read at the
+// function's top and a data read ahead of the accounting stores leave both LEAs data-first; the data tested in the mode
+// test stays in EDI and the mask addresses `[edi + edx]`, still data first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

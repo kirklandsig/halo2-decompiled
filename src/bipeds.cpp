@@ -4462,6 +4462,16 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // goal-first except with up.j) and the zero held in XMM5 across the turn's sine negation where ours uses XMM3 and consumes
 // it. On it, one / two paren pairs in the first side row 584 (2676 B) / 598 (2726 B): the paren phase changes this
 // function's lengths, not only its operand orders. Body unchanged.
+// M3 lane 8 r209 (plain checks with 0xe1c40 0xdd360, both unchanged; the fast image gives 598 here and is not
+// faithful). The wall block's product operand loads do not follow the written operand order: with every row read through
+// biped's fields all 64 written orders compile alike (compile-only screen); they follow the access path. The side rows
+// with the goal read through a `vector3f const *goal = &biped->facing_goal` pointer 588 (2722 B), with both up and goal
+// through pointers 590 (2726 B). On lane 4 r232's 531 lead (A+B+C plus the false-default special flag and the two-use
+// key; re-measured 531 at 2712 B, match-only): the goal pointer 594 (2694 B: the side products other than up.i * goal.k
+// and up.i * goal.j load as retail's and facing's i/j rows copy side then multiply by up as retail, but the turning block
+// shortens), plus the sine's forward through a pointer 597 (2691 B; LTCG still folds two of its reads to biped-relative
+// loads), both up and goal through pointers 552 (2696 B). Retail reads the sine's forward through EBX throughout and sums
+// it (up.k * t3 + up.j * t2) + t1 * up.i.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

@@ -2002,6 +2002,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // set-active call 188; zoom, no_zoom and no_scope declared at the loop body's top 188; both together 188 (same code each); the
 // sound callback selected ahead of the orientation pointer 185 (a statement order, under the bar), with the active block 185;
 // `unit` as a const pointer 188. Still BLOCKED by the stand-in (round 98) for the ESI/EDI saves.
+// M3 lane 8 r208 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the overlay lookup tested
+// without the named class-type result 197 (frame 0x2c, but the result temporary then lives at -0x28 and the weapon-object
+// and frame homes move; retail's named result at -0x10 is right); the look record in its own block around the four
+// spring statements 188; the look pointer and the flags copy declared at their assignments 188; the weapon counter
+// declared in the for statement 188; no channel pointer (the +0xb8 channel written out at its test and clear) 188 (same
+// code each).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

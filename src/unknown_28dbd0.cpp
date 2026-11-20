@@ -701,6 +701,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // cosine, sine, projection 237, the dot first or named 236 / 236, sine and cosine as arguments 236, the named-draw
 // jitter 234 (1227), cross terms declared j, k, i 226 (1216) [171 / 41], include/axis_rotation.h's statement shape 234
 // (1216). No form reaches the 0x118 frame with the zero in XMM3. Helper and body unchanged.
+// M3 lane 8 r206 (h2m fast with 0x28dab0 and 0x256bd0, both MATCH; control 173, register/offset-masked aligned 66): the
+// frame word is the cross vector's aggregate home (cross i and k spilled at +0x24/+0x2c, its unused j slot the hole at
+// +0x28); retail's spills are separate scalar slots (cosine +0x10, sine +0x24, cross j +0x28, cross k sharing +0x20 with the
+// second draw's integer). Tried: the jitter as one real_point3d_set with both draws as its arguments and z passed back 215
+// (block order moves); the cross scale folded into the sums re-measured 193 (frame 0x128); all three scales folded into the
+// sums 228 (1198 B); the cross taken as heading x axis and subtracted with its sine scale folded into each row 199 (1219
+// B), that with sine and cosine taken first 197 (1219 B); the helper taking sine and cosine from the caller (named, sine
+// first, right before the call) with its body otherwise unchanged 230 (frame 0x120).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

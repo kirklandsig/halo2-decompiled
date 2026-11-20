@@ -945,6 +945,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // loop); the variant read at the call with no local 49; a named player pointer for the test and the call 49 (the session
 // stays in ESI in each). On the current body the scratch registers follow the opening: once the second address is formed
 // in the first test's block (as retail and the pair form do), the rest of the rotation is retail's.
+// M3 lane 8 r209 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22): the variant preset to 0 and set
+// under SESSION_STATE_IS_LIVE (0x64d70's in-place spelling) 22 (same code); the mask from the field with the member count
+// read after it 22; the member count read ahead of the two clears 124; the countdown started from the field 22; the
+// output pointer named ahead of the mask store 22 (all the 22s the same code).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1417,6 +1421,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // count/index colouring are retail's there; only the inline copy's two pointers swap (destination copy in ECX and source in
 // ESI, where retail forms the source in ECX and copies the destination to ESI). In the 195 forms the count is spilled
 // and the loop index kept in ESI (retail spills the index and keeps the count in EBX).
+// M3 lane 8 r209 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): on this body the else
+// arm copying into `dest` 9 (same code); the player mask read into a named local at the top of the true arm 359 (559 B, no
+// unrolling); `dest` also used by the else arm's copy with `dest = identities[0];` again at the top of the true arm 195
+// (the first definition is dropped, the colouring of the branch form); the destination declared in the branch as
+// `identities[count]` 195; the pointer step ahead of the count step on this body 17 (the scheduler moves `inc ebx`
+// after the step). Re-measured: the destination declared in the branch with the step first 216 (728 B).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
