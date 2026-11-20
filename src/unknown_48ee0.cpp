@@ -452,6 +452,11 @@ extern real g_4c9798[36];
 // if/else instead of in both arms 254 (1443 B); near and far distances named ahead of the scale 189 (1484 B); the four
 // texture-slot clears as one memset 173 (only the mode byte's store moves among the clears; one point, not kept).
 // Still BLOCKED-BY 0x48e70 (machine 1's file).
+// M3 lane 15 r119 (control 174 fast and plain; the reduced image builds the far-plane point block differently for this
+// function, so a gain needs the plain check): the distance test as `0.0f != distance` 175; the border's product kept
+// ahead of the divide by a cast on the product 180 (1491 B, plain: retail's multiply-then-divide, but the far-plane point
+// loads then reorder); the half-angle test, the second mode test and the two clamp tests with the constant on the left
+// 174 each.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

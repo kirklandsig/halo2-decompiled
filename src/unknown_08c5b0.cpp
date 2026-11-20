@@ -298,6 +298,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // || !available` gives 1) 11; no old-setting local, the change test reading the stored setting, 5; the selector defined
 // after the handler (forward-declared) 4 (same code); re-measured the reference-bound plain read 4 (same code). A 600 s
 // permuter run on the current form, 57 tries, best 4.
+// M3 lane 15 r121 (h2m fast with 0x8c5b0, MATCH each time; control 4; the existing kind read kept): the store ahead of the
+// change test 28 (88 B); the availability read into a bool first with `kind == 1 && available ? payload : 1` 43 (108 B);
+// old_setting declared first and assigned after the lookup 4 (same code); the selection in the handler as `if (kind == 1)
+// setting = available ? payload : 1; else setting = 1;` 4 (same code); a single-exit `bool result = true;` 4 (same code).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

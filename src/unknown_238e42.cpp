@@ -1375,6 +1375,11 @@ bool __stdcall function_2399da(long controller_index)
 // every rank use (NONE test, over-rank test, rank-3 test, store) through that pointer; the identity declared first, and
 // last, among the locals. Diagnostic (reverted): the identity test without the id read 105 (422 B, the identity then
 // loaded only at the removal). Identity ECX/rank EAX remain.
+// M3 lane 15 r120 (fast with 0xac050/0xac360/0x2399da/0x23955e, all MATCH; control 90): the membership call's result kept
+// in an unused bool local 90 (same code); the have_member block as `if (!have_member) { if (may_change) copy; else refuse;
+// }` 92 (430 B, the colouring stays); an assume that the identity pointer is not NULL at the top of the identity block 90
+// (same code); the member's current rank named before the permission test 90 (same code); the rank read through a
+// `long const *` to its own address in the dispatch 90 (same code).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
