@@ -2050,6 +2050,19 @@ void function_1f86a0(long actor_index);
 // negated with the accept call first and the decline in the else 134 (all the same code); the decline as `u && (!bit40 ||
 // !same) || !u && specified && !same` 240 (866 B); re-measured: the element's root named inside `if (specified)` 241.
 // Retail lays the decline block and the iterator step right after the bit-0x40 test; ours keeps the tests together.
+// M3 lane 16 r150 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all MATCH; control 134, aligned 109, register-masked 49).
+// Same code as this body (134): the joint index declared and set to NONE first with the early exit returning it; the
+// search loop moved whole into an inline function that returns the found index (forced inline; left to the compiler it
+// stays out of line, 467 at 639 bytes); the iterator's three stores in an inline set-up function; a first-entry inline
+// function (the three stores and the first step) driving a `for` loop; the mask as the only member of a local aggregate;
+// the mask's address taken in a no-op statement (diagnostic). One function-scope mask byte also assigned above the
+// slot-flag test and tested in both arms 231 (862 bytes: `and al, 0x20` there, where retail keeps the whole flags
+// byte in AL for two `test al, 0x20`). Diagnostic, reverted at once: a volatile mask on this body 254 (879 bytes, frame
+// 0x14 and the mask at +0x13, but the flags byte is then shared across the root calls in BL and the entry stays in
+// memory). Re-measured: the slot views ahead of the actor 137. Reading of retail's head: the incoming actor index sits in
+// EDX because ECX already belongs to the iterator address for the first step (retail forms that address ahead of the
+// actor-index store), the unit index chain stays in ECX and the object table goes to ESI because EAX is not free there;
+// none of the forms above moves either.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
