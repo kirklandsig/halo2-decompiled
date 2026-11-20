@@ -438,6 +438,33 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Separate symmetric matrix, with final aggregate, in-place correction, field transfers or row setters:
 // direct sine products 429/374/358/348; sine-axis vector 379/377/353/353.
 // NOT kept: all change the 0x90 frame and raise the score. The axis-square spills remain.
+// M3 lane 1 r134 (fast with 0x137ed0, matched throughout; control 334; about 420 shapes screened in a compile-only
+// build first, each aligned with retail by region). Retail's second matrix, where every value is spilled, shows the
+// builder's statements: the three squares into adjacent homes, the three sine products into adjacent homes, then
+// forward.i; xy stored to forward.j, left.i = that minus the k sine product, forward.j reloaded plus it; left.j; xz
+// stored to forward.k, up.i = that plus the j product, forward.k reloaded minus it; up.k; yz, left.k = yz plus the
+// i product, up.j = yz minus it; each cross term as (1 - cosine) * second * first with both read from the axis
+// again. Retail's passes: each row in place with i and j copied to temporaries, k read from the row again, and the
+// partial sum of each component written to a temporary after each term. Its frame: two 0x34-byte transforms at
+// +0x28 and +0x5c, the squares at +0x1c, the sine products at +0x10 and four scalar homes at +0 to +0xc that hold
+// the first sine (+0), second cosine (+4), first cosine (+8) and second sine (+0xc): four homes, not two shared.
+// Forms (the builder with squared / scaled vectors and the pair statements above; the rows in place with i, j and k
+// copied; both matrices as transform4x3f locals): sine and cosine taken at the calls, squares as products 356 (1799
+// B, frame 0x8c), squares copied then squared in place 335 (1782 B, frame 0x8c), sine products as scalars with the
+// complement named after forward.i 341 (1783 B) or squares as scalars 343 (1787 B) / 356 (1803 B), squares as scalars
+// squared in place with vector3f_scale for the sine products 351 (1798 B). With the four sines and cosines as named
+// locals ahead of both builders (one use each: match-only) the frame is retail's 0x90 and the first difference moves
+// to +0x10: order sine, cosine, sine, cosine 323 (1781 B), cosines first 324, the second pair first 327 (1779 B, retail's
+// length), with squares as products 354 (1801 B). LEAD, not kept (one-use locals, no match): build/r134's
+// lead-0x39e50-323.patch. Compile-only only: the builder taking the angle and forming its own sine and cosine
+// (real or double angle, either order, angle as an expression or a named local), the sine and cosine through const
+// references or filled through out pointers by a small helper all keep frame 0x8c (the two builders share two
+// homes); the rows with a named running sum are the same code as the single expression once i, j and k are copied;
+// i and j copied with k read again leaves the partial sums in registers. Left on the lead: retail loads the first
+// axis i, j, k into XMM0/XMM7/XMM3, squares copies of them, scales i and k by the sine in place and j through a copy
+// (j then serves the xy term from its register), and keeps forward.i, left.j, up.i, up.j and up.k of the first matrix
+// in XMM2/XMM3/XMM4/XMM5/XMM1; ours loads j, k, i, squares i in place, forms the i sine product late on the x87 stack
+// and keeps one more register free for the second matrix.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -4101,6 +4128,19 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // reference, entry reference and both 317/317/317. Active growth entry reference 317, growth initial
 // reference 369, both 388. The growth initial bindings expand the body to 1336 and 1351 bytes. The
 // state and prefix registers and ordinal homes remain exchanged.
+// M3 lane 1 r134 (fast with 0x4b160, MATCH each time; control 317): one to seven dead initialised locals 317 each (same
+// code: not a local-symbol-count state); a second variable holding `first` after pass 2 for passes 3 and 4 and both sort
+// calls 370 (1338 B); pass 3 alone with its own in-loop index 367 (1335 B); the swap as an index-taking helper
+// (state, a, b) at pass 3 only 368 (1336 B), at all four swaps 368, at passes 1-2 375 (1342 B), at passes 3-4 375, at
+// passes 1-3 367 (1335 B); pass 3 as `for (i = first; ; ++i) { if (last < i) break; ...` 317 (same code, also with
+// `!(last >= i)`); diagnostic, pass 3's test with pass 1's `last > i &&` in front 338 (1305 B: retail's registers and
+// homes through passes 1-4 with one extra `jle` at the loop head, which reuses the loop test's flags; it skips the last
+// entry, so it is not retail's code). Compile-only readings (it reproduces passes 1-4 but for the sort calls' register
+// setup): pass 1's head has no alignment pad in any spelling tried (start from `first`, `i <= last`, without its
+// `last > i`, without its swap), so a missing pad alone is no evidence there; pass 3's head keeps its pad whenever
+// `first` loses EBP for another reason (pass 1 without `++first`, diagnostic), and loses it only with a (last, i) test
+// at the top of its body, kept (`last > i`) or folded away (`last >= i`). `while (true)` with `if (i > last) break;`
+// and the increment at the bottom grows (1335 B, compile-only), the break after the entry pointer more (1351 B).
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4496,6 +4536,31 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // xmm2, [edi+0xa4]`) 490 (2030 B, aligned 337 against 346); the adds written `vx + velocity->i` 486 (same code); one
 // saved-position local used for the camera copy and each element's old position 535 (1985 B, frame 0x58), with the
 // divisor read at each use 544 (1976 B).
+// M3 lane 1 r134 (fast with 0x36b50, control 486; a compile-only build gives this function's code but for the random
+// generator's pointer, which it reloads at each draw, so shapes were screened there with an aligned count first; A =
+// aligned unmatched lines of the fast listing, ours/retail, 353 for the kept body). One combined body of the
+// retail-shaped pieces (camera copy and delta through a pointer to the stored view position; phase stored ahead of the
+// fade in both arms with the distance between them and the strength read at its use; one saved-position local for the
+// camera and each element; the divisor and the maximum read at each use; the size store as an if/else): 537 (1983 B,
+// frame 0x58, A 322/340). On it, the velocity sums written through the indexed state array (`*(real *)(state + 0x24 +
+// i * 12) = vx + ...`, `+=` for j and k) with the pointer local kept for the reads: 532 (1988 B, frame 0x4c, A
+// 281/290): the three sums are then stored and read back for the length as retail does. On that, the speed test as
+// `sqrt(dot3f(velocity, velocity))` with normalize3d and vector3f_scale: 567 (1951 B, A 255/277): from the velocity
+// sums to the size store every line is then retail's (the first length's x87 sequence, `1 / length` and the maximum
+// each scaled as copy, `[i]`, store, then j and k loaded and scaled) except that the second length is shared with
+// the first, where retail computes it again in the same form. Keeping them apart: the speed test through
+// length_sq3f and the helpers given the element's address in place of the pointer local 532 (1988 B, A 285/294;
+// both lengths then load all three components and keep them on the x87 stack to the end); a second named pointer for
+// normalize3d and the scale 545 (1975 B, A 282/294; the first length is retail's, the second keeps its loads).
+// Compile-only only: the kept double-cast length with normalize3d, normalize_inline with the dot3f test, the dot
+// through a one-pointer private length helper, `(double)dot3f(...)` and dot3f given the element's address twice
+// (each product then loads its component twice) are no closer. Readings for the next round: retail takes the cycle
+// bit from a byte load of state+0x94 and the other two bits from one dword load (`mov al, [state + 0x94]`, then
+// `mov esi, [state + 0x94]`), keeps the state pointer in EDX up to the loop and reloads it from its parameter home
+// inside it, keeps the view in EBX with a home, and walks five pointers (state+0x18, view+0x120, view+0x104,
+// state+0x2c, view+0x158); both projections copy the point into three locals and scale those (the first in
+// registers, the second in stack homes), and the moved point is `step * i + old.x` with j and k scaled in place.
+// None of the pieces lowers the positional count while the frame (0x38) and the entry registers differ.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

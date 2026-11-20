@@ -2880,6 +2880,46 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // Round 431: indexed velocity/sample/both material inputs 91/377/377; indexed output
 // alone or with material inputs 91/91; lateral axes through array 377; bound output array 99;
 // shared material addition with indexed output 139. Early j/k loads and property zero still differ.
+// M3 lane 1 r134 (fast with 0x1d06c0, 0x1d0400 and 0x181db0, matched each time; control 8). The two leftovers are
+// independent. (1) The zero's register: the inline setter copying its property word into a local ahead of the search
+// (`s_havok_property_word word = property;`) gives retail's EDI at all three sites, 5 (a one-use copy ahead of a call:
+// match-only, not kept). (2) The last block: retail emits copy, speed*i, store x, then j*speed, k*speed, the zero and
+// the three other stores; ours the copy, j, k, the zero, then speed*i and the four stores. Measured on the 5 form: one to
+// seven dead initialised locals 5/5/5/385/385/5/5 (the count moves the first contact loop's operand sides at 4 and 5,
+// never the last block); x through `real const &` 5; havok_from_vector3d(result, scaled) 5; `result` declared ahead of
+// the scale 249 (1402 B); set(velocity.i, scaled->j, scaled->k) 186; a separate scaled vector 385, with one to six dead
+// locals 13; the scale written straight into the result with w stored after it 345 (1402 B; 286 with five or six dead
+// locals); havok_from_vector3d given the scale's return value 249. A compile-only build reproduces our last block
+// exactly, so its order was screened there (not scores): the four stores written in any order, through m128_f32, through
+// a private four-store setter, through the packed-set intrinsics (the vector then goes through a stack temporary) or
+// with the scale folded into a private scale-and-store helper all keep the products as copy, j, k, zero, i; the same
+// with w = 1.0f (no zero in the block) gives copy, i, j, k and the stores last; only a real branch right after the x
+// store (diagnostic) gives retail's `movaps; mulss; movss [x]` ahead of the j and k products. So retail's block ends
+// after the first component's store, with the j and k scaling behind that boundary: a block boundary that emits no
+// code. An aggregate-returning helper for the speed, for the scaled vector or for the Havok vector does not leave one
+// there (the last two copy through integer registers). /G5, /G6 and /G7 (the one compiler-setting diagnostic) do not
+// change the block's order. No other function in retail has this copy, product, store, product, product sequence.
+// A construct that does leave that boundary (found last, same round): the result written by a private inline setter
+// that stores `s * v->i` by a statement and the other two components in a two-pass loop (`for (long n = 1; n < 3;
+// ++n) c[n] = s * v->n[n];`, then w), called with the speed expression before `result` is declared. On the 5 form:
+// 130 at 1454 B (the last block is then retail's order: x product, x store, j and k products, zero, three stores;
+// left: the i product is formed in place in XMM1 where retail copies the speed into XMM1 and keeps i in XMM4, and
+// the second contact loop's unrolled operand side); with one more named local in the setter (x named, or x as a
+// copy of s multiplied by i) 122 with that operand side right (aligned 8 ours / 7 retail: the copy, `cvtsi2ss`'s
+// register and two pads). The setter called after `result` 368 (1389 B; 278 with five or six dead locals); its
+// operand orders, `v->n[0]`, an array parameter, scaling in place inside the loop, a named speed in the body with
+// the statement and loop written there 130 each (same code); the scale by const reference 130; `v->i = s * v->i;
+// c[0] = v->i;` 175; a loop over all three after the statement (diagnostic) 42 with x stored twice; the loop as
+// `for (++n; ...)`, `while (++n < 3)` or do-while 176/223/223 (1484 B, the loop stays). Three-pass loops of every
+// counter type, test and direction, and counted loops given 3, never split one-plus-two (compile-only). Match-only
+// forms (a one-caller helper and a loop for two statements); nothing kept. A 24-form grid of that setter called
+// ahead of `result` (parameter order (out, v, s), (v, s, out), (s, v, out) or (out, s, v); x plain, through a named
+// copy of v->i, or as a copy of s multiplied by i; the stores through a `real *` local or m128_f32): order (out, v, s)
+// 130 plain and 122 with either named x (as above); every other order 77 plain and 69 with a named x (1457 B,
+// aligned 14: the x product is then retail's copy form, `movaps; mulss; movss [x]`, but the velocity's j is no longer
+// loaded beside the length and i, j, k and the copy take XMM3/XMM1/XMM2/XMM4 for retail's XMM4/XMM2/XMM3/XMM1); one
+// to seven dead locals on (v, s, out) 69 x4, 379 x2, 69 named and 77 x4, 379 x2, 77 plain. So the two states found
+// are: velocity block exact with the x product in place, or the copy form with the j preload lost.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
