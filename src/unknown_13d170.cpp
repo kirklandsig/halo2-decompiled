@@ -856,6 +856,16 @@ struct s_physical_block_iterator
 // `candidates` 93, 1-8 dead locals 93; permuter on the 93 form (900 s, 94 tries) best 93. Left on 93: one EBX/EDI swap
 // over the whole tail (the walk's high-water mark and bit, the overlap test's data and sum registers, and the
 // insertion's result EDI / NONE EBX in retail, here the other way round with NONE also taking the `result != NONE` test).
+// M3 lane 8 r199 (fast with 0x13d320, the file's six other functions and 0x16b840, all MATCH each run; control 201): lane 1
+// r124's 40 lead rebuilt 40 (1213 B, first difference +0x356, aligned 18). On it: the insertion tested through a plain `long
+// previous = best.previous;` copy in place of the bool, used by both stage tests and both block indexes 93 (the `sete` goes, but
+// NONE then takes a register ahead of the allocation test and the walk scan and the tail swap EBX/EDI), the copy for the two tests
+// only 93, the copy taken ahead of the allocation 93; the bool as a flag set by a branch (`at_head = false; if (...) at_head =
+// true;`, either arm form, or declared ahead of the allocation) 93 each (threaded, as the copy); `long const &` bindings of
+// best.offset and of pages for the overlap test, before or inside the walk, or a named start read through one, 40 each (same
+// code); a single-stage insertion with `entry->next = first; first = result` in each head sub-arm or once after them 96/96; one
+// `entry->previous = NONE;` ahead of the first-block test on the copy form, the two single-stage forms and the lead 102/100/101/92.
+// Permuter on the 40 lead (600 s, seed 199, 59 tries): none below 40. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

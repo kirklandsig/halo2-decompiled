@@ -597,6 +597,14 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Signed candidate word with cursor latch in pre-test or post-test loop 469/469, cursor consumed at read 479/479.
 // Signed candidate word with end-pointer latch or read advance 489/493, byte or short countdown at latch 469/469.
 // NOT kept: every signed-count form shortens the body and changes the matched caller.
+// M3 lane 8 r199 (fast with 0x29a190 and 0x298c30, both MATCH throughout): lane 1 r129's lead rebuilt (global count, near rows in
+// per-side arms, emitter storing angle and side first) 310 (1716 B, first difference +0x163, aligned 127, masked 89 against this
+// body's 260 / 159). On it: the wrapped angle as `x >= 0.0f ? x - 2pi : x + 2pi` 311 (aligned 117, masked 84); the angle element
+// read at each use 315 (1714 B, aligned 116, masked 79); both 314 (1717 B, aligned 104, masked 71); the near y row as
+// `local_11 * arg_3->y` or y term first 310 (same code); the loop root summed y-first 310, on both 314 (same code); no `(real)` on
+// the root 310 / 314 (same code). Diagnostic dead locals 1..7 on both: 314/316/314/314/314/314/313 (the loop head never moves).
+// Our loop head stores the root and reloads it for the radius compare (`fstp`, two pops, `fld`) where retail keeps it on the x87
+// stack (`fstp st(2); fstp st(0); fst`): one instruction more, shifting the near arm by a line.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
