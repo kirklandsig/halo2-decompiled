@@ -1473,6 +1473,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // copy, the tail's count in ECX) and guard + clamp inside + dx at its uses 151; new on the 92 form: `inside` after the epsilon
 // tests 101, the entry side as an if/else assignment 92 and `fraction` declared ahead of the deltas 92 (same code each), the
 // guard spelled `0 < count` 251 (880 B) and `count >= 1` 271 (906 B).
+// MiniMax E (11-20): score 129 (was 129): no new form and no lower score; the first difference is the count's load width -
+// retail reads the count slot as a dword (`mov ecx, dword ptr [ebp + 8]`) and takes its low word (`movsx edi, cx`), this
+// build reads a word directly (`movsx edi, word ptr [ebp + 8]`). Retail's dword load means its count parameter is 32-bit,
+// and the declaration may not change here. Behind that: retail keeps the previous-side flag in memory at [esp + 0xd] where
+// this build keeps it in CL, and retail's zero is XMM2 where this build uses XMM4.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

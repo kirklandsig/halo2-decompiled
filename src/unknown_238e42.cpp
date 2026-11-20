@@ -1370,6 +1370,11 @@ bool __stdcall function_2399da(long controller_index)
 // listed other-way-round shape, re-measured as a cleanup); the identity declared with a NULL initialiser 90; the identity
 // test with explicit `!= NULL` / `!= 0` and the own rank unsigned 90; the permission test with the member's rank on the
 // left 91; `own_rank >= rank` with `3 == rank` 90 (each 90 the same code). Identity ECX/rank EAX remain.
+// MiniMax E (11-20): score 90 (was 90): no new form and no lower score; the difference is still the colouring of the two
+// values the matched callee 0xac050 takes - retail loads the selected identity pointer into EAX and the requested rank into
+// ECX, this build keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call, which costs
+// two bytes and shifts every later jump. Fixing it needs 0xac050's parameter order changed in src/online_teams.cpp, a file
+// this lane may not edit.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

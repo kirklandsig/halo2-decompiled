@@ -601,6 +601,11 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax E (11-20): no new form and no lower score (675): retail re-tests the input's type after the obstacle setup,
+// so the collision pass is a separate top-level test, and it keeps the success result in a byte at [esp+0x13]; the
+// forms tried here (the radius as one ternary 708, the result as a bool 754, the collision pass split out 848 with
+// the frame at 0x1f84, a short frame 704, the radius declared before the pathfinding 674, the radius compared against
+// the 0.2f literal 675 and the ternary with the reorder 704) all land at or above the baseline, so the body stands.
 // score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
 // score lines below are merged into this one (m3 lane 11 r102).
 // MiniMax I (11-20): no new form, no lower score (675): the frame and the length (2986 bytes) are retail's and what is left is the entry's colouring - retail takes the path pointer into EBX after the pushes, keeps the success flag in the byte at [esp+0x13] and loads the source radius before the 0.2f constant, where this build takes the pointer into EAX before the pushes and keeps the result in a dword at [esp+0x64], and the homes of the radius, the maximum height and the count sit at different offsets.
