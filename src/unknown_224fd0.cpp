@@ -436,6 +436,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // once in the kept order 452 (1756 B); the output parameter first in the helper and both calls 219 (same code); the
 // squared and sine vectors as one two-element array (bound by reference) 471 (1740 B); diagnostic, reverted: the rotation
 // switch without its `__assume(0)` default 228 (1836 B, first difference +0x56 at the added bounds test).
+// The squared-k spill still follows the sine products. Complements, cosine corrections and
+// complete diagonals beside their square producers 204/204/219, together after the final square
+// 204/204/219, or corrections and diagonals after both products of each axis 204/219.
+// NOT kept: the table moves to its retail address but only two executable rows improve,
+// and the first rotation arm still lacks retail's early squared-k spill.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

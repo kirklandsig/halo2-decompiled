@@ -754,6 +754,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Written-differs at 489. NOT kept: Sharing the query vector for the full translated target gains two
 // and leaves the position at +0x8c. The two-component target reaches 3499 bytes at 669 and moves the
 // first difference earlier. The opening body is restored.
+// Position remains at +0x8c for retail's +0x80. Both path vectors declared together before
+// the heading, before the position, before or after its query, or after normalization 489 each;
+// one path vector before the position or before or after its query 489 each.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
