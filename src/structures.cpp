@@ -837,6 +837,15 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // result and a break 247 (741 B). Diagnostics on the lead: one more read of the range ahead of the section test 239
 // (739 B), the loop's first index read there 242 (741 B): the range still does not take EBP (the triangle parameter
 // does). Nothing kept: no form gains on the control, and the lead needs an exact match.
+// M3 lane 7 r200 (fast with 0x14a8e0/0x14af40/0xd47d0/0x16e1b0, all MATCH throughout; control 172): round 268's lead
+// rebuilt (the vertex getter's result unset on a miss, definition and section NULL at their declarations, result after
+// section, no else arm, unknown18 stored before part_index) with a byte result 146 (743 B: the BSP in EBX as retail, but
+// the byte goes back through test/setne), with a bool result 133 (733 B). On 133: 1 to 8 dead initialised longs ahead of
+// the body (diagnostic) 133 at every count, so not a symbol-order tie; a per-iteration copy of the section for the
+// indices, the 0x16e1b0 call and the vertex reads 133; the 0x16e1b0 outputs and the vertex array declared at function
+// scope 133; range as a const pointer 133. Left on 133: ours keeps the section in EDX from the join into the loop (NONE
+// then takes ESI), where retail reloads the section at the 0x16e1b0 call and gives EBP to the range from the arms to
+// the loop's first test. Body unchanged.
 // M3 lane 6 r212 (fast with 0x14a8e0/0x14af40/0xd47d0, all MATCH; aligned [exact, stack masked, registers masked]): lane
 // 7 r123's lead re-measured 208 at 726 B [19, 19, 15] and its definition/section/result order 133 at 733 B [75, 68, 25];
 // on each, the loop bound written `range->count + range->first` 208/133 (same code); on 133 the range as a const pointer,

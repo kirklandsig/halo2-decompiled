@@ -1894,8 +1894,9 @@ void function_0bfe20(dword *flags, long bit, bool value);
 // in registers, which is what the shared rotate helper's three copies give when they get no register and are read
 // back from their source; ours spills them to the frame instead. BLOCKED-BY 0x142570 as before (/Ob1, inlined by
 // retail; this file's attachment-point helper writes that body).
-// score 67 (was 192, r924 stand-in image): the body runs inside `if (allowed) { ... }` (one return at the end) instead
-// of `if (!allowed) return;` before it; 1240 bytes (retail 1236). The BLOCKED-BY note above still describes the rest.
+// MATCH (r924 stand-in image) on top of the nested `if (allowed) { ... }`: `header` declared before `parent`, the parent's
+// node matrices taken into a local ahead of the link stores (retail loads the parent's +0x116 there), and the bit-vector
+// test reading the root header's unknown04 again (retail re-loads it after the NONE compare).
 // M3 lane 1 r136 (fast with 0xb8ee0/0xbe760, both MATCH each run; control 192, lead 166): the forward vector through the
 // existing in-place rotate helper (`&inverse.rotation`) 280 (1262 B: its aliasing copy branch stays, frame 0x70); a
 // `data` local for `pool->data` after the walk, for the parent and the header, 332 (the parent load then takes retail's
@@ -1904,6 +1905,8 @@ void function_0bfe20(dword *flags, long bit, bool value);
 // use 291; on the 166 lead the two vectors declared ahead of `position` 166 (same code). Reading: retail stores each forward
 // row before the next one and reloads the object's components per row, so its rotate's output is treated as possibly
 // aliasing the source (ours defers the three stores and spills the copies). Body unchanged.
+// score 67 (was 192, r924 stand-in image): the body runs inside `if (allowed) { ... }` (one return at the end) instead
+// of `if (!allowed) return;` before it; 1240 bytes (retail 1236). The BLOCKED-BY note above still describes the rest.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, long index, short node)
 {
@@ -1918,8 +1921,8 @@ void __stdcall function_b93b0(long parent_index, long index, short node)
         if (ancestor == index) return;
     if (allowed)
     {
-        byte *parent = *(byte **)(pool->data + (parent_index & 0xffff) * 12 + 8);
         s_object_header_view *header = (s_object_header_view *)(pool->data + offset);
+        byte *parent = *(byte **)(pool->data + (parent_index & 0xffff) * 12 + 8);
         bool was_active = (bool)((header->flags >> 2) & 1);
         if ((bool)((*(dword *)(object + 4) >> 7) & 1))
         {
@@ -1929,6 +1932,7 @@ void __stdcall function_b93b0(long parent_index, long index, short node)
         function_b7300(index);
         if ((bool)((*(dword *)(object + 4) >> 8) & 1)) function_b87b0(index);
         if ((bool)((*(word *)(object + 0xc0) >> 6) & 1) && !((1 << header->type) & 0x80)) function_b8840(index);
+        transform4x3f const *parent_matrices = object_node_matrix_bdef0((byte const *)OBJECT_GET(parent_index));
         *(long *)(object + 0x14) = parent_index;
         short node_index = node;
         object[0x18] = (byte)node_index;
@@ -1939,7 +1943,7 @@ void __stdcall function_b93b0(long parent_index, long index, short node)
         *(short *)(object + 0x2c) = NONE;
         *(short *)(object + 0x2e) = g_4686c4;
         transform4x3f inverse;
-        function_141590(&object_node_matrix_bdef0((byte const *)OBJECT_GET(parent_index))[node_index], &inverse);
+        function_141590(&parent_matrices[node_index], &inverse);
         point3f position;
         vector3f forward, up;
         object_attachment_point(&inverse, (point3f *)(object + 0x64), &position);
@@ -1954,7 +1958,7 @@ void __stdcall function_b93b0(long parent_index, long index, short node)
         long root = function_baf80(index);
         s_object_header_view *root_header = OBJECT_HEADER_GET(root);
         if (!(root_header->flags & 1) && root_header->unknown04 != NONE &&
-            bit_vector_test((dword const *)((byte *)g_4e6948 + 0x11b8), root_header->unknown04)) function_b7290(root);
+            bit_vector_test((dword const *)((byte *)g_4e6948 + 0x11b8), OBJECT_HEADER_GET(root)->unknown04)) function_b7290(root);
         if (was_active && !(root_header->flags & 4)) function_bba20(root);
         function_b7360(parent_index);
         function_b7360(index);
