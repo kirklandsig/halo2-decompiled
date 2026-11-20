@@ -1651,6 +1651,14 @@ void function_1e3b60(long actor_index);
 // typed prefix with child count > 0 at 26, const typed update view 25, scoped
 // layout-derived reset 25, callee __cdecl declaration and definition 71.
 // NOT kept: the call still pushes the actor index. The __cdecl form also adds caller cleanup.
+// M3 lane 2 r115 (fast with 0x262ba0; 25 unless said; this body unchanged): this function MATCHES as it stands once
+// 0x262ba0 takes the actor index in EAX, which needs 0x262ba0 never to read the argument's stack home again. Three
+// things there each force such reads: our link expands 0x25c820 inline at its release site (retail calls it; the
+// expanded 0x25c780 call takes the prop index in EBX), the `update` byte takes BL, and the prop index is promoted to
+// a register (retail keeps it in the iterator's cell). Diagnostics in 0x262ba0, reverted at once: the walk form with the
+// iterator and the update flag kept in memory and the 0x25c820 call kept out of line gives MATCH here (0x262ba0 545
+// at 1496 B); any two of the three without the third 25 (see 0x262ba0's note for the forms and counts).
+// BLOCKED-BY 0x262ba0 (0x25c820 expanded inline there; iterator and flag homes).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -2350,6 +2358,20 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // outrank the unit and the index. Body unchanged.
 // Lazy primary/secondary weapon result by assignment, by conditional, or from an initial NONE,
 // and separate slot guard 251 each. Each also scores 251 with a separate valid-unit guard.
+// M3 lane 2 r115 (fast with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240 and 0x1e5280; control 251, aligned 57
+// with registers masked; body unchanged). Call counts agree with retail (12 each), so no inline decision differs here.
+// Re-measured lane 8 r146's diagnostic in a natural-looking spelling: in matched 0x1e53e0 the found entry assigned
+// through a reference bound to its own result (`void *&found = result; found = entry;`) keeps 0x1e53e0, 0x2758b0,
+// 0x1e04a0 and 0x1e5380 matched and gives this function 265 at 1247 B with the first difference at +0x26 (aligned 48
+// masked): the pool global is then held in a callee-saved register and the unit is looked up again after the call and
+// after the first weapon store, as retail does. The parent index assigned through a reference to the parameter instead
+// loses 0x1e53e0 (43), 0x1e5380 (8), 0x1e04a0 (6) and 0x2758b0 (82) and gives 307 here. On the 265 base: block 2's
+// queries through the existing 0xcbd50 with the slot from a fresh lookup 300 (1240 B); the two private queries
+// result-first (`long result = NONE; if (slot != NONE) result = ...;`) 299 (1239 B, aligned 97 unmasked, 44 masked);
+// those with a `long` weapon index 294 (1218 B); 0xcbd50 with a `long` index 294 (1219 B). Not kept: the reference
+// store in 0x1e53e0 is a steering form in a matched function and raises this count. Left on the 265 base: the pool in
+// EBP for retail's EDI with the options the other way round, the seed pointer reloaded around the 0x259a0 call
+// (BLOCKED-BY 0x259a0's file flags, as recorded above), retail's 32-bit weapon index with its own cell.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

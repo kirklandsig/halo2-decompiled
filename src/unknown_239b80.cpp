@@ -835,6 +835,22 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // with other registers. Retail loads the count into EBX only as the classifier's argument, copies it to EDX for the lowest
 // scan, reads its home again for `current = count` after the call and compares it from memory either side of the index
 // store; EBX then caches the hull count.
+// M3 lane 2 r115 (fast with 0x239d50 and 0x239b80, both MATCH each time; control 144, aligned 58 with registers and
+// slots masked; body unchanged). Reading of retail's entry: EBX and EDI are only the classifier's argument registers;
+// after the call the count is copied EBX -> EDX for the lowest scan, `current` is loaded again from the count's home
+// (so `short current = count;` stands ahead of the call and is rematerialised after it), and from the pass loop on the
+// count has no register at all (three compares against its home per pass) while the hull count owns EBX with its cell
+// at +0x10. Re-measured: the one-counter body with main's gotos 265 (759 B); the completion-flag body (match-only)
+// with `current` after the call 216 (791 B, aligned 84 unmasked), with `current` ahead of the call 116 (784 B). In both
+// flag bodies ours gives the count a callee-saved register for the pass loop (EBX or EDI) and the hull count only ECX.
+// Diagnostics, each reverted at once (an unreachable call taking the address, or the address stored to a global): the
+// hull count's address taken unreachably on the one-counter body 230 (762 B: `inc dword [hull count]`, the scan's
+// bound compared from memory, the loop still rotated); with the count's as well 238 (792 B); with all three parameters'
+// too 252; the count's address taken unreachably on the flag body 216 (same code) and on the `current`-first flag body
+// 212 (784 B: the count still cached in EDI); stored to a global on the flag body: both 240 (784 B, aligned 182), the
+// hull count's alone 242 (768 B), the count's alone 178 (807 B, aligned 88), both on the `current`-first body 245. So
+// neither an address-taken nor an escaping count or hull count gives retail's allocation; what ranks the hull count
+// above the count for the fourth callee-saved register is still open.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

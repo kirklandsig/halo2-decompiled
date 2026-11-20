@@ -805,6 +805,33 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // raises the count (412 -> 442) although it removes the hand-written step; the next round should start from the walk
 // and look for what ranks the actor index above the prop index (retail's inlined 0x2641c0 is one read of it fewer).
 // MiniMax C (11-19): no gain (412, baseline; body restored). Retail holds the actor index in EBX for the whole body and gives the prop index EDI with a stack home; ours keeps the argument in its stack home and reloads it, and the prop index takes EBX, which also leaves the frame at 0xa4 against retail 0xa0. The inlined 0x2641c0 inline decision belongs to another lane file.
+// M3 lane 2 r115 (fast with 0x1e34e0; control 412; body unchanged). Why the actor index stays a stack argument: the
+// argument goes in EAX exactly when no instruction of this body reads its stack home again (main's body reads it 12
+// times, the walk form 12, see below), and three things in our build each force such reads. (1) Our link expands
+// 0x25c820 inline at the release site (`mov word [prop + 0x24], 0` and a direct 0x25c780 call are in our listing; retail
+// has neither, it calls 0x25c820 once, case 1 jumping to that call): the expanded body's 0x25c780 call takes the prop
+// index in EBX, so EBX cannot hold the actor index across it. (2) The `update` byte takes BL. (3) The prop index is
+// promoted to a register. Retail keeps the prop index and the next index in the iterator's cells (+0x14 / +0x18,
+// reloaded at each use) and all three flags in stack bytes.
+// Diagnostics, each reverted at once (D = an unreachable call taking a local's address, which keeps that local in
+// memory; P = an inline_depth(0) pragma around the release site's 0x25c820 call): the walk through the existing
+// 0x26be00 / 0x26be30 with the iterator's index read at each use re-measured 442 at 1616 B (12 home reads); + D on the
+// iterator 453 (1644 B); + D on the iterator and the update flag 431 at 1616 B with retail's frame 0xa0 and 5 home
+// reads left, all beside the expanded 0x25c820; that with the 0x25c820 calls cut out: no home read, entry `push ebx;
+// mov ebx, eax` and 0x1e34e0 MATCHES; + D on both and P: 0x1e34e0 MATCHES (this function 545 at 1496 B, first
+// difference +0x2b); P with D on the iterator only or on the flag only 498 / 497 (still stacked); P alone on the walk
+// 497 (1552 B), on main's body 462 (1568 B). Other cuts on the D-both form (0x1e34e0 25 each): without the 0x2641c0
+// call 549, without 0x1e5240 455, without the three callees that take the actor in EBX 504, without the two entry
+// calls 458.
+// Forms: case 1's 0x25c820 call and the release one as a single call (a `release_only` label) on main's body 457
+// (1592 B), on the walk 465 (1592 B), on the walk with D on both 430 (1616 B, first difference +0x6; the single site
+// is still expanded inline); the release calls written out in each arm with no goto 445 (1644 B; one of the four
+// sites is expanded, the first in source order), on the walk 481 (1656 B). 0x2641c0's body expanded here through a
+// forced-inline copy (diagnostic) 497 at 1688 B on main's body, the same bytes as dropping its noinline declaration
+// (round 143), 492 (1672 B) on the walk, 668 (1812 B) without the three inline_depth pragmas: 0x25c820 is still
+// expanded in each, so retail's call there does not follow from 0x2641c0's expansion using up an inline budget.
+// BLOCKED-BY our link expanding 0x25c820 (and, without its pragmas, 0x25d700) inline where retail calls them; what
+// keeps retail's iterator and flags in memory is open.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
