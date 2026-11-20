@@ -469,6 +469,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // in i/j/k or i/k/j order 382/382, separately scoped 360/362. Vector copy with direct products or
 // shared scaler 383/404, component initializer 364/382. NOT kept: all change the retail frame
 // and lengthen the body. The saved axis and square registers still differ.
+// Shared scaled k before or after the i/j coefficient, by direct or compound
+// multiplication, 334 in all four forms. Also naming the scaled j 336 in all
+// four forms. NOT kept: the first loads use retail's i, j, k order, but the
+// square spills remain and the new forms grow to 1784 bytes.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2349,7 +2353,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // product operand sides, the loop's XMM numbering (lead at the end of this note).
 // MiniMax I (11-19): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10 and the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order.
 // Earlier (492, was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
-// score 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
+// Earlier 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // Earlier 492 (was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // MiniMax S (11-17): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still
 // 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at
@@ -2725,6 +2729,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // vertex value through PIN 504. Left on the lead: the camera forward's first load (ours i, retail j) and the k
 // products' sides in the forward and both camera sums (ours global first, retail delta first in all three), the
 // projection's i product, the loop's amount/size registers (ours 1/4, retail 2/1).
+// Camera axis in scalars/vector 422/542. Running forward sum 487, or interleaved with delta 487.
+// Attenuation initialized by animated tint 503; distance read between named reflection terms 503.
+// Draw point accumulated from decoded position 544, or from reflected components 294.
+// NOT kept: none improves the opening body. The reflected-component draw point keeps the 0x94 frame and length but still loads the X product differently.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4621,6 +4629,11 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // state+0x2c, view+0x158); both projections copy the point into three locals and scale those (the first in
 // registers, the second in stack homes), and the moved point is `step * i + old.x` with j and k scaled in place.
 // None of the pieces lowers the positional count while the frame (0x38) and the entry registers differ.
+// Divisor sampled before x, y or z acceleration 485/485/486. Compare at
+// those points with the same divisor for the inverse 494/494/495. Early
+// comparison before x or z with a fresh divisor for the inverse 487/488.
+// NOT kept: the one-point gains reach 2035 bytes and retain frame 0x60. Both
+// velocity roots still spill forwarded values instead of reading the fields.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

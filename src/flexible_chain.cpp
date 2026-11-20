@@ -895,6 +895,9 @@ void __stdcall function_1160c0(real dt)
 // with rest-offset components through the vector setter all 273.
 // NOT kept: the ratio stages tie. The setter changes the entry saves while retaining
 // the 0xa4 frame. The segment carrier and ratio/sine home remain.
+// Chain stiffness before the node, after the node, or before the split ordinal 277 each; stiffness after the split
+// ordinal 144; both inputs after the addresses 144, before segment selection 277, between selected ordinal and
+// address 144, or before the node 277. NOT kept: the early read forms grow to 1375 bytes and the other forms tie.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

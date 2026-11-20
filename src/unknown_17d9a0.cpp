@@ -1020,6 +1020,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // using the secondary guard 533/533, flag then while 532/532, flag early exit 532/532,
 // or transfer before phase admission 537/537.
 // NOT kept: score gains are at most three and the definition spill stays at +0xb4.
+// The tag still spills at +0xb4 against retail's +0x94. Signed mode field through a typed
+// tag pointer or reference 535/535, with mode locals at the face calls, the limit tests,
+// or both 570/620/631 for either type.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

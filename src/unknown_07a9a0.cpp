@@ -1700,6 +1700,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // gates 876 and type retained across the lower check 876.
 // NOT kept: the selector expands but the opening lookup still expands, and all eight
 // move the session onto the stack and disturb the matched caller. The dword frame is 0xb0.
+// Player-loop lookup nested at the range, population or enablement checks, at each pair, at all three, or at
+// separate signed range bounds 871 each. The frame and both lookup boundaries remain unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

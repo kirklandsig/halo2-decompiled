@@ -78,7 +78,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // score 76 (was 76): Retail reloads enable after the player statistics write and carries the maximum in ECX.
 // The existing getter and setter live in a separate /Ob1 translation unit. The global layout affects alias analysis.
 // MiniMax B (11-20): no new form, no lower score (76): the enable byte's raw reload needs one address-taken object that src/unknown_1967d0.cpp holds (BLOCKED-BY 0x196960/0x1968b0); what still differs is that reload, the old maximum's home (EAX here, ECX in retail), the 15-bit value read (movzx against retail's xor/mov) and the row pointer's register order.
-// score 76 (was 76): BLOCKED-BY 0x196960/0x1968b0 (retail inlines both here; their file is /Ob1 and was on
+// Earlier score 76 (was 76): BLOCKED-BY 0x196960/0x1968b0 (retail inlines both here; their file is /Ob1 and was on
 // this round's avoid list) and the enable reload's aggregate; earlier notes below.
 // MiniMax B (11-19): no new form, no lower score (76): reading the enable byte at both use points instead of through
 // the bool local gives 103 (the same form MiniMax G measured on 11-18) and a byte local gives 103, so the body is
@@ -315,6 +315,10 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // maxima 99, nested enabled maximum 99, early clamp input promotion 99,
 // and limits before the index check 95. The 434-byte forms still carry
 // enable across the increment and leave the maximum in EAX.
+// Separate clamp output in long/word form: exhaustive 86/108, lower
+// default 85/113, upper default 95/121, lower-bound admission with nested
+// upper comparison 86/109. NOT kept: all regress. The 434-byte long forms
+// still keep enable across the statistics write and the old maximum in EAX.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -838,6 +842,10 @@ struct s_object_damage_view
 // Primary-award snapshots of code, credited handle, defeated handle, code/credited, code/defeated,
 // credited/defeated, and all three 353 each. All three with long award code 354. NOT kept: the
 // scoped snapshots tie or regress, and the credited-player home and repeated code load persist.
+// Attribution branches initialize killer/threshold/code 417/379/436.
+// Killer and threshold/killer and code/threshold and code 436/459/446.
+// All three in the selected or absent arm first 469/478. NOT kept: the
+// explicit defaults raise the score and leave the rotated homes unresolved.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -441,6 +441,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // the operand sides are canonicalised); forward.i moved right after the sine products (retail's first case) 357 (1820 B),
 // with the three operand orders above as well 357. The jump tables' four-byte offset is code length: ours ends at +0x700
 // with no padding, retail at +0x701 with a 3-byte `lea ecx, [ecx]` ahead of the tables (one byte of encoding).
+// The squared-k spill still follows the sine products. Complements, cosine corrections and
+// complete diagonals beside their square producers 204/204/219, together after the final square
+// 204/204/219, or corrections and diagonals after both products of each axis 204/219.
+// NOT kept: the table moves to its retail address but only two executable rows improve,
+// and the first rotation arm still lacks retail's early squared-k spill.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

@@ -1096,6 +1096,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // member stores 325. With material beside the defaults 324/324/357/321.
 // NOT kept: the wider-scope material recovers 0x44 but the hit transport grows the body.
 // The second-node home and classifier loads still differ.
+// Scalar transformed plane offset 240; instance projection or signed distance 238 each; scalar offset plus signed
+// distance 240; direct projection, both projections or both signed distances 238 each; scalar-coefficient side
+// test before the normal stores 240. NOT kept: all retain frame 0x40 and the original length.
 // Late result bindings for found/position, normal/fraction, entity indices (subsets 1 through 7):
 // 270/268/279/236/277/275/378. One final result binding 396. NOT kept: the entity-index binding
 // gains two at 1244 bytes and retains frame 0x40. The second-node slot and frame still differ.

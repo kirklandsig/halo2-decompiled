@@ -2598,6 +2598,9 @@ __forceinline char unit_action_round(real value)
 // 335, a shared projected header 293, and a word slot with the active and
 // short hand helpers 320. The shared header reaches 1189 bytes with the
 // displacement in ECX and the hand comparison still at byte width.
+// The pool and slot still take the wrong registers, and the hand test differs in width.
+// Metadata name first 237, valid metadata with fallback else 239, name-miss branch first 242,
+// and block-local metadata name 239. With the short-slot hand getter 250/250/256/250.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

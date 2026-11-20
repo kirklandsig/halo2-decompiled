@@ -1988,6 +1988,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 124 each. Raw selected/default-invalid close handle 124/124. File pointer selected from the
 // write outcome or failed resize first 115/137. NOT kept: correct count slots with the by-value
 // handle forms, but the body shortens. The pointer forms regress at retail length.
+// Query/write/both mismatch via XOR 164/121/167 or split inequalities 171/118/183.
+// Negated inclusive bounds for query/write 171/118. NOT kept: comparison
+// forms retain the slot difference or add instructions and raise the score.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -508,10 +508,19 @@ static inline void quaternion_transform_vector(
 // computed ahead of the copy from the shared 2.0 and stored twice, where retail computes it after the copy with a fresh
 // 2.0); m first, then the dot and the cross terms, w2 last 245 (1312 B); `real w = q->w;` read once for w2 and m 201 (same
 // code), with m first 247 (1317 B); m first with the helper `__forceinline` 247.
+// Cosine half written to the quaternion scalar 208; half-angle product doubled by addition 244;
+// dot doubled after the cross 242; quadratic coefficient centered at one half 316.
+// Identity copied by transform members 353 or by separate axes 421. Direct identity axes
+// with translation before or after rotation 321/290. NOT kept: rotating directly from
+// the identity recovers the frame on the first form but drops the retail block copy.
 // Round 444: Persistent forward/up/left destination pointers 243/243/209, paired forward/up,
 // forward/left, up/left 204/204/199; all three pointers/references 248/248 (reduced control 201).
 // NOT kept: the two-point up/left gain reaches 1317 bytes, but the frame stays 0x20 and the
 // quadratic coefficient still lacks its separate retail spill.
+// The frame remains 0x20 against 0x24 and the quadratic coefficient still lacks its separate spill.
+// Weighted cross/input/quaternion terms named in all rows 280/201/199, pairs 257/250/262,
+// all terms 244, left-associated partial sums 244 at retail length.
+// NOT kept: the two-point gain leaves the frame mismatch.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

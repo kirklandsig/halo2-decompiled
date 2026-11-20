@@ -871,6 +871,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Compaction after the complete walk uses input count 195, republished result 264, separate
 // compacted count 250, or named input bound 195. Starting each scan at the first index with
 // a predecessor gives 195/257/247/195. NOT kept: all retain the extra frame word and raise the score.
+// Equality bounds in lowest scan, hull walk and candidate scan, all seven
+// subsets 144. Direct post-test hull walk 267. NOT kept: equality leaves the
+// 0x18 frame, and the post-test walk reaches 0x14 but shortens the body to
+// 759 bytes and moves the caller to 80.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -950,6 +950,9 @@ void function_245400(s_source_245400 const *source, long index,
 // second address/side paired 210 each. With shifted side bits 234/234/233/233.
 // NOT kept: the sign tests reach retail length but regress. The shifted forms are short
 // and all retain the 0x24 frame with the source and separate side homes displaced.
+// Scaled axis contributions in six orders 223/222/222/223/222/222; vector setter for their sum 223; aggregate
+// rotated direction 250. NOT kept: all grow past 783 bytes. The frame stays at 0x24 or grows past 0x2c to
+// 0x30 or 0x3c.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -5489,6 +5489,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // uncorrected up snapshot 212, with aim getter 257; separate fallback producer and normalization 169.
 // NOT kept: the copy and workspace forms increase the length. The fallback split ties, and the
 // early first-cross up.i load and final x87 scale lifetime remain.
+// Named yaw cosine/sine/both, both immutable, and both sampled before the
+// products with mutable or immutable terms all 169. Existing basis builder
+// for first/second cross 186/225. NOT kept: the builder grows the branch
+// and the yaw forms leave both schedules at their opening scores.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
