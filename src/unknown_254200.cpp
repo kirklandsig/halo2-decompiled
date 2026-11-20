@@ -302,6 +302,10 @@ void function_254200(void)
 // (1133 B); the colour products and the colour 4f call written at the call site 4 (same code); the point copy declared
 // and then assigned 4 (same code); the point copy and size declared in a block of their own around Begin..End 21 (the
 // pair unchanged); the four vertex 4f calls through the device-pointer wrapper given the device global 4 (same code).
+// M3 lane 3 r286 (single-address fast, control 4): separate `width` and `height` products for the x and y offsets 127
+// (1113 B); the doubled size computed at the top of the readiness block 33 (the pair stays ours); at the top of the
+// function 283 (1103 B); the size parameter doubled in place with no size local 19; the bitmap choice as `if (arg_4)
+// local_0 = local_1;` reusing the first view local 41. All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -710,6 +714,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // first pixel-shader record cleared by value-initialisation instead of memset 576 (2287 B); the first quad's 64-unit
 // extent as a named `real const` 2 (same code); both readiness tests written `!= NULL` 2 (same code); the depth pair
 // through the platform header's 24-bit far-depth macro cast to real 2 (same code).
+// M3 lane 3 r286 (single-address fast, control 2): the offset quad's half size as an if/else assignment 2 (same
+// code); defaulted to 42 and overridden in an `if` 94 (2258 B); the closing `else if (g_51ec9a)` as a plain `else` 22
+// (retail re-reads the flag); the alpha product scale first 2 (same code); the offset quad reading arg_0's fields
+// directly instead of the two coordinate pointers 18. All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

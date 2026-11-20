@@ -1513,7 +1513,13 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 96 (was 123): the pool count and state test precede pointer publication in retail. The stride spill, x87 clamp reload and bounds expansion still differ.
+// score 37 (was 45): the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
+// destination load moves up into that copy as in retail. Still differs: result->points is stored before the pool
+// count (retail stores the count, tests the state, then publishes the pointer), the x87 clamp keeps a copy of the
+// distance where retail reloads it, the corners read result->bounds off EBP where retail reads them off the bounds
+// pointer, the loop preheader spills step*8 after the clipped pointer's lea, and the recount colours points/count
+// ECX/ESI where retail has ESI/ECX.
+// Earlier at 96 (was 123): the pool count and state test precede pointer publication in retail. The stride spill, x87 clamp reload and bounds expansion still differ.
 // Earlier: logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
 // 11fc80 argument lists, the 173890 call (cache as context, count as state), FLT_MAX (0x44aed4), the g_4687dc bounds
 // copy, pool count update, the index/step setup, the 1/z projection loop with its min/max tests and the distance
@@ -1570,9 +1576,25 @@ struct s_point_pool_173520
 // forward index 172, nonnegative count 184, guarded postdecrement 96, ascending counter with
 // separate source cursor 968. NOT kept: the postdecrement ties, the ascending counter unrolls,
 // and the reservation forms do not recover retail's count and state-test order.
-// score 45 in a full build with stand-in SDK headers (was 96): the four corners read result->bounds by name instead
+// At 45 in a full build with stand-in SDK headers (from 96): the four corners read result->bounds by name instead
 // of through the `bounds` reference the inflate writes through, so the inflated bounds are copied back out of memory
 // as retail does (0x173796 on).
+// M3 lane 3 r286 (single-address fast, control 45): the corners through `bounds` 96 (the inflate interleaves and x0 is
+// forwarded); the inflate through result->bounds with the corners through `bounds` 49, both through result->bounds 96;
+// the corners through a second `box2f const &` to result->bounds 36 (corner block exact), through a pointer to `bounds`
+// 96; the inside arm's bounds copy as `result->bounds = ...` 37 (kept, plain 37). Lead, match-only (each step a steering
+// form): the second reference plus the direct copy 28; plus the reservation as 0x172840's `point2f *allocated =
+// &pool->points[pool->count]; pool->count += 64; result->points = allocated;` 24 (store and state-test order exact; the
+// count stored first with `used` kept 41, `allocated` after the count update with `used` 33); plus the clamp's compare
+// read through `real const &distance = result->distance` 9 at 865 B (x87 block exact; the arm through it instead 9).
+// On the 24 lead the clamp as `<`, as `0.015625 > d ? d : 0.015625`, as `<=`, through an inline double minimum: 24 each.
+// On the 9 lead (left: step*8 spilled after the clipped pointer's lea, recount ECX/ESI): the recount as
+// `&result->points[result->count] - pool->points` 15 (867 B), count first 9, count in a long or short local 9, the
+// difference named 9, through a forceinline (pool, points, count) helper 9, points or count through a forceinline
+// accessor 9 each, the count stored first then `+=` the difference 36 (retail's ESI/ECX, one extra store); remaining
+// declared before the pointer 9, the pointer declared first 9, in the for-init 9; `index += step` first 121; step
+// declared first 187; an ascending `i` loop over `&clipped[i]` 990 (unrolls); a guarded do-while 72; permuter 102
+// tries in 900 s, best 9.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1632,7 +1654,7 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 					if (inside)
 					{
 						result->distance = (real)(result->distance > 0.015625 ? 0.015625 : result->distance);
-						bounds = *(box2f *)(cache->view + 0xa0);
+						result->bounds = *(box2f *)(cache->view + 0xa0);
 						result->count = *(short *)(cache->view + 0x198);
 						memcpy(result->points, cache->view + 0x19c, *(long *)(cache->view + 0x198) * sizeof(point2f));
 					}
