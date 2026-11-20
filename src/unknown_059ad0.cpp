@@ -4248,6 +4248,11 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // is in the paragraph below (the two stacked score lines merged in r286).
 // score 295 (was 295): Frame and length agree. Rejection branches still lead to separate exits,
 // and acknowledgement is laid out early. Rounds 275 and 234 kept the round 208 score.
+// score 295 (was 295; r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// MiniMax D (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it,
+// the acknowledgement block comes last in retail, and the three boolean homes stay rotated; the timeout spill needs 0x769a0's third
+// argument, whose declaration lives in another file: BLOCKED-BY 0x769a0.
+// score 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
 // Earlier at 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns

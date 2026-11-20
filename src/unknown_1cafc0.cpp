@@ -544,6 +544,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // expansion whose body is in src/unknown_1dacb0.cpp, so the graph's EBX/EBP roles, the add of 0x34 and the lazy reload
 // into EBP cannot be moved from this file; the frame and both query temporaries' homes still agree.
 // MiniMax G (11-20): no new form, no lower score (348): the first difference is still at +0x1de inside the request expansion in src/unknown_1dacb0.cpp, so the graph's ebx/ebp roles, the add of 0x34 and the lazy reload into ebp cannot be moved from this file; the frame and both query temporaries' homes still agree.
+// MiniMax D (11-20): no new form, no lower score (348): the first difference is still at +0x1de inside the inlined
+// graph_resources_request, whose body is in src/unknown_1dacb0.cpp, so the graph's EBX/EBP roles, the add of 0x34 and the lazy
+// reload into EBP cannot be moved from this file; the frame and both query temporaries' homes still agree.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
