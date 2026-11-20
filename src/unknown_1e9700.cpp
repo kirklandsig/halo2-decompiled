@@ -838,6 +838,9 @@ struct s_object_damage_view
 // Primary-award snapshots of code, credited handle, defeated handle, code/credited, code/defeated,
 // credited/defeated, and all three 353 each. All three with long award code 354. NOT kept: the
 // scoped snapshots tie or regress, and the credited-player home and repeated code load persist.
+// Event code chosen in the valid-credit arm with guarded/short-circuited/conditional/exhaustive
+// fallback 358/358/416/416, with conditional code selection 358/358/416/416.
+// NOT kept: all shorten past retail and leave the credited-player, victim-team and code homes unresolved.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

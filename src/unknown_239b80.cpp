@@ -871,6 +871,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Compaction after the complete walk uses input count 195, republished result 264, separate
 // compacted count 250, or named input bound 195. Starting each scan at the first index with
 // a predecessor gives 195/257/247/195. NOT kept: all retain the extra frame word and raise the score.
+// Completed lowest-point scan extent as pass/candidate/compaction bound, seven subsets:
+// 144/251/154/225/155/256/256. Signed-word pass with the completed extent at both traversal bounds 244.
+// NOT kept: the two-bound form recovers frame 0x14 but raises the score and changes the caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

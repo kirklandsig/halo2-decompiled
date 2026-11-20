@@ -1988,6 +1988,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 124 each. Raw selected/default-invalid close handle 124/124. File pointer selected from the
 // write outcome or failed resize first 115/137. NOT kept: correct count slots with the by-value
 // handle forms, but the body shortens. The pointer forms regress at retail length.
+// Conditional count, conditional failure, conditional success 178/188/188; absent-count store 89;
+// skipped/short/full write outcome with default, exhaustive or separate tests 112/112/90;
+// conditional completed count local 157. NOT kept: the outcome forms recover both slots
+// at retail length but raise the score. The failed-resize branch and write registers still differ.
 // @retail 0x213970
 void function_213970(void)
 {

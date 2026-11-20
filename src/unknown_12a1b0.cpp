@@ -3705,6 +3705,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 597/597/597/598/598/598/598. All three with alternate under the definition guard 613.
 // NOT kept: the guarded form restores the saved-register prefix and then differs at +0x1c,
 // but shortens to 2500 bytes and raises the score. The request and track-state homes still differ.
+// Alternate request at record admission/update publication/retained-voice branch 760/780/780.
+// Direct bit at both consumers 788, shared bit test 788, rejection at track use 757,
+// admission at track use 757, track result from the complete test 745.
+// NOT kept: all grow the frame to 0x40 and raise the score. The early BL load and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
