@@ -1235,6 +1235,35 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // The reset cutoff or separate scopes with live table reads in scan two 549/549. One table snapshot
 // across both scans 623. NOT kept: the live table forms reach retail length but retain a short frame
 // and miss the candidate x store. The snapshot shortens the body, and the other forms tie or regress.
+// M3 lane 3 r280 (fast with 0x22750, 0x22c30, 0x24550, all MATCH each time; control 418 at 2094 B, frame 0x1c; [n] =
+// aligned differing rows, control [273]). Reading: retail computes the scan-2 offset y, z, x and stores only x to the
+// offset's 12-byte home each pass, loads the delta k, i, j and stores only k (at +8 of the home it shares with the
+// fallback vector), so both vectors keep their homes; the i product of retail's projection is `delta.i * offset.i`
+// where the j and k products have the offset first. A difference helper returning its output pointer (a local
+// one-caller copy of the difference helper, diagnostic), chained into dot3f, as a statement or through a pointer local:
+// 418 each with the helper distance, 646 with length_sq3f (all the same code as the void helper: the pointer folds, no
+// home). The offset's fields assigned directly in place of the difference helper (match-only, a helper body written
+// out), with dot3f and the helper distance: i, j, k 433 [255]; j, i, k 435 [253]; j, k, i 435 [265]; i, k, j 427 [268]
+// (all 2122 B, frame 0x28: the offset then has its home and its x is stored each pass whatever the field order, the
+// delta loads k, i, j with only k stored as retail, the samples pointer keeps its home; still one induction pointer
+// and the pass counter in ESI, which is the missing frame dword); k, j, i 469 [241] and k, i, j 469 [251] (2086 B).
+// With the distance as length_sq3f(&offset) every order 649 (2039 B, the home is gone again). On the j, k, i form: the
+// delta's fields assigned directly too 422 [222] (2094 B); the projection written `offset.k * delta.k + offset.j *
+// delta.j + delta.i * offset.i` 428 [268]; the distance written k, j, i on the offset 649; both 649. On the helper
+// offset: that written projection 575 (2135 B), with the written distance 646. Scan 2 through `source->entries[i]`:
+// helper offset 549 [219] (2122 B, frame 0x20, listed; no samples local at all gives the same code), with length_sq3f
+// 628 [286]; with the offset's fields assigned directly 848-859 (2357-2366 B: each field store makes the entries field
+// be read again), with length_sq3f 572 (2109 B) in all six orders. Lead: the offset keeps its home when its fields are
+// stored directly and the distance repeats the subtractions through the helper; no form here combines that with
+// retail's two induction pointers.
+// Later in r280 (a compile-only screen first, then the fast check): the induction pointers follow the base's kind, a
+// named samples local gives one pointer in either scan, the entries field read gives two; the samples bound as
+// `s_light_sample const *const &` to the entries field (same code as the field at each use, 549) with the offset's
+// fields assigned directly and the helper distance reaches retail's frame 0x2c with two pointers, the pass counter
+// and the offset's x stored each pass, but the distance then repeats its subtractions from the second pointer: 691
+// (2228 B) for j, k, i and i, j, k, with dot3f's arguments swapped 691 (same code), with the written projection 696
+// (2233 B); with length_sq3f(&offset) 650 (2038 B, frame 0x1c), the helper offset with length_sq3f 628 (2057 B).
+// On the samples local, dot3f(&offset, &delta) with the j, k, i fields 435 (same code as the other order).
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

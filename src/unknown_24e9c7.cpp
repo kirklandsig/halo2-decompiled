@@ -656,6 +656,16 @@ struct s_24e9c7_points
 // across i as `size * (0.0f - forward_j)` 138 (739 B); both across values through const references with `0.0f -` 139
 // (742 B); the size through a const reference 125 (same code); the forward pair copied into a point local first and
 // read from it for the across and upper products 147 (752 B, 0x24e59f still MATCH).
+// M3 lane 3 r280 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). One grid of 24 on the
+// side point set to the across products and scaled in place by the half width: the first corner's base copy (with the
+// corner record declared there) right after the side products / after the scale read / after the result / after the
+// half width / after up / after back, each with forward_i read at its two uses or once into a local, and across i as
+// `size * -forward_j` or `size * (0.0f - forward_j)`. Scores, in that order of copy position, for (at uses, unary),
+// (at uses, `0.0f -`), (local, unary), (local, `0.0f -`): 145/141/145/143, 145/141/145/143, 143/139/143/141,
+// 128/143/139/144, 128/143/139/144, 144/139/143/141 (743 B only for the two 128 forms; 738-746 B otherwise). None
+// stores the across j product at its definition, so the result home stays at [ebp-8]. Reading of retail's corner
+// copies: the first copy goes through EDX while EAX still holds the half width before its `sar`, and EDX keeps the
+// placement's y for the three later copies (`mov eax, edx`), x being read again each time.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
