@@ -1655,6 +1655,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // before dword cells 911, separate dword histogram scopes with shared count 917, shared group-size base with
 // dword cells 911. NOT kept: Changes to count lifetime tie or shorten the body. Dword cells bring the frame to
 // 0xb0 and the scores to 911 or higher. The opening lookup still expands.
+// Complete positive admission, nested summary/capacity scopes, summary rejection with positive
+// capacity, positive summary with capacity failure, or missing-summary rejection 871 each.
+// Common admission result 886, positive machine-validation region 894, positive admission with
+// dword histogram 911. NOT kept: five forms tie. The dword form reserves 0xb0 and is shorter.
+// The opening lookup still expands and the upper-capacity selector remains a call.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -861,6 +861,11 @@ void __stdcall function_1160c0(real dt)
 // all three 332/332/332/144/144/332. All three with aggregate prior copy 144 and
 // prediction setter 332. NOT kept: the vector forms tie or move the frame and extent
 // farther from retail, with the segment spill still different.
+// Shared rotation first cross at its store 144, with the later crosses staged k then j 113.
+// Complete vector, axis or both inputs 216/144/216. Staged projection 143, complete output
+// before stores 213, three cross products staged j/k/i 144.
+// NOT kept: the 113 form gets within one byte of retail, but raises three shared users’ scores
+// and loses two matches. The selected segment and length-ratio spill still differ.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

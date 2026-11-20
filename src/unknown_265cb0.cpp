@@ -936,6 +936,11 @@ real function_30bf0(vector3f *vector);
 // seat array extent 84, separate clipped fraction 245, scalar names 84, inclusive last
 // seat 204. NOT kept: the extent and names tie. The indexed advance and separate clip
 // fraction reach 1308 bytes but keep the result and clip homes displaced.
+// Clip output initialized to zero or unity 263/268. Separate intersection status 84,
+// plane scope ending at the query 84, nested success and lower bound 84, named positive
+// fraction test 153, named motion squared 150, condition-local intersection status 84.
+// NOT kept: the narrowed scopes tie and the initialized output grows the body.
+// The result slot and the clip output’s spill partner still differ.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2834,6 +2839,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // loss/age/both 224/206/223; post-increment loss or age with shared actor displacement
 // and other-object field reads 162/162 at 2880 bytes. NOT kept: the six-point gain
 // leaves a score above 30. Player iterator and scoring registers still differ.
+// Other actor-index field reference or pointer 384/384, contact object handle 168,
+// shared threshold distance 379, nested very-close tests 350, explicit qualified outcomes 168,
+// complete view-state selection 619, named shared-target object handles 168.
+// NOT kept: the field alias inserts an address addition. The explicit outcomes and handles tie.
+// The contact head SIB and player iterator registers still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
