@@ -1829,6 +1829,15 @@ long function_2197f0(real gain);
 // named scaled test with conditional quotient or in-place quotient 143/143;
 // direct quotient accumulated before cap 143; selection in interpolation argument 143.
 // NOT kept: the cap and quotient forms raise the score; separate gain load and late join remain.
+// M3 lane 5 r220 (fast with 0x1251e0/0x221810, both MATCH; control 87, masked aligned rows 20): three local causes are left,
+// arm 1's schedule (retail forms 1/fade_in first, multiplies by the fade-out still in the test's XMM1, subtracts elapsed
+// after the product and divides eagerly), arm 1's add (retail loads the gain and adds the interpolation into it) and
+// the arm-3/arm-4 join (ours carries the gain in XMM0 into arm 4 behind a jmp and a load, about the six extra bytes).
+// The three ducking pointers const 87 (same code); a fade-out local for the tests and the product
+// `(elapsed - hold) * inverse * fade_out`, the clamp value divided eagerly and `gain +=` 169 (644 B); without the local,
+// the clamp as `1.0f > time * inverse ? time / fade_in : 1.0f` and `gain +=` 163 (648 B); the local with that ternary
+// and `gain = gain + ...` 171 (644 B; without the fade-in copy the division becomes `inverse * time` and every one of
+// these is short); the fade-out window test written `elapsed < fade_out + hold` 87 (same code). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
