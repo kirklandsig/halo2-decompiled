@@ -2720,6 +2720,10 @@ struct s_unit_event
 // MiniMax I (11-16): no new form, no lower score (513): the first difference is the schedule of the argument loads - retail pushes
 // the saved registers first and reads the arguments from the shifted slots, this build reads one argument
 // before the pushes.
+// MiniMax G (11-19): no new form tried this round, no lower score (420): the region index, the datum offset and the
+// permutation are still in a cycle against retail's EBP/EBX/ESI, the region index is still read through its own
+// address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
+// where retail reads it after.
 // score 420 (was 513): Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
 // permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
 // the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.

@@ -7060,6 +7060,10 @@ done:
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
 // MiniMax I (11-16): no new form, no lower score (242): the body is retail's length and the first difference is still at +0x51; what is left is retail's native facing GPR transfers, the first-scale ownership, the dead flag-byte stores and the state pointer's home; the permuter over 300 s made nine tries and reached 229 against its baseline of 242 differing instructions (the check's 242), but that variant adds a local holding only a constant, a flag set by one test and tested by the next and a swapped call argument, so it is not kept; the two forms written by hand here - the ternary written as an if/else, and the two tests of the same condition in the other order - measure 242 and 243.
+// MiniMax G (11-19): no new form, no lower score (187): retail's inline 2-D normalizer multiplies the first component
+// as scale * x and the second as y * scale, while the shared helper in include/unknown_11cc90.h multiplies both as
+// component * scale; the helper is used by other files where retail's order is component * scale, so it cannot be
+// changed from here, and writing the normalizer out by hand is a form the review list rejects.
 // score 187 (was 199): Normalization x-load order, definition-flag bytes, weapon reloads and the state slot still differ.
 // Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
@@ -9407,6 +9411,10 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
+// MiniMax G (11-19): no new form, no lower score (484): the range field read at each ray, as retail reads it in every
+// row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
+// the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
+// order; the named range local stays.
 // score 484 (was 493): The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
 // MiniMax E (11-16): score 484 (was 493): the material index local is typed c_type_47f957 (impacts.h, the type this file's own damage code uses), so its copies are the word moves retail's are, and the weapon index comes through the existing function_cbd50, which retail inlines here in its NONE-first form; the body is now retail's 2229 bytes. Still differs: the frame is 0x180 against retail's 0x17c, and the prologue still loads the pool global first and keeps the unit in ebx with the tag table in esi, where retail loads the tag table into esi and the pool into edi before the pushes and holds -1 in ebp for the weapon slot's compare.
 // MiniMax D (11-15): 493 -> 429 (2221 bytes vs retail 2229): the material local typed c_type_47f957 (impacts.h, the
