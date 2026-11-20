@@ -1331,6 +1331,14 @@ bool __stdcall function_2399da(long controller_index)
 // still takes ECX and the rank EAX, so the length of the identity's range is not what loses it EAX. Reading: three
 // cross-block values pick the lowest free of EAX, ECX, EDX in the order rank, identity, own rank here and identity, rank,
 // own rank in retail; the expression temporaries (the 64-bit test, the team address) then take the lowest free one.
+// M3 lane 2 r114 (fast with 0xac050/0xac360/0x2399da/0x23955e; control 90): one pointer to the team identity named
+// ahead of the dispatch and passed to both the removal and the rank calls 90 (same code: the lea is rematerialised in
+// each arm). Re-measured listed forms, all as listed: the task index at function scope 90, the validity test inverted
+// with the 0x5c dialog first 90, the permission denial first 90, `own_rank >= rank` 90, own rank read at each use 90,
+// the dispatch as `switch (rank)` 95 (437 B). New: the 0x1487c3 follow-up written in both the removal and the rank arms
+// 90 (same code: the two calls are cross-jumped back into one block); the identity bound by a const reference for the
+// removal call 90; the rank read through a const reference in the whole dispatch 90; the removal under an implied
+// `if (xuid)` with the task index preset to NONE 90 (all the same code).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -985,6 +985,14 @@ void swarm_leader_detach(long actor_index);
 // (862 bytes), so no part of the lead is a gain without the expanded helper. Still BLOCKED-BY 0x26ed40 for a natural form
 // (marked inline it also expands in 0x1bead0 and 0x26ef70), and on the link-time state for the handler pointer.
 // MiniMax C (11-19): no gain (236, baseline; body restored). The known 216 form holds the definition bit in a byte flag set by the tests and read by the next test, which is kept only with a byte match. What is left is the head: ours loads the pool global and the slot table into other registers than retail (the pool into EAX against retail ECX) and keeps the actor index in EBX against retail EAX.
+// M3 lane 2 r114 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40; control 236), tail forms the
+// list above lacks: the definition test held in a bool from the `&&` expression (retail stores the bit into the dead
+// [esp+0x34] slot before branching, the shape of a named phi) 236 (same code: no store); the definition read from the
+// cached actor instead of a fresh lookup 298 (946 B); the last block through the cached actor 296 (990 B); the last
+// block re-deriving the actor at each of its three uses 251 (980 B, retail's length, aligned 161 / masked 114 against
+// 106 / 65); the bit test spelled `!= NULL` / `!= 0` 236 (same code). In the tail retail keeps NONE in EDI and the pool in
+// EBP after the 0xcbf60 call and reloads the scaled index from +0x10 at each lookup; ours puts the pool in EDI, the index
+// in EBP and compares with -1 immediates. Still BLOCKED-BY 0x26ed40.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

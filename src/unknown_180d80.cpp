@@ -109,6 +109,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 
 // MiniMax C (11-19): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the
 // 0x17cfa0 call setup all still differ, and the callee that decides the last one lives in another file; the body stands.
+// MiniMax E (11-20): no new form, no lower score (93): the entry guard's registers, the count loop's extension and the 0x17cfa0 call setup still differ, and the callee that decides the last one is in another file and does not match yet: BLOCKED-BY 0x17cfa0.
 // score 93 (was 93): BLOCKED-BY 0x17cfa0 (contributor, unmatched: ours passes the NONE first index in ECX and the
 // Round 127 (m3 lane 10, fast): dead initialised locals at the top for K = 8/10/12 216/216/261 and K = 14..32 (even)
 // 93 each, the transform rows never flip (diagnostic, removed); the count sum as a `short` without its two casts 93
@@ -370,6 +371,16 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // K = 1..7 at the top 177/178/178/178/178/222/225 (one centre-sum row and the fourth transform copy change order, the
 // first three copies do not), one dead long inside the block or after the count loop 177; the transform helper's point
 // read z, y, x 114; the vertex counter as a long 585 (2697 bytes). Still BLOCKED-BY 0x17cfa0 for the call setup.
+// M3 lane 11 r128 (fast with 0x180b60 MATCH; control 93, aligned 63 by a sequence-aligned diff, 38 with registers masked;
+// row state = how many of the four inlined transforms have retail's x-row and y-row operand forms, 0 of 4 throughout):
+// one to seven unused long locals re-measured 168/169/169/169/169/213/216 (aligned 87 to 97, the rows never move); live
+// named float locals in the helpers, counted per expansion: a named result in the random-fraction helper 169, a named x
+// output in the transform helper 169, x and y 169, x, y and z 213, the fraction result with x 169, with x and y 216, with
+// all three 216 (the same states as the unused locals, rows unmoved); the transform helper's accumulator through a `real &`
+// 307 (2689 B, aligned 327), for the x row only 298 (2669 B); one accumulator per row 169; the x row's left product in a
+// named local 297 (2661 B); the two `+=` of the left terms written `local_4 = local_4 + ...` 93 (same code). Retail's rows
+// keep every product in its spelled operand order and statement order; ours evaluates the x row's left product ahead of
+// its up product and commutes three products, at every symbol count tried. Still BLOCKED-BY 0x17cfa0 for the call setup.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

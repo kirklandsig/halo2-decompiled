@@ -1207,6 +1207,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 88, Byte pending bit with separate sent and pending admissions 86. NOT kept: The bitfield update emits the byte
 // OR, including at 225 bytes, but changes the opening register allocation and raises the score. The original
 // message layout and body are restored.
+// Read-only or mutable message record references across the local slot lookup or the shared message
+// lookup: saved word 35 in all four forms, in-place bit update 89 in all four. NOT kept: The in-place
+// forms emit the byte OR but lose retail query and scan allocation.
 // M3 lane 3 r271 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched or unchanged each time; control 35). The live
 // flags word is confirmed as the one cause: with the in-place update and any read of `flags` after it, the scan, the
 // message in ECX, the flags in AX, the found path's EDX/ESI temporaries, the pointer-first `*time` store and the byte OR

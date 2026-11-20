@@ -104,6 +104,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
 // score 949 (was 949): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain; earlier 949 (was 902), 902 (was 902).
 // Frame 0x1f0/0x1d4 (ours 28 bytes larger), entry argument/flags in EAX/ECX against retail ECX/EAX,
 // byte-flag homes and the record/vector homes still differ; the forms below were measured.
@@ -135,6 +136,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // MiniMax S (11-16): no new form, no lower score (902); retail's scale helper is still unrolled while this build's loop is rolled, the frame stays 0x1f0 against retail's 0x1d4, and the contact array's destructor that blocks the unroll is set in another lane's header.
 // Earlier score line: 949 (was 902): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // MiniMax A (11-18): no new form, no lower score (949 in the reduced image): the first difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, ours the other way round) and the frame (0x1f0 against retail's 0x1d4), so every stack home below the top is out of step.
+// Earlier 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier score line: 902 (was 902): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier at 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // score 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
@@ -524,6 +526,15 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // code); the flags word read once into a named local for both entry tests 962 (4283 B); the was-active bit tested as
 // `!(flags & 0x2000)` 951; the activity flag and response maximum declared before the two entry flags 956; the
 // contact array pointer read once before the loop test 1003 (4287 B).
+// M3 lane 6 r205 (fast with 0x1cf9f0, 0x1d2070, 0x1d1260, 0x24590, 0x1d2280, 0x1152e0, 0x11bce0; control 949, aligned unmatched
+// [exact/stack-masked] [528/391]): the flags word in a named local for both entry tests re-measured 962 [532/395]; the
+// validity tests nested around the body with the removal after it re-measured on this baseline 964 [533/405]; that with the
+// slot byte read from the element at each use and the long slot local defined at its later assignment (retail keeps the
+// byte in AL and widens it at the clamp, the compare and the first body lookup) 974 [540/407]; that with the record flags
+// read from the field at each bit 983 [538/405]; the entry test as two shifted bit tests of the flags word 1011 (4283 B)
+// [524/391] (still `test ecx, 0x104000` with the component in EAX where retail has EAX and ECX the other way round). Retail
+// saves EBX with ESI and EDI for the whole function and only EBP around the loop; ours saves EBX with EBP around the loop,
+// which is one instruction of shift from the third push to the loop head. All restored.
 // MiniMax B (11-19): no new form, no lower score (949): the frame is still 0x1f0 against retail's 0x1d4 and the first
 // difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
 // the other way round), so every stack home below the top is out of step; the loop head's shape is decided by the callee

@@ -363,12 +363,12 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// score 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax R (11-17): no new form, no lower score (84): the seat loop's two cross products load their operands in the
 // other order (retail multiplies a term with the vector's component in the register and this build with the memory
 // operand), and the shared header helper's spelling fixes that order, so the products cannot be moved from here; the
 // seat loop's result still lands four bytes above retail's and the range still loads into xmm2 for xmm0.
 // MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
-// score 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // M3 lane 8 r189 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): names do not order these homes (result,
 // range or the facing maxima renamed to sort first or last, diagnostic, 84 each); the facing copies as secondary then
 // primary 84; distance_squared declared at the top of the settings block 84; the clip amount declared in the motion
@@ -919,6 +919,10 @@ real function_30bf0(vector3f *vector);
 // kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
 // retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
 // the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
+// M3 lane 4 r226 (fast with 0x263740/0x25c9d0/0x26d370; control 84): the actor's byte flag at +7 read once into a named
+// bool for the clip and facing tests 97; the motion threshold as `0.05f * 0.05f` 84 and the close-range one as `6.0f * 6.0f`
+// 84 (same code); the settings through the file's typed situation view with flags and range at +0/+4 84 (same code); the
+// endpoint and flag tests as nested ifs 84 (same code). All restored.
 // M3 lane 5 r210 (fast with 0x263740, 0x25c9d0, 0x26d370 and five neighbours; control 84, register-masked 46): both
 // seat-loop crosses through a trial copy of the textbook cross spelling (`a->j * b->k - a->k * b->j`, as several files keep
 // it locally) 84, the first cross only 84, the second only 84 (all the same code: the product operand order does not
@@ -936,6 +940,20 @@ real function_30bf0(vector3f *vector);
 // seat array extent 84, separate clipped fraction 245, scalar names 84, inclusive last
 // seat 204. NOT kept: the extent and names tie. The indexed advance and separate clip
 // fraction reach 1308 bytes but keep the result and clip homes displaced.
+// M3 lane 16 r152 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84; body unchanged). Retail packs
+// the clip amount and distance_squared into one cell ([esp+0x1c]); ours packs the amount with the seat count and gives
+// distance_squared the top cell (0x5c), which is what puts delta and the probe outputs four bytes low. One real for
+// both (the clip amount's variable reused for the squared distance; a reused variable, so match-only) 81 at 1310 B:
+// delta and the probe outputs then sit in retail's homes, but motion moves up four and result, range and scale stay
+// off. On that form, 1 to 7 dead initialised locals (diagnostic) 83/83/85/139/139/81/81 (1308 B at four and five):
+// no symbol count completes the layout. distance_squared written through a pointer to itself 84 (same code: the
+// pointer folds, the cell does not change class). One, two or three redundant parenthesis pairs around `scale * range`
+// 150/154/148 (1312/1312/1310 B): the pairs do move the float operand sides, but not to retail's.
+// Clip output initialized to zero or unity 263/268. Separate intersection status 84,
+// plane scope ending at the query 84, nested success and lower bound 84, named positive
+// fraction test 153, named motion squared 150, condition-local intersection status 84.
+// NOT kept: the narrowed scopes tie and the initialized output grows the body.
+// The result slot and the clip output’s spill partner still differ.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2834,6 +2852,23 @@ real function_2683f0(long actor_index, long node_index, short type)
 // loss/age/both 224/206/223; post-increment loss or age with shared actor displacement
 // and other-object field reads 162/162 at 2880 bytes. NOT kept: the six-point gain
 // leaves a score above 30. Player iterator and scoring registers still differ.
+// M3 lane 16 r152 (fast with 0x25d810, MATCH each time; control 168; body unchanged): the vehicle-type test through a
+// file-local inline predicate taking the type by value 769 (2687 B: one more inline function here moves the link's
+// inline choices for the whole body); this file's own inline definition of 0x30bf0 (same name and body, in place of
+// the declaration) 168 (same code, 0x30bf0 still matches: the direction's residence does not follow where the call
+// binds); `direction` as an aggregate initializer 168 (same code); direction k and j named inside the relative arm
+// 168 (same code: the copies fold back into memory operands). Re-measured: the two NONE stores ahead of the table
+// store 170. Diagnostics (behaviour changes, reverted at once): the vehicle-type exit without its two reset stores
+// 398, and the players iterator started with no NONE stores at all 385: in both the iterator's table pointer still
+// loads into ECX, so that register follows neither the zero register of the reset stores nor the NONE constant.
+// Reading of retail's relative arm: direction j and k load ahead of the relative-length branch and i in both arms
+// (the skip arm at 0x266ed0, the join at 0x266ed6), all three then feeding the facing dot from registers, where the
+// first dot (after the velocity normalize) reads them from memory in both builds.
+// Other actor-index field reference or pointer 384/384, contact object handle 168,
+// shared threshold distance 379, nested very-close tests 350, explicit qualified outcomes 168,
+// complete view-state selection 619, named shared-target object handles 168.
+// NOT kept: the field alias inserts an address addition. The explicit outcomes and handles tie.
+// The contact head SIB and player iterator registers still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

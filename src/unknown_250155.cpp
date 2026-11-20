@@ -2841,7 +2841,6 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // needs a store through a pointer in the 0x53b40 chain, whose source lives in src/network_voice.cpp, another lane's
 // file), and the last loop still spills both bitmaps where retail keeps the bitmap_a in EBX and spills only the
 // bitmap_b at ebp+0x1c.
-// score 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
 // Earlier 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
 // keeps it at ebp-0xc, the first loop's element address ebp-0x18 where retail keeps it at ebp-8 and the player ebp-0xc
 // where retail keeps it at ebp-0x14, so the six spill slots stay one six-step cycle off retail's; the voice query
@@ -3134,6 +3133,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // helper's default arm as copies through the outputs (`*text_b = NONE; *text_a = *text_b; *bitmap_a = NONE; *bitmap_b =
 // *bitmap_a;`) 92 (925 B); its two case arms storing the bitmaps before the texts 194 (944 B); the team byte read into a
 // `long` in the second loop 94, in the first loop 259 (919 B), in both 259 (919 B). Body unchanged.
+// M3 lane 1 r132 (fast with 0x2507c3 MATCH; control 87): the second loop with its own counter (`shown`) 85 (the first
+// loop's element address then takes retail's ebp-8 home; the shown count moves to ebp-0x10, retail ebp-0xc), with the
+// third loop's own counter too 85, every loop with its own counter (no shared `i`) 85: two points, under the bar. The
+// third loop's own counter alone 87; the voice state as one ternary 87; the second loop's first three widgets in
+// their own named pointers 87 (same code each). The players[i] reload after 0x53b40 is still BLOCKED-BY
+// src/network_voice.cpp (another lane's file this round).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

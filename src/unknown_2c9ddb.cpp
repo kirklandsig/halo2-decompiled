@@ -55,6 +55,7 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax D (11-19): no new form, no lower score (61): retail still keeps two 0x212bc0 call sites with their own g_54e49c stores and their own copy into g_54e4a0, calls the name copy out of line at 0x13fac0 and passes the controller index in ECX to 0x238c69, while ours keeps one call site with the choice in a byte slot, the copy in place and five stack arguments; the out of line copy lives in a file this lane may not edit.
 // MiniMax G (11-19): no new form, no lower score (61): retail's second half still has two 0x212bc0 call sites (the
 // default arm inline, the selected arm out of line at 0x2ca467), each with its own g_54e49c store and its own copy
 // into g_54e4a0, and it calls the name copy out of line at 0x13fac0; ours keeps one call site with the
@@ -411,6 +412,14 @@ extern long g_55c154;
 // `mov ebp, esp`, retail biased by 0x70, so every frame offset differs) and the variant's address, which ours loads once
 // per arm into EAX for the copy and the calls where retail writes the immediate each time. What gives `this` its weight
 // in retail without that read is still not found. Body unchanged.
+// M3 lane 2 r114 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all MATCH; control 61): retail's two load arms
+// (`if (selected == NONE) { if (load(saved)) {...} } else if (load(selected)) {...}`) re-measured 174 (595 B); in it the
+// constant 1 sits in EBX in the first half, `saved` and the &g_54e4a0 address in the second, and `this` takes EDI and is
+// spilled around the `rep movsd` copies. On those two arms: the bit test spelled as a mask `(entry->variant & 0x200000)
+// != 0` (diagnostic: no `test al, 1` use of the constant) 184 (597 B: EBX is then pushed late and unused in the first
+// half, but `this` still takes EDI, so the constant is not what evicts it: `this` outranks `saved` in every two-arm
+// form, where retail gives `saved` EDI and `this` EBX); a variant local of its own for the second half 174; `saved` as
+// a dword 174; `saved` as a const local 174; `saved` read through a const reference in both arms 174 (all the same code).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

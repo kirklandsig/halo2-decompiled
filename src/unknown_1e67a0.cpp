@@ -1267,6 +1267,15 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // diagnostic, K = 1..16 dead initialised locals on that form: 150 145 122 149 139 150 139 163 166 144 112 116 139 150 150
 // 163 (first difference +0x1f3 for every K, never retail's copy-first products); that form with include/axis_rotation.h's
 // helper for the rotation 163; that form with round 112's preset-false moved-away flag 162 (1375 B).
+// M3 lane 16 r150 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114, aligned 89, register-masked 75).
+// Diagnostics on a private copy of the rotate (the shared one sits in an Avoid file this round; a copy stands only with
+// a match): the axis read into three locals first 253 (1437 B: the axis then lives in registers, so retail's per-use
+// [ebp+N] reads are not locals); the vector read into three locals first 192 (1397 B); the three crosses ahead of the
+// dot 187 (1373 B); the rows stored k and j through locals after i 178 (1392 B); every product written axis first (and
+// cosine, axis and sine first in the rows) 112 (1389 B, aligned 88: the rotation lines unchanged, one turn-block cross
+// line moves; two points from a copy, not kept). Reading of the listing: by product, retail loads v.i first only
+// against a.i, and the axis first against v.i, while it loads v.j and v.k first against every axis component; ours
+// lets v.j and v.k outrank a.j and a.k (the axis is then loaded first against them).
 // M3 lane 2 r110 (fast with 0x1ecf50/0x24590/0x1cd6c0, all MATCH; control 114): `moved_away` as `(a && b) ? true : false` 114
 // and as `alignment > 0.99f ? alignment > dot : false` 114 (same code); named `sine` then `cosine` float locals for the
 // rotation 150 at retail's 1382 B (every rotation product turns axis-loaded-first, the dot's i term too), `cosine` then `sine`
@@ -1274,6 +1283,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // the nine rotation products: retail multiplies the copied vector component by the axis from memory everywhere except the
 // vector's i against the axis' j and k, where it loads the axis; ours loads the axis first whenever its component is j or k.
 // Body unchanged.
+// M3 lane 2 r114 (fast with 0x1eb640; control 114): a same-file copy of the rotation helper, so it is inlined at compile
+// time instead of at link time (diagnostic) 114 (same code: the inlining stage does not place the rotation products);
+// the rotated vector renamed turned / direction / new_forward / a_rotated 114 each (same code); one vector for the
+// sampled movement and the rotated forward (on the rotate_direction body) 176 (1385 B: the axis loads are hoisted even
+// further, so retail's memory operands do not come from the vector being address-exposed); no `animation` cast local
+// (cast at each use, a symbol-count diagnostic in the direction the dead-local scan never took) 145 (1397 B); no
+// `state` cast local 145 (1397 B).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

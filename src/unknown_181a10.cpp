@@ -1066,6 +1066,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
 // origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.
 // NOT kept: The frame and second-node home still differ, as does the classifier data reload sequence.
+// Packed-branch material receiver before data 238; before both snapshots 230;
+// admitted upper result index 238; separate signed key guards 306;
+// named radius contribution 248; immutable origin component view 238;
+// plane-arm signed distances 238; material receiver between snapshots 230;
+// exclusive result-count bound 307. NOT kept: The 230 form restores the frame size but shifts
+// both saved node homes and remains four bytes long.
 // M3 lane 5 r210 (fast with the file's seven other functions; control 238, register-masked 89): the dead second root walk
 // ahead of the property get 341 (1243 B); the key read ahead of the kind-4 test 251; the key adjust as `(data - 1) * 8`
 // 238 (same code); friction and restitution declared at function scope 238 (same code); the material output declared at
