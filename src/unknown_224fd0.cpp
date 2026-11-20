@@ -94,7 +94,6 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // and the basis switch still crosses from the second axis global in the other order; the helper spellings tried (the
 // cross term as `(1.0f-cosine)*axis->i*axis->j`, the sine product as `axis->i*sine`, the axis through a block-scoped
 // pointer local, the case group written first) all score the same or worse. Body unchanged.
-// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax R (11-17): no new form, no lower score (219): retail keeps two separately scheduled rotation copies whose complement products take their operands on different sides, which one shared helper cannot produce, and the helper's body may not be written out by hand unless the function then matches.
 // MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
 // still hoist and spill the sine products where retail keeps them in registers, and the jump table
@@ -432,6 +431,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // squares first, then the three sine products 448 (1764 B); forward.i right after the i square 233 (1820 B); up.k moved
 // up after left.j 357. Reading: in both copies the squared and sine vectors' frame homes are swapped against retail's
 // (retail's first copy spills k^2 at once to the squared vector's +0x24 and keeps the sine products in XMM6/XMM7).
+// M3 lane 12 r156 (fast with 0x246cd0, 0x142eb0, 0x30bf0, 0x11d000 and 0x173ba0, all MATCH; control 219; the two
+// identical score lines merged): the rotation helper returning the matrix by value 447 (1852 B); the complement named
+// once in the kept order 452 (1756 B); the output parameter first in the helper and both calls 219 (same code); the
+// squared and sine vectors as one two-element array (bound by reference) 471 (1740 B); diagnostic, reverted: the rotation
+// switch without its `__assume(0)` default 228 (1836 B, first difference +0x56 at the added bounds test).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
