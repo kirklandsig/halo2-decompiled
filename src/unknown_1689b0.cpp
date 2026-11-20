@@ -1565,9 +1565,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
 // Earlier 580.
 // Earlier at 551 (was 580; a second score line, merged in round 211): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
+// Earlier at 551 (was 551; a stacked score line, merged in lane 8 round 201): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
 // Earlier at 551 (was 580): initial sum homes also agree.
 // Count, clearance and prism-index homes differ. The square precedes the nonempty branch.
 // The axis reload and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
+// Earlier at 551 (was 551; a stacked score line, merged in lane 8 round 201): frame 0xb964, plane.j cursor and ESI query zero agree. The initial sums,
 // Earlier at 551 differences (was 551): frame 0xb964, plane.j cursor and ESI query zero agree. The initial sums,
 // projected point and first point use retail slots. Count, clearance and prism-index homes differ.
 // The square precedes the nonempty branch. The axis reload and early remainder also differ.
@@ -2137,6 +2139,16 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // or header reference, indexed 547/547/551/547 and with an entry cursor
 // 555/554/551/554. NOT kept: the four-point indexed leads remain above 30;
 // the count and clearance homes and pre-branch radius square still differ.
+// M3 lane 8 r201 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380; control 551, difflib-aligned 564, register-masked
+// 311). Homes read from the head stores and the tail (frame offsets with no pushes): retail keeps the face count at
+// 0x78, the edge radius 0x7c, the edge count 0x80, the face radius 0x84, the prism index 0x98 and the nearest square at
+// 0x50 between the two sums (face 0x44, edge 0x54); ours keeps the edge radius 0x7c, the face radius 0x80, the edge
+// count 0x84, the face count 0x88, the prism index 0x8c and the nearest square 0x78. The four locals renamed so their
+// names sort in retail's home order 551, in the reverse order 551 (same code each: these homes do not follow names).
+// The projection offset `0.0f - distance` named and used in the three rows 565 (2893 B); the rows as `point - distance *
+// plane` 595 (2899 B, aligned 534). The four declared in retail's home order (face count, edge radius, edge count, face
+// radius) 550 (one point: the head stores come out count, radius, count, radius as retail's, at the old homes), in the
+// reverse order 551. Body unchanged.
 // Signed word prism ordinal with square before the loop, at prism entry or at clearance admission
 // 602/600/584, end-step while 602. Unsigned word ordinal 620/620/623/620. NOT kept: all raise the score.
 // The late signed square reaches its retail slot but displaces the ESI zero and prism cursor. The count
@@ -2149,6 +2161,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // both 597; the perpendicular as cross3f(&plane.n, &edge) (the same values, both signs cancel) 557, with the side cross
 // as cross3f(&relative, &edge) tested `> 0.0f` too 574; the two averages as three divisions by the count (one stored
 // reciprocal) 573 for the face average, 578 for both. Body unchanged.
+// MiniMax B (11-20): no new form, no lower score (551): the count and clearance homes are still displaced and the
+// radius square is still computed before the clearance branch where retail computes it after; the four-point indexed
+// leads stay above 30 and the live-count forms tie at 547 or 551.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

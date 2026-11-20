@@ -108,7 +108,8 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // The candidate count is a byte here (the count in BL, the endpoint index in BP) where retail has the count in BP and the
 // index in BX; as a short the count measures 469 at 1686 bytes (the length no longer matches retail and the caller
 // 0x29a190 regresses), as earlier rounds recorded. Body restored to the kept form.
-// score 305 (was 305): The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// Earlier header (305, was 305), merged into the note's first line: the 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// Earlier score 305 (was 305): The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax B (11-14): no new form, no lower score (382): retail carries the constant at +0x57 in xmm2 where this build
 // carries it in xmm1, which then swaps the product registers, retail's counter is in BX where this build's is in BP, and
 // the body is still 40 bytes shorter than retail's (1692 against 1732); the normalizer's two products follow the source
@@ -673,6 +674,25 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Fixed x accumulator 306, separate products 306, wide fixed x 306.
 // Distant x accumulator 305, distant y 320, both distant rows 320, all x rows 306, all rows 321.
 // NOT kept: The distant x form ties. The other forms raise the score or leave the fixed-turn spill unchanged.
+// M3 lane 16 r154 (fast with 0x29a190 and 0x298c30, both MATCH throughout; control 305; plain where said; nothing kept):
+// the near arm's y row staged as `turned_y = arg_3->y; turned_y *= local_11;` 305 (same code); the side flag declared
+// ahead of the distance 305 (same code); the facing x and y read into two locals at the near arm's top 387 (+0x2, 1740 B).
+// Why unity takes XMM1: retail keeps 1.0f in XMM2 from the entry normalizer through the near arm's field_8 stores to the
+// far arm's ratio clamp, because retail's near arm forms `y * cos` in XMM1; ours forms it on x87, so XMM1 is free for
+// unity. On lane 1 r129's 310 lead (re-measured 310 fast): the loop distance with named `double dx, dy` (each used twice)
+// 300 fast but 346 plain (frame padded: a double local); the same through a file-local inline helper with double locals
+// 300 fast; through an inline helper taking the two differences as double parameters 310 (dy computed first), with the
+// parameters (dy, dx) so that dx is computed first as retail 300 fast and 300 plain (1716 B, frame 0x64: a double
+// parameter does not pad the frame). Left on that form: the root is still stored and reloaded at the loop head (retail
+// `fstp st(2); fstp st(0); fst`), the near arm's cosine/sine slots (+0x18/+0x14 against retail's +0x28/+0x1c) and its
+// `cos * y` operand order, and the far arm's normalizer, dot order, wrapped-angle compare and per-arm loads; the helper
+// and the lead's forms need a match, so nothing is kept (build/r154/lead-298d90-plain300.patch in m3-lane16). On main's
+// body the named double differences measure 316 (1740 B), as the note already records.
+// shared scale with native admission 305, reciprocal at shared scale call 305, shared magnitude with native
+// admission 305, shared magnitude and scale 305, shared facing dot 396, shared tangent dot 305, typed
+// velocity projection 305, shared planar projections 396.
+// The unity register, near cosine spill and candidate ordinal remain. All eight previews retain retail
+// length.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

@@ -59,10 +59,22 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
+// score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// M3 lane 4 r230 (fast; control 489, difflib-aligned 224, register/offset-masked 77). With local_6.i/.j set before the k
+// test (retail's order: its `movaps xmm7, xmm5` / `movaps xmm6, xmm1` copies sit ahead of the branch, the zero is made once
+// before `cmp di, 2` and the field_68 test compares against it) the whole mode-2 block is retail's but for the MIN operand
+// order: 677 (3474 B, aligned 165, masked 64); that with both clamps as MIN(1.0f, ratio) (retail tests `1.0 > ratio` at
+// both) 676 (aligned 158, masked 59), the second only 677. The 25-byte shortfall is retail's per-arm y of the side point
+// (+4 instructions: local_8.y read in each arm, which may also be what gives local_8 the lower home), the flip's
+// `test al, al; setne al` (+2) and the 0x47c block (-1). The side ternary written in each coordinate, with the defaults
+// first 384, with MIN(1.0f, ...) too 373 (3483 B at retail's 844 instructions, but the arms become an x87 temporary and
+// the frame moves, masked 69: positional only); the y coordinate assigned before x 708 (frame moves); local_25 copied as
+// a planar vector 706 (frame moves); vector3f_add's operands swapped 489 and local_13 declared before local_11 489 (both
+// the same code); the side distance as an if/else assignment 489 and the flip as `local_21 = local_22 ? local_21 :
+// !local_21` 489 (both the same code). All match-only or worse; body unchanged.
 // MiniMax C (11-19): no new form, no lower score (489): the position and the sum still take each other's homes (the
 // position at +0x8c where retail has +0x80); neither declaring the position ahead of the sum nor hoisting the sum's
 // declaration to the top of the body moves that slot, and the normaliser still squares k, j, i where retail squares i, k, j.
-// score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 8 r189 (fast; control 489): local_8 renamed `position` 489, local_14 renamed `destination` 489, both 489
 // (same code: names do not order these 12-byte homes); local_9 filled through vector3f_assign 665 (3499 B), through a
 // brace initializer of the three fields 765 (3486 B). Compile-only reading: the squares follow local_9's field ranks;
@@ -735,6 +747,13 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Planar snapshot before or after the actor update 725/723, after the translated target 723,
 // after both planar normalizations 725, and before side selection 720.
 // NOT kept: The planar snapshots move the position to +0x68 or +0x58 and disturb the entry spills.
+// Shared query and steering direction-validity byte, separate target, direct/named arrival test 489/489.
+// same byte with shared query vector and 3D target 487/489.
+// same byte with shared query vector and XY target 669/669.
+// same byte with the target calculated in the lateral test 773/771.
+// Written-differs at 489. NOT kept: Sharing the query vector for the full translated target gains two
+// and leaves the position at +0x8c. The two-component target reaches 3499 bytes at 669 and moves the
+// first difference earlier. The opening body is restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

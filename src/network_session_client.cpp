@@ -1359,6 +1359,14 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // result, so this image is the faithful screen (a caller-only fast check is not). On the indexed copy: the arm reading the
 // session through a second named pointer 195; the session id zeroed by `= {0}` 197; the player array named in the arm 196;
 // the copy as a `continue` arm 195; a list pointer formed before the branch and passed to the call 195.
+// M3 lane 12 r156 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): the parameter as `self`
+// with the state read through the joining view (0x6fa60's opening: entry_count, entries, part, unknown104) 9 (same
+// code); on the view the destination declared in the branch 195, the indexed copy 195, `[count++]` 40 (the copy forms
+// the destination in ECX before the source), the indexed copy with an owner local 195. Diagnostics in this image
+// (reverted): the indexed copy plus a global store of the count after the if/else gives retail's code up to the probe
+// (44, first difference +0x263; the store sinks to just before the call, so one more use of the count is what retail's
+// colouring needs); the destination declared in the branch plus that probe 48 (the lea then sits before the mask
+// stores); a constant store at the end of the else arm 113 (round 53's else-arm finding does not hold here).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

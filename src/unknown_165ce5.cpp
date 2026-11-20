@@ -1984,6 +1984,15 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // the look pair 188 (same code each). Retail pops EDI and ESI right after the weapon loop, ahead of the two flag tests
 // that close the unit block, and pushes each just ahead of its first use after the unit test; ours saves both ahead of
 // the test and restores them at the end (the round 98 block). Body unchanged.
+// M3 lane 14 r125 (fast; control 188): slot sharing against retail: retail packs unit, the user-flags copy and zoom in
+// -0x1c, mode in -0x18, spring_d and the active byte in -0x14; ours packs unit, flags and active in -0x18, mode in -0x1c,
+// spring_d and zoom in -0x14. Tried: `bool active` declared in the unit block 188, `real zoom` declared in the unit block
+// 188, the look record declared at function scope 188, `flags` declared after the weapon index 188 (same code each).
+// Diagnostic (reverted at once): the look pair as two scalars plus one probe local 537 (2203 B, frame 0x28, ten cells),
+// so the frame's odd cell count cannot tell whether the record alone rounds the frame. Retail's epilogue confirms the
+// shrink-wrap: ESI/EDI are popped right after the weapon loop, before the flag tail; still BLOCKED by the stand-in.
+// MiniMax B (11-20): no new form, no lower score (188): the channel pointer still differs at every channel use and
+// the look pair still needs an aggregate slot of its own, so the frame stays 0x30 against retail's 0x2c.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

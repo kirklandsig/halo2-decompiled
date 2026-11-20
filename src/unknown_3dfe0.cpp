@@ -191,12 +191,23 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // stack slot is where update lives) 21; `(void)&update;` after its declaration 21; `(void)&priority;` 21 (same code each:
 // none takes update out of the allocator); the hidden bit read into a named bool ahead of force 237 (833 B); the object
 // read through a const reference to its header entry 21 (same code).
+// M3 lane 14 r125 (fast with 0x3d2c0 and 0xd1850, both MATCH; control 21; `bool update = false;` right after the zero-elapsed
+// return re-measured 216, aligned 26: entry block as retail, the sample/update timestamps in EDI/ESI, the late object index
+// in EDI, no force-arm reload): a redundant `update = false;` at the top of the not-force arm 222 (aligned 7), the same on
+// the update-first form 222; on update-first, the hidden test through a fresh lookup expression (no second named pointer)
+// 216 (same code), the force arm inverted as `if (!force) { hidden return } else update = true;` 216 (aligned 31), the
+// sample decision as `if (sample time == NONE) sample = true; else { thresholds }` 166 (aligned 26: positional only).
 // M3 lane 6 r206 (fast with 0x3d2c0 and 0xd1850, both matched; control 21, update right after the zero return re-measured
 // 216): the kept order with a redundant `update = false;` added at the top of the not-force arm 222 (object straight into
 // EBX, retail's homes and ESI/EDI timestamps, but the initialiser is then dead: the false store moves into that arm and the
 // force arm has no reload); that with update after the zero return as well 222; the arms inverted (`if (!force) { update =
 // false; if (hidden) return; } else update = true;`) 223; `bool update;` declared bare ahead of update elapsed and set in
 // both arms 222; declared bare right before the force test, set in both arms 222.
+// M3 lane 3 r277 (fast with 0x3d2c0, 0xd1850, 0xd4080, 0x3e4e0 and 0x3db00; control 21): the object typed through the
+// existing object header and object views (include/unknown_0bad50.h, the hidden test on the word flags' 0x100 bit) 21
+// (same code); the update-time test only while update is still false 201 (836 bytes); the not-force arm first with the
+// hidden return in its own braces 25; the force arm as `update = force` 52; the zero return and the negative clamp
+// nested under one `elapsed <= 0` test 46.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

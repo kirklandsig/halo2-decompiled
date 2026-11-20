@@ -671,10 +671,38 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // coefficient values 465/448, direct paired rows 367/335, separate completed
 // view results 477/454. NOT kept: all enlarge the frame and score higher.
 // The second displacement spill and the live right-axis coefficient still differ.
+// M3 lane 8 r201 (fast with 0x30290, 0x30bf0, 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221 at 1112 B,
+// difflib-aligned 249, register-masked 154). Lane 13 r96's macro lead rebuilt on this body (separate view vectors, the
+// rows written straight into them, the depth limits in the condition) 252 at retail's 1136 B and 0x14 frame, aligned 174,
+// masked 62: the positional score rises while two thirds of the masked differences go. Reading of what it leaves: retail
+// loads the scale after the last origin subtraction into XMM6 (the origin z's register) and gives XMM7 to right.i, which
+// it loads once and carries across the second scale test, so the second view's scaled x and z live in [esp+4] and [esp]
+// and its products take those from memory; ours gives XMM7 to the scale, which lets the scale test rise to the top of
+// the block, carries no coefficient across the test and keeps the second view's copy in registers. On the lead: the
+// depth limits as named locals 260 (masked 88); the second offsets computed first 249 (masked 65); the scale read
+// once into a local ahead of both views 256 (masked 93); the scale step written out per component in the macro 252
+// (same code). Lead saved as build/r201/lead-0x501e0.patch; nothing kept (every form is above 221).
 // Caller scale test at each view, its own scale sample, one shared test, or one shared sampled scale and
 // test 278/283/282/308. Selecting the complete scaled vector in the two arms on those forms
 // 311/319/310/306. NOT kept: all raise the score. The 0x20 frame, second displacement and coefficient
 // homes still differ.
+// M3 lane 11 r133 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; control 221, aligned 249,
+// register-masked 154; body unchanged). Lane 8 r201's macro lead re-measured 252 (1136 B, frame 0x14, aligned 174, masked
+// 62). On it: the second offset loop first 249 (masked 65); the orthographic segment written into the second offset vector
+// 253 (masked 70), with the second offset first too 250 (73); the macro's scaled copy as three reals set to `scale * input`
+// under the test 297 (1176 B, masked 119); the two offset loops as six component statements with the second point first
+// 226 (1136 B, masked 67). On this body: those six statements with the second point first 220, the first point first 218
+// (1115 B; three points, under the keep bar). Reading: retail computes the second point's offsets first through one
+// register and stores x and y at once, never carries a second-point offset in a register through the first view (ours
+// holds its x in XMM0 from the opening to the second view's default copy and stores it last), loads the scale only after
+// the last origin use (XMM6, the origin z's register) and gives XMM7 to right.i, loaded once in the first view (`movaps
+// xmm1, xmm7` before its product) and used up by the second view's first x product; the second view's scaled x and z then
+// live in [esp+4] and [esp] with y in XMM0. Every first-view product loads its coefficient first, and in the second view
+// only the three x products do: the nine coefficients behave as values shared between the views, of which only right.i gets
+// a register.
+// MiniMax B (11-20): no new form, no lower score (221): the frame stays 0x20 against retail's 0x14 because the first
+// offset vector still needs a stack home (its address reaches the view helper); writing the offsets as explicit
+// component assignments reaches 218 (under the 8-point bar) and a by-component view helper 265, both kept out.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

@@ -911,6 +911,13 @@ extern "C" void _ReadWriteBarrier(void);
 // the slot at the head of the NONE block 6; the NONE test in a bool read through a `bool const &` 50 (212 B); a second pointer
 // to the slot for the point copy 6; the 0x86/0x50c arms' 0x41c/0x420 stores through a forced-inline setter 6; the busy field
 // bound to a `long const &` for the NONE test 6 (all the 6s the same code: the slot still loads after the jne).
+// M3 lane 3 r276 (fast with 0x1bca20, 0x1ba3f0, 0x1ba5c0, all MATCH; control 6): the 0x50c arm as a call to the existing
+// callback 0x1bca20 (its body is that arm) 58 (192 B, the call stays out of line), with `inline` on its definition 58
+// (still a call), with `__forceinline` on its definition 46 (211 B: inlined, but the barrier makes it look the actor up
+// again), the same without the barrier 46 (212 B, the no-barrier entry). Compile-only screen (same code as the barrier
+// body or the no-barrier body): the state as `&slot->type` cast, with/without the barrier; the state declared after the
+// actor ahead of the barrier; `&((s_slot_4c *)slot)[0]` without the barrier; the flags test through a const cast of the
+// slot without the barrier.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1614,6 +1621,8 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// score 123 (was 123): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
+// MiniMax H (11-20): no new form, no lower score (123): the flag bytes take AL and ECX where retail takes CL and EDX, the frame is 0x10 against retail's 0x14, and the default block sits before the final tests.
 // score 123 (was 134): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
 // magnitude retail's spill holds instead of being normalised to 0/1, and the build is now retail's exact 861 bytes.
 // Left: the frame is still 0x10 against retail's 0x14 (retail spills the 0x20 mask byte to frame+0x03 and keeps the
@@ -2079,6 +2088,22 @@ void function_1f86a0(long actor_index);
 // negated with the accept call first and the decline in the else 134 (all the same code); the decline as `u && (!bit40 ||
 // !same) || !u && specified && !same` 240 (866 B); re-measured: the element's root named inside `if (specified)` 241.
 // Retail lays the decline block and the iterator step right after the bit-0x40 test; ours keeps the tests together.
+// M3 lane 11 r131 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70/0x1ba5c0, all MATCH; control 123, aligned 82, register
+// and slot masked 28; the accept-first predicate with a plain non-zero mask re-measured 134, aligned 83, masked 24). Aim:
+// a mask that lives in memory without being a register candidate, which is what retail's frame shows. On the accept-first
+// form, all the same code (134): the mask's address discarded as a statement; a one-element array; a two- and a
+// four-element array; a one-member and a two-member aggregate; a byte-and-long overlay; a pointer to the mask read at both
+// tests; an inline test taking the mask by const reference; the same-root test in an inline function taking the mask by
+// pointer, taking it by value, or comparing two named roots; the whole predicate in an inline function (declining or
+// admitting, as a conditional expression or as two returns). The optimizer promotes every one of them back into BL.
+// Named roots under `if (specified)` 245 (one or two locals); `same` by a conditional expression 228.
+// Diagnostics, reverted at once: a volatile mask 259 (879 B: frame 0x14 and the mask at +0x13, but the flags byte is then
+// shared across the root calls in BL and the entry stays in memory); the root calls through a stand-in that writes a
+// global 132 with the mask local (mask still in BL), 136 with the mask used only after the calls, 229 with no mask local;
+// one, two and one-at-the-top extra uses of the entry (stores to a scratch global) 254/251/249: with two the entry gets a
+// callee-saved register with a home and the first root borrows it, retail's shape, but the register is EDI (the actor
+// leaves it for the loop) and the mask keeps BL. So the mask wins BL from every other value however it is spelled, and a
+// second byte value shared across the root calls takes BL when the mask cannot; retail's loop has neither in BL.
 // M3 lane 16 r150 (fast with 0x1b8c80/0x1b8d40/0x1ba990/0x1b9e70, all MATCH; control 134, aligned 109, register-masked 49).
 // Same code as this body (134): the joint index declared and set to NONE first with the early exit returning it; the
 // search loop moved whole into an inline function that returns the found index (forced inline; left to the compiler it

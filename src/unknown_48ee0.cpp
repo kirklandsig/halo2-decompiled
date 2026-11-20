@@ -60,7 +60,7 @@ extern real g_4c9798[36];
 // MiniMax A (11-18): no new form, no lower score (174): the five source variants tried this round score 250, 280, 264, 258
 // and 258; the frame's homes still run mode, maximum, extent, size, distance, aspect, border where retail's start with
 // the size, and the mode bit still loads the flags into EDX where retail uses EAX.
-// score 174 (was 174): the far plane's near distance goes into a named local so the three
+// score 174 (was 174): r275 unchanged. The far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // The earlier score was 178.
@@ -409,12 +409,25 @@ extern real g_4c9798[36];
 // the point's rows read from it 337 (1469 B, entry changes at +0x2); the rows written origin first 174 (same code).
 // Still BLOCKED-BY 0x48e70's link-time register summary (machine 1's file): with our build keeping the size
 // and the aspect in XMM registers across its two calls, the true second-plane form moves the parameters' registers.
+// M3 lane 3 r275 (fast with 0x48e70/0x1ddd0/0x1cf50 MATCH; control 174): the border written `w / maximum * 0.75f` and
+// `0.75f * w / maximum` 174/174 (same code: the compiler divides first either way); `(real)((real)w * 0.75f) / maximum`
+// 180 (1491 B): retail's multiply-then-divide, and the second point's direction rows then load into xmm2/xmm3/xmm4
+// as retail's do, but the second plane's tail grows; that with the second plane's dot through the plane 337 (1463 B,
+// entry changes at +0x2); the near distance named ahead of the depth scale and used in it 189 (1484 B).
 // M3 lane 1 r132 (fast with 0x48e70 MATCH; control 174): retail's clamp compares the upper bound on both paths (the
 // lower arm jumps to the comiss) and stores the size back in both of its arms, so it is two separate bounds on a size
 // held in memory; written as two ifs (no else) 258 (1484 B: the size still stays in XMM0, BLOCKED-BY 0x48e70); with the
 // border product in parentheses as well 265; the border product in parentheses alone 180 (1491 B: the multiply then
 // comes first, as retail); that with the height limit as a long (retail's dword) 243 (1481 B); the mode as one nested
 // ternary 174 (same code).
+// M3 lane 11 r133 (fast; control 174, aligned 89, register-masked 77; body unchanged). The fixed-size test named once as a
+// bool for both limits and the later branch 333 (1489 B, the entry changes at +0x2); that with the height limit as a long
+// 295 (1461 B); both limits set in one if/else 346 (1458 B); the two rounded sizes as a call statement and a rounding
+// statement each 174, with both calls ahead of both roundings 174 (same code each); the border test as `mode != 0` 175.
+// Frame reading (two pushes down): retail has the size at +8, the mode at +0xc, the converted width limit at +0x10 and the
+// extent, later the width limit, at +0x14; ours has the mode, the converted limit and the extent one cell lower each and the
+// size at +0x14, because retail's size lives in memory across the two 0x48e70 calls and ours in XMM0. Still BLOCKED-BY
+// 0x48e70 (machine 1's file).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

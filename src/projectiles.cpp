@@ -2000,6 +2000,11 @@ PRIVATE inline long projectile_object_root(long object_index)
 // MiniMax E (11-17): no new form, no lower score (296): re-measured this round; retail still expands the matched speed setter
 // 0xfbfd0 inline after the 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not write out by hand, so the 66
 // missing bytes and the pool, tag and seat-bit homes behind them stand: BLOCKED-BY 0xfbfd0.
+// MiniMax E (11-19): no new form, no lower score (296; a reduced image built for this function alone measures 359, its
+// layout differing): retail still expands
+// the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not
+// write out by hand, so the missing bytes stand; the first difference is in the prologue, where this build keeps the
+// global pointer in ebp and retail keeps it in edx: BLOCKED-BY 0xfbfd0.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2313,6 +2318,9 @@ real function_17c900(short function_type, real input);
 // the index in eax where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the
 // only form below 348 writes the salt expression out at both its uses, which the rules forbid, so the shared normalizer's
 // callers pin that helper.
+// MiniMax E (11-19): no new form, no lower score (348, baseline): the prologue still loads the two globals in the
+// opposite order (this build takes the unit table through ecx and edx, retail takes one through eax and the other
+// through ecx), and the shared normalizer still pins the rest of the body.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2779,6 +2787,7 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
    target, its speed curve and gravity, its range, then the line it moves
    along and what that line hits (up to 10 times), its orientation, and at
    the end its detonation or deletion */
+// MiniMax B (11-20): no new form, no lower score (947): retail expands the range check's 0xfaa30 body inline at two of its five uses and emits the call once per arm of the average-speed test, so our five calls stay and our frame remains 0x110 against retail's 0x118; marking that helper inline expands it at all five uses and scores 1093.
 // score 946 (was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;

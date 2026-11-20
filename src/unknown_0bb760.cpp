@@ -448,13 +448,16 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
-// and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
-// blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
-// Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
+// score 77 (was 97): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
+// Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // The choice count, mask and blend use other homes. The first scan exits on inequality.
 // Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
 // the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
+// the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
+// the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
+// blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
+// Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
 // Earlier 77 (was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
 // The zero ordinal store falls after the guard in this build and before it in retail.
 // Earlier (97, was 123): The object and tint entry exchange EDI and ESI.
@@ -790,6 +793,10 @@ void function_3dd10(long object_index, bool force);
 // 404 (0xd1a30 149, 0x131d60 52, 0xc0c80 319 lost); with a forceinline declaration of it in this file still a call 398;
 // the choices read through an inline element accessor with a signed `<` first scan 638 (unrolled, 1309 bytes); the
 // three clamps through a by-reference pin helper 197.
+// indexed current bank 311, second-bank cursor 98, cursor with bank-end bound 191, ordered cursor bound 191,
+// indexed bank-end bound 271, ordinal from cursor 278, unsigned bank ordinal 282, inclusive last choice 667.
+// NOT kept: The second-bank cursor keeps 1034 bytes at 98. Other bank forms raise the score or move the frame.
+// The inclusive last-choice bound unrolls the signed weight scan.
 // M3 lane 15 r113 (fast with 0x3dd10/0x1318d0/0x131a00/0x14bfc0/0x2c0b70, all MATCH; control 77): the choice count read
 // from the entry field at its test and both scan bounds 77 (same code); the three channel clamps through a forceinline
 // by-reference pin helper with early returns (the form a matched neighbour uses) 189 (the running sum becomes a memory
@@ -804,6 +811,10 @@ void function_3dd10(long object_index, bool force);
 // extent 86/86. Tag lookup after extent or after address 260/87. One supplied/default
 // color assignment by value or by source address 298/298. The choice count and mask
 // homes and the signed weight-scan exits still differ.
+// One choice-name read with nonmatching skip, nested mismatch, selected-name first or
+// complementary admission 86/86/189/86 at the unequal bound. All four signed forms 645.
+// NOT kept: the signed bound unrolls the scan, and the other forms regress at retail length.
+// The ordinal zero, choice count and mask homes still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

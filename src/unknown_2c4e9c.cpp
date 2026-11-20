@@ -3163,9 +3163,7 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // @retail 0x2bb3a2 destructor c_custom_game_maps_list
 
 /* selects the map chosen last (v1 reaches it by a tail jump) */
-// score 30 (was 30):
-// ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
-// The 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
+// score 30 (was 30): the 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
 // Ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
 // loads the global into eax (0x2c9a7d), tests it (cmp eax, -1 at 0x2c9a82) and only then copies it to ebx (mov ebx,
 // eax at 0x2c9a85); ours loads the global straight into ebx and moves `this` into edi after the test. The loop body,
@@ -3273,6 +3271,17 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // EAX for the compare and both iterator stores; match-only); the iterator declared at function scope ahead of the id 30;
 // the NONE default with `else return;` and the walk unconditional 30 (the dead default is dropped before NONE is counted:
 // NONE takes a register only with four uses).
+// M3 lane 11 r132 (fast with 0x2c9a58, matched in each): the field through a file-local inline getter taking the list 30; the
+// iterator's NONE stores chained datum_index first 30; the if/else two-definition id with the walk guarded by the field itself 33
+// (85 B: the head is retail's, `mov edi, eax; mov eax, [field]; cmp; mov ebx, eax`, and the guard threads, but the dead NONE arm
+// stays as `mov ebx, ecx; jmp` with NONE cached in ECX); the same with the arms swapped 30; the id read and reset to NONE under
+// `if (field == NONE)`, walk guarded by the field, 30; a NONE default with the copy made inside the field test 30. A one-object
+// LTCG screen is not faithful here (`this` arrives in EBX). All restored.
+// M3 lane 6 r210 (fast with 0x2c9a58, matched in each): the id assigned in the guard's condition 30; the id read through
+// a `long const &` bound to the named local at the guard and the loop compare 30; the hit clearing the id with the loop
+// as `while (map_id != NONE && next(&iterator))` 35 (88 B; 0x2c9a58 then 8); the id started NONE and set from the field
+// inside a guard on the field 30; the loop compare on the field with the guard on the local 30. Diagnostic, not
+// keepable: a compiler barrier intrinsic after the read 30 (all 30s the same direct EBX load).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

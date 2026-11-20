@@ -2113,6 +2113,11 @@ void function_27dd10(void)
 // interpolation arm 2; both 2; in function_288573 the blend-1 weight through a `real const &` for the three arms 2; the
 // blend-1 arms as a switch on the component 2 (all the same code; 0x281b60 2 throughout). The screen still flips pass 0
 // with `+= 1.0f` in the blend-1 scale arm (diagnostic). All restored.
+// M3 lane 2 r116 (fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2/2): the vector and
+// scale blends' bodies through the existing interpolate_real 159 (1735 bytes; 0x288570 120); the walk's inheritance
+// parameter by value instead of `const *const &` 399 (1745 bytes; 0x281b60 389, 0x285750 427); the interpolation's
+// scale arm through interpolate_real instead of the scale blend 2 (0x285750 17); the map-index test bound-first
+// (`index < count && index >= 0`) 16 (0x281b60 16, 0x285750 12); the root offset scale as `*=` 2 (same code). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2312,6 +2317,11 @@ void function_2818e0(void)
 // 0x288570 98); the bit flags as `dword` 5 (every walk user 3-5); screen only, the pair unchanged in all three: the
 // output pointer set ahead of the three frame-state sets, the bit flags as `unsigned long`, the saved frame index as
 // long (same code). All restored.
+// M3 lane 4 r231 (screened with 0x27dff0 and the four matched walk users): in function_288572 the outer loop bounded by a
+// `long const` copy of the count 95 (0x288570 120, 0x289580 2); the group end declared at the walk's top 2 (same code); the
+// destination-mask test as an if nested under the lookup 2 (same code); the interpolation test inverted with the plain apply
+// first 4 (0x27dff0 4, 0x285750 184, 0x28aaa0 2); in function_288571 pass 0 given the settings' node count directly, the local
+// for the later passes 397 (1681 bytes, every walk user 217-433). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

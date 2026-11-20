@@ -280,6 +280,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax B (11-20): no new form, no lower score (164): our frame is 0x24 against retail's 0x2c, retail homes the two decoded material codes as dwords and the first index as a dword where this build keeps two shorts, and retail materialises each side bit as its own stack byte where ours merges the two tests; retail also receives the source in ECX and copies it to ESI, which the declaration in the caller's file decides.
 // score 164 (was 164): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
 // and independently decoded side homes differ.
 // Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
@@ -916,6 +917,11 @@ void function_245400(s_source_245400 const *source, long index,
 // all geometry names with the plane table after the edge 166. NOT kept: the late
 // table still reserves 0x24 and raises caller 0x245aa0 to 3.
 // MiniMax C (11-19): no gain (164, baseline; body restored). Retail reads the second surface index (field_0a) before the first (field_08) and homes the two decoded material codes as dwords at +0x14 and +0x18 with the first index at +0x1c, which is the 0x2c frame; ours has two homes and the 0x24 frame. Reading the two material codes in retail order measures 163, a gain of one and under the bar.
+// End vertex record 164; retained start vertex 164; both vertex bindings 164; both bindings with late
+// plane table 205; retained primary material 164; both material bindings 164; primary material with
+// late output point selection 164; bound vertices with shifted side bits 232.
+// NOT kept: the late plane-table form lengthens the body and raises caller 0x245aa0 to 3. The shifted
+// side bits shorten it to 752 bytes. The record bindings leave the frame at 0x24.
 // M3 lane 5 r213 (one-object LTCG screen of this file linked with the caller's object, exact against the fast build;
 // counts are aligned rows, lane 3 r271's lead = 51 on it, 53 positional). On that lead: the edge copies declared in each
 // order x each edge row as one statement or split `(a + b)` then `+= c` three ways x the dot by hand (two orders) or

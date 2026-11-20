@@ -482,6 +482,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax H (11-20): no new form, no lower score (23): the old team mask still reloads narrowly for the compare and
+// once more for the change block where retail reloads its word spill once into ECX ahead of the first jne and shares
+// that register with the OR for the store; a dword mask with a dword OR and a word store (33), the same with the
+// compare narrowed on the mask side (82-83), the word mask with the OR uncast on the present teams (24) and with the
+// present teams first (24), the word mask with the store written as one expression (77) and a dword mask stored
+// inline (82) all score worse, so the body stays as it is.
 // MiniMax G (11-19): 23 (was 32): the kept form was re-measured with a plain check (23, same 10774 matched) and the
 // mask's type was tried once more around it: a dword mask with a dword OR and a word store (33), the same with the
 // compare narrowed on the mask side (83), the same with the present teams cast to a word (83), the dword mask in one
@@ -519,7 +525,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // MiniMax E (11-15): no new form, no lower score (32): the word mask read through the pointer still gives retail's head and loop (77) but not its tail, the mask read off the field rematerialises it (129), and a one-use team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) is retail's loop and reaches 29 - not kept, it is a one-use local and 3 points is under the bar (MiniMax D's 11-14 form, dropped by the coordinator); what is left is the old mask's word load and word spill (retail's `mov cx` and a word store against our zero-extended ECX and a dword store), its one reload into ECX ahead of the first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // MiniMax B (11-19): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, its reload ahead of the first jne is still split between the compare and the change block, the playing teams are still in EAX where retail keeps them in EDX, and the present update still lands in ESI where retail keeps it in EBX; a word mask with a separate dword copy folds back to the same code, and the word mask alone (77), the plain present (102), the field paths (129), the guard orders (78, 91) and the store orders all score 63 or more.
-// score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
+// score 23 (was 23; 32 before MiniMax G's dword update local): the word mask's one reload ahead of the first jne, and present's update in EBX remain.
 // D's form, not kept: score 29 (was 32): the old team mask is still zero-extended to a dword when it is loaded and spilled as a dword, where retail loads and spills a word; its reload into ECX ahead of the first jne also still differs.
 // MiniMax D (11-14), NOT kept (coordinator: the gain is a one-use `dword team_bit` local, kept only with a
 // byte match, and 3 points from 32 is under the keep bar; code back to main, 32): 29 (was 32), kept: a named team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) inside the team test makes the loop's bit build and the present update match retail's register choices and removes the loop's remaining differences; what is left is the old mask's word load and word spill, which retail does with `mov cx` and a word store while our build zero-extends into ECX and stores a dword, and the reload of that spill ahead of the first jne.
@@ -890,6 +896,15 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // teams 375 bytes 111/22, the added teams computed after the stores 72/16, both change tests operand-swapped 73/16. On
 // the word mask with a plain present: the team mask read and written through `globals->team_mask` (no pointer local)
 // 368 bytes 113/39, also with a `*const` globals pointer 113/39; the index24 named for its test and call 375 bytes 102/45.
+// M3 lane 16 r153 (fast; base 23, aligned 20): the post-loop block is what is left: retail reloads the word spill
+// once into ECX (a full `mov` load, then `movzx eax, cx` for the compare), keeps playing in EDX, and the engine-index
+// load is scheduled ahead of the not/and because EAX is free there; ours reloads the mask with `movzx` at each use and
+// keeps playing in EAX, so the index load cannot rise above the OR's store of AX. New: the mask read and stored through
+// `globals->team_mask` with no pointer local 131 (374 B); only the store through `globals` 23 (same code); the updated
+// mask as a `word` local of the uncast OR 77 (the change block then reloads the spill with a full `mov`, but the loop
+// moves); the OR's operands swapped 23 (same code); the mask pointer and old mask declared above the old playing teams
+// 28. Re-measured on this base: the uncast present in the dword local 24; a plain present 63 (384 B); diagnostic, the
+// one-use team-bit carrier 20 (aligned 17: the loop is retail's).
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5907,12 +5922,24 @@ void __stdcall function_d6bc0(long object_index);
 // at the 0x15aad0 argument, for the whole countdown block or at the schedule test 172/172/172 (same code: the copy
 // folds into the parameter); the reset counter as `value06 = reset ? 0 : value06 + 1;` 182 (851 B); the schedule test
 // through `s_netgame_entry_state *const &kept = entries;` 172 (same code).
+// M3 lane 14 r125 (fast with 0x15c150, matched each time; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172
+// at 858 B): on the flag + field-test form, `schedule = false` at the declaration with the index test setting true 172 (same
+// code; on the local test 7, same code); the countdown on the field as `if (value04 > 0) { if (--value04 == 0)` 172 (same
+// code); case 1 as `schedule = bit;` 139 (869 B; `entries` still in EDI from the loop top, the timer in EBX); the object
+// left uninitialised and set NULL in the index test's arm 159 (869 B), on the local test 190 (870 B). A 1500 s permuter
+// run on the 7 form (62 tries) found nothing below 7.
 // M3 lane 6 r206 (fast with 0x15c150, matched each time; base 29, label form re-measured 7, its field-test form 172 at 858 B):
 // the two skip tests (rate slot, 0x15a090) as nested ifs around the rest in place of `continue` 7 / 172 (same code each);
 // on the label + field-test form the countdown as `value04 > 0 && --value04 == 0` with no local 172; one displacement
 // vector and distance shared by the reset and case-0 tests 172; the release test reading the object type into a named
 // char used by both type tests 172 (7 on the label form); 1..6 dead locals (diagnostic) 172 each, so the EDI/EBX choice
 // between `entries` and the timer is not a symbol-count tie.
+// M3 lane 3 r277 (fast with 0x15c150, 0x15ac50 and 0x15aad0, all matched each time; base 29): the flag recipe rebuilt 7
+// (869 B); on it with the field test 172 (858 B: the switch test on the field and case 1 in AL as retail, but `entries`
+// held in EDI from the reset block through the zero and index tests and the timer in EBX); with no loop-top index local
+// 172; a named `short *` timer for the zero test, delay store and countdown 172, with the countdown's `= 1` too 177 (854
+// B); the timer as a `short &` 177 (854 B); the parameter read once through its address into a second pointer used for
+// every access 172 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

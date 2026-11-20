@@ -4244,6 +4244,8 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// score 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
 // score 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns
 // directly (1264 B). Left: retail reads the accepted byte back at every exit where ours folds it at the reason-1/2/9
@@ -4543,6 +4545,15 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // volatile store, discarded; its plain parts alone (`better != 0`, the state read into a local, the two NONE stores
 // swapped, the owner declared then assigned) 96 each. Re-measured on the control: every exit through `done:` 320
 // (1280 B), with the tie-break 313.
+// M3 lane 3 r275 (fast with 0x5e3f0/0x769a0/0x58d90/0x58d20 MATCH): round 208's 96 lead rebuilt on the current body
+// (96, difflib-aligned 8). On it: `if (result) return result;` after the disconnect 119 (aligned 30, as before); `if
+// (result) goto received_done; return result;` there 48 (retail's length, but aligned 23: the read, test and `jne`
+// appear, the fall-through returns a folded `xor al, al` and the byte homes rotate, result +9); that with `(void)&result;`
+// 48 (same code: the address-taking is dropped); `if (!result) goto` a second `return result;` after the acknowledgement
+// 48 (same code); the result cleared by `memset(&result, 0, sizeof(result))` on that form 48 (same code: scalar-
+// replaced). Reading: retail's fall-through returns the byte it just tested without folding it to zero, and every
+// exit reads the byte back, which is what an escaped (address-taken) result gives; nothing in this inline_depth(0)
+// region takes its address.
 // M3 lane 14 r123 (fast with 0x5e3f0, MATCH): round 208's lead body re-measured 96 on current main (1264 B, first difference
 // +0x94). On it: the acknowledgement under `if (!result && acknowledge)` 96 (same code: the proceed path threads the whole test
 // away); the final return as `result ? true : false` 410 (1310 B), `result != false` 396 (1313 B), `result == true` 406
@@ -4550,6 +4561,27 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // jump to their own `mov al, 1` return). Reading: retail's return at 0x5e891 (the state-8 exit's epilogue) gathers every path
 // on which the result is true (state 8, the kept arms with AL = 1, the post-disconnect `jne`) and the false edge has its own
 // epilogue, as if the final return were threaded on the result by a test whose other part is unknown on the proceed path.
+// M3 lane 11 r133 (fast with 0x5e3f0, MATCH each run; body unchanged at 295). Round 208's 96 body re-measured 96 (1264 B,
+// aligned 20: only the end of the received block differs). Reading of retail's end: the refused path (result still false)
+// and the accepted path with neither kept arm (result just set) meet at the disconnect, so the read, test and `jne` after
+// it is a real test of the result on merged paths; its true edge and the two kept arms all enter the state-8 exit's
+// epilogue behind its load with AL already holding the result (`mov al, 1; mov [result], al` ahead of the kept-arm tests,
+// which therefore go through CL), and its false edge returns the byte just read without `xor al, al`, so the false edge's
+// return is not a return that only that edge reaches. The acknowledgement block's two entries four bytes apart (one
+// reloads the sender) and this file's matched 0x5e3f0 (a `take` flag set in a chain and tested after it) fit the flag
+// form. Tried on the 96 body: the kept arms as `if (same) return result; if (better) return result;` with `if (result)
+// return result;` after the disconnect 150; the kept arms as one `return result;` with that test 123 (the kept arms get a
+// `mov al, 1` block of their own and the test folds away); `if (result) goto received_done; return result;` after the
+// disconnect 48 (retail's read, test and `jne`, but `xor al, al` on the false edge, the kept arms still through AL and
+// the result byte at +9: each added reference to the result moves its home); that with the kept arms returning 113; the
+// block as `for (; !result && proceed; proceed = false)` 389 or `while (!result && proceed)` 392 (1230 B: the layout
+// goes); the acknowledgement under `if (!result && acknowledge)` 96 (same code); `if (result) return result;` ahead of
+// the acknowledgement test 119; the block as an inline helper returning its own flag, called under `if` or assigned 908
+// to 921 (this file's inline depth of 0 keeps it out of line); a second flag `success` inside the block with `if
+// (success) result = true;` after it 239 (1273 B: the test is there but the two flags take two homes), `result =
+// success;` 227, `return success;` 243; the false edge and the reason-9 arm sharing a `return result;` inside the block
+// with the true edge jumping to a label after the block or at the final return 119 each (the two returns merge and the
+// test goes); `if (!result) goto` a second final `return result;` 48 (the 48 form again).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

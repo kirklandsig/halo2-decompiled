@@ -823,12 +823,30 @@ void function_1537f0(s_profile_record *record);
 // element too 46 (both hoisted). Diagnostics (value-wrong): the four heads set to -2 33 (260 bytes: no hoist and base +0x4c,
 // but the link stores and the -1 are scheduled above the builder's byte stores, which retail keeps in source order as stores
 // through a pointer are); two heads -2 and two NONE 65 (still hoisted).
+// M3 lane 15 r114 (fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): through the link pointer, the
+// links in retail's store order (0x5c, 0x58, 0x5e, 0x5a) as `links[0] = links[2] = NONE; links[1] = links[3] = NONE;` 18
+// (base +0x5e), with a second pointer for the other list (`links[0] = other_links[0]`, ...) 18 (base +0x5a), that pointer
+// declared first 18; the other list's pointer with `entry->` for the first list 47 (hoisted). New lead: the same order with
+// flags and the word after it also stored through a pointer instead of `entry->` (`*(dword *)&links[4] = 0;`, or `dword *tail
+// = &entry->flags; tail[0] = tail[1] = 0;`) 14: retail's whole tail schedule (0x4c, 0x50, 0x51, 0x52, 0x56, the -1, 0x53, the
+// links in retail's order, the two words, the record's words in EBP/EBX, no hoist); only the base differs (+0x5e or +0x5c,
+// every row left is a displacement). Not kept: both are a cast or a field-overrunning pointer, kept only with a match. On that
+// form the base did not follow the tail pointer: a byte pointer at +0x4c 14 (+0x5c), the links as four statements 14 (+0x5e),
+// the pointer declared before the record 14, taken from the view's end 14, a dword cast index 14, a dword pointer from the
+// links 14 (+0x5c). Through `entry->` (or a second entry pointer, alone or from the element) 46-49 (hoisted); the tail by a
+// small memset 45 (with `entry->` links), 31 (with the pointer links). Only `short`/`dword` pointer stores keep retail's
+// schedule, and with them the base lands in the links' range; through `entry` the base is retail's +0x4c.
 // M3 lane 7 r192 (fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): the link pointer taken from the end
 // of the view (`(short *)(&entry->player + 1)`) 18 (base +0x5c); a named view pointer for the builder call beside main's link
 // pointer 18 (+0x5c); the link pointer's stores as two chained pairs in retail's order (`links[0] = links[2]`, `links[1] =
 // links[3]`) 18 (base +0x5e: through the pointer the base follows the link stores' order, never +0x4c); the heads as two
 // chained pairs in retail's store order with the `entry->` links as chained pairs 49 (NONE now in EBP from the head stores),
 // with main's link pointer 18 (same code).
+// M3 lane 4 r231 (fast with 0x7f8b0, 0x1537f0 and 0x80490, all matched each time; control 18): the link pointer taken
+// as `&entry->next - 1` 18; the entry pointer `const` 18; the identity cleared as `memset(&record, 0, sizeof(record.identity))`
+// 18; the first link set to NONE and the other three copied from it through the pointer 18 (all the same code, base +0x5c);
+// the four link statements through the pointer in the order 1, 0, 3, 2 18 (base +0x5e, the second non-zero offset again).
+// All restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -733,6 +733,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // test reading `s->counter` 603 (same code); no count local, `s->counter` at its three uses 603 (same code); the count
 // read at the top of the active block ahead of the clamp 609 (2883 B); the scaled sample through the existing
 // vector3f_scale(&qr, globals->rate, &qr) after the displacement 683 (2871 B).
+// M3 lane 4 r229 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603 = plain, aligned 458, register/offset-
+// masked 174): the 0.866 test as dot3f(&s->direction, d) 604; the output position filled from q as three component
+// statements 657 (2878 B); both 658; both with the zero-tick fallback as `q = counter == 0 ? g_4687a4 : q;` 658 (d keeps
+// EBX in all four, so q's and d's reference counts as written are not what ranks them). Diagnostic (reverted at once):
+// the d parameter qualified so that it stays in its stack home 659 (2890 B): the entry is then retail's (q loaded into
+// EBX from [esp + 0x38], first difference +0x1d), so d out of EBX is enough to give q the register; the count rises only
+// because the qualifier reloads d at every component where retail loads it once per site (0x1ebda0: one load for the
+// fallback copy, one for the 0.866 test and its copy). Body unchanged.
 // M3 lane 14 r123 (fast with 0x1eb6f0 and 0x1ed4a0, both MATCH; control 603; all restored): the output position copied from q
 // field by field (more q references for the q/d EBX weight) 657 (2878 B, d still in EBX); the 0.866 test's terms in i, j, k
 // order 603 (same code); the three step clamps through one forced-inline helper returning the step 688 (2873 B); the first
@@ -742,6 +750,15 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 672/672, conditional pointer 674/674, branched vector copy 622/623, conditional vector copy 667/670.
 // NOT kept: all regress and shorten the body past retail length. The supplied direction still takes
 // EBX at entry. Original sample selection and body restored.
+// M3 lane 1 r135 (plain; the fast image builds this body differently, 597 at 2878 B; plain control 603 at 2885 B): the first
+// clamp's 12/8 factor ahead of t 711 (2868 B, the caller 0x1eb6f0 lost); the third clamp's factor ahead of t3 603 (the
+// select lands in retail's place, the count stays); the two aim-at-target/normalise/fall-back-to-d blocks as one forceinline
+// helper used twice 603 (same code); the output copy as three q field copies 657 (2878 B, EBX still d); a block-local
+// game-time pointer read once at the top of the active block (retail loads it once there, ahead of the clamp's branch,
+// and uses it for the cap and the rate products) 600 (2888 B; a second local for the same pointer, not kept).
+// Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
+// output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
+// Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

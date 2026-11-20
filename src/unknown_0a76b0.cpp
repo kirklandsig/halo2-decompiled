@@ -2279,6 +2279,7 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax H (11-20): no new form, no lower score (234): the weapon-slot index compares as a byte against an immediate where retail sign-extends it to sixteen bits; the pool and index take other registers.
 // score 234 (was 234): frame 0x14 agrees; the pool, index, type and name register homes, the NONE carrier and the completion byte still differ; rounds below (r214 lead 105 just above the marker).
 // Round 192 (m3 lane 8, fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470;
 // control 234): goto-free single exit (switch default and mode-else leave the name NONE, `if (name != NONE)` round the
@@ -2591,6 +2592,12 @@ __forceinline char unit_action_round(real value)
 // permuter on it (909 s, 34 tries) found nothing below 105. Also on it: the mode-2 arm's first-person copy in both
 // branches 105, the first-person NONE alone ahead of the getter (name's NONE after it) 105, both NONEs as separate
 // initialisers ahead of the getter 105 (same code each: the first-person name keeps EBP and the compare its immediate).
+// One entry table read with the short hand getter 332, a shared
+// pool with a word slot 318 or long slot 295, one entry table read 328,
+// a shared pool with the short hand getter 298, a separate active receiver
+// 335, a shared projected header 293, and a word slot with the active and
+// short hand helpers 320. The shared header reaches 1189 bytes with the
+// displacement in ECX and the hand comparison still at byte width.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4407,6 +4414,15 @@ extern vector3f *g_4687bc;
 // `0.0f != function_30bf0(&direction)` 9 (only the ucomiss operands flip); the facing test as `0.0f < dot` 8; the default
 // material built ahead of the definition re-lookup 40 (1099 B), between the re-lookup and the effect tag read 35 (1099
 // B); re-measured: round 247's typed object-type test (with a byte cast) 8.
+// M3 lane 3 r276 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the element as the array's data pointer
+// bound through a pointer reference and stepped with `+= rigid_body_index` 33 (the add's operands flip, data first as
+// retail, but in ESI/ECX for retail's EAX/EDX, and the node count moves to EAX). Compile-only screen (it reproduces
+// both sites; all the same code at both): a code-free forceinline identity wrapper on each of twelve reads of the
+// Havok block (the component index at the test and at the lookup, the unit's definition index, the model index, the
+// effect tag, the global material, the component, the rigid-body index at its call, its test and its element, the
+// component at the element); the element as data then `+=` without the reference, through a named index copy, as byte
+// arithmetic; `long const` effect tag and index; a const definition; `*rigid_body->nodes`; the model in a `byte *`
+// local; the node index as `short` (one more line, both sites unchanged).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

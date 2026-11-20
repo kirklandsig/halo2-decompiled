@@ -94,8 +94,15 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// score 162 (was 162): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// Earlier score detail: 194 before.
+// score 162 (was 162): the statement order already matches retail (the blend remainder sits between the two
+// aspect tests, where retail computes it into XMM2); what is left is the allocation - retail carries the blend
+// in XMM5 through the aspect block, ours computes it in XMM2 and spills the remainder to [esp+0x74]; removing
+// the two named inverse terms so the sums read inline measures 322 and is reverted.
 // score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
+// Earlier score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
 // score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
@@ -769,6 +776,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // stores 512/499, complete bounds assignment 519/571, or a projected center point 512/499.
 // NOT kept: the geometry-encoder forms change the frame or incoming register schedule and do not
 // recover the bitmap blend register.
+// Fixed-branch and bitmap defaults split at the combined sequence gate, bitmap validity, sequence presence,
+// or positive count. Direct fraction 456/503/466/522. Fraction published after both pivots 454/497/486/522.
+// NOT kept: every form lengthens the body and shifts the entry schedule. The blend still needs to survive the aspect join.
 // M3 lane 14 r124 (fast with 0x2243c0, which matches throughout; control 162): the two inverse next terms computed
 // before the `bx>by` test 255 (1942 B, first difference +0x2); the aspect tests written `ay<ax` and `by<bx` 162 (same
 // code); the width product after `inv_y` 173 (1951 B); both inverse next terms, then the width, then both sums (retail's
@@ -777,6 +787,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Both primary inverses after flip in vertical/horizontal and horizontal/vertical order 266/266; one
 // primary inverse before the secondary pair, the other after flip 176/176; one after the secondary
 // pair, the other after flip 176/176; split around the secondary pair before flip 162/162.
+// M3 lane 16 r153 (fast with 0x2243c0, MATCH throughout; control 162, aligned 127): the pivot products written
+// pivot-coordinate first (`first->pivot.x*(1.0f-blend)+next->pivot.x*blend`) 162 (same code); flip computed ahead of the
+// extents 217 (1948 B); width computed after both inverse rows 173 (1951 B); width computed ahead of both inverse rows 170
+// (1950 B); the aspect test as `ay<ax` 162 (same code). Diagnostic (behaviour change, reverted): the blend assigned without
+// its 0x20 test 332 (1959 B), so the conditional store and reload is not what keeps it out of XMM5.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

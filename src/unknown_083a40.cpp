@@ -899,6 +899,18 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // form) keeps the grouping; `collection` before the second loop, or at the top and used by the first loop's apply too,
 // gives the key its own induction variable (a fourth one: retail has i, the cursor and the session player only). In
 // every in-loop form the screen names the base a compiler temporary (watcher + 0x88) and adds it last. All restored.
+// M3 lane 11 r132 (fast with 0x84e90/0x84c90/0x83c90/0x69260/0x83c20/0x83570, all MATCH; a one-object LTCG screen of the file with
+// 0x84e90's file, checking the swap set-up and the key grouping): the occupied remove step as a forceinline helper given (collection,
+// i, update) 28 (same code); `collection` at function scope set before both loops 228 (1088 B, the key gets its own induction
+// variable); `collection` at function scope set at the second loop's top and in the first loop's update block 28; the key from
+// `(byte *)collection + 4 + i * sizeof(player)` 28, through `((s_simulation_owner_player *)((byte *)collection + 4))[i]` 28 (same
+// code). Re-measured the swap order (collection, player, update, other) 32: the swap set-up and the occupied block's load order are
+// then retail's, left the key sum and the final block's two source loads (ECX/EDX swapped). Screen only, same code:
+// `&collection->players[i].key[0]`, a `(dword)i` subscript, the byte sum with the offset last. All restored.
+// M3 lane 6 r210 (fast): the second loop's `player` and `source` declared ahead of `collection` 28 (same code); `player`
+// as `&collection->players[i]` 267 (1064 B); the swap's update named first (`update = &updates[++*count - 1];` then the
+// call) 28 (same code); the occupied key copied from `&collection->players[i]` 28 (same code); the occupied key copied
+// through the loop's `player` pointer (the same element) 291.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

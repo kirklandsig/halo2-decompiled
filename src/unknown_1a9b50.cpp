@@ -1027,6 +1027,7 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax G (11-20): no new form, no lower score (382): the false exit still lands after the main exit instead of at 0x1aac35, and 0x25d740 stays expanded here where retail keeps it out of line.
 // MiniMax G (11-18): no new form, no lower score (382): our false exit already has retail's own epilogue (xor al, al;
 // pop ebp; add esp, 0x58; ret 8), but it is emitted after the true exit instead of at 0x1aac35; giving the else
 // branch its own return - `return false;` and `local_2 = false; return local_2;` - folds the result byte away and
@@ -1042,6 +1043,12 @@ static __forceinline long real_to_long(real value);
 // what still differs is the false exit's place, the facing pointer that retail forms late through the view pointer
 // in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
+// M3 lane 4 r230 (fast with 0x25d740/0x25d690, both MATCH; control 382, difflib-aligned 155, register/offset-masked 86).
+// On today's tree the early `return false` for the three flags keeps 0x25d740 out of line (still a call) but folds the
+// result to `mov al, 1` (frame 0x54) and leaves the false exit last: 508 (re-measure); retail keeps the multi-valued
+// result in its byte across the inlined conversion asm. The result's true store moved to the `local_7` label 419 (masked
+// 88); that with the early return 508; the speed test as `local_4->unknown28 < 0.8f` 382 (same code), with the early
+// return 508; the view pointer declared const 382 (same code); local_11 declared before local_10 382 (same code).
 // Round 127 (m3 lane 10, fast with 0x25d740 and 0x25d690; control 382, aligned 83): the computed result as
 // `!(f13 || f14 || f2d)` with `if (local_2)` 508 (1921 bytes, aligned 122); that with the facing pointer formed after the
 // first dot (that dot read off the view) 566 (1966 bytes); the facing pointer after the first dot alone 494 (1918 bytes);

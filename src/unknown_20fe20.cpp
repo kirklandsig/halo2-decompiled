@@ -1303,6 +1303,12 @@ void function_2118c0(void)
 // to an external call before the loops 111, in a function-static array 119, in a local aggregate 116 (all with `b * 8`:
 // every row still reduces, so an aliasable index home is not it); a redundant `row >= 0` guard 151; a conditional knot
 // pointer under `row < 24` 185.
+// M3 lane 2 r116 (fast with 0x212100 and 0x211fd0, both MATCH; control 10): the three knot indices declared in the band
+// body 174 (756 B); the weights ta/tb/tc and previous at the sample loop's level 14 (first +0x105); previous alone at the
+// knot level (beside the knot indices, where retail computes it) 18 (first +0xda); the knot-row pointers declared p0, p1,
+// p2, p3 33 (first +0xb0); `long k` 133 (753 B); `long row = (long)b << 3` 10 (same code). Retail's band loop keeps the
+// row (8 * b) as its own register stepped by 8 beside the down-counted trip count, with the knot rows recomputed from it;
+// ours keeps b and scales it inside each knot row's lea.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

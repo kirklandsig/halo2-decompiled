@@ -1097,6 +1097,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // score rises to 596, and to 590 with the two arms left as they are and their k read back. Left: the damping bit's first
 // extraction in ECX, the two cross products that keep up.k on the other side, and the general arm's k row ending in XMM2
 // where retail's ends in XMM0.
+// MiniMax B (11-20): no new form, no lower score (234): the first cross multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the same code for all sixty-four operand spellings and is used by nine matched functions here, so that difference needs this one cross written out in place; the damping bit's first extraction also still uses ECX where retail uses EDX.
 // score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
@@ -1690,6 +1691,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // (same code: helper text order does not reach the products); the low arm's cross on the `forward` copy 380 (3053 B); the
 // basis copied after the cross 348 (3070 B); the input pointer declared after the four flags 250; no input pointer, every
 // read through state->input, 543. Body unchanged.
+// Velocity binding throughout/in history 589/495; carrier contribution binding 474; returned scale
+// destination 587; gravity clear before both additions 233; velocity binding with clear before
+// vertical add 590; staged disabled velocity 635; returned scaled input 617.
+// NOT kept: the one-point gain is below the keep threshold. The staged disabled result changes caller
+// 0x1f0450, and the bindings and returned pointers leave the damping register and shared vertical
+// store unresolved.
 // M3 lane 7 r193 (fast with 0x1f0450 and 0x24590, both MATCH; control 234): the input pointer between the flag
 // declarations (untried middle positions; f = flying, d = direct, m = damping, g = gravity, i = input): f i d m g 244,
 // f d i m g 230 (the r184 best's code: damping in EDX, first difference +0x31, the first arm's two `up.k` products and

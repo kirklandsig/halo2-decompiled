@@ -550,6 +550,14 @@ static inline real interpolate_linear(real a, real b, real t)
 // after the test, or a non-constant start value; the same call after the loop, an escape followed by `restart = false`,
 // or an opaque call without restart's address keep the skip. So retail's compiler saw no constant restart on one of
 // the loop head's two edges. All restored.
+// M3 lane 11 r132 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; a compile-only thread screen and a new one-object
+// LTCG screen of the file entered through v3, both reproducing the skip): dispose and restart as the two members of one local
+// result aggregate 10 (restart's home moves to [ebp-3], the skip stays); restart with the three timing values in one local
+// aggregate 10; restart and next time in one aggregate 21; the flags word assigned just ahead of the loop 200 (656 B); the high
+// boundary as a separate `if` with the flag-8 test on the field 66 (658 B). LTCG screen only: 60 random combinations of round 212's
+// join test, `== true` (keeps the skip) or the separate high `if` with five natural toggles (flags on the field in the loop, no
+// per-pass dispose reset, the flag-8 test on the field, long next time, a late flags local): once the thread breaks the flags word
+// is hoisted into BX and the zero leaves EBX in every one (27+ aligned lines). All restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
