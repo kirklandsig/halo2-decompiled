@@ -636,6 +636,17 @@ struct s_24e9c7_points
 // way round 54 / 99 (same code); both forward locals on main's form 57 / 100. Body unchanged.
 // AC597: Both lateral components start from size in scalar, per-component scalar, aggregate point or
 // field-written point forms, with dimension scale before or after: 125/125/125/125/144/144/143/143.
+// M3 lane 16 r152 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). All on the side point
+// set to the across products early (`size * (0.0f - forward_j)`, `size * forward_i`) and scaled in place by the half width:
+// with the half width ahead of the result conversion 146 (742 B: the width chain then runs first, its `cdq` ahead of the
+// height's load, and the bitmap pointer moves to ESI, where retail keeps the truncated height in ESI across the `cdq`
+// and the bitmap pointer in EAX); the width truncated into its own long ahead of `width / 2` 146 (same code); the first
+// corner's base copy between the half width and the result 146 (same code); both 146 (same code); that copy there with
+// `(real)height` written in both up products and the result assigned after them 144 (738 B). Reading of retail
+// (0x24eab8 on): the first corner's base copy loads x into EDX straight after `sub eax, edx` and y into EDX after it,
+// and the three later copies take y from EDX (`mov eax, edx`) while reading x again from the placement; ours copies
+// through EAX, so nothing is left in a register to reuse. forward_i stays in XMM4 from the across j product to
+// `result * forward_i`, which is why the conversions take XMM1 and across j goes to [ebp-8] at once.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
