@@ -2132,7 +2132,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // keep the two apart.
 // Earlier 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier at 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
-// score 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
+// Earlier at 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // Earlier: the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
@@ -2570,6 +2570,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // current range handle carried through both admissions 412; full request with both track bindings 305.
 // NOT kept: the range handle reduces the frame to 0x11c and loses the indexed loads. Complete request
 // storage reaches 0x12c while retail reserves 0x128.
+// Ring advance at the latch 453; definition-only, separate definition and state, or combined rejection 305 each;
+// latch with those guards or with a read-only entry 453 each. NOT kept: latch forms grow to 1955 bytes and reserve
+// 0x12c with the short request. The guard forms tie with the same 0x120 frame.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

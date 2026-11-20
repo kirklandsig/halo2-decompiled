@@ -1092,6 +1092,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 0x40); the hit copied member-wise 323 (aligned 166); both 361 (1260 B); the distance sum written radius first 238 (same
 // code); the valid flag and the two indices declared ahead of the fraction test 328 (1243 B, aligned 222); the hit copy
 // after the distance 305 (1245 B, aligned 137).
+// Scalar transformed plane offset 240; instance projection or signed distance 238 each; scalar offset plus signed
+// distance 240; direct projection, both projections or both signed distances 238 each; scalar-coefficient side
+// test before the normal stores 240. NOT kept: all retain frame 0x40 and the original length.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

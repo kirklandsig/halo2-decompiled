@@ -931,6 +931,9 @@ void function_245400(s_source_245400 const *source, long index,
 // operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
 // Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
 // (retail loads the second normal first in four products and reuses the first normal's k in two).
+// Scaled axis contributions in six orders 223/222/222/223/222/222; vector setter for their sum 223; aggregate
+// rotated direction 250. NOT kept: all grow past 783 bytes. The frame stays at 0x24 or grows past 0x2c to
+// 0x30 or 0x3c.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

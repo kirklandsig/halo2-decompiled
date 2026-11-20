@@ -883,6 +883,9 @@ void __stdcall function_1160c0(real dt)
 // the loop bound as `i <= definition->segment_count` 286 (1368 B: the guard becomes a compare, the rest unchanged).
 // Diagnostic: the segments base read through a file-local forceinline accessor 144 (same code: the base stays in EDI,
 // so the one-step scratch rotation is not set by a temporary at the base's own load).
+// Chain stiffness before the node, after the node, or before the split ordinal 277 each; stiffness after the split
+// ordinal 144; both inputs after the addresses 144, before segment selection 277, between selected ordinal and
+// address 144, or before the node 277. NOT kept: the early read forms grow to 1375 bytes and the other forms tie.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

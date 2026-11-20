@@ -1684,6 +1684,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `*out = s_matchmaking_ratings();` 862 (2800 B, but through a 0x364-byte temporary copied with `rep movsd`, frame 0x434,
 // aligned 1020 against 1016: not kept); the player loop bounded by the summary's count 883 (0x73530 8); adding_group
 // declared beside result 881.
+// Player-loop lookup nested at the range, population or enablement checks, at each pair, at all three, or at
+// separate signed range bounds 871 each. The frame and both lookup boundaries remain unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
