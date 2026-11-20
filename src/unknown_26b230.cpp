@@ -2236,6 +2236,15 @@ void function_269250(long clump_index, long actor_index);
 // parameter is copy-propagated, so the selection keeps EDI); on the in-arm form the actor index read into a local at the
 // top of the actor body 126 or after the walk 126 (same code), the actor's previous clump in a local for the post-loop
 // compare 126. Body unchanged.
+// M3 lane 8 r199 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0/0x26ae30/0x268c90/0x268510, all
+// matched each run; this body 87): on the in-arm compare (re-measured 126, 480 B), each the same code, 126: the post-loop uses
+// through a `long const &` bound after the walk, the same bound at the selection's declaration, the improving arm writing the
+// selection through a `long &`, every selection use through it, the walk's clump index bound by `long const &` in the improving
+// arm, the loaded clump pointer read through a `const &` for the team test and the score call, the score bound by `real const &`
+// for the compare and the store, a repeated `selected = NONE;` at the top of the creation arm. Diagnostics (the address passed to
+// a never-taken call, removed at once): the selection at its declaration 143 (488 B, the pool then hoisted into EBX but the
+// not-found path threads), selection and best 174, the walk record after the loop 231, both 255, the selection after the loop
+// only 124 (480 B). Body unchanged.
 // M3 lane 3 r270 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0/0x268510/0x268c90/0x26ae30, all
 // matched each time; control 87, aligned 54, masked 45; the in-arm compare re-measured 126 at 480 B, the datum-index
 // selection on it 128). New on the in-arm form: a phase scan of one to seven unused initialised locals 126 at every count
