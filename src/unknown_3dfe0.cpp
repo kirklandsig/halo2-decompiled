@@ -208,6 +208,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // (same code); the update-time test only while update is still false 201 (836 bytes); the not-force arm first with the
 // hidden return in its own braces 25; the force arm as `update = force` 52; the zero return and the negative clamp
 // nested under one `elapsed <= 0` test 46.
+// M3 lane 15 r116 (fast with 0xd1850 and 0x3db00, both MATCH; control 21, aligned 16): diagnostic, 0 to 7 dead initialised
+// longs on `bool update = false;` right after the zero-elapsed return 216 each (the timestamps' ESI/EDI swap is not a
+// symbol-count tie); the tail's update test through a `bool const &` binding 21, on update-first 216; force through a
+// `bool const &` for its test 21 and for the 0xd1850 argument 21; the hidden test's object through a `byte *const &` 21, on
+// update-first 216 (same code each); update assigned in both arms re-measured 222 (aligned: only the false store's place in
+// the not-force arm and the missing force-arm reload differ); that with the object looked up again in the force arm 226 (813 B).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

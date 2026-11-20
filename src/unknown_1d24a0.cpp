@@ -104,11 +104,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
+// score 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field (see the end of this note). Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
 // pointer in EAX and the field in ECX; the frame is 0x1f0 against retail's 0x1d4, the second activity flag sits
 // at +0xa where ours has +9, and the record pointer and the counter sit at other homes.
 // MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
-// score 949 (was 949): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain; earlier 949 (was 902), 902 (was 902).
+// Earlier score line: 949 (was 949): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain; earlier 949 (was 902), 902 (was 902).
 // Frame 0x1f0/0x1d4 (ours 28 bytes larger), entry argument/flags in EAX/ECX against retail ECX/EAX,
 // byte-flag homes and the record/vector homes still differ; the forms below were measured.
 // MiniMax B (11-18): no new form, no lower score (949, was 949): the frame is still 0x1f0 against retail's
@@ -142,7 +142,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Earlier 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier score line: 902 (was 902): frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier at 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
-// score 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier score line: 949 (was 949): earlier 902 (was 902); Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // M3 lane 3 r268 (fast, control 949): the three entry flags renamed (time step, newly active, velocity changed) 949
 // (same code: the flag bytes stay at +8/+9 where retail leaves +9 between them); the newly-active test with the
 // flags-word bit first and the time-step flag second 997; the swap-remove copy reading `[--size]` in one statement 949
@@ -547,6 +547,22 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // copy of local_0 cleared when bit 13 is set 994 (retail's entry registers, first difference +0x9, but the flag takes
 // its own byte at +3); the record loop counter declared at block scope 949 (same code). Both builds are in asm
 // slot-ordering mode (inlined fistp helper, cvttss2si).
+// M3 lane 15 r116 (fast = plain; control 1014 at 4299 B, frame 0x1f4): main's count rose from 949 when lane 8 r201 put
+// `inline` on magnitude3d's definition (0x24590; the old file swapped into the fast image gives 949 again), the round 148
+// held lead's condition. Kept: the residual subtract written in both arms at the two limit sites (retail keeps two subtract
+// blocks) and the record flags read from the field at each bit (no flags local): 895 (4278 B, aligned 670, frame 0x1f0).
+// LEAD (no count change, so not kept): with the scale helper as three statements (retail's unrolled multiplies) and the motion
+// position copied field by field (retail's three movss) as well, 895 at 4240 B, frame 0x1dc, aligned 405 (plain 895).
+// Steps (fast): subtract alone 951; helper alone 1048 (4167 B); helper with the subtract 958; with the field copy as well
+// 952; all four 895; the scale helper with the subtract and the field reads 921; plus the second-bit flag declared first 895 (same as without); plus the
+// removal as an else arm after the body with the clamp test written on the field 898 (aligned 377), with the slot locals
+// kept 895 (same code). Not kept: the first block's offset through the existing vector3d_from_points3d with no staging copy
+// 948 on the old body (frame 0x1e8), 1028 with the kept forms (frame 0x1cc); the angular block's slot index through local_15
+// 944 (aligned 736: retail reads the field there); both 964; each block's response fraction in its own block 1012; the
+// motion-position pointer dropped 1017; the two in-place differences through vector3d_from_points3d 948 (same code); the
+// attached object index named at its tests 895 (same code), named right after the element pointer 901; the angular
+// coefficients read from the record at each use 916 (4210 B, aligned 348). Left: retail pushes EBX at entry and keeps the
+// element pointer (shl/add) in a stack home with the attached index in EDI; the frame is 8 bytes over retail's 0x1d4.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
@@ -580,14 +596,13 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
     --local_8;
     continue;
    }
-   dword record_flags = local_12->field_0;
-   bool local_17 = (bool)((record_flags >> 2) & 1);
-   bool local_18 = (bool)((record_flags >> 1) & 1);
+   bool local_17 = (bool)((local_12->field_0 >> 2) & 1);
+   bool local_18 = (bool)((local_12->field_0 >> 1) & 1);
    hkRigidBody *local_19 = arg_0->rigid_bodies.data[local_10->field_3].rigid_body;
    bool local_20 = (!local_19->m_fixed && local_19->body_is_simulating().m_bool) || local_1;
    bool local_21 = local_14->rigid_bodies.data[local_15].rigid_body->body_is_simulating().m_bool || local_20;
-   bool local_22 = (bool)((record_flags >> 25) & 1);
-   bool local_23 = (bool)((record_flags >> 26) & 1);
+   bool local_22 = (bool)((local_12->field_0 >> 25) & 1);
+   bool local_23 = (bool)((local_12->field_0 >> 26) & 1);
    s_object_marker local_24;
    if (!function_b8d30(arg_0->object_index, local_12->field_8, &local_24, 1, false))
     function_ba160(arg_0->object_index, &local_24.matrix);
@@ -643,8 +658,10 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
       {
        real local_42 = local_36 >= 0.0f ? local_36 : 0.0f-local_36;
        function_1d24a2(&local_40, 1.0f - (local_41-local_42)/local_41, &local_40);
+       function_1d24a4(&local_37, &local_40);
       }
-      function_1d24a4(&local_37, &local_40);
+      else
+       function_1d24a4(&local_37, &local_40);
      }
      if (!(local_3 > local_34)) local_3 = local_34;
      local_2 = true;
@@ -681,8 +698,10 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
        {
         real local_55 = local_12->field_28 >= 0.0f ? local_12->field_28 : 0.0f-local_12->field_28;
         function_1d24a2(&local_52, 1.0f-(local_54-local_55*g_510c54->rate)/local_54, &local_52);
+        function_1d24a4(&local_50, &local_52);
        }
-       function_1d24a4(&local_50, &local_52);
+       else
+        function_1d24a4(&local_50, &local_52);
       }
       if (!(local_3 > response_fraction)) local_3 = response_fraction;
       local_2 = true;
