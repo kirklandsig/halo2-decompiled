@@ -565,6 +565,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// MiniMax G (11-20): no new form, no lower score (34): retail's parameter order begins with the party list (it arrives in
+// ECX) and the two counts after it, while ours begins with the player count and the party list second, and a declaration
+// may not change; the player count therefore still arrives in EDX where retail puts it in EAX, which is the caller's
+// choice (0x7e210, in src/unknown_07a9a0.cpp) and out of this lane's reach. BLOCKED-BY 0x7e210.
 // MiniMax A (11-19): no new form, no lower score (34): the sum written with the extra count first compiles to the same
 // bytes, and the two counts still take the other registers - the player count arrives in edx where retail puts it in
 // eax - so the copy loop, the rep stosd fill, the call setup and the final clamp all follow from that one exchange;
