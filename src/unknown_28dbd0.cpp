@@ -73,6 +73,7 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax I (11-20): no new form, no lower score (173): the permutation search over the body ran on the full image (2 tries in 311.4 s, best 173 against a baseline of 173); the frame is still 0x11c against retail's 0x118 because the rotation helper gives its cross vector a stack home where retail keeps the components in registers, and the cosine is still taken with fcos before the sine where retail takes the sine first and stores it after the dot.
 // MiniMax D (11-20): no new form, no lower score (173): the frame is still 0x11c against retail's 0x118; retail's
 // homes are 0xc (the random int), 0x10 (the rotation's cosine), 0x14/0x18/0x1c (the angle vector), 0x20 (the second
 // draw's int), 0x24 (the rotation's sine) and 0x28/0x2c (the rotation's temps) with a hole at 0x30, ours are 0xc,

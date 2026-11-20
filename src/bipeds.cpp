@@ -2815,6 +2815,7 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax I (11-20): no new form, no lower score (63): the +0x3aa byte tested in place with the count read again at the call as `(char)biped->unknown3aa` measures 82 (253 bytes against retail's 245), so the sign-extended long local stays; the extra EBP for the Havok base, the widening count test and the hoisted 0x9fff word clears against retail's byte read-modify-write at +0x349 remain, and the settling count's transport to 0x1d5120 is fixed by that callee's declaration, which lives in another file: BLOCKED-BY 0x1d5120.
 // MiniMax E (11-20): no new form, no lower score (63): the +0x3aa byte tested in place with the count read again at
 // the call through BIPED_GET gives 68 (249 bytes), the header's main-rigid-body getter on that graph 91, and a local
 // component index on it 68; the extra EBP for the Havok base, the widened count test and the hoisted 0x9fff word
@@ -4080,6 +4081,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
+// MiniMax I (11-20): no new form, no lower score (537): this round only re-measured the body; the frame is still 0x7c against retail's 0x78 - the definition's row pointer is taken into ebx where retail takes it into ebp - so the changed flag byte sits at [esp+0x12] against retail's [esp+0x11] and the flight threshold's home at +0x14 against +0x18, and ours is 2726 bytes against retail's 2712.
 // MiniMax I (11-19): no new form, no lower score (537): the frame is still 0x7c against retail's 0x78 - the definition's row pointer is taken into ebx where retail takes it into ebp - so the changed flag byte sits at [esp+0x12] against retail's [esp+0x11] and the flight threshold's home at +0x14 against +0x18.
 // MiniMax E (11-20): no new form, no lower score (537): the frame is 0x7c against retail's 0x78 - this build keeps the definition's row pointer in ebx and homes the index offset at [esp+0x1c] where retail keeps it in ebp; a single index local used at all three lookups measures 644 and both weapon reads taken from the biped local 670, so the body stands.
 // score 537 (was 548): The 0x78 frame agrees. The changed byte is at +0x12 versus +0x11, then the flight

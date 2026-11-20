@@ -6387,7 +6387,7 @@ bool __stdcall function_44370(long mode);
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
 bool function_133790(s_bit_vector_pool *state, short index, bool flag, long *bounds, long context, bool final);
 void __stdcall function_44ac0(long group, dword selection_mask, long level);
-void function_0494b0(real const *bounds, real const *clip);
+void function_0494b0(real const *window, real const *bounds);
 void function_40e90(long mode);
 
 extern long g_4ba134;
@@ -6477,7 +6477,11 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // MiniMax C (11-14): no new form, no lower score (47): the 0x494b0 call's arguments are still set up
 // ecx-then-eax where retail sets eax-then-ecx, the entry's radius still goes to edx where retail uses eax,
 // and the three group fields are still loaded into eax and ecx where retail uses ecx and edx.
-// score 47 (was 88): r136 lane 7: draw_light_source_pass (pass 11) follows 0x44370's body for its mode: the cull through
+// MiniMax I (11-20): matches retail byte for byte (was 47): the entry's value and key are read into one-use
+// locals before the 0xb8d30 call, the value local first, and 0x494b0 takes its window parameter first, so the
+// call sets up eax before ecx as retail does; the parameter swap is in src/unknown_0494b0.cpp (outside this
+// lane's files) with its declaration and the call site here, and 0x494b0 still matches.
+// Earlier 47 (was 88): r136 lane 7: draw_light_source_pass (pass 11) follows 0x44370's body for its mode: the cull through
 // two 0x15680 calls (retail's dead g_485898 load and arm order) and case 11's
 // `enabled = true` before the 0x496f0 call; 655/659 bytes, the remaining differences are register choices.
 // MiniMax R (11-06): no new form, no lower score (88).
@@ -6540,7 +6544,9 @@ void function_30ed0()
             continue;
         s_object_marker marker;
         byte *frustum = *(byte **)state + 4;
-        if (function_b8d30(entry->key, entry->value, &marker, 1, false) <= 0)
+        long entry_value = entry->value;
+        long entry_key = entry->key;
+        if (function_b8d30(entry_key, entry_value, &marker, 1, false) <= 0)
             continue;
         s_bounds3d bounds3d;
         if (!function_1650a0((s_view *)frustum, &marker.matrix.position, &bounds3d, entry->x))
@@ -6557,7 +6563,7 @@ void function_30ed0()
         if (r[3] > *(real *)(frustum + 0xac)) r[3] = *(real *)(frustum + 0xac);
         function_133790((s_bit_vector_pool *)state, index, false, &counter, first_group + i, true);
         function_44ac0(3, 2, first_group + i);
-        function_0494b0(clip, (real const *)&bounds3d);
+        function_0494b0((real const *)&bounds3d, clip);
         draw_configured_pass_r18(10);
         draw_light_source_pass(1, 11, false, false, g_4858b8, true);
         group.flags = group.unknown10;
@@ -7419,6 +7425,7 @@ PRIVATE __forceinline real absolute_32350(real value)
     return value >= 0.0f ? value : 0.0f - value;
 }
 
+// MiniMax I (11-20): no new form, no lower score (429): this round only re-measured the body; the constant 1 that retail holds in ebx through the inlined pass and the result byte that shares that pass's enabled slot both come from 0x44370 being inlined with its mode table folded, and that is blocked by 0x44370 (src/unknown_01cf50.cpp); what still differs is retail's smaller frame, its five epilogue copies and its ja/jbe diamond for |x| > |y|.
 // MiniMax B (11-19): no new form tried this round, no lower score (437): the constant 1 that retail holds in ebx
 // through the inlined pass and the result byte that shares that pass's enabled slot both come from 0x44370 being
 // inlined with its mode table folded, and that is blocked by 0x44370 (src/unknown_01cf50.cpp); what still differs is
