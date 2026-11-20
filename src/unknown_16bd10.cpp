@@ -1368,6 +1368,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Source-direction displacement with direct/in-place/separate/origin-copy addition 409/443/433/474.
 // Same four forms using the copied plane normal 461/492/493/539.
 // NOT kept: The staged displacement grows the body, and reading the copied normal for the final projection moves the first difference into the prologue.
+// Round 611. early direction self-dot 164, early squared magnitude 417, early dot before plane initialization 411,
+// plane guarded by self-dot 185, plane guarded by squared magnitude 421, early dot with zero-offset plane 417,
+// scoped length and plane constant 406, zero-first offset 407. NOT kept: the early dot loads j into XMM1 but
+// computes the length in XMM0 and reorders the normal copy. The guard forms also regress.
 // M3 lane 1 r137 (H2M_FAST with 0x142d10 and 0xa9b40, both MATCH; control 126): re-measured 0x142d10 as (out, forward,
 // up) 124 and that with the shared quaternion normalise summing i, j, k, w 122 (round 113's leads, a gain of 4, under the
 // bar). On that 122: case 2's test as `0.0f != length_squared` 121 (only the ucomiss operand text lines up; the registers

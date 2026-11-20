@@ -60,7 +60,8 @@ extern real g_4c9798[36];
 // MiniMax A (11-18): no new form, no lower score (174): the five source variants tried this round score 250, 280, 264, 258
 // and 258; the frame's homes still run mode, maximum, extent, size, distance, aspect, border where retail's start with
 // the size, and the mode bit still loads the flags into EDX where retail uses EAX.
-// score 174 (was 174): r275 unchanged. The far plane's near distance goes into a named local so the three
+// score 174 (was 174): Frame 0x28 agrees. The mode flags load into EDX instead of EAX. Mode and size homes and rounding reloads differ.
+// r275 unchanged. The far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // The earlier score was 178.
@@ -457,6 +458,8 @@ extern real g_4c9798[36];
 // ahead of the divide by a cast on the product 180 (1491 B, plain: retail's multiply-then-divide, but the far-plane point
 // loads then reorder); the half-angle test, the second mode test and the two clamp tests with the constant on the left
 // 174 each.
+// Mode-bit or full flag-word reads before projection stores 0/1/4/7: 174/174/174/174 in each form.
+// NOT kept: these observations leave the score, length and EDX load unchanged.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

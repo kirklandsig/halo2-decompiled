@@ -2102,7 +2102,8 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
-// score 305 (was 305): the second pitch-range loop's registers (retail NONE in EBX, track definition in EBP, the
+// score 305 (was 305): Frame 0x120 versus 0x128. Outer-index, playback, range and detail-request homes differ.
+// the second pitch-range loop's registers (retail NONE in EBX, track definition in EBP, the
 // two indices pushed from memory), the first loop's set and bound addresses, the mask update, the ring walk's
 // scratch registers and the gain store's two entry addresses still differ; r153 at the end of this note has the
 // form that gives the second loop's registers (336, not kept).
@@ -2150,7 +2151,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Earlier at 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // Earlier at 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // MiniMax B (11-20): no new form, no lower score (305): our frame is 0x11c against retail's 0x128; retail keeps NONE, the track definition and the active bit in registers through the second pitch-range loop and indexes sounds[i] at each use, where this build hoists the datum index and the track index into EBX and EBP and keeps the sounds address in EDI with the active bit spilled; the listed forms (the count in each for-init, the pitch bounds pointer, the per-use reads, the byte-typed NONE field) all measure 305 or more.
-// score 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
+// Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // Earlier: the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
@@ -2597,6 +2598,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // latch with those guards or with a read-only entry 453 each. NOT kept: latch forms grow to 1955 bytes and reserve
 // 0x12c with the short request. The guard forms tie with the same 0x120 frame.
 // MiniMax A (11-20): no new form, no lower score (305); the frame is still 0x11c against retail's 0x128, so the native request, the range and the pitch homes sit at other offsets, and the second pitch-range loop still hoists the datum index and the track index into EBX and EBP and keeps the sounds pointer in EDI where retail holds NONE, the track definition and the active bit there and indexes the sounds array at each use; the plain check and the fast check of the nine-address set agree at 305 here.
+// Gain-phase handle, gated pitch-phase handle, early ring head and their four combined forms: 305 each.
+// All three with complete play-state storage: 305. NOT kept: the handles and ring head leave the
+// opening code intact. The full state still reserves 0x12c, with one extra scalar word.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

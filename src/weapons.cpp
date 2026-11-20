@@ -3762,6 +3762,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // with promoted debit, or with named fallback minimum 639/639/639. Reduced control 636.
 // NOT kept: ties and regressions. The early magazine tag and post-heat rounds still occupy separate
 // spill homes in the full build, with the 0x1c64 frame and swapped weapon/barrel registers.
+// Round 611. signed post-debit remainder 627, positive-rounds branch 636, saturated debit store 643, prefetched
+// magazine flags 597, prefetched notification predicate 635, late notification bit 639, positive branch with signed
+// remainder 627, shot result before debit 633. NOT kept: the flag snapshot moves the flag read and shortens the
+// frame to 0x1c5c in the reduced image. The full frame and register roles still differ.
 // Typed holder-header accessor 636; unsigned type mask 636; typed Boolean type bit 632;
 // conjunctive holder rejection 636; negated ammunition shortage 636; short debit store 636;
 // negated heat exemption 636; ammunition/heat gate before the loaded-minimum gate 639.
@@ -4222,6 +4226,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // bodies this round: a bitfield returned through a bool-returning inline function gives retail's `mov; shr; test 1` (a
 // direct test of a narrow bitfield gives `test byte [mem], mask`), and a bool with two definitions that is tested at once
 // keeps its store (retail's `shr al, 6; and al, 1; mov [esp + 0x1b], al; jne` at 0xfe7cf needs no qualifier). Body unchanged.
+// Round 611. channel lookup helper 1417, typed animation state 1412, typed state with channel getter 1417, typed
+// graph getter 1417, conditional animation lookup 1434, primary channel reference 1417, typed frame count 1417,
+// nested animation-end test 1417. NOT kept: these animation-state forms leave the 0x34 frame, pool registers and
+// spilled dual result in place.
 // Tracked-target snapshot 1412; typed owner player read 1412; separate magazine activity
 // 1416, or seeded from prior activity 1415; call-first logical OR 1425; wide magazine
 // accumulator 1412; narrow pre-magazine activity 1449; named animation receiver 1412.

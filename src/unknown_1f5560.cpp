@@ -1860,6 +1860,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // offset as one planar_scale call with a ternary scale 241 (1164 B); the type-zero centre copied from the target and the
 // two scaled terms added in place 317 (1210 B); the side vector set member by member 226 (same code); the type-one centre
 // copied from the target and its scaled difference added in place 275 (1200 B); both arms' centres so 340 (1226 B).
+// Round 611. radial switch 0 first 254, radial switch 1 first 254, paired facing components 267, complementary side
+// predicate 198, in-place radial scale 206, shared opposite radius 242, destination and shared subtraction 231, in-
+// place side scale 294. NOT kept: the complementary predicate reverses the stored side and loses the shared radial
+// tail. In-place radial scaling shortens below retail. The radius register still differs.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

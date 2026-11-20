@@ -3224,7 +3224,8 @@ real magnitude3d(vector3f const *v);
 // clamp tests, where this build leaves it on the x87 stack and lets the clamped value take its place. Note for the
 // next round: with this function alone in the reduced image the length drops to 997 bytes and the score to 315,
 // because magnitude3d stays out of line there, so measure it with the rest of the file's functions present.
-// score 170 (was 170): the raw current length, the dot's double copy and the angle reload (below).
+// score 170 (was 170): The raw current length shares the bounded slot at ESP+4. Retail reuses ESP+0xc for it and the real dot and angle.
+// the raw current length, the dot's double copy and the angle reload (below).
 // MiniMax S (11-17): no new form, no lower score (170): retail still keeps the raw current length in its own slot
 // and the pinned value in another, where this build reuses one slot for both, so the later homes shift; retail
 // still re-reads the dot as a float for the arccosine where our acosf and fabsf widen to their double forms, and
@@ -3519,6 +3520,8 @@ real magnitude3d(vector3f const *v);
 // One root in the current, target, or both direction phases 251/309/324.
 // NOT kept: the phased forms move the first difference to +0x14, and the single-root
 // forms shorten the body. The separate raw-length home and real dot reload still differ.
+// Named floor, ceiling or both comparison outcomes for the current and target lengths, all four together,
+// and their complementary outcomes: 170 each. NOT kept: all forms generate the opening code.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
