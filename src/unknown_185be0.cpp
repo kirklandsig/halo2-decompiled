@@ -700,6 +700,13 @@ union s_185be7
 // MiniMax B (11-19): no new form, no lower score (396): retail treats 0x24590 as clobbering the XMM registers, which is
 // what fixes the whole block from the speed fraction to the stick clamps; the `inline` lead on 0x24590 is measured above
 // (384 [65], one shift left) and is not kept because six of its other callers' counts rise - BLOCKED-BY 0x24590.
+// M3 lane 6 r207 (fast with 0x186ab0, 0x187b30, 0x185b30 and 0x24590, all MATCH throughout; body unchanged): the angle
+// pair scaled through the existing planar_scale helper ahead of the record copy 957 (same registers, one `add` more),
+// after the copy 415; the second hold time as `arg_2 + field_7c` or `field_7c + arg_2`, or both hold times argument-first
+// 396 (same code: retail loads the field first, ours the argument); the second hold time accumulated ahead of its rate
+// scale 402; the parent object through a named pointer, through the shared header view, or the unit's object named 396
+// (same code: the scratch rotation stays one step off at the parent lookup). Still BLOCKED-BY 0x24590 (its file was on
+// the avoid list again).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
