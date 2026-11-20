@@ -1014,6 +1014,17 @@ bool function_e4050(long object_index);
 // Reading of the 405-byte family: retail gives EAX to the unit object's parent (0xbaf40's argument, read after the walk)
 // and to the 0xaa byte, so its unit goes to EBX and the walk's step object is free to take EAX; ours gives EAX to the
 // unit first and puts the parent and the byte in ECX. BLOCKED-BY 0xbaf80 stands (its pin is in an avoid file this round).
+// M3 lane 2 r117 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43). On
+// the `dword current` NONE-root walk (re-measured 171 at 405 B): the step object named and read through a const
+// reference ahead of the root store 82 (435 B: the frame and the entry test are back, but the step object takes EDI,
+// the unit keeps EAX and the unit object EBX), after the root store 171 (same code as the walk); the same two with a
+// long walk variable 87 (442 B) and 108 (431 B). Diagnostics (reverted at once): a call to an unresolved function in
+// the loop on the dword walk, at the loop top or in the vehicle arm, 145/147 (431 B with the call: the frame returns,
+// the unit keeps EAX and the iterator index EBX), on the kept body 97 (436 B). `inline` on 0xbaf40 and 0xbaf80's
+// definitions (diagnostic, full check) leaves this function unchanged and loses eight matched callers (0x4baf0,
+// 0x3d7f0, 0xc0c80, 0xc3ad0, 0x133790, 0x159690, 0x1ac610, 0x1ced00); `inline` on 0xe4050's loses 0xdd8e0 and 0xe3700
+// and leaves it unchanged: the link-time summaries of those callees are already retail's, so BLOCKED-BY 0xbaf80
+// concerns only its expansion here.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2821,6 +2832,12 @@ static __forceinline long player_round_ticks(real value)
 // length hides that many bytes owed to the blockers (0x151b80 and 0xccd20 expanded here, 0xe68c0 not). Left in the
 // opening on the 705 form: retail keeps the unit's scaled index in EBX (pushed at entry, stored to its own home) and the
 // 0xfffd mask in ESI; ours keeps the mask in EBX. BLOCKED-BY 0x151b80, 0xccd20 and 0xe68c0 as before.
+// M3 lane 2 r117 (fast with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0, 0x14e970; control 701, aligned 708,
+// register-masked 270): `idle = rest = 0;` in the negative arm 701 (same code); one function-scope `weapon` for the
+// 0x60 block and the read after it 701 (same code); the parent and the seat tested on the fields with both locals read
+// inside the block 701 (aligned 694); the +0x214 read of the two-slot arm through `current` 703 (2736 B); the latch's
+// node stored ahead of its target 702 (2741 B). `inline` on 0xe4050's definition (diagnostic, full check) leaves this
+// function unchanged. BLOCKED-BY 0x151b80, 0xccd20 and 0xe68c0 as before.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3503,6 +3520,16 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // and the last unit's NONE store takes its place as in retail, but the globals pointer keeps EDI and the rows shift).
 // Same code as the body: the final store under `if (!failed)`; the iterator declared ahead of the last unit and its
 // position; `globals->unknown9e == false`; loop 2's set-up with the data field stored last. BLOCKED-BY 0xb8540 stands.
+// M3 lane 2 r117 (fast in round 34's widened image + 0x14d3a0 and 0x13cb40; control 103, aligned 79, register-masked
+// 26). Diagnostics (reverted at once): a call to an unresolved function after loop 2 gives 94 at 613 B with retail's
+// ESI prologue and the final store's own reload (first difference +0x3e, aligned 60), the same call inside loop 2 109
+// (616 B), inside loop 1 137 (617 B): what retail's link saw and ours does not is a write of g_4e8c20 on every path
+// into the final store. `inline` on 0x6b380's definition, alone or with a pin, 103 (same code; a full check with it
+// moves no function at all), on 0x16bc00's 210 (661 B: it expands into loop 1), on 0xe4050's and on 0xbaf40/0xbaf80's
+// 103 (full checks; they lose matched callers elsewhere). Source forms: the final store through a local read after
+// loop 2 103, that local bound by const reference 103, the `= 6` store through such a local 103, both 103, the final
+// store under `if (!failed)` through a local 103, the `= 6` store through the prologue's pointer 103 (all the same
+// code); the final store through the prologue's pointer 176 (618 B). BLOCKED-BY 0xb8540 stands.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

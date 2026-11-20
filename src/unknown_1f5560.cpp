@@ -1798,6 +1798,39 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // reused in XMM6. Named lower bound 239, fraction default one 271, explicit
 // fraction arms 239, named span 239, named excess 239, both 239, named upper
 // bound 239, early lower-range return 283. Default one reaches 1173 bytes at 271.
+// M3 lane 2 r117 (fast with 0x29a190/0x29cbb0; control 239; al = aligned differing instructions exact/XMM numbers
+// masked, 213/57 on this body). Cause of the XMM numbers: retail assumes that a call between the desired vector and
+// the cosine may write the address-taken locals (direction and desired, whose addresses go to the inlined normalizer),
+// so its cosine reads all four components from memory into XMM0/XMM1 and their register lifetimes end before the
+// calls; our link knows that 0x210770, 0x210690 and 0x26ccb0 write only through their own pointer arguments and keeps
+// the four values register candidates across the calls, which reorders the whole vector block. Diagnostics (reverted
+// at once): the cosine without its direction.x term gives the radius XMM5, the side XMM6, the centre XMM4/XMM1 and the
+// lateral spill; `&direction` passed as 0x210690's output 241 (cosine operands from memory); a call to an unresolved
+// function after the transforms 163 at 1168 B (al 108/23); a call there to the out-of-line `inline` normalizer 0x2b400
+// 233 at 1173 B: with either the cosine is retail's instruction for instruction. HELD (needs the coordinator's OK,
+// patch build/r117/held-0x210d10.patch): `inline` on 0x210d10's definition in src/unknown_20fe20.cpp (the axis helper
+// under both transforms) makes 0x210770 and 0x210690 such calls; 0x210d10, 0x210770, 0x210690 and 0x29a190 still match
+// and a full check loses nothing, this function's first difference moves from +0x4f to +0x97 (240 at 1163 B, al
+// 135/48) and 0x299460's entry becomes retail's (its float parameter is no longer preloaded into XMM5; first
+// difference +0x14 -> +0xd0), but both positional counts rise (239 -> 240 here, 0x299460 569 -> 726 at 3349 B of
+// 3372), so it is not kept. Not the cause: `inline` on 0x142700/0x1427f0 (diagnostic, full check) loses 0x210690,
+// 0x210770, 0x14a8e0, 0x168d60 and 0x23d030; the two normalizations through a normalizer defined in another source
+// file and inlined at link time (plain, inline or forced) and pointer-returning inline helpers for the direction give
+// this body's code; the 3-D set-up, both transforms and the trace in one inline function taking the planar points by
+// pointer 194 on the left-arm lead (same code as the lead), with the radius by value 265 (1186 B). Redundant
+// parentheses (new lever here): the number of redundant pairs mod 4 is one global phase of the allocation wherever the
+// pairs stand (one pair = none 239; two 276 at 1187 B; three 268 at 1187 B; four, five, eight = none; three on the
+// lateral sum's first three products 256 at 1184 B with the lateral spilled), and a new used local shifts the phase by
+// one; a 210-sample search over the arm orders x pairs on 25 products x phase on this body found 101 distinct codes,
+// none below r115's left-arm lead (194) and no match. On the HELD base (match-only forms, none matched): the named
+// trace radius 233 at 1173 B (al 119/32); with the left arm y first 239 (al 107/22), its phase 2 138 at 1173 B (al
+// 104/26); the type-one centre as both products and then both sums 237 at 1181 B (al 63/22: the radius XMM5, the
+// inverse length XMM3, the direction XMM2 and the lateral spill are then retail's; left are the side in XMM7 for XMM6,
+// the type-one arm, where retail loads the difference into registers and multiplies by the negated radius held in the
+// zero register, and the left arm's shared tail), a named scale for it 224 (1176 B), through a by-value scale helper
+// 224 (same code), the difference copied into the centre first 230..295; 370 more samples over those spellings, the
+// arm orders, the normalizer's product order and pairs: best 123 (1167 B), best aligned 60, none with the type-one
+// arm's register loads, no match.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
