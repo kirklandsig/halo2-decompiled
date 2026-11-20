@@ -86,6 +86,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // -0x8cc, display_name -0x6cc, suffix -0x4cc, layout -0x2cc against retail's display_name -0x8cc, title -0x6cc,
 // layout -0x4cc, suffix -0x458); writing the text arms as direct calls measures 425, moving the set_text into the
 // message block 502 and calling function_253b1a in each arm 540, so the one-call body with the text variable stands.
+// A permuter run against the full image over 700 s (twelve tries) reached no lower score than its own baseline.
 // score 316 (was 316): r209 unchanged (lead below: the buffer homes follow reference counts). Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
 // Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
 // m3 lane 8 r195 (fast = plain here): 43 at retail's 2345 bytes (plain check, 0x2b37fd and 0x2b3fca still match) with four

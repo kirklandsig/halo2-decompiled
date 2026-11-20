@@ -1730,6 +1730,9 @@ real function_30bf0(vector3f *vector);
 // the mobile flag byte in the entry block where this build clears it after the first branch, and the query's four
 // components still reach the x87 stack in the other order; retail's 0xd37f0 takes the block in EAX and the query in
 // EDX where this build has them the other way round, and that callee's parameter order is fixed in a declaration.
+// MiniMax G (11-19): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the normal
+// copy and the limited, rotation and colour homes are still in other slots; the permuter over 300 s made ten tries and
+// reached no lower score than its own 370, and the test-set mobile flag measures 362 (kept only with a byte match).
 // score 378 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).

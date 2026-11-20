@@ -70,6 +70,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax G (11-19): no new form, no lower score (334): retail computes each axis's sine and cosine inside the builder
+// (fsin before fcos) and keeps both angles live on the x87 stack, while this build computes them in the caller and passes
+// them to the helper; the forms that compute the trig inside the helper measured 355-357 and lost the matched caller
+// 0x137ed0 whose inputs are doubles, so the body stands.
 // score 334 (was 334): the builder's squares spill where retail keeps them in XMM1/XMM4/XMM6 and re-reads the axis.
 // MiniMax A (11-18): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7
 // with the squares in xmm1, xmm4 and xmm6, takes the cosine on the x87 stack before the cross terms and forms them as
