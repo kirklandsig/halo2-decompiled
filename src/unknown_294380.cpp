@@ -328,6 +328,14 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // sits below the centroid sum and the walk's offset (not its position) shares the post-walk vector's slot in every one,
 // also with `3 - total` or the reciprocal unnamed, the scaled centre written per component, the sum assigned after its
 // declaration or added through a pointer, and with 1-10 unused locals (no home moves). Body unchanged.
+// M3 lane 5 r218 (plain with 0x293b30, 0x293d30, 0x294050 and 0x295600, all matched each time; control 252; [aligned, masked] =
+// difflib counts with addresses masked / registers and stack offsets masked too): 0x294669's scale taken as `real const &` (each
+// row reads the caller's strength from its home) 469 at 3712 B [101, 33]; the four strengths named with the centroid scaled in
+// place 270 at 3716 B [88, 30]; the four strengths named with the reference scale 453 at 3717 B [97, 36]; the four strengths
+// named with the request's speed vector stored ahead of its forward vector 276 [100, 41]; the reference scale with the speed
+// vector stored first 469 at 3712 B. Slot reference counts recounted from both listings: the object spill, the count, the nearest
+// distance, each centroid cell and the record spill have four references a cell in retail and here, so the three pairs are ties in
+// the emitted code too. Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

@@ -837,6 +837,18 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Initial-only and independent two-site input snapshots: named component stores 133/135,
 // shared vector setter 137/139, library vector copy 303/333. Named field references at
 // the initial observation or both 221/320. The copy receivers and early unity still differ.
+// M3 lane 5 r218 (fast with 0xef4f0, which stays MATCH; control 107, aligned 67, registers masked 25): the reversing sum
+// on blend itself with the negation written in the sum (no blend_left local) 107 (same code); the angle computed ahead of
+// the reversing test 219; the reversing angle in a named local tested afterwards 107 (same code); the three controls
+// copied into a vector local for the entry magnitude 299 (1145 bytes); the blend weight written out in both rows from a
+// named alignment dot 112; dt folded into the approach call 107 (same code). Diagnostics (reverted), redundant pairs
+// around a float operation, one / two / three pairs: the first speed square 229 / 110 / 108; the input.x row, the
+// normalizer's reciprocal, the blend weight 107 each (same code), so this function's operand orders do not follow the
+// pair count. Listing: at the gear site both builds add the first two squares before the third product; at the entry
+// retail does too and loads 1.0 into the first square's freed XMM3, ours finishes all three products first and loads 1.0
+// into XMM2; each normalize's y row is `y * inverse` with y loaded first in retail, ours multiplies the dying inverse by
+// the stored y; the reversing sum's first product is input.y * blend.x in retail (the negated blend.y waits on the x87
+// stack and takes an fxch), ours multiplies the negated value first.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3233,10 +3245,10 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// MiniMax I (11-19): no new form, no lower score (672): the frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the transform position is still cleared as one twelve-byte region where retail uses three four-byte zero stores; the two leads that reach retail's frame (the mass field read at each use and the final force and torque scaling) each score worse, so the body stands.
-// MiniMax H (11-20): no new form, no lower score (672): the frame is 0x100 against retail's 0xfc, one dword more, and the homes are not one uniform shift (retail's dt at 0x10, the linear-velocity address at 0x14, the acceleration scale at 0x34, the maximum speed at 0x3c and the angular-velocity address at 0x44 against ours at 0x20, 0x38, 0x58 and 0x68), so no single local accounts for the gap; the permuter tried sixteen forms in 523 s without a gain.
 // score 672 (was 672): earlier 682; current transform position cleared as one twelve-byte region; native
 // has three consecutive four-byte zero stores. Frame 0x100 versus 0xfc and scalar/vector homes remain.
+// MiniMax I (11-19): no new form, no lower score (672): the frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the transform position is still cleared as one twelve-byte region where retail uses three four-byte zero stores; the two leads that reach retail's frame (the mass field read at each use and the final force and torque scaling) each score worse, so the body stands.
+// MiniMax H (11-20): no new form, no lower score (672): the frame is 0x100 against retail's 0xfc, one dword more, and the homes are not one uniform shift (retail's dt at 0x10, the linear-velocity address at 0x14, the acceleration scale at 0x34, the maximum speed at 0x3c and the angular-velocity address at 0x44 against ours at 0x20, 0x38, 0x58 and 0x68), so no single local accounts for the gap; the permuter tried sixteen forms in 523 s without a gain.
 // MiniMax S (11-17): no new form, no lower score (672, was 672); our frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the two leads that reach retail's frame (the mass field read at each use, 676, and the final force and torque scaling through vector3f_scale, 710) each score worse, so the body stays as it is.
 // MiniMax B (11-13): no new form, no lower score (682): our frame is 0x100 where retail's is 0xfc (our mass local takes
 // the extra slot); the lead that reads the mass field at each use reaches retail's frame but only scores 676, under the
@@ -3583,6 +3595,36 @@ real g_47ff30 = 2.5f;
 // NOT kept: the after-i form preserves 3244 bytes but still has frame 0x100. The after-j
 // and scoped forms recover frame 0xfc and retail length but score 710. The acceleration
 // spill and velocity homes remain.
+// M3 lane 5 r218 (fast with 0x2053c0, which stays MATCH; control 672; aligned / slot-masked = difflib counts with addresses
+// masked / with registers and stack offsets masked too, 720 / 479 on the 672 body). Read from retail: the approach-rates
+// pointer stays in EDX from the approach to the turn fraction (0x2053c0 leaves EDX alone) with the state pointer in EBX, ours
+// had them the other way round; each friction site reads its definition field twice (compare, then `subss` in the negative
+// arm); the tail loads the mass field once per scaled vector as scale * component; the reciprocal is divided right after the
+// forward clamp and each fraction multiplied right after its own clamp (0xf24f4-0xf2544). Not kept (m3 review: a by-reference
+// parameter that rereads the field and moved declarations are match-only; code back to main), 654 fast and plain: the
+// friction parameter as `real const &` (the field read at each use), the force and torque scaled through the existing
+// vector3f_scale on the mass field, and each fraction formed after its clamp. Singly: the scale calls 710 (frame 0xfc);
+// the fraction order 715; the reference parameter 703 (slot-masked 388; a `real const *` parameter the same code); scale
+// calls + reference 698; fraction order + reference 693; all three 654 (aligned 718, slot-masked 359). Fraction orders on
+// scale calls + reference: only the reciprocal after the first clamp 699; the reciprocal ahead of the clamps with each
+// fraction after its clamp 655; only the reciprocal ahead of the clamps 660; the forward fraction after its clamp, the other
+// two after both 688; the reciprocal after the second clamp 701 (3245 bytes); fractions as `PIN(...) * inverse_maximum`
+// 706 (3216 bytes); fractions as `PIN(...) / maximum_speed` with the speed fraction as `speed / maximum_speed` 713 (3218);
+// bounded locals with divisions 701 (3220); the divisions with the named reciprocal for the speed fraction only 699 (3225).
+// The planar copies (two point2f locals ahead of the turn fraction, the slip written on them; they come out as retail's
+// dword moves): alone 757 (3280 bytes, frame 0x108), with the scale calls 749 (frame 0x104), with the fraction order too 749,
+// on the 654 form 707 (3274 bytes, frame 0x104, slot-masked 343): the frame is then two dwords over retail's. On the 654
+// form: a named rates pointer for the approach and the turn fraction 654, a named pointer for the +0x1f4 limits 654, both
+// 654 (same code); the mass field read at each of the three products 704 (3225 bytes), with the rates pointer 673 (3245);
+// the friction magnitude through vehicle_magnitude 719; the magnitude in a named local 654 (same code); the friction scale
+// as `real const &` too 656; the forward clamp through a by-value forceinline of PIN 654 (same code), all three clamps
+// through it 775 (3166 bytes); the forward clamp as in-place statements 654 (same code).
+// Diagnostics (reverted): one, two or three redundant pairs around the speed product 681 (3228 bytes, slot-masked 315) /
+// 680 / 749; around the boost product, ahead of the maximum-speed product, 689 (3244 bytes, aligned 674, slot-masked 314) /
+// 689 / 742 (3186 bytes): with one pair there the maximum-speed and speed products are retail's (field loaded, then times
+// boost), so retail's allocation phase at the head is one step from ours, but the forward clamp then takes a fresh register.
+// With the state reads cut the rates pointer goes to EDX; with the turn fraction's reads through another address the
+// `lea edx` is direct and the state takes EDX.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6834,6 +6876,15 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // the other way round, the index kept in a register past 0xf44a0 (retail reloads it from its argument home and gives
 // ESI to the forward pointer), the tick store ahead of the pitch loads, and the 267 masked differences between the
 // second 0xf1380 call and the first product (the lift block's repeated magnitudes among them).
+// M3 lane 5 r218 (fast with 0xf44a0 at 118, 0xf1380 and 0xf42f0 MATCH; control 978, aligned 1041, registers masked 647,
+// slots masked too 500). Retail reads the vehicle's speed 13 times and its turn 11 times against 11 and 7 here (the lift
+// block's repeated magnitudes) and has five fewer constant loads. On today's body: the reversal loop over a block-scoped
+// short index 1036 (slots masked 455); the first rotation product into a block-scoped matrix 1032 (5062 bytes, 503); the
+// lift block as retail's repeated expansions (`|speed| > max ? |speed| : max` with both magnitudes re-read from the
+// vehicle, then MIN(MAX(0, fastest - low), high)) 1158 (5187 bytes, 469); loop + matrix 1065 (448); loop + matrix + lift
+// 1104 (5144 bytes, 423); the conditional-store loop + matrix + lift 1101 (5142 bytes, aligned 999, registers masked 676,
+// slots masked 390: the closest structure measured); loop + matrix + lift with `bool boosting` 1163 (411). The combination
+// does not bring the rows back in step: the lift expansion is 93 bytes longer in this build than in retail.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -498,6 +498,18 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // register later); a byte load/store probe ahead of the pool read (diagnostic) moves the swarm pointer to EBP (116).
 // Also: the copy from an inline returning the origin point by value 111 (402 bytes: the pool and its data now load
 // ahead of the origin, but the data still reuses the pool's ECX, and the point is held in three registers).
+// Round 218 (m3 lane 5, fast with 0x1e3b60 and 0x28f890): one `base` local for both pools' data (the perception
+// lookup written on it, then reassigned to the actor pool's data) 28 (same code: the two definitions are allocated
+// apart); the one-variable form with its second step through a forceinline returning base + offset 90 (same code as
+// `p += offset`, the add still in place); the block's body in a forceinline taking the record and the pool data as a
+// parameter 30 (the prologue unchanged, the centre sum's operands swap); the copy inside the actor expression as a
+// comma operand, on either side of the sum (diagnostic) 99 and 99 (the copy runs first and the pool is read after its
+// stores, the form of the copy-first statement order); forceinline accessors inside the centre update, for the next
+// creature, the object's flag test, the count's clear, the count's read in the averaging, the first creature, and all
+// five together, 28 each (same code). Listings re-read: the actor_get form (38) loads the data into a fresh EDX as
+// retail does, because the data is then an operand inside the sum; a data local in its own statement always reuses the
+// pool's ECX, whichever variable or parameter holds it, so retail's shape needs the data inside the sum's expression
+// with the copy's loads between the data and the add, and no statement order or comma gives that.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {
