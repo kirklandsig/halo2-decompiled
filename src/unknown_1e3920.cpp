@@ -893,7 +893,7 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax I (11-19): no new form, no lower score (237): the -1 sentinel still sits in edi where retail keeps it in esi, and this
 // build still reads the squad entry index into esi after the first call where retail reloads it into ecx; the query output homes
 // and the loop's entry block still sit at other frame offsets.
-// score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
+// score 222 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // MiniMax E (11-16): no new form tried this round, no lower score (237): the frame and the length agree with retail's and the squad
@@ -1318,6 +1318,21 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Shared direction at actor/settings/entry scope 237/237/237, aggregate direction 237,
 // component setter and shared setter 237/237, two named facing parts with separate/shared vector 237/237.
 // The EDI sentinel and the squad and query homes still differ.
+// M3 lane 3 r274 (fast with 0x1e4990, plain with the file, 0x203780, 0x256bd0 and the callees; control 237): kept 222, the
+// substitution loop on a `replace` flag in its condition (`while (replace && next != NONE)`, the replace as a ternary, the
+// advance under `if (replace)`) under the unchanged three-part guard, the squad entry index as `(squad_index & 0xffff)`
+// and the squad bit as `squad ? (bits >> 10) & 1 : false`: entry and loop as retail's (NONE in ESI, the index reloaded
+// into ECX, top-tested loop) with 0x1e4990 still a call. Without the mask 335, without the ternary bit 298. Screens:
+// `if (substitute && squad) while (squad_index != NONE && next != NONE)` 411 (0x1e4990 expands in the loop), the same with
+// the character accessor for the tag reads 411, the guard's index test repeated in the while 347 (the same loop as the
+// kept form), every condition in the while 434 (expands). On 222: the creation arm first with the bit test negated 304
+// (stays in place); the squad bit started false and set under `if (squad)` 296; the palette count at each use 344; the
+// grenade tests at full width 347, both 350; the query bools and probability declared in other orders or outside the
+// loop 222/222/222 (same code). Left: retail parks the creation arm after case 2's jump (the swarm arm falls into the
+// actor test); a compile-only build of this file lays it out as here, and an `else if`, early returns in either arm, a
+// goto to the actor test, a smaller arm or the swapped cleanup arm do not park it. Matched 0x132e60 parks its else arm
+// only because that arm threads past the join test. Then the squad home (0x1c here, retail 0x10 shared with the bit
+// and the actor) and the query bytes' homes.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1326,23 +1341,27 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 		byte *definition = g_4e3b44[character_index & 0xffff].bytes;
 		long unit_index = NONE, perception_index = NONE;
 		byte *flags = (byte *)function_1e4990(character_index);
-		byte *squad = squad_index == NONE ? NULL : *(byte **)((byte *)g_4e0350 + 0x164) + (word)squad_index * 0x74;
+		byte *squad = squad_index == NONE ? NULL : *(byte **)((byte *)g_4e0350 + 0x164) + (squad_index & 0xffff) * 0x74;
 		if (substitute && squad && squad_index != NONE)
-			while (*(long *)(definition + 0x28) != NONE)
+		{
+			bool replace = true;
+			while (replace && *(long *)(definition + 0x28) != NONE)
 			{
 				bool enabled = false, forced = false;
 				real probability = 0.0f;
 				function_2036c0(character_index, *(short *)(squad + 0x30), &enabled, &forced, &probability);
-				bool replace = enabled;
-				if (forced) replace = function_203900((short)squad_index, probability);
-				if (!replace) break;
-				character_index = *(long *)(definition + 0x28);
-				definition = g_4e3b44[character_index & 0xffff].bytes;
-				flags = (byte *)function_1e4990(character_index);
+				replace = forced ? function_203900((short)squad_index, probability) : enabled;
+				if (replace)
+				{
+					character_index = *(long *)(definition + 0x28);
+					definition = g_4e3b44[character_index & 0xffff].bytes;
+					flags = (byte *)function_1e4990(character_index);
+				}
 			}
+		}
 		if (flags)
 		{
-			bool flag = squad && ((*(dword *)(squad + 0x20) >> 10) & 1);
+			bool flag = squad ? (*(dword *)(squad + 0x20) >> 10) & 1 : false;
 			byte const *data = (byte const *)placement;
 			if (*flags & 1)
 			{

@@ -1405,6 +1405,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // distance expression (no previous_distance local) 133; the side test as `previous_inside != inside` 129; the previous
 // side updated before the previous point at the loop end 129; `inside` declared once ahead of the loop 129; the count
 // named once as `short total = count;` for every use (0x23a160's spelling) 129 (same code each). Body unchanged.
+// M3 lane 3 r274 (fast with 0x239e50; control 129): the previous side declared, then assigned 129; recomputed from the
+// distance at the loop end 258; the crossing written through a pointer to its output element 129; the previous point as
+// `points + count - 1` with the inside copy written per member 129; the epsilon test as `epsilon < distance` 129.
+// Diagnostic (reverted): a volatile previous side 149 (the frame moves, the entry is not retail's).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
