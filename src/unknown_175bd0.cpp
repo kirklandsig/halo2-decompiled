@@ -2356,6 +2356,13 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // location, A, B, unknown / location, A, B, scale, unknown / location, scale, A, B, unknown 163 (register-masked
 // aligned 13); A, B, scale, location, unknown 163 (masked 16); with unknown stored ahead of the colours 168 (masked 33
 // and 32): retail reads both colours before the unknown store. The 31 form is build/r215/lead-0x178c80-31-diagnostic.txt.
+// M3 lane 1 r138 (fast with 0x178eb0/0x179020/0x178bc0/0x177040/0x176f60; control 128): the type lookup and colour call
+// moved into a function of another effects file (to test whether retail's short system copy is a link-time inlined
+// helper's parameter) 215 (504 B: the link does not expand it, with or without `__forceinline`; 0x178eb0 13, 0x179020 11);
+// the system parameter as a reference, the definition, declaration and both calls changed together, 128 (same code; both
+// callers matched); that with both colours read into locals ahead of the spawn stores and both queries in the colour
+// call 187 (568 B); with `multiplied()` as the colour call's argument 135; a `s_location const *` for the cluster test and
+// set_location only 128 (same code). All restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4024,6 +4031,16 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // the late next index 112 [25]; the cursor declared first 103 [25]. The plain per-call form re-measured 103 [25]. A
 // compile-only first pass gives the same entry (system index into EBP, effect index into EDI) for the cached form and
 // the cursor form, so it does not show what flips the convention.
+// M3 lane 1 r138 (fast with 0x176f60 and 0x178c80; caller in brackets, [0] = still matched; control 93 [0]): lane 15 r105's
+// lead (spawn-record cursor, long cached mode, colour B then A, named 0x1751d0 result, both queries in the colour call)
+// re-measured 49 [0] at 333 B, with the mode read at each call 103 [25]. New on the per-call lead: the effect index read
+// once through its own address 86 [18] at 337 B (effect index on the stack, but the system index in ECX); that with the two
+// parameters as (effect index, system index) at the definition, the declaration and the call 90 [0] at 340 B (retail's
+// convention: system index in EAX, effect index on the stack, tint and node flag in its home; left: the address read
+// loads the effect index first into ECX and folds the pool base, so EBX is pushed late, and the per-call mode loads
+// use `xor`/`mov cx` for retail's `movzx eax`); on that, the system looked up before the effect 116 [0] (342 B), a plain
+// long cursor in place of the spawn record 96 [0], the 0x1751d0 result unnamed 90 [0] (same code). None kept: the address
+// read, the record cursor and the colour order are match-only forms. All restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

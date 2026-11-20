@@ -416,6 +416,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (1573 B); the two missing-input tests merged into one `||` 412 (1594 B); the data getter declared at its own test 425.
 // The state register follows 0x5b080's expansion: expanded, its state test is CSE'd with the earlier inlined state
 // tests across the 0x192e60 call (ESI); retail calls 0x5b080, so its state dies in EAX. BLOCKED-BY 0x5b080 calibration.
+// M3 lane 1 r138 (fast with 0x72140/0x71ff0/0x71e00/0x5b080/0x706f0, all MATCH; control 376): 0x5b080's own body respelled
+// (its file is machine 3's) to move its inline cost here, nested `if (state > 2) { if (state <= 8) ...` 376, a state local
+// with one three-part test 376 (both the same code; 0x5b080, 0x6d380 matched, 0x6e720 22 and 0x7e210 871 unchanged); the
+// members-ready live test as `!session_state_is_live(local_2) || !local_2->flag49e8` 376 (same code); the property value
+// as `= {0}` in place of the memset 387 (1597 B); the not-ready block's live test as two nested ifs 376 (same code). All
+// restored; still BLOCKED-BY 0x5b080 calibration.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

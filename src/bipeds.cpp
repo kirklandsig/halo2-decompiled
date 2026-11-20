@@ -6058,6 +6058,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // side and final crosses with ordinary/staged final output 98/91. Both rotations
 // before normalization with staged side 270; initialize the up copy before
 // normalization 176. The first complement spill and final forward load remain.
+// M3 lane 1 r138 (fast with 0x1ecf50/0x30bf0/0xe3c90, all matched; control 79): the rotation helper's declaration here marked
+// `__forceinline` 79 (same code); both crosses written out component by component (side, then the up field directly) 226
+// (903 B); side through cross3f and the final cross written out into i, j, k locals then stored 240 (915 B); up and side
+// declared in a block opened after the forward normalize 79 (same code); the forward pointer set between the angle and
+// the trig calls 85 (first difference +0xc6). All restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
