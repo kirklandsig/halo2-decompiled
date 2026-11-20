@@ -411,6 +411,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // global before copying it into `basis.up` 364 (1844 B). Body unchanged.
 // AC597: Paired sine/cosine storage passed as scalars, by value, by reference, or by pointer, each with
 // aggregate or field initialization: 252/252/366/366/252/252/252/252.
+// M3 lane 14 r123 (fast, control 219; all restored): the sine products read through a second axis pointer local (squares
+// through `axis`) 489 (1720 B); helper statement orders: the j square moved up after the i square 232 (1820 B); the three
+// squares first, then the three sine products 448 (1764 B); forward.i right after the i square 233 (1820 B); up.k moved
+// up after left.j 357. Reading: in both copies the squared and sine vectors' frame homes are swapped against retail's
+// (retail's first copy spills k^2 at once to the squared vector's +0x24 and keeps the sine products in XMM6/XMM7).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

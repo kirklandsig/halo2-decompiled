@@ -733,6 +733,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // test reading `s->counter` 603 (same code); no count local, `s->counter` at its three uses 603 (same code); the count
 // read at the top of the active block ahead of the clamp 609 (2883 B); the scaled sample through the existing
 // vector3f_scale(&qr, globals->rate, &qr) after the displacement 683 (2871 B).
+// M3 lane 14 r123 (fast with 0x1eb6f0 and 0x1ed4a0, both MATCH; control 603; all restored): the output position copied from q
+// field by field (more q references for the q/d EBX weight) 657 (2878 B, d still in EBX); the 0.866 test's terms in i, j, k
+// order 603 (same code); the three step clamps through one forced-inline helper returning the step 688 (2873 B); the first
+// step clamp as one ternary 607; the alignment dot as `dot3f(a, d)` 603. Retail's alignment dot reads d from its stack home
+// into EAX (a in ECX), pos stays in EBP and the time globals in EDI.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
