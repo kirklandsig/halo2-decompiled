@@ -1095,6 +1095,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Late result bindings for found/position, normal/fraction, entity indices (subsets 1 through 7):
 // 270/268/279/236/277/275/378. One final result binding 396. NOT kept: the entity-index binding
 // gains two at 1244 bytes and retains frame 0x40. The second-node slot and frame still differ.
+// M3 lane 8 r204 (fast with the file's 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the hit distance
+// accumulated (`distance = contact->distance; distance += radius;`) 248; both plane-side tests with the zero on the left 238
+// (same code); the fraction test as `!(distance < fraction)` 238 (same code); the final test as `!(normal.k <= scale)` 240;
+// the position published by aggregate assignment alone 340 (1227 B), with the hit snapshot by components 310 (1249 B).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
