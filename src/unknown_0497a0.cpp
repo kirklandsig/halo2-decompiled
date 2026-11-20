@@ -26,7 +26,7 @@
 // the default arm and the PIN calls), which is a form the coordinator rejects, so it is not kept; the frame stays 0x54 against
 // retail's 0x60 and the wave's three dead x87 factors stay behind retail's product.
 // MiniMax S (11-20): no new form, no lower score (536): the frame is 0x54 against retail's 0x60 and the rounded-wave and cross homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes while the copy in this file is a front-end inline.
-// score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// Earlier header 536 (merged in r284): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // MiniMax E (11-20): no new form, no lower score (536): retail keeps the first cross's three products and two of its components in stack cells across the two sines and gives the cross result and w the same home, so retail's homes run v1, v2, w, v3, v4 against v1, v2, w, v4, v3 here and its frame is 0x60 against 0x54; spelling both crosses with matching product operands (650), the products as a local vector (650), the staged cross helper with the adds written out (663) and the adds written out alone (663) all leave the products in registers and shorten the body.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
@@ -602,6 +602,10 @@
 // compound depth reciprocals with named denominators 535;
 // compound perspective reciprocals initialized before crosses 536.
 // NOT kept: The one-point gain is below the retention threshold. The 0x54 frame and retail inverse allocation remain unresolved.
+// M3 lane 3 r284 (h2m fast screen; control 536): s1 and s0 ahead of the first cross 654 (2590 B); s0 before s1 536 and
+// s1 between the cross and s0 536 (same code: VC evaluates s0 first and sinks s1 to its use either way); the two wave
+// scales named ahead of both adds (`real offset0 = s0 * 0.03f; real offset1 = s1 * 0.025f;`) 650 (2594 B); s0 written
+// `0.5f * (...)` 536 (same code).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

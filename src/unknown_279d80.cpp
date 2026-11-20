@@ -2130,6 +2130,11 @@ void function_27dd10(void)
 // arm unnested 2 (same code each). Diagnostics (fast): `__assume(local_2 >= 0)` after the flags read 348 (1733 bytes,
 // every walk user regresses: the node tests no longer fold); with node_flags_test returning its expression 2 (0x281b60
 // 39, 0x288570 120, 0x289580 2), so a run-time assume flips the pair only together with the unfolded tests. All restored.
+// M3 lane 3 r284 (h2m fast screen with 0x281b60 and the four matched walk users): in function_288572 `__assume(local_2 !=
+// 0)` at the top of the non-empty group arm 348 (1733 bytes, every walk user regresses); `__assume(arg_7 > 0)` after the
+// flags read 348; `__assume(local_3 <= arg_7)` after the group end 348; `__assume(arg_5 < arg_7)` ahead of the bit test 348
+// (0x288570 362); the flags local declared `register long` 2 (same code). Every run-time assume in the walk unfolds the
+// node tests, whatever it states. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
