@@ -935,6 +935,13 @@ extern "C" void _ReadWriteBarrier(void);
 // block (after the data base as retail when the read follows the lookup), but ESI's save then moves to the entry and the
 // data base folds into the add or takes ESI; retail keeps the ESI save in the flags arm (shrink-wrapped) and the data base
 // in EDX. Re-measured: volatile read first, without/with the barrier 50/29; after the lookup, then the barrier 31.
+// M3 lane 4 r237 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the flags byte read into a local after the actor
+// lookup, ahead of the barrier, and tested in the NONE block 38 (205 B, first +0x1e: the entry is then retail's through the
+// add, the slot loaded into ECX between the data base and the mask, but the flags byte loads in the entry block into DL where
+// retail reads it into BL inside the NONE block); the same flags local declared first 45; actor, state, flags local, barrier
+// 38; a second actor lookup for the NONE test with the barrier 53 (212 B); the barrier moved ahead of the final 0x450 store 51
+// (190 B). Reading: a read through the slot pinned in the entry block gives retail's entry schedule exactly; retail's own
+// entry load has no such read.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

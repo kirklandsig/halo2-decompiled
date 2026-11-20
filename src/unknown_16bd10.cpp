@@ -1380,6 +1380,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `dot3f(&plane.n, offset) - plane.d` 126 (same code), as `dot3f(offset, &plane.n) - plane.d` 394 (1700 B), against the
 // direction instead of the normal 37/37 (screen); the plane constant as `dot3f(&plane.n, position)` 22 (same code), against
 // the direction either way round 36/36 (screen). No spelling preloads left.j.
+// M3 lane 4 r237 (fast with 0x16c6f0, 0x13cb40 and 0x142d10, all MATCH; control 126): the yaw distance dot with its arguments
+// the other way round 126; the distance dot ahead of the atan2 126; the field-of-view tail as `start + (target - start) * t`
+// 126 (same code each); the tail's clamp into a named fraction local 395 (1700 B); the tail's range in a named local 396.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

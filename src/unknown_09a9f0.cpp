@@ -1449,6 +1449,15 @@ bool c_projectile_type::v8(long a, long b)
 // full-width mask: the 0x400 arm's bit set as `result |= flags & 0x400` 46; the entry as `&data[(index & 0xffff) * 12]` 12;
 // a `real *` to the state's 0x90 field for the 0x400 test and store 12; the NONE test written `NONE != index` 12; the
 // flags local typed `word` (`(word)b`) 12. Word-read body kept (5).
+// M3 lane 4 r237 (fast with 0xa5e70, MATCH each time; control 5), with the full-width mask: the group field read in place at the
+// NONE test and inside the masked address at the compare and the store 15; the masked entry address (used twice) computed
+// before the NONE test 24 (187 B, first +0x70: the head then has retail's object ESI and flags EDI with the mask, but the entry
+// is formed ahead of the compare); a two-use `long group = index & 0xffff` before the NONE test with the address written at
+// both uses 25 (188 B, the head flipped the same way), the same local inside the NONE block 15; a one-use masked index, group
+// data base or scaled offset before the test 12 each (forwarded to the use); the entry declared outside and assigned in the
+// NONE block 12; the call's mask from `b` with the object looked up after the call 18. Diagnostic (semantics changed,
+// reverted): the call's mask 0x3fe 13, still swapped. Reading: only a two-use group computation anchored ahead of the NONE
+// compare gives retail's head pair with the mask.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

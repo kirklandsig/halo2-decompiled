@@ -837,6 +837,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // With grouped cache defaults those three give 161/153/120. Native pass array with unshifted
 // base or material field address 164/152. NOT kept: ties or regressions. The fallback still
 // zero-extends into EAX instead of masking EDX and the stage/pass loads still fuse.
+// M3 lane 4 r237 (fast with 0x2243c0 and 0x224d90, both MATCH; control 117): the tag bound as a `long const &` to the
+// definition's +0x1c field with the word fallback 135 (first +0x0), with the `& 0xffff` fallback 156; the group read in place
+// at both compares (no instance pointer) 165 (first +0xe), with the masked fallback 135; the instance pointer const 117 (same
+// code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
