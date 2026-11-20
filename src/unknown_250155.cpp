@@ -2807,6 +2807,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
 // score 87 (was 87; round 196's forms at the end of this note): the shown count, element-address and index homes are permuted against retail's, retail reloads
+// score 87 (was 87): r275 unchanged. The shown count, element-address and index homes are permuted against retail's, retail reloads
 // players[i] after the 0x53b40 voice query (BLOCKED-BY that chain's helper shape in src/network_voice.cpp, held by
 // another lane this round), and the last loop keeps the screen in ebx where retail gives ebx to bitmap_a.
 // m3 lane 4 r224: dead initialised longs at the top, K = 1-6, 8, 10, 12, 14, 16, 20, 24, 28: 87 at every K (921 bytes,
@@ -2841,6 +2842,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // needs a store through a pointer in the 0x53b40 chain, whose source lives in src/network_voice.cpp, another lane's
 // file), and the last loop still spills both bitmaps where retail keeps the bitmap_a in EBX and spills only the
 // bitmap_b at ebp+0x1c.
+// MiniMax G (11-18), at 87: no new form, no lower score; the shown count still takes ebp-8 where retail
 // Earlier 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
 // keeps it at ebp-0xc, the first loop's element address ebp-0x18 where retail keeps it at ebp-8 and the player ebp-0xc
 // where retail keeps it at ebp-0x14, so the six spill slots stay one six-step cycle off retail's; the voice query
@@ -3133,6 +3135,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // helper's default arm as copies through the outputs (`*text_b = NONE; *text_a = *text_b; *bitmap_a = NONE; *bitmap_b =
 // *bitmap_a;`) 92 (925 B); its two case arms storing the bitmaps before the texts 194 (944 B); the team byte read into a
 // `long` in the second loop 94, in the first loop 259 (919 B), in both 259 (919 B). Body unchanged.
+// M3 lane 3 r275 (fast with 0x24fd74/0x2507c3/0x22f042/0x250155/0x22ee47, all MATCH; control 87): retail's default arm
+// code (`or edi, -1; or ebx, -1; mov eax, edi; mov [ebp+0x1c], ebx`) reads as text_a copied from text_b and bitmap_b
+// from bitmap_a: the default arm chained (`*text_a = *text_b = NONE; *bitmap_b = *bitmap_a = NONE;`) re-measured 92
+// (925 B; the last loop keeps the screen in ebx); separate widget pointer locals for the three hidden widgets in the
+// second loop 87 (same code); the voice state passed as a ternary 87 (same code); the case arms storing bitmap_b before
+// bitmap_a 88; that with the chained default arm 93 (925 B). Still BLOCKED-BY 0x53b40's chain for the reload.
 // M3 lane 1 r132 (fast with 0x2507c3 MATCH; control 87): the second loop with its own counter (`shown`) 85 (the first
 // loop's element address then takes retail's ebp-8 home; the shown count moves to ebp-0x10, retail ebp-0xc), with the
 // third loop's own counter too 85, every loop with its own counter (no shared `i`) 85: two points, under the bar. The

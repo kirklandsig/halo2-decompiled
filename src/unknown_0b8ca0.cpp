@@ -1000,6 +1000,11 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // the 0x16bc00 result, marker copy and second lookup blocks rotate their scratch registers); on that, the model index
 // named inside the model arm 45, a model pointer named in the arm 45, both 45 (they fold away); the zoom block
 // reading the unit through the unit_index local 156 (899 B).
+// MiniMax A (11-19): no new form, no lower score (76): the head still loads the object flags dword before the header
+// test's branch, where retail loads it after the test, and the header byte test folds to `test byte ptr [ecx + 2], 1`
+// where retail keeps it in bl; the cluster bit table read ahead of the first query 71, the flags read at each use 216,
+// the flags behind a forceinline flag test 215, the header test split from the flag tests 215, the body nested in both
+// tests 215 and the five forms of the lane 12 lead together 218 (the head's fold); all restored.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {

@@ -207,6 +207,11 @@ union s_6ec80
 // same allocation), that with the mask scoped 225; the 0x18 value typed dword 5 (same code); the 0x49c8 getter result
 // named and copied 5 (same code); the mask tested ahead of the machine word 8. Screen only, all in the scoped state 58-61
 // with the mask scoped: the two flags declared ready first, the getter result named, the dword 0x18 value. All restored.
+// M3 lane 11 r132 (one-object LTCG screen of lane 10 r129 rebuilt, then fast with 0x6ec10/0x5b120; base 5): member-style getters
+// for the 0x4da8/0x4db0/0x5dd0/0x4dac reads (the range test in each, no live helper) 5 (same code), with the mask scoped 225; an
+// out-pointer getter for the two blocks with the mask scoped 225; a typed player-record pointer copied from players just before
+// the guard (live across both tests) with the mask scoped 225, that pointer stepped inside the guard 225; the scoped mask tested
+// ahead of the data word re-measured 225. All restored.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
