@@ -3188,6 +3188,14 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // in the second loop 95; the no-team flag at function scope 84 (same code); the first loop's player assigned after its
 // declaration 84 (same code). On the kept body: the slot helper taking the screen and reading its mode 87 (same code), with
 // the field-order default arm 95. Two further score lines stacked in this note were merged into the first.
+// M3 lane 11 r141 (fast with 0x24fd74, 0x2507c3, 0x22f042, 0x250155, 0x22ee47 and 0x2514fd, all as before; control 87,
+// aligned differing rows 57, 23 with the frame offsets masked, 14 with registers masked too; body unchanged): the last
+// loop on a counter of its own 87, its four indices declared in the reverse order 87, the second loop's colour array
+// declared at function scope 87 (same code each); the first loop's item list declared at function scope 94 (first
+// difference +0xf), with the colour array too 94. With the offsets masked only two places differ: the voice block
+// (retail keeps the address of players[i] in ESI and reads it again after 0x53b40) and the last loop, where retail
+// gives EBX to bitmap_a, takes the screen from its home into ECX for the first call and into EDI once text_b is pushed,
+// and pushes immediate zeros, while this build keeps the screen in EBX, spills both bitmaps and pushes a zero register.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

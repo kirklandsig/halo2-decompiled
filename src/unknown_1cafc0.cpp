@@ -946,6 +946,20 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // test. bool success passed as the request's urgent argument with `!success` as the other 1398 (2473 B). The cause
 // sits inside the shared inline request (src/unknown_1dacb0.cpp, held by another lane this round, and used by the
 // contributor's matched 0x1dc8c0).
+// M3 lane 11 r141 (fast with 0x1ddd00/0x1ddc70/0x1ddb90/0x1db120/0x1dc8c0/0x1cccd0/0x1cd070, all as before; control 348 at
+// 1782 B, aligned differing rows [exact/stack-masked/register-masked] 36/36/25; body unchanged). The graph held in a
+// one-member aggregate local 348 (same code: the aggregate is scalar-replaced), with bool success 478 (bool's code); the
+// graph returned by value in that aggregate from an inline getter 348 and 478 (same code again). Diagnostic, reverted at
+// once: the graph local kept in memory by an unreachable address-taking call, byte success 451 (first difference +0x2:
+// the frame grows to 0x10, but aligned 47/19/15), bool success 464 at 1777 B (49/22/18): with bool the request is then
+// retail's but for four places: the graph is reloaded into EBP at the first two loop preheaders and at the join after
+// the second loop exactly as retail does, the zero for the inheritance loop is made in ECX at the loop entry (`xor ecx,
+// ecx`, `cmp eax, ecx`, both stores) and the return is unnormalised; left there are the sum formed by `lea ebx, [eax +
+// 0x34]` from a scratch load where retail adds in place, the inheritance loop's graph read per use where retail keeps
+// EBP, the fallback chain reloading the graph for each call where retail holds it in ESI (the escaped address makes
+// every call kill it), and the fourth frame dword. So retail's request reads the graph as a value that lives in memory
+// but is not killed by calls, and its status is a bool; the natural source for a graph that stays in memory without
+// its address escaping is still to find (a one-member aggregate is not it).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

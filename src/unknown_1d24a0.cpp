@@ -105,7 +105,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
+// score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
 // pointer in EAX and the field in ECX; the frame is 0x1f0 against retail's 0x1d4, the second activity flag sits
 // at +0xa where ours has +9, and the record pointer and the counter sit at other homes.
 // MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
@@ -592,6 +592,39 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Also on 838: the object-type mask computed at each of its two tests from the byte field (no mask local) 852 (4259 B,
 // retail's length; still `mov cl`); from a long type local 834 (4256 B, retail's `movzx` read; under the bar and a
 // computed value written out at each use, so not kept).
+// M3 lane 11 r141 (h2m fast = check.py --fast = plain; aligned unmatched [exact/stack-masked/register-masked], control 838
+// [340/196/92]): kept, 838 -> 780 at 4264 B [282/139/70]. The loop head was not blocked by 0xbadc0: retail keeps the list
+// in EBX from the loop top to the removal and re-reads its data pointer there, which is the component's list field read
+// once at the loop top (for the element pointer) and once more at the removal into the list local (four uses there):
+// 786 [287/145/73], with retail's head (`shl eax, 3`, the attached index in EDI, `add esi, eax`, the element pointer
+// spilled) and retail's removal block byte for byte. The same code from a private swap-remove helper taking the list
+// (786, a new one-caller helper, not needed) and from the old top-of-loop local with the field read again at the removal
+// (786). Other removal spellings on the 838 body: only the size decrement through the component's field 788 (head
+// retail's, removal 5 rows off); the decrement inside the index expression through the field 932; every removal read
+// through the field 932 (4281 B, the list is reloaded after the size store); no list local at all 932 [323/166/79]; the
+// copy through the element pointer 838 (same code), with the decrement through the field 956; the list local at
+// function scope, set before the entry test, or also used by the final free 838 each (same code); the counter at
+// function scope 838; a named data pointer 838. On 786: the second simulating query through the existing
+// havok_component_rigid_body_get 780 (retail forms the body pointer before the result-buffer push), the owner body and
+// the motion position through it too 780 (same code; all three kept); the record's bit-1 flag declared ahead of its
+// bit-2 flag 773, with the getter 767 (retail copies the flags word for bit 1 and shifts the original for bit 2, as it
+// does for bits 25 and 26 in that order; a declaration order, so not kept); the angular coefficients read from the
+// record at each use 815 at 4231 B [272/138/69], frame 0x1cc (retail's reads, positional rise), with the bit-1 flag
+// first 804. On 780: the list local at function scope (declared only, or set for the entry test) 780 (same code); the
+// scale of the first limit arm in a named local 793 [305/163/74], of the second 780 (same code), both 793; the
+// object-type byte in a long local 780 (same code). Tail forms on the 838 body (same code unless a count is given): the
+// step arms as a ternary, with `<=` and the arms swapped, with the compare turned round; the two levels declared in
+// the other order; the clamps in named locals; the else arm's two steps or the two step locals in the other order; the
+// final clamp as a ternary; the first clamp testing the upper bound first 834 (4259 B); the first level's step ahead of
+// the target test 807 at retail's 4259 B (not kept: a statement order, and the tail is then not retail's; it is the one
+// form that uses EBX outside the loop, which moves `push ebx` to the entry as retail has it).
+// Left on 780: retail saves EBX with ESI and EDI at the entry though it uses EBX only inside the loop, exactly where
+// this build does (the same 18 rows), and this build saves it around the loop with EBP (one row of shift from the
+// third push to the loop, and one at the exit); the frame is 0x1d8 against 0x1d4 with the two angular coefficient
+// homes retail does not have; the flag pairs' copy roles and the argument loads at the marker calls; `mov cl` against
+// retail's `movzx` for the object type; the operand sides of about a dozen float products (retail loads the vector
+// component and multiplies by the scale at both limit arms); and the tail (retail keeps the first level in EDX with its
+// clamp result in ECX, and loads the second step into ESI only in the add arm).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
@@ -621,9 +654,9 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
     {
      bool local_17 = (bool)((local_12->field_0 >> 2) & 1);
      bool local_18 = (bool)((local_12->field_0 >> 1) & 1);
-     hkRigidBody *local_19 = arg_0->rigid_bodies.data[local_10->field_3].rigid_body;
+     hkRigidBody *local_19 = havok_component_rigid_body_get(local_10->field_3, arg_0);
      bool local_20 = (!local_19->m_fixed && local_19->body_is_simulating().m_bool) || local_1;
-     bool local_21 = local_14->rigid_bodies.data[local_10->field_1].rigid_body->body_is_simulating().m_bool || local_20;
+     bool local_21 = havok_component_rigid_body_get(local_10->field_1, local_14)->body_is_simulating().m_bool || local_20;
      bool local_22 = (bool)((local_12->field_0 >> 25) & 1);
      bool local_23 = (bool)((local_12->field_0 >> 26) & 1);
      s_object_marker local_24;
@@ -637,7 +670,7 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
      if (local_27 & 1) function_def30(local_14->object_index);
      else if (local_27 & 0x1000) function_119250(local_14->object_index);
      long local_15 = local_10->field_1;
-     point3f const *local_76 = (point3f const *)((byte *)local_14->rigid_bodies.data[local_15].rigid_body->m_motion + 0x70);
+     point3f const *local_76 = (point3f const *)((byte *)havok_component_rigid_body_get(local_15, local_14)->m_motion + 0x70);
      point3f local_28;
      local_28.x = local_76->x;
      local_28.y = local_76->y;
