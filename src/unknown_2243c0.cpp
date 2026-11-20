@@ -819,6 +819,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // busy). Reading by next-fit over EAX, ECX, EDX: retail's choices at the last two lookups (pass definition EAX twice,
 // material tag EDX, zero EAX, material definition EDI) are what next-fit gives if ECX stays busy from the pass tag's
 // load to the material definition's and EDX until the +0x20 read; nothing in this body uses either that late.
+// M3 lane 12 r156 (fast with 0x2243c0 and 0x224d90, both MATCH; control 117): the tag local not const 117 (same
+// code); the group tests reading the instance at each use with no instance local 165; the group test negated with the
+// fallback arm first 117 (same code); the material tag named once for 0x1c590 and its lookup 146 (524 B); the stage and
+// pass indices named where they are summed 117 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

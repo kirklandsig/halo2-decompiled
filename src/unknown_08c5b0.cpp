@@ -276,6 +276,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // 30 (94 B); that helper with early returns under `if (kind == 1) ... else setting = 1;` 32 (95 B); seeded `setting = 1` with
 // `switch (kind) { case 1: if (available) setting = block; break; }` 17 (95 B, `movsx; dec`); the same switch on the field
 // itself with the index read after it 26 (95 B).
+// M3 lane 6 r209 (fast with 0x8c5b0/0x8c660, both MATCH each run), plain reads: the kind copied and passed through a
+// `short const &` to the copy 4 (same code as the volatile read); a second request pointer local for the kind read 32 (95 B);
+// the kind as a `short const &` to the field passed through a second const reference 32 (95 B); the index as a `long const &`
+// to the field with the kind copy through a const reference 23 (99 B); the selector's result stored through a `long &` bound
+// to the setting 32 (95 B).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

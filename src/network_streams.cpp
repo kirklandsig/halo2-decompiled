@@ -1255,6 +1255,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // a found flag or a zero result selected at the return 187/192; declaration orders of message, flags and next
 // (7 forms) the member update's code; a grid of 195 spellings (five lookups, five flag tests, three updates,
 // three statement orders) none at 225 bytes, nearest the ternary lookup with the saved-word update.
+// MiniMax E (11-19): no gain (35, baseline; body restored): the message pointer is still in EAX where retail keeps it
+// in ECX (and the flags word in CX against retail's AX), and the update is still a full-word store where retail ORs
+// the resend bit in the message; the in-place update reaches retail's byte OR (or byte ptr [ecx+0xe], 2) but frees the
+// flags word and changes the whole allocation (89), the ternary message pointer with the in-place update is 90, and
+// the ternary alone keeps retail's registers but lays the arms out with the address in the fall-through (45).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

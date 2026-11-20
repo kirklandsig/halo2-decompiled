@@ -959,6 +959,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // named tick count; a pointer local to the wind direction for the rotation and the scale; the axis declared bare and
 // assigned; the axis index named. The frame cell retail has more is its random integer kept apart from the sine (+0x18
 // against +0x14); in every form here the two share a cell.
+// MiniMax E (11-19): no new form, no lower score (130, baseline): the frame is still 0x1c against retail's 0x20 and
+// the random sample still lands at [esp+0x14] against retail's [esp+0x18]; the SSE rotation block still differs in
+// every row's register assignment (retail keeps the seed pointer in ESI from the prologue, this build loads it after
+// the surface lookup), and the function is still 889 bytes against retail's 880.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

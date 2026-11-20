@@ -810,6 +810,26 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // from the range table with range taken after it 208 (same code); range taken after the call 254 (755 B); the type-3
 // instance read from the collision record 208; the loop index at function scope 208; `section != NULL` with the count
 // test as `!count` returning result 208 (same code each).
+// M3 lane 14 r126 (fast with 0x14a8e0, 0x14af40, 0xd47d0 and 0x16e1b0, all MATCH unless noted; control 172 at 733 B, aligned
+// [exact, stack masked, registers masked] 95/77/48; body unchanged). Reading of retail first: 0x16e1b0 takes the section
+// in EBX, so retail loads the section from its home right at that call (`mov ebx, [esp+0x14]`), copies it for the vertex
+// block (`mov eax, ebx; mov eax, [eax+0x3c]`) and reloads the BSP into EBX only after a failed triangle; the range is
+// loaded into EBP at the end of the type-3 arm (`mov ebp, [esp+0x18]`, the type-1 arm jumps past it with EBP still
+// holding it), ahead of the section test. Round 268's lead rebuilt (the getter's result unset on a miss, definition NULL
+// at its declaration, `bool result` after section, unknown18 stored before part_index) 133 at 733 B, 75/68/25: every
+// line left on it is EBP (this build does not use EBP before the loop and pushes it there; retail pushes it in the
+// prologue and gives it to the range from the arms to the loop's first test). New forms, on the control / on that lead:
+// the section's address discarded (`(void)&section;`), and the range's too, 172 / 133 (same code); the section set
+// through an inline helper taking the block info, the sections field's address and `&section` 172 / 133 (same code: the
+// address does not survive the expansion); the same helper as a template over the cluster and the definition 231 (714 B)
+// / 209 (726 B) (the two copies fold into one out-of-line function, even forced inline); the triangle search loop as a
+// forced-inline helper returning true from inside the loop 196 on the lead (735 B, 53/44/32: the section is then loaded
+// at the 0x16e1b0 call as retail, but the result takes BL, the BSP EBP and there are two exits), plain `inline` 642 (the
+// helper stays out of line, 311 B, and 0x14af40 and 0xd47d0 lose their match with the clear inside it); that helper with
+// the clear and the section test inside 223 (714 B); with a `bool *found` out flag 133 (the lead's code); with its own
+// result and a break 247 (741 B). Diagnostics on the lead: one more read of the range ahead of the section test 239
+// (739 B), the loop's first index read there 242 (741 B): the range still does not take EBP (the triangle parameter
+// does). Nothing kept: no form gains on the control, and the lead needs an exact match.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
