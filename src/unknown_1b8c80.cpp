@@ -2161,6 +2161,24 @@ void function_1f86a0(long actor_index);
 // the mask-after form 245 (868 B, a 65/26), the no-mask split 237 (869 B, a 59/46). Reading: the masked byte, the full flags
 // byte and the entry contest BL/EBX; retail spills the mask, re-reads the flags and gives the entry EBX, which none of these
 // gives at once. Body unchanged.
+// M3 lane 1 r141 (fast with 0x1b8c80, 0x1b8d40, 0x1ba990, 0x1b9e70 and 0x1ba5c0, all MATCH each run; control 123 at 861 B,
+// aligned 105, register-masked 50). The slot data-block form of build/m3-reports/FORMS-slot-data-block.md is round 39's 134
+// (listed above); it does not apply here. Reading: retail tests the spilled mask as a plain non-zero byte (`mov cl, [esp +
+// 0x13]; test cl, cl`), re-reads the flags from memory for the 0x40 test after the two root calls, and in the tail loads the
+// flags byte once ahead of the slot's byte test and tests `al, 0x20` in both arms, reloading it for the 0x29 update after
+// the object index store (the index takes EAX). Forms: the mask assigned inside the same-root test with plain non-zero tests
+// 134 (the code of the plain-mask form: the mask keeps BL); that with `== 0x20` at the later test 123 (same code as this
+// body); the same-root result set under `if ((specified = flags & 0x20) != 0)` 241; the mask computed ahead of the element
+// lookup 242 (864 B); the loop as `for (entry = first; entry != NULL; entry = next)` 123 (same code), as `entry = first;
+// while (entry != NULL) { ...; entry = next; }` 123 (same code), with the joint index read through the entry after the loop
+// 123 (threaded back, same code), the `for` with plain non-zero mask tests 134. Diagnostic, removed (a local copy serving
+// one of two reads of the same flag): the flags tested directly in the same-root test and the mask local read only at the
+// later test 244 (868 B) but frame 0x14 with the mask at +0x13 and aligned 90: the raw flags byte then takes BL across the
+// root calls for `test bl, 0x40`, so the entry still has no register. Tail: the else arm's 0x29 update written last (after
+// both radii) 122 (aligned 99: the seat, far radius and flags stores then come in retail's order; a statement order, one
+// point, not kept), object, near, seat, far, flags 122 (same code), object, flags, near, seat, far 124, object, near, far,
+// seat, flags 124; a bool read from the 0x20 bit ahead of the slot's byte test and used in both arms 236 (866 B), with the
+// update last 236; the flags byte in a local there 140, with the update last 139. Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

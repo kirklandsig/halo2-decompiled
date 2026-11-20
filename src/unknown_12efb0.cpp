@@ -865,6 +865,21 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // separate remaining count and cluster cursor 607; cluster cursor compared with end 831;
 // cluster cursor stopped at end 806; cluster cursor while with end 1508.
 // NOT kept: The for countdowns tie. The other walks increase the length and leave the provider, sentinel and palette allocation unresolved.
+// M3 lane 1 r142 (fast with 0x12e5e0/0x12eb00/0x130f60/0x131030/0x1317a0, all matched throughout; al = aligned differing
+// lines / the same with registers and stack offsets masked, 487/222 on this body). The masked count is the structural
+// gap, and most of it is the three-scalar helper's eight updates: retail multiplies each by-value scalar in its own
+// register (`mulss xmm1, xmm0`, three independent chains that the scheduler interleaves with the colour updates) where
+// this build copies the weight and multiplies the copy by the scalar (`movaps xmm6, xmm0 / mulss xmm6, xmm5`), one serial
+// chain through XMM6. Forms: the palette byte read at each use, no slot local, 666 at 3827 B (al 747/220: the registers
+// move, the structure does not); the clamped weight in a new local 608 (al 487/222); the scalars scaled in place by
+// separate statements and then added 607 (same code); the helper's statements as colours, scalars, weight, remaining 718
+// at 3838 B (al 466/198); colours, weight, scalars, remaining 718 (455/186); weight, colours, scalars, remaining 718
+// (455/185); colours, scalars, remaining, weight 698 at 3829 B (451/187); scalars, colours, weight, remaining 718
+// (463/187); colours, the scalars reversed, weight, remaining 718 (476/196); red, height, green, weight, blue, intensity,
+// distance, remaining (retail's order of first appearance) 718 (467/199); colours, height, weight, intensity, distance,
+// remaining 718 (458/193); height first 718 (455/217); colours, intensity, distance, weight, height, remaining 718
+// (455/188); colours, weight, remaining, scalars 607 (488/201). None gives the in-place scalar products. Diagnostic: 1 to 7
+// dead initialised locals 606-608 (al 487-488/222-232), so the product sides are not a symbol-count phase here.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

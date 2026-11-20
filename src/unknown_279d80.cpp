@@ -2130,6 +2130,17 @@ void function_27dd10(void)
 // arm unnested 2 (same code each). Diagnostics (fast): `__assume(local_2 >= 0)` after the flags read 348 (1733 bytes,
 // every walk user regresses: the node tests no longer fold); with node_flags_test returning its expression 2 (0x281b60
 // 39, 0x288570 120, 0x289580 2), so a run-time assume flips the pair only together with the unfolded tests. All restored.
+// M3 lane 1 r140 (compile-only build of the file, exact here: this function 2, 0x281b60 2, 0x285750 0): the interpolation's three
+// frame-state saves as wrapper locals shared by the passes (by reference) 44 (0x281b60 42, 0x285750 46), the walk's output pointer
+// shared that way 329 (0x281b60 318); the second decode with its blend in a forceinline helper 2, the frame-state restore in one 2,
+// both 4 (0x281b60 4, 0x285750 2), the destination lookup with the mask test in one 2 (0x281b60 28); 150 random combinations of those
+// two helpers with the apply index named, the destination index declared at the group's top, the bit test as `!= 0`, the counters as
+// `+= 1`, the count declared first, the output and bit-flags selections as if/else and the saves declared ahead of the interpolation
+// test: 2 (115 forms) or 4 (35), the pair never moves. Diagnostics: the settings read as separate globals (every field, or the frame
+// trio, the blend-frame trio, the bit flags, the count, the inheritance, the mask or the decompressors alone) 2 each, so the pair does
+// not follow how many global symbols the function references; a statement under a constant-false test of the blend method at each of
+// 117 places in the walk and its helpers never moves the pair (it changes 0x285750's blend-3 registers at 89 of them); live probes at
+// the wrapper's start or end flip it only for `g = h << 2` and `g = h + k` (stores, `+= 3`, float work, `/ 3`, `& 7` do not).
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2346,6 +2357,20 @@ void function_2818e0(void)
 // as `arg_2 ? node_flags_test(...) : true` 39 (the pass-2 scale product changes; 0x288570 120). Diagnostics (screen, not
 // kept): `__assume(node_count >= 0)` in this wrapper or on the count in function_288571 moves 8 lines, pair unchanged;
 // 0 to 15 dead initialised locals in this wrapper shift the walk's symbols by 3 each, pair unchanged. All restored.
+// M3 lane 1 r142 (compile-only screen of the whole file, exact here as rounds 84 and 197 found; nothing reached retail's
+// order, so nothing went on to check.py): the wrapper's definition moved to six other places in the file (first wrapper,
+// ahead of 0x27dff0, 0x27e6b0, 0x281370, 0x2825b0, 0x285400, end of file) 2 each (same code: the pair does not depend on
+// what is compiled ahead of it). On the apply-in-each-arm walk (function_288572): node index, bit-flag pointer, flags,
+// group end and destination index each as a reference to a function_288571 local or as a local of the walk, all 32
+// masks, with one count / a clamped copy for passes 1 and 2 / separate translation and scale copies (96 forms): 34 are
+// the present code, the rest move 2-10 lines elsewhere, and the pair is count-then-flags in every one, 2 at best. The
+// channel counter incremented through a dword view 2 (same code); the blend-2 scale with a folded `* 1.0f` 2 (same code),
+// under an `if (arg_0 == 2)` whose dead else arm holds a float literal 2 (same code). Diagnostics (reverted at once): a
+// float literal operand in pass 1 or 2 flips the pair with no other change than its own instruction, the same instruction
+// with a float global in the literal's place does not; one to three reads of new int globals do not, an int sum of two
+// loads (even of one global) does; a load, multiply and store of one new global does not; the compiler's temporary
+// numbers do not correlate (0 to +3 on both sides). Retail's pair (EBX then ECX) and pass 1's (EDX then ECX) are both in
+// descending register order; ours in pass 0 is the one ascending pair.
 // @retail 0x281b60
 void function_281b60(void)
 {

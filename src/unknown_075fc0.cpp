@@ -377,6 +377,19 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // local_16 declared beside local_7 and the chained has-host arm 352 (four points, not kept); with the flag form 403; the
 // flag form alone on the bool callee 403; the snapshot and reset through `*(__int64 *)&g_4e6398` 429 (1330 B), with the
 // flag form 419; the flag form with the connection read through link_connection_get at each use 397.
+// M3 lane 1 r140 (fast with 0x75910, 0x76520, 0x765c0, 0x77940, all MATCH in every run; control 356, aligned 240 lines, 139 with
+// registers and offsets masked). Reading: retail's two NONE stores (+0x30, +0x24) and two false bytes (+0x16, +0x13) sit exactly
+// where ESI and EBX are given to the channel base and the has-host argument, so they are spills of values held since entry (NONE
+// in ESI, zero in EBX): local_26, local_6, local_7 and the has-host flag are set ahead of the channel search, and the flag is set
+// again in the call's arm. Grid of those three choices (NONE locals first / local_7 first / the flag started false and set in the
+// arm): 358 / 409 / 402, NONE + local_7 353 (three points, a declaration move), NONE + flag 410, local_7 + flag 389, all three 398
+// (entry then has `or esi, -1`, `xor ebx, ebx`, `mov ebp, esi`, `cmp [eax], ebx`, `cmp ebp, esi` as retail, but the four values
+// are stored at once and `this` is not in EDI), all three with the flag declared after the search 410. On all three: every field
+// through `arg_0->channels[local_0]` with no pointer local 447 (1393 B); the snapshot and the reset as copies through the file's
+// counter view 421 (1342 B); both 425 (1357 B, frame 0x34, first difference +0x3, aligned 166 [98]: the nearest form by
+// alignment, left are the NONE/index roles of ESI and EBP, the four early stores, the channel base formed at the first field read
+// where retail forms `this + index * 0x528` right after the connection, and the 64-bit window update); NONE + local_7 without the
+// flag and both 419 (1353 B, aligned 161); the counter view alone 429 (1330 B, re-measured). Body unchanged.
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,
