@@ -995,6 +995,10 @@ struct s_collision_result_buffer_1697c0
 // clear carrier, each with unpublished result or positive fraction first at fallback 344/335 each.
 // NOT kept: all raise the score at retail length and change the matched caller. The 344 forms
 // also shrink the 0xa8 frame.
+// Round 498: zero-first comparison, named axis length, scoped axis length, separate initial best-vector assignment, scaler result in the trace call, named obstruction, sampling names, immutable hit fraction.
+// Fast scores in order 270/270/270/270/270/270/270/270.
+// NOT kept: All eight trials tie at 270 and 1431 bytes. Every control keeps its opening score.
+// The frame stays 0xa8 on the opening body. The zero register, pitch-axis j preload and shared random/trig transfer word still differ.
 // M3 lane 12 r158 (h2m fast with 0x297660 (stays matched) and 0x297d30 (stays 23 unless noted); control 270): the
 // header's shared normalize3d in place of the file-local normalizer at the three uses 282 (1437 B); the file-local normalizer
 // in that helper's single-return shape (zero set in an else arm) 282 (1437 B); the rotate helper's dot as `dot3f(axis,
