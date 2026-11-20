@@ -104,7 +104,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
 // Earlier score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
+// Earlier first line, 162 (was 162) (merged in m3 lane 4 r232): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier at 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
+// Earlier score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // Prior score history: 194 before.
 // MiniMax E (11-19): score 162 (was 162): no new form, no lower score. Read from the listing again: the first
@@ -792,6 +794,15 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // extents 217 (1948 B); width computed after both inverse rows 173 (1951 B); width computed ahead of both inverse rows 170
 // (1950 B); the aspect test as `ay<ax` 162 (same code). Diagnostic (behaviour change, reverted): the blend assigned without
 // its 0x20 test 332 (1959 B), so the conditional store and reload is not what keeps it out of XMM5.
+// M3 lane 4 r232 (fast with 0x2243c0, MATCH throughout; control 162). Read from retail: in the aspect block both
+// first-set reciprocals go straight to memory (1/ax at +0x88, 1/ay at +0x18, each formed in XMM0), the second set's stay in
+// XMM3/XMM4, all four extents are spilled (+0x20, +0x1c, +0x28, +0x24) and the blend rides in XMM5, so the sequence arm
+// jumps past the join that reloads the seed and the blend; ours keeps the reciprocals in registers and reads the blend
+// from memory. Redundant paren pairs (one pivot row, both, both products of both, one to four extents, one or four
+// reciprocals) 162 each (same code: no commutative order is open here). The flag flip ahead of the extents 217 (1948 B),
+// after the first aspect test 217, after the blended aspect 318 (1957 B); the bounds copied after the pivot rows 188; the
+// pivot's complement in a two-use local 166; the first aspect by direct division 294 (1956 B); the remaining blend ahead
+// of the extents 331 (1980 B). Body unchanged.
 // M3 lane 16 r157 (fast with 0x2243c0, MATCH throughout; control 162, aligned/masked 94/35). Reading: retail gives each of
 // the four extents one register up to its aspect test (the products are taken in place on the extent) and a home at
 // +0x1c..+0x28 for the encode's unflipped arms, stored together after the second set's x extent; ours keeps the first
@@ -803,6 +814,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // local aggregate are register candidates like scalars); a by-value copy of the blend declared after the sequence block
 // and used through the aspect block 162 (same code). Diagnostic, reverted: the blend's sequence-arm store through a
 // pointer to it 162 (same code). Three further score lines stacked in this note were merged into the first.
+// Inverse spans at each use, primary/secondary/both/horizontal/vertical 326/212/325/286/314.
+// Both pairs at use with current/next/both weighted terms staged 306/306/306.
+// NOT kept: The secondary-only form preserves frame 0x60 and regresses. The other forms reduce the frame and score higher.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -188,6 +188,13 @@ bool function_1946f0(s_bitstream *stream)
 // `count > 0` block 2 (same code); the bound test as `stream->size_in_bytes > byte_index` 4; `byte_index` declared ahead
 // of the counter stores and assigned after them 2 (same code). Diagnostic: both addresses through a byte-array pointer
 // cast of the data (`(*(byte (*)[1])data)[i]`) 2 (same code, both LEAs data-first).
+// M3 lane 7 r199 (fast with 0x1957d0/0x195820, both MATCH): the pop through a `long *` to the checkpoint slot 2 (same
+// code); the bound test as `byte_index <= size_in_bytes - 1` 51 (141 B); the mask with a redundant complement term 40
+// (142 B); the clear started from the buffer's end (`&data[size_in_bytes] - count`) 45 (142 B); the index recomputed
+// from the stored fields (`(bit_position - unknown2c) / 8`) 51. Compile-only probes (standalone, the file's flags): an
+// index expression written in the address with no earlier use gives index-first (`add idx, data`, as 0x194830); once
+// the same value is used earlier (the bound test), every spelling gives data-first in both the RMW and the clear LEA,
+// with the data read in its block; only a data value defined before the index reverses them.
 // M3 lane 16 r156 (fast with 0x1957d0/0x195820, both MATCH each time): a data local read before the index for the clear
 // with a block-local data local for the mask 40 (the clear's data then held in EDI from the top); the mask as
 // `~(byte)(0xff << (saved % 8))` 4; the index and the data field bound to `long const &` / `byte *const &` and used at

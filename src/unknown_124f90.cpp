@@ -1817,6 +1817,13 @@ long function_2197f0(real gain);
 // gain then assigned 87 (same code), returned from the arm 174 (668 B); arm 3's sum stored through the long view 87
 // (same code). Reading: ours has exactly one sum with the gain in a register (arm 4, fed across the join) and retail
 // exactly one too (arm 1, loaded there); the other three add the gain from memory in both.
+// Retained release duration with scaled overlap, staged subtraction/normalization/scaling,
+// independent release component, or attack accumulator 92/92/92/92. Retaining the attack
+// divisor for the final quotient instead gives 92/92/92/92. NOT kept: all raise the score;
+// the 0xc frame and length hold, and elapsed and gain loading still differ.
+// Composite release or normalized overlap staged, each with initialized or accumulated attack time.
+// Guarded and eager fractions: 87/87/87/87/143/143/143/143.
+// NOT kept: The guarded stages tie at 87. The eager stages shorten to 681 bytes and raise the score to 143. The elapsed/reciprocal allocation, separate gain load and final gain join still differ.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3698,6 +3705,7 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // for the next slot spills it and measures 185, so the body is unchanged.
 // MiniMax C (11-19): no new form, no lower score (8): the pool reload is still placed right after the body's last call; retail loads the pool after the next-index ternary, and every other instruction is retail's.
 // MiniMax D (11-19): no new form, no lower score (8): the pool reload stays ahead of the next-slot selection in every form tried this round (the reload inside the search call's argument, the seed computed as its own statement ahead of the reload, and both pool uses reading through the global), so the reload is still six bytes ahead of retail's and the branch into the loop advance still differs at +0x6b.
+// MiniMax G (11-20): no new form, no lower score (8): the pool reload is still scheduled before the next-slot selection - retail loads the pool after the next-index ternary's join and re-reads it on every path into the advance, while this build reloads it only where the body clobbered the register and lets the branch into the loop advance skip it; the seed as its own statement ahead of the reload, the reload inside the search call's argument and both pool uses through the global all score the same 8.
 // score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
 // advance differs at +0x6b.
 // Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
@@ -4311,6 +4319,10 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
+// score 48 (was 72): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
+// word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
+// DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
 // score 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
 // bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
 // sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
@@ -4474,7 +4486,7 @@ struct s_128ca0
 // pin joins remain.
 // B440: Existing gain operators at raw nested/argument/inner/update producers
 // 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
-// MiniMax H (11-06): score 167 (was 222): the caller's gain and the location's unknown08 are added
+// MiniMax H (11-06) reached 167 from 222. The caller's gain and the location's unknown08 are added
 // to the playback's gain through the decibels type (s_decibels' operator+, as 0x21e330's reverb sums do),
 // and the scale is read once into a real local. The frame is retail's 0x494 and the scale stays in xmm2.
 // Not kept: reading the pitch bounds as a pair through &pitch_lower (local_18[0]/[1]) gave 164, three
@@ -4664,6 +4676,16 @@ struct s_128ca0
 // sums retail gives the gain byte its register before the bits' copy (EDX then EAX; EAX in place then ECX), ours the
 // copy first; a form that evaluates the gain byte first should bring the pins, the field_c store and the tail together.
 // One or two named copy locals of the parameters (the symbol-count lever that moved 0xb93b0's XMM triple) 72 (same code).
+// Both pin objects assigned 72, direct-initialized 72, decoded real member accumulated 181,
+// signed gain initialized then summed into its member 201, pin argument from the value member 72.
+// Named started test 72, scoped pitch/gain setup 72, scoped permutation lookup 72. The tied forms
+// keep both scratch register exchanges. Real-member arithmetic shortens the pin input copies.
+// Attenuated gain name, opening gain/pitch names, submission gain names, shared unpinned
+// level, read-only voice record, playback record reference, selected permutation reference,
+// and shared pinned level all 72. The two pin register pairs and packet store order stay put.
+// Synchronization count as short/word/dword with the separate decrement or postdecrement
+// 116/120/122 either way. The inactive-controller branch assigns a short/dword default 116/122.
+// NOT kept: word reaches the retail length but keeps separate NONE comparisons, and dword widens the count extraction.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4739,7 +4761,7 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 			sound_voice_queue_chunk(arg_0, local_8, local_1->chunk_index);
 			local_1->flag3 = false;
 		}
-		if (!TEST_FIELD_BIT(local_1->flag3))
+		if (!local_1->flag3)
 		{
 			short next_chunk = (short)function_219290((s_permutation_group *)local_8, local_1->chunk_index);
 			if (next_chunk != NONE)

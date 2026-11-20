@@ -712,6 +712,25 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // &` to the field 27 (all the same code); the tail's block read once into a local with a `const &` to it for the pointer
 // record 51 (EDI/EBP swap), with the loop's reference as well 51; a second cache-block pointer looked up before the wait
 // loop and read in the arm 102 (281 B).
+// Round 203 (m3 lane 8, fast with 0x12e210, which stays matched; control 27): READING. With the field read at each use
+// (no block local), any second use of the block in the loop's arm before the call gives retail's arm and tail line for
+// line (the test's load in EDX, `mov esi, edx` after the page-shift load, the tail's ECX with no copy), and only that
+// use's own code differs: `+ block->cache_block_index` on the address 41 (272 B), `+ (dword)block` 36, `+ block->
+// block_offset` 40, a probe store of the block ahead of the call 40 (273 B). With a block local none of these split the
+// value (42/46/47: it keeps ESI from the test), and a use after the call is a reload (54). So retail's block is the common
+// read of the test and the arm with two uses in the arm, the second leaving no code. Forms that add no use, 27 each (same
+// code): a `const &` binding of the block local for the test or the argument (four forms), two block locals both read from
+// the field, a const reference to the field in the arm, a reference bound to the cast pointer (a temporary), the cast
+// through `dword`, the first field's address, the block local assigned again in the arm, the block local declared before
+// the loop, `p ? p : NULL` and `linked ? p : NULL` as the argument; a select local (`linked ? block : NULL`, then `if
+// (selected)`) 44 (269 B, its own null test); `__assume(block != NULL)` or `__assume(block->runtime_linked)` in the arm 45
+// (they move the time test's registers, no split); the count named and stored to g_4e28f0 after a flag read 27 (the store
+// moves above the load before allocation); a block local read between the named count and its store 73. Re-measured: the
+// count named and stored to the async field after a flag read 18, the arm through a field pointer 14 (the listed forms).
+// Round 129 (m3 lane 14, fast with 0x12e210, which stays matched; control 27): the release address from the entry's
+// physical block local (no second lookup) 87 (248 bytes: the block pointer is kept, retail re-derives it from the pool);
+// the loop's block local bound to a const reference used for the argument 27, used for the linked test 27; the loop's
+// block local declared `register` 27; the arm's linked test as `!= false` 27 (all four the same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
