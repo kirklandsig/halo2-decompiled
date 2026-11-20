@@ -1891,6 +1891,7 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // and re-reads colour A at the colour call; measured and reverted: the two virtual calls in the other order (148), the
 // definition's location mode and placement read into locals before the loop so the definition is not live across the
 // set_location call (143, frame 0x48), so the body stands.
+// MiniMax A (11-20): no new form, no lower score 128: retail keeps the particle system in ESI and colour B in EDI, while every form here colours them the other way round.
 // score 128 (was 128): The frame is still 0x40 versus retail 0x44, and the early color-A spill and ESI system are missing.
 // MiniMax B (11-19): no new form, no lower score (128): retail spills colour A to frame+0x00 and keeps the particle
 // system in ESI and colour B in EDI across the two indirect calls, while this build re-reads colour A from the effect
@@ -3559,6 +3560,7 @@ void __stdcall function_17a380(s_effect_datum *effect)
 
 // MiniMax G (11-20): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, and the particle system is still in EDI.
 // The definition is still unspilled and the location mode cached where retail spills the definition and reads the mode at each call.
+// MiniMax A (11-20): no new form, no lower score 93: the same register preference as 0x178c80 - retail keeps the particle system in ESI and colour B in EDI; every form here swaps them.
 // score 93 (was 93): The frame is 0x4c against 0x54, system/successor use exchanged registers and the definition is unspilled.
 // MiniMax H (11-19, round 95): no new form, no lower score (49): the live mode read at each location call measures 103 and moves
 // the effect index out of the stack into a register, which loses the matched caller 0x176f60, so the cached mode in the
