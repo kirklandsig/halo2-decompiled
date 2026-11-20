@@ -434,6 +434,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Separate symmetric matrix, with final aggregate, in-place correction, field transfers or row setters:
 // direct sine products 429/374/358/348; sine-axis vector 379/377/353/353.
 // NOT kept: all change the 0x90 frame and raise the score. The axis-square spills remain.
+// Early samples for squares and sine only, with cross terms reading the axis separately. Grouped scalars
+// in i/j/k or i/k/j order 382/382, separately scoped 360/362. Vector copy with direct products or
+// shared scaler 383/404, component initializer 364/382. NOT kept: all change the retail frame
+// and lengthen the body. The saved axis and square registers still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

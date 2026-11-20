@@ -1615,6 +1615,10 @@ void function_150820(dword *bits, bool local_only)
 // output pointer after the call 43, nested query with selected output pointer before the call 43. NOT kept: The
 // field aliases fold the unit field address into LEA and leave the saved registers exchanged. The header forms
 // lengthen the body and the query output forms tie.
+// Direct policy at the slot 93, at both commands 82, at the mode and commands 118, or at both array lookups 87.
+// Selected mode as result 95, weapon presence refined into result 101, command-first result 95,
+// or shared failure exit after command rejection 63. NOT kept: the best variant grows by nine bytes
+// and retains the saved-register exchange.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

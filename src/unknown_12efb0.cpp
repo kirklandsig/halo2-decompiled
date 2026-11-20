@@ -804,6 +804,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // with the low byte of the -1 it also stores to the record, while this build keeps the slot in a 16-bit register and holds
 // the -1 in ecx; the byte at each use and the char and signed-char slot measure 666 to 700, and the record's three initial
 // stores sit before the palette read here and after it in retail, but moving them into the palette branch measures 725.
+// Three-way source selection as conditional, explicit branches, missing-record default, or provider default
+// with palette precedence scores 734/618/618/737 for the short slot and 730/704/708/724 for the byte.
+// NOT kept: all raise the score, with the provider and palette register assignments still different.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
