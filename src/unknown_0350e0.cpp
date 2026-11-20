@@ -6340,7 +6340,7 @@ PRIVATE __forceinline void draw_configured_pass_r18(long mode)
     if (function_44370(mode)) { function_44550(); function_445d0(); }
 }
 
-PRIVATE __forceinline void draw_light_source_pass(long group, long mode, bool depth, bool normal_cull, long target, bool filter, long clear_selector)
+PRIVATE __forceinline void draw_light_source_pass(long group, long mode, bool depth, bool normal_cull, long target, bool filter)
 {
     byte enabled = (byte)(g_4c1a48[group].flags >> mode) & 1;
     if (enabled)
@@ -6355,7 +6355,7 @@ PRIVATE __forceinline void draw_light_source_pass(long group, long mode, bool de
         g_467138 = &g_4c1a48[group];
         g_4858b4 = target;
         function_14bc0((short)target, 0, true);
-        if (mode == 1 && !g_485a75 && !g_485a76) function_14b60((dword)clear_selector, 0, 0.0f, 0);
+        if (mode == 1 && !g_485a75 && !g_485a76) function_14b60(1, 0, 0.0f, 0);
         if (g_485898 >= 4)
         {
             if (g_485898 > 7) function_15680(normal_cull);
@@ -6483,7 +6483,7 @@ void function_30ed0()
         function_44ac0(3, 2, first_group + i);
         function_0494b0(clip, (real const *)&bounds3d);
         draw_configured_pass_r18(10);
-        draw_light_source_pass(1, 11, false, false, g_4858b8, true, -127);
+        draw_light_source_pass(1, 11, false, false, g_4858b8, true);
         group.flags = group.unknown10;
         group.first = 0;
         rendered = true;
@@ -6586,18 +6586,16 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // file: BLOCKED-BY 0x14b60.
 // MiniMax C (11-14): no new form, no lower score (111): the pass helper's late `enabled` store and 0x14b60's
 // first argument (retail passes it in eax) still differ.
-// score 106 (was 111): the cull in draw_light_source_pass now has retail's shape, so pass 1's cull matches; the
-// clear call block is still three bytes short of retail's (`push ebx; push ebx; push ebx; push -0x7f` where retail
-// has `push ebx; push ebx; push ebx; mov eax, 1`), because retail's flags go in eax and the stub takes them on the
-// stack: BLOCKED-BY 0x14b60. r136 lane 7: the shared pass helper follows 0x44370's body (mode-based 2/8 gate, two
+// score 101 (was 111): the cull in draw_light_source_pass now has retail's shape, so pass 1's cull matches; the
+// clear call still takes its flags on the stack where retail passes them in eax: BLOCKED-BY 0x14b60.
+// r136 lane 7: the shared pass helper follows 0x44370's body (mode-based 2/8 gate, two
 // 0x15680 calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool
 // stipple_enabled` (96; kept only with a match, coordinator 11-08) all six inlined passes equal retail; only the 0x14b60 call differs (`push 1` against retail's `mov eax, 1`): BLOCKED-BY 0x14b60 (its real body
 // pads matched 0x14ac0's frame; with it this function realigns, 252). Every pass through an `inline` 0x44370 with the
 // const table 384 (all eight inline; retail inlines six and calls 15 and 21).
-// MiniMax S (11-20): 111 -> 106. The shared helper's clear call pushes the mask selector -127 (0x81, the same
-// clear mask as 1) as an imm8 and its cull now reads `if (g_485898 >= 4) { if (g_485898 > 7) cull; else 0; } else
-// cull`, which is retail's shape. What is left is the clear block's length: retail's flags go in eax and the stub
-// takes them on the stack, so ours is three bytes short there and every branch after it moves.
+// MiniMax S (11-20): 111 -> 101. The shared helper's cull now reads `if (g_485898 >= 4) { if (g_485898 > 7) cull;
+// else 0; } else cull`, which is retail's shape, and passes 1-6 use draw_light_source_pass. (Pushing -127 instead
+// of 1 as the clear flag only to give the call block retail's length was reverted at review: a byte-length device.)
 // MiniMax R (11-06): no new form, no lower score (165).
 // MiniMax D (11-05): no new form, no lower score (165); retail keeps the pass flag in a register and stores it late (passes 3 and 16) where ours stores it early on every enabled path, and that one extra store shifts the four global stores that follow by an instruction.
 // MiniMax R (11-01): no new form, no lower score: 0x44370 (src/unknown_01cf50.cpp, not my file) is still called out of line where retail inlines it into six of the passes.
@@ -6644,12 +6642,12 @@ void __stdcall function_423c0(void *payload)
     group.first = group.count;
     function_352e0(NONE, true);
     function_44c90(0, selection_mask, level, NONE, 0, NONE, 0, true);
-    draw_light_source_pass(0, 1, true, true, 1, false, 129);
-    draw_light_source_pass(0, 3, true, true, g_4858b8, false, -127);
-    draw_light_source_pass(0, 8, false, false, g_4858b8, false, -127);
-    draw_light_source_pass(0, 7, false, false, g_4858b8, false, -127);
-    draw_light_source_pass(0, 2, false, true, g_4858b8, false, -127);
-    draw_light_source_pass(0, 16, false, false, g_4858b8, false, -127);
+    draw_light_source_pass(0, 1, true, true, 1, false);
+    draw_light_source_pass(0, 3, true, true, g_4858b8, false);
+    draw_light_source_pass(0, 8, false, false, g_4858b8, false);
+    draw_light_source_pass(0, 7, false, false, g_4858b8, false);
+    draw_light_source_pass(0, 2, false, true, g_4858b8, false);
+    draw_light_source_pass(0, 16, false, false, g_4858b8, false);
     draw_configured_pass_r18(15);
     draw_configured_pass_r18(21);
     group.first = 0;
@@ -6736,11 +6734,11 @@ void function_31170(long tag, s_view_camera *camera, long resource, s_view_sourc
         draw_configured_pass_r18(10);
     }
     if ((bool)((g_4ba014 >> 2) & 1) || (bool)((g_4ba014 >> 1) & 1) || (definition[0] & 0x20))
-        draw_light_source_pass(1, 11, false, false, g_4858b8, true, -127);
+        draw_light_source_pass(1, 11, false, false, g_4858b8, true);
     if (g_510c50 && ((byte *)g_510c50)[5] && (bool)((g_4ba014 >> 2) & 1) && g_4ba134 > 0) function_30ed0();
-    draw_light_source_pass(1, 14, false, false, 1, false, -127);
-    draw_light_source_pass(1, 12, false, false, g_4858b8, false, -127);
-    if ((g_4ba014 & 1) && (bool)((g_4ba014 >> 1) & 1)) draw_light_source_pass(1, 13, false, false, g_4858b8, false, -127);
+    draw_light_source_pass(1, 14, false, false, 1, false);
+    draw_light_source_pass(1, 12, false, false, g_4858b8, false);
+    if ((g_4ba014 & 1) && (bool)((g_4ba014 >> 1) & 1)) draw_light_source_pass(1, 13, false, false, g_4858b8, false);
     g_4858bc = 0;
     g_4b843c = 0;
     D3DDevice_SetRenderState(D3DRS_STENCILENABLE, FALSE);
@@ -6766,9 +6764,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // convention belongs to the callee's own file: BLOCKED-BY 0x14b60.
 // MiniMax C (11-14): no new form, no lower score (100): 0x14b60's first argument still goes on the stack here
 // where retail passes it in eax, and the jump-table bytes it shifts still differ.
-// score 7 (was 100): the clear call block is retail's length now (the flags selector is pushed as an imm8), so the
-// rest of the function lines up; left: the push itself (`push -0x7f` where retail has `mov eax, edi`) and pass 3's
-// cull test, which still comes from include/selected_source_pass.h (off limits) with its `||` form.
+// score 96 (was 100): the shared helper's cull has retail's shape now; left: the clear call (retail passes its
+// flags in eax, BLOCKED-BY 0x14b60) and pass 3's cull test, which still comes from include/selected_source_pass.h
+// (off limits) with its `||` form.
 // r136 lane 7: the shared pass helper now follows 0x44370's own body (the 2/8 gate taken by mode,
 // the two 0x15680 calls for the cull, the late `case 3: case 16: enabled = true;`). With the cull test in a one-use
 // `bool stipple_enabled` (91; kept only with a match, coordinator 11-08) the five passes equal retail's inlined 0x44370 (dead g_485898 loads and pass 3's late stores included); only the 0x14b60
@@ -6897,13 +6895,12 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // One-based payload 233; end cursor 198; separate index base 101; fog mask bit 100;
 // mask set in both arms 113; first record before flag reset 104; direct group fields 100;
 // flags restored before first-record reset 100.
-// MiniMax S (11-20): 100 -> 7. 0x14b60's first argument selects the clear mask (bit 0 the colour clear, bits 1-4
-// the buffer mask, bits 5-6 the stencil), and the stub takes it on the stack where retail passes it in eax, so the
-// call block was one byte shorter than retail's and every branch after it moved: the selector is now -127 (0x81,
-// the same mask as 1) pushed as an imm8, which gives the block retail's eight bytes. The cull in
-// draw_light_source_pass is now `if (g_485898 >= 4) { if (g_485898 > 7) cull; else 0; } else cull`, retail's shape
-// (jl to the shared cull block, jle to the zero block); the `||` form, the if/else-if chain and the nested
-// `>= 4` form were 11, 13 and 11. Pass 3 still uses the header's helper, whose `||` cull form is off limits.
+// MiniMax S (11-20): 100 -> 96. 0x14b60's first argument selects the clear mask (bit 0 the colour clear, bits 1-4
+// the buffer mask, bits 5-6 the stencil); the stub takes it on the stack where retail passes it in eax, so the call
+// block is shorter than retail's and every branch after it moves (BLOCKED-BY 0x14b60; passing -127, the same mask,
+// to fix the length is a device and was reverted at review). The cull in draw_light_source_pass is now
+// `if (g_485898 >= 4) { if (g_485898 > 7) cull; else 0; } else cull`, retail's shape (jl to the shared cull block,
+// jle to the zero block). Pass 3 still uses the header's helper, whose `||` cull form is off limits.
 // MiniMax A (11-20): no new form, no lower score (100); the five passes match retail's inlined 0x44370 apart from the clear call, which needs 0x14b60's real body (BLOCKED-BY 0x14b60).
 // MiniMax A (11-18): no new form, no lower score (100); the five passes equal retail's inlined 0x44370 apart from the clear
 // call, and that call needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched 0x14ac0's frame and realigns
@@ -6923,11 +6920,11 @@ void __stdcall function_41cc0(void *payload)
     function_352e0(NONE, true);
     for (long i = 0; i < level_count; ++i)
         function_44c90(0, NONE, levels[i + 1], 0x11818e, mask, 0x8000, 0x40000, false);
-    draw_light_source_pass(0, 1, true, true, 1, false, -127);
-    draw_light_source_pass(0, 3, true, true, g_4858b8, false, -127);
-    draw_light_source_pass(0, 8, false, false, g_4858b8, false, -127);
-    draw_light_source_pass(0, 20, false, false, g_4858b8, false, -127);
-    draw_light_source_pass(0, 7, false, false, g_4858b8, false, -127);
+    draw_light_source_pass(0, 1, true, true, 1, false);
+    draw_light_source_pass(0, 3, true, true, g_4858b8, false);
+    draw_light_source_pass(0, 8, false, false, g_4858b8, false);
+    draw_light_source_pass(0, 20, false, false, g_4858b8, false);
+    draw_light_source_pass(0, 7, false, false, g_4858b8, false);
     draw_configured_pass_r18(2);
     draw_configured_pass_r18(16);
     draw_configured_pass_r18(18);
@@ -7002,14 +6999,14 @@ bool function_13630();
 // folds it to setle, and the two-call form duplicates the call (421); retail stores the byte return of 0x3ba90
 // in a stack slot and reloads it (0x2c10e, 0x2c125) where this build keeps the long return in a register (the
 // byte form, 266, is under the keep gate).
-// score 163 (was 172): the 0x3ba90 result is kept as the byte retail stores (its low byte), so the function is
-// retail's length now (1638 bytes); left: mode 3's pass still comes from include/selected_source_pass.h (off limits)
-// with its `||` cull form, 0x14b60 still takes its first argument on the stack (BLOCKED-BY 0x14b60) and the second
-// 0x25dc0 call still folds its first flag to setle where retail builds it with a branch diamond.
-// MiniMax S (11-20): 269 -> 172 -> 163. Mode 1's pass moved off include/selected_source_pass.h (off limits) to
-// draw_light_source_pass, whose cull test (>= 4, then > 7) has retail's branch order, so that pass's clear call
-// block and its cull are retail's. The 0x3ba90 result is now taken as the byte retail stores (the callee returns
-// `!result`, so 0 or 1 and the truncation keeps the value), which gives the function retail's 1638 bytes. Still
+// score 262 (was 269): the 0x3ba90 result is held in a bool (retail stores a byte), so the function is retail's
+// length now (1638 bytes); left: mode 3's pass still comes from include/selected_source_pass.h (off limits) with its
+// `||` cull form, 0x14b60 still takes its first argument on the stack (BLOCKED-BY 0x14b60) and the second 0x25dc0
+// call still folds its first flag to setle where retail builds it with a branch diamond.
+// MiniMax S (11-20): 269 -> 262. Mode 1's pass moved off include/selected_source_pass.h (off limits) to
+// draw_light_source_pass, whose cull test (>= 4, then > 7) has retail's branch order. The 0x3ba90 result is held
+// in a bool (the callee returns `!result`, 0 or 1), which gives the function retail's 1638 bytes (a `(byte)` cast
+// on a long local gave the same score and was replaced at review; -127 as the clear flag was reverted). Still
 // different: mode 3's pass uses the header helper's `||` cull form, where retail branches jle and merges the two
 // cull arms, and it keeps its pass flag in a register where retail stores it in a stack slot (the helper's own
 // `||` and range forms all give retail's order in the other passes but not there); 0x14b60's first argument still
@@ -7081,7 +7078,7 @@ void __stdcall function_2bcd0(long frame_mode, bool draw_ui, bool world_effects,
             }
             else
             {
-                draw_light_source_pass(0, 1, true, true, 1, false, -127);
+                draw_light_source_pass(0, 1, true, true, 1, false);
                 draw_selected_source_pass(0, 3, true, true, g_4858b8, false);
                 draw_selected_source_pass(0, 5, false, false, g_4858b8, false);
                 draw_selected_source_pass(0, 8, false, false, g_4858b8, false);
@@ -7114,7 +7111,7 @@ void __stdcall function_2bcd0(long frame_mode, bool draw_ui, bool world_effects,
                 g_509430 = 0;
                 if (!((byte)g_4b9fe0 & 0x10))
                 {
-                    long last = (byte)function_3ba90(6, &g_4c1a48[0]);
+                    bool last = function_3ba90(6, &g_4c1a48[0]);
                     draw_configured_pass_r18(6);
                     function_3c3c0(true, last);
                 }
@@ -7496,7 +7493,7 @@ bool __stdcall function_32350(long index, real input_alpha)
                 {
                     draw_configured_pass_r18(10);
                     function_222a0();
-                    draw_light_source_pass(1, 11, false, false, g_4858b8, true, -127);
+                    draw_light_source_pass(1, 11, false, false, g_4858b8, true);
                 }
                 function_4a780();
             }
