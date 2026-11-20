@@ -5543,6 +5543,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // products with mutable or immutable terms all 169. Existing basis builder
 // for first/second cross 186/225. NOT kept: the builder grows the branch
 // and the yaw forms leave both schedules at their opening scores.
+// First staged cross: aggregate result 255; result members 255; member product differences 255;
+// left vector value 216, right 231, both 261; repeated left components read at first use 184, both inputs 184.
+// NOT kept: all lengthen the body. The first-cross load schedule and final x87 scale lifetime remain.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

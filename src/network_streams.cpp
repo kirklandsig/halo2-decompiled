@@ -1266,6 +1266,14 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Bind time destination, name size at publication, or both 89/89/89.
 // Resend goes straight to the common return, with ordinary type read at exhaustion 120.
 // NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
+// M3 lane 13 r129 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched throughout; control 35): the resend scan as a
+// file-local bool helper (marks the message, returns true) under `&& helper) type = 4;` 35 forceinline with the saved-word
+// update (same code), 91 with the member update; the caller returning 4 itself 111/129; as plain `inline` the helper stays a
+// call (250/237). Lane 15 r115's second-variable lead re-measured 10 at 225 B (only the last two exit blocks swapped); on it:
+// the count or the send test inverted 10/10 (same code), both 87, the copy inside the count arm 88, without the count
+// test's else 95, `result` declared first 10, `next` at function scope 10, the count as `> 0` 22; the copy in a
+// `!send && count` arm with an else 28, as `send || !count` arms 28; a result local in the failed-send block with two
+// returns 94, an early `return type` on the send 94 (both push every register at entry).
 // M3 lane 7 r197 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched each time; control 35). Arrangements of the
 // listed second-result lead (result = 4 first in the found block, the in-place update): the lead itself 10 (225 B), with
 // the send test inverted 10, with the count test inverted (`if (!count) result = type; else` the loop) 10: the shared
@@ -1278,6 +1286,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // result has no register for the found block.
 // MiniMax C (11-20): no new form, no lower score (35): the message pointer is in eax where retail has ecx and the flags in cx against ax;
 // the polarity and else forms give retail registers but fold the window NONE init (43, 45).
+// Resend result set before publication with return selection 129, or assigned ordinary type when none 120.
+// Separate query/empty-window and active-scan outcomes 36; ordinary type snapshot 20, with sole exit 23.
+// Bind time destination, name size at publication, or both 89/89/89.
+// Resend goes straight to the common return, with ordinary type read at exhaustion 120.
+// NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

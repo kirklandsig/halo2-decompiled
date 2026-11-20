@@ -4688,6 +4688,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Shared projection coefficients for forward/left/up 531/532/532, forward+left/forward+up/left+up
 // 519/518/519, all axes 500, all axes and translation 486. NOT kept: the axis-only forms shorten
 // the body. All forms stop at a 0x5c frame, and the full coefficient form ties at the opening extent.
+// Single scale read for world, projections or all transforms 497/518/491.
+// Selected original or scaled projection coordinates 518, with world scale read once 505.
+// World point setter 521, with world scale read once 524, or with selected projection coordinates 508.
+// NOT kept: the smallest frame is still 0x5c and shortens the body; all eight raise the score.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
