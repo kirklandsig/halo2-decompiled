@@ -306,7 +306,7 @@ struct s_weapon_sound_event
 	long marker_name;
 };
 
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction, long tag_index);
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale, long tag_index);
 
 #define WEAPON_UNIT_GET(index) (((s_weapon_unit_header *)g_4e0300->data)[(index) & 0xffff].unit)
 
@@ -1003,7 +1003,7 @@ void __stdcall function_105dd0(long object_index, long unused, s_weapon_sound_ev
 			marker.node_matrix.position = *g_468788;
 			marker.node_matrix.forward = *g_4687a8;
 		}
-		function_189060(object_index, marker.node_index, 1.0f, &marker.node_matrix.position, &marker.node_matrix.forward, event->sound_index);
+		function_189060(object_index, marker.node_index, &marker.node_matrix.position, &marker.node_matrix.forward, 1.0f, event->sound_index);
 	}
 }
 
@@ -1166,7 +1166,7 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 				result = function_176780(tag_index, (s_effect_owner const *)NULL, owner_index, scale_a, scale_b, NULL, NULL);
 			break;
 		case 'snd!':
-			function_189060(unit_index, NONE, scale_a, g_468788, g_4687a8, tag_index);
+			function_189060(unit_index, NONE, g_468788, g_4687a8, scale_a, tag_index);
 			break;
 		}
 	}
