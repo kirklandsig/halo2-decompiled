@@ -1043,7 +1043,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871): Frame 0xd0 versus 0xb4. The opening lookup expands and the upper-capacity selector remains a call.
+// score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// selector remains a call. Earlier score 964.
+// Frame 0xd0 versus 0xb4. The opening lookup expands and the upper-capacity selector remains a call.
 // Earlier score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // The 0xd0 frame exceeds retail by 0x1c, and the opening variant lookup expands.
 // Previously noted: Earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
@@ -1635,6 +1637,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 876/885/885. With the shared availability test 875/905/903, direct pointer publication with the
 // shared test 885, complete nullable expression 871. NOT kept: the expression ties, and the other
 // forms regress. The opening lookup still expands and no trial reaches the retail frame.
+// Pointer/reference from the output clear 926/926, after machine admission 871/871.
+// With dword buckets, clear-result forms 938/938 and admitted receivers 911/911.
+// NOT kept: the clear-result dword forms recover frame 0xb4 but shorten the body
+// and lose the caller in preview. The opening lookup still expands.
 // M3 lane 12 r152 (fast with 0x73530, MATCH each time; control 871, both builds `ret 4`): the admission test as two `if`s
 // (summary, count and variant, then the two capacity calls) 871; `bool result = true;` declared first 871; the variant
 // declared, then assigned 871; 0x193300's result named for the second test 871 (all the same code); diagnostic, the output
@@ -1667,6 +1673,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // (2848 B: 0x193250 shrinks to 72 bytes against retail's 100 and this function then expands it, so not kept); the add
 // loop's minimum as retail's three-way (`type <= 3 ? 1 : type == 4 ? field_5fc : height`, the arms behind retail's `cmp
 // edx, 3` at 0x7eaea and `cmp edx, edx` at 0x7eaef) 872 (2784 B, register-masked aligned 269 against the body's 267).
+// Complete positive admission, nested summary/capacity scopes, summary rejection with positive
+// capacity, positive summary with capacity failure, or missing-summary rejection 871 each.
+// Common admission result 886, positive machine-validation region 894, positive admission with
+// dword histogram 911. NOT kept: five forms tie. The dword form reserves 0xb0 and is shorter.
+// The opening lookup still expands and the upper-capacity selector remains a call.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

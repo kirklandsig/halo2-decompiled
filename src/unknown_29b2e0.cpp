@@ -54,7 +54,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // score 176 (was 176): r121, r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax D (11-19): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the XY vector read before the second copy measures 169 (seven points, under the eight-point bar), the same helper with the original vector order 171 and the two-exit helper with the early vector 174, the length taken from the helper's return 265 and the rotation rows written with the projection term first unchanged, all dropped; the magnitude and the aim length still sit at +0x10 where retail keeps them at +0xc, the final pitch takes a local slot where retail uses the fourth argument's home, and the rotations' sine, cosine and vector copies keep different slots.
-// score 176 (was 176): r123 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// r123 unchanged (merged from a second score line). frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
 // stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
 // return value 267 and the length local initialised before the call 171, all dropped; the helper's locals renamed
@@ -668,7 +668,33 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // square-root homes and the yaw share +0xc, its final pitch is stored in the dead scale parameter's home (+0x40) with
 // the first rotation's sine at +0x10, and the rotated result is written into the first copy's home (+0x20); ours gives
 // the yaw +0xc, the roots +0x10, the pitch +0x10, that sine +0x40 and the result the second copy's home (+0x2c).
+// M3 lane 13 r123 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH unless noted; control 176, difflib-aligned 229,
+// masked 114): what puts the three roots in the pitch's slot. Diagnostics (reverted): with the second rotation fed the yaw, or
+// with the final pitch store removed (1706 B, frame 0x28), the roots and the arc-cosine result move to the yaw's +0xc as in
+// retail; so they follow the pitch whenever one value serves both the second rotation's x87 loads and the store after the
+// join. Forms: the final pitch add moved to just before the second rotation 279 (1719 B), to after the first rotation 281
+// (1723 B), to after the vector copy 176 (same code); the rotation helper's angle by const reference 178, copied into a
+// helper local 178, the cosine taken before the sine 178, the angle typed double 171 (1707 B; a type picked by score, five
+// points); block-local yaw and pitch with the function-scope results assigned at the end of the arm 179, pitch only 203
+// (1718 B); the pitch result assigned right after the final add with the rotation reading the block-local 209 (1727 B: roots
+// +0xc as retail, aligned 194, but the pitch is then stored twice), assigned just before the second rotation 214 (1733 B, roots
+// +0xc); the rotation reading the result variable 176 (same code); the two angle stores written in each arm 251 (1743 B); the
+// final pitch formed as the second rotation's argument with the add repeated after it 298 (1742 B, roots +0xc), as a named
+// local after the first rotation 291, before it 203. Diagnostic: the final pitch kept in the scale parameter's variable 173
+// (aligned 202): its home becomes retail's +0x40, the first sine then takes +0x3c and the cosine +0x10 (retail +0x10 and
+// +0x3c) and the roots stay at +0x10; a parameter reused for another value, not kept. Reading: retail gives the pitch its
+// home after the first rotation's sine and cosine have theirs (roots and yaw +0xc, first pitch angle and both sines +0x10,
+// both cosines in the first stack argument's home, the pitch in the scale's home); ours homes the pitch first. Body unchanged.
 // MiniMax C (11-19): no gain (176, baseline; body restored). The single-exit normalizer with the XY vector before the second copy is the known 169, a gain of seven and under the bar; on it the roots and the inlined 0x11cc90 arc-cosine result sit at +0x10 where retail packs them at +0xc with the clamp input and the yaw. Re-measured here: the single-exit normalizer written with a result local and a length store 404, with a bool and ternaries 270, and the XY vector before the second copy 174.
+// M3 lane 7 r193 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH each time; control 176, aligned 153 by
+// difflib with addresses masked): the private normalizer single-exit (`result = 0.0f`, set to the root in the success arm,
+// one length store after the branch) 217 (1718 B, aligned 157). LEAD: this function's first two normalizations as
+// `k = 0.0f;` then the existing normalize3d (0x29b990 keeps the private helper and stays matched) 186 (1718 B) but aligned
+// 139: unity in XMM4 and every XMM of the three normalizers retail's; left are the root and arc-cosine cell (+0x10 for
+// +0xc), one store pair's order, the yaw clamp's zero copy below the branch, and the first rotation, which ours
+// interleaves with the cross axis. On it: the second pitch angle computed before the first 270 (1711 B, aligned 151); the
+// rotated copy stored before the two angles 186 (aligned 142); only the first normalization through normalize3d 266
+// (1717 B, aligned 205). Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -993,6 +993,13 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // build 45); definition/model names, `const`, `register`, declaration order, a model pointer, a shared tag pointer,
 // range-zero default, swapped range arms, inline range/model-index helpers, dead locals 1..8 and the zoom block's
 // spellings leave EDX (2). Removing the zoom block altogether (diagnostic) gives EAX, so the choice is global.
+// m3 lane 11 r130 (fast with 0xbf2c0, 0x268c90, 0xb8a80, 0xb8b20, 0xcaf60, 0xc8880, 0x30bf0, 0x16bc00, all matched):
+// lane 12 r149's lead patch applies and is 2 again (only the object definition pointer in EDX, retail EAX; the
+// instructions around it are identical, so the choice is not local). On the lead: the model index read through the
+// definition at both uses 45 (896 B: the definition takes EAX, but the model's definition pointer moves to ECX and
+// the 0x16bc00 result, marker copy and second lookup blocks rotate their scratch registers); on that, the model index
+// named inside the model arm 45, a model pointer named in the arm 45, both 45 (they fold away); the zoom block
+// reading the unit through the unit_index local 156 (899 B).
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -1743,7 +1750,7 @@ struct s_object_placement_data;
 struct s_effect_object_placement;
 long __stdcall function_b7b40(void *creation);
 extern long *g_4de2d0;
-bool function_d5060(s_scenario_block *palette, volatile long type, long index,
+bool function_d5060(s_scenario_block *palette, long type, long index,
     s_type_4f0dcc const *datum, bool enabled, s_object_placement_data *data);
 bool function_a7640(s_effect_object_placement *data);
 void object_dispatch_place(long index, long datum);

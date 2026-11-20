@@ -250,6 +250,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // the model definition as `pane->models + i` 23; the text and model loops stepping `++i` 23; the model's value0a
 // store without the cast 23; the text call's definition as `pane->texts + i` 23 (all the same code). Compile-only (no
 // LTCG conventions) gives both the text and model resets as `and` and reads the text loop's screen without a copy.
+// M3 lane 3 r274 (fast, control 23): on main's body the text loop on its own counter declared in its `for` 23, the model
+// loop so 23, both 23; the flag as `bool const` 23; a `continue;` closing the model loop's `if (model)` block 23 (all five
+// the same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

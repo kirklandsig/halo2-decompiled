@@ -103,10 +103,18 @@ PRIVATE __forceinline void collision_damage_location(dword key, long *instance, 
 	}
 }
 
+struct s_material_type_1da550
+{
+	short index;
+};
+
 /* fills a collision damage entry from one of an object's contacts when its
    impulse is above 0.4 */
 // score 13 (was 95): the tail's loads of the location are scheduled
 // differently (retail reloads the instance right after function_1201a0)
+// Matched in a full build with stand-in SDK headers (was 13): the contact's material is copied through a one-member
+// struct local (a struct-typed local is not folded into its use, so the 16-bit value stays a register value while its
+// load stays after the kind store), and the surface index is stored after the material index.
 // @retail 0x1da550
 bool function_1da550(long object_index, long contact_index, s_collision_damage_entry *entry)
 {
@@ -126,13 +134,14 @@ bool function_1da550(long object_index, long contact_index, s_collision_damage_e
 		entry->direction = contact->normal;
 		function_1201a0(&entry->direction, g_4687a8);
 		entry->kind = 2;
-		entry->unknown7c = contact->material_b;
+		s_material_type_1da550 material = *(s_material_type_1da550 const *)&contact->material_b;
+		*(s_material_type_1da550 *)&entry->unknown7c = material;
 		entry->object_value28 = object->value28;
 		entry->object_value2c = object->value2c;
 		entry->flags |= 0x100;
 		entry->instance_index = location.instance;
-		entry->surface_index = location.surface;
 		entry->material_index = location.material;
+		entry->surface_index = location.surface;
 		result = true;
 	}
 	return result;

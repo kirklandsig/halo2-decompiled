@@ -556,7 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 115 (was 115): earlier 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// score 114 (was 114): earlier 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
 // `short const &` for the bounds store 191 (1888 bytes; the reference folds away and `left` is still stored as a dword);
@@ -862,6 +862,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // a dword at -0x50 (the spelling that narrows it groups the two coordinates into one array, a banned
 // locals-grouping form); the view pointer sits at -0x44 against -0x30 here and the font at -0x50 against -0x4c.
 // The tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
+// m3 lane 11 r130 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115 fast, 114 full):
+// text_bounds renamed to sort first 115 (identical code); the three message flags and the message block in an inner
+// block of their own, with the bool timer 463 (1883 B: the flags leave memory) and with the long timer 128; the view
+// pointer typed const 115 (same code); the timer flag as `char` 191 (1888 B, the byte timer's code). The sibling
+// 0x13954b converts its origin into a `short origin[2]` it passes to a call; here no call takes the pair, so that
+// spelling stays the locals-grouping form listed above.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
