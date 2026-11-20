@@ -342,6 +342,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // cursors 326, with independent deadline 316. Independent deadline with polynomial names
 // or shared unit-length checks 125 each. NOT kept: both 125 forms recover the traversal
 // through +0x2b7 but change the basis correction and grow to 1413 bytes.
+// Named deadline through a read-only cursor 94, or declared before the constant cursor 98.
+// With the named deadline: shared basis dot 70, three named alignment products 94,
+// nested alignment check or successful early return 94 each, shared side cross 94,
+// staged up cross 98. The separate deadline recovers the two traversal slots, but
+// none of these forms recovers the orientation schedule at retail length.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1274,6 +1279,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // horizontal field 356, shared original-direction setter 380.
 // NOT kept: the repeated half-angle is 1454 bytes and duplicates a computed value. The original-direction
 // setter demotes the matched initializer.
+// Saved forward, rotation workspace, second axis and unrotated-copy names 337 each.
+// Horizontal/vertical angle names, deviation component names, late matrix declaration,
+// and second axis declared beside matrix 337 each (reduced control 337).
+// The square spills and early EDI save survive all eight forms.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1750,6 +1759,12 @@ struct s_pool_view_172840
 // ring subscript 226, retained portal count 230, shared portal bit tests or tests and set 55 each.
 // NOT kept: the 55 forms still grow to 870 bytes and keep the long sentinel load and
 // displaced key store.
+// With signed list publication: native short cluster store 152, queue failure or
+// success return 241 each, queue result AND 250, pool then grouped projection/queue
+// result 78, geometry chain then queue 72, positive capacity return 255, and
+// direct pool-derived result 261.
+// NOT kept: the 72 form recovers the flag homes, but shares a geometry false
+// store that retail emits twice. The 78 form groups projection with queue handling.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

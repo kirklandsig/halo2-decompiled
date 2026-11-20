@@ -3737,6 +3737,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // with promoted debit, or with named fallback minimum 639/639/639. Reduced control 636.
 // NOT kept: ties and regressions. The early magazine tag and post-heat rounds still occupy separate
 // spill homes in the full build, with the 0x1c64 frame and swapped weapon/barrel registers.
+// Magazine record or tag names 636 each, immutable receiver bindings 636,
+// separate record or tag references 636 each, positive notification branch 636,
+// fallback rounds before burst reset 636, and nested fallback thresholds 636.
+// Reduced control 636. The full frame and separate magazine-tag and round spills still differ.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4180,6 +4184,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // bodies this round: a bitfield returned through a bool-returning inline function gives retail's `mov; shr; test 1` (a
 // direct test of a narrow bitfield gives `test byte [mem], mask`), and a bool with two definitions that is tested at once
 // keeps its store (retail's `shr al, 6; and al, 1; mov [esp + 0x1b], al; jne` at 0xfe7cf needs no qualifier). Body unchanged.
+// Blocked control or status shift tests 1415/1412, both shifts 1415,
+// both shifts with branch assignments 1415, original tests with branch assignments 1412,
+// the unblocked path first 1412, and scoped or read-only blocking receiver 1412 each.
+// The frame remains 0x34 and the dual result still spills.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
