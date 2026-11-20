@@ -703,6 +703,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // `return 0.0f` 305, in 0x2b400's shape (`x = x * inv; y = inv * y;`) 305, with the reciprocal first in both products 305,
 // with both components divided by the length 305 (all the same code); the arg_0 read through its address removed 316
 // (1726 B; plain agrees, 0x29a190 MATCH -> 345).
+// M3 lane 9 r146 (fast with 0x29a190/0x298c30, both MATCH unless noted; base 305): the facing x and y read into two
+// locals in each near emission 423 (1772 B); the facing point copied once at entry and read everywhere 435 (1728 B,
+// 0x29a190 351); the near rotated point built in a named point2f and stored as one aggregate 375 (1725 B); the near side
+// and hit flags stored right after the angle, ahead of the rows, 313; only the facing y named in each near emission 413
+// (1772 B). All restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

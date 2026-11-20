@@ -638,6 +638,16 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // to sort first or last 2/2; the entry loop as `while (n < count) { ...; ++n; }` 2 (all the same code); as a guarded
 // `do ... while (++n < count)` 159 (492 B). Diagnostic: 0, 1, 2, 3, 4, 6, 8, 10 dead initialised longs at the top 2 each
 // (round 119 measured odd 9..39), so first's slot is no symbol-count tie at any parity.
+// M3 lane 9 r146 (fast with 0x404b0; control 2): the shape read ahead of the weight 19; the material index read ahead of
+// the shape 22; the weight read after the material lookup 23; no first local, the index from `g_4c0b78.previous + n` 142
+// (496 B: the previous count is re-read every pass); first and index typed dword 2 (same code). A multi-file LTCG screen
+// (this file's generated unit linked with the four callees' files as the full build compiled them) reproduces the real
+// slots exactly (material alone at the frame's second cell, first and the entry cursor in the mode home; the explicit
+// cursor moves first as in the real build). In it 191 random combinations of ten same-code spellings (first by chain
+// or current-then-first, dword/long selection, pre/post increment, n or material declared ahead, `&entries[n]` or
+// `entries + n`, `first + n` or `n + first`, the index ahead of, after or inside the entry test) all keep first in the
+// mode home, and so do the guard as `>= 1`, the loop test reversed, `current = first + count` and the selection ahead of
+// the copy (each other code). Only a later read of first (diagnostic) moves it. All restored.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
