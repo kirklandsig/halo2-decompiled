@@ -1896,6 +1896,15 @@ PRIVATE __forceinline real const &component_time_step()
 // 74/40; the scaled value assigned back into `acceleration`, step-first 17/14 and stop-first 36/36 (same code each);
 // stop-first with the step started as the scale result and multiplied in place 36/36; stop-first with the stop tick
 // count and the per-tick travel named 36/36, plus the final change named 36/36 (same code each).
+// M3 lane 15 r112 (one-file harness, exact: 17/14 = 26; fast 26): the scale written in the body as an if/else on
+// `scaled_acceleration` 26 (fast, same code); that with the power's base and the power named 26 (same code); bare
+// declarations of next_velocity, fraction, stop_distance, magnitude and step at the top 26 (same code); the time step
+// through a getter defined in another source (inlined at link time) read at each use, bound as a reference or as a
+// pointer 26 each (same code), its value in a local 461 B, 90/48; `target - position` named at the top 467 B, 76/69.
+// Diagnostic (dead locals, not kept): the head is retail's for 3 mod 8 extra symbols numbered before the time-step
+// binding (465 B, 104/6; stop-first 105/29: then only the XMM2/XMM3 swap and `add eax, 4` differ). Dead locals after
+// the binding never give it; a named base or power in the body counts one each, locals inside the inline helpers and
+// bare declarations count nothing. A pointer with a second, live definition in the low-step arm still folds both reads.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -3547,6 +3556,10 @@ byte *__fastcall function_30c170(hkWorld *world);
 // at the composed matrix, with one converter call after the test 313 (1023 B); the first half's rigid-body entry named
 // once for the count, first node, child search and body store 314 (1165 B); the entry reads through the array's
 // operator[] 15 (same code).
+// M3 lane 15 r112 (same harness, 15 as the check): the converter passing w explicitly 15; the translation built with
+// `position.set(...)` 15; the rotation part bound as an `hkRotation &` for the three columns 15; the translation copied
+// through `m_quad` 15 (all the same code); the converter reading the vector into i, j, k locals first 32 (the value in
+// XMM0 is still stored first, then the zero). Dead initialised locals K = 0..40 at the top: 15 at every K.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,

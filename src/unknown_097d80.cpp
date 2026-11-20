@@ -649,6 +649,12 @@ struct c_aggregate : c_child
 // Per-child dispatch range with first/count 161/124, first/end 163/141,
 // end/count 163/148, and first/saved count 161/139, with independent/field output.
 // NOT kept: the range table leaves the frame oversized and increases the score.
+// M3 lane 15 r112 (one-file harness, exact 31): the allocator globals read once per item into a local for both calls
+// 65 (366 B); the cleanup object local as `void *` 31; the query test as `== false` 31; its result held in a bool 31;
+// the cleanup block bound as a reference 31 (same code each). Diagnostic: the count stays apart (+0x1c) whenever a
+// cleanup call takes its object through the pointer global's allocator field (either call alone is enough); both calls
+// on an object read from the block memory, or on a file-local global aggregate's allocator field, pack it at +0x10 as
+// retail does (frame 0x801c); a file-local static pointer global does not.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
