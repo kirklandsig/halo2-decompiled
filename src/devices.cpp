@@ -1309,7 +1309,7 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
-// score 116 (was 127): Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
+// score 116 (was 116; earlier 116, was 127): Duration and position use different XMM registers. Ramp-down remains cached across its bounds.
 // Previously noted: Both denominator arms compute the cruise speed, then a shared
 // store publishes it at the join. The body is 523 bytes and both callers still match.
 // Duration and position use different XMM registers. The ramp-down clamp caches its value,
@@ -1749,6 +1749,14 @@ bool function_108530(long device_index, long name)
 // MiniMax B (11-20): no new form, no lower score (116): the initial velocity still reaches the clamp on the stack
 // where retail passes it in XMM6, so the clamp's own convention keeps the ramp-down slot and the duration and
 // position registers displaced; every form that moves the velocity off the stack loses a matched caller.
+// M3 lane 7 r197 (fast with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, aligned 48, register-masked
+// 13). Re-measured on this XMM6 body: the deceleration distance reduced in place 116 (same code); the acceleration block
+// from the cruise_speed local with the deceleration block on the field 116 (same code), with the in-place deceleration 116
+// (same code); a named cruise time (`remaining - ramp_down_time`) first in the inner block with the denominator from it 131
+// (528 B, callers 31/13); that with delta after the reset stores 120; delta after the reset stores alone 109 (listed, a
+// moved declaration) and with either first form 109 (same code). In the inner block retail gives XMM registers to the
+// distance (XMM5), the final velocity (XMM7) and the 2.0 constant (XMM3) and reloads the ramp-down and the cruise velocity
+// from memory; ours keeps the ramp-down (XMM7) and the cruise velocity (XMM4) and reloads the distance.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2277,7 +2285,7 @@ bool function_0b6760(s_index_pair const *pair);
 // MiniMax G (11-18): no new form, no lower score (250): the frame 0x20 and the state test are retail's; the index and index * 12 sit in
 // EDI/ESI where retail has ESI/EBX, the result byte is returned in DL where retail keeps it on the stack, and the definition pointer is
 // re-read; the one-use tick-rate local that reaches retail's block order (58) stays match-only, so the body stands.
-// score 61 (was 250): retail's length (1495 bytes) and registers up to the position arms. Left: retail stores the definition
+// score 61 (was 61; earlier 61, was 250): retail's length (1495 bytes) and registers up to the position arms. Left: retail stores the definition
 // slot before the result byte (ours after), the manual position arm loads the state for its push into ECX (ours EAX), the
 // unit byte test is `ja` (ours `jne`), and at the two channel-1 0xb6760 calls retail keeps the channel pointer in ESI and
 // nothing in ECX/EDX across the call (ours keeps it in ECX and copies it to ESI): BLOCKED-BY 0xb6760 (see r118 below).
@@ -2717,10 +2725,17 @@ bool function_0b6760(s_index_pair const *pair);
 // Bind the position-group field reads and updates to position and position velocity and group target 316.
 // Use the existing device definition as the saved receiver in both motion paths 61.
 // NOT kept: The position lvalue and typed definition tie at 1,495 bytes. Forms that bind the velocity change the frame and shorten the body by 20 bytes. The definition store order and the channel-1 call registers remain.
-// score 61 (was 61): MiniMax H (11-19): the result local is declared after the saved definition, the speed is a
+// MiniMax H (11-19), at 61: the result local is declared after the saved definition, the speed is a
 // running sum and the unit byte is tested as `<= 0`; what still differs sits at the two channel-1 0xb6760 calls,
 // whose convention is fixed in another file.
 // MiniMax H (11-20), NOT kept: 58 (was 61), a 3-point gain, under the 8-point bar for a function above 30.
+// M3 lane 7 r197 (fast with 0x108600, 0x108670, 0x107cc0, 0x107520, 0x107980, 0x1cd070, all MATCH each run; control 61,
+// aligned 27, register-masked 8): the first channel-1 test nested under `if (state)` 61 (same code); a channel pointer
+// local for both channel-1 tests and both channel calls 61; `inline` on this file's declaration of 0xb6760 (diagnostic,
+// reverted) 61 (same code: the declaration alone does not change the callers' view of its registers); the previous
+// position read ahead of the first channel-1 test and passed to the frame call 98; the group target read once into a
+// local for the test and the motion call 388 (1479 B; retail reads the group's value at both uses). Still
+// BLOCKED-BY 0xb6760 at the channel-1 sites.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

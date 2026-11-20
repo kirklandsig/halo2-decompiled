@@ -1260,6 +1260,16 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the resend bit in the message; the in-place update reaches retail's byte OR (or byte ptr [ecx+0xe], 2) but frees the
 // flags word and changes the whole allocation (89), the ternary message pointer with the in-place update is 90, and
 // the ternary alone keeps retail's registers but lays the arms out with the address in the fall-through (45).
+// M3 lane 7 r197 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched each time; control 35). Arrangements of the
+// listed second-result lead (result = 4 first in the found block, the in-place update): the lead itself 10 (225 B), with
+// the send test inverted 10, with the count test inverted (`if (!count) result = type; else` the loop) 10: the shared
+// early exit is still laid out ahead of the loop's zero-trip exit. Both tests inverted 87 (216 B); no inner else 95 (205
+// B); one combined test with the copy at the top of its arm and an else 28 (214 B), the same with a named `sent` 28, the
+// combined test inverted (`send || !count` arm first) 28; `else if (!count)` chain 92 (210 B); `bool sent` and the copy
+// before the test 20 (listed); an early return of the type on a successful send with the copy after it 94 (218 B), with
+// the count test as a second early return 90 (212 B), with both tests in one early return 80 (216 B). The early exit
+// follows the loop's zero-trip exit only when the early paths jump straight to the return (the kept form), and then the
+// result has no register for the found block.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
