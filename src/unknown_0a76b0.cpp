@@ -4407,6 +4407,15 @@ extern vector3f *g_4687bc;
 // `0.0f != function_30bf0(&direction)` 9 (only the ucomiss operands flip); the facing test as `0.0f < dot` 8; the default
 // material built ahead of the definition re-lookup 40 (1099 B), between the re-lookup and the effect tag read 35 (1099
 // B); re-measured: round 247's typed object-type test (with a byte cast) 8.
+// M3 lane 3 r276 (fast with 0xb67a0, 0x188180, 0x1eb020, all MATCH; control 8): the element as the array's data pointer
+// bound through a pointer reference and stepped with `+= rigid_body_index` 33 (the add's operands flip, data first as
+// retail, but in ESI/ECX for retail's EAX/EDX, and the node count moves to EAX). Compile-only screen (it reproduces
+// both sites; all the same code at both): a code-free forceinline identity wrapper on each of twelve reads of the
+// Havok block (the component index at the test and at the lookup, the unit's definition index, the model index, the
+// effect tag, the global material, the component, the rigid-body index at its call, its test and its element, the
+// component at the element); the element as data then `+=` without the reference, through a named index copy, as byte
+// arithmetic; `long const` effect tag and index; a const definition; `*rigid_body->nodes`; the model in a `byte *`
+// local; the node index as `short` (one more line, both sites unchanged).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

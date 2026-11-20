@@ -4244,7 +4244,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// score 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// score 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns
 // directly (1264 B). Left: retail reads the accepted byte back at every exit where ours folds it at the reason-1/2/9
 // exits, the acknowledgement block is laid out last in retail, the timeout call lacks retail's owner spill (the earlier
@@ -4543,6 +4543,15 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // volatile store, discarded; its plain parts alone (`better != 0`, the state read into a local, the two NONE stores
 // swapped, the owner declared then assigned) 96 each. Re-measured on the control: every exit through `done:` 320
 // (1280 B), with the tie-break 313.
+// M3 lane 3 r275 (fast with 0x5e3f0/0x769a0/0x58d90/0x58d20 MATCH): round 208's 96 lead rebuilt on the current body
+// (96, difflib-aligned 8). On it: `if (result) return result;` after the disconnect 119 (aligned 30, as before); `if
+// (result) goto received_done; return result;` there 48 (retail's length, but aligned 23: the read, test and `jne`
+// appear, the fall-through returns a folded `xor al, al` and the byte homes rotate, result +9); that with `(void)&result;`
+// 48 (same code: the address-taking is dropped); `if (!result) goto` a second `return result;` after the acknowledgement
+// 48 (same code); the result cleared by `memset(&result, 0, sizeof(result))` on that form 48 (same code: scalar-
+// replaced). Reading: retail's fall-through returns the byte it just tested without folding it to zero, and every
+// exit reads the byte back, which is what an escaped (address-taken) result gives; nothing in this inline_depth(0)
+// region takes its address.
 // M3 lane 14 r123 (fast with 0x5e3f0, MATCH): round 208's lead body re-measured 96 on current main (1264 B, first difference
 // +0x94). On it: the acknowledgement under `if (!result && acknowledge)` 96 (same code: the proceed path threads the whole test
 // away); the final return as `result ? true : false` 410 (1310 B), `result != false` 396 (1313 B), `result == true` 406

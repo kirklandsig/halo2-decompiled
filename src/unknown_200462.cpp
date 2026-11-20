@@ -254,6 +254,13 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // on the bounds-record pointer 12 each (diagnostic, full image: the XMM3/XMM4 pair is not a symbol-count tie); on the
 // bounds-record pointer: both half extents ahead of the pulse query 53, the corner array declared at the draw loop's top 12,
 // each corner's y stored before its x 20.
+// M3 lane 3 r276 (fast with 0x2008fc 0x200891 0x1396c7 0x22a664 0x13927e, control 14): the draw pass's bitmap entry as the
+// bitmap header's typed dimensions element (width/height fields) 14; the draw pass in the typed group/sequence/dimensions
+// idiom of 0x24e9c7 (bounds as a box2f local copied from `sequence->sprites->bounds`, cast at the draw call) 14 (both the
+// same code: the copy source stays ADD); that with the first sprite through a one-use typed pointer 12 (retail's
+// `lea esi, [eax + 8]`; only the XMM3/XMM4 pair left; a one-use pointer, not kept), and with the first pass typed the
+// same way as well 12 (the pair unchanged); the corners as four chained assignments (`[3].x = [0].x = x - half width`
+// and so on) 89 (846 B).
 // @retail 0x200462
 void function_200462(long arg_0)
 {
