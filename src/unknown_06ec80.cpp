@@ -225,6 +225,15 @@ union s_6ec80
 // return NONE;` 229, as an if/else on its result 194 (entry registers retail's, block pointers EBX/EDI swapped from
 // +0x101), each of the three also unmatching the getter (27 B against 26); the bit or-ed as a full assignment 225; one
 // readiness test after the guard repeating the pointer tests (match-only) 226.
+// M3 lane 13 r131 (fast with 0x6ec10/0x72a90/0x5b120; base 5; the mask zeroed in the guard re-measured 225: with it the
+// name/second_id and data/short homes swap as the zero and NONE swap registers, so each home follows the constant
+// stored to it): a leading unused parameter at the definition and both calls 5, with the mask zeroed in the guard 225
+// (the link drops the parameter; retail's callers load only EDX and push the flag); the 0x18 read written ahead of the
+// 0x49c8 NONE default 7, with the mask zeroed in the guard 225; the mask as a one-member flags type with inline
+// clear/set/test methods, cleared in the guard, do loop 225, `for` loop 348 (1059 B, still unrolled), cleared before
+// the guard 5 (same code); with the mask zeroed in the guard, the loop's first bit named before the guard 225, the
+// player count named before the guard with the do loop 225, with a `for` loop 348 (1059 B): named constants fold
+// before allocation, so nothing stays live across the two pointer tests.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

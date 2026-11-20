@@ -360,6 +360,22 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // nested alignment check or successful early return 94 each, shared side cross 94,
 // staged up cross 98. The separate deadline recovers the two traversal slots, but
 // none of these forms recovers the orientation schedule at retail length.
+// M3 lane 13 r131 (fast with 0x16fe90; base 64): the time pointer and the group counter trade homes because retail sets
+// the time pointer ahead of the counter's zero; `real *time = state->times;` declared after `constant`, read as `*time`
+// and stepped last in the body gives retail's whole loop (first difference +0x2b8, in the tail) but 125 by position
+// (1413 B). The tail's product operand order is a numbering state: retail orders up.i < forward.k < computed values <
+// forward.i, forward.j < up.j, up.k; the plain body has forward.* < computed < up.*, the explicit-pointer body computed
+// < everything with forward.j/k above up.*. Diagnostic sweeps of 0..7 dead initialised function-scope locals (period
+// 8; dead locals inside the correction block change nothing): plain body 64, 88, 112, 112, 112, 112, 86, 127 (with six
+// the dot's sides and the second normalize are retail's); explicit-pointer body 125, 121, 121, 123, 125, 127, 91, 121.
+// On the explicit-pointer body: the corrected up as named values declared in each of the six orders and stored j, k, i
+// 124, 124, 124, 128, 128, 128; declared and stored at once in the six orders 131, 133, 133, 133, 132, 132; stored
+// directly in the six orders 131, 133, 133, 133, 132, 132; through the cross helper with stores j, k, i or i, j, k 130
+// / 130, as one vector assignment 201 (1363 B); the left rows in the five other orders 132, 128, 132, 132, 128 and
+// through the cross helper 124. Seven tail spellings x 0..7 dead locals (direct stores, left through the helper, up
+// through the helper, left as three reals, up as `forward + 1`, both vector pointers declared at the function top, the
+// dot through dot3f): best 84 (1399 B, six dead locals with the named or helper forms); the first normalize stays one
+// instruction long in every explicit-pointer state (the scale ranks below all three forward fields).
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -871,7 +887,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 129 (was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. The build still places cluster creation ahead of traversal.
+// score 105 (was 129): the creation block is now out of line and the slot (EBX) and volume index (BP) registers are retail's,
+// at retail's 434 bytes. Left: the call setup (retail loads the camera array into ECX at the block top and the key into EDX,
+// copies the key for the multiply and pushes it afterwards; ours loads the array into EDX after the count store and
+// multiplies the key in EAX after pushing it) and, one row later, the plane lookup's operand order. Earlier (129, was 142):
+// Retail saves EBX for the cluster slot and defers EBP for the signed volume index. The build still places cluster creation ahead of traversal.
 // Earlier (129, was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. Cluster creation stays inline in the build.
 // The save at entry and the signed volume index still exchange EBX and EBP, and cluster creation stays before the loop.
 // Earlier score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
@@ -989,10 +1009,30 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // signed capacity comparison after a break or a positive arm, with or without immutable
 // entry/volume addresses: 126 each. NOT kept: the three-point gain leaves creation inline
 // and shortens the body to 425 bytes.
+// M3 lane 13 r131 (fast with 0x1730a0, MATCH throughout; plain with the file's 33 functions; base 129): KEPT one result
+// for both failures (`bool result = true;` cleared where the cluster table is full and where the volume table is full, the
+// loop under `if (result)`, one `return result;`): 105 (434 B). The result known in every arm of the find-or-add is
+// threaded past the later test, which is what moves the creation block out of line; with it the slot takes EBX and the
+// volume index BP. Tried before it: creation under `if (slot == NONE)` with a created flag and the lookup under `if
+// (!created)` 144 (418 B); a found flag from the map read 144; the mapped value kept and tested twice 144 (each lays the
+// creation block first); the find-or-add as a forced-inline bool helper with out parameters, early returns or one
+// result, 112 / 112 (434 B, creation out of line, slot still EBP); a have_cluster flag set in all three arms and tested
+// after the if/else 112; the creation failure through a result tested by `if (!result) return false;` with the loop's
+// own returns 112. On the kept form: the entry key named for both uses 105 (same code); the camera pointer named after
+// the volume pointer 22 (the key takes ECX and the array EDX, retail the reverse; a one-use local, not kept), named
+// between the count store and the volume pointer 13, spelled key * size + cameras, &cameras[key * size], as an integer
+// sum, with an unsigned product, by indexing a 0x1bc-byte record array type, or through an inline accessor 22 each;
+// started from cameras and advanced by the key 22; the camera byte offset named and added in the call 11 (the plane
+// lookup is then retail's, the array still EDX); offset and pointer both named 22; with the key also named, or assigned
+// inside the camera expression, 105 (forwarded back into the call); the call's key re-read through the pool array 21
+// (diagnostic value: the array then takes ECX at the block top as in retail, the key is loaded twice). 1..7 dead locals
+// on the 22, 13 and 11 forms: no change (not a numbering state). Diagnostics (restored): an extra store of the array
+// ahead of the camera pointer 91, an extra store of the key 110, the count store after the volume pointer 87.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
 {
+	bool result = true;
 	long cluster_slot = cluster_map[cluster_index];
 	s_view_cluster_1733e0 *cluster;
 	if (cluster_slot != NONE)
@@ -1012,36 +1052,42 @@ bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool,
 			memset(cluster->heads, 0xff, sizeof(cluster->heads));
 		}
 		else
-			return false;
+			result = false;
 	}
-	do
+	if (result)
 	{
-		short volume_index = collection->volume_count;
-		if (volume_index >= 512)
-			return false;
-		s_pool_entry *entry = &pool->entries[entry_index];
-		if (entry->unknown28 == NONE)
+		do
 		{
-			collection->volume_count = volume_index + 1;
-			s_view_volume_1733e0 *volume = &collection->volumes[volume_index];
-			if (function_163db0((s_camera_163db0 const *)(cameras + entry->key * 0x1bc), (box2f const *)&entry->rect, entry->key, (s_frustum_1648d0 *)volume))
+			short volume_index = collection->volume_count;
+			if (volume_index >= 512)
 			{
-				volume->cluster_index = cluster_slot;
-				volume->distance = entry->unknown24;
-				entry->unknown0a = volume_index;
-				short portal_index = entry->unknown06;
-				if (portal_index != NONE)
-					volume->plane_index = *(long *)(*(byte **)((byte *)g_4e0348 + 0x60) + portal_index * 0x24 + 4);
-				else
-					volume->plane_index = NONE;
-				if (cluster->heads[group] == NONE)
-					cluster->heads[group] = volume_index;
-				++cluster->counts[group];
+				result = false;
+				break;
 			}
-		}
-		entry_index = list_next(lists, (short)cluster_index, (short)entry_index);
-	} while (entry_index != NONE);
-	return true;
+			s_pool_entry *entry = &pool->entries[entry_index];
+			if (entry->unknown28 == NONE)
+			{
+				collection->volume_count = volume_index + 1;
+				s_view_volume_1733e0 *volume = &collection->volumes[volume_index];
+				if (function_163db0((s_camera_163db0 const *)(cameras + entry->key * 0x1bc), (box2f const *)&entry->rect, entry->key, (s_frustum_1648d0 *)volume))
+				{
+					volume->cluster_index = cluster_slot;
+					volume->distance = entry->unknown24;
+					entry->unknown0a = volume_index;
+					short portal_index = entry->unknown06;
+					if (portal_index != NONE)
+						volume->plane_index = *(long *)(*(byte **)((byte *)g_4e0348 + 0x60) + portal_index * 0x24 + 4);
+					else
+						volume->plane_index = NONE;
+					if (cluster->heads[group] == NONE)
+						cluster->heads[group] = volume_index;
+					++cluster->counts[group];
+				}
+			}
+			entry_index = list_next(lists, (short)cluster_index, (short)entry_index);
+		} while (entry_index != NONE);
+	}
+	return result;
 }
 
 PRIVATE __forceinline long list_head_index_1730a0(s_pool_lists const *lists, short index)
@@ -1694,7 +1740,9 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 134 (was 205): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
+// score 55 (was 134): only the publication block differs (870 B against 868): its first scratch load takes CX where retail's
+// takes DX (the link value; the key then ECX), so the stores reorder and the sentinel is a five-byte load. Earlier (134,
+// was 205): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
 // The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return
 // still differ.
 // Earlier comparison at 221.
@@ -1821,6 +1869,19 @@ struct s_pool_view_172840
 // direct pool-derived result 261.
 // NOT kept: the 72 form recovers the flag homes, but shares a geometry false
 // store that retail emits twice. The 78 form groups projection with queue handling.
+// M3 lane 13 r131 (fast, then plain with the file's 33 functions; base 134): KEPT the three failure tests as independent
+// `if`s (retail's tail is three separate test/store sequences: pool, projection, queue) with the other cluster chosen by
+// one ternary into a `long` (retail widens it once, spills the dword and reloads it for the list call): 55 (870 B); every
+// row outside the publication block is then retail's but for jump targets. Alone: independent tests 152 (878 B); with a
+// long set by an `if` 151; a short ternary 150; a short `if` selection widened right after it 55; widened after the key
+// store with value08 from the long 55 (ternary or `if`), value08 from the short and widened after it 150/152; the key
+// store written ahead of the link store 53 (leaves retail's store order); an inline other-cluster helper (ternary or `if`
+// form, into a short or a long) 55/55/55; a second read of field_6 in the compare 55; the cluster on the left of the
+// compare 56; a named bool then a ternary 55; inline by-value setters for link/key and cluster/portal 152 (short
+// cluster) / 55 (long), one setter for all four 55 / 152; the key read into a local ahead of the link store 55 (both
+// selection forms; propagated). Diagnostics (restored): one extra load/store statement between the selection and the
+// link store gives retail's DX link, ECX key and `or eax, -1` sentinel (126, the stores then reorder); ahead of the
+// selection it changes nothing (138). So retail has one more scratch temporary at the start of the publication block.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1878,12 +1939,10 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 				if ((byte)function_173380((s_polygon_clip_173380 *)&polygon->bounds,
 					(s_polygon_clip_173380 *)&entry->rect, (s_polygon_clip_173380 *)&next->rect))
 				{
-					short other_cluster = polygon->field_6;
-					if (other_cluster == (short)cluster_index)
-						other_cluster = polygon->field_8;
+					long other_cluster = polygon->field_6 == (short)cluster_index ? polygon->field_8 : polygon->field_6;
 					next->next = (short)index;
 					next->key = key;
-					next->value08 = other_cluster;
+					next->value08 = (short)other_cluster;
 					next->unknown06 = (short)portal_index;
 					next->unknown28 = NONE;
 					next->unknown0a = NONE;
@@ -1894,7 +1953,7 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 					portal_bits[word_index] |= bit;
 					storage->used = ((point2f *)next->data - storage->points) + next->count;
 					function_11f5f0((box2f *)&next->rect, (point2f *)next->data, next->count);
-					function_173b00(lists, other_cluster, (short)new_index);
+					function_173b00(lists, (short)other_cluster, (short)new_index);
 					if ((queue->index + 1) % 256 != queue->unknown00)
 						function_173b60(queue, (short)new_index);
 					else
@@ -1912,9 +1971,9 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 	}
 	if (pool_full)
 		result = false;
-	else if (projection_full)
+	if (projection_full)
 		result = false;
-	else if (queue_full)
+	if (queue_full)
 		result = false;
 	return result;
 }
