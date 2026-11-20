@@ -99,7 +99,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
 // Earlier score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
-// score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
+// Earlier score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // Prior score history: 194 before.
 // MiniMax E (11-19): score 162 (was 162): no new form, no lower score. Read from the listing again: the first
@@ -787,6 +787,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // extents 217 (1948 B); width computed after both inverse rows 173 (1951 B); width computed ahead of both inverse rows 170
 // (1950 B); the aspect test as `ay<ax` 162 (same code). Diagnostic (behaviour change, reverted): the blend assigned without
 // its 0x20 test 332 (1959 B), so the conditional store and reload is not what keeps it out of XMM5.
+// Inverse spans at each use, primary/secondary/both/horizontal/vertical 326/212/325/286/314.
+// Both pairs at use with current/next/both weighted terms staged 306/306/306.
+// NOT kept: The secondary-only form preserves frame 0x60 and regresses. The other forms reduce the frame and score higher.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

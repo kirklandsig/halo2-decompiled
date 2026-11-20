@@ -838,6 +838,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // EBX and cluster in ESI as retail; the slot is still a word and NONE is in EDX), the same with a char slot 666 (3827 B:
 // retail's `mov cl` and byte compare, NONE in EDX against retail's EAX with the call result moved to EDX); the slot read
 // ahead of the three source resets 607 (same code).
+// Current-cluster predicate after palette lookup, at its first publication, or before lookup 739/735/726.
+// Predicate shared across both sources after defaults, after the provider, or before the provider 733/733/750.
+// Shared cluster index for lookup and predicate 741; complementary predicate across both sources 733.
+// NOT kept: All grow and regress, with a first difference before the original loop span.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

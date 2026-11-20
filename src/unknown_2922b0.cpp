@@ -75,7 +75,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_1 * arg_0->k + arg_1->k * local_2 - cross_k * local_0;
 }
 
-// score 521 (was 521; 558 before round 111): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// score 521 (was 521): Earlier scores 558, 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // Earlier at 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // MiniMax C (11-19): no new form, no lower score (558): the success byte still sits at +0x13 where retail has +0x17, the four hit flags sit at 0x20..0x23 against retail's 0x1c..0x1f, the collision copy lands at 0x3c against retail's 0x40, and the comiss operand order and the exit layout still differ.
 // Earlier at 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
@@ -734,6 +734,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // local_6 = field_48;` read once for the test and every later use) 667 (2852 B); the same with the positive test and the
 // block ending in the common return 664 (2863 B); the output cleared through vector3f_assign 521 (same code); `*arg_5 = 0.0f`
 // after the hit flags 521 (same code); the minimum declared after the hit flags 522. Stacked score lines merged into this note.
+// Array ordinal derived from the point cursor with countdown or end test 663/671.
+// Ordinal derived from the hit cursor with countdown or end test 518/643.
+// Paired cursors, ordinal from point or hit with countdown 659/517.
+// Paired cursors, ordinal from hit with do-end or for-end test 639/639.
+// NOT kept: The best form is four points lower at 2865 bytes and leaves the success byte at +0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

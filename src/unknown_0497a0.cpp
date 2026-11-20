@@ -579,6 +579,10 @@
 // Split late axes and cross workspace (shape/reciprocal initialization together or split) 536/536.
 // Split all vector declarations in capture order (shape/reciprocal initialization together or split) 536/536.
 // NOT kept: The assignments still give the opening frame and stack slots.
+// Entry shape predicate reused for the axis, default denominator, case-one test or all three
+// 705/659/658/717. With primary/secondary/both guarded shapes read through the source 666/706/628.
+// Both shape pointers initialized conditionally with the shared predicate 709.
+// NOT kept: The forms reach frame 0x58 or 0x5c, grow past retail length and all regress.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -1563,6 +1563,9 @@ void function_143250(
 // Input/output/both slices advanced after the calls 1625/1725/1701.
 // Shared coefficient offset advanced after admission or the calls 1231/1231.
 // NOT kept: The advancing forms retain the 0x2fc frame and do not recover the displaced scalar homes.
+// Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
+// 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
+// NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
