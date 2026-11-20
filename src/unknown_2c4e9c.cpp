@@ -3277,18 +3277,18 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // stays as `mov ebx, ecx; jmp` with NONE cached in ECX); the same with the arms swapped 30; the id read and reset to NONE under
 // `if (field == NONE)`, walk guarded by the field, 30; a NONE default with the copy made inside the field test 30. A one-object
 // LTCG screen is not faithful here (`this` arrives in EBX). All restored.
+// Score 27 (was 30) with stand-in SDK headers: the datum iterator is declared and pointed at the pool at the top.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
+	s_data_datum_iterator iterator;
+	iterator.data = data;
 	long map_id = global_preferences_globals.current.unknown16c;
 
 	if (map_id != NONE)
 	{
-		s_data_datum_iterator iterator;
-
 		iterator.index = NONE;
 		iterator.datum_index = NONE;
-		iterator.data = data;
 		while (data_datum_iterator_next(&iterator))
 		{
 			if (((s_map_definition *)function_19c5f0(((s_map_entry *)iterator.datum)->map_id))->map_id == map_id)
