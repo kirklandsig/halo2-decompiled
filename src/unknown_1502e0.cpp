@@ -1250,6 +1250,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // aggregate copied from the field 17; as a `memcpy` of the field into a local 17 (every 17 the same code: each is
 // folded into the plain read before allocation); the unit through a getter returning NULL for NONE with the block
 // under `if (unit)` 52 (144 B).
+// M3 lane 12 r152 (fast with 0x152bf0; control 17): `s_tail_player *const &kept = player;` ahead of or after the result
+// with the lookup reading `kept->unit_index` 17/17; the unit pointer bound to a `*const &` for the slot and weapon reads 17;
+// the slot test through a `short const &` 17 (all the same code); a redundant `result = false;` at the top of the tested
+// block 33 (140 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1296,7 +1300,10 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
-// score 43 (was 43): The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
+// score 43 (was 43): The four-byte frame and 210-byte extent agree. Player and hand occupy the opposite saved registers.
+// Earlier score 43 (was 43): The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
+// Frame and extent agree. The player, hand and first unit handle use different registers.
+// Previously noted: The 210-byte extent agrees. The saved player and hand are exchanged between ESI and EDI, and
 // the first unit-index load uses ECX instead of EDX.
 // Earlier score 43 (was 43): The 210-byte extent still agrees. Retail uses ESI for the player, EDI for the hand and EDX for the unit index. This build assigns those values to EDI, ESI and ECX.
 // Earlier score 43 (was 43): a one-step scratch rotation (ours ECX/EAX/EDX where retail has EDX/ECX/EAX) and the player/hand
@@ -1587,6 +1594,22 @@ void function_150820(dword *bits, bool local_only)
 // Integer player address and separate unit-index lookup 73, Integer player and unit-header addresses 43. NOT
 // kept: The separated player lookup recovers the saved registers but folds the player address into LEA and raises
 // the score. The other seven address forms preserve the original allocation and tie.
+// conditional hand enumerator 43; paired hand enumerator assignments 43; primary hand enumerator default 45;
+// secondary hand enumerator default 45; conditional hand enumerator with captured eligibility unit 43; paired
+// hand enumerator assignments with captured eligibility unit 43; primary hand enumerator default with captured
+// eligibility unit 45; secondary hand enumerator default with captured eligibility unit 45.
+// NOT kept: The conditional and paired assignments tie at 43. The explicit defaults add one byte and score 45.
+// Sharing the eligibility unit index leaves both results unchanged. The original body is restored.
+// Shared table and absolute slot with the player bound before the guard, before the hand,
+// after the hand, or after the initial unit read: 32/28/28/71 with either player type.
+// Indexed unit reads throughout 74/74, one unit index through the mode query 43/43.
+// NOT kept: 32 folds the player address into the unit field address. The 28 forms add a
+// unit reload before the query and grow to 213 bytes. The consistent forms tie or regress.
+// Local word ordinal 64, word ordinal before hand 64, word ordinal after header table 64, word ordinal with
+// captured prequery handle 64, separate admission with word ordinal 67, separate admission with full ordinal 18,
+// word ordinal with signed-byte slot 67, separate admission with signed-byte slot 20. NOT kept: The word ordinal
+// produces MOVZX. Separate admission restores the saved roles at 18 and 20 and folds the player add and move into
+// LEA. It reloads the unit handle. The 18-point form grows to 212 bytes.
 // unit-index field pointer 73, unit-index field reference 73, selected query output pointer 43, selected query
 // output reference 43, indexed object header pointer 70, indexed object header reference 70, selected query
 // output pointer after the call 43, nested query with selected output pointer before the call 43. NOT kept: The
