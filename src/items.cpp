@@ -398,7 +398,7 @@ inline real item_real_random_range(real lower, real upper)
 {
 	dword *seed = &g_4e7408->unknown0;
 	*seed = *seed * 0x19660d + 0x3c6ef35f;
-	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f))) + lower;
+	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f)) + lower);
 }
 
 // score 2 (was 2): frame 0x14 and retail length agree; the final x87 add
@@ -437,6 +437,8 @@ inline real item_real_random_range(real lower, real upper)
 // scoped to filling its packet 2. The integer draw, object lookups, bound pair and packet scope preserve the
 // same two instructions. The normalized draws move other instructions, and the full range helper grows the
 // body. Opening executable source restored.
+// Matched in a full build with stand-in SDK headers (was 2): item_real_random_range returns its sum inside one pair
+// of parentheses, which puts the delay's last fadd before the field load as in retail.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
