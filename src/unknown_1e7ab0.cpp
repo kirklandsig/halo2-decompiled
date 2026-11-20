@@ -551,6 +551,13 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // caller 165 (2312 bytes): the getter is then retail's byte for byte, and the 4 extra bytes are case 4's child test (`test cl, 1`
 // against retail's `test al, 1`, one byte) moving the jump table's alignment pad (three bytes); what is left there is case 4's
 // parent and definition registers and per-case scratch rotations. BLOCKED-BY 0xd0590 stands.
+// M3 lane 6 r205 (fast with 0x1e83c0/0x1e8d50/0xd0590/0xd05c0/0x1e6bd0/0x14de70/0x1e8eb0/0x1e7a10/0x1e7a60/0xcbd50; control 117,
+// aligned rows 86 with the 32 jump-table rows): case 4's parent declared at function scope 117; the child walk as
+// `for (function_d0590(&iterator, parent); function_d05c0(&iterator);)` 117; the iterator declared at function scope 117; the
+// parent's object in a named pointer ahead of the definition 117; the blocked flag declared ahead of the iterator 117; the
+// child's seat in a named short for its test and the flags lookup 117 (the same code each). Retail's own call setup (ECX =
+// iterator at 0x1e7db5, then EDX = parent at 0x1e7db9) is the reverse of ours, which is what a declared (object index,
+// iterator) order gives under link-time code generation, so the HELD 0xd0590 order above still stands as the cause.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
