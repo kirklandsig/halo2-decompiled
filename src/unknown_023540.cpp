@@ -2921,7 +2921,8 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // is still compared with minus one where retail does that before the size is stored; re-measured at 330 (1591 bytes
 // in the reduced image, against retail's 1543). BLOCKED-BY 0x235a0.
 // MiniMax R (11-15): no new form, no lower score (330): the first difference is still at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; retail inlines the first 0x235a0 copy and calls the second one, while this build inlines both, and retail's dword rounding of the byte count (sub size, remainder; add size, 4) written out after the zero test measures 392 (1624 bytes), since the body is already misaligned there.
-// score 354 (was 354; earlier 330, 364, was 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
+// score 354 (was 354): Retail calls the second matrix copy out of line. The build inlines both.
+// Earlier full-build scores included 330, 364, 401 and 481. The block walk found:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
 // made 0x4b5d0 175, long makes it 93); the structure global is read
@@ -3094,6 +3095,11 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // loop 369, indexed per bucket with `real` source arithmetic 354 (same code); the allocator form with the cursor 423.
 // Retail's six 0x143600 calls set up ECX, EAX, ESI (ours ESI, ECX, EAX), the order 0x143600's own parameter list gives
 // under LTCG; its file was on another lane's list this round: BLOCKED-BY 0x143600.
+// Sample-local matrix 430, inverse 377, rotated channels 365, matrix and inverse 430,
+// or complete workspace 430. Second sample as fallthrough 354. Indexed short pairs 418,
+// short-pair cursor 365, cursor with node read after the sample guard 369.
+// NOT kept: the separate workspaces move the frame away from retail and both matrix copies
+// still inline. The unguarded cursor also reads the node index for an empty bucket.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

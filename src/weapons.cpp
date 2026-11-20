@@ -3443,6 +3443,10 @@ struct s_ammo_conversion_entry
 // 191/191 with both predicates evaluated, 189/189 with sticky accumulation. Calculated
 // residues carried into both stores or published as calculated 209/209. NOT kept: one-point
 // gain at 189, with destination and conversion search register homes unchanged.
+// Paired weapon references, source tag reference and magazine tag reference 190 each.
+// Source selected at capacity 208, reserve field reference 207, removal predicate 188,
+// shared weapon-kind predicate 214, shared type mask 190. NOT kept: the removal predicate
+// gains two with the same extent and saved-register divergence.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4792,6 +4796,10 @@ struct s_weapon_projectile_creation
 // 1140, default network case first 1153; independently computed synchronization 1143 and independent
 // synchronization/network results 1157. Switch with case 2 first or default first 1121 each.
 // NOT kept: the conditionals lengthen the body, and neither switch order changes the 0x1ea4 frame.
+// Typed barrel tag, named projectile field, native barrel flags and aggregate placement owner 1121
+// each. Owner presence branch 1122 at 5199 bytes, admitted motion 1121, tracer from the two tests
+// 1119 at 5212 bytes, complete damage initializer 1121. NOT kept: tracer gains two and retains the
+// 0x1ea4 frame. The owner branch shortens the body and regresses.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

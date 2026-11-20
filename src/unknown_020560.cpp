@@ -1239,6 +1239,14 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // offset declared before ordinal exclusion 418. Nearest cutoff, zero projection limit, or opposite cutoff
 // on the left of its comparison 418/418/418. Both opposite-scan scratch values at scan scope 418.
 // All tie. The 0x2c retail frame, second induction address and offset.i store remain unresolved.
+// Reused offset norm as square accumulation or grouped sum 646/646. Candidate setter with either
+// norm 649/649. Both setters with either norm 649/649. Anchor setter and accumulated norm 646.
+// Candidate setter with offset-first dot and accumulated norm 649. NOT kept: 2039-byte extent
+// and 0x1c frame, with the candidate-X store still missing.
+// Conditional nearest/opposite state assignments, alone or paired, and named projection
+// alone or with nearest 418 each. Named projection with opposite or both 1236 each.
+// Filtered distance with the current cutoff for a rejected candidate 417. NOT kept:
+// one-point gain, extent grows past retail, and the separate frame homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

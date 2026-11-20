@@ -4672,6 +4672,9 @@ struct s_128ca0
 // signed gain initialized then summed into its member 201, pin argument from the value member 72.
 // Named started test 72, scoped pitch/gain setup 72, scoped permutation lookup 72. The tied forms
 // keep both scratch register exchanges. Real-member arithmetic shortens the pin input copies.
+// Attenuated gain name, opening gain/pitch names, submission gain names, shared unpinned
+// level, read-only voice record, playback record reference, selected permutation reference,
+// and shared pinned level all 72. The two pin register pairs and packet store order stay put.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

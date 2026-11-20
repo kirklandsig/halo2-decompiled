@@ -473,6 +473,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // multiplication, 334 in all four forms. Also naming the scaled j 336 in all
 // four forms. NOT kept: the first loads use retail's i, j, k order, but the
 // square spills remain and the new forms grow to 1784 bytes.
+// Per-axis square/sine/diagonal scopes with immediate or grouped diagonal stores 378/374.
+// Separate unscoped axes 378/374. Shared axis capture 363/346. Sine products before
+// diagonals 349/341. NOT kept: all lose the 0x90 frame and shorten the body.
+// Const square, cross-coefficient and cosine-complement locals, alone or grouped,
+// and all three with const angle products 334 each. The 0x90 frame agrees and the
+// axis and square registers and their early spills still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2354,6 +2360,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // MiniMax I (11-19): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10 and the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order.
 // Earlier (492, was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // Earlier 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
+// Earlier score 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // Earlier 492 (was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // MiniMax S (11-17): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still
 // 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at
@@ -2733,6 +2740,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Attenuation initialized by animated tint 503; distance read between named reflection terms 503.
 // Draw point accumulated from decoded position 544, or from reflected components 294.
 // NOT kept: none improves the opening body. The reflected-component draw point keeps the 0x94 frame and length but still loads the X product differently.
+// Coordinate deltas as scalars in original/XYZ order or const XYZ 519/519/519.
+// Position scalars then subtraction 518. Vector at camera angle in original/XYZ order 519/519.
+// Vector at reflection exit via setter/aggregate 519/519. NOT kept: all lose the 0x94 frame and shorten the body.
+// Camera displacement, reflection and animated tint local renames, alone and in pairs
+// or together, and forward-distance rename 281 each. The 0x94 frame agrees and the
+// delta/reflection XMM allocation and unity-store schedule stay unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3470,6 +3483,11 @@ real magnitude3d(vector3f const *v);
 // current length 267 (1033 B); the sine, the projection dot, the cosine and then `projection *= 1.0f - cosine` 170
 // (same code); the rotated rows stored straight into `current` with the size computed first 196 (1038 B). Body
 // unchanged.
+// Current reciprocal before target measurement 233. Complete current unit before the
+// target 243, with initializer 243, paired scale calls 247, or separate reciprocal scopes 243.
+// One root in the current, target, or both direction phases 251/309/324.
+// NOT kept: the phased forms move the first difference to +0x14, and the single-root
+// forms shorten the body. The separate raw-length home and real dot reload still differ.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4634,6 +4652,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // comparison before x or z with a fresh divisor for the inverse 487/488.
 // NOT kept: the one-point gains reach 2035 bytes and retain frame 0x60. Both
 // velocity roots still spill forwarded values instead of reading the fields.
+// Shared projection coefficients for forward/left/up 531/532/532, forward+left/forward+up/left+up
+// 519/518/519, all axes 500, all axes and translation 486. NOT kept: the axis-only forms shorten
+// the body. All forms stop at a 0x5c frame, and the full coefficient form ties at the opening extent.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

@@ -106,6 +106,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
 // Earlier first line, 162 (was 162) (merged in m3 lane 4 r232): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier at 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
+// Earlier score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // Prior score history: 194 before.
 // MiniMax E (11-19): score 162 (was 162): no new form, no lower score. Read from the listing again: the first
@@ -813,6 +814,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // local aggregate are register candidates like scalars); a by-value copy of the blend declared after the sequence block
 // and used through the aspect block 162 (same code). Diagnostic, reverted: the blend's sequence-arm store through a
 // pointer to it 162 (same code). Three further score lines stacked in this note were merged into the first.
+// Inverse spans at each use, primary/secondary/both/horizontal/vertical 326/212/325/286/314.
+// Both pairs at use with current/next/both weighted terms staged 306/306/306.
+// NOT kept: The secondary-only form preserves frame 0x60 and regresses. The other forms reduce the frame and score higher.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

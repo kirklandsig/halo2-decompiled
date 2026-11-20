@@ -590,6 +590,10 @@
 // not kept: the form T103 above); s1 and s0 as `real const` 536 (same code); inv declared without an initialiser with case 1
 // assigning -1.0f in an else arm 692 (2636 B, frame 0x50); the special test negated with the arms swapped 544; w initialised
 // from source->v1c at its declaration (no else arm) 678 (frame 0x60, aligned 220).
+// Entry shape predicate reused for the axis, default denominator, case-one test or all three
+// 705/659/658/717. With primary/secondary/both guarded shapes read through the source 666/706/628.
+// Both shape pointers initialized conditionally with the shared predicate 709.
+// NOT kept: The forms reach frame 0x58 or 0x5c, grow past retail length and all regress.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

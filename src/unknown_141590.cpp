@@ -521,6 +521,9 @@ static inline void quaternion_transform_vector(
 // Weighted cross/input/quaternion terms named in all rows 280/201/199, pairs 257/250/262,
 // all terms 244, left-associated partial sums 244 at retail length.
 // NOT kept: the two-point gain leaves the frame mismatch.
+// Named double cosine/sine radicands 217/217, both independently or together 201/201.
+// Named double cosine/sine roots 258/258, both 215, and both radicands and roots 210.
+// All keep the 0x20 frame and miss the separate retail transform spill.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1577,6 +1580,9 @@ void function_143250(
 // Input/output/both slices advanced after the calls 1625/1725/1701.
 // Shared coefficient offset advanced after admission or the calls 1231/1231.
 // NOT kept: The advancing forms retain the 0x2fc frame and do not recover the displaced scalar homes.
+// Complete running sums for the multi-term third-band coefficients, rows 1 through 7,
+// 939/939/939/1095/1520/939/1196. Paired running sums at entries 23 and 25 1095.
+// NOT kept: All tie or regress, and the scalar spill frame stays four bytes short.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
