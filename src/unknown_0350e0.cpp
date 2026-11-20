@@ -3515,6 +3515,9 @@ real magnitude3d(vector3f const *v);
 // One root in the current, target, or both direction phases 251/309/324.
 // NOT kept: the phased forms move the first difference to +0x14, and the single-root
 // forms shorten the body. The separate raw-length home and real dot reload still differ.
+// Shared squared-length producer under the current or target root at the lower
+// test, upper test, in-range result, or all three sites: eight at 170.
+// The raw current root still shares the bounded slot; the promoted dot stays.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4698,6 +4701,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Selected original or scaled projection coordinates 518, with world scale read once 505.
 // World point setter 521, with world scale read once 524, or with selected projection coordinates 508.
 // NOT kept: the smallest frame is still 0x5c and shortens the body; all eight raise the score.
+// Y inversion at the moved, stored or both projections 530/486/530,
+// with both inverted and a shared displacement 513. Screen-y result in the
+// projection helper as field, named row or direct expression 517 each;
+// the named row with shared displacement 530.
+// NOT kept: the stored-only form ties; the others add frame storage and length.
+// The independent velocity reads and register projection results remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

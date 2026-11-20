@@ -329,6 +329,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // upper comparison 86/109. NOT kept: all regress. The 434-byte long forms
 // still keep enable across the statistics write and the old maximum in EAX.
 // MiniMax S (11-20), NOT kept: 72 (was 76), a 4-point gain, under the 8-point bar for a function above 30.
+// Raw enable held as unsigned byte, signed byte, word or long 103/103/98/101.
+// Either byte with a direct setter read 103/103; raw team byte added to the
+// player byte, with a held or direct setter read, 103/103.
+// NOT kept: all regress. The raw byte avoids Boolean materialization but the
+// enable still remains live across the increment and the maximum stays in EAX.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

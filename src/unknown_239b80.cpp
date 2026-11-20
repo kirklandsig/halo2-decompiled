@@ -882,6 +882,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Completed lowest-point scan extent as pass/candidate/compaction bound, seven subsets:
 // 144/251/154/225/155/256/256. Signed-word pass with the completed extent at both traversal bounds 244.
 // NOT kept: the two-bound form recovers frame 0x14 but raises the score and changes the caller.
+// Separate signed-word loop bounds on pass, candidate, lowest/candidate,
+// pass/candidate, lowest/pass or all three 144 each. A signed-word pass
+// with its own bound, alone or with a signed-word candidate bound 250/250.
+// NOT kept: the copies fold, and the short pass keeps the extra frame word.
+// The result and departure homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
