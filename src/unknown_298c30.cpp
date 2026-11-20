@@ -1343,6 +1343,72 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // (3387 B). The normalizer's squares as `j*j + (k*k + i*i)` 569 (same code; retail stores k and then takes i*i, k*k,
 // j*j from memory, ours keeps k on the x87 stack and squares it first); the distance's squares as `x + (y + z)`,
 // `z + y + x`, `(z + y) + x`, `x + (z + y)` 569 each (same code; retail squares z, then y, then x).
+// M3 lane 6 r207 (fast with 0x29a190, which stays MATCH; al = aligned differing lines out of retail's 810; the 108 lead also
+// plain-checked with 0x2108a0, 0x210770, 0x210d10, 0x26c590, 0x298c30 and 0x29a190 MATCH, 0x298d90 305 and 0x29cbb0 378 as
+// before; all restored, body unchanged). LEAD, not kept: 108 at 3374 B (al 30), and 236 at retail's 3372 B (al 32) without
+// its last step. It still needs the match-only pieces below (the nested body, two one-use locals, an arm order, the new
+// rotation helper, the helper's added parameter); the natural pieces alone on this body, with the early NONE return,
+// score 715 to 729. Built on the r201 lead (`inline` on 0x2108a0's definition, the body under `if (local_11 != NONE)
+// { ... return local_0; } return true;`, 490), each step on the one before:
+// - sweep arms: the true arm with one `scale` local assigned before each `planar_scale(&local_6, scale, &local_17)` call
+//   (then local_18, local_19), the false arm with the three named scales first and then the three planar_scale calls: 761
+//   (3349 B, al 204; the false arm is then retail's: scales in XMM0/1/2, each product's destination a copy of the component);
+// - the pivot offset's false arm with the negated radius in a named local ahead of the function_2994a1 call: 435 (3380 B;
+//   both pivot arms retail's, no shared tail);
+// - both side endpoints through function_2994a1 (the forward one with local_12.distance, the reverse one with the named
+//   negated distance), each followed by its own `.z = local_5->z`: 355 (3372 B, al 130; both sweep arms and the endpoint
+//   block exact, the components now in XMM0/XMM1 ahead of the scale);
+// - one `point2f rotated` declared in the caller and passed to function_29991b at all three sweep rotations (the helper
+//   writes the rotated pair there, then adds the pivot): 298 (al 71; the rotations exact, sine and cosine in XMM2/XMM3);
+// - the first 0x210770 output in a `vector3f` of its own instead of the pivot: 280 (al 55; the pivot's home +0x94);
+// - both obstacle dots through dot_product2d: 279 (al 52; normalizer and facing-dot registers retail's, y preloaded);
+// - the obstacle owner's actor in a named pointer (retail's dead `add eax, edx`), the second side written
+//   `!local_47 ? 2pi - a : a`, the angle `field_0 ? (double)(field_4 + pi) : (double)-field_4` (retail's `fadd dword`): 246
+//   (al 38; alone 190, 219 and 279);
+// - one offset pair for both obstacle differences, through vector2d_from_points2d and magnitude2d: 236 (3372 B, al 32);
+// - the obstacle rotation through an inline helper with the rows `v->x * (double)cosine - v->y * (double)sine` and
+//   `v->y * (double)cosine + v->x * (double)sine`, called with `(real)sin(a)`, `(real)cos(a)`: 108 (3374 B, al 30).
+// Left on the 108 form: the two sine products (retail copies the sine and multiplies it by the memory component, ours
+// loads the component first; the products of the component at offset 0 take retail's form and those at offset 4 do not,
+// whichever of sine and cosine they multiply), the homes of the rotated side and the obstacle offset (+0x44 and +0x18 in
+// retail, exchanged here) and two x87 sum orders that flip with unrelated edits (the first side distance, the first
+// obstacle distance). What moved things: a product's destination is the operand read through a helper's pointer and its
+// source the scalar assigned in its own statement; an expression argument of an inline helper becomes the destination;
+// named scalars take XMM registers in declaration order unless a value's later in-place use gives it more references.
+// Other forms, on the step named (lockstep counts). On 490: the sweep scales as expression arguments of planar_scale 786;
+// the false arm's sum operands exchanged, scale-first products or the expression in each product 490 (same code);
+// `-(-r - d)` 760 (not folded); three named scales interleaved 496; the true arm as `d + -r` or with a named `-r` 785
+// (folds to `d - r`); the false arm's named scales first with direct products 501; both arms that way 765; the arms
+// exchanged (diagnostic: the first arm always gets the component as destination) 766; named i/j per arm 782, after the
+// named scales in the false arm 715; named scales first with planar_scale in both arms 761; one `scale` with planar_scale
+// in both arms 758; planar_scale in the false arm only 502. On 761: the false arm's two scale declarations exchanged 763
+// (the registers follow the declarations); the true arm's scales as expression arguments or as negated named positives
+// 782; three named scales interleaved in the true arm 761 (same code), with direct products 771; named x/y locals inside
+// function_29991b 761 (same code). On 298: the pivot typed as a pair 683; the rotation outputs or the pivot declared
+// earlier 298 (same code). On 280: the distance sum as `x*x + (y*y + z*z)` or `(z*z + y*y) + x*x` 277 (both distance sites
+// exact, the obstacle bounds sum flips), `z*z + y*y + x*x` 280; the endpoint declarations exchanged 280; the end copies
+// reordered 310. On 277: the 2-D normalizer's rows through planar_scale or as `scale * x` 277 (same code); one dot alone
+// through dot_product2d 286 (facing) or 277 (angle). On 279: the rotation rows without the double casts 329, a float
+// angle 392, both 418; the rotation through a helper with float rows and `(real)sin(a)`, `(real)cos(a)` arguments 333
+// (421 with a float angle); with double parameters 320 (331); the trig calls inside float rows 329, through a helper
+// taking the angle 338 (469 with a float angle); double trig calls inside the rows 273 (394; cosine first, the angle
+// stored); double sine/cosine locals 273 (392); the casts on the sine/cosine, on both, component-first rows or the Y row
+// sine-first 279 (same code). On 246: role names for the rotated side and the offset 246 (same code: names do not order
+// these homes); the offset written into local_6 254 (local_3 and local_18 homes move). On 236: the first difference as
+// two scalars with the pair declared ahead of them 246; the rotation helper with named sine/cosine 245. On 108: the
+// helper with a by-value vector 380; its parameters reordered 108, cosine first 111; the components copied into locals
+// 116 (254 with named sine/cosine); named sine/cosine passed to it 245; sine named and cosine an expression 191; sine
+// named with the cosine call written in direct rows, or the reverse 236; each product's operands exchanged (six
+// spellings) 108 (same code); the Y row first 110; the rotated side written into local_17/18/19 137/125/131; the
+// components exchanged in the rows (diagnostic) 110; sine and cosine as the members of one pair (caller local with
+// direct rows 240, passed to the helper 236, helper local 111 or 108, by value 529, array 245); the rotated side in the
+// shared `rotated` 108 (same code); the offset in local_6 with the rotated side separate or in local_18 117 / 125 (128 /
+// 136 with the first difference as scalars); one or two unused real parameters ahead of the sine, or the output first
+// (diagnostic) 108 (same code); a helper taking the angle as a double 418 (frame grows) or 117 from a named angle; component-first rows
+// with the float trig calls written in them 245 (direct) or 116 (through a helper taking the angle). Main's
+// body with planar_scale in both arms, the false arm or the true arm 708 / 574 / 780; the same with `inline` on 0x2108a0
+// 737 / 726 / 751 (726 control). The patches are build/r207/lead-299460-w10.patch (108) and
+// build/r207/lead-299460-w9.patch (236) in the lane 6 worktree.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

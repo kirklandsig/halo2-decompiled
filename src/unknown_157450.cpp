@@ -5886,6 +5886,12 @@ void __stdcall function_d6bc0(long object_index);
 // at the 0x15aad0 argument, for the whole countdown block or at the schedule test 172/172/172 (same code: the copy
 // folds into the parameter); the reset counter as `value06 = reset ? 0 : value06 + 1;` 182 (851 B); the schedule test
 // through `s_netgame_entry_state *const &kept = entries;` 172 (same code).
+// M3 lane 6 r206 (fast with 0x15c150, matched each time; base 29, label form re-measured 7, its field-test form 172 at 858 B):
+// the two skip tests (rate slot, 0x15a090) as nested ifs around the rest in place of `continue` 7 / 172 (same code each);
+// on the label + field-test form the countdown as `value04 > 0 && --value04 == 0` with no local 172; one displacement
+// vector and distance shared by the reset and case-0 tests 172; the release test reading the object type into a named
+// char used by both type tests 172 (7 on the label form); 1..6 dead locals (diagnostic) 172 each, so the EDI/EBX choice
+// between `entries` and the timer is not a symbol-count tie.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

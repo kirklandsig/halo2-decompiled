@@ -3101,7 +3101,7 @@ void function_e0c70(long arg_159e6d)
 		long settled;
 
 		if (rigid_body != NONE &&
-			function_1d5120(component, rigid_body, 9, (long)definition->biped.physics.pill_shapes.address + 0x20, g_510c54->rate * 0.15f,
+			component->function_1d5120(rigid_body, 9, (long)definition->biped.physics.pill_shapes.address + 0x20, g_510c54->rate * 0.15f,
 				&settled, steps))
 		{
 			biped->unknown3aa = settled;
