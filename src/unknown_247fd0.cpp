@@ -905,6 +905,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Native flags masked with either velocity selection gives 334/334. Word flags with a
 // bit-position test gives 417/417. NOT kept: the masks reproduce the folded address,
 // and the field and word forms regress. Effect address and gate/settings homes remain.
+// Full 0x5c collision output with opening scratch 337, separate blend 406, separate first sample 395,
+// both 444, branch-local collision/ray objects 336, branch-local result plus separate blend/sample 446,
+// independent objects 444, and independent objects with a branch-local query 447.
+// NOT kept: the full result alone enlarges the frame. The retail-frame forms shorten and regress.
+// The effect lookup still folds and the gate byte stays off retail's slot. Original body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
