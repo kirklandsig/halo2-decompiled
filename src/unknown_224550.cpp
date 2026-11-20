@@ -94,6 +94,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
+// (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
 // score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // Prior score history: 194 before.
@@ -754,6 +757,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // compound reciprocal weights 162, both compound weight pairs 162.
 // NOT kept: staging both pivot contributions grows the frame. The best forms leave the blend spill
 // and fixed-arm displacement different.
+// M3 lane 14 r122 (fast with 0x2243c0, MATCH; control 162): the blend read through a `real const &` in the aspect
+// block 162 (same code); the blend uninitialised and set to 0 at the top of each 0x10000 arm 497 (1953 B); the second
+// UV set encoded before the first 256; the width as `aspect_x*context->width` 162 (same code); the aspect pair as one
+// `point2f` initialised to 1, 1 158 (1938 B, the colour and aspect homes move: first difference at +0x199).
 // Blend before both frame pointers, between them, or after bounds 373/190/245.
 // Horizontal scale reused at width calculation, secondary-aspect join,
 // after inverse spans, or after encodes 162/170/173/423.
@@ -762,6 +769,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // stores 512/499, complete bounds assignment 519/571, or a projected center point 512/499.
 // NOT kept: the geometry-encoder forms change the frame or incoming register schedule and do not
 // recover the bitmap blend register.
+// M3 lane 14 r124 (fast with 0x2243c0, which matches throughout; control 162): the two inverse next terms computed
+// before the `bx>by` test 255 (1942 B, first difference +0x2); the aspect tests written `ay<ax` and `by<bx` 162 (same
+// code); the width product after `inv_y` 173 (1951 B); both inverse next terms, then the width, then both sums (retail's
+// schedule) 170 (1950 B); the y inverse sum before the x one 162 (same code). Retail still keeps the blend in XMM5 from
+// the sequence arm through the aspect block and spills both a-reciprocals; ours spills the blend.
 // Both primary inverses after flip in vertical/horizontal and horizontal/vertical order 266/266; one
 // primary inverse before the secondary pair, the other after flip 176/176; one after the secondary
 // pair, the other after flip 176/176; split around the secondary pair before flip 162/162.
