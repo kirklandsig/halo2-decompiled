@@ -1144,6 +1144,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax A (11-19): no new form, no lower score (529 plain, 602 on the reduced image): retail takes the block in
+// EAX, the type in ECX and the query in EDX, and this build takes the block in EDX and the query in EAX, so the
+// entry's register roles, the frame (0x2c against retail's 0x28) and every later register differ; the parameter
+// order is fixed by the rules, so retail's order is reported here. The base and lightmap arguments exchanged at
+// the definition and at the call compile to the same bytes, so the exchange cannot be measured from this file;
+// the body is unchanged.
 // score 529 (was 529): The 0x2c frame has an extra word. The selection result spills and the block and query use exchanged registers.
 // Previously noted: frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax I (11-17): no new form, no lower score (529): the reduced build of this function is not faithful on its
