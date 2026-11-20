@@ -1368,6 +1368,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Source-direction displacement with direct/in-place/separate/origin-copy addition 409/443/433/474.
 // Same four forms using the copied plane normal 461/492/493/539.
 // NOT kept: The staged displacement grows the body, and reading the copied normal for the final projection moves the first difference into the prologue.
+// M3 lane 1 r137 (H2M_FAST with 0x142d10 and 0xa9b40, both MATCH; control 126): re-measured 0x142d10 as (out, forward,
+// up) 124 and that with the shared quaternion normalise summing i, j, k, w 122 (round 113's leads, a gain of 4, under the
+// bar). On that 122: case 2's test as `0.0f != length_squared` 121 (only the ucomiss operand text lines up; the registers
+// stay swapped), the timer as `0.0f != time_scale` 122, both 121, the yaw clamp as `0.0f < distance` 122, the animation
+// arm's two zero stores chained 122.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -227,6 +227,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // `const &` at its two late uses 12; a second actor pointer local for the three flag tests 12; the saved +0x418
 // reference copy read ahead of the node lookup 27; the bool output declared at the top with its address named there 12;
 // the result flag stored true again at the top of the non-equal arm 124 (978 bytes).
+// M3 lane 1 r137 (H2M_FAST with 0x1e1f20, control 12): the rounding through the existing `real_to_long` (slot_handler.h)
+// stored straight to the record's short 25 (the helper's result takes its own home; retail's fistp writes the long output's
+// home, so the asm form stays); `local_13 = real_to_long(local_20);` 134 (981 bytes); `local_13 = real_to_long(...)` on the
+// product with no real local 134 (981 bytes); the rounding product written `field_2_3 * random` 12; the bool output through
+// a `bool *const` local for the 0x261280 call and the 0x2626b0 argument 12 (both the same code).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

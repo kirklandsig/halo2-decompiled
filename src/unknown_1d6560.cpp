@@ -617,6 +617,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Shared header for the repeated types and case zero 96. One type with the original getter or shared
 // header in case zero 122/122. Model binding with array pointer or rigid-body reference 96/94. NOT kept:
 // The repeated-type form gains one. The 94 form gains two and changes the matched caller to 13.
+// M3 lane 1 r137 (H2M_FAST, caller 0x1d5bf0 MATCH unless noted): the one-read form (object index, absolute index, rigid
+// body, header array, byte type) with case 0 through the existing globals.h word-bitfield view's `bit2` 28 at 256 bytes
+// (still `shr eax, 2`, the entry's EDX/ECX/ESI shift left); on it the kind-7 route single-exit (`result = 1; if (type ==
+// 1) result = 0xc;`) 95; a short type 39 (260 bytes); case 0 through the header array local at the component's index 28
+// (same code); the absolute index as `word` 98 (caller 13). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
