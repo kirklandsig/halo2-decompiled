@@ -76,6 +76,7 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
+// MiniMax A (11-19): no new form, no lower score (173): retail's rotation is axis = heading x up (C.i = up.k*v.j - up.j*0, C.j = up.i*0 - up.k*v.i, C.k = up.j*v.i - up.i*v.j), the dot accumulated as (C.j*v.j + C.i*v.i) + C.k*0, the projection = dot * (1 - cos), and the rows = projection*C + v*cos - (C x v)*sin with the products' operands in retail's order; the heading's trig is fcos into +0x14 then fsin into +0x18, the heading's zero into +0x1c, the a2 sine into +0x24 and the a2 cosine into +0x10 (a home reused from earlier in the block), and retail's frame is 0x118 with eight homes (+0xc random, +0x10, +0x14, +0x18, +0x1c, +0x20 the third draw, +0x24, +0x28); writing the rotation out in the caller with the heading as scalars, so its k is the constant 0.0f, gives retail's frame and 1212 bytes but 205, because the homes land a slot off (our cos a1 at +0x10, retail's at +0x14) and the cross terms take other registers, the same rotation with retail's dot and row operand orders and with the cross terms as separate locals still gives 205, the heading as three separate scalars gives 261 in a 0x114 frame, and the permuter's five tries in eleven minutes found nothing lower.
 // MiniMax B (11-12): no new form, no lower score (173); retail's rotation takes the second cross with the
 // rotated vector on the left (its .x is the up vector's .k times the sine) and subtracts that from the sum,
 // so the helper's cross the other way round and subtracted is the same value: 187. Retail keeps one of the
@@ -91,7 +92,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // zero register and then at the heading's homes). NOT kept: the score rises from 173; the original helper
 // and body restored.
 // MiniMax C (11-19): no new form, no lower score (173): the frame stays 0x11c against retail's 0x118 (the helper gives its whole 12-byte cross vector a home where retail spills cross j and k as scalars at +0x20 and +0x28 with the sine at +0x24), and the rotation still takes the cosine with fcos before fsin where retail takes the sine first; every form that reaches retail's frame scores above 173.
-// score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
+// Second header, merged into this note (173, was 173): frame 0x11c versus retail 0x118 (ours spills a rotation cross
+// term to +0x2c where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
+// Earlier score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
 // M3 lane 11 r113 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): own `{}` blocks (slot sharing) around
@@ -645,6 +648,13 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // products; when `1 - cosine` is formed all eight XMM registers are busy (the first product of cross j, `axis.k * v.i`,
 // is already in XMM7), so the 1.0f takes the zero's XMM3 and the three later uses of the heading's zero k become a
 // literal and a fresh `xorps xmm7`; here XMM7 is still free at that point, so the zero survives. Body unchanged.
+// M3 lane 15 r112 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173, of which 42 are the frame offset alone):
+// the helper's dot as `dot3f(arg_2, arg_1)` 173; the projection as `(1.0f - cosine) * dot` 173; the rows as `+=` of the
+// axis and cross terms 173; the rows summed axis, cross, vector 173 (all the same code); the trig through cosf/sinf 185;
+// the three scales vector first re-measured 245 (1231 B).
+// In the rotation helper, a planar heading snapshot for projection/cross/cosine scale,
+// alone, each pair, all three, and all three through the vector setter. All eight score 226 at 1209 bytes.
+// NOT kept: frame stays 0x11c, with the request and transform displaced. Original helper and body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

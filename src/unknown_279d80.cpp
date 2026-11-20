@@ -2107,6 +2107,12 @@ void function_27dd10(void)
 // blend's fraction by value 2; the vector blend's fraction by value 138 (pair unchanged); both 138; the interpolation's
 // translation fraction read once into a local 2; interpolate_real's fraction by const reference 2; all three of its
 // parameters by const reference 2. All restored.
+// M3 lane 10 r132 (compile-only pair detector, exact here, then fast with 0x281b60 and the matched 0x285750/0x288570/
+// 0x289580/0x28aaa0/0x27f530): in function_288572 the three frame-state saves declared ahead of the interpolation test and
+// assigned inside it (compute_component_orientations' form) 2; that walk's `if (blend == 0) __assume(0);` line in the
+// interpolation arm 2; both 2; in function_288573 the blend-1 weight through a `real const &` for the three arms 2; the
+// blend-1 arms as a switch on the component 2 (all the same code; 0x281b60 2 throughout). The screen still flips pass 0
+// with `+= 1.0f` in the blend-1 scale arm (diagnostic). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2300,6 +2306,12 @@ void function_2818e0(void)
 // double negation 6, while an extra product with a float global, an int store to a new global or a folded
 // `* 1.0f`, `+ 0.0f`, `- 0.0f`, `/ 1.0f` do not. With both blend-3 arms written as blend 2's, 0x285750 gets the
 // pair reversed too; either of its arms alone keeps retail's order. All restored.
+// M3 lane 12 r155 (a one-object compile of this file gives the real build's pairs: count first in this function and
+// 0x27dff0, flags first in 0x285750; linking it alone, with the ballast or with the graphics library objects changes
+// nothing): the output pointer's restore ahead of the three frame-state restores 13 (0x27dff0 13, 0x285750 11,
+// 0x288570 98); the bit flags as `dword` 5 (every walk user 3-5); screen only, the pair unchanged in all three: the
+// output pointer set ahead of the three frame-state sets, the bit flags as `unsigned long`, the saved frame index as
+// long (same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

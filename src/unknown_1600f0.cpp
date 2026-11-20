@@ -1578,6 +1578,18 @@ PRIVATE inline long score_string_list_1608e0()
 // Named score-buffer member and typed receiver 679/679, typed conditional 719, native team offset 681,
 // player score record 691, native team/player records 693, early player record 687, named player fields 691.
 // The 0x798 frame and viewer in EDI remain in the retail-length forms.
+// Two-word origin at coordinate producers 693, from completed coordinates 693, row copy after title
+// 690, original origin through caption bounds 693. Score-source selection first 713, fade phases on
+// the row counter 679, published team-count test 681, one displayed-player count for traversal and
+// publication 675.
+// NOT kept: the displayed-player count recovers frame 0x79c at 2879 bytes and gains four, with viewer
+// still in EDI and the independent origin missing.
+// The top edge stays live across the scroll bounds, with the viewer and origin homes
+// still displaced. Retained short top 679, long top 691, short top and height 693,
+// retained left 692, retained top and left 692, vertical origin advance 691,
+// early horizontal cursor with retained top 677, named scroll pixels 679.
+// NOT kept: the early horizontal cursor gains two at retail length and leaves
+// the 0x798 frame. The widened viewport forms grow nine bytes.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

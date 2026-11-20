@@ -18,6 +18,24 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax G (11-19): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail uses
+// EAX, and the homes are still permuted (ours keeps the mode in the lowest slot at 0x8 and the offset at 0x14 where
+// retail keeps the mode at 0xc and the offset at 0x10). This round the declaration order was tried with the mode
+// declared at the top (174), with the mode declared before the offset (174), with the extent before the offset (333)
+// and with the whole mode block moved to the top (333): the homes do not follow the declaration order, and the size
+// still stays in a register across the two rounding calls where retail reloads it, which is BLOCKED-BY 0x48e70's
+// link-time register summary in another lane's file. Retail's own slots were read off its listing to aim the rest: it
+// keeps the size in the lowest slot, the mode above it, the maximum and the extent above those and the aspect next,
+// while ours keeps the mode lowest and the size in the extent's old place, so the size's declaration was hoisted to the
+// top of the function (174), with the maximum hoisted with it (174) and with the extent hoisted too (174): the homes do
+// not move at all, and the mode's test was also written without its casts (174), with the cast dropped from the test
+// (174) and through a dword local (174). Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail uses
+// EAX, the mode's home still sits one slot lower than retail's (retail keeps the clamped size in the lowest slot and
+// the mode above it, ours keeps the mode in the lowest slot and reuses the distance's slot for the size), and
+// retail's clamps write the clamped value back through the size's slot in both arms where ours assigns it in one
+// arm; the nested-ternary clamp, the limit as a long and the mode's placements all score the same or worse.
+// Body unchanged.
 // MiniMax E (11-15): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail
 // keeps them in EAX, so that load stays a byte longer and every later address field drifts, and the size still
 // stays in a register across the two rounding calls where retail reloads it from the lowest slot, which sets the
@@ -391,6 +409,12 @@ extern real g_4c9798[36];
 // the point's rows read from it 337 (1469 B, entry changes at +0x2); the rows written origin first 174 (same code).
 // Still BLOCKED-BY 0x48e70's link-time register summary (machine 1's file): with our build keeping the size
 // and the aspect in XMM registers across its two calls, the true second-plane form moves the parameters' registers.
+// M3 lane 1 r132 (fast with 0x48e70 MATCH; control 174): retail's clamp compares the upper bound on both paths (the
+// lower arm jumps to the comiss) and stores the size back in both of its arms, so it is two separate bounds on a size
+// held in memory; written as two ifs (no else) 258 (1484 B: the size still stays in XMM0, BLOCKED-BY 0x48e70); with the
+// border product in parentheses as well 265; the border product in parentheses alone 180 (1491 B: the multiply then
+// comes first, as retail); that with the height limit as a long (retail's dword) 243 (1481 B); the mode as one nested
+// ternary 174 (same code).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

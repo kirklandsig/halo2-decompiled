@@ -169,7 +169,8 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 	}
 }
 
-// score 67 (was 67): Retail spills the entry-array base and recomputes the indexed
+// score 67 (was 67): Retail keeps the entry base in the 0x28 frame and retains the unscaled ordinal through the appends.
+// Earlier (67, was 67): Retail spills the entry-array base and recomputes the indexed
 // terminator after the string calls.
 // independent read cursor and indexed terminator 84; cursor search condition with
 // indexed result after loop 59 (NOT kept: extra count test and no retail base spill);
@@ -344,6 +345,16 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // 77/66, 72/75. Suffix append returns result/destination with cached or indexed
 // clear 83/73, 67/80. NOT kept: 66 regains the 0x28 frame and reaches 206 bytes
 // but spills the result and gains one point. The base and ordinal remain missing.
+// M3 lane 15 r113 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b and the two string callees, all MATCH; main
+// 67): lane 10 r119's two-member lead rebuilt 39 (204 B); on it the result taken as the indexed buffer after the
+// terminator 51 (218 B: the product still shared, now holding the result too), the plain arm written as an else of both
+// tests 78 (201 B). Round 101's loop-top entry form rebuilt 75 (196 B, aligned 9, register-masked 5); on it a second
+// pointer to the found entry for the append arm 90 (184 B: folded back onto the loop pointer), the append test nested
+// with the name test inside 75 (same code), the result taken as the indexed buffer after the terminator 71 (206 B).
+// Single exit at a match, mismatch continue, formatted exit, early plain exit or plain break
+// 67/67/67/67/67. Early plain exit with indexed clear 84, with advancing comparison cursor 67.
+// Entry range with indexed clear and shared exit 64. NOT kept: the range groups base and
+// count and gains three points at 207 bytes.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

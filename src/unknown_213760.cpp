@@ -1929,6 +1929,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // with the close as a pointer-taking forceinline (test, close, wait, invalidate) 114; the close helper alone 5 (same
 // code); the close call through a by-value forceinline (close and wait; test and invalidate in the body) 119 on the 5
 // form, 114 on the write-local and write-helper forms. Body unchanged at 33.
+// M3 lane 10 r131 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, 0x2141f0, all MATCH; control 33). Lane 9 r132's 5 form
+// rebuilt at 5 (left: the write call's flags zero in EAX ahead of the handle load). On it, same code each (5): the size
+// argument as `sizeof(empty_header)`; a named `s_file_write_flags write_flags(0)` at the top of the resized block (the
+// font writer's spelling); the count declared ahead of the header; the handle through `s_file_handle const &write_handle
+// = *handle`; and `written = bytes_written == 0x800;` 111. Blocking call-and-wait forceinline wrappers taking the handle by
+// value (the done flag passed in), one per operation, on the 5 form: open, size, resize, write and close 118 (917 B); size,
+// resize, write, close 118; open, size, resize, write 6; resize, write, close 118; write and close 114; open, size, resize
+// 10; size and resize 10; open alone 5; size alone 122; resize alone 122. Each wrapper compiles like a named handle local
+// at that call (round 117's sixteen-set table), so wrappers give no new code.
 // M3 lane 3 r270 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33, aligned 19, masked 8; lane 9 r132's
 // 5 form rebuilt at 5). New forms, all match-only (helpers with one caller): the handle of each asynchronous call built
 // by a forceinline helper that turns the raw handle into the file-handle aggregate, on the 5 form: at all four calls 118
@@ -1970,6 +1979,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Reading from retail's other callers of 0x1a1050: matched 0x7fb50 loads its handle (ECX) ahead of the flags zero (EAX)
 // with the plain `function_1a1050(handle_global, ..., s_file_write_flags(0), ...)` call, so the order here is only the
 // two temporaries' registers: this body gives both EAX (the zero first), retail gives the handle EAX and the zero ECX.
+// Query handle aggregate 43, resize handle aggregate 43, write handle aggregate 35, close handle aggregate 40,
+// query and write aggregates 32, resize and write aggregates 32, write and close aggregates 33, all aggregates 39.
+// NOT kept: The query-and-write and resize-and-write forms reach 32 at retail length. Both retain the first stack-
+// slot difference and use one-use handle copies, so the one-point gain is excluded. The other six tie or raise the
+// score.
 // @retail 0x213970
 void function_213970(void)
 {
