@@ -300,6 +300,11 @@ static __forceinline long real_to_long(real value);
 // the state local declared before the 0x1fe410 test 428; the 0x210850 call with all three draws through
 // function_259d0 on the state local 452. Next lead: what makes retail's 0x2104b0 call clobber the random-state
 // global (its callees 0x210d60 and 0x142570 are matched leaves).
+// M3 lane 1 r131 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, control 373, register-masked aligned 64): the
+// final state copy as `= *local_3` 380; the timer count read into a long 427 (1855 B); the timer draw through
+// slot_random_range 395; the timer count read from its field at each of its four uses (no short local) 378 (masked
+// 63); the +0x84 scale product written `scale * value` 373. The largest masked block left is the three range draws
+// (retail forwards the seed through them with one store; ours reloads and stores it per draw).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

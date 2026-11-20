@@ -3987,6 +3987,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // M3 lane 5 r205 (fast with 0x4b160, MATCH each time; control 317): passes 3 and 4 sharing their own index (passes 1-2 and
 // the decay loop keep `i`) 317; pass 1 with its own in-loop index 375 (1342 B); `register` on `first` 317; the decay loop
 // with its own in-loop index 317; pass 2 with its own in-loop index 317. `first` keeps EBP in each.
+// M3 lane 1 r131 (fast with 0x4b160, MATCH each time; control 317): pass 2's swap target as a pointer to
+// entries[first] taken before its loop 357 (frame 0x2c); pass 3 as a helper taking (state, start index, pointer
+// to `last`) with the parameter as the loop index: static 468 (1239 B, called out of line), forceinline 393
+// (1351 B); passes 1-2 as a helper returning the new `first`: static 589 (1146 B, out of line), forceinline 358
+// (1324 B, but `first` is then not homed before pass 1: frame 0x2c). Body unchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4376,6 +4381,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // M3 lane 5 r205 (fast, control 486): the old position advanced in place as the moved point (no `moved` local) 535 (1985 B,
 // frame 0x5c); the two projections as const locals 486; the offset updates as `+=` 486; the current position projected
 // before the moved point 546 (2097 B); `old` copied through the position pointer declared ahead of it 486.
+// M3 lane 1 r131 (fast with 0x36b50, control 486): the velocity pointer as `&((vector3f *)(state + 0x24))[i]` 486 (same
+// code); every velocity access as `velocities[i]` off a base pointer, no element pointer 509 (2009 B, frame 0x5c, the
+// adds still forwarded into the root); the divisor field read at its test and in the reciprocal (retail's `divss
+// xmm2, [edi+0xa4]`) 490 (2030 B, aligned 337 against 346); the adds written `vx + velocity->i` 486 (same code); one
+// saved-position local used for the camera copy and each element's old position 535 (1985 B, frame 0x58), with the
+// divisor read at each use 544 (1976 B).
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
