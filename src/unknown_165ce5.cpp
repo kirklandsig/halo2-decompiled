@@ -1984,6 +1984,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // shrink-wrap: ESI/EDI are popped right after the weapon loop, before the flag tail; still BLOCKED by the stand-in.
 // MiniMax B (11-20): no new form, no lower score (188): the channel pointer still differs at every channel use and
 // the look pair still needs an aggregate slot of its own, so the frame stays 0x30 against retail's 0x2c.
+// Round 611. previous angle field view 193, previous angle record store 193, delta angle field view 193, delta
+// record with reset 193, both typed angle records 193, scoped angle and flag publication 193, separate clamped
+// scalars with angle views 201, current angle snapshot for both consumers 422. NOT kept: the record views leave the
+// frame at 0x30 and the scalar form takes it past retail to 0x28. The unit and mode allocation remains unresolved.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

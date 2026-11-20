@@ -1368,6 +1368,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Source-direction displacement with direct/in-place/separate/origin-copy addition 409/443/433/474.
 // Same four forms using the copied plane normal 461/492/493/539.
 // NOT kept: The staged displacement grows the body, and reading the copied normal for the final projection moves the first difference into the prologue.
+// Round 611. early direction self-dot 164, early squared magnitude 417, early dot before plane initialization 411,
+// plane guarded by self-dot 185, plane guarded by squared magnitude 421, early dot with zero-offset plane 417,
+// scoped length and plane constant 406, zero-first offset 407. NOT kept: the early dot loads j into XMM1 but
+// computes the length in XMM0 and reorders the normal copy. The guard forms also regress.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
