@@ -727,7 +727,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 126 (was 126): Frame 0x48 and extent agree. The projection preloads k in this build and j in retail.
+// score 126 (was 126): The switch span, direction-k preload and exchanged length and zero XMM homes remain.
+// 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and
+// length/zero homes differ.
+// Frame 0x48 and extent agree. The projection preloads k in this build and j in retail.
 // Earlier (126, was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
 // MiniMax E (11-19): score 126 (was 126): no new form, no lower score. Read from the listing again: the case-2 plane
 // length still preloads the camera point's left.k into XMM1 where retail preloads left.j, so the length's accumulator
@@ -1312,6 +1315,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // timer division 126/126/147; the plane length written out j, k, i without dot3f 397 (1700 B: left.j hoisted as retail, but
 // the normal's i/k registers swap and left.k is read off the camera pointer), with 1-3 pairs around its first product
 // 398/398/392 or its leading pair 397/397/391; written out i, j, k 397, with the same pairs 398/398/392 and 397/397/393.
+// direct vertical output 394, planar point inputs 394, planar scalar inputs 394, products after distance 392,
+// products around distance 392, products before distance 392, sine terms before cosine 395, planar point result
+// 394.
+// NOT kept: All forms add four bytes. The direction preload and length and zero registers still differ.
 // M3 lane 15 r113 (fast with all eleven callees and 0x23d090; control 126): the yaw distance dot with its operands
 // swapped 126 (every product then loads the forward first; retail loads the position first for i only); the animation
 // arm's two zero stores chained 126; the field-of-view test as `target != 0.0f` 149 (1700 B: the target is loaded for
