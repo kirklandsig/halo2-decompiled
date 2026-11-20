@@ -1534,6 +1534,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // ours reloads the result after the output stores. In the first request retail frees EBP after the fourth kind request,
 // zeroes it for the fifth and reloads the mode from its argument home for the inheritance loop, so each inlined call
 // keeps its own copy of the mode where ours keeps the argument in EBP throughout.
+// M3 lane 15 r114 (fast over the file's 38 markers and 0x2963f0; control 828/828, the rest matched): on the siblings'
+// found-flag form (re-measured 755 at 2825 B, match-only): the iterator's mode read through `long const *mode_reference =
+// &mode` (0x1dc8c0's form) 755, the first request's mode through it instead 755 (same code: the reference folds here); the
+// request helper's inheritance index scoped in its `for` 755, a named inherited-graph pointer in that loop 755 (same code),
+// the loop as a `while` with `i++` 824 (0x1dbc80 1011, 0x1dc8c0 474). In the 755 listing retail makes `xor ebp, ebp` at the
+// first request's fifth kind (mode's EBP is dead there in both builds; its next read is a reload), with four `cmp reg, ebp`
+// tests and the inheritance counter and offset stores from EBP; ours keeps `test` and two immediate stores and pads a `jmp`
+// into the loop.
 // M3 lane 5 r213 (fast with the twin 0x1dbc80, 0x1dc790, 0x1dc8c0 and 0x1dd9d0; control 828, aligned 314, registers and
 // offsets masked 76): the per-pass candidate renamed (three names sorting before, between and after the outputs and the
 // result), the result renamed, the outputs renamed two ways: 828 each (same code; name order sets no home here); the
