@@ -705,6 +705,13 @@ s_1a8a10 g_4453c0[] =
 // stores 17; the sums assigned through references bound to the array elements [0] and [2] 17; the two sums as the fields
 // of one 2D vector local 17; both negations named and the stores written [3], [1], [2], [0] 21; the sums reading the
 // rotated point through a `point2f const &` 17. Re-measured: the identifier, index, score initialisation order 15.
+// M3 lane 6 r211 (fast with 0x1a8c30, MATCH; control 17; a compile-only screen of the float block reproduces it exactly,
+// 12 differing xmm lines against retail): the value array zero-initialised at its declaration 110 (548 bytes); the facing
+// copy as a 3D vector with only i and j assigned 17 (same code); the final switch's cases in all 24 orders and each case's
+// two stores swapped (30 forms, screen) at best the same float block (cases 2, 0, 1, 3: 17), so later mentions of the
+// point do not set the sums' operand sides here; the second sum first with the copy assigned i, j or j, i and the four
+// stores in all 24 orders (48 forms, screen) 26-29 xmm lines against 12 (stores [2], [0], [1], [3]: 31); re-measured: the
+// copy's j assigned between the sums 17 (round 119), retail's term orders 17 (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

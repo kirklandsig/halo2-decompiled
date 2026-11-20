@@ -227,6 +227,12 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // `const &` at its two late uses 12; a second actor pointer local for the three flag tests 12; the saved +0x418
 // reference copy read ahead of the node lookup 27; the bool output declared at the top with its address named there 12;
 // the result flag stored true again at the top of the non-equal arm 124 (978 bytes).
+// M3 lane 6 r211 (`--fast 0x1af160 0x1e1f20`, control 12): the rounding through the existing x87 rounding helper of
+// slot_handler.h assigned to the long output 134 (981 bytes), stored straight to the record's short 25 (974 bytes, masked 0:
+// the helper's own result takes a new home and the small cells rotate further); the asm block writing a fresh block-local
+// long 25 (same layout as the helper); the saved reference copy declared const 12 (same code). On 0x260670's chain (with
+// that function's five trials of this round: the sort scratch in its own block, the two flags in one declaration, the flags
+// declared after the best score, the evaluator-loop flag declared at the top, a long sorted index) this function stays 12.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
