@@ -5382,6 +5382,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax E (11-20): no new form, no lower score (169): the first difference is still inside the shared cross-product
+// helper, whose header this lane may not edit, so the products land in the other SSE registers; retail loads up.k and
+// up.j before up.i where this build preloads all three.
 // score 169 (was 169): The frame agrees at 0x50. The first cross loads up.i early, and the projection and x87 forward-scale lifetimes differ.
 // MiniMax E (11-16): no new form, no lower score (169): the first difference is still inside the shared cross-product helper, whose header this lane may not edit, so the products land in the other SSE registers; retail loads up.k and up.j before up.i where this build preloads all three, and the clamped angles still reuse the two incoming argument slots.
 // MiniMax D (11-14): no new form, no lower score (169): re-measured this round: the body is 768 bytes against retail's
@@ -8971,6 +8974,8 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // MiniMax E (11-14): the shake's minimum (the definition's +0x5c) named as a local and read twice: 116 -> 62 (1602 bytes,
 // retail's length); the stun block then follows retail's instructions; left is the shake's own load order (retail reloads
 // the definition's +0x58 for its division), the owner and damage store orders and the 0xc98a0 call's register roles.
+// MiniMax E (11-20): no new form, no lower score (62): the owner fields are read in the other order and the 0xc98a0
+// call materialises its word argument in ECX where retail uses EDX and loads the direction pointer before the pushes.
 // score 62 (was 116): Retail interleaves owner-field reads and the grenade tag lookup. Earlier scores 129, 383, 399.
 // Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the

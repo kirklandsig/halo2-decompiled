@@ -1897,6 +1897,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 // writing that body out here would copy another function's code: BLOCKED-BY 0xfbfd0.
 // MiniMax I (11-15): no new form, no lower score (296): retail expands 0xfbfd0 inline after the 0xfbd40 call while this build calls it, so the body is 66 bytes short and everything after the call is shifted; writing that body out here would copy another function's code.
 // MiniMax S (11-15): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand: BLOCKED-BY 0xfbfd0.
+// MiniMax E (11-20): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after
+// the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand: BLOCKED-BY 0xfbfd0.
 // score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
 // higher, so measure this with a big caller such as 0xfaa60 in the check).
 // Round 2 of #1061: statement-by-statement walk against retail: no behaviour difference (every
@@ -2161,6 +2163,9 @@ real function_17c900(short function_type, real input);
 // normalizer's own callers constrain that helper, so it cannot be spelled differently here.
 // MiniMax I (11-15): no new form, no lower score (348): the frame is retail's 0x30 but the index stays in a register where retail keeps it on the stack, the aim point's stack home is [esp+0x28] here against [esp+0x24] in retail, and the normalization and the rotation are scheduled in another order.
 // MiniMax S (11-15): no new form, no lower score (348): the frame is retail's 0x30 and the body is four bytes long, with the index in EAX where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the shared normalizer's own callers constrain that helper, so it cannot be spelled differently here.
+// MiniMax E (11-20): no new form, no lower score (348): the frame is retail's 0x30 and the body four bytes long, with
+// the index in a register where retail keeps it on the stack and the normalization and the rotation scheduled in
+// another order.
 // score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
 // Earlier 382 (was 382): Frame 0x2c versus 0x30 and index EAX versus stacked index remain.
 // Consistent parameter reorder 382; common exit 382; lead field at every use 376 (six-point gain dropped);
