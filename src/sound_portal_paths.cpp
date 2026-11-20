@@ -1,6 +1,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
+#include "bit_vector.h"
 #include <float.h>
 #include <math.h>
 #include <string.h>
@@ -354,15 +355,16 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 305 (was 315): Frame 0x42c versus 0x428. The starting cluster is in EBX and both
-// BSP table bases stay live through the walk.
+// score 295 (was 305): Frame 0x42c versus 0x428. The starting cluster is in EBX and both
+// BSP table bases stay live through the walk. (Earlier header: 305, was 315.)
 // The 0x42c frame, starting cluster in EBX and cached BSP table bases still differ.
 // Earlier comparisons were 315 and 354. Advancing the required index at the row latch brought the
 // entry frame to 0x42c.
 // Advancing the required index at the row latch brings the entry frame to 0x42c.
 // Earlier scores were 315 and 354.
 // Earlier 315 (was 354). Advancing the required index at the row latch brings the entry frame to 0x42c.
-// score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Earlier header: 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Earlier at 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // (A second header line, "score 305 (was 354)" with the same text, merged here in m3 lane 14 r124.)
 // Frame 0x42c versus 0x428. The starting cluster is in EBX and both BSP table bases stay live through the walk.
 // Prior score history: 315 before r118, 354 before that.
@@ -554,9 +556,26 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // order 305/305; walking record roles alone and with candidate arrays 305/305; distance and order
 // declarations first or last 305/305; distinct traversal/fill/output ordinals 305, with path
 // measurement names 305.
+// Rank-fill cursor 321, distance-fill cursor 321, both 337, ordinal from rank pointer 339.
+// Rank storage first declared at the fill with rank/key/both cursors 321/321/337.
+// Both fill cursors with the two-row condition in the output loop 334. All keep the 0x42c
+// frame and the cached BSP bases.
 // Round 648: deferred seed portal 396; destination ordinal from its record 364; split flag predicates 320;
 // bitmap word shifted at reads 348; fallback-first range 346; short-circuited range tests 305;
 // defaulted output gain 308; common count update 305.
+// M3 lane 8 r204 (fast with 0x18d730, 0x14b240, 0x249d60, 0x18ae50; main 305): kept, the three hand-written valid-bit
+// tests through include/bit_vector.h's existing bit_vector_test 295 (the destination block's test alone gives the gain:
+// retail tests the environment index it has already widened instead of reading the field again; the fill and output
+// tests give the same code); in the twin the same helper gives 309 (its destination test alone 309, the other two 287),
+// so the twin keeps its spelling. Tried on main's 305 body: the path list read through the bsp at each use 357; the valid
+// words cleared by two assignments 368 (1350 B); `bsp->portals + portal_index` 305; the distance summed `travel + ...`
+// 305 (same code). On 295: the setters through bit_vector_set (seed, destination, both) 295 each (same code); `*indices++`
+// at the stores 295 (1365 B); the limit capped by an `if` 295; `count >= 2 ? 2 : count` 295 (same code); the sort scratch
+// in its own block, the twin's spelling, 280 (frame 0x428 as retail, first difference +0x16; left the cluster pointer in
+// EBX and the cached table bases; a scope that moves a stack home, match-only, not kept).
+// Reacquire destination after travel, geometry, or at the range gate 359/359/359;
+// reacquire start after travel or geometry 369/369; reacquire both after travel, geometry,
+// or at their consumers 405/370/366. NOT kept: all raise the score and retain the extra frame word.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -599,7 +618,7 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 				real limit = environment ? environment->range : maximum_range;
 				if (limit >= travel)
 				{
-					if (valid[other->environment_index >> 5] & (1 << (other->environment_index & 31)))
+					if (bit_vector_test(valid, other->environment_index))
 						limit = distances[other->environment_index];
 					if (limit >= distance)
 					{
@@ -615,7 +634,7 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 	for (long i = 0; i < bsp->environment_count; i++)
 	{
 		order[i] = i;
-		if (!(valid[i >> 5] & (1 << (i & 31))))
+		if (!bit_vector_test(valid, i))
 			distances[i] = FLT_MAX;
 	}
 	real scratch;
@@ -626,7 +645,7 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 	for (long i = 0; i < limit; i++)
 	{
 		long index = order[i];
-		if (valid[index >> 5] & (1 << (index & 31)))
+		if (bit_vector_test(valid, index))
 		{
 			*indices = index;
 			if (gains)

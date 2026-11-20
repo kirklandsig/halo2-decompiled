@@ -717,6 +717,27 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // the final-pitch local 159; the turned vector in the second copy's variable 162 (1707 B); the copy made ahead of the yaw
 // clamp 428 (0x29b990 48). On the kept body: the XY vector read ahead of the second copy 149 (first difference +0x179; a
 // two-point gain, not kept), after the depth clear 151 (same code), built from the copy 316.
+// M3 lane 5 r217 (fast with 0x29b990, 0x11ce20, 0x11cc90, 0x1e5450, 0x29c860, all MATCH; control 151, aligned 178 rows
+// by difflib with jump targets masked; a one-file link-time harness of this file with the angle helper's and the tag
+// accessor's objects reproduces the fast build row for row and screens a form in half a second). Phase diagnostic
+// (reverted): one, two or three redundant parenthesis pairs on the pitch difference 255 / 295 / 245 (1721 / 1706 /
+// 1708 B, aligned 242 / 291 / 214); pairs around a lone field read change nothing, pairs around a product do.
+// The matched sibling 0x29c860's private rotation (angle taken, sine before cosine, cross j and k staged in a vector,
+// cross i inline in its row, rows `a.i * p + c * v.i`, `c * v.j + p * a.j`, `a.k * p + c * v.k`) has retail's operand
+// spelling for every product and row here; called for both rotations through a copy of it 192 (retail's 1706 B, but
+// frame 0x34: its cross vector gets 8 bytes of its own, aligned 254). Harness screens, aligned rows, each a private
+// rotation in that spelling (a new one-caller helper, so match-only): cross j and k as scalars with sine and cosine as
+// arguments 162 (frame 0x2c again) for every dot order; with the vector's k read first 164; taking the angle 171; the
+// cross in a vector 220 to 238. With 0 to 3 parenthesis pairs around the second axis's first product and the three cross
+// terms as scalars: 134 at 3 pairs with the dot as (j + k) + i. A coordinate descent over the trig form, the k local,
+// an axis alias, 12 dot groupings, 3 product spellings, 6 cross forms, 4 row forms, in or out pointer, both pair
+// counts, the XY pair ahead of the second copy and the row order (9 starts, about 2000 forms): best 113 (named sine and
+// cosine locals per rotation, axis alias, dot (i + k) + j, cross k then j as scalars, two pairs in the helper, one in
+// the second axis, XY ahead of the second copy, rows j, k, i); other starts end at 115 to 161. The planar XY pair moved
+// into a yaw helper with the sibling's rotation: frame 0x24 (the cross vector then shares the second copy's home and
+// XY the scalar cells). No form matches; nothing kept. Left: the two rotations' schedule (retail loads the vector's k
+// first, sums the dot as (i + k) + j, keeps cross j and k in registers in the first rotation and spills cross i into
+// the cosine's home) and the yaw clamp's zero copy above its branch.
 // M3 lane 11 r134 (fast with 0x29b990, 0x11cc90, 0x11ce20 and 0x1e5450, all MATCH; control 151, aligned 178, masked 104):
 // the first rotation through a file-local copy of the in-place rotation with its dot summed i, k, j (retail's first-rotation
 // order) 151 (same code: the three-term sum is reordered by the compiler); the yaw clamp's lower limit as `0.0f - yaw_limit`

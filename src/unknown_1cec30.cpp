@@ -1844,6 +1844,17 @@ PRIVATE __forceinline real const &component_time_step()
 // binding (465 B, 104/6; stop-first 105/29: then only the XMM2/XMM3 swap and `add eax, 4` differ). Dead locals after
 // the binding never give it; a named base or power in the body counts one each, locals inside the inline helpers and
 // bare declarations count nothing. A pointer with a second, live definition in the low-step arm still folds both reads.
+// M3 lane 14 r130 (fast with 0x1d87b0, 0x1d06c0, 0x1d0400, 0x181db0, 0x1d24a0; control 26): the acceleration scale in
+// the body with the power's base and the power named 26 (same code); that with the stop-first test 43; the stop ticks
+// and per-tick travel named 26; `(velocity / step + 1.0f) * velocity * delta_time * 0.5f` 138 (462 B); the base and
+// power names plus the time-step reference bound through a `game_time` globals pointer local 105 (467 B, the head
+// retail's but no `add eax, 4`, every later line one off). Diagnostics: base and power plus one dead local 105, three
+// dead locals ahead of the scale 105, the first with the stop-first test 106: any third symbol ahead of the binding
+// gives the head; the pointer step still has no cause.
+// M3 lane 16 r155 (fast; control 26): `target - position` named as an offset after the magnitude (target left
+// unchanged), step-first 29, stop-first 46; the target-below-zero and square-root arms as one ternary, step-first 26
+// (same code), stop-first 43. The stop-first listing: the whole head and branch layout retail's except the scale in
+// XMM1, the zero in XMM2 and the stop temp in XMM3 (retail XMM3/XMM2), and the step loaded from `[eax + 4]` both times.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2943,6 +2954,12 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // Native scalar lanes 8, packed lane store 284, assigned four-lane value 284, copy of the three scaled
 // lanes 176. Contact decision before normalization/scale/after scale 173/151/8. Ordinary inline on
 // the typed setter 8. NOT kept: packed forms also break the material-sample provider in the preview.
+// M3 lane 14 r130 (fast with 0x1d06c0, 0x1d0400, 0x181db0; control 8): the result's x stored by hand, then a compiler
+// memory barrier intrinsic, then y, z, w (diagnostic) 12: only the other-contacts load moves below the x store, the j
+// and k products stay ahead of it, so the boundary retail has is a real block boundary, not a memory fence. The
+// setter's word copied first re-measured 5 (match-only); on it: `vector3f_scale` as a statement with
+// `set(velocity.i, velocity.j, velocity.k)` 276; `havok_from_vector3d(result, scaled)` 5; the scale's return value
+// passed to `havok_from_vector3d` 249 (1402 B); `speed_sum = speed_sum + ...` 5; a named flag weight 5.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -3557,6 +3574,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // frame) 15; the converter `__forceinline` on this body 15 (all three the same code); the pair's first frame named once
 // for both arms of the first half 265; both halves' pair frames so named 238 (1239 B). The first arm's order is a
 // scheduling choice: retail's column 0 loads k, i, j (neither argument order) and stores i, j, k, then the zero.
+// M3 lane 16 r155 (fast with 0x1d83e0, 0x1d77d0 and the converter's other users, all unchanged; control 15): the
+// converter `__forceinline` 15; the vector-to-Havok helper `__forceinline` 15; the Havok vector's set writing the four
+// lanes of `m_quad` directly 15; that set `__forceinline` 15 (same code each); the converter a plain static function
+// 918 (655 B, called out of line). In both builds the frame_b equal arm loads k, j, i and stores i, j, k, w; only
+// retail's frame_a arm loads column 0 as k, i, j, so that block's schedule, not the helper's text, is what differs.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3695,6 +3717,9 @@ struct s_1cf531
  word field_2 : 4;
 };
 
+// MiniMax H (11-20): no new form, no lower score (2): the corrected vector still spills to 0x40 where retail keeps it in
+// the argument vector's own slot (0x30). The corrected vector copied into the argument vector before the scale call
+// measures 23 and the final product in its own temporary 65, so it stays a plain temporary.
 // MiniMax G (11-19): no new form, no lower score (2): only the corrected vector's spill slot differs (retail stores it to
 // local_13's slot at 0x30 and folds its reload into the final mulps, this build stores it to 0x40 and reloads it there);
 // the correction in place in local_13 measures 23 (the store goes to 0x30 but the reload after 0x183dc0 is a separate

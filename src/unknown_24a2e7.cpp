@@ -375,6 +375,15 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // i then stays in EBX and the found entry and plain arm are formed again from it as retail, but every use of i gains a
 // `movsx`, which retail never has, so retail's index is 32-bit; diagnostic only); the entries pointer `const` 67 (same
 // code); `buffer` named ahead of the suffix conversion 76 (196 B).
+// Immutable suffix text with cached/indexed clear 95/90, named display choice 95/90, and plain-name
+// break 95/90. Selecting an empty suffix when append is off gives 59/63; append-scoped suffix 67/84.
+// NOT kept: the 59 form adds an empty-string selection absent in retail, keeps the 0x24 frame
+// and omits the entry-base spill and the final ordinal multiply.
+// Round 452: Scan produces the successful ordinal or NONE, tested for equality
+// or signed validity 72/73, or the count, tested for equality or the bound 72/72.
+// The same four forms with a separate comparison cursor also give 72/73/72/72.
+// The terminator uses a direct zero and the body reaches 205–206 bytes, but the
+// 0x24 frame still lacks the base spill and EBX carries the scaled entry address.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

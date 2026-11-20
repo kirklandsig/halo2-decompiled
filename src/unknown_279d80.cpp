@@ -2118,6 +2118,12 @@ void function_27dd10(void)
 // parameter by value instead of `const *const &` 399 (1745 bytes; 0x281b60 389, 0x285750 427); the interpolation's
 // scale arm through interpolate_real instead of the scale blend 2 (0x285750 17); the map-index test bound-first
 // (`index < count && index >= 0`) 16 (0x281b60 16, 0x285750 12); the root offset scale as `*=` 2 (same code). All restored.
+// M3 lane 3 r278 (compile-only build of the file, exact here, then fast with 0x281b60 and the four matched walk users):
+// function_288573 as a switch on the blend method 2 (0x288570 120, 0x289580 2); blend 1's vector arm through
+// interpolate_real per component with its scale arm as `+=` 155 (1732 B); the output pointer declared ahead of the in-place
+// flag 2 (0x288570 3, 0x289580 78); the in-place test's operands swapped, the bit test as `!= 0`, the shift as an
+// assignment and the counters pre-incremented 2 each (same code); all 35 combinations of blend 1's vector and scale arms
+// (helper, interpolate_real, `+=`) with blend 2's (`+=`, `*=`) keep the pair (30 of them move 0x288570).
 // M3 lane 11 r136 (fast with 0x281b60 and the four matched walk users, all unchanged): function_288573 ending in `else
 // { __assume(0); }` 2 (the method is a constant, so it folds); function_288571/2/3 `static` 2; the bit test as
 // `(local_2 & 1) != 0` 2; function_288573's parameters const 2; the empty group ending in `continue;` with the other
@@ -2328,6 +2334,14 @@ void function_2818e0(void)
 // destination-mask test as an if nested under the lookup 2 (same code); the interpolation test inverted with the plain apply
 // first 4 (0x27dff0 4, 0x285750 184, 0x28aaa0 2); in function_288571 pass 0 given the settings' node count directly, the local
 // for the later passes 397 (1681 bytes, every walk user 217-433). All restored.
+// M3 lane 7 r198 (fast with 0x27dff0, 0x285750, 0x288570; a compile-only build of the file is exact here, 2): in
+// function_288572 the bit-flag shift ahead of the cursor step 2 (same code here; 0x288570 12); node_destination_get as one
+// exit through a found flag 2 (same code everywhere, though every symbol number moves: pass 0's flags then number below
+// the count and the count is still reloaded first, so the pair does not follow symbol numbers); in function_288571 the
+// counter resets ahead of the count read 6 (the count's store moves; 0x285750 4, 0x288570 4); the destination-mask test
+// as `arg_2 ? node_flags_test(...) : true` 39 (the pass-2 scale product changes; 0x288570 120). Diagnostics (screen, not
+// kept): `__assume(node_count >= 0)` in this wrapper or on the count in function_288571 moves 8 lines, pair unchanged;
+// 0 to 15 dead initialised locals in this wrapper shift the walk's symbols by 3 each, pair unchanged. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

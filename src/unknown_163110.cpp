@@ -626,6 +626,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // after that point is swapped with it.
 // Earlier m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115.
 // Earlier at 115 (was 115; merged from a second score line; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// Earlier status line, merged in r127 (115, was 115; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax E (11-20): no new form, no lower score (115): retail copies t for the intersection's x and scales y and z in place, and that form (`t * delta.i + p0->x`, `delta.j * t + p0->y`, `delta.k * t + p0->z`) matches the intersection block exactly here but scores 119, because the first plane's dot then keeps the copied normal's i in xmm4 and reads view->vector_e4.i late where retail loads the coefficient into xmm4 before the copy; a permuter run (34 tries) found nothing below 115.
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
 // Earlier: coefficient XMM roles, classification operands and projection staging still differ.
@@ -1168,6 +1169,23 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // component arrays 115, all near and far component arrays 115, indexed near dot 173, indexed far dot 171, both
 // indexed dots 326. NOT kept: The five component-array forms tie. Indexed accumulation raises the score and moves
 // the first difference earlier, and indexing both dots adds sixteen bytes.
+// M3 lane 13 r127 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115). Lane 12 r123's 18 patch rebuilt 18,
+// with three unused locals (diagnostic) 14. A fast grid over main's body, 96 forms: {clip block as main, as `delta.i * t +
+// p0->x` rows, as the lead's delta_i/staged-j,k,i/named rows} x {main's projection tail, the lead's walking `out` with a
+// `source` element pointer and `total` declared first} x {plane 1's j and k negations through a normal pointer or not} x
+// 0-7 unused locals. Keepable corners: the walking `out` with the source pointer alone 113 (two lower, under the bar), with
+// the far plane's j/k through the pointer 111 (a mixed pointer/array spelling: match-only); the scaled rows alone 119;
+// with the lead's clip block 25, 20 (tail), 23 (pointer), 18 (both), 14 at three or seven unused locals. Unused locals on
+// main's body 119/135/130/242/246/135/127 (no phase helps). On plane3f planes with the walking tail (113): plane d through
+// dot3f 153, the classification through plane_distance_to_point 265, the denominator through dot3f 224, the numerator
+// through plane_distance_to_point 115, and every combination of the four 155-309, with 0-15 unused locals none below 113.
+// Compile-only screen of the clip block on the lead (XMM stream from the denominator on; the lead scores 16, 12 at three
+// unused locals): 2048 forms (named deltas in all eight subsets x the eight t-first/delta-first row sides x named or
+// unnamed scaled rows x 0-15 unused locals) best 16, none below the lead. The projection entry (retail carries `total` in
+// EAX and stores it after `mov ecx, ebx`, ours ECX before it): all 60 orders of the five statements there (culled, out,
+// total, cursor, source) and 396 spellings (three declaration orders, the cursor declared inside or outside the guard,
+// `!flag` / `== 0` / named flag, `total = total + 2`) at 0 and 3 unused locals compile to one of four shapes, none
+// retail's. Body unchanged.
 // MiniMax B (11-20): no new form, no lower score (115): retail keeps the clip deltas in the order x, z, y and ours
 // keeps them x, y, z, so the three product rows and the plane normal loads still differ; the form that reorders them
 // needs the delta helper written out by hand, which is only allowed on an exact match.
