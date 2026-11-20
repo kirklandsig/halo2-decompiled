@@ -652,6 +652,10 @@ struct s_24e9c7_points
 // and the three later copies take y from EDX (`mov eax, edx`) while reading x again from the placement; ours copies
 // through EAX, so nothing is left in a register to reuse. forward_i stays in XMM4 from the across j product to
 // `result * forward_i`, which is why the conversions take XMM1 and across j goes to [ebp-8] at once.
+// M3 lane 12 r156 (fast; control 125): across j read through a const reference bound to it 125 (same code); that with
+// across i as `size * (0.0f - forward_j)` 138 (739 B); both across values through const references with `0.0f -` 139
+// (742 B); the size through a const reference 125 (same code); the forward pair copied into a point local first and
+// read from it for the across and upper products 147 (752 B, 0x24e59f still MATCH).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

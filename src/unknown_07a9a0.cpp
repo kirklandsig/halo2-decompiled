@@ -1678,6 +1678,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Common admission result 886, positive machine-validation region 894, positive admission with
 // dword histogram 911. NOT kept: five forms tie. The dword form reserves 0xb0 and is shorter.
 // The opening lookup still expands and the upper-capacity selector remains a call.
+// M3 lane 13 r126 (fast with 0x73530, 0x63220, 0x192e60, 0x193300, 0x1932c0, 0x631f0; control 871 at 2780 B, session in EAX
+// and `ret 4` as retail, frame 0xd0 for 0xb4, 0x73530 MATCH): the player loop's value through the matched 0x63220 1012
+// (2608 B, still called); the opening test as four separate early returns 871 (same code); the output cleared as
+// `*out = s_matchmaking_ratings();` 862 (2800 B, but through a 0x364-byte temporary copied with `rep movsd`, frame 0x434,
+// aligned 1020 against 1016: not kept); the player loop bounded by the summary's count 883 (0x73530 8); adding_group
+// declared beside result 881.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
