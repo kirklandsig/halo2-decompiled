@@ -856,6 +856,12 @@ static inline bool teams_enabled_19e1c0()
 // scan's read the event takes the last register (EBP) and without it the first (EDI), so the registers go out lowest
 // weight first, and retail's order (token length EDI, event EBX, `remaining` EBP) puts `remaining` above the event,
 // which has the scan's loop read. No natural form found that weighs `remaining` that high.
+// M3 lane 4 r234 (fast with 0x19e0f0/0x19ea60/0x19eae0; control 390, plain result 691): the parameters in the caller's
+// setup order (token, destination, remaining, token_length, event) with a direct call from 0x19e0f0 449 (1477 B: LTCG
+// then passes token_length in EAX and token in ECX, the two heaviest values in our body, so the register parameters
+// follow the body's ranking and retail's ECX/EDX pair means event and token_length outrank token there; 0x19e0f0 8);
+// every NONE test NONE-first 390 / 691 plain (same code); the twelve token literals as named file-scope arrays 390 / 691
+// (same code); the opponent scan's team declared ahead of best_score 390 / 691 (same code). Body unchanged.
 // Round 203 (m3 lane 8, fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
 // diagnostics (a volatile probe local, reverted): a read of `remaining` ahead of the first compare flips the plain result
 // to retail's homes (remaining EBP from the entry, the token preloaded into EAX and reloaded per compare) 453 (1470 B,

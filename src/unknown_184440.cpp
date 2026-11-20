@@ -503,6 +503,12 @@ __forceinline bool function_184448(long arg_0)
 // where retail takes EDI (then the group table in ESI and its count in EBX; ours EDI/ESI). The 8 bytes the structural
 // form lacks are retail's homes for the inverse spacing and the clamp constants it reloads after each 0x48e70 call:
 // BLOCKED-BY 0x48e70.
+// M3 lane 7 r200 (fast with 0x9cca0/0x184250/0x184060, all MATCH throughout; control 965): the worklist scan as a for
+// loop with a break on a hit 965 (same code); the start face bound by a const reference for the entry lookup and the
+// seed 965 (other code); the face and plane arrays read into per-face locals at the face-loop top (retail loads both
+// there into EBX/EDI) with the face array also in the neighbour test 965 (other code); the axis row through one
+// `short const *` pointer at all four uses 999 (4572 B, frame 0x11cc as retail, first difference +0x1c); that with the
+// sign named as a bool 1001 (4598 B). BLOCKED-BY 0x48e70 as above.
 // M3 lane 15 r116 (fast with the callers 0x9cca0/0x184060, both MATCH; control 965): the flipped plane negated with unary
 // minus 965 (same code); the plane copied first and negated in place under the flip test 987 (4602 B), with unary minus 987;
 // the else arm's copy written field by field 1017 (4544 B); the three magnitudes through fabsf 965 (same code), computed
