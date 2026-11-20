@@ -2009,6 +2009,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // typed `byte` with `11 + 2 * (include_mask != 0)` 139 [0] (460 B); the clamp as one nested ternary 118 [0] (same code);
 // the written-first orders WSKC 144 (443 B) [13], WSCK 153 (434 B) [13], WKSC 144 (443 B) [13] (the player goes to the
 // stack in each).
+// Word reduction using indexed for/while, entry cursor or captured count 170/170/170/172.
+// Dword reduction using those four walks 159/159/159/155.
+// NOT kept: The local reduction shrinks the native frame and changes the matched caller.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

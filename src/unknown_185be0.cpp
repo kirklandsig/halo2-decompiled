@@ -131,6 +131,7 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax H (11-20): no new form, no lower score (396): the two angle conversions take swapped XMM registers, retail's unit-record copy sits between the products and the two stores, and the body is 21 bytes shorter.
 // score 396 (was 396): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
 // M3 lane 3 r268 (fast): the input-record copy ahead of the two angle conversions 395 (the copy then precedes the angle
 // stores as retail, registers unchanged); that copy first with the second angle converted first 393 (the pair then takes

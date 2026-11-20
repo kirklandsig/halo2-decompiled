@@ -911,6 +911,13 @@ extern "C" void _ReadWriteBarrier(void);
 // the slot at the head of the NONE block 6; the NONE test in a bool read through a `bool const &` 50 (212 B); a second pointer
 // to the slot for the point copy 6; the 0x86/0x50c arms' 0x41c/0x420 stores through a forced-inline setter 6; the busy field
 // bound to a `long const &` for the NONE test 6 (all the 6s the same code: the slot still loads after the jne).
+// M3 lane 3 r276 (fast with 0x1bca20, 0x1ba3f0, 0x1ba5c0, all MATCH; control 6): the 0x50c arm as a call to the existing
+// callback 0x1bca20 (its body is that arm) 58 (192 B, the call stays out of line), with `inline` on its definition 58
+// (still a call), with `__forceinline` on its definition 46 (211 B: inlined, but the barrier makes it look the actor up
+// again), the same without the barrier 46 (212 B, the no-barrier entry). Compile-only screen (same code as the barrier
+// body or the no-barrier body): the state as `&slot->type` cast, with/without the barrier; the state declared after the
+// actor ahead of the barrier; `&((s_slot_4c *)slot)[0]` without the barrier; the flags test through a const cast of the
+// slot without the barrier.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1615,6 +1622,8 @@ void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
 // score 123 (was 123): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
+// MiniMax H (11-20): no new form, no lower score (123): the flag bytes take AL and ECX where retail takes CL and EDX, the frame is 0x10 against retail's 0x14, and the default block sits before the final tests.
+// score 123 (was 134): the 0x20 mask is compared against 0x20 at both uses, so the masked byte keeps the
 // magnitude retail's spill holds instead of being normalised to 0/1, and the build is now retail's exact 861 bytes.
 // Left: the frame is still 0x10 against retail's 0x14 (retail spills the 0x20 mask byte to frame+0x03 and keeps the
 // loop entry in EBX, saved after the early return; ours keeps the mask in BL and the entry in memory), so the tail's

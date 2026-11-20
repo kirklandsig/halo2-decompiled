@@ -21,7 +21,7 @@ struct s_visibility_bound_record
 // them per arm) scores 465 and is not kept: the tag then takes eax and the flags edx, retail's tag is in eax
 // and the flags in ecx, and the body's length stays 1760 against retail's 1742.
 
-// score 430 (was 443): the geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
+// score 430 (was 430): r275 unchanged. The geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
 // MiniMax S (11-17): no new form, no lower score (443): the frame 0x74a4 agrees with retail's and the first
 // difference is still at +0x10, where retail forms the entry address with a lea into ebx from an index in eax
 // before the register saves and we form it with an add into edi after them; the part centre's body is inlined
@@ -536,6 +536,14 @@ struct s_visibility_bound_record
 // if on `query_data = tree` 430 (same code); the first form on the long-index lead 489 (1792 bytes). Diagnostic: 1-12
 // dead initialised locals at the top 430 each (flat: the inlined plane transform's product order is no symbol-count
 // state here). The long-index lead re-measured 458 (1776 bytes).
+// M3 lane 3 r275 (fast with 0x458d0/0x45a80/0x165010/0x1428b0/0x2dd930 MATCH; control 430, difflib-aligned 215,
+// stack-masked 184): the query data as an if/else reading the field in each arm 449 (1760 B, aligned 217: the parts
+// bool is then threaded into the arms where retail re-tests its stack byte); as a ternary 449 (same code); the
+// plane copy as `planes[j].n = p.n;` 418 (1744 B) but aligned 253 and masked 230 (the inlined plane transform
+// loses retail's shape: not kept); the frustum base named before the +0x78 source 430 (same code); 0x1428b0's
+// loads ordered i, k, j (retail's inlined copy names k before j) 430 here and 0x1428b0 lost (16): restored. LEAD,
+// not keepable (a memory read moved ahead of calls): the bottom arm's visible-bits pointer read at the top of the
+// arm, before the node loop, as retail does ([ebx+0x14] read beside the tag) 397 (1778 B, aligned 193, masked 167).
 // M3 lane 1 r132 (fast with 0x458d0/0x45a80, both MATCH each time; control 430): ours already loads the tag table at the
 // top (ECX) but only for the tag path; retail keeps it in ESI to the bottom arm, keeps the entry in EBX in the outer
 // region (reloading it from its home after the frustum loop's call) and the geometry in EDI. A tag-table local read
