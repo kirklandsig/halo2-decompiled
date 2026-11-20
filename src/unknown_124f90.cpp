@@ -3705,6 +3705,7 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // for the next slot spills it and measures 185, so the body is unchanged.
 // MiniMax C (11-19): no new form, no lower score (8): the pool reload is still placed right after the body's last call; retail loads the pool after the next-index ternary, and every other instruction is retail's.
 // MiniMax D (11-19): no new form, no lower score (8): the pool reload stays ahead of the next-slot selection in every form tried this round (the reload inside the search call's argument, the seed computed as its own statement ahead of the reload, and both pool uses reading through the global), so the reload is still six bytes ahead of retail's and the branch into the loop advance still differs at +0x6b.
+// MiniMax G (11-20): no new form, no lower score (8): the pool reload is still scheduled before the next-slot selection - retail loads the pool after the next-index ternary's join and re-reads it on every path into the advance, while this build reloads it only where the body clobbered the register and lets the branch into the loop advance skip it; the seed as its own statement ahead of the reload, the reload inside the search call's argument and both pool uses through the global all score the same 8.
 // score 8 (was 24): The pool reload is still scheduled before the next-slot selection. The branch into the loop
 // advance differs at +0x6b.
 // Earlier score 8 (was 24): the mode is the class's two-value field (0 or 1, or 1 when flag4 is set), so the switch has its
