@@ -7702,6 +7702,11 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
    (NONE for none): the one inside the grab window (function_e63b0), and when
    both are, the one with the smaller yaw when both are close, else the
    nearer; NONE when neither is */
+// score 55 (was 112) in a full build with stand-in SDK headers: the result lives in object_index's argument home
+// and the candidate in a copy (`candidate_index`), with no result local, as retail keeps them. Left: retail keeps
+// the pool pointer in esi and reloads [esi+0x44] for the weapon lookup of the inlined 0x1012c0 where ours caches
+// the data pointer, and retail calls 0xe63b0 on the candidate first.
+// Before:
 // score 112 (was 112): walked against retail block by block, no behaviour difference: the weapon slot byte at
 // +0x212 and the +0x218 table (0xe5be1-0xe5bfd), the flag inlined from function_cbd50 and function_1012c0
 // (definition byte +0x12f, bit 0; 0xe5c04-0xe5c34), previous == NONE at 0xe5c37, both function_e5d50 calls (object
@@ -7720,17 +7725,19 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index)
 {
 	s_biped *unit = BIPED_GET(unit_index);
-	long result = NONE;
+	long candidate_index = object_index;
 	bool flag = function_1012c0(function_cbd50(unit_index, *((char *)unit + 0x212)));
+
+	object_index = NONE;
 
 	if (previous_index == NONE)
 	{
 		vector3f measurement;
 
-		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&measurement);
+		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&measurement);
 		if (function_e63b0(&measurement, flag))
 		{
-			result = object_index;
+			object_index = candidate_index;
 		}
 	}
 	else
@@ -7740,7 +7747,7 @@ long __stdcall function_e5bc0(long unit_index, long object_index, long previous_
 		bool candidate_inside;
 		bool current_inside;
 
-		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&candidate);
+		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&candidate);
 		function_e5d50(unit_index, previous_index, &unit->unknown168, (point3f *)&current);
 		candidate_inside = function_e63b0(&candidate, flag);
 		current_inside = function_e63b0(&current, flag);
@@ -7755,31 +7762,31 @@ long __stdcall function_e5bc0(long unit_index, long object_index, long previous_
 
 					if (candidate_yaw < current_yaw)
 					{
-						result = object_index;
+						object_index = candidate_index;
 					}
 					else
 					{
-						result = previous_index;
+						object_index = previous_index;
 					}
 				}
 				else if (candidate.k < current.k)
 				{
-					result = object_index;
+					object_index = candidate_index;
 				}
 				else
 				{
-					result = previous_index;
+					object_index = previous_index;
 				}
 			}
 			else
 			{
-				result = object_index;
+				object_index = candidate_index;
 			}
 		}
 		else if (current_inside)
 		{
-			result = previous_index;
+			object_index = previous_index;
 		}
 	}
-	return result;
+	return object_index;
 }

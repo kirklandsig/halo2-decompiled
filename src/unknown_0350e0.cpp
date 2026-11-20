@@ -1868,19 +1868,28 @@ void function_36f50(byte *state)
 // scaling (retail loads out[0] and multiplies by parameters[24]). Clamping
 // with if/else on locals, a y local inside PIN and reordered products score
 // 135 to 323.
+// Matched in a full build with stand-in SDK headers (was 124): index is declared first (its read of mode's home comes
+// before center_y is stored, so the center_y spill shares that home as in retail); in both arms the x sign is an
+// if-form, out[0] is stored, and only then the y sign is chosen (retail uses the `test ebx, ~1` flags after the out[0]
+// store), the weighted arm's y sign as `!(index & ~1) ? -0.5f : 0.5f` and its out[0] sum grouped explicitly; the radius
+// has no x local; and case 0 multiplies both outputs through one const reference to parameters[24] (operand order of
+// the two products).
 // @retail 0x34100
 bool __stdcall function_34100(long mode, real const *rectangle, real const *coordinates,
     real *out, real const *parameters)
 {
+    long index = mode - 1;
     real center_x = (rectangle[0] + rectangle[1]) * 0.5f;
     real center_y = (rectangle[2] + rectangle[3]) * 0.5f;
-    long index = mode - 1;
     switch (mode)
     {
     case 0:
         function_350e0(rectangle, coordinates, out, parameters[0]);
-        out[0] *= parameters[24];
-        out[1] *= parameters[24];
+        {
+            real const &multiplier = parameters[24];
+            out[0] *= multiplier;
+            out[1] *= multiplier;
+        }
         return true;
     case 1:
     case 2:
@@ -1897,25 +1906,24 @@ bool __stdcall function_34100(long mode, real const *rectangle, real const *coor
             real weight = parameters[18 + index];
             if (parameters[22] != parameters[23])
             {
-                real x = coordinates[0] * 2.0f - 1.0f;
-                real radius = (real)sqrt(PIN((coordinates[1] * 2.0f - 1.0f) * (coordinates[1] * 2.0f - 1.0f) + x * x, 0.0f, 1.0f));
+                real radius = (real)sqrt(PIN((coordinates[1] * 2.0f - 1.0f) * (coordinates[1] * 2.0f - 1.0f) + (coordinates[0] * 2.0f - 1.0f) * (coordinates[0] * 2.0f - 1.0f), 0.0f, 1.0f));
                 real fraction = PIN((radius - parameters[22]) / (parameters[23] - parameters[22]), 0.0f, 1.0f);
                 weight *= fraction;
             }
             real x_sign = -0.5f;
             if (index & 1)
                 x_sign = 0.5f;
-            real y_sign = -0.5f;
-            if (index & ~1)
-                y_sign = 0.5f;
-            out[0] = (parameters[1] * x_sign + weight * center_x + (1.0f - weight) * out[0]) * parameters[10 + index * 2];
+            out[0] = ((parameters[1] * x_sign + weight * center_x) + (1.0f - weight) * out[0]) * parameters[10 + index * 2];
+            real y_sign = !(index & ~1) ? -0.5f : 0.5f;
             out[1] = ((1.0f - weight) * out[1] + parameters[1] * y_sign + weight * center_y) * parameters[11 + index * 2];
         }
         else
         {
-            real x_sign = (index & 1) ? 0.5f : -0.5f;
-            real y_sign = (index & ~1) ? 0.5f : -0.5f;
+            real x_sign = -0.5f;
+            if (index & 1)
+                x_sign = 0.5f;
             out[0] = (parameters[1] * x_sign + out[0]) * parameters[10 + index * 2];
+            real y_sign = (index & ~1) ? 0.5f : -0.5f;
             out[1] = (parameters[1] * y_sign + out[1]) * parameters[11 + index * 2];
         }
         out[0] += parameters[2 + index * 2];
