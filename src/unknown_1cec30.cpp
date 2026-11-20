@@ -1299,7 +1299,10 @@ void havok_component_rigid_body_point_impulse_apply(long rigid_body_index, s_hav
 		__m128 mass4;
 
 		havok_from_vector3d(&havok_point, (vector3f const *)point);
-		havok_from_vector3d(&impulse, velocity);
+		/* the change bound by reference: callers then count it as written through (0x1c4c50 reloads
+		   its loop counter, kept beside the change, after this call) */
+		vector3f const &change = *velocity;
+		havok_from_vector3d(&impulse, &change);
 		mass = rigid_body->m_motion->getMass();
 		mass4 = _mm_set_ss(mass);
 		impulse.m_quad = _mm_mul_ps(_mm_shuffle_ps(mass4, mass4, 0), impulse.m_quad);

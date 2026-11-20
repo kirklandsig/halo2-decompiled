@@ -396,6 +396,16 @@ PRIVATE inline byte const *material_parameters(long tag)
 // reference and read back 5 (+0x19e) (all four their base form's code); the chain lookup in 0x174d0's spelling with the word
 // address kept in a local read through its address (`word *const *chain_reference = &chain;`), on the direct store 177 and
 // on the reference form 179 (974 B, first difference +0x148).
+// M3 lane 15 r118 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the direct store, the
+// tail's shader record read from the field at each of its five uses (no reference) 5 (same code; on main's body 5 at
+// +0x19e); the two mask words written as two statements 163 (977 bytes); the range published without its reference and
+// read back from the field for the two calls 162 (977 bytes); both 176; the pass definition folded into the records
+// expression 5, with the top block's entry folded into the packed read as well 5 (same code). Diagnostics (reverted at
+// once), all on the direct store: with the five shader-record calls of the tail removed the restore block is exactly
+// retail's (`second` then loads after the chain and pass bases, 905 bytes otherwise); with only 0x18a90's call removed
+// 62, only 0x19be0's 63, the other four 114, the 0x17420 call 56, the four argument-free calls 49, all still loading
+// `second` early. So the late load depends on the whole group of shader-record calls (a threshold, not one callee's
+// summary); 0x18a90 (a contributor's, 146 at 715 bytes against 736) saves the same registers as retail's.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

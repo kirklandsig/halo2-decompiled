@@ -2033,6 +2033,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // block-local copy of the render model, a const reference, forceinline pair helpers, a one-member aggregate render
 // model with and without a constructor, one-pass loops, the copy written in both arms, switch accessors): the store
 // stays at the eighth slot in every one.
+// M3 lane 15 r118 (fast; control 2): the two quaternion pointers declared a first 12; the current matrix and its inverse
+// declared at the top of the orientation block 2; the state fetched ahead of the 0xbf5a0 test 12; the state read through
+// the inline accessor at every use (no local) 366 (1644 bytes); had_animation set right after the second sample 31.
+// Diagnostics (reverted at once): the orientation block's object as the device local 383 (the state then takes EBX, no
+// reload, and the fstp follows `push edi` at the same eighth slot); its first or second half removed 204/225 (our order);
+// one fabs test in place of nine 477 (our order), so the temporaries of the compare chain do not set the slot.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

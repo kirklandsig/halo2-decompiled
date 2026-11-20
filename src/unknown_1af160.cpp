@@ -227,6 +227,12 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // `const &` at its two late uses 12; a second actor pointer local for the three flag tests 12; the saved +0x418
 // reference copy read ahead of the node lookup 27; the bool output declared at the top with its address named there 12;
 // the result flag stored true again at the top of the non-equal arm 124 (978 bytes).
+// M3 lane 15 r118 (fast with 0x1e1f20, MATCH; control 12): the bool output declared ahead of the entry aggregate and the
+// long output 12; the rounding input declared at the function's top 12; the long output declared at the function's top
+// 12; the bool output declared just before the scratch fetch 12; the short array declared ahead of the marker array 12
+// (all the same code). Lead for next rounds: round 141's diagnostic (0x260670 storing the flag pointer to a global moved
+// the bool output's home) is the callee-summary lever that matched 0x1c4c50 this round (a reference binding in its
+// callee); 0x261280 already writes the flag directly, so look for how retail's 0x260670 lets the flag pointer escape.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
