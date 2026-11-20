@@ -355,6 +355,11 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // 70/70/70, or whole vector publication 234. With independent deadline 130/130/130/201.
 // NOT kept: The separate component stores leave the swapped deadline and group homes in the
 // original loop. The independent form grows to 1413 bytes and differs in the basis correction.
+// Named deadline through a read-only cursor 94, or declared before the constant cursor 98.
+// With the named deadline: shared basis dot 70, three named alignment products 94,
+// nested alignment check or successful early return 94 each, shared side cross 94,
+// staged up cross 98. The separate deadline recovers the two traversal slots, but
+// none of these forms recovers the orientation schedule at retail length.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -984,6 +989,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // Assignments at map hit, signed capacity test, unlinked-entry test, or projection: 129 each.
 // With a shared capacity result: 125 each. NOT kept: The shared result restores EBX and BP
 // and advances the first difference to +0xe. The gain is four and creation stays inline.
+// Slot/index lexical orders and immutable reservation/entry 129 each. Return the last
+// signed capacity comparison after a break or a positive arm, with or without immutable
+// entry/volume addresses: 126 each. NOT kept: the three-point gain leaves creation inline
+// and shortens the body to 425 bytes.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1317,6 +1326,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // pair-local cross products after their diagonal 357; square as first diagonal summand 337;
 // diagonal-first publication 384; cosine bound to diagonal scope 384; joint trig declaration 337.
 // NOT kept: reduced control 337, full 334. Unity and two axis-square homes remain different.
+// Saved forward, rotation workspace, second axis and unrotated-copy names 337 each.
+// Horizontal/vertical angle names, deviation component names, late matrix declaration,
+// and second axis declared beside matrix 337 each (reduced control 337).
+// The square spills and early EDI save survive all eight forms.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1806,6 +1819,12 @@ struct s_pool_view_172840
 // 134 each. With independent failure stores and signed cluster publication: 55 each.
 // NOT kept: The 55 forms restore the flag and traversal homes but grow to 870 bytes,
 // publish the key late and retain the five-byte sentinel load.
+// With signed list publication: native short cluster store 152, queue failure or
+// success return 241 each, queue result AND 250, pool then grouped projection/queue
+// result 78, geometry chain then queue 72, positive capacity return 255, and
+// direct pool-derived result 261.
+// NOT kept: the 72 form recovers the flag homes, but shares a geometry false
+// store that retail emits twice. The 78 form groups projection with queue handling.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

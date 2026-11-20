@@ -5546,6 +5546,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // and the yaw forms leave both schedules at their opening scores.
 // Reuse frame left and forward, left and up, or all three axes 204/218/205.
 // Staged first cross with frame left, left and forward, or all three 205/204/205; staged second with frame left and up 218; both staged with all three 205. NOT kept: longer bodies and higher scores.
+// First staged cross: aggregate result 255; result members 255; member product differences 255;
+// left vector value 216, right 231, both 261; repeated left components read at first use 184, both inputs 184.
+// NOT kept: all lengthen the body. The first-cross load schedule and final x87 scale lifetime remain.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

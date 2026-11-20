@@ -932,6 +932,12 @@ void function_245400(s_source_245400 const *source, long index,
 // operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
 // Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
 // (retail loads the second normal first in four products and reuses the first normal's k in two).
+// M3 lane 11 r137 (fast with 0x245aa0, 0x245400, 0x244de0, all MATCH; control 164, aligned 193): the dot through the
+// existing dot3f(&local_12, &local_6) 207 at retail's 783 B (aligned 156), with the operands the other way round 207 (same
+// code); lane 1 r119's second-material pointer head alone (compare and codes through `second`) 211 (783 B), with dot3f
+// 223 (768 B); the sides from the short material codes (`first_material < 0`) 213 (783 B). On lane 5 r213's best body
+// (fast 50 at 789 B, re-measured): cross3f_staged 50 (same code); the first normal's k in a local for a written-out cross
+// 190 (801 B; retail's single k load needs more than a named k).
 // M3 lane 5 r217 (the same one-file link-time screen, exact against the full build for this body; aligned rows on lane
 // 3 r271's lead, 40): the cross does move with the order its rows are stored in. Written out in place with rows in
 // each of six orders 84 to 96, in a file-local helper 40 (i, j, k), 44, 43, 47, 54 (k, i, j), 56 (k, j, i): with the k

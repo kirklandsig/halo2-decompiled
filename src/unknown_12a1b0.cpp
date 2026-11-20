@@ -3729,6 +3729,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Lookup miss first with a creation guard, state test first, result in each arm, or positive creation gate 607/645/607/607.
 // The initial result store and the availability exit use the same frame byte after the EDI push.
 // With alternate scoped to the definition guard 630/630/598/630. NOT kept: the per-arm result reaches retail length and recovers the saves but raises the score.
+// Alternate request at record admission/update publication/retained-voice branch 760/780/780.
+// Direct bit at both consumers 788, shared bit test 788, rejection at track use 757,
+// admission at track use 757, track result from the complete test 745.
+// NOT kept: all grow the frame to 0x40 and raise the score. The early BL load and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

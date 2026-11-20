@@ -1011,6 +1011,9 @@ void swarm_leader_detach(long actor_index);
 // re-derived through prop_node_get after the 0x1e2150 callback (retail's re-read) 285 (948 B). Still BLOCKED-BY
 // 0x26ed40 (expanded in retail, kept a call by its file's inline setting) and by `value` as bool, whose declaration in
 // src/unknown_1e3920.cpp sits in a file another lane holds this round.
+// Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
+// fresh entry from byte distance, element distance, short index or advanced byte
+// displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
