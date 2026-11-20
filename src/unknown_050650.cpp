@@ -502,6 +502,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// MiniMax E (11-20): no new form, no lower score (270): the frame agrees (0xa8) and the body is 1431 bytes against retail's 1423; the zero still lands in XMM1 where retail has XMM2, and this build stores it before the three component stores where retail stores it after them - swapping the two declarations measures 267, below the keep bar, and the rest (the trigonometric transfer and the collision argument scheduling) needs the shared helper, which would raise a matched caller's score.
 // score 270 (was 270): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
@@ -2417,6 +2418,8 @@ struct s_actor_looking_turn_request
 // /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not make.
 // MiniMax C (11-17): no new form, no lower score (442, was 442): the frame is still 0xcc against retail's 0xc8, and 0x1fdd90 is still inlined here where retail calls it from its only call site (only /Ob1 on its own file keeps it out of line, a build-flag lead): BLOCKED-BY 0x1fdd90.
 // Earlier 442: frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
+// MiniMax E (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the body keeps its own length; the entry's argument order follows 0x1fdd90's convention, which does not match yet, so the call setup cannot be had from this file: BLOCKED-BY 0x1fdd90.
+// score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn
 // block's planar vectors built from members (no `&actor->forward` cast) 450 (2032 B), that with the 0xe70b0

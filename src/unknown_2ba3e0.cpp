@@ -510,6 +510,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
