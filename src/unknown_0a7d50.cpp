@@ -105,6 +105,7 @@ struct s_action_event_data
     long linked_slot;
 };
 
+// Stand-in image 145 -> 134: the linked object is read before the parent is stored in the list.
 // @retail 0xa7d50
 void function_a7d50(long index, long group, long target, short node, point3f const *point)
 {
@@ -127,8 +128,8 @@ void function_a7d50(long index, long group, long target, short node, point3f con
             {
                 if (slot >= 0 && slot < 4)
                 {
-                    objects[0] = parent;
                     long linked = *(long *)(headers[parent & 0xffff].object + 0x24c);
+                    objects[0] = parent;
                     source = linked != NONE ? linked : parent;
                 }
             }
