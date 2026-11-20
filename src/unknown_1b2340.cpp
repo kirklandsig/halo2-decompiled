@@ -148,13 +148,14 @@ bool __stdcall function_1b2770(long actor_index, s_slot *slot)
 					point3f point;
 					point3f position;
 					short cluster;
+					long count = 0;
 
 					function_210850(&view->unknown78, &point);
 					function_1e3b00(actor->unknown018, 1, &point, NULL, NULL, &position);
 					cluster = view->unknown78.output_index == NONE ?
 						*(short *)((byte *)view + 0x72) : function_272af0(g_4e0348, &point);
 					state->unknown00 = function_1c8df0(*(short *)((byte *)actor + 0x254), cluster, &position, NONE,
-						(point3f const *)((byte *)actor + 0x22c), 0, false, actor->unknown26c != NONE, true, NULL) == 0;
+						(point3f const *)((byte *)actor + 0x22c), count, false, actor->unknown26c != NONE, true, NULL) == 0;
 				}
 				if (state->unknown00)
 				{
