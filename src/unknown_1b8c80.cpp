@@ -918,6 +918,14 @@ extern "C" void _ReadWriteBarrier(void);
 // body or the no-barrier body): the state as `&slot->type` cast, with/without the barrier; the state declared after the
 // actor ahead of the barrier; `&((s_slot_4c *)slot)[0]` without the barrier; the flags test through a const cast of the
 // slot without the barrier.
+// M3 lane 16 r156 (fast, control 6): reads of the slot parameter through its own address after the actor lookup:
+// volatile, then the barrier after the lookup and a second barrier after the read 28 (205 B); volatile after `actor, barrier`
+// 29; the state declared bare first and assigned by a volatile read after the lookup, no barrier, 49 (210 B); a plain read
+// through a `s_slot *const *` to the parameter between two barriers 6, and after the lookup ahead of the barrier 6 (both
+// the base code: the barrier does not pin a parameter read). Reading: each volatile form loads the slot in the entry
+// block (after the data base as retail when the read follows the lookup), but ESI's save then moves to the entry and the
+// data base folds into the add or takes ESI; retail keeps the ESI save in the flags arm (shrink-wrapped) and the data base
+// in EDX. Re-measured: volatile read first, without/with the barrier 50/29; after the lookup, then the barrier 31.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

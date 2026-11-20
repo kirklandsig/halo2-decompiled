@@ -262,6 +262,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // `if (!model) continue;` then the start and the store 23; the third loop's inner counter declared in its `for` 23; the
 // text result typed as the text helper's return type 23, with the block-24 and block-18 results typed as theirs too 23
 // (all the same code). Diagnostic: 1-8 unused initialised locals after `long i = 0;` 23 each (not a numbering effect).
+// M3 lane 16 r156 (fast with 0x22facd, 0x230427, 0x22f6ca; control 23): the text loop's test written
+// `pane->text_count > i` 25 (check.py --fast agrees); the model's animation start reading the screen through a
+// `c_class_1473c9 *const *` to the parameter 23 (same code, the EAX copy stays); a `continue;` after the model's value0a
+// store 23 (same code). Diagnostics (not kept): the block-18 loop deleted 229 (327 B; the copy appears in the bitmap,
+// block-24 and model loops), the bitmap loop deleted with the block-24 loop starting from the shared zero 194 (353 B; the
+// model reset becomes `mov` as retail, but its EAX copy of the screen stays).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
