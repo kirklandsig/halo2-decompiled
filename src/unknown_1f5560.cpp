@@ -1751,6 +1751,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // to the zero register. Retail reaches the same final return from the type exit but past its reload, i.e. it still holds
 // the result in XMM0 from `movaps xmm0, xmm1` at its definition; the `goto done` form (260, retail's 1173 bytes) lacks
 // exactly that copy and reloads.
+// Separate float cosine limit branch 264, double clipped cosine 239, direct clipped expression at the
+// arc helper 239, unsigned angle before result publication 262. Positive or negative initial side
+// radius 243/279, planar side vector 239, shared outgoing cosine dot 239. The zero and radius
+// registers remain different. The radius branches move the extent past retail to 1160 and 1157 bytes.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

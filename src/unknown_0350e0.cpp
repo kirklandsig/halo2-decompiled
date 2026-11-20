@@ -3798,7 +3798,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
-// score 317 (was 317): see the forms below.
+// score 317 (was 317): EBP and EDX hold the prefix and state in reverse order, with swapped ordinal homes.
 // MiniMax E (11-16): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
 // MiniMax S (11-14): no new form, no lower score (317): the permuter's search over this body (29 tries, 304 s, reduced image and full image) found nothing below the baseline's 317; retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two read the stack slots in the other order, so the frame's shape and the register plan have to change together.
 // MiniMax B (11-13): no new form, no lower score (317): retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two then read the stack slots in the other order; the frame's shape and the register plan have to change together.
@@ -4065,6 +4065,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // M3 lane 5 r205 (fast with 0x4b160, MATCH each time; control 317): passes 3 and 4 sharing their own index (passes 1-2 and
 // the decay loop keep `i`) 317; pass 1 with its own in-loop index 375 (1342 B); `register` on `first` 317; the decay loop
 // with its own in-loop index 317; pass 2 with its own in-loop index 317. `first` keeps EBP in each.
+// Paired candidate reference after the tail check 317, creation candidate reference 317. Decay initial
+// reference, entry reference and both 317/317/317. Active growth entry reference 317, growth initial
+// reference 369, both 388. The growth initial bindings expand the body to 1336 and 1351 bytes. The
+// state and prefix registers and ordinal homes remain exchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
