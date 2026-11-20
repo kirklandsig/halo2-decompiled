@@ -2129,6 +2129,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax S (11-16): score 305 (was 305): no new form; the length 1923 agrees but this build's frame is 0x11c
 // against retail's 0x128, so every stack slot is off by 0xc from the first store on; the missing locals are what
 // keep the two apart.
+// Earlier 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier at 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // score 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
@@ -2564,6 +2565,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // use, where this build hoists the datum index and the track index into EBX/EBP and holds &sounds[i] in EDI with the
 // active bit spilled; the listed forms (the count in each for-init, the pitch bounds pointer, the per-use reads) all
 // measure 305 or more.
+// Track/datum/track-tag/class/pitch-bound references 305 each; activity bit updated with the mask 305;
+// current range handle carried through both admissions 412; full request with both track bindings 305.
+// NOT kept: the range handle reduces the frame to 0x11c and loses the indexed loads. Complete request
+// storage reaches 0x12c while retail reserves 0x128.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
