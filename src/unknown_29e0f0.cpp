@@ -731,6 +731,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // point bitmap tested and set through bit_vector_test/bit_vector_set as the group bitmap now is 367 (aligned 293), cleared
 // by memset 367, both 367 (aligned 293, masked 157); on this base local_29 `long` 418 at retail's 1596 bytes (frame 0x68,
 // aligned 242, masked 161), `short` 420 (aligned 246, masked 161).
+// score 359 (was 367, r924 stand-in image): `return local_4;` also ends the outer `if` block, the final return kept for
+// the other path (size 1596 = retail's).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
@@ -851,6 +853,7 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                 }
             }
         }
+        return local_4;
     }
     return local_4;
 }
