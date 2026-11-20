@@ -402,6 +402,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // the second session as a `const &` to the owner's field 473 (1616 B); the data getter's result and the surface lookup's
 // result each bound by `const &` 376/376 (same code); a second session local re-read from the owner for the data getter's
 // call 400 (the getter still expands); the first session as a `const &` 461 (1595 B).
+// M3 lane 3 r277 (fast with 0x5b080, 0x75890 and 0x192e60; control 376): `inline` on 0x75890's definition 376 here (the clock
+// read is written out) but matched 0x776a0 in 0x75890's own file then expands it (102, 680 B), so that lead is closed; with
+// both elapsed times through 0x75890 as well 413; the data getter called ahead of the 0x49c8 getter and 0x192e60 444
+// (1573 B); the two missing-input tests merged into one `||` 412 (1594 B); the data getter declared at its own test 425.
+// The state register follows 0x5b080's expansion: expanded, its state test is CSE'd with the earlier inlined state
+// tests across the 0x192e60 call (ESI); retail calls 0x5b080, so its state dies in EAX. BLOCKED-BY 0x5b080 calibration.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

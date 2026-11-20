@@ -5913,6 +5913,12 @@ void __stdcall function_d6bc0(long object_index);
 // vector and distance shared by the reset and case-0 tests 172; the release test reading the object type into a named
 // char used by both type tests 172 (7 on the label form); 1..6 dead locals (diagnostic) 172 each, so the EDI/EBX choice
 // between `entries` and the timer is not a symbol-count tie.
+// M3 lane 3 r277 (fast with 0x15c150, 0x15ac50 and 0x15aad0, all matched each time; base 29): the flag recipe rebuilt 7
+// (869 B); on it with the field test 172 (858 B: the switch test on the field and case 1 in AL as retail, but `entries`
+// held in EDI from the reset block through the zero and index tests and the timer in EBX); with no loop-top index local
+// 172; a named `short *` timer for the zero test, delay store and countdown 172, with the countdown's `= 1` too 177 (854
+// B); the timer as a `short &` 177 (854 B); the parameter read once through its address into a second pointer used for
+// every access 172 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
