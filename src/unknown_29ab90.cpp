@@ -574,6 +574,9 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // main's declaration-plus-if form (ours colours local_19 XMM6 and local_24 XMM5, where retail gives local_24 XMM1), so
 // the 275 only drops the early load and re-aligns later rows. The forward-gain clamp as `local_16 < local_30` 286; the
 // sign test as `0.0f > local_25` 286; local_18 declared ahead of local_19 286.
+// Typed actor reset and target, direction and request flag, and turn status, alone and combined,
+// scored 286 each. Typed actor fields with scalar and vector views of the history buffer also scored 286.
+// The object/settings spills still differ with the 0x64 frame in place.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

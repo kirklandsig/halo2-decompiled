@@ -370,6 +370,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
 // count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
 // 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
+// Carry opening/suffix, opening/closing, suffix/closing or all append results:
+// cached terminator 69/78/83/83, indexed terminator 79/73/81/80.
+// NOT kept: the 0x24 frame persists and all scores rise. The entry base stack
+// home and unscaled ordinal through the appends still differ.
 // M3 lane 11 r134 (fast with 0x24a64d, 0x24a763, 0x24a52b, 0x24a7bf and 0x24a09b, all MATCH; control 67): the suffix
 // declared at function scope 66 (195 B); `long count = 0;` 83 (192 B); the loop index as `short` 46 (202 B, aligned 20:
 // i then stays in EBX and the found entry and plain arm are formed again from it as retail, but every use of i gains a

@@ -1717,6 +1717,11 @@ struct s_item_flags_view_10b850
 // 846/862 and 815/843. NOT kept: the 815 form reaches the retail extent and frame
 // 0x148, but the ray and flow still have separate slots and the scale stays in XMM4.
 // The entry Boolean stores and the 0x12c frame remain unresolved.
+// Motion-vector names for pre/post-query velocities, both query vectors, those
+// vectors plus carrier output, and all same-size motion vectors: 824 each.
+// Early collision sentinel 823, early settle result 822, both 823, and motion-entry
+// collision declaration with early sentinel 823. NOT kept: gains below eight.
+// The 0x154 frame and entry flag stores still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

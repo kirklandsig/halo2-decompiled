@@ -990,6 +990,10 @@ static inline long font_character_pixel(long alpha, long color)
 // Two-field pair loop/output-end pair loop and ordinary endpoint selection/set opaque bits
 // 163/183/237/237; with dword parity 181/178/256/256.
 // NOT kept: reaching retail length with the pair loops increases the score; endpoint forms shorten away from retail.
+// Distinct names for the packed and ordinary run, both pixels, all four,
+// and the output extents and fill pixels: 59 each. With dword parity: 203 each.
+// NOT kept: dword masking restores the opacity width, but moves the packed run
+// and shortens the body to 444 bytes. Literal assembly and run reuse still differ.
 // Ordinary alpha in both assignment arms, transparent default, opaque default or opaque predicate:
 // 59/171/172/59 with byte parity; 203/240/240/203 with dword parity.
 // NOT kept: The defaults reach 504 bytes with byte parity but move the cursor registers. Dword parity

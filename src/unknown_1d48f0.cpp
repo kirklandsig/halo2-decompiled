@@ -452,6 +452,10 @@ const dword g_455978[81] = {
 // first 370 (its byte moves to +0x1f); the two optional-state locals renamed (bounds_volume, bounds_body_index) 268 (same
 // homes +0x24/+0x48). The planar length's squares come j first from the shared magnitude2d (retail i first); that header
 // serves about twenty files, so it was not changed. Still BLOCKED-BY 0x11bed0's inlinability at this site.
+// Bounds through the existing component reader 268, with one cached endpoint coordinate 341.
+// Clipped bounds before stores 480, each clipped edge per axis 491, and separate lower and upper passes 491.
+// Conditional edge values 481, clipped point pair into setters 478, and setters before conditional stores 486.
+// The optional-state homes and the selective location and release expansions still differ.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

@@ -730,6 +730,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // defaults, the displaced point as an aggregate initialiser, the transformed points declared `tb, ta` (retail's ta.z
 // slot sits below tb.z, ours above) and as two declarations: 195 each, identical code. The 0x4f7e0/0x4ff50 call-line
 // reorder stays held (both still contributor code). Body unchanged.
+// Array views of transform input, output, camera basis and translation, separately and together 195 each.
+// Input and output as bounded array references with camera array access 195. The X/Z spills and inverse homes persist.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

@@ -908,6 +908,9 @@ struct s_physical_block_iterator
 // test of best.previous with the head arm's next/first stores in both of its sub-arms and the predecessor re-read through
 // a fresh pool base 100, with those stores once after the sub-arms 96 (first difference back to +0x338: the walk's scan
 // registers flip), both with a named `long previous` 100/96 (same code). Main's body unchanged.
+// Explicit two- and three-outcome candidate decisions: timestamp expression 212/212,
+// inequality selects the test 273/273, equality refinement 212/212 and ordered accept/reject 210/210.
+// NOT kept: all raise the score and change the extent. The retail policy join still differs.
 // M3 lane 15 r116 (fast with 0x13d320 and 0x13d830, both MATCH; control 201): lane 1 r124's 40 lead re-applied on today's file,
 // 40 (1213 B, aligned 22: the overlap walk, where retail loads best.offset into EDI, sums `pages + offset` into EBX and
 // compares a `mov edx, edi` copy, with the handle built in ECX and moved to EBX for the delete call; and the head flag's

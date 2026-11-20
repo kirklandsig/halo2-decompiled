@@ -1817,6 +1817,11 @@ long function_2197f0(real gain);
 // gain then assigned 87 (same code), returned from the arm 174 (668 B); arm 3's sum stored through the long view 87
 // (same code). Reading: ours has exactly one sum with the gain in a register (arm 4, fed across the join) and retail
 // exactly one too (arm 1, loaded there); the other three add the gain from memory in both.
+// Composite threshold applied to unscaled quotient receiver or scaled estimate 143/143;
+// fraction assigned separately in both arms, quotient or cap first 143/94;
+// named scaled test with conditional quotient or in-place quotient 143/143;
+// direct quotient accumulated before cap 143; selection in interpolation argument 143.
+// NOT kept: the cap and quotient forms raise the score; separate gain load and late join remain.
 // Retained release duration with scaled overlap, staged subtraction/normalization/scaling,
 // independent release component, or attack accumulator 92/92/92/92. Retaining the attack
 // divisor for the final quotient instead gives 92/92/92/92. NOT kept: all raise the score;

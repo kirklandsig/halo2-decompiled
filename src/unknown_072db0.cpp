@@ -2217,6 +2217,7 @@ bool function_1900a5(long index);
 // their two size-optimised callers expand them in a loop, where retail calls), and selects the slot with cmovne (the
 // SSE flag); after the request test the listings still lose step at the loop set-up (retail stores both zero counts
 // to their slots and loads them into ESI/EDI after the clock read).
+// MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
