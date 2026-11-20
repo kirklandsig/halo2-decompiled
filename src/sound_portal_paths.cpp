@@ -240,6 +240,11 @@ __forceinline long portal_path_gain(real distance, real range)
 // Destination array names 287; distance and bitmap names 287; four ranked table roles 287; destination
 // arrays before order 287, order before the distance array 287; source and destination record names
 // 287; distinct phase ordinals 287, with candidate array and bitmap roles 287.
+// Round 648: deferred seed portal 391; destination ordinal from its record 322; split flag predicates 311;
+// bitmap word shifted at reads 338; fallback-first range 344; short-circuited range tests 287;
+// defaulted output gain 286; common count update 288;
+// split flags with signed link decode 356; nested flag guards 311.
+// NOT kept: the 286 gain result improves one point and the 311 split flag forms keep both table spills.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -338,10 +343,8 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 305 (was 315): Earlier 315 (was 354). Advancing the required index at the row latch brings the entry frame to 0x42c.
-// score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
-// (A second header line, "score 305 (was 354)" with the same text, merged here in m3 lane 14 r124.)
-// Frame 0x42c versus 0x428. The starting cluster is in EBX and both BSP table bases stay live through the walk.
+// score 305 (was 315): Frame 0x42c versus 0x428. The starting cluster is in EBX and both
+// BSP table bases stay live through the walk.
 // Prior score history: 315 before r118, 354 before that.
 // Earlier 305 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
@@ -523,6 +526,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // order 305/305; walking record roles alone and with candidate arrays 305/305; distance and order
 // declarations first or last 305/305; distinct traversal/fill/output ordinals 305, with path
 // measurement names 305.
+// Round 648: deferred seed portal 396; destination ordinal from its record 364; split flag predicates 320;
+// bitmap word shifted at reads 348; fallback-first range 346; short-circuited range tests 305;
+// defaulted output gain 308; common count update 305.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
