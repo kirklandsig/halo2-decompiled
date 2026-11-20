@@ -883,6 +883,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
+// score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax G (11-12): no new form, no lower score (233): the frame is four bytes short (0xa8 against retail's 0xac), which puts the
 // definition, source, scale and vertex homes four bytes below retail's, and retail's u step, v and width are in the eight-byte spill
 // slots at the top of its frame in another order than ours; no new spelling of the three scalars moves them.
@@ -915,7 +916,6 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // +0x98, the green at +0x9c and the blue at +0xa0) this file's front-end inlined copy does not reproduce, so the frame
 // stays four bytes short at 0xa8 against retail's 0xac; that helper's declaration is fixed in another file, which this
 // lane may not change: BLOCKED-BY 0x131e50.
-// score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
 // declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:
 // retail's case-4 head, with the position pointer formed inside each arm); with the colour stored `outer->color =
@@ -1442,6 +1442,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // width left as v_width) 351; the negated step in its own local 351 (same code each). Diagnostics on ribbon_pixel's locals
 // (no change to slots or code, 351 each): renamed blue/green/red/alpha, renamed out of alphabetical order, the four
 // channel longs declared after scale and pixel. The slot order follows neither names nor declaration order here.
+// M3 lane 1 r139 (fast with 0x42c50/0x42b20/0x43720/0x43740, all matched; control 351): the real pack_color4f (0x131e50)
+// called in place of this file's copy, with 0x131e50's own noinline declaration removed so link-time code generation expands
+// it: 351 (the expansion gives exactly the copy's homes and frame 0xa8, so front-end versus link-time expansion is not the
+// frame cause), and matched 0x19ca0 is lost in the plain check (625: the packer expands there too); both files restored. The
+// width halved in place instead of the half-width local 351; the edge points as a two-element array 351; width declared at
+// function scope 351; the point formed by array indexing 351; the first vertex's position written through a named pointer
+// 351 (same code each). Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

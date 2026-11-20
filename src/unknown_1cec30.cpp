@@ -3532,6 +3532,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // `position.set(...)` 15; the rotation part bound as an `hkRotation &` for the three columns 15; the translation copied
 // through `m_quad` 15 (all the same code); the converter reading the vector into i, j, k locals first 32 (the value in
 // XMM0 is still stored first, then the zero). Dead initialised locals K = 0..40 at the top: 15 at every K.
+// M3 lane 1 r139 (fast with 0x1d83e0 and 0x1d77d0, control 15 as the plain check): a redundant `if (0 < node_count)` guard
+// around the first child search 15 (same code); the first-node test held in a bool read through a const reference 258;
+// `first` read through a const reference for the test and the call 242; the body_a store written in each arm of the first
+// conversion 349 (1216 B); the equal arm reading the pair through a const reference to the pointer 15 (same code). Permuter
+// with the caller and callee as context (604 s, 63 variants): best 15. Body unchanged.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
