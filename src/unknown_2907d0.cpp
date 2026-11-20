@@ -223,6 +223,9 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // pointer local 19 (same code); no address local, the position and forward pointers named once ahead of the branch for
 // both arms 147 (451 B); the node bound to a const reference `local_3[arg_1]` for both calls 19 (same code); the node
 // index widened into a named long for the test and the index 36.
+// M3 lane 6 r209 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the node arm's forward address
+// named in a pointer local after the point call 19, ahead of it 19, the node arm's position address named 19 (the three the
+// same code); the else arm's forward copied through a pointer local 67, with the node arm's pointer as well 67.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
