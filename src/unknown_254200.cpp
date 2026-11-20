@@ -625,6 +625,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // dropped (function_14390 is a call either way) 2 (same code; kept, one pragma pair fewer); the closing `inline_depth(255)`
 // dropped 2, as `inline_depth()` 2 (same code); the colour pointer declared `const` 2. In retail every call after the first
 // quad's second vertex stays out of line except the border-colour stage call, the shape of an inline budget spent there.
+// M3 lane 4 r226 (fast with 0x254490 4 and 0x254200 matched; control 2): the first quad's halving as `arg_1 / 2.f` 2
+// (same code); the readiness test as two nested ifs 3 (first difference +0x95); the colour as a `real const *` indexed 2;
+// the table getter called once into a named local for both lookups 545 (2233 bytes: retail calls it twice); the colour
+// getter through End in their own block scope 2 (same code). All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

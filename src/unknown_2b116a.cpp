@@ -4476,98 +4476,8 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56): Retail keeps the controller slot and reloads both pointer levels before the two dialog masks.
-// Earlier: only case 3 differs. Retail keeps controller in esi, spills controller_index
-// only case 3 differs. Retail keeps controller in esi, spills controller_index
-// to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
-// function_1a334a. Our build reuses the index loaded before player_slot_get_identity: LTCG here
-// treats function_1a334a as writing no memory (an impure call placed after it gives retail's
-// registers exactly), so the cause is outside this function. Tried: bool member (199: 8 bytes
-// shorter, though closer by align.py), no controller_index local (199), long volatile
-// controller_index (188). Case 2's count = 0 first: 56 -> 54.
-// Const index 54, index reassignment after membership 54, named initial controller pointer 54,
-// post-call controller object reference 181 at retail length, shared word flag mask 200,
-// conditional membership result 204, named admission test 54, per-dialog word flag masks 54.
-// With a boolean membership result, early identity failure, affirmative break, choice first, XUID member
-// address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
-// bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
-// index rather than re-reading it for the dialogs.
-// Dialog masks before/after the context calls 188/192, per-arm controller object 181, shared short
-// mask 200, membership-initialized decision 192, membership-first test 55, type tested before
-// membership 54, initial controller and short masks 54, named identity field 54, copied post-query
-// controller index 54, Boolean membership with retail-order dialog operands 199.
-// NOT kept: Boolean membership with context call before both mask reads 28 at 655 bytes. It recovers
-// the index spill and reloads by changing the observed evaluation order.
-// Double-pointer selection view 199; reference to the current controller pointer
-// 199; per-dialog short mask 195 (Boolean membership 197); membership tested
-// before identity type 201, in the condition 201, or held as nonmember 191;
-// per-dialog controller index 199. NOT kept: the original controller reference
-// and post-call index reloads are still missing.
-// Round 575: the incoming double pointer still needs to survive both identity calls. NOT kept: index field
-// reference or address 181/181; early identity failure 54; confirmation arm first 54; shared dialog
-// context with long or Boolean membership 197/202; nullable dispatch 198; nested warning with common
-// confirmation fallback 54.
-// Round 416: Case orders 3/2/1/0, 3/0/2/1, 0/3/2/1 and 0/2/3/1 each score 54.
-// Orders 3/1/2/0, 3/0/1/2, 0/3/1/2 and 0/1/2/3 each score 127. NOT kept: case
-// reordering still leaves the original index in ESI and omits the dialog reloads.
-// Scope the initial index to the identity calls, using one numeric snapshot
-// 199/197, a reference to the index field 205/206, both direct reads 199/197,
-// or an identity-only controller view 199/197. Each pair forms masks at their
-// dialog calls or in the corresponding arm. The original reference and index
-// stack home are still missing.
-// The controller reference and initial index spill still differ. End the identity object before
-// presentation, carrying the raw kind, kind predicate, combined decision or confirmation decision:
-// 199/54 for each with Boolean/existing qualified membership. NOT kept: no gain or reload recovery.
-// Retail still retains the controller reference through membership and reloads both pointer levels before the dialog context calls.
-// Native membership: bitwise operands 192, ternary decision 60, kind-first confirmation decision 194,
-// named warning decision 199, kind tested before membership 199, explicit window recheck 199,
-// explicit window and channel 187. Both virtual queries explicit with the inherited long result 201.
-// The controller reference and the initial index still need their separate retail homes in the opening body.
-// Independent membership ID value 204. NOT kept: one-use field copy requires a match.
-// The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
-// Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
-// native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
-// Shared unsigned/short dialog mask 208/208, with the first or both virtual
-// queries 210/210. Conditional dialog calls with Boolean/existing membership
-// 199/54. Early confirmation with direct/short masks 201/202. The controller
-// reference is still absent after the membership query.
-// The incoming controller reference and the two post-membership index reloads still differ.
-// Dispatch-scope controller index for the initial queries, then with name entry, message permission, both dialog masks, name and permission, name and masks, or all three groups each score 54. All uses with Boolean membership score 199.
-// Callback slot bound before identity, before membership with a fresh index, after
-// membership, or at each dialog: 54 with the existing membership storage in each form.
-// Early identity rejection with the slot and bool, then bool at the other three boundaries:
-// 199/199/199/199. NOT kept: none recovers the two post-membership reads through ESI.
-// The bool forms also shrink case 3 while retaining the initial index in ESI.
-// Named identity-query result 54, index assigned at the identity call 54, Boolean membership with
-// warning assigned on the eligible path 199 or cleared for the excluded kind 192, signed warning result 199,
-// conditional dialog invocation 199, function-scope identity 199, inherited dialog receiver 199.
-// The original controller reference and both index reloads still differ.
-// Separate leave before/after the other actions 215/210; separate name before/after
-// 211/199; message selection last/first 219/248; separate leave with Boolean membership
-// 196; group lower actions before leave 217. The original double pointer and index spill
-// still differ. Isolating leave grows the frame.
-// Library copies at the two dialog reads: slot 181/205, index 54/199,
-// both levels 181/205, or both levels at initial and dialog reads 181/205
-// with the opening and Boolean membership locals, respectively. The slot copy
-// keeps the controller object in ESI, and the index copy still folds the reload.
-// Copy the dialog controller pointer, index or both 181/54/181; with Boolean membership 205/199/205.
-// Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
-// NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
-// and the index-only copy folds into the original read.
-// Guarded membership using a conjunction or an if 212/199; separate warning
-// and confirmation 242; three-way dialog result from the identity branch,
-// conditional admission, qualified membership or scoped identity 199/212/54/199;
-// explicit dialog-present guard 199. NOT kept: the qualified form ties and
-// still reuses the initial controller index. The other forms regress.
-// Shared message parameters, iterator or both 54/54/54; source-scoped iterator
-// and distinct message workspace names 54/54; descending, ascending and
-// message-first if chains 206/207/196. NOT kept: the dialog index still folds
-// into the initial read, and the conditional dispatch regresses.
-// The initial index still takes ESI and the dialog masks still reuse it. Dispatch-wide const slot or
-// slot reference 54/54, with Boolean membership 199/199; recipient counts initialized at case entry
-// 76; fresh index at membership 54; unsigned mask bits throughout 54; signed short membership in the
-// existing qualified local 55. NOT kept: slot forms preserve numeric-index reuse, and the Boolean
-// width shortens case 3 without restoring the reloads.
+/* runs the chosen item: 0 the name entry, 1 and 2 a message to the listed members, 3 a
+   message box or a choice dialog, by the player's identity type and function_1a334a's query */
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -4694,9 +4604,7 @@ void c_clan_options_list::handle_item(s_controller_reference **controller, long 
 
 			if (player_slot_get_identity(controller_index, &identity))
 			{
-				/* volatile: stored to the stack slot where retail spills
-				   controller_index, which keeps the function within a byte of retail's length (see the score note) */
-				long volatile member = function_1a334a(controller_index, (_XUID const *)&identity);
+				bool member = function_1a334a(controller_index, (_XUID const *)&identity);
 
 				if (identity.type != 1 && member)
 				{

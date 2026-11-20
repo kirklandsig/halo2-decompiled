@@ -363,12 +363,12 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// score 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax R (11-17): no new form, no lower score (84): the seat loop's two cross products load their operands in the
 // other order (retail multiplies a term with the vector's component in the register and this build with the memory
 // operand), and the shared header helper's spelling fixes that order, so the products cannot be moved from here; the
 // seat loop's result still lands four bytes above retail's and the range still loads into xmm2 for xmm0.
 // MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
-// score 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // M3 lane 8 r189 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): names do not order these homes (result,
 // range or the facing maxima renamed to sort first or last, diagnostic, 84 each); the facing copies as secondary then
 // primary 84; distance_squared declared at the top of the settings block 84; the clip amount declared in the motion
@@ -914,6 +914,10 @@ real function_30bf0(vector3f *vector);
 // kept: 8/9/10/11 dead initialised locals 84/84/86/138 (period 8; no count moves the homes). Reading: the aggregates sit in
 // retail's homes; only the 4-byte cells are permuted: retail packs the clip amount with distance_squared and gives result,
 // the two facing outputs the lowest cells, ours packs the amount with the seat count and the pair lands lowest.
+// M3 lane 4 r226 (fast with 0x263740/0x25c9d0/0x26d370; control 84): the actor's byte flag at +7 read once into a named
+// bool for the clip and facing tests 97; the motion threshold as `0.05f * 0.05f` 84 and the close-range one as `6.0f * 6.0f`
+// 84 (same code); the settings through the file's typed situation view with flags and range at +0/+4 84 (same code); the
+// endpoint and flag tests as nested ifs 84 (same code). All restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

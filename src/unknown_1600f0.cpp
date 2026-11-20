@@ -1211,8 +1211,10 @@ PRIVATE inline long score_string_list_1608e0()
 	return result;
 }
 // score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
-// score 679 (P622: a one-use caption-phase local at the division gives 671, match-only, reverted): Frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
-// score 679 (was 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// P622: a one-use caption-phase local at the division gives 671 (match-only, reverted); frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
+// M3 lane 4 r226 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): x as long 684; y as short 681; the width folded into x's
+// expression (no width local) 679 (same code: left is still read once); `panel->time` as one `flag1128 || score_to_win != 1`
+// 701 (2888 bytes); the row total written into the fade count's initialiser (no total local) 710 (2888 bytes). Body unchanged.
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
