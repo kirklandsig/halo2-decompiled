@@ -683,8 +683,8 @@ bool function_bba80(long object_index)
                         offset.k = centre->z - position.z;
                         real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
                         byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
-                        long zoom_level = *(signed char *)(unit + 0x240);
-                        real zoom = function_c8880(*(long *)(player + 0x2c), zoom_level);
+                        long zoom_index = *(signed char *)(unit + 0x240);
+                        real zoom = function_c8880(*(long *)(player + 0x2c), zoom_index);
                         if (zoom > 0.0001f)
                             distance_squared /= zoom * zoom;
                         if (distance_squared < radius_squared)
