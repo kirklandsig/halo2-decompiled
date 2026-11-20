@@ -2299,6 +2299,12 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // instruction, but that is a cast of the field's own address. Retail computes the release impulse twice, once in
 // each branch, with the two flag clears around the two copies, where this build shares one copy - BLOCKED-BY the
 // transform helper's own file.
+// Direct spin with separate active/inactive defaults 190, separate
+// active result 206, release success before the queries 180, countdown success
+// after decrement 190, returned contact point 191, center workspace used directly
+// 189, returned center for both event points 171, and owner copied after flag and
+// scale 190. The shared center form reaches the retail return-byte slot and length
+// with the release-byte clear and impulse branches still differing.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
