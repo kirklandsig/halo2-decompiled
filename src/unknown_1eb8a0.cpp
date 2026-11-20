@@ -756,6 +756,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // helper used twice 603 (same code); the output copy as three q field copies 657 (2878 B, EBX still d); a block-local
 // game-time pointer read once at the top of the active block (retail loads it once there, ahead of the clamp's branch,
 // and uses it for the cap and the rate products) 600 (2888 B; a second local for the same pointer, not kept).
+// Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
+// output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
+// Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
