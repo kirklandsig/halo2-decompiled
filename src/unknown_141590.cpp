@@ -1559,6 +1559,11 @@ void function_143250(
 // Input/output/both slices advanced after the calls 1625/1725/1701.
 // Shared coefficient offset advanced after admission or the calls 1231/1231.
 // NOT kept: The advancing forms retain the 0x2fc frame and do not recover the displaced scalar homes.
+// capture with matrix store for r1 1740; capture with matrix store for r4 1721;
+// capture with matrix store for r1, r4 1748; capture with matrix store for r0 1717;
+// capture with matrix store for r0, r1 1766; capture with matrix store for r0, r4 1742;
+// capture with matrix store for r0, r1, r4 1788; capture with matrix store for r0, r1, r3, r4, r8 1832.
+// NOT kept: The early matrix stores displace the capture and spill schedule, miss the retail frame and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

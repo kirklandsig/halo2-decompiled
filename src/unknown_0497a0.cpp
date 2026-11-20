@@ -579,6 +579,12 @@
 // Split late axes and cross workspace (shape/reciprocal initialization together or split) 536/536.
 // Split all vector declarations in capture order (shape/reciprocal initialization together or split) 536/536.
 // NOT kept: The assignments still give the opening frame and stack slots.
+// compound depth reciprocals 536; compound paired perspective reciprocals 536;
+// compound depth and perspective reciprocals 536; independent compound perspective reciprocals 536;
+// compound depth reciprocals with named extent 537; compound depth reciprocals with named span 537;
+// compound depth reciprocals with named denominators 535;
+// compound perspective reciprocals initialized before crosses 536.
+// NOT kept: The one-point gain is below the retention threshold. The 0x54 frame and retail inverse allocation remain unresolved.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
