@@ -909,6 +909,9 @@ real g_55e618;
 // XMM), so forms here need the real build. Left on the 61 form: the normal components' registers (retail i XMM1, k XMM2,
 // j XMM4, loaded as needed), the position sums' order with `lea ebx` among them, the value argument's load at the block
 // top, and the flags test ahead of the final rows.
+// AC597: Typed placement output; surface construction at call, construction before position, and copy
+// before position; typed output with call construction or early copy; initialization before position
+// with call or early construction: 102/102/242/242/102/242/102/242.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

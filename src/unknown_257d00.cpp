@@ -2030,9 +2030,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 433 (was 433): The dispatch-default branch span, return placement and timer and request scheduling still
+// score 433 (was 433): r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
 // Earlier score 433 (was 433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
+// MiniMax I (11-19): no new form, no lower score (433): the case-13 body still returns through its own 16-bit move instead of
+// retail's shared 32-bit return-1 block, the turn-facing sum is still added in the other order, and the case-4 dot product is
+// still computed with the vector helper from the other file where retail inlines it.
+// score 433 (was 433): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree. Earlier 479.
 // MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
 // MiniMax H (11-18): score 433 (was 479): the switch's cases now sit in retail's order and case 13 returns 1;
 // what still differs is the shared return-1 block, which this build keeps at the end of the function where retail
@@ -2498,12 +2502,30 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // `return 1` / `return 0` exits and no result local 639 (2368 B, masked 75); with case 18's references in two named locals
 // checked one at a time and case 6's flag byte named for two stores 624 (masked 54; case 6 still folds to `or 0x69`); case
 // 18's named references alone 528 (2424 B, swapped); case 13 through the shared exit 478 (2400 B, masked 84).
+// M3 lane 6 r203 (fast with 0x110ab0/0x258b60/0x258a00; control 433, aligned 117/118): retail sends case 13 and the
+// default to one return-1 block that follows case 0 with the post-switch test, and cases 5 and 10 jump into case 0's
+// `sete`. That reads as the test and epilogue copied into each case and merged back into the first copy. Ours places
+// the test after case 20, whose else arm stores the flag and falls into the reload. Retail's short sibling 0x258cf0
+// returns through `xor ax, ax`, so the 32-bit `mov eax, 1` here comes from the merged result path, not the type.
+// Tried: a long return type (declaration, definition and the 0x258a00 call cast) with the result gotos 481 (2404 B:
+// case 13 merges into the end block), the same with plain returns 481; case 20's else arm as one assignment
+// `local_3 = unknownb0 == NONE || unknownd1` 527 (2432 B); local_2 declared ahead of local_0 433 (same code), and on
+// the case 2 aggregate copy + case 4 direct facing base 623 (same as that base, 623: actor EDI / state EBX; with the
+// two registers swapped back it is aligned 131 against the baseline's 117, so those forms are not retail's alone).
+// The frame and entry ownership hold, with a longer dispatch branch and different
+// copy-carrier registers. Release-direction assignment 433; requested and settled
+// direction snapshots 519/433; release and delayed workspace names 433; inverted
+// turn decision 433; byte turn decision 433; fallback value selection 589; named
+// delay mode 518; staged turn-direction test 433.
+// NOT kept: the equal scores leave the copy schedule and dispatch span different;
+// the regressing forms disturb the entry register roles or lengthen the tail.
 // M3 lane 5 r204 (fast with 0x110ab0; control 433; all restored): case 6's second OR through a signed char view 433
 // (same code: still `or 0x69`); case 4 reading the state's facing at each use 611 (2400 B, re-measured on this base:
 // actor EDI, state EBX); on it one, two or three unused locals in the case 611 each (same code: the exchange is not a
 // symbol-count tie), the case 2 vector written as three member copies from the actor 611; `default:` joined to case
 // 13's `return 1` 613 (2416 B).
-// score 433 (was 433):
+// Further forms on the 433 base:
+//
 // Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
 // busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
 // fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
@@ -2513,6 +2535,18 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // order with direct acknowledgement exit 477, Unsupported selector exits as completed 433. NOT kept: The selector
 // orders and unsupported-selector return tie. The direct acknowledged return shortens the body to 2400 bytes at
 // 477. The checked callee stays at 164.
+// M3 lane 5 r209 (fast with 0x110ab0 at 164; control 433, aligned 151, register-masked 130). Retail's jump table sends
+// type 13 to the same return-1 block as the default (`ja`) target, after the post-switch result test that retail lays
+// out right after case 0 (cases 7/8, 0, 5 and 10 cross-jump into its `sete`). On retail's case order: case 13 removed
+// 481 (2404 B), as `break` 481, through the shared exit 481, removed with case 7/8 falling into case 0 481 (all with
+// the test moved to the end after case 20); case 13 moved after case 20 as `return 1` 515 (2432 B), as the shared exit
+// 447 (2420 B, aligned 139, masked 97: the result test then sits after case 0 as in retail, case 20's first arm jumps
+// back to it where retail has its own return-1 epilogue, and its else arm still stores the d1 flag; a case moved by
+// score, match-only), `default: return 1` last 613, with case 13 613, `default:` through the shared exit last 641.
+// The dispatch default and shared success target still span different blocks.
+// Direct type-19 release 475; direct ordinary release 473; direct returns in both release arms 474.
+// Direct completion at the unit request 679, playback 493, animation 405, object mode 438, all four 622.
+// NOT kept: The animation form adds a short-return epilogue where retail joins the shared completion test.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

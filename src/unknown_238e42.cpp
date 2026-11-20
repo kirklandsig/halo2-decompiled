@@ -888,6 +888,12 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax A (11-19): no new form, no lower score (90): the frame (0xf00) and every stack home agree, but after the
+// membership query the selected identity is reloaded into ecx where retail reloads it into eax and the requested rank
+// takes eax where retail's takes ecx, so the copy into eax before the removal call is still needed and its two bytes
+// are what move every later jump; the forms the earlier rounds list (the identity in a local of its own, the rank
+// copied into a local, the identity test spelled five ways, the identity held in an integer) all compile to the same
+// bytes, and the removal callee's argument order cannot change.
 // score 90 (was 90): the identity pointer takes ECX and the requested rank EAX (retail EAX/ECX), so a `mov eax, ecx`
 // before the removal call adds the two bytes that move every later jump. M3 lane 3 r268 (fast with 0xac050, 0xac360,
 // 0x2399da, 0x23955e, 0x2b278e, all MATCH): the over-rank and rank-3 refusals as guard returns inside `rank != NONE`
@@ -1295,10 +1301,30 @@ bool __stdcall function_2399da(long controller_index)
 // so either order hands the callee the team there: the gain is the shorter call, the identity stays in ECX and the rank in
 // EAX, and the present order is retail's. Restored. Same code (90 each): the identity pointer declared non-const; the
 // task index declared with the function's other locals; the rank parameter typed int.
+// M3 lane 4 r222 (fast with 0x239a3d, 0xac050, 0xac360 and 0x2399da; control 90, aligned 14): the dispatch as a flat chain
+// (`== NONE` remove, `> own_rank` deny, `== 3` choice, else set) 90 (same code); `rank != NONE` tested first with the removal
+// in the else arm 95 (437 B); the selection getter with a return per case 156 (436 B) and with a `default: result = NULL`
+// arm 156, both losing 0x239a3d (41); the identity test through an inline helper testing the pointer and its id for zero (the
+// form another file has) 90 (same code). A one-object LTCG screen (diagnostics, reverted): removing the member's rank store, or
+// storing into a block that is dead afterwards, puts the identity in EAX; storing own rank or `rank + 1` there instead, or into
+// another member field, keeps it in ECX with the stored value in EAX: any register value stored into the member takes EAX
+// ahead of the identity. NULL team or a zero controller in the removal call, no rank-3 arm, no over-rank dialog: ECX. 1 to 6
+// dead locals at the top: ECX (not a symbol-count state).
 // M3 lane 13 r115 (fast, all 90 at 434 B; restored): the own-rank read moved right after the membership call, ahead of
 // the identity test, as a declaration 90 and as an assignment to a function-scope local 90; the redundant block
 // around the membership call and its tests removed 90; the own rank declared const 90; the over-rank refusal tested
 // before the set-rank arm (`rank > own_rank` first) 90.
+// M3 lane 7 r189 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e, 0x239a3d and the three callers 0x2c69b3,
+// 0x2b5f9b, 0x2b5d3b, all MATCH in every trial; control 90, nothing kept): the rank parameter's address discarded at the
+// top (the idiom that keeps 0x2078f0's parameters in memory) 90 (same code); the rank read at the NONE test through a
+// null-checked pointer in an inline helper (the form that stops 0x206090's counter being an induction variable) 90 (same
+// code: the rank is still loaded into EAX); the explicit stack convention dropped from the definition and both declarations
+// 90 (same code, callers still MATCH: the link keeps both parameters on the stack by itself; not kept, no gain); the rank
+// parameter as an unsigned dword with the NONE and own-rank compares cast 90 (same code). Diagnostic: the permission test
+// moved ahead of the identity test, so the identity's reload sits right before the rank's load, 99 (426 bytes): the identity
+// still takes ECX and the rank EAX, so the length of the identity's range is not what loses it EAX. Reading: three
+// cross-block values pick the lowest free of EAX, ECX, EDX in the order rank, identity, own rank here and identity, rank,
+// own rank in retail; the expression temporaries (the 64-bit test, the team address) then take the lowest free one.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

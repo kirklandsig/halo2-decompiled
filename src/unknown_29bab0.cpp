@@ -59,6 +59,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
+// MiniMax C (11-19): no new form, no lower score (489): the position and the sum still take each other's homes (the
+// position at +0x8c where retail has +0x80); neither declaring the position ahead of the sum nor hoisting the sum's
+// declaration to the top of the body moves that slot, and the normaliser still squares k, j, i where retail squares i, k, j.
 // score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // M3 lane 8 r189 (fast; control 489): local_8 renamed `position` 489, local_14 renamed `destination` 489, both 489
 // (same code: names do not order these 12-byte homes); local_9 filled through vector3f_assign 665 (3499 B), through a
@@ -692,6 +695,21 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // for the three dots 640 (3499 B); the three dots as named speeds 671 (3487 B); the target point computed just before the
 // steering-side block 730 (3463 B); the input copy and its normalize ahead of the position query 762 (3499 B). Diagnostic,
 // reverted: 1..7 dead initialised locals 665/665/665/665/669/500/493.
+// M3 lane 6 r203 (fast with 0x30bf0; control 489, aligned 178/178): dead-local scan K = 0..31 at the top (diagnostic,
+// removed): K = 1-5, 9-13, 17-21, 25-29 move the frame homes (3499 B, 658-669), K = 6-8, 14-16, 30-31 493-500, K = 22-23
+// 574 (3509 B), K = 24 484 (aligned 176); the normaliser's squares stay k, j, i at every K, so that order is not a
+// symbol-count state. A matched-function scan of retail for the x87 square sums finds i, k, j only in 0x195070 (a vector
+// filled by a callee, then normalize_inline); k, j, i (ours) in 0x195370, 0x1b81c0, 0x1f1ee0, 0x23cbb0, 0x25dd50.
+// Tried: the input copy normalised through the existing function_30bf0 (retail calls it out of line three times
+// here) 874 (3398 B: stays a call); local_26 through the existing vector2d_from_points2d 665 (3499 B, frame moves);
+// local_25's components written y first (diagnostic: retail computes y in the select's arms) 708; the vector add's
+// operands as (arg_2, local_8) 489 (same code).
+// The frame still agrees with the position at +0x8c for retail's +0x80.
+// Point-typed target, query and shared query/target 489/489/489. Shared point
+// setter 487. Closing alignment products in j-k-i, k-i-j, j-i-k and i-k-j
+// order 741/750/747/747. NOT kept: the shared setter's gain is two. The named
+// products reach retail's length and one recovers the normalizer square
+// order, but the position slot stays different and the scores rise.
 // M3 lane 5 r204 (fast with 0x1f9e70 and 0x110ab0; control 489; all restored): the input normalised through a
 // file-local inline with the sum written j, k, i and the scale sides inverse * i, j * inverse, k * inverse 763 (3501 B:
 // the squares still run k, j, i, so the written order is not what sets them); LEAD: the closing dot written with the
@@ -704,6 +722,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // after planar normalization or at the collision split, scoped/entry declaration:
 // 790/790, 791/791, 790/790, 794/794. NOT kept: collision-split seeding reaches
 // 3499 bytes and position +0x80, but drops the early vector copy and shifts the heading spills.
+// The position query still uses ESP+0x8c for retail's ESP+0x80.
+// Planar snapshot after position 775, after normalization 751, at query admission 745.
+// Planar snapshot before or after the actor update 725/723, after the translated target 723,
+// after both planar normalizations 725, and before side selection 720.
+// NOT kept: The planar snapshots move the position to +0x68 or +0x58 and disturb the entry spills.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

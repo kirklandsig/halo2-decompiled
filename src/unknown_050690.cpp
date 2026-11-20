@@ -478,6 +478,8 @@ void __stdcall function_508d0(void *payload_data)
 	g_46713c = true;
 }
 
+// MiniMax H (11-19): no new form, no lower score (626): the frame stays 0x1490 against retail's self-aligned 0x1474 and the mode still has a stack home where retail keeps it in CL; the only caller at 0x508d0 is still a stub, so the frame's alignment is not reachable from here.
+// MiniMax I (11-19): no new form, no lower score (626): the frame is still 0x1490 against retail's self-aligned 0x1474 and the mode still has a stack home where retail keeps it in CL, so every stack home sits further out; the only caller at 0x508d0 is still a stub, so the flag's convention is out of reach from here and the body is unchanged.
 // MiniMax B (11-18): no new form, no lower score (626): the frame is still 0x1490 against retail's self-aligned
 // 0x1474 and the mode still has a stack home where retail keeps it in CL; the exponent clamp, the random real and the
 // level float are already retail's, so the body's own arithmetic is not the difference and nothing else in this file

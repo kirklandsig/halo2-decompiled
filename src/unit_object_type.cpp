@@ -862,6 +862,9 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // 0xe4bd0 tail call and its argument register left; one-use pointer and gain 3, not kept); that local with a byte clear 22
 // (99 B); that local from a second unit lookup 59 (114 B); `return function_e4bd0(unit_index);` 13; the mask in a named
 // long 13 (both the same code). Still BLOCKED-BY 0xe4bd0 (EAX convention, tail call), itself BLOCKED-BY 0xe5930.
+// M3 lane 11 r126 (fast with 0xe4bd0): the +0x10a clear written out as `flags_10a = flags_10a & ~4` 13; one to three
+// redundant pairs around the +0x33e word address 13 each; the word clear written out as an assignment 13 (all the same
+// code). Still BLOCKED-BY 0xe4bd0 (EAX convention, tail jump), itself BLOCKED-BY 0xe5930 (expanded inside 0xe4bd0).
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -2255,6 +2258,11 @@ struct s_unit_motion
 
 /* advances a position and velocity along the motion for a time; whether
    time remains after its last phase */
+// MiniMax B (11-19): no new form kept, no lower score (104): the accumulator spelling still measures 28 at retail's
+// 227 bytes, but this round traced the chain that lead needs - the two matched callers 0x1e5af0
+// (src/unknown_1e67a0.cpp) and 0x1faf80 (src/unknown_118e80.cpp) lose with it, and 0xc7840 has to be rewritten to
+// retail's XMM convention - and those files are not this lane's, so the lead is out of reach here:
+// BLOCKED-BY 0xc7840's call sites.
 // MiniMax E (11-16): no new form tried this round, no lower score (104): the body still keeps the position and velocity on the
 // stack (ret 0xc) and is 265 bytes against retail's 227; the accumulator spelling still measures 28 at retail's 227 bytes, but
 // this link then inlines the body into 0xc7840 and flips the matched 0x1e5af0 and 0x1faf80, and the only source form that keeps
@@ -2438,6 +2446,15 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// MiniMax B (11-19): no new form kept, no lower score (1): this round worked out why the equality spelling cannot be
+// used - with `unit_index != NONE` VC proves the value to be -1 at the exit and folds the returned copy to a constant,
+// so the copy survives only with the `> NONE` spelling and its `jle`; retail's exit block has a single predecessor
+// as well, so no merge of two paths can restore the unfolded copy, and the one-instruction difference stands. A separate
+// `long result` local, assigned the parameter at the top and the parent index in the seat branch, with the entry test
+// on the parameter, scores 47: the extra phi moves the unit pointer from EAX to ECX and the exit copies out of place.
+// The single-exit spelling of that body (one `return result` at the end) measures 113: it hoists retail's lazy pushes
+// into the prologue, and the matched 0xbaf40 and 0x6a690 show that an unfolded exit needs a two-predecessor phi,
+// which retail's single-predecessor NONE exit does not have.
 // MiniMax R (11-16): no new form, no lower score (1): the entry branch is still `jle` where retail has `je`; the
 // `!= NONE` spelling gives retail's `je` but VC folds the NONE exit to the constant again (2), and dropping the
 // inner returns to merge the exits moves retail's lazy pushes into the prologue (62 for all three, 12 for the
@@ -2554,6 +2571,15 @@ void function_cfec0(long unit_index)
 // NOT kept: no exact separate NONE exit; original body and lazy saves restored.
 // MiniMax S (11-17): no new form, no lower score (1): the one difference left is still the branch at the NONE test, where this build's greater-than test gives jle and retail has je; the equality test with the body as the then arm gives retail's branch but folds the NONE exit's value into the constant (2), the same with the parameter copied into a local of its own (2), the equality test as an early return (92) and the one's complement form (96, which builds not/test instead of cmp); a local copy of the parameter that the body reassigns measures 46 and 47 and shortens the body to 247 bytes, so the copy goes to memory and the branch and the exit cannot both be had from one source shape.
 // MiniMax C (11-17): no new form, no lower score (1): the entry branch is still jle where retail has je; the equality spelling gives retail's je but VC folds the NONE exit to or eax, 0xffffffff again (2), and dropping the inner returns to one return at the end moves retail's lazy pushes into the prologue (62), so the jle spelling stands.
+// MiniMax A (11-19): no new form, no lower score (1): the one difference left is still the branch at the NONE
+// test, where this build's greater-than test gives jle and retail has je. The equality spelling gives retail's
+// je on EBX but VC then folds the NONE exit's register copy to the constant (2). A copy that all four exits
+// return keeps the copy alive - the exit is no longer folded - but the copy takes EBX and the test moves to
+// EAX, which loses retail's `mov ebx, eax` prologue (47). A copy that the test and the lookup share is
+// propagated back into the parameter, so the branch matches and the exit folds again (2); the same copy
+// tested and returned on its own gives the test on EAX (47). One exit at the end merges the four epilogues
+// into one and moves retail's lazy pushes into the prologue (113). Retail's exit block has a single
+// predecessor, so no merge can restore the copy there.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -3028,6 +3054,11 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
+// MiniMax B (11-19): no new form tried this round, no lower score (97): the body is still retail's 350 bytes with the
+// same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and
+// re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into
+// EAX before the pushes and hoists the unit index into EBX, and the call's register arguments follow the 0x188180
+// helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax I (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into EAX before the pushes and hoists the unit index into EBX, and the call's register arguments follow the 0x188180 helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax S (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; the prologue still differs in that this build loads the object globals pointer into EAX before the pushes and hoists the unit index into EBX, while retail reads the unit index from the incoming stack slot into EAX and keeps the globals pointer in EDI, and the hoisted parameter differs too (retail's EBP holds the definition index, this build's EBP the material index); the call's register arguments follow the 0x188180 helper's own body, in another file: BLOCKED-BY 0x188180.
 // score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
@@ -4740,6 +4771,15 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
+// MiniMax B (11-19): no new form kept, no lower score (2): the only difference left is the order of two instructions -
+// the x87 spill of the sampled speed (`fstp dword ptr [esp + 0x18]`) sits after `add ecx, 0x168` here and before it
+// in retail, and both write the same slot and pass the same pointer. This round tried the speed's expression with the
+// sum and the product swapped, without the explicit cast, and with the direction declared before it: all three give
+// the same two instructions, so the placement is the scheduler's and not the expression's; the file was restored.
+// Named locals for the cone's forward pointer, for its angle and for its result pointer measure 2 as well, and the
+// cone call moved up next to the sampled speed measures 129.
+// The rest of the call setup (the forward, result and seed operands) still follows the cone helper's own convention in
+// a file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax I (11-16): no new form, no lower score (4): the body is retail's length and the frame agrees, and only the four instructions that set up the random_vector_in_cone call differ - this build forms the forward, result and seed operands while retail spills the sampled speed first and forms them after - and that order is the cone helper's own convention in a file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax S (11-16): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - this build forms the forward, result and seed operands while retail spills the sampled speed first - and that order is the cone helper's own convention in a file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax C (11-15): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - this build forms the forward, spill, seed and result operands while retail spills the sampled speed first and then forms the forward, result and seed ones - and that order is the cone helper's own convention in src/unknown_146240.cpp, which this lane may not edit; the eight source shapes tried before all give these four bytes, and the permuter (300 s, 5 tries) found nothing below its baseline of 4: BLOCKED-BY 0x146320.
@@ -4799,6 +4839,15 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // the forward, result and seed pointers, this build forms the pointers first - and the callee's parameter list
 // is in src/unknown_146240.cpp: BLOCKED-BY 0x146320.
 // MiniMax S (11-17): no new form, no lower score (2): the only difference left is that retail spills the sampled speed before it forms the forward, result and seed operands, where this build forms them first; that order comes from the cone helper's own convention in another file: BLOCKED-BY 0x146320 (src/projectiles.cpp).
+// MiniMax A (11-19): no new form, no lower score (2): the one difference left in the whole body is a single
+// swapped pair in the cone call's setup - retail spills the sampled speed (`fstp dword ptr [esp + 0x18]`)
+// and only then forms the forward pointer (`add ecx, 0x168`), this build forms the pointer first and spills
+// after it; every other instruction, the frame and the length agree. The spill is the x87 value's store,
+// which has to happen before the call, and the `add` is the last piece of the forward argument, so the order
+// of the two is the scheduler's tie-break rather than the source order (inferred, not measured). A permuter
+// run (5 plain tries and then 13 annealing tries over the whole body, 373 s) found no variant below 2: the
+// annealing walk's variants scored 2 eight times, 6, 15 and 90 once each and two failed to build. The order
+// comes from the cone helper's own convention, whose file this lane may not edit: BLOCKED-BY 0x146320.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
@@ -5394,6 +5443,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // direction components read at each use instead of the three named copies 262 (682 bytes). Retail keeps
 // forward_scale on the x87 stack to the end (popped with cosine, `fld [m]; fmul st(n)` in all three rows) where
 // ours consumes it in the k row with an fxch. Not kept; original body restored.
+// MiniMax D (2026-11-19): no new form, no lower score (169): the first difference is inside the inlined cross-product
+// helper, which lives in a header this lane may not edit, and our build is one byte longer than retail's, which moves
+// the branch targets in the bit-test dispatch.
 // projection components have independent scalar destinations 187; projection destination declared outside the
 // basis phase 169; basis forward workspace reused as the projected direction 169; basis up workspace reused as the
 // projected direction 184; scalar horizontal projection consumed before the vertical projection 187; planar

@@ -886,6 +886,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // same code, the getter still matching); the tail's live and 0x5dd0 tests through a forceinline copy of the existing
 // 0x5dd0 getter (0x63e00's form) 127 (451 bytes: the limit helper's live test merges; both callers lost); the two
 // buffer clears swapped 26; the player buffer declared and cleared first 26.
+// M3 lane 5 r207 (fast with 0x6e500 and 0x72700; control 22): the preset stored pair under the flag alone 46 (re-measured
+// with the live test 46): register-masked it is retail but for one line, the copy loop's count spill ahead of the two
+// leas, and the callee-saved permutation (ours session ESI, index EDI, player pointer EBX; retail index ESI, pointer EDI,
+// session EBX); 1-7 dead initialised locals on that form 46 each (not a symbol-count tie); the pair set in both arms of
+// the flag test 46; the opening's condition held in a named bool 218 (361 B: the address tests fold inside `&&`); the
+// pair as two flag ternaries on the countdown copy 156 (499 B, callers match); the variant named between the pair and
+// its test with the summary inside 152 (495 B).
 // Round 116 (m3 lane 13, fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22): the NULL-preset stored pair with a
 // `const dword *` mask pointer named before the summary 46, with the member count read above the pair 136, with the
 // summary fetched above the pair 55, with the variant and the summary above the pair 55; the summary fetched above the
@@ -893,6 +900,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // and the summary above the opening 32. Compile-only first pass (lane 5's round 175 harness): a 0-16 dead-local sweep on
 // the preset pair keeps ESI, and mask or 0x49c8 pointer locals named before the summary are propagated back (ESI), so
 // the preset pair's flip is a ranking change, not a symbol-count tie.
+// M3 lane 5 r210 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22, register-masked 2): the two buffers declared
+// at function scope 22 (same code); the NULL-preset stored pair in the state block re-measured 46 (masked 1, session ESI),
+// with a plain `for` copy 108; the plain `for` copy alone 100 (477 B: its copy loop is then retail's exactly with the
+// session in EBX; left one scratch step at the summary lea, at the player loop's mask/bit and argument temporaries and at
+// the final players lea, plus the folded mask read and the opening's second lea), with the mask read into a loop local
+// 100 (same code); a 600 s permuter run (context 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; without the callee
+// contexts its reduced image scores the body 137) 58 tries, best 22.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1316,6 +1330,18 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // aggregate filled by `identities[count++] = *(aggregate const *)&current->players[i]` 195; the branch inverted (`if
 // (!all_players)`, else arm first) on this body 209 (701 B); the count declared bare and zeroed at the top of the true
 // arm 201.
+// M3 lane 2 r112 (fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): a redundant `count = 0;` at the top of the true arm
+// on the indexed copy, on this body, and with the destination declared after it in the arm 201/201/201 (the first zero
+// is then dead and dropped, as the bare-count form); a row pointer `dword (*)[3]` declared before the branch and copied
+// through `memcpy(dest++, ...)` or `memcpy(*dest++, ...)` 53/53. Re-measured the indexed copy 195 (the state takes EBX
+// from the top, `current` stays in ESI up to the preheader and its spill slot swaps with `joining`'s, the count is
+// spilled).
+// M3 lane 12 r151 (fast with 0x6fcc0, 0x6f940, 0x6fa60, all MATCH; control 9; re-measured: indexed 195, `[count++]` 40):
+// `count++;` then `memcpy(identities[count - 1], ...)` 203 (704 B); the count typed `dword` 9 (same code); a slot pointer
+// named from `identities[count++]` ahead of the copy 40; identities as a byte array filled by `memcpy(identities + count++
+// * 12, ...)` 40; the walked destination filled by three dword stores from a source dword pointer 225 (684 B). Reading of
+// the indexed listing: the state takes EBX for the whole function (reloaded after the loop) and `current` ESI at the top,
+// so count, state and `current` compete for the two callee-saved registers that survive the close call and the clear.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
