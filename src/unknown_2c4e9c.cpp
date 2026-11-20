@@ -3246,6 +3246,19 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // load; the file's 14 functions still matched). A retail byte scan finds a memory load into a scratch register,
 // compared with a constant and then copied to a callee-saved register, in no other function. Compile-only under /O2
 // (diagnostic): no frame and a rotated loop, so retail's body is an /O1 one. All restored.
+// M3 lane 2 r112 (fast with 0x2c9a58, matched in each): a redundant `if (map_id == NONE) map_id = NONE;` after the read 30
+// (folded); the id assigned in both arms of a test on the field, the `== NONE` arm first, 13 (the NONE-default code);
+// `if (map_id == NONE) return; else` the walk 30; the walk in a file-local `static inline` helper taking (list, id) or
+// (id, list) 100/100 (14 B: the helper stays a call), as `__forceinline` 30 (the inlined parameter loads straight into
+// EBX). Re-measured the if/else two-definition id 36: NONE has five uses there (two tests, the else store and the two
+// iterator stores), so it is kept in ECX.
+// M3 lane 8 r197 (fast with 0x2c9a58, matched in each): `long map_id;` then the test on the field with the id assigned
+// inside the block 30; `if (field != NONE) map_id = field; else return;` with the walk unconditional 30 (both give
+// retail's EAX load, compare and later copy in a compile-only build, where `this` arrives in ECX, but under LTCG,
+// with `this` in EAX at entry, the load goes straight to EBX again); the id as a for variable reset to NONE at its
+// step (diagnostic, loop-carried second definition) 30; the loop compare written id first 30; the id typed dword 30.
+// Compile-only only (same direct load): the read assigned in the condition, a by-value inline validity predicate, an
+// inline getter with a result local. All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

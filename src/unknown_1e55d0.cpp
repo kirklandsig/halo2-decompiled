@@ -55,14 +55,14 @@ static __forceinline long real_to_long(real value);
 
 /* sets or clears the blocked flag by testing a capsule just inside the shape at the component's
    position */
-static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *component, byte const *input, byte *out)
+static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_component *component, byte const *input, byte *out)
 {
 	real margin = g_47f05c + 0.001f;
 	real radius = *(real *)((byte *)shape + 0xc) - margin;
 	if (g_47f05c > radius) radius = g_47f05c;
 	c_z_capsule_temp capsule((byte *)shape + 0x10, (byte *)shape + 0x20, radius);
 	transform4x3f matrix;
-	((s_havok_component *)component)->rigid_body_matrix_get(0, &matrix);
+	component->rigid_body_matrix_get(0, &matrix);
 	matrix.position.z += margin * 0.5f;
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
@@ -312,6 +312,13 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // a match (the positional count rises). Left on the last: the output/input registers (BLOCKED-BY 0x1ec690), retail's
 // null test and single rate load from the expanded 0xb77d0, and the shape re-read from the input at each use of the
 // capsule chain. BLOCKED-BY 0xb7430 (disabled: it closes a call cycle) for the 0x1c4a80 call.
+// Round 145 (m3 lane 16, fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319): the component
+// and its first rigid body read through the existing havok_component_get / havok_component_rigid_body_get (the body had
+// both written out), the capsule helper taking the component typed: 319, the same code (kept). Retail's position
+// update loads the rate once and multiplies `rate * v.i`, `v.j * rate`, `v.k * rate` with the base added from memory:
+// the existing vector3f_scale into a temporary then the base added 335 (1188 bytes); scaled and added through
+// vector3f_add 335; scaled into the position then the base added in place 335 (the compiler loads the base and adds
+// the product to it). Still BLOCKED-BY 0x1ec690 for the EBX/EDI trade (its draft sits in another lane's file).
 // M3 lane 6 r201 (fast with 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0, 0x1c4a80, all MATCH unless noted; control 319;
 // positional / bytes / aligned-equal of retail's 335 / register-masked equal, base 319 / 1176 / 133 / 216; all restored).
 // Diagnostic: with the disabled 0x1ec690 draft switched on in place of its stub, the call is retail's (two pushes, the
@@ -327,6 +334,18 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // code as main), on the 345 form 346: the state keeps ESI either way. Retail never gives the state a saved register
 // (it reloads [ebp + 8] before the switch, for 0x1e5b50 and for each object index read) and adds 0x10 to that copy
 // in place in each case.
+// Round 149 (m3 lane 16, fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319): the capsule
+// helper with two exits (`|= 2; return;`) 350 (1200 bytes; the destructor stays expanded, now twice, where retail calls
+// 0xdc370 in each arm as the matched 0xa9f70 does); the capsule in its own block with a hit result tested after it
+// (0xa9f70's shape) 323; the position products as `rate * v.i`, `v.j * rate`, `v.k * rate` 319 (same code); the body's
+// current-shape field read at each use with main's `||`/`&&` 319 (same code); the same as `compound ? (field == shape ||
+// field->0x30 == shape) : field == shape` 388 (1212 bytes) but aligned exact 214 -> 206 and register-masked 131 -> 79:
+// the compound test with its out-of-line non-compound arm, the velocity block and the position block become retail's,
+// while the input loses its register (reloaded from [ebp+0xc]); with the shape also read from the input at each use of
+// the type chain and for the capsule (retail re-reads [input+0x14c] before each virtual call) 346 (1224 bytes, aligned
+// exact 136, register-masked 55). Left on that: the input register (BLOCKED-BY 0x1ec690), and 0x1c4a80 and the 0xdc370
+// destructor expanded here where retail calls both (open: retail also expands 0xb77d0 here, which its /Ob1 file keeps
+// a call in this build, or the link's inline threshold sits one level deeper than retail's, as at 0x25d740).
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
@@ -366,8 +385,8 @@ void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_bipe
 	c_z_shape_view *shape = *(c_z_shape_view **)(input + 0x14c);
 	if (shape)
 	{
-		byte *component = g_51e9b8->data + (*(long *)(input + 0x18) & 0xffff) * 0xa0;
-		byte *body = *(byte **)(*(byte **)(component + 0x70) + 0x40);
+		s_havok_component *component = havok_component_get(*(long *)(input + 0x18));
+		byte *body = (byte *)havok_component_rigid_body_get(0, component);
 		c_z_shape_view *current = *(c_z_shape_view **)(body + 0xc);
 		bool compound = current->v5() == 0x17;
 		current = *(c_z_shape_view **)(body + 0xc);

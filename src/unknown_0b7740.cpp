@@ -1150,6 +1150,20 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // propagates every one of these copies back to the parameter, so result and the parameter stay one value in ESI). Re-measured
 // the 0xbfe20 clear 262 (813 B: ours keeps `definition` in EAX across the mask copy, retail stores it and reloads it from
 // the slot it later gives the render-node count). Body unchanged.
+// M3 lane 4 r225 (fast with the file's functions, 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout;
+// control 240, aligned 177). Reading: retail's single exit explains its entry (result copied to EDI and to its home at
+// once, the three early exits returning EDI from tail epilogues, the main exit the home), and retail's second early test
+// is the body of the existing 0xbfc90. Re-measured round 168's lead (single exit, 0xbfe20 clear, bit 29/+0x34b through
+// header->object, final_matrices at the top) 287 (aligned 83); on it the header's index as a named local 287 and
+// final_matrices initialised from `result` 287 (same code each); with final_matrices left late 295 (aligned 91: the
+// parameter held to the late store, in ESI). New: that late form with the awake test as `!function_bfc90(object_index)`
+// 170 (826 B, aligned 100; the +0xb3 byte and the reuse of the first test's object are then retail's; left: object_index
+// in a scratch register where retail gives it ESI and the parameter EDX) - the lead, match-only (bit 29/+0x34b read
+// through header->object beside the `object` local); with those two tests through `object` 292 (828 B, aligned 77, the
+// lowest aligned count), that with the plain `&=` clear 263 (841 B, aligned 132); only the model test nested with the
+// 0xbfc90 awake test 299 through `object`, 290 through header->object. Diagnostic (restored): both early tests through
+// their existing predicates, 0xbf5d0 marked `inline` at its /Ob1 definition, 274 (843 B, aligned 75): each expansion
+// looks the object up again where retail's +0xb3 test reuses the first test's object, and 0xe01d0 goes 537 -> 598.
 // M3 lane 14 r119 (fast with 0xbdb60/0xbfe60, both MATCH each time; control 240, aligned 182 in the reduced image):
 // `result` as a non-const pointer cast from the parameter 240 (same code); the sample arm's three assignments with
 // orientations last and the periodic arm's with orientations first 244; matrices and final_matrices set by one chained
@@ -1676,6 +1690,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // parent_mirrored = false; }` 18 (1394 B, the else-arm form above: the initialisers are dropped); the parent node read
 // into a local before the parent test 20 (same code); parent, flag and index declared once for both arms with the
 // no-model defaults in an else arm 18 (1394 B, same code as the else-arm form).
+// M3 lane 12 r151 (fast with 0xb8bd0, 0xbdc40, 0xbc820, 0xbd020, 0xbee60, 0xbfa40 and 0xbdb60, all MATCH; control 20 at
+// 1399 B): the no-model test inverted with the defaults in the NONE arm and the lookups in the else 25 (1395 B); the
+// else-arm defaults (r267's 18) with the flag read before the matrix 18 (1394 B: the node's `movsx` moves ahead and takes
+// ESI), with the flag's object through object_header_get 18 (same code as r267's); 0xb8bd0 called for the matrix with the
+// else-arm defaults 48 (1387 B); defaults first with a parent header pointer named in the arm for both reads 41 (1392 B).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

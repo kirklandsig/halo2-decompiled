@@ -375,7 +375,10 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// score 182 (was 182): earlier scores 182 and 188. Frame 0x80, prologue, first exit and the unit-mode slot agree.
+// score 182 (was 182): Frame 0x80 and entry agree. The route join follows mode seven and the cleanup path folds the result reload.
+// Earlier score 182 (was 182): earlier scores 182 and 188. Frame 0x80, prologue, first exit and the unit-mode slot agree.
+// The entry and 0x80 frame agree. The route dispatch follows case 7 instead of the common case 5 tail.
+// Previously noted: earlier scores 182 and 188. Frame 0x80, prologue, first exit and the unit-mode slot agree.
 // The route test layout, case 7 stores and result home still differ.
 // MiniMax C (11-15): no new form, no lower score (182): the route dispatch still lands after the mode cases where
 // retail puts it between case 5 and case 6, and the result still comes back through BL where retail loads the
@@ -927,6 +930,11 @@ struct s_1f8a70_actor
 // half held in a bool ahead of the ternary 302 (1644 B: the whole bool is materialised, `xor al, al` / `mov al, 1` /
 // `movzx`); the bool preset false, set from the radius/node half when the route is zero and true for routes 1-2, 182 (same
 // code); the ternary's arms swapped (`route != 0 ? range : radius/node`) 182; `long route = route_mode;` 182 (same code).
+// M3 lane 12 r149 (fast with 0x1f86a0/0x1f8750/0x1f8780/0x1f8940/0x1f90f0/0x1f8510/0xe70b0; control 182): mode cases in
+// source order 6, 7, 2, 3, 4, 5 382 (1616 B); 2, 3, 4, 5, 7, 6 334 (1608 B); 3, 2, 4, 5, 6, 7 350 (1640 B); the zero-route
+// half through a file inline returning `radius != 0 || node != NONE` 299 (1648 B: the whole bool is materialised with
+// `xor eax, eax` / `mov eax, 1`, where retail materialises only the node half with `setne al`); the same inline as a
+// false-initialised result set by an if 305 (1644 B).
 // M3 lane 3 r267 (fast with 0x1f86a0, 0x1f8780 and 0x1f8750; base 182, aligned 49): the route test as `route != 0 ?
 // (route > 0 && route <= 2) : (radius != 0 || node != NONE)` 182 (aligned 61: the zero arm moves behind the range test,
 // the dispatch still follows case 7); the mode cases in source order 6, 7, 2, 3, 4, 5 382 (1616 B) and 2, 3, 4, 5, 7, 6
@@ -943,6 +951,22 @@ struct s_1f8a70_actor
 // body. Reading: retail's success exit returns the AL it tested (loaded from the +0x12 home), its failure exit reloads
 // that home after 0x1f8750, and 0x506's store sits between the load and the branch; what differs here is where the
 // route dispatch is laid out (after case 5 in retail, after case 7 here) and the failure value kept in BL.
+// target-mode switch 316; case-local path bindings 182; target-mode switch with case-local path bindings 316;
+// root override snapshot 182; target-mode switch with root override snapshot 316; case-local path bindings with
+// root override snapshot 182; target-mode switch with case-local path bindings with root override snapshot 316;
+// target-mode switch with case-local path bindings with root override snapshot with an explicit position-object
+// default 316.
+// NOT kept: Case-local path and root lifetimes tie. The real target-mode switch scores 316 and shortens the
+// body to 1620 bytes. The route join and failed-result reload remain open.
+// Missing targets rejected through the route selector in modes 4/5/6: 338/321/310.
+// Pairs 4+5/4+6/5+6: 404/405/405. All three 411, with missing movement 411.
+// NOT kept: all score higher. The 0x80 frame and branch condition agree. The
+// first branch displacement, route dispatch and failure result still differ.
+// Shared point cases 2 and 3 372, shared reference cases 4 and 5 383, both shared case pairs 408, shared
+// forced-route tail for 3 and 5 244, selected source and shared forced-route stores 390, shared node tail for 2
+// and 4 386, shared reference for 5 and 6 with conditional movement 398, shared forced-route tail through frame
+// reference 451. NOT kept: Sharing the forced-route tail scores 244 and still leaves the dispatch after case 7.
+// The other case pairs and the frame reference raise the score further.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

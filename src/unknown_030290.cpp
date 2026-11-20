@@ -226,6 +226,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
 // score 195 (was 195): one note (the stacked score lines merged, r184).
 // Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
@@ -645,6 +646,13 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // appears. Orders xzy 217, yxz 218, yzx 213, zxy 216, zyx 213; the defaulted origin in a new local `a ? a : g_468788`
 // 195 (only the x sum turns d-first); that with order y, x, z 218 (retail's x/y sums and XMM7/XMM6, z still a-first).
 // A two-argument inline point-plus-vector helper, ternary defaults and the default statement order change nothing.
+// M3 lane 12 r149 (fast with 0x30bf0/0x30710; control 195): retail expands the existing 0x142570 three times here.
+// Diagnostic (file flag, not kept): this file without /Ob1 and the helper calling 0x142570 still leaves three
+// calls, 718 (475 B), with the direct inverses 724, so the file flag is not what keeps it out of line: only
+// `inline` on 0x142570 (another lane's file) expands it. The helper written as 0x142570's text with its parameter-
+// address read plus the direct inverses 220 (960 B); the helper's scaled coordinates bound by reference 236
+// (974 B), with the direct inverses 222 (963 B); the displaced point bound by reference 268 (repeat of r110);
+// rows summed position first 195 (same code); `b` declared at the top 195 (same code).
 // M3 lane 15 r106 (fast with 0x142570/0x30bf0/0x30710; control 195, aligned 95, stack- and register-masked 49): the existing
 // transform4x3f_apply_point (0x142570) marked `inline` and called for the three transforms (camera viewed as the
 // transform4x3f it begins with) 234 (971 B, frame 0x2c); the factor copies dropped, the inverses set to 1 in the
@@ -668,6 +676,15 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // the six orders 150 (same code); a compile-only screen of all 216 coordinate, scale-statement and row-statement
 // orders ranks this form first. Left on 150: each row's term order (retail right*x, then z*forward, then y*up; ours
 // forward*z and up*y, then right*x) and which side of each product is loaded. Body unchanged (195).
+// Y643: project origin in place 197; project displaced point in place 196; project both in place 197; direct inverses
+// and origin in place 207; direct inverses and displaced point in place 207; direct inverses and both in place 207;
+// both in place with point2f difference 197; direct inverses and both in place with point2f difference 207.
+// NOT kept: The in-place point forms retain the extra frame word. Resolving inverse depth independently shortens the
+// function to 974 bytes but raises the score to 207.
+// Returned depth with planar point or separate planar scalars 195/195, depth computed
+// first 195/195, direct inverse factors 207/207, reversed input reusing displacement
+// 195/195. NOT kept: the depth return folds to the existing transform. Direct use of
+// the inverse factors shortens the body to 974 bytes and shrinks the frame to 0x1c.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
