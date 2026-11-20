@@ -47,9 +47,9 @@ struct s_obstacle_object_flags_2c
 
 struct s_obstacle_unit_flags_2c
 {
-    byte : 2;
-    byte no_obstacle : 1;
-    byte : 5;
+    word : 2;
+    word no_obstacle : 1;
+    word : 13;
 };
 
 struct s_obstacle_definition_flags_2c
@@ -214,7 +214,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 920 (was 920): r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// score 917 (was 920): the frame is retail's 0x2cac since m3 lane 4 r229 (below); the body is 3676 bytes against 3731. Left: the entry's
+// registers (retail actor_index EBX, self_unit and its zero EBP, unit_index EDI, reloaded at the loop head), the skip flag's home, the
+// deferred type-0 second branch and the type 1/7/11 arms. Earlier first line (920): r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// r121, r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // MiniMax D (11-19): no new form, no lower score (920 plain, 926 fast): the frame is still 0x2cb4 against retail's 0x2cac, the pool globals are still hoisted above the actor test and the actor address is still folded instead of being kept in EDX, so the actor, unit and byte homes stay where they are.
 // score 920 (was 920): r123, r125 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
 // r118 (lane 14) unchanged; r123 unchanged. frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
@@ -677,6 +680,22 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // MiniMax H (11-19): no new form, no lower score (920): retail lays the join out of source order, with the type 0
 // other-actor branch followed by the join and the remaining arms jumping back to it, and no form tried here changes
 // that layout; the plain and the fast score are the same (920), so the body is as it stands.
+// M3 lane 4 r229 (fast with the three callers 0x2c41b0, 0x29a190, 0x29cbb0 and 0x2c0d00, 0x2c3030, 0x2c2060, 0x2c3550,
+// 0x29c860, unchanged in every run; control 920 = plain, aligned 480, register-masked 172). KEPT, plain 917 (3676 B, frame
+// 0x2cac as retail, aligned 366, masked 139): both qualifiers dropped (the actor pointer a plain NULL-initialised local,
+// unit_index a plain parameter), the unit's flag byte at +0x10a viewed as a word bitfield (retail's `mov dl; shr dl, 2; test
+// dl, 1`) and the object type byte read at each of its seven uses; the entry then reads the actor's unit field as retail
+// does (`mov eax, [index + data + 0x18]; add index, data`) and stores the actor home once. Steps (fast): the actor through a
+// file-local inline getter with a NULL-initialised result variable, called at the declaration 965 (3675 B, aligned 417), in
+// the block 980, with the unit field through its own lookup 932, with unit_index plain 945 (aligned 424, masked 153); the
+// plain actor local alone 974 (aligned 414, masked 147), with unit_index plain 972; the word bitfield alone on main's body
+// 930 (masked 170); getter + plain unit_index + word bitfield 925 (3687 B); that with the type byte at each use 910 (3692 B,
+// aligned 378, masked 150; the getter is a one-caller helper, so not kept), with the getter called after the three bools 918
+// (aligned 365, masked 142). On the kept form: self_unit declared ahead of the four shorts 917 (same code); the unit and
+// ignore index tests as two statements 917 (same code). Retail's type-0 arm passes `false` to 0x25d810 from the register
+// that holds the type (`movsx eax; test eax, eax; ... push eax`): the four arm compares share one sign-extended load. That
+// form (a long type local for the four arm tests, the byte read at the three later uses) 949 (3692 B); the kept form with the
+// flag byte back as a byte bitfield 968 (the word bitfield is what holds 917).
 // Scoped motion 926 reduced, scoped priority and enabled 926 reduced, scoped physics indices 926 reduced, scoped
 // object flags 926 reduced, scoped motion and priority 926 reduced, scoped motion and flags 926 reduced, scoped
 // early classification 926 reduced, all separate scopes 926 reduced. NOT kept: All eight scope forms tie the
@@ -684,14 +703,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
-    point3f const *position, real radius, vector3f const *direction, volatile long unit_index, long ignore_index)
+    point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index)
 {
     short ignore_priority = 0;
     short block_priority = 0;
     short range_min = 0;
     short range_max = 0;
     byte *self_unit = NULL;
-    s_actor_view *volatile actor = NULL;
+    s_actor_view *actor = NULL;
     bool straight = true;
     bool aligned = true;
     bool local_4d3867 = false;
@@ -754,8 +773,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             continue;
         if (self_unit && self_unit[0x3dc] == 1 && object_index == *(long *)(self_unit + 0x448))
             continue;
-        long type = (char)object[0xaa];
-        if (type == 0)
+        if ((char)object[0xaa] == 0)
         {
             if (TEST_FIELD_BIT(((s_obstacle_unit_flags_2c *)(object + 0x10a))->no_obstacle))
                 continue;
@@ -805,7 +823,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                 skip_classification = !enemy;
             }
         }
-        else if (type == 1)
+        else if ((char)object[0xaa] == 1)
         {
             if (actor && actor->unknown26c == NONE)
             {
@@ -813,14 +831,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                 skip_classification = team == actor->unknown024 || !function_1df560(team, actor->unknown024);
             }
         }
-        else if (type == 7)
+        else if ((char)object[0xaa] == 7)
         {
             byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
             word device_flags = *(word *)(definition + 0x11e);
             if (!(device_flags & 1) || ((device_flags & 2) && (*(real *)(object + 0x140) == 1.0f || !(object[0x1cc] & 1))))
                 device_spheres = true;
         }
-        else if (type == 11)
+        else if ((char)object[0xaa] == 11)
         {
             long component_index = *(long *)(object + 0xb4);
             if (component_index != NONE && havok_component_get(component_index)->unknown1c <= 1)
@@ -870,7 +888,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                     obstacle_flags = 0x10;
                     blocking = true;
                 }
-                else if (range_min <= priority && range_max >= priority && type != 0)
+                else if (range_min <= priority && range_max >= priority && (char)object[0xaa] != 0)
                 {
                     obstacle_flags = 0x20;
                     blocking = true;
@@ -931,7 +949,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                     }
                 }
             }
-            if (actor && actor->unknown26c != NONE && ((1 << type) & 3))
+            if (actor && actor->unknown26c != NONE && ((1 << (char)object[0xaa]) & 3))
             {
                 point3f center;
                 function_b9dd0(object_index, &center);
@@ -1012,7 +1030,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             if (!(combined_radius * combined_radius >= squared))
                 continue;
             long moving = 0;
-            if (type == 0)
+            if ((char)object[0xaa] == 0)
             {
                 real dot = dot3f(direction, &difference);
                 if (dot > 0.0f)

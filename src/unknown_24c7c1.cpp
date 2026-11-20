@@ -868,6 +868,14 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // pointer typed const 115 (same code); the timer flag as `char` 191 (1888 B, the byte timer's code). The sibling
 // 0x13954b converts its origin into a `short origin[2]` it passes to a call; here no call takes the pair, so that
 // spelling stays the locals-grouping form listed above.
+// M3 lane 5 r215 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115 fast, 114 in the
+// baseline full check): the bool timer re-measured 191 (1888 bytes, aligned 111 against the control's 113: the flags
+// then sit at -0xe, -0xd and -2 for retail's -0xf, -0xe, -0xd). Retail's word store means another two-byte local shares
+// `left`'s cell, so with the bool timer the function's other short locals were declared beside it: the fade tick count
+// declared after `left` (assigned where it was) 191; between `top` and `left` 191; the row index declared after `left`
+// 191; the count declared after `left` 191; all three 191; `left`, the tick count, `top` in that order 191 (six forms,
+// all the bool timer's code: `left` is still stored as a dword at -0x4c and no short is packed with it; the homes do not
+// follow where the shorts are declared).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

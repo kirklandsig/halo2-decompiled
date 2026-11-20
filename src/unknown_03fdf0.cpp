@@ -623,6 +623,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // index declared once ahead of the loop and assigned in the body 2; first declared `long const` 2; the entry pointer
 // declared once ahead of the loop 2; the entry pointer and the index both declared ahead of the loop 2 (all the same
 // code: first keeps the mode parameter's home). Permuter (fast, annealed, 600 s): 55 tries, none below 2.
+// M3 lane 13 r126 (fast with 0x404b0/0x3fdf0; control 2): the counter declared `long n;` ahead of first and set in the
+// `for` 2 (same code); the entries base named at the function top for the copy and `&entries[n]` 28 (cache_index then
+// arrives in EAX, first still in mode's home); the material as one ternary 76; `chosen` as a ternary 52; a `short`
+// counter 152. The permuter was skipped (the round's baseline full check took 17 minutes).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

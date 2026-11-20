@@ -2920,6 +2920,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // loaded beside the length and i, j, k and the copy take XMM3/XMM1/XMM2/XMM4 for retail's XMM4/XMM2/XMM3/XMM1); one
 // to seven dead locals on (v, s, out) 69 x4, 379 x2, 69 named and 77 x4, 379 x2, 77 plain. So the two states found
 // are: velocity block exact with the x product in place, or the copy form with the j preload lost.
+// Native scalar lanes 8, packed lane store 284, assigned four-lane value 284, copy of the three scaled
+// lanes 176. Contact decision before normalization/scale/after scale 173/151/8. Ordinary inline on
+// the typed setter 8. NOT kept: packed forms also break the material-sample provider in the preview.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
