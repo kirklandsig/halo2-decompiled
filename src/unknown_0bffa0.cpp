@@ -1316,6 +1316,13 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // M3 lane 4 r233 (h2m fast), at 290: one matrix pointer for every matrix use in the sphere arm 588 (2788 B); the two true
 // flags as one chained assignment 290 (same code); the reference axis as an if/else of the two copies 574 (2822 B);
 // `orthogonal = (short)shape->kind == 1` 599 (2778 B); the cone depth from `entry->plane_offset` 291.
+// M3 lane 7 r197 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 199, masked 77): the
+// projection helper's rows through the existing 0x1427f0 inverse transform (the same k, j, i rows) re-measured 1273 (2143 B,
+// out of line); with `inline` on 0x1427f0's definition 495 (2799 B: expanded, but its rows are not retail's, and matched
+// 0x210770 then inlines it too, 48), `inline` alone (diagnostic) 290 here with 0x210770 at 48; the cone plane point through
+// vector3f_add_scaled re-measured 290 (same code); the cone bounds as a box2f initialiser assigned after the corner points
+// 579 (2840 B). Retail's cone arm stores the corner points first and the bounds after them in x0, y0, x1, y1 order, and
+// forms the reciprocal after loading the cone's width and height.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

@@ -4245,6 +4245,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
 // score 295 (was 295; r275 and r234 unchanged, 305 -> 295 in r208): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// score 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
+// Earlier at 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns
 // directly (1264 B). Left: retail reads the accepted byte back at every exit where ours folds it at the reason-1/2/9
 // exits, the acknowledgement block is laid out last in retail, the timeout call lacks retail's owner spill (the earlier
@@ -4560,6 +4563,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // jump to their own `mov al, 1` return). Reading: retail's return at 0x5e891 (the state-8 exit's epilogue) gathers every path
 // on which the result is true (state 8, the kept arms with AL = 1, the post-disconnect `jne`) and the false edge has its own
 // epilogue, as if the final return were threaded on the result by a test whose other part is unknown on the proceed path.
+// Direct reason 3/5/8 returns 345/301/297, both timeout returns 299, all five policy returns 362.
+// Shared range rejection or admission 370/370, shared rejection with five direct returns 387.
+// The result byte at +0xb holds, but the first branch displacement and the return layout still differ.
 // M3 lane 11 r133 (fast with 0x5e3f0, MATCH each run; body unchanged at 295). Round 208's 96 body re-measured 96 (1264 B,
 // aligned 20: only the end of the received block differs). Reading of retail's end: the refused path (result still false)
 // and the accepted path with neither kept arm (result just set) meet at the disconnect, so the read, test and `jne` after
@@ -4590,6 +4596,21 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // folds). Reading: retail's kept arms, the post-disconnect true edge and its false edge each act as a `return result;` of
 // their own in one extended block (the store's AL or the test's load reused, then the epilogues cross-jumped); any test
 // of `result` here lets our IL fold the false edge to zero.
+// M3 lane 14 r129 (fast with 0x5e3f0, MATCH each run; body unchanged at 295). Round 208's 96 body re-applied 96. Retail's
+// state-8 `result = true` block (store, reload, epilogue) is also the target of the channel-7 exit and of the
+// acknowledgement block's end when the state is not 7; the kept arms and the post-disconnect test enter its epilogue
+// behind the reload. On the 96 body: the result declared `volatile` (diagnostic) 96 (the same code: our result is already
+// re-read at every exit); the kept arms as `return true;` 100 or `return result;` 100 (both a `mov al, 1` return block of
+// their own at the end); `result = true` set with `acknowledge` at the two sender sites and the acknowledgement under
+// `if (result && acknowledge)` 325 (retail's acknowledgement block does end in `result = true`); after the disconnect,
+// a test through `bool const &kept = result;` as `if (kept) goto received_done; return result;`, `if (!kept) return
+// result;` or `if (!kept) return kept;` 48 each (retail's read, test and `jne`, but `xor al, al` on the false edge and
+// the result byte at +9); the same two tests through `bool *const result_address = &result;` 48 each (the address-taking
+// folds away).
+// MiniMax G (11-20): no new form, no lower score (295): the exits still sit at other offsets from the first
+// branch on, so every later branch differs as well, the invalid-type exit still returns the constant where retail
+// reads the result byte back, and the acknowledgement block is still placed before retail's: the byte homes of the
+// result, the identity and the better flag are not yet recovered.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

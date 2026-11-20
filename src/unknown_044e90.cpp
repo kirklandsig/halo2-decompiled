@@ -595,6 +595,12 @@ struct s_visibility_bound_record
 // restored. On main's body, the part centre in 0x142570's shape (x, y, z reals, `scale * x` under the test, rows up,
 // left, forward, position) 432 (1744 B, first difference +0x12). Retail keeps the tag table in ESI from the head to the
 // bottom arm and the entry in EBX; ours still loads the table into ECX for the lookup only.
+// M3 lane 1 r136 (fast with 0x458d0 and 0x45a80, both MATCH each run; control 430): the plane copy declared once at function
+// scope 430; the query aggregate declared ahead of the plane array and filled by two stores 430 (same code each); each plane
+// stored as an aggregate copy with d negated after it 431 (1767 B); the transform arm writing into the copy from the source
+// with an else-arm aggregate copy 440 (1760 B); the containment flag declared inside the visibility test 430 (same code).
+// Reading: retail's plane copy sits 8 bytes higher (+0x34, ours +0x2c) and the query count at +0x44 (ours +0x3c), with the
+// tag table held in ESI from the head to the bottom arm (ours in ECX). Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

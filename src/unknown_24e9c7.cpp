@@ -79,6 +79,10 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax C (11-20): no new form, no lower score (125): the side point declared at function scope instead of inside the
+// corner block compiles to the same code, so the frame's homes are not set by the declaration order; the result, kind
+// and bitmap homes are still eight bytes above retail's; a permuter run with annealing (18 tries, 301 s, 1 confirming
+// build) reached 124, one point, and was not kept.
 // MiniMax B (11-20): no new form, no lower score (125): the result, kind and bitmap homes are still eight bytes
 // above retail's and the early across-axis product still has no retail spill at [ebp-8]; this build sinks the two
 // across products into the side computation, so they never get a stack home and the frame slots stay high. The
@@ -656,6 +660,9 @@ struct s_24e9c7_points
 // across i as `size * (0.0f - forward_j)` 138 (739 B); both across values through const references with `0.0f -` 139
 // (742 B); the size through a const reference 125 (same code); the forward pair copied into a point local first and
 // read from it for the across and upper products 147 (752 B, 0x24e59f still MATCH).
+// Shared external origin pointer or lvalue 125/125; with the first, both upper or all four
+// base copies before half-width conversion 123/124/129 for either form. NOT kept: two-point best
+// gain. The first copy uses EDX earlier, but the across-Y spill and return home still differ.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

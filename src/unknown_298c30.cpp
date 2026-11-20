@@ -94,6 +94,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// MiniMax R (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the first difference is still the
+// register that carries the constant 1.0f, which this build loads into XMM1 where retail loads it into XMM2, and the
+// reciprocal copy and the two product registers follow that one choice, so the float register assignment of the whole
+// function turns on it; the near arm also keeps the cosine on the x87 stack where retail spills it to a float slot and
+// takes the y row in SSE, and the candidate count is a byte here against a short in retail. A permutation search over
+// the body (four tries in 399 s) reached 301 only by naming the constant and the index, a form not kept.
 // score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax D (11-20): no new form, no lower score (305, 1732 bytes, retail 1732). The first difference is still the constant
 // 1.0f, which this build loads into XMM1 where retail loads it into XMM2; the reciprocal copy and the radius load then swap
@@ -693,6 +699,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // velocity projection 305, shared planar projections 396.
 // The unity register, near cosine spill and candidate ordinal remain. All eight previews retain retail
 // length.
+// M3 lane 5 r216 (fast screen, plain where noted; 0x29a190 MATCH unless noted): the 2-D normalize helper with an early
+// `return 0.0f` 305, in 0x2b400's shape (`x = x * inv; y = inv * y;`) 305, with the reciprocal first in both products 305,
+// with both components divided by the length 305 (all the same code); the arg_0 read through its address removed 316
+// (1726 B; plain agrees, 0x29a190 MATCH -> 345).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -855,6 +865,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// MiniMax R (11-20), NOT kept (coordinator review: an unread output buffer and a moved statement are match-only): 561
+// (was 569): the forward trace writes to its own vector, which gives the pivot retail's
+// +0x94 home, and the sector reads moved after both trace calls, which gives the trace results retail's homes. Still
+// open: the radius is promoted into XMM5 at the entry where retail reloads it from its home in each block.
 // MiniMax G (11-19): no new form, no lower score (569): the radius is still promoted into XMM5 at the entry and kept
 // for the whole body where retail loads it from its home in each block, and that follows from this build's link-time
 // register summary of 0x2108a0 and 0x210770, whose definitions are in another lane's file, so the radius, the pivot
@@ -1400,8 +1414,8 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // plain-checked with 0x2108a0, 0x210770, 0x210d10, 0x26c590, 0x298c30 and 0x29a190 MATCH, 0x298d90 305 and 0x29cbb0 378 as
 // before; all restored, body unchanged). LEAD, not kept: 108 at 3374 B (al 30), and 236 at retail's 3372 B (al 32) without
 // its last step. It still needs the match-only pieces below (the nested body, two one-use locals, an arm order, the new
-// rotation helper, the helper's added parameter); the natural pieces alone on this body, with the early NONE return,
-// score 715 to 729. Built on the r201 lead (`inline` on 0x2108a0's definition, the body under `if (local_11 != NONE)
+// rotation helper, the helper's added parameter); the natural pieces alone on this body, with the early NONE return, score
+// 715 to 729. Built on the r201 lead (`inline` on 0x2108a0's definition, the body under `if (local_11 != NONE)
 // { ... return local_0; } return true;`, 490), each step on the one before:
 // - sweep arms: the true arm with one `scale` local assigned before each `planar_scale(&local_6, scale, &local_17)` call
 //   (then local_18, local_19), the false arm with the three named scales first and then the three planar_scale calls: 761
@@ -1470,6 +1484,16 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // output keeps +0x18 and the offset +0x44 whichever variable holds them); the 3-D distance sum as `(z*z + y*y) + x*x`,
 // `x*x + (z*z + y*y)` and `z*z + y*y + x*x` 108 each (same code: the first side distance's square order is not the
 // source's).
+// M3 lane 14 r129 (fast; control 569; all restored, body unchanged). The w10 lead re-applied 108 (3374 B, aligned 30): left
+// are the first distance site's squares (ours y then z, retail z then y), the obstacle offset's 2-D squares, the two sine
+// products and the exchanged +0x18/+0x44 homes. On it: 0 to 7 unused `long` locals at the top 108 / 188 / 188 / 188 / 178
+// / 178 / 236 / 240 (the obstacle offset's squares are retail's from 4 to 7, but two other x87 sums after it flip; the
+// first distance site and the sine products never move); the distance helper's sum spelled `(z*z + y*y) + x*x`,
+// `x*x + (z*z + y*y)`, `z*z + y*y + x*x` or `x*x + y*y + z*z` 108 each (same code: the sum is canonicalised); both
+// distances through the existing inline distance3d (0x3ea30) 247 (3372 B: its vector local squares destructively, with
+// fmulp); the first or the second distance passed straight into its trace call (no named local) 640 / 657 (the whole
+// allocation moves), with 1 to 7 unused locals 640 to 738. The exchanged homes: the rotated side's and the offset's names
+// swapped 108, the rotated side declared ahead of the offset 108, or at the top of the function 108 (all the same code).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

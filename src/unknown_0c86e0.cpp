@@ -9,6 +9,8 @@ struct s_object;
 s_object *function_badc0(long object_index, dword type_mask);
 bool function_100f70(long weapon_index);
 long function_1896c0(real scale, long tag_index);
+long unit_get_player_index(long unit_index);
+long function_cbd50(long unit_index, short weapon_index);
 
 /* the unit (a view of the object data) */
 struct s_zoom_unit
@@ -60,26 +62,6 @@ struct s_zoom_globals
 };
 
 #define ZOOM_UNIT_GET(index) (((s_zoom_object_header *)g_4e0300->data)[(index) & 0xffff].unit)
-
-static inline long unit_get_player_index(long unit_index)
-{
-	s_zoom_unit *unit = (s_zoom_unit *)function_badc0(unit_index, 3);
-	long result = NONE;
-
-	if (unit)
-		result = unit->player_index;
-	return result;
-}
-
-static inline long unit_get_current_weapon(s_zoom_unit *unit)
-{
-	short slot = unit->current_weapon_slot;
-	long result = NONE;
-
-	if (slot != NONE)
-		result = unit->weapon_indices[slot];
-	return result;
-}
 
 static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 {
@@ -439,6 +421,26 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // 63: everything after the calls then has retail's shape, but retail also keeps the entry fetch in EBP for the reset), not
 // kept (a moved declaration, a gain of 1). 0xbadc0 prints as ours now, but its file is on this round's Avoid list.
 // Still BLOCKED-BY 0xbadc0.
+// M3 lane 14 r128 (fast with 0x103b10, 0x14de90, 0xbadc0 and 0x100f70, all MATCH; control 110): the user index as a
+// short 107 (362 B, a gain of 3, not kept); the weapon flag set by an `if` after a false default 114 (357 B); the weapon
+// index through include/unknown_1e1f20.h's unit_get_current_weapon(unit_index) 110 (same code: the fetches still
+// merge); re-measured: the user index as one conditional initializer 110, the reset test weapon flag first 97 (378 B,
+// not retail's keep-first test order). Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp is avoided again).
+// M3 lane 16 r157 (fast with 0x103b10, 0x14de90, 0xcbd50, 0xbadc0 and 0x100f70, all MATCH each run; control 110). Kept,
+// same code (110, 359 B, fast and plain; the two functions and their 23 other matched callers and callees checked still
+// match): the weapon lookup and
+// the player-index lookup through the real 0xcbd50 and 0x14de90, declared here and expanded at link time, in place of
+// this file's two hand-written copies of them (either one alone 110, same code). Evidence on the blocker: retail's image
+// holds exactly one `ret`, one `ret 4`, one `xor eax, eax; ret`, one `xor al, al; ret` and one `mov al, 1; ret` among its
+// 11,326 game functions, so retail's link folded identical functions onto one address, as this build's does; a second
+// source function with 0xbadc0's bytes and no link-time summary, called by the player-index getter, would give this
+// function its reload and leave 0xbadc0's other callers their no-write summary. Measured in a one-file link-time screen
+// (build/r157/lt.py; pool fetches counted in this function): 0xbadc0 unresolved 3 fetches (retail's shape, 128
+// instructions); its real code linked ahead of this file or after it 2 and 2 (107 instructions each: the order of the
+// files at link time is not the cause); a same-file copy of the getter called by the player-index helper, declared
+// static noinline, noinline, or noinline inline 2/2/2 (a same-file copy keeps its summary whatever its linkage), plain
+// inline expanded in place. A new copy of an existing function is barred by the coordinator's ruling of 2026-10-30, so
+// none is kept or proposed here. Still BLOCKED-BY 0xbadc0 as reached through the inlined 0x14de90.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
@@ -449,7 +451,7 @@ void function_c86e0(long unit_index, bool keep_weapon_zoom)
 		user_index = NONE;
 	else
 		user_index = ((s_zoom_player *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c))->user_index;
-	long weapon_index = unit_get_current_weapon(ZOOM_UNIT_GET(unit_index));
+	long weapon_index = function_cbd50(unit_index, ZOOM_UNIT_GET(unit_index)->current_weapon_slot);
 	bool weapon_zoomed = weapon_index != NONE ? function_100f70(weapon_index) : false;
 
 	if (!keep_weapon_zoom || !weapon_zoomed)
