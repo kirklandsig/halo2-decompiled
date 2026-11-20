@@ -94,8 +94,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
-// score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// score 162 (was 162): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// Earlier score detail: 194 before.
 // (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
+// Earlier score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)
 // score 162 (was 162): Frame 0x60 and tint and UV homes agree. The fixed-arm jump spans extra bitmap code, and blend spills across the aspect calculations.
 // Earlier: tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
@@ -769,6 +771,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // stores 512/499, complete bounds assignment 519/571, or a projected center point 512/499.
 // NOT kept: the geometry-encoder forms change the frame or incoming register schedule and do not
 // recover the bitmap blend register.
+// Fixed-branch and bitmap defaults split at the combined sequence gate, bitmap validity, sequence presence,
+// or positive count. Direct fraction 456/503/466/522. Fraction published after both pivots 454/497/486/522.
+// NOT kept: every form lengthens the body and shifts the entry schedule. The blend still needs to survive the aspect join.
 // M3 lane 14 r124 (fast with 0x2243c0, which matches throughout; control 162): the two inverse next terms computed
 // before the `bx>by` test 255 (1942 B, first difference +0x2); the aspect tests written `ay<ax` and `by<bx` 162 (same
 // code); the width product after `inv_y` 173 (1951 B); both inverse next terms, then the width, then both sums (retail's

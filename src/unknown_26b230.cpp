@@ -2293,6 +2293,14 @@ void function_269250(long clump_index, long actor_index);
 // the walk 129. Retail's listing: the pool sits in EBX from the initialiser (the inactive path loads EBX from the walk's
 // uninitialised home), the bit scan borrows EBX for its mask and reloads the pool after it, and the selection is only
 // ever in its +0x14 home; ours gives EDI to the selection and reads the pool from the walk's home at each use. Body unchanged.
+// attachment result with guards, selection first 147, selected attachment with guards, selection first 146,
+// optional attachment result, selection first 113, optional selected attachment, selection first 122,
+// attachment result with guards, creation first 147, selected attachment with guards, creation first 147,
+// optional attachment result, creation first 118, optional selected attachment, creation first 126, team-
+// local score with attach join (selection first) 146, team-local score with attach join (creation first)
+// 146, team-local score with optional attach 112.
+// The optional attachment with a team-local score recovers EBX, the x87 compare and the slot at +0x14. The
+// found-block and transfer schedule still differ.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -432,6 +432,10 @@ void function_2232a0(void)
 // as a plain `for` 47, the stub's count as `local_2 + 1` alone 47, the layout as one conditional expression 47 (same code
 // each); dead longs K = 0..7 at the top 47 each. Still BLOCKED-BY 0x2b5d0 (activation loses 0x223240, 0x12b450 and
 // 0x12b690 while 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 stay unmatched).
+// M3 lane 8 r202 (fast with 0x223240/0x2232a0 MATCH, 0x223080 2 as before; control 47, aligned 20): the 0x2b5d0 stub and its
+// declaration `__stdcall` 56 (aligned 32), with view_count declared just before the terminal call 63; diagnostic, the terminal
+// record as a two-definition pointer (NULL, then set under a test) 78: the inlined 0x223080 still adds the base first, so
+// the call site's pointer shape does not reach the inlinee's fold.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

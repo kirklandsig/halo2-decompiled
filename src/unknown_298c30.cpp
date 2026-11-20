@@ -109,6 +109,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // index in BX; as a short the count measures 469 at 1686 bytes (the length no longer matches retail and the caller
 // 0x29a190 regresses), as earlier rounds recorded. Body restored to the kept form.
 // Earlier header (305, was 305), merged into the note's first line: the 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// Earlier score 305 (was 305): The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax B (11-14): no new form, no lower score (382): retail carries the constant at +0x57 in xmm2 where this build
 // carries it in xmm1, which then swaps the product registers, retail's counter is in BX where this build's is in BP, and
 // the body is still 40 bytes shorter than retail's (1692 against 1732); the normalizer's two products follow the source
@@ -687,6 +688,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // `cos * y` operand order, and the far arm's normalizer, dot order, wrapped-angle compare and per-arm loads; the helper
 // and the lead's forms need a match, so nothing is kept (build/r154/lead-298d90-plain300.patch in m3-lane16). On main's
 // body the named double differences measure 316 (1740 B), as the note already records.
+// shared scale with native admission 305, reciprocal at shared scale call 305, shared magnitude with native
+// admission 305, shared magnitude and scale 305, shared facing dot 396, shared tangent dot 305, typed
+// velocity projection 305, shared planar projections 396.
+// The unity register, near cosine spill and candidate ordinal remain. All eight previews retain retail
+// length.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

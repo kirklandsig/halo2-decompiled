@@ -927,6 +927,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // declared at the top of the traversal body, outside the capacity test, 2 (same code); the step point copied from a
 // ternary-selected source with the edge-index record as its own `if` 388 (1357 B); the projected point written as three
 // rows in place of vector3f_add_scaled 2 (same code). Body unchanged.
+// scan completed-step count 287, distance-gated completed-step count 287, bounded link ordinal and scan
+// count 366, step frame across conversion 332, indexed fill with completed-step count 295, indexed fill
+// with completion update first 295, coordinate scope before scan latch 295, predecessor edge before point
+// 353, late surface with indexed fill 343, wide edge shift with indexed fill 290, late surface and wide
+// edge shift 344.
+// The 0xe4 prologue returns with indexed fill, but the completion flag still uses +0xf and the body grows.
+// The opening short scan and long link ordinal are restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -495,6 +495,10 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // 2/2/6/4/4/4/4/2, 4/4/6/4/4/6/6/4, 4/4/8/6/4/4/6/4, 2/2/6/4/4/4/4/2: the other float rows move with the phase, the i
 // product never does; the threshold compared through a pointer to it 2. Still BLOCKED-BY 0x1faf80. On this body: the
 // final copies as direct field assignments 25, through memcpy 25 (same code each: the copy order is not the spelling).
+// native settings array 25, native special bit 25, ordinary mode first 247, active angular limits first 25,
+// staged axis admission 25, paired axis snapshots 49, zero-limit branch snapshot 27, const up agreement on
+// native frame 25.
+// The special-call address schedule and the final axis load order still differ.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1240,6 +1244,7 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax H (11-20): no new form, no lower score (14): retail spills the 0x119bc0 result to a stack byte and pushes the dword; this build keeps it in AL; that needs 0x1c4b00's bool formal in other files.
 // MiniMax D (11-20): no new form, no lower score (14, 1034 bytes): retail's block after the 0x119bc0 call still differs
 // in the tail (retail spills the 0x119bc0 result to a stack byte in the dead definition pointer's slot and pushes the
 // containing dword, this build keeps the result in al) and in the copy's load order (retail hoists the source's first
