@@ -4636,6 +4636,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // MiniMax I (11-19): no new form, no lower score (336): the first difference is still a stack home (this build's matrix receiver at [esp+0x60] against retail's [esp+0x50]), and the origin and the matrix shift together with it although the 0x12c frame and the body length agree.
 // Earlier 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
 // Earlier score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
 // MiniMax A (11-18): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and the matrix, placed-point and property homes shift together although the 0x12c frame agrees.
 // MiniMax E (11-17): no new form, no lower score (336): this build's locals still sit 0x10 higher in the frame than retail's (the matrix receiver at esp+0x44 against retail's esp+0x40, the argument block at esp+0x60 against esp+0x50), so the home sequence and the jumps after it land elsewhere.
 // MiniMax I (11-16): no new form, no lower score (336): the first difference is a stack home (this build's vector workspace at
