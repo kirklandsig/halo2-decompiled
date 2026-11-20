@@ -906,6 +906,9 @@ struct s_item_collision_bsp
 // assignment (the two component loads at [esp+0x30] and [esp+0x34] land in xmm3 and xmm4 here and in xmm2 and xmm4 in
 // retail, and every row's product and sum then differs by one register), the body is still 1366 bytes against retail's
 // 1361, and the branches inside the function still reach their blocks at other offsets.
+// Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
+// Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
+// contact registers still differ at the 1366-byte extent.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -2334,6 +2337,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 189, returned center for both event points 171, and owner copied after flag and
 // scale 190. The shared center form reaches the retail return-byte slot and length
 // with the release-byte clear and impulse branches still differing.
+// MiniMax G (11-20): no new form, no lower score (140): the returned flag still sits one byte lower in the
+// frame than retail's, retail still clears the release flag with one byte read-modify-write where this build
+// loads it, masks it and stores it back, and retail still keeps two copies of the release impulse where this
+// build shares one: BLOCKED-BY the transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

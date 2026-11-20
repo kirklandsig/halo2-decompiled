@@ -2030,6 +2030,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax S (11-20): no new form, no lower score (433): the prologue matches and the first difference is the switch's jump table, so every case body sits at another offset and the dispatch-default branch, the return placement and the timer and request scheduling differ.
 // score 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
 // r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
@@ -2579,6 +2580,34 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // through the shared exit with the result cleared after it 502 (2432 B); its else arm as a conditional clear 537
 // (2440 B). Retail compares the actor field first in cases 9 and 11 only (`cmp [ebx + 0x18], reg`; cases 5, 6, 7/8
 // compare arg_1 first); listed above at 432. All restored.
+// M3 lane 5 r217 (fast with 0x258cf0, 0x25a130, 0x258a00; control 433 at 2416 B, aligned 151 rows, 130 with registers
+// masked; each form given as score / bytes / masked rows). Read from retail, block by block: case 7/8's flag is a
+// conditional (`jne; mov al, [actor + 0x264]; jmp; mov al, 1`, no normalising test); the turn-side byte at +0x465 is
+// set from a 32-bit 1 or 0 (`mov eax, 1` / `xor eax, eax`, then `mov [x + 0x465], al`); case 2 copies the facing as
+// three dwords through `lea ecx, [actor + 0x424]`; case 4 reads the state's facing at each use; case 18 holds both
+// references across the two validation calls (one in the state argument's dead home, one in ESI); case 6 keeps two
+// ORs with a store between them and loads the flags byte ahead of the first store.
+// Single forms: case 7/8's flag as `arg_1 == actor->unit ? actor->flag264 : true` 493 / 2416 / 103 (retail's code
+// there), as an if/else 493 / 2416 / 103 (same code), as `!= ? true : flag` 494 / 2416 / 131, started true with an
+// `if` 493 / 2416 / 113 (`mov al, 1` ahead of the jump); the +0x465 byte as `comparison ? 1 : 0` 433 / 2420 / 129
+// (retail's 32-bit pair); the tail's hold flag as a long 516 / 2416 / 107 (`test eax, eax` where retail tests AL);
+// cases 9 and 11 comparing the actor field first 432 / 2416 / 128; case 13 through the shared exit 481 / 2404 / 138;
+// case 6 with the 0x29 OR right after the first store 433 (same code, still one `or 0x69`), through an inline
+// request-fill helper ending in the 0x29 OR 433 (same code: the helper boundary does not stop the fold); case 18's
+// references in two named locals tested one at a time 583 / 2416 / 125 (actor EDI / state EBX); the case 2 aggregate
+// copy 611 / 2404 / 136 and case 4's direct facing 611 / 2400 / 155, each alone exchanging the actor and state
+// registers, both 623 / 2384 / 112.
+// LEAD, not kept (the score rises): the conditional flag, the `? 1 : 0` byte, the actor-first compares, the
+// aggregate copy and the direct facing together give retail's 2396 bytes, 604, masked 111 (107 with stack offsets
+// masked); with case 18's named references 604 / 2396 / 106 (100). Everything left on it follows from one exchange:
+// ours gives the actor EDI and the state EBX, retail the reverse, so ours reloads the actor around the 0x210b60 and
+// 0x1c1080 calls and homes case 1's point at +0x1c, where retail shares +0x10 with the actor's spill. The register
+// references are equal in number in both builds (actor 59, state about 46), so the choice is not a use count.
+// Tried on the lead for the exchange, all still exchanged: the state read as the parameter at every use, or only
+// in case 1, or only at the 0x25a130 call (same code each); the datum declared ahead of the actor 618; the result
+// byte and the state declared first 629 / 2376; a pointer local for the turn facing 622 / 2376; one to three
+// parenthesis pairs in case 4's dot 622 / 2376 (regrouped, no phase effect). The switch as an inlined predicate
+// with the tail on the caller's own locals 645 / 2384 (frame changes, aligned 532).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

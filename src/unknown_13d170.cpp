@@ -911,6 +911,13 @@ struct s_physical_block_iterator
 // Explicit two- and three-outcome candidate decisions: timestamp expression 212/212,
 // inequality selects the test 273/273, equality refinement 212/212 and ordered accept/reject 210/210.
 // NOT kept: all raise the score and change the extent. The retail policy join still differs.
+// M3 lane 15 r116 (fast with 0x13d320 and 0x13d830, both MATCH; control 201): lane 1 r124's 40 lead re-applied on today's file,
+// 40 (1213 B, aligned 22: the overlap walk, where retail loads best.offset into EDI, sums `pages + offset` into EBX and
+// compares a `mov edx, edi` copy, with the handle built in ECX and moved to EBX for the delete call; and the head flag's
+// `sete; test` ahead of retail's direct `jne`). On the lead: the walk test as `pages + best.offset`, with `best.offset <` on
+// the left of the second test, with both tests start-first, with the block's size first in the end sum, and pages-first with
+// size-first 40 each (same code); the head flag as `bool const`, `NONE == best.previous`, `!(best.previous != NONE)` and
+// through a named `long previous` 40 each (same code). Main's body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

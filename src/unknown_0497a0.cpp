@@ -16,6 +16,8 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// and late x87 factor lifetimes remain, at retail length 2622.
 // MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
 // retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
 // after the product, which no plain spelling of the wave expression reproduces.
@@ -23,9 +25,9 @@
 // by naming the 0.5 factor in a local that holds nothing else (`real tmp0 = 0.5f;` used by the wave product, the k factor,
 // the default arm and the PIN calls), which is a form the coordinator rejects, so it is not kept; the frame stays 0x54 against
 // retail's 0x60 and the wave's three dead x87 factors stay behind retail's product.
+// MiniMax S (11-20): no new form, no lower score (536): the frame is 0x54 against retail's 0x60 and the rounded-wave and cross homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes while the copy in this file is a front-end inline.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // MiniMax E (11-20): no new form, no lower score (536): retail keeps the first cross's three products and two of its components in stack cells across the two sines and gives the cross result and w the same home, so retail's homes run v1, v2, w, v3, v4 against v1, v2, w, v4, v3 here and its frame is 0x60 against 0x54; spelling both crosses with matching product operands (650), the products as a local vector (650), the staged cross helper with the adds written out (663) and the adds written out alone (663) all leave the products in registers and shorten the body.
-// and late x87 factor lifetimes remain, at retail length 2622.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // MiniMax H (11-13): no new form, no lower score (536).
@@ -584,6 +586,22 @@
 // Split late axes and cross workspace (shape/reciprocal initialization together or split) 536/536.
 // Split all vector declarations in capture order (shape/reciprocal initialization together or split) 536/536.
 // NOT kept: The assignments still give the opening frame and stack slots.
+// M3 lane 2 r119 (fast; control 536 at 2622 B, both builds `ret 0x20`; aligned = rows outside a minimal diff against retail,
+// addresses, stack offsets and registers masked, control 183): the two scaled adds through an intermediate point (the first
+// writes it, the second reads it into v1) re-measured 522 (2627 B, frame 0x60 as retail, aligned 179; a one-use aggregate, so
+// not kept: the form T103 above); s1 and s0 as `real const` 536 (same code); inv declared without an initialiser with case 1
+// assigning -1.0f in an else arm 692 (2636 B, frame 0x50); the special test negated with the arms swapped 544; w initialised
+// from source->v1c at its declaration (no else arm) 678 (frame 0x60, aligned 220).
+// Entry shape predicate reused for the axis, default denominator, case-one test or all three
+// 705/659/658/717. With primary/secondary/both guarded shapes read through the source 666/706/628.
+// Both shape pointers initialized conditionally with the shared predicate 709.
+// NOT kept: The forms reach frame 0x58 or 0x5c, grow past retail length and all regress.
+// compound depth reciprocals 536; compound paired perspective reciprocals 536;
+// compound depth and perspective reciprocals 536; independent compound perspective reciprocals 536;
+// compound depth reciprocals with named extent 537; compound depth reciprocals with named span 537;
+// compound depth reciprocals with named denominators 535;
+// compound perspective reciprocals initialized before crosses 536.
+// NOT kept: The one-point gain is below the retention threshold. The 0x54 frame and retail inverse allocation remain unresolved.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -915,6 +933,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // +0x98, the green at +0x9c and the blue at +0xa0) this file's front-end inlined copy does not reproduce, so the frame
 // stays four bytes short at 0xa8 against retail's 0xac; that helper's declaration is fixed in another file, which this
 // lane may not change: BLOCKED-BY 0x131e50.
+// MiniMax S (11-20): no new form, no lower score (351): the frame is 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes and 0x131e50 is declared noinline in its own file.
 // score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
 // declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:

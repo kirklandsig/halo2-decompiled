@@ -226,6 +226,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// MiniMax E (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both inverse
+// defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the transformed points
+// still take the opposite component order.
+// MiniMax S (11-20): no new form, no lower score (195): the frame is 0x30 against retail's 0x2c, so every local home sits four bytes higher; retail's caller 0x4f7e0 sets the arguments up as three pushed values, then ECX = camera, EDX = a, ESI = the displacement vector and EBX = the output point.
 // score 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
 // MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
@@ -708,6 +712,13 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // to 1 at their declaration with the else arm dropped 261 (906 B); the zero outputs as one chained assignment 195 (same
 // code); the displaced and transformed points renamed point/origin/displaced (name order reversed) 195 (same code: the
 // frame does not follow these names). All restored.
+// M3 lane 6 r212 (fast with 0x30bf0/0x30710; control 195): the displacement copied into a value local for the six sums
+// 324 (1032 B); the origin copied into a value local 336 (1039 B); both 341 (1046 B); the helper's scale tested through a
+// `s_camera const *const *` to its own parameter with the inverses set to 1 in the orthographic arm and copied to fa/fb
+// after the block 220 (960 B), with the displacement bound by const reference 253 (990 B). On the match-only
+// parameter-address and direct-inverse lead (re-measured 175 at 955 B): the displacement by const reference 200; a
+// `vector3f const *` copy of d for the sums 200 (the z sum then loads d first as retail, the first transform's x/z swap);
+// a `point3f const *` copy of a 175; the sums in statement order y, x, z 175.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

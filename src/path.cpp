@@ -374,6 +374,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax B (11-20): no new form, no lower score (286): the link count's increment split out of the copy's index
+// (`memcpy(&links[link_count], ...)` then `link_count++`) measures 298, so the post-increment form is the better one;
+// retail still counts the links in a dword (`inc dword ptr [esp + 0x1c]`) but compares it as a word (`cmp dx, word ptr
+// [esp + 0x114]`), which this build does not do, and the frame is still 0xe8 against retail's 0xe4.
 // MiniMax A (11-19): no new form, no lower score (286): rebuilt the body on retail's own listing (the rep stosd fill, the
 // split link copy, the walkable bit as a byte local, the dword previous/count homes, the node-index loop variable and the
 // per-arm distance through vector3d_from_points3d/length_sq3f): the two fill loops and the flag form reach retail's frame
@@ -934,12 +938,19 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // edge shift 344.
 // The 0xe4 prologue returns with indexed fill, but the completion flag still uses +0xf and the body grows.
 // The opening short scan and long link ordinal are restored.
+// M3 lane 8 r204 (fast with 0x270930, MATCH): m3 lane 16's saved two-flag lead re-applied to today's file 2 again (the same
+// back-edge pair). On it: one `short i` shared by the fill loop and the scan loop, declared before the fill loop or at the
+// top 2/2 (same code); the scan index renamed (six names) 2 each (same code); an element pointer for the two-step arm's
+// `steps[node->depth - 1]` 264 (1366 B), for `steps[node->depth]` 299 (1372 B), both 389 (1358 B). Body unchanged.
 // The extra link cursor, predecessor homes and scan-latch reloads still differ.
 // Short-link test-set form with predecessor pointer alone/ordinal alone/unsigned word/parent first
 // 409/297/399/396; scan previous point/current step/both/previous ordinal 366/430/193/230.
 // Common flag and short-link copy 209; increment after copy, signed edge test, parent early and
 // signed edge with split increment 300/210/326/273. Direct link/both predicates/both with parent early 211/339/353.
 // NOT kept: the lower scores retain test-set flags, and the 193 form adds six bytes.
+// score 286 (was 286): frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
+// count compared as a dword where retail compares it as a word, and the node depth read at one address here and
+// through a lea there.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

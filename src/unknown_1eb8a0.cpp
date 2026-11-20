@@ -763,6 +763,16 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // both normalizations 646, activation-plus-threshold 662, refresh-plus-threshold 672,
 // all three 664, or select a fallback pointer at all three 662. NOT kept: all raise
 // the score. The supplied direction still takes EBX ahead of the sample.
+// M3 lane 15 r116 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH: with these listed the fast count equals the plain
+// 603; control 603, aligned 658): the target copy from pos as memcpy 603, the output position copy from q as memcpy 603, both
+// 603 (same code each); the output position assigned through `out->position` before the pointer local 659 (2875 B); a, b and
+// pos as const pointees (definition and declaration) 603 (same code). Retail evidence: q is loaded into EBX at entry, EBX is
+// then a temp in the target copy and q is reloaded into it after the second normalise call, so q's EBX range is split.
+// Round 452: A single ramp-tail calculation or a single elapsed-count read
+// 693/693. Named braking distance or travel ticks 693/693; accumulated estimate 697.
+// Real estimate before the cast on the first or both arms, or one shared store 693/693/693.
+// All eliminate the repeated elapsed-count calculation but move the first gap earlier
+// and shorten the body to 2865 bytes. EBX still keeps the supplied direction.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
