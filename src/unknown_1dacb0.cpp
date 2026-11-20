@@ -1554,14 +1554,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 1043, no-result return after the optional outputs 1028.
 // NOT kept: the late chained defaults gain two without changing the entry difference. The conditional
 // candidates enlarge the frame. Identifier and output homes and the later zero carrier remain.
+// score 812 (was 828, r924 stand-in image): the search runs inside `if (weapon_class != NONE) { ... return result; }`
+// with the final `return result;` kept for the NONE path (size 2825 = retail's); a plain nested block without the inner
+// return is 1040.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
 {
 	c_type_709360 result;
 
-	if (weapon_class == NONE)
-		return result;
+	if (weapon_class != NONE)
 	{
 		s_graph_weapon_type_iterator iterator;
 		long iterator_mode = NONE;
@@ -1610,6 +1612,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 			graph_resources_request(this, mode, weapon_class, weapon_type, true, false);
 			graph_resources_request(this, iterator_mode, iterator_weapon_class, iterator_weapon_type, true, false);
 		}
+		return result;
 	}
 	return result;
 }
@@ -2061,14 +2064,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Direct found identifier with graph-index-only missing-name reset, found-first/missing-first/change-only/before-found:
 // 1008/1008/990/990 with whole value, 985/985/983/983 with field stores. NOT kept: every form raises
 // the score at 2807 bytes. The candidate slot, resolved output slots and class/NONE allocation still differ.
+// score 812 (was 828, r924 stand-in image): the search runs inside `if (weapon_class != NONE) { ... return result; }`
+// with the final `return result;` kept for the NONE path (size 2825 = retail's); a plain nested block without the inner
+// return is 1040.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
 {
 	c_type_709360 result;
 
-	if (weapon_class == NONE)
-		return result;
+	if (weapon_class != NONE)
 	{
 		s_graph_weapon_type_iterator iterator;
 		long iterator_mode = NONE;
@@ -2117,6 +2122,7 @@ c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon
 			graph_resources_request(this, mode, weapon_class, weapon_type, true, false);
 			graph_resources_request(this, iterator_mode, iterator_weapon_class, iterator_weapon_type, true, false);
 		}
+		return result;
 	}
 	return result;
 }
