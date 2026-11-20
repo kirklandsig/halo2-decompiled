@@ -949,6 +949,16 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // and assigned in it 130 (same code); the draw inside the angle product after the oscillation (no fraction local) 199 (880
 // B, aligned 69); the fraction declared after the oscillation 201 (885 B, aligned 67); the strength as a real local with
 // float rows 130 (same code). Body unchanged.
+// M3 lane 15 r115 (one-file LTCG harness with 0x30bf0's file linked in: aligned 93 at 889 bytes, as the real build; leads
+// confirmed fast with 0x118140, 0x117c80, 0x30bf0, 0x2551f0, 0x1ff360, all MATCH; control 130). Both ends are a plain `ret`
+// now (the ret 4 in older notes is gone). Fast: the draw's integer named as a dword local and converted in the fraction
+// 154 (880 B, aligned 108); the definition lookup after the angle 156 (888 B, aligned 134); the rotation applied to a
+// local copy of the wind direction stored back after 201 (916 B); the sine named ahead of the axis draw 154 (880 B); the
+// cosine named after the axis draw 155 (880 B, aligned 114). Harness only (same code as the control): the seed pointer
+// named and used for all three draws (876 B, aligned 130); the angle product as oscillation squared first; the time from a
+// named tick count; a pointer local to the wind direction for the rotation and the scale; the axis declared bare and
+// assigned; the axis index named. The frame cell retail has more is its random integer kept apart from the sine (+0x18
+// against +0x14); in every form here the two share a cell.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

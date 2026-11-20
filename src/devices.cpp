@@ -1986,6 +1986,19 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // the render model in a register (`!render_model ||` ahead of the flag test) 421 (no load in the block, fstp at index 7
 // behind `push edi`); the samplers' unused third parameter as a one-member aggregate with a converting constructor 2
 // (same code: promoted to a long).
+// M3 lane 15 r115 (fast; control 2). A scan of every x87 load / multiply-or-add / store chain in the retail image (193
+// chains): all the others that open a block follow the slot rule above, and this flag block is the only one with a stack
+// load first, the fld second and the store nine slots in, so the cause is local to this block. Trials: the sampling
+// method's matrix parameter declared first (definition, declaration and its three other callers; a diagnostic for the
+// declared order, reverted at once) 2 here with 0x16c110 121 and 0x16cfa0 136 lost, so the matrix is declared last;
+// the channel through a file-local inline accessor with a switch on the channel index, at each read 2, named once 2;
+// the animation state fetched again for the first sample 346 (1635 bytes). Diagnostics (reverted at once):
+// had_animation's initialiser moved after the matrix copy 10, the speed's 32, both 32, the flag block unchanged each
+// time: one or two more instructions ahead of the flag branch do not move the store, so the scheduler carries nothing
+// across the branch. Compile-only replica of the block (a matrix copy ahead of it, both locals spilled; 40 forms: a
+// block-local copy of the render model, a const reference, forceinline pair helpers, a one-member aggregate render
+// model with and without a constructor, one-pass loops, the copy written in both arms, switch accessors): the store
+// stays at the eighth slot in every one.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

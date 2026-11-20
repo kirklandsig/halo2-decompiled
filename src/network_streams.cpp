@@ -1236,6 +1236,25 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the flags local declared at function scope with the in-place update 89, with the saved-word update 35 (same code); the
 // found test through an inline predicate on the flags with either update 89/35, on the message with the in-place update
 // 89; the in-place update between the first and second output stores 90.
+// M3 lane 15 r115 (a one-file LTCG harness that reproduces this function, about 290 forms at 2 s each; the leads
+// confirmed fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched each time; control 35). New cause: the flags word
+// need not stay live. A second, plain result variable assigned 4 as the first statement of the found block (with
+// the member update `message->flags |= 2;`) gives retail's loop, the message in ECX, the flags in AX, the found
+// path and the byte OR: the result holds EAX through the found block, so the message cannot take it. Forms:
+// `result = type` in both arms of `sent || !count` with one return 28 (214 B: the type is loaded once ahead of
+// the loop, where retail loads it at each exit); `bool sent = get_next_send(...); long result = type;` ahead of
+// the test 20 (224 B: the copy is held in ECX for the two early exits); LEAD: `result = type` after the failed
+// send, the loop under the count test, `else result = type;` on the count test and on the send test, one return:
+// 10 at retail's 225 bytes, the only difference the order of the last two exit blocks (ours lays the early exit
+// ahead of the loop's zero-trip exit, retail after it). Not kept: the inner else repeats an assignment (a
+// match-only form); saved as build/r115/lead-965e0-10.patch. On that lead (harness, same code or worse): the two
+// tests as `||` or `&&` with the copy in a comma expression (same code), early returns of the type 218/207/216,
+// the loop arm with its own return 218/212, the copy inside the count arm 214, a found flag guarding the copy
+// after the loop 214 (the loop is no longer entered through a zero-trip test), a loop with its own exit test 214.
+// Without the second variable (harness): the found block returning 4 itself 187 (no shrink-wrapped entry);
+// a found flag or a zero result selected at the return 187/192; declaration orders of message, flags and next
+// (7 forms) the member update's code; a grid of 195 spellings (five lookups, five flag tests, three updates,
+// three statement orders) none at 225 bytes, nearest the ternary lookup with the saved-word update.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
