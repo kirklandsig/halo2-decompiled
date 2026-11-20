@@ -1555,10 +1555,19 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// MiniMax C (11-19): no new form, no lower score (551): the two surface sums grouped with their counts and radii, in
+// either order, give 551 (2877 B) on the reduced image; the count and clearance homes and the radius square after the
+// loop guard still differ.
+// score 551 (was 551; earlier 580): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
+// Earlier at 551 (was 580; a second score line, merged in round 211): frame 0xb964, plane.j cursor, ESI query zero and initial sum homes agree.
 // score 551 (was 551): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
 // Earlier at 551 (was 580): initial sum homes also agree.
 // Count, clearance and prism-index homes differ. The square precedes the nonempty branch.
 // The axis reload and early remainder also differ. Earlier scores 606, 610, 637, 640 and 552.
+// score 551 (was 551): frame 0xb964, plane.j cursor and ESI query zero agree. The initial sums,
+// projected point and first point use retail slots. Count, clearance and prism-index homes differ.
+// The square precedes the nonempty branch. The axis reload and early remainder also differ.
+// Earlier scores 580, 606, 610, 637, 640 and 552.
 // MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
 // Retail saves ESI and walks the prisms from &prism->plane.j (the plane's i at [esi-4], the point count at [esi+0x14])
 // where ours saves EBX and walks from &prism->point_count (the plane's i at [esi-0x18]); the first accumulator has
@@ -2068,6 +2077,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // paired initialization beside each sum or counts beside sums with clearances last 550/551,
 // prism index before the square or square in the admitted loop 551/548.
 // NOT kept: the count and clearance homes remain, and the three-point gain is below the threshold.
+// Squared radius at prism admission 553; nearest measure scoped to the prism 551;
+// one separation for the edge search and interior path 557. Carried wrapped successor
+// with live or retained point count 601/601; first-endpoint cursor 581.
+// Existing point setter for both accumulated sums or both output means 552/551.
+// The count and clearance homes and signed remainder schedule still differ.
 // M3 lane 4 r219 (fast with 0x120790 and 0x2469b0, both MATCH each time; control 551): the edge loop from 0 with
 // `long next_vertex = (vertex + 1) % prism->point_count;` at its top 619 (2904 B, frame 0xb968; re-measure), with
 // `radius * radius` in the test 601 (2888 B), plus the nearest reset after the plane distance 601, plus `inside` there 600.
@@ -2084,6 +2098,33 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // named projection products 565, early nearest reset and common projection scale 564,
 // prism ordinal before the query 553. NOT kept: grouping moves the sum slots, and cached
 // plane components eliminate retail coefficient reloads and move the prism cursor.
+// M3 lane 5 r211 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0, control 551; the four matched ones stay MATCH):
+// a redundant `if (0 < count)` around the edge loop 599 (2894 B); the nearest-edge scan (nearest reset, `inside`, clamp
+// and edge loop) as a forceinline helper returning `inside` 556 (2878 B: the plane distance's y and z products then load
+// the plane first); the clamped count read through a `long const &` 565 (2893 B); the three ray casts (hit position or
+// the ray's end) through one three-caller forceinline helper 588 (2898 B); the two averages through one two-caller
+// forceinline helper 552 (2879 B; the same averaging code: ours still copies the inverse and folds each sum component,
+// retail loads the component and multiplies by the inverse).
+// M3 lane 11 r125 (fast with 0x120790 and 0x2469b0, both MATCH; control 551, difflib-aligned 564, register-masked 238):
+// `real radius_squared = radius * radius;` declared right before its one use in the prism loop's test 543 (2878 B, aligned
+// 501, masked 223: the square is then hoisted after the loop guard and `push ebx` as retail, with the prism index stored
+// after the shape query; NOT kept, a moved declaration and a one-use local without a match); the product written in the
+// test with no local 553 (2883 B, not hoisted); the face count and radius then the edge count and radius as pairs with the
+// square at the top of the prism loop 548; the prisms walked by a pointer stepped with the index 552; the vertex clamp as
+// `point_count < 8 ? point_count : 8` 551 (same code); both sums copied through one const origin pointer 558 (2889 B).
+// M3 lane 15 r109 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380, the four matched ones stay matched; control 551).
+// Lane 6 r179's lead re-measured on this body (it predates r184's 0x120790 tail): the second vertex's pointer named ahead of
+// the first reconstruction, `real const *second_vertex = (real const *)&prism->points[next_vertex % prism->point_count];`,
+// 536 (2867 B); with a zero-based edge loop (`points[vertex]`, `(vertex + 1) % point_count`) 591 (2855 B); with `radius *
+// radius` at its one use 540 (2876 B); with the square declared at the top of the prism loop 530; with the nearest reset and
+// `bool inside = true;` right after the plane distance 530; both moves together 524 (2867 B). All match-only (a one-use pointer
+// and moved declarations), restored. Left on the 524 form: the side-test cross products and the in-plane projection run
+// in other registers and order (retail spills side.i to 0x124 and side.k's operand to 0xec), and 15 bytes short.
+// Signed query count with indexed or cursor traversal gives 570/568 or 574/572
+// for square before/in the loop. End-pointer forms give 647/647 with a bounded
+// extent and 623/623 with positive-count advancement. NOT kept: all regress.
+// The in-loop square reaches retail +0xd4 after the count branch, with a widened
+// initial count test and different ordinal home. Count and clearance homes remain.
 // Live signed prism count by field reference, array pointer, typed count header,
 // or header reference, indexed 547/547/551/547 and with an entry cursor
 // 555/554/551/554. NOT kept: the four-point indexed leads remain above 30;

@@ -413,6 +413,9 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// score 375 (was 375): Frame 0x40 agrees. The actor loads after the settings call, and actor, settings and prop homes still differ.
+// Earlier score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
+// MiniMax C (11-19): no new form, no lower score (375): retail loads the actor table before the register saves, keeps the actor block in EBP across the call to 0x1e4f90 and the settings pointer in ESI, while this build calls 0x1e4f90 first, keeps the actor in EBX and the settings in EBP; the result declared after the three lookups measures 409 and the actor-first order 413, so the body stands.
 // score 375 (was 375): Frame 0x40 agrees. The actor table loads late and the actor, settings and prop homes differ.
 // Earlier: Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax B (11-18): no new form, no lower score (375): the direct final return (true in the tail, false after the
@@ -837,17 +840,37 @@ extern point2f *g_468778;
 // actor first on those forms 419/427; actor first with the partial dot and direct completion 393;
 // partial dot with prediction velocity pointer 427, actor first on it 467; actor first with the
 // partial dot and one mode read 419. NOT kept: entry or view scheduling still differs and scores rise.
+// M3 lane 5 r210 (fast with the file's neighbours; control 375, register-masked 67): actor first 413; actor first with
+// `return !f14 && !f13 && !f2d;` in the arm and `return false;` last (B) 393; B with a `vector3f const *velocity` for the
+// magnitude call and every field_1c read 417 (1563 B); that with the planar pair copied whole 408 (1555 B); the velocity
+// pointer and the whole planar copy on the body 393 (1568 B); B with the velocity pointer and the first facing dot's k
+// and j read off the view 455 (1593 B); B with that facing read and the whole planar copy 411 (1531 B). Retail stores the
+// zero weight to arg_1's home before the 0x24590 call and reloads it after (0x1aa318, 0x1aa379), so it treats 0x24590 as
+// clobbering XMM where our link keeps the weight in XMM4: BLOCKED-BY 0x24590 (its register summary; `inline` on it
+// raised six callers in earlier rounds).
+// planar output aggregate near and aggregate prediction transfers 406; planar output component near and aggregate prediction transfers 387; planar output aggregate near and component prediction transfers 376; planar output component near and component prediction transfers 371; planar output aggregate near and aggregate prediction transfers with actor first 415; planar output component near and aggregate prediction transfers with actor first 414; planar output aggregate near and component prediction transfers with actor first 423; planar output component near and component prediction transfers with actor first 373.
+// NOT kept: The best planar form scores 371 at retail length, a four-point gain. The actor-first component form scores 373 and moves the first difference to +0x9. Neither meets the retention threshold. The original actor, settings, and request lifetimes are restored.
+// Actor/slot names, settings/prop names and two orders of all four names:
+// settings-first 375/375/375/375, actor-first 413/413/413/413.
+// Typed settings view after admission, with existing or later slot binding:
+// settings-first 375/374, actor-first 413/413.
+// NOT kept: the one-point gain leaves the late actor read. Actor-first forms
+// reserve 0x44 instead of 0x40, spill the actor and grow to 1555 bytes.
 // Unit handle in facing arm or at slot/facing boundary 389/385; live unit field
 // at the same boundaries 374/375. With actor lookup first 408/418/409/413.
 // NOT kept: the one-point gain leaves entry scheduling unresolved, and the
 // actor-first forms enlarge the 0x40 frame.
+// score 259 in a full build with stand-in SDK headers (was 375): the actor's table entry is formed before the
+// 0x1e4f90 call, there is no result local (the block returns true and the function ends with return false, retail's
+// two epilogues at 0x1aa6c5 and 0x1aa6d1), a pointer to field_1c is taken at the top of the third arm, local_8 is
+// declared inside the 0x110ab0 block with the first dot written through local_7, and the planar copy is one
+// point2f assignment (retail's two integer moves at 0x1aa54f).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
-	bool result = false;
+	s_actor_view *local_0 = actor_get(arg_0);
 	s_1aa0d1 *local_1 = (s_1aa0d1 *)function_1e4f90(arg_0);
 	s_1aa0d0 *local_2 = (s_1aa0d0 *)arg_1;
-	s_actor_view *local_0 = actor_get(arg_0);
 	if (local_1 && !local_2->field_13 && !local_2->field_14 && !local_2->field_2d)
 	{
 		s_prop_node_view *local_3 = NULL;
@@ -886,11 +909,11 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 		{
 			s_1aa0d2 *local_6 = (s_1aa0d2 *)function_25d690((s_prop_datum *)local_3);
 			s_prop_view_fields *local_7 = (s_prop_view_fields *)function_25d740((s_prop_node *)local_3);
-			vector3f const *local_8 = &local_7->unknown2c;
 			if (!function_110ab0(local_0->unknown018))
 			{
+				vector3f const *local_8 = &local_7->unknown2c;
 				vector3f local_9;
-				if (-0.4f > local_8->k * local_0->unknown290.k + local_8->j * local_0->unknown290.j + local_8->i * local_0->unknown290.i &&
+				if (-0.4f > local_7->unknown2c.k * local_0->unknown290.k + local_7->unknown2c.j * local_0->unknown290.j + local_7->unknown2c.i * local_0->unknown290.i &&
 					local_1->field_c > local_3->unknown28 && !local_0->unknown264 &&
 					function_10f340(local_0->unknown018, 0x7000101, 0xa0005b9) && !local_2->field_16)
 				{
@@ -905,15 +928,16 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 				}
 				else
 				{
+					vector3f const *local_20 = &local_6->field_1c;
 					real local_13 = 0.0f;
 					real local_10 = 0.0f;
-					real local_11 = magnitude3d(&local_6->field_1c);
+					real local_11 = magnitude3d(local_20);
 					if (local_11 > 0.0f)
-						local_10 = (1.0f + (local_8->k * local_6->field_1c.k + local_8->j * local_6->field_1c.j + local_8->i * local_6->field_1c.i) / local_11) * 0.5f;
+						local_10 = (1.0f + (local_8->k * local_20->k + local_8->j * local_20->j + local_8->i * local_20->i) / local_11) * 0.5f;
 					real local_12 = (real)local_2->field_30 * g_510c54->rate * local_10;
-					local_9.j = local_6->field_1c.j * local_12 + local_6->field_4.y - local_0->position.y;
-					local_9.k = local_6->field_1c.k * local_12 + local_6->field_4.z - local_0->position.z;
-					local_9.i = local_6->field_1c.i * local_12 + local_6->field_4.x - local_0->position.x;
+					local_9.j = local_20->j * local_12 + local_6->field_4.y - local_0->position.y;
+					local_9.k = local_20->k * local_12 + local_6->field_4.z - local_0->position.z;
+					local_9.i = local_20->i * local_12 + local_6->field_4.x - local_0->position.x;
 					if (0.0f > local_8->k * local_9.k + local_8->j * local_9.j + local_8->i * local_9.i)
 						local_9 = *local_8;
 					else
@@ -928,9 +952,9 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 					{
 						vector3f local_14;
 						local_12 = (real)local_2->field_32 * g_510c54->rate * local_10;
-						local_14.i = local_6->field_1c.i * local_12 + local_6->field_4.x - local_0->position.x;
-						local_14.j = local_6->field_1c.j * local_12 + local_6->field_4.y - local_0->position.y;
-						local_14.k = local_6->field_1c.k * local_12 + local_6->field_4.z - local_0->position.z;
+						local_14.i = local_20->i * local_12 + local_6->field_4.x - local_0->position.x;
+						local_14.j = local_20->j * local_12 + local_6->field_4.y - local_0->position.y;
+						local_14.k = local_20->k * local_12 + local_6->field_4.z - local_0->position.z;
 						if (!(local_2->field_38 > function_30bf0(&local_14)))
 							goto local_15;
 						local_2->field_15 = 3;
@@ -941,7 +965,7 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 				}
 				if (!local_2->field_2e && (local_2->field_15 == 0 || local_2->field_15 == 2 || local_2->field_15 == 3))
 				{
-					point2f local_16 = {local_9.i, local_9.j};
+					point2f local_16 = *(point2f *)&local_9;
 					if (normalize2d(&local_16) > 0.0f && 0.866025388f > local_0->unknown290.j * local_16.y + local_0->unknown290.i * local_16.x)
 						goto local_15;
 				}
@@ -975,9 +999,12 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 			function_1a9d80(arg_0, local_1->field_c, &local_2->field_2c, &local_2->field_2d);
 		if (!local_2->field_12)
 			function_1a9e00(arg_0, local_1->field_c, local_2->field_2d);
-		result = !local_2->field_14 && !local_2->field_13 && !local_2->field_2d;
+		if (!local_2->field_14 && !local_2->field_13 && !local_2->field_2d)
+		{
+			return true;
+		}
 	}
-	return result;
+	return false;
 }
 
 bool function_25d9b0(long arg_0);

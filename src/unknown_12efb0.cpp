@@ -775,15 +775,35 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the -1 in ecx; the record's three initial stores sit before the palette read here and after it in retail, and moving
 // them into the palette branch measures 725, the palette byte read before the stores 607, and a signed palette byte read
 // before the stores 700.
+// M3 lane 12 r149 (fast with 0x130f60/0x131030/0x1317a0/0x12e5e0, all MATCH; control 607): the two range clamps
+// through one shared inline taking the range by value 679 (3837 B), by pointer (read at each use in both arms)
+// 609 (3834 B), that with the char slot 702; the four source publications through one shared inline setter 607
+// (same code); the tag result and its out value declared outside the loop 607 (same code).
 // M3 lane 15 r106 (fast with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607, aligned 487, register-
 // and stack-masked 220): the cluster entry indexed at each use instead of the entry pointer 609; the palette index out value
 // declared once at function scope and reset per cluster 607 (same code); the weight clamp as two independent ifs 607 (same
 // code); the three per-cluster source resets ahead of the 0x130f60 call 713 (3836 B); the scenario lookup with the global
 // tested in its own `if` around the bounds test 607 (same code). All restored.
+// Y643: provider slot long at return 684; dword at return 684; word at return 696; long in tag arm 607; dword in tag
+// arm 607; word in tag arm 696; word at return with signed palette byte 668; word in tag arm with signed palette byte
+// 668.
+// NOT kept: Late long and dword slots tie 607. The early decodes and the low-word forms increase the score. The
+// signed-byte low-word forms narrow the length gap without recovering the provider and sentinel registers.
+// Compound tag admission before the shared palette/default arm with a guarded lookup, conditional
+// record or explicit missing slot scores 714 with a word and 703 with a signed byte.
+// Testing provider validity first scores 832 with a word or 729 with a signed byte.
 // Select record base and ordinal before forming the pointer. Short slot with default
 // base, guarded/conditional 705/716; explicit base 709/617. Signed byte slot with
 // default base 721/720; explicit base 677/698. NOT kept: the provider and palette
 // registers remain different, including the 3818-byte guarded form. Original body restored.
+// Palette upper before lower 607, signed byte 700. Positive table extent 755,
+// signed byte 724. Inclusive last entry 725, positive extent with inclusive last
+// entry 674. Lower bound before the scenario table 607, missing table as an
+// empty extent with signed byte 689. Provider, sentinel and palette homes still differ.
+// MiniMax B (11-19): no new form, no lower score (607): retail reads the palette byte into a byte register and compares it
+// with the low byte of the -1 it also stores to the record, while this build keeps the slot in a 16-bit register and holds
+// the -1 in ecx; the byte at each use and the char and signed-char slot measure 666 to 700, and the record's three initial
+// stores sit before the palette read here and after it in retail, but moving them into the palette branch measures 725.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

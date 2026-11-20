@@ -802,6 +802,10 @@ static inline bool teams_enabled_19e1c0()
 // names plus fallback 505/504/440/525 with the existing result, 634/636/673/415
 // with an ordinary result. NOT kept: the minimum stays out of line and needs
 // a larger frame. The 415 form restores the opening extent, with the preload still missing.
+// First comparison before both locals 390/691; native comparison count 390/691; signed name
+// length published after the clamp 438/692; missing-index sentinel in dispatch 454/736
+// (existing result and ordinary result, respectively). The ordinary count recovers the
+// 0x204 frame while merging the name-copy paths. Token preload and capacity home still differ.
 // M3 lane 1 r125 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
 // `remaining` copied into a named `long capacity` used for every clamp, format and the fallback, on the plain result 691,
 // on the volatile result 390 (both the same code: the copy propagates); on the plain result the token parameter declared
@@ -815,6 +819,10 @@ static inline bool teams_enabled_19e1c0()
 // (diagnostic, not keepable) 691 (same code: the assumption adds no weight); `token` declared `word const *const` 691 (same
 // code); the fallback's clamp as `remaining <= token_length ? remaining : token_length` 693 plain (1168 B), 395 on the
 // volatile result (1432 B). Body unchanged.
+// M3 lane 13 r119 (fast with 0x19e0f0; control 390): the plain result with `remaining` renamed through a `long const &`
+// local 691, through a local copy 691, `token` through a local copy 691, both copies 691 (1170 B each, same code as the
+// plain result); the volatile result with the `remaining` copy 390 (same code). Copies of a parameter fold away before
+// the allocator weighs token against remaining.
 // Zero-result terminators for player names, team names, scores, or all 467/413/433/487.
 // Ordinary result for player, team, score, or cause names 691/691/691/691.
 // NOT kept: the team-name form reaches retail length but keeps the 0x208 frame.

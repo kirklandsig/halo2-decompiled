@@ -913,8 +913,10 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 100 (was 100; earlier 191): the teams flag is read before the configuration copy and address-index
+// score 100 (was 100): the teams flag is read before the configuration copy and address-index
 // store, and the third team-score read expands where retail calls 0x1587f0.
+// Earlier score 191.
+// store, and the third team-score read expands where retail calls 0x1587f0. Earlier score 191.
 // Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
 // entry 314, combined team guard 333, team read before flag 309, record reference 191,
 // native counter field 191, and branch-local score stores 192.
@@ -985,6 +987,10 @@ static inline long team_score_195ed0(long team)
 // installed-team and active-team references 100/100, count-first rank comparison 100,
 // admitted clamp with a shared result 177, unsigned terminal player inequality 732.
 // The flag still leads the configuration copy and the final score call still expands.
+// Clamp failures with rank continues and native or inline final score 192/128.
+// Team ordinal read at each use 216; signed count snapshots 100; rank before the
+// ranking query 104; team/rank cursors 337; signed rank sample at the store or
+// before the entry lookup 100/100. The early flag read and expanded final score remain.
 // M3 lane 4 r219 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH each time; control 100): the score
 // helper reading its result through a private inline copy of the statistics getter, as 0x1587f0's own source does, 100;
 // the score helper `__forceinline` 100 (the third read still calls 0x161e60 from inside it); the team test with an early
@@ -997,6 +1003,41 @@ static inline long team_score_195ed0(long team)
 // rank and score through indexed team 105, short team rank ordinal 205,
 // named player rank and slot 100, native in-range score with short selection 191.
 // NOT kept: the early flag load remains and the native score call still inlines.
+// M3 lane 11 r125 (fast with 0x196470 and 0x199310, both MATCH throughout; control 100): the records through the
+// results view of g_510cb0 (players at +0x384, as 0x199310 reads them) 100 (same code: the flag is another symbol); the
+// flag and the records through that view 333 (aligned 58: each pass reads the flag after the copy and the 0xff store as
+// retail, but the first loop then keeps the flag in BL across the 0x161e60 calls); the same through the cast at each use
+// 333 (same code); the flag, the records and the team entries (+0xdc4) through the view 328 (aligned 59: the first loop
+// reloads the flag as retail, but counts down from 16 in EBX because the entries' end lies past the one-byte g_510cb0);
+// the score helper reading the score through the engine getter's statborg 116 (frame 0x78); the score helper taking
+// `long const &team` 296 (1077 B). Diagnostic (not keepable, an unmapped name): the flag, the records and the team
+// entries as fields of one 0x1044-byte object of the view type 73 (aligned 25): everything up to the rank loop body is
+// then retail's, the rank loop's `cmp word ptr [esp + 0x82], bp` included. So retail addresses the flag, the records and
+// the team entries off one symbol that runs past 0x511bf4, while matched 0x196470 needs the records' symbol to start
+// above 0x510fa0 (its NONE test keeps an index * 0xa4 counter); only the rank loop's inline budget is then left.
+// Diagnostic on that object: 0x196470's second player loop indexing its player array as a real array member (not the
+// cast entry pointer) 158 (751 B, the NONE test on the pointer again): the compiler forms `players - 0xa4` whenever it
+// lies inside the symbol, array member or not, so one object for both functions does not reproduce retail.
+// M3 lane 16 r147 (fast with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the clamp over the real
+// 0x1587f0 re-measured 192 (1241 B: all three reads inlined, their nested calls kept); the score helper's team test
+// through the real 0x161e60 180 (1225 B); the team helper plain `static` 180 (1225 B, the same code: its copy folds into
+// 0x161e60); the score helper plain `static` 322 (1051 B: no read inlined, each calls the file's copy); a `0 <
+// ranking.team_count` guard around the rank loop 161 (1210 B; the count tested as a word, but twice).
+// Public score query at the lower bound, upper bound, both bounds, lower bound with
+// selected value, or upper bound with selected value gives 217/203/135/223/216.
+// Short return, short result local, or both gives 101/147/147.
+// NOT kept: the provider substitutions grow the body. Narrow result storage reaches
+// 1210 bytes but raises the score, and the teams flag still precedes the copy.
+// Counter bound beside the record or after publishing its address index 100/100,
+// native counter value with low-bit mask 100, bool team-mode sample 100,
+// full-width lower default 177, nested inclusive score selection 165,
+// inclusive upper selection with local or native interior query 100/191.
+// The tied forms still load the teams flag before the copy, and the native
+// interior query still inlines.
+// Machine-player configuration byte span 100, typed source member 100, typed assignment or memcpy
+// into the results record 100/100, returned typed copy destination 204, and shared device-view
+// copies from the byte or typed member or through assignment 100/100/100. NOT kept: the
+// copy and address-index write still follow the teams-flag read in the tied forms.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
