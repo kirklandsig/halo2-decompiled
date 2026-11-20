@@ -219,7 +219,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
-// score 25 (was 51): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
+// score 25 (was 25; 51 before): retail's length (1030 B). Left: the early 0x1faf80 call's setup and, after it, the zero-limit
 // copy's registers (BLOCKED-BY 0x1faf80's parameter order, round 121 below), the forward agreement's i product, and the
 // order of the final up/forward loads and stores (retail runs the three up loads first and interleaves the rest, ours
 // pairs each load with its store).
@@ -475,6 +475,15 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // shared setters for all outgoing vectors 100. NOT kept: The best named special-arm addresses gain two, below the
 // retention threshold and short of the exact match required for a one-use pointer. The stack names tie and shared
 // vector setters lengthen the body.
+// M3 lane 6 r206 (fast with 0x1faf80, 0x118700, 0x11f0d0 and 0xe01d0; control 25): 0x1faf80's parameters as (object_index,
+// facing, settings, control, threshold, turn), definition, both declarations and both calls together, re-measured on this
+// body: 12 (the 0x1faf80 call setup and the zero-limit copy become retail's; left the forward agreement's i product and
+// the tail's load/store interleave), but 0x1faf80 matched -> 2 (its `forward.i * facing->i` product loads facing first)
+// and 0xe01d0 537 -> 569: not kept, BLOCKED-BY 0x1faf80 (patch build/r206/lead-1197b0-1faf80-reorder.patch in m3-lane6).
+// On that order, in 0x1faf80: facing `vector3f const *` 2; the i product's operands swapped, or all three, 2 / 2 (the
+// order is canonical); the settings parameter typed `real const *` with no cast local 4 (2 without the reorder);
+// facing renamed a_facing / z_facing 2 / 2; desired declared first, settings first, desired between object and
+// settings, settings assigned after its declaration 2 / 4 / 2 / 2.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
