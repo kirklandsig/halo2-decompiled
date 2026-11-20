@@ -528,6 +528,12 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // sequential tail copies (79), so the barrier is the address taken at our call, not the callee's use of it; 0 for the
 // forward only at our call (70) lets the forward loads rise above the up stores but not the up loads, and the forward
 // dot's i product stays object-first, so that product's order is not the escape.
+// M3 lane 15 r121 (h2m fast with 0x118700, 0x11f0d0 and 0x1faf80; control 25): 0x1faf80's facing as its FIRST parameter
+// (definition, both declarations and both calls) 12 here, 0x1faf80 2 and 0xe01d0 537 -> 569, exactly as with facing second
+// (its i product still loads facing first): still BLOCKED-BY 0x1faf80. On this body: the two field pointers declared ahead
+// of the dispatch block 25 (same code: pointers formed before the escape do not free the tail's loads), declared at the top
+// beside the definition 107; the tail copies through the existing vector3f_assign 66 (1047 B, the copies go through xmm);
+// the zero-limit test written `0.0f == max_angle && 0.0f == acceleration` 27.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

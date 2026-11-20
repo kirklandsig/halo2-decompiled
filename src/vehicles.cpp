@@ -1241,6 +1241,13 @@ __forceinline long vehicle_round(real value)
 // cross too 94 (735 B), the dot named 13. Compile-only (2 flips each, the same products): a typed definition view for the
 // three definition fields, the tick compare reversed, `up` declared first in the arm, `rate` or `side` declared with the
 // vectors, `strength = rate * strength`; a named side correction 4 flips.
+// M3 lane 15 r121 (h2m fast), at 4: no result local (the failure arm returns false, the success path true) 10 (753 B);
+// the flag clear as the bitfield store `((s_vehicle_word_flag_bits *)&vehicle->flags348)->bit6 = false;` (0xf0fd0's
+// spelling) 7: the side cross's forward.j * up.i becomes retail's, but the first cross's up.j * forward.i flips and the bit
+// clear is scheduled ahead of the byte clears; on that, the rate on vehicle->up.k 9, that with no up pointer 15, plain
+// cross3f at the side 7, the up pointer at the side cross 96 (735 B), cross3f_staged at the first cross 16, the rate on
+// vehicle->up.k with the plain side cross 9; `strength *= rate;` after the side block 72 (757 B); the entry test by De
+// Morgan 4 (same code); the tick count without the `(real)` cast 4 (same code).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2355,6 +2362,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // &vehicle->forward) 11, as basis_dot_xzy(&vehicle->forward, &linear_velocity) 11; the final overlay loop bounded with `!=`
 // 9; `i` declared ahead of the overlay channel 9. Reading: retail's reloads after the update block come in the order of
 // the values' next uses (state for the channel test, then graph and the index as the callback's arguments are pushed).
+// M3 lane 15 r121 (h2m fast), at 9: arm 3's speed fraction named 13; arm 2's speed fraction named 13; the graph and
+// animation-state tests as two nested ifs 9 (same code); the second lookup written as the header-table subscript 9 (same
+// code); the two small loops' counter `short` 384 (movsx per use).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
