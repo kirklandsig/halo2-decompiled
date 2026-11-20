@@ -320,6 +320,13 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // terminator indexed through `long const &found = i;` 39 (same code); the buffer named before the suffix conversion with the
 // suffix declared in the arm 44. Diagnostic (behaviour change, reverted): the append arm continuing the loop 59 (211 B).
 // Body unchanged.
+// M3 lane 4 r226 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf; control 67). Reading: with the terminator indexed
+// (re-measured 84) ours keeps the whole entry address in EBX across the five calls, so neither i nor the base is needed
+// after them; retail keeps i in EBX, spills the base and forms the address again, sharing neither the address nor the
+// product. The base written by a forceinline getter through an out-pointer, indexed terminator 84 (resolved, no spill);
+// that with the arm's entry pointer for the buffer and source 84; the suffix declared at the found block's top and
+// cleared by memset 94 (187 B); the found body as a forceinline (entries, i, append) name helper 84; a found flag set
+// before the break with the body after the loop (threaded) 84. Body unchanged.
 // M3 lane 1 r129 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all matched throughout; main 67; body
 // unchanged). Reading: retail's found entry in ESI serves the name test and the two copy arguments, dies when ESI takes
 // the copy's count, and the terminator and the plain arm each multiply i again (three `imul`), with i in EBX from the

@@ -2284,6 +2284,11 @@ void function_2818e0(void)
 // three restores best 2 (two save orders give the same code, every other order moves 0x285750 or 0x288570);
 // root_offset_scale's three conditions in all six orders, its product as `*=` or with the operands swapped 2 (same
 // code or only a branch order). All restored.
+// M3 lane 4 r226 (fast with 0x27dff0 and the five matched walk users): the pair is in the rotation pass, the one pass
+// with no C-level float arithmetic for blend methods 1 and 2 (both asm), where method 3's matched 0x285750 has literal
+// float code. interpolate_real's fraction as `real const &` 2; the blend weight passed to function_288573 as a parameter
+// 2 (0x27dff0 147, 0x285750 157); quaternion_blend's fraction copied into a local the asm reads 2; the saved frame
+// fraction `real const` 2; component_interpolate's fraction read once into a named local 2 (0x288570 120). All restored.
 // M3 lane 8 r197 (fast with 0x27dff0 and the matched walk users; a compile-only screen of this file is exact here, 2):
 // the blend asm split into two blocks at the fraction load 2; the multiply asm split after its first operand load 2;
 // the interpolation's blend fraction named before the blend call 2; the blend asm's sign constant as a const SSE

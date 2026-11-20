@@ -614,6 +614,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // across the cursor's range) 36 (517 B): first then leaves mode's home, so its slot follows a range overlap, and
 // retail's preheader order (the cursor's start ahead of first's last read) is what gives that overlap without code.
 // Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 2 at every K (not a symbol-count tie).
+// M3 lane 4 r228 (fast with 0x404b0; control 2): the index start read through a `long const &` bound to first 2; the
+// index declared once ahead of the loop and assigned in the body 2; first declared `long const` 2; the entry pointer
+// declared once ahead of the loop 2; the entry pointer and the index both declared ahead of the loop 2 (all the same
+// code: first keeps the mode parameter's home). Permuter (fast, annealed, 600 s): 55 tries, none below 2.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
