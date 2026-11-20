@@ -126,7 +126,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // the two 0xbadc0 calls, which our link does not do because that callee does not write the pool global; the
 // permuter's 17 tries reach 93 with the arguments of function_1896c0 swapped, which changes the call, so the
 // gain is not kept.
-// MiniMax C (11-16): score 107 (was 107): no new form, no lower score; BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp,
+// MiniMax C (11-16), at 107 then: no new form, no lower score; BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp,
 // on the Avoid list): retail re-fetches the unit from the object pool after its two 0xbadc0 calls and does the
 // weapon lookup through that second fetch, while this link knows the callee writes no memory and merges the
 // two fetches, so the entry saves, the unit index's register and every later register differ; the callee's
@@ -405,6 +405,12 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // earlier notes say: what makes the calls that come from the inlined 0x14de90 lose the callee's summary in retail.
 // One compiler-setting diagnostic, reverted: the aliasing-across-calls optimize pragma around the helper, or around
 // this function, 128 (no reload).
+// M3 lane 1 r131 (fast with 0x103b10, MATCH each time; control 110, register-masked aligned 9/13): the sound helper
+// `static inline` instead of forceinline 165 (315 B: it stays out of line); the player-index helper forceinline 110
+// (same code); the user entry's two stores through `g_4ed284->entries[user_index]` with no entry pointer 112 (357 B);
+// the entry as a reference local 110 (same code); the sound call behind `if (sound_index == NONE) return;` 110 (same
+// code). Retail also threads the weapon arm's NONE sound straight to the exit (`cmp edi, -1; je` at 0xc87f3) where
+// ours sets EAX to -1 and tests it. Still BLOCKED-BY 0xbadc0.
 // M3 lane 6 r204 (fast with 0x103b10, 0x14de90, 0xbadc0, 0xcbd50 and 0x100f70, all MATCH each run; control 110, register-masked
 // aligned 13; nothing kept). Round 117's three forms re-measured 128 (348 bytes, aligned 28); with the file's own inline copy
 // of the player-index getter replaced by a declaration of the real 0x14de90 (another file, later in link order, as in retail)
@@ -419,6 +425,12 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // its direct call and uses it for the second lookup), so what is left is that retail's two calls here reach 0xbadc0's bytes
 // as a different source function with a writing summary, folded onto the same address at link time; this tree keeps one
 // definition per address, so that cannot be written here. Still BLOCKED-BY 0xbadc0 as reached through the inlined 0x14de90.
+// M3 lane 13 r124 (fast with 0x103b10, MATCH each time; control 110): the weapon lookup from the entry `unit` pointer
+// 110 (same code); the user index defaulted to NONE and set under `!= NONE` 127 (357 B); the weapon slot read from the
+// unit at each use 114 (355 B); the user's entry fields written through `g_4ed284->entries[user_index]` at each use 112
+// (357 B); the zoom-out sound helper plain `inline` 165 (315 B). Checked: 0x10a390's source re-reads the pool through
+// its macro after its 0xbadc0 call, so the no-write inference above holds; the real 0x14de90 is in a file this round
+// could not edit. Still BLOCKED-BY 0xbadc0 as reached through the inlined 0x14de90.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

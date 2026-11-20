@@ -223,6 +223,16 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// MiniMax G (11-19): no new form, no lower score (334): the gate byte is still read from the folded address
+// (`mov al, byte [eax+edx+2]`) into AL and stored at [esp+0x1f], where retail adds the base to the index first, reads
+// the byte into DL and stores it at [esp+0x1b]; a pointer local for the datum (418), the shift chain in one statement
+// (334) and the pointer local with a combined shift (334) leave the code as it is. The flags word is still loaded into
+// AX (`mov ax, word [ebp+2]`) where retail zeroes EDX and loads DX before the mask, and reading the flags into a dword
+// local first (338) or writing the mask as one expression (334) does not change it. Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (334): retail materializes the datum address with `and eax,0xffff;
+// imul eax,eax,0x190; add eax,edx` and reads the flag byte at `[eax+2]` where ours uses the two-register address
+// `[eax+edx+2]`, and the flag mask chain starts from `xor edx,edx; mov dx, word [ebp+2]` where ours zeroes EAX;
+// binding the datum to a pointer local of its own does not change the code (334). Body unchanged.
 // score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
 // combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // MiniMax E (11-15): no form kept; the permuter's best variant (333 in the reduced image and in the full one)
@@ -905,6 +915,21 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Native flags masked with either velocity selection gives 334/334. Word flags with a
 // bit-position test gives 417/417. NOT kept: the masks reproduce the folded address,
 // and the field and word forms regress. Effect address and gate/settings homes remain.
+// M3 lane 14 r123 (fast with 0x247fd0/0x248cc0, both MATCH; control 334): one effect pointer local assigned at the gate and
+// again at the velocity site 334 (same code: both still fold base+index). A plain (not inline) effect getter folds the same in
+// this file (334), is not inlined from 0x249170's /Ob1 file (453, 1617 B), and folds again when LTCG inlines it from a /O2
+// file (334, plain): the unfolded address is no cross-file inline. Lead, match-only: each kept value read through a const
+// reference binding gives retail's unfolded shapes one by one: the gate pointer (`s_effect_datum const *const &`) 355 (the
+// gate is then retail's `add eax, edx; mov dl, [eax + 2]`, only the flag's home differs, +0x1f vs +0x1b); with the velocity
+// pointer bound in an if/else 357 (`add; add 0x30`); with the definition short bound 348 (`mov ax, [reg + 0xc]; test ax,
+// ax`, the definition reloaded into EAX where retail keeps it in EDI); with the bit-4 byte bound 364 (1665 B, `shr al, 4;
+// test al, 1`). Retail's four sites read as values kept apart from the test or load that uses them. Diagnostic (reverted at
+// once): a volatile view of the gate byte still folds base+index (378, 1665 B), so it is the binding, not volatility.
+// Full 0x5c collision output with opening scratch 337, separate blend 406, separate first sample 395,
+// both 444, branch-local collision/ray objects 336, branch-local result plus separate blend/sample 446,
+// independent objects 444, and independent objects with a branch-local query 447.
+// NOT kept: the full result alone enlarges the frame. The retail-frame forms shorten and regress.
+// The effect lookup still folds and the gate byte stays off retail's slot. Original body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

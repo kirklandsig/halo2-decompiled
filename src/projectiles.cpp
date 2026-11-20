@@ -837,6 +837,27 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
 // MiniMax A (11-11): matches; the six selector outputs follow retail's order (effect 0, effect 1, effect 2,
 // sound 0, sound 1, sound 2) in the parameters and in the NONE stores, and both call sites pass them in that
 // order; retail reads them in eax, ecx, edx, esi, edi and ebp and null-tests them in that order.
+PRIVATE inline void projectile_effect_parameters_reset_fd0e0(s_effect_parameters *parameters)
+{
+	memset(parameters, 0, sizeof(*parameters));
+	parameters->tag_index = NONE;
+	parameters->unknown18 = NONE;
+	parameters->object_index = NONE;
+	parameters->unknown34 = 0;
+	parameters->unknown38 = 0;
+	parameters->unknown3c = 0;
+	parameters->owner.unknown4 = NONE;
+	parameters->owner.unknown0 = NONE;
+	parameters->owner.unknown8 = NONE;
+	parameters->scale_a = 1.0f;
+	parameters->scale_b = 1.0f;
+	parameters->unknown30 = 0;
+	parameters->color_a = 0xff808080;
+	parameters->color_b = 0xff808080;
+	parameters->source = 0;
+	parameters->flags = 0;
+}
+
 /* the effects and sounds of an effects block's effect (+0x58), three of
    each, NONE without one:
    0x1883e0 gives sounds as its "first" values and effects as its "second"
@@ -880,10 +901,14 @@ void function_fd740(point3f const *point, byte const *effects, long index, short
 // this function to 66, but the caller's setup then grows (0xfaa60 1234), so the form is reverted. What is left here is the
 // register choice for the four register arguments (ours takes the projectile index in ecx and effect0 in eax where retail takes
 // them in eax and ecx) and the projectile lookup, which this build sinks below the game-state test where retail keeps it above.
+// Matched in a full build with stand-in SDK headers (was 69): the parameters are declared in retail's order (the three
+// effect out-pointers first, then the stack arguments) and the NONE block is grouped as retail has it, the element index
+// is a c_type_47f957 passed on as it is (the caller 0xfaa60 builds it from the material index; a class object lives in
+// memory, so the call's block has one register candidate less and effect2 gets edi), and the projectile is read through
+// a reference-bound local in the game-state test. The caller 0xfaa60 goes 1196 -> 1160.
 // @retail 0xfd7d0
-void function_fd7d0(long object_index, point3f const *point, byte const *effects,
-	long index, long element_index, long *sound0, long *sound1, long *sound2, long *effect0,
-	long *effect1, long *effect2)
+void function_fd7d0(long object_index, long *effect0, long *effect1, long *effect2, point3f const *point,
+	byte const *effects, long index, c_type_47f957 element_index, long *sound0, long *sound1, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
@@ -894,26 +919,27 @@ void function_fd7d0(long object_index, point3f const *point, byte const *effects
 		if (object_index != NONE)
 		{
 			s_projectile *object = PROJECTILE_GET(object_index);
+			s_projectile *const &kept = object;
 
-			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)object + 0xd4) != NONE)
+			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)kept + 0xd4) != NONE)
 				ignore_distance = true;
 		}
-		function_1883e0(effect_index, ignore_distance, point, c_type_47f957(g_47d8e0), c_type_47f957((short)element_index), index, 0, sound0, effect0,
+		function_1883e0(effect_index, ignore_distance, point, c_type_47f957(g_47d8e0), element_index, index, 0, sound0, effect0,
 			sound1, effect1, sound2, effect2);
 		return;
 	}
-	if (sound0)
-		*sound0 = NONE;
 	if (effect0)
 		*effect0 = NONE;
-	if (sound1)
-		*sound1 = NONE;
 	if (effect1)
 		*effect1 = NONE;
-	if (sound2)
-		*sound2 = NONE;
 	if (effect2)
 		*effect2 = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (sound1)
+		*sound1 = NONE;
+	if (sound2)
+		*sound2 = NONE;
 }
 
 /* sticks a projectile to what it hit; location is the hit's s_location, which the
@@ -1725,12 +1751,14 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // (point in EDI, zero in EBX), so it stays BLOCKED-BY 0xfd740, which this lane does not touch. No new form tried.
 // Permuter (25 min on #1061, about 340 variants): 111 only with the flag set through an int temporary and the
 // sound index declared apart; the plain forms in it (tag before flag, unsigned index, declaration order) stay 115.
+// Matched in a full build with stand-in SDK headers (was 11): the definition pointer is read after the six NONE
+// stores, the effect parameters are reset by a file-local copy of the initialiser whose stores are in retail's
+// order, and the three loops are bounded by NUMBEROF of their arrays.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,
 	long node_index, bool alternate)
 {
-	byte *definition = g_4e3b44[definition_index & 0xffff].bytes;
 	long sounds[3];
 	long effect_indices[3];
 	s_location location;
@@ -1742,13 +1770,14 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 	sounds[0] = NONE;
 	sounds[1] = NONE;
 	sounds[2] = NONE;
+	byte *definition = g_4e3b44[definition_index & 0xffff].bytes;
 	function_11bed0(&location, point);
 	{
 		s_effect_marker markers[6];
 		s_effect_parameters parameters;
 
 		function_1763a0(point, direction, markers, normal);
-		projectile_effect_parameters_initialize(&parameters);
+		projectile_effect_parameters_reset_fd0e0(&parameters);
 		if (attached)
 		{
 			parameters.flags = 1;
@@ -1768,7 +1797,7 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 			effect_new_from_parameters(&parameters);
 			return;
 		}
-		for (i = 0; i < 3; i++)
+		for (i = 0; i < NUMBEROF(effect_indices); i++)
 		{
 			if (effect_indices[i] != NONE)
 			{
@@ -1783,7 +1812,7 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 			effect_new_from_parameters(&parameters);
 		}
 	}
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < NUMBEROF(sounds); i++)
 	{
 		long sound_index = sounds[i];
 
@@ -3465,8 +3494,8 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 	default:
 		goto no_effects;
 	}
-	function_fd7d0(projectile_index, &collision->point, (byte const *)definition, effect_type, material_index,
-		&sounds[0], &sounds[1], &sounds[2], &effects[0], &effects[1], &effects[2]);
+	function_fd7d0(projectile_index, &effects[0], &effects[1], &effects[2], &collision->point, (byte const *)definition,
+		effect_type, c_type_47f957((short)material_index), &sounds[0], &sounds[1], &sounds[2]);
 no_effects:
 
 	if (g_4e6948->mode != 4 && (collision->type == 1 || collision->type == 3) && (collision->unknown58 & 8))

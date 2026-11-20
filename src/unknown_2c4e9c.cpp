@@ -1611,27 +1611,35 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // shared validity at both widget tests 78, title tested first 94; shared or block-local output cursor 69 each.
 // NOT kept: title buffer clear before list admission 6, before the title test 4, before the list
 // load 8; retail clears it only after both guards. All three keep the native extent.
+// Matched in a full build with stand-in SDK headers (was 15): the setting index is read into a local before the
+// lookup, and the string list index is read once into a local that the NONE test and the title call share (the
+// definition test and the list test are two nested ifs).
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
 	word buffer[0x100];
 	c_class_1a2c81 *title = find_child(6, 0, false);
 	c_class_1a2c81 *description = find_child(6, 2, false);
-	s_variant_setting_definition *definition = (s_variant_setting_definition *)game_variant_settings_find_setting(list.setting_index);
+	long setting_index = list.setting_index;
+	s_variant_setting_definition *definition = (s_variant_setting_definition *)game_variant_settings_find_setting(setting_index);
 
-	if (definition && definition->string_list_index != NONE)
+	if (definition)
 	{
-		if (title)
+		long string_list = definition->string_list_index;
+		if (string_list != NONE)
 		{
-			buffer[0] = 0;
-			function_1a0180(definition->string_list_index, definition->title_string_id, buffer);
-			title->function_22f52e()->set_text(buffer);
-		}
-		if (description)
-		{
-			buffer[0] = 0;
-			function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
-			description->function_22f52e()->set_text(buffer);
+			if (title)
+			{
+				buffer[0] = 0;
+				function_1a0180(string_list, definition->title_string_id, buffer);
+				title->function_22f52e()->set_text(buffer);
+			}
+			if (description)
+			{
+				buffer[0] = 0;
+				function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
+				description->function_22f52e()->set_text(buffer);
+			}
 		}
 	}
 	list.select_current_value();
@@ -3259,6 +3267,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // step (diagnostic, loop-carried second definition) 30; the loop compare written id first 30; the id typed dword 30.
 // Compile-only only (same direct load): the read assigned in the condition, a by-value inline validity predicate, an
 // inline getter with a result local. All restored.
+// M3 lane 3 r274 (fast with 0x2c9a58, matched in each): the iterator's pool stored before the id read with the NONE
+// stores after the test re-measured 27 (the id still straight into EBX); `long const` id 30; the id read into a first
+// local and copied into the id 30 (propagated); the NONE-default id with `else return;` and the outer test kept 13 (NONE in
+// EAX for the compare and both iterator stores; match-only); the iterator declared at function scope ahead of the id 30;
+// the NONE default with `else return;` and the walk unconditional 30 (the dead default is dropped before NONE is counted:
+// NONE takes a register only with four uses).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

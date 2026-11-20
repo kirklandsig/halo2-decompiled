@@ -543,6 +543,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // plain string read once through its own address at the scan with `start += (long)string` after the clamp 40 (104 bytes)
 // [6], the same with the count tested first 39 (103 bytes) [35], the address read at the add instead 40 (104 bytes) [6];
 // 0-40 dead initialised locals at the top of the first of these 40 each (no symbol-count state).
+// M3 lane 7 r192 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the volatile-free kept body re-measured
+// 49 (92 bytes) [6] (string EBP, start arriving in EDX, the destination left on the stack); on the kept body the sign tests as
+// `0 <= start && 0 < count` 21 [match]; the scan on `&string[0]` with the source as `&string[start]` 21 [match]; the string
+// parameter advanced in place (`string += start;` where the source is named) 47 (107 bytes) [6]; the source declared (not
+// assigned) after the result 21 [match], before it 21 [match]. The walk ECX / counter EDX split stands.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -600,7 +600,17 @@ struct s_allocator_globals
 	}
 };
 
-extern s_allocator_globals *g_4d87f8;
+/* g_4d87f8 is read as a member of a global aggregate: retail's allocator reads in 0x97d80 let its count,
+   whose address went to a virtual call, share a frame slot with a later loop's spill, which a load
+   through a plain pointer global prevents. The aggregate's other members are not recovered yet (its
+   neighbours g_4d87f4, the heap size, and g_4d87fc, the heap memory, are set up with it by 0x81780). */
+struct s_network_heap_globals
+{
+	s_allocator_globals *allocator;
+};
+
+extern s_network_heap_globals g_network_heap;
+#define g_4d87f8 (g_network_heap.allocator)
 
 /* the pairs of structure bsp and bit that map to the breakable surface slots
    (183ee0, 09a5e0) */
