@@ -963,6 +963,10 @@ void function_245400(s_source_245400 const *source, long index,
 // side comparison scoped to facing 197, signed-word plane ordinals 224, rotated and staged
 // edge setters 164 each, one edge scale read 164, signed ordinals with scoped facing 215.
 // The frame and code and side homes remain unresolved. NOT kept: ties and regressions.
+// Whole endpoint references or pointers through one vertex table, edge before decode, table, plane addresses
+// or after side tests, 165/205/205/218 each. After sides with second material bound first 218;
+// separate side/ordinal decodes 199, long codes from records 198, both 167.
+// NOT kept: the final two-decode form reaches the 0x2c frame and 783 bytes but scores 167.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

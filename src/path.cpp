@@ -395,7 +395,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `previous` pointer, set to NULL here and left alone there; dropping that initializer gives retail's frame but the body grows
 // by two bytes and the score rises to 357), the node depth is still read at one address here and through a lea there, and the
 // prologue's saves and stores are in another order; the permuter (27 tries in 313 s, annealing) found no variant under 286.
-// score 286 (was 286): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
+// score 286 (was 286): frame 0xe8 versus retail 0xe4, the folded entry depth read, and the link/special flag
 // homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again
 // (1388 bytes, masked 0, re-measured; only `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back
@@ -960,9 +960,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Common flag and short-link copy 209; increment after copy, signed edge test, parent early and
 // signed edge with split increment 300/210/326/273. Direct link/both predicates/both with parent early 211/339/353.
 // NOT kept: the lower scores retain test-set flags, and the 193 form adds six bytes.
-// score 286 (was 286): frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
+// Earlier note: frame 0xe8 against retail's 0xe4 (the extra dword is the `previous` pointer's home), the link
 // count compared as a dword where retail compares it as a word, and the node depth read at one address here and
 // through a lea there.
+// Initial node reference and ordinal-only predecessor, long/short link counts with fallback branch
+// 287/396 or selected point and separate edge test 360/362. Pointer-only predecessor in the same
+// forms 365/408 and 414/443. NOT kept: ordinal-only recovers the frame in three forms but raises
+// the score. Pointer-only forms also raise the caller score.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

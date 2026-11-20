@@ -1035,6 +1035,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // mandatory first pass with the step after submission 546/546 or with the
 // face read 533/533. NOT kept: 533 gains two at retail length and leaves
 // the definition and count homes displaced.
+// Physical mode field reference or pointer, through the tag byte pointer or tag entry, each
+// with primary or secondary count initialized first: eight at 779.
+// NOT kept: each materializes the field offset, keeps the old spill homes and shortens to 3630 bytes.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
