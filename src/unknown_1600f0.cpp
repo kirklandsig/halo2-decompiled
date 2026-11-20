@@ -1625,6 +1625,12 @@ PRIVATE inline long score_string_list_1608e0()
 // M3 lane 7 r199 (fast): the player's local user index named once and used at the four scroll-offset uses 697; the
 // scroll offset through a `real *` formed once 740 (2840 B), through a `real &` 740 (2840 B); the player pointer declared
 // after the scores pointer 713 (2888 B), just before the first scroll-offset use 717 (2888 B).
+// Caption rectangle holds the original horizontal/vertical/both edges, with row-copy or
+// direct title far edges 694/694, 693/693, 714/714. Advance caption top from its original
+// edge with vertical/both edges held 715/706.
+// NOT kept: the first six recover frame 0x79c at higher scores. The horizontal forms also recover EBX for the viewer.
+// The final two return to 0x798
+// and shorten the body. The separate ordered origin and score pointer homes still differ.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

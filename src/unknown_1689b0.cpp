@@ -2170,6 +2170,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `radius * radius` at its one use and no square local 552 (2883 B); with the four declared first and assigned in that
 // order 550; with the prism index declared after them 550; with the nearest distance declared after them 550 (all
 // one point, moved declarations: not kept).
+// Face/edge/both average returns 575/589/628, admitted-radius/rejected-radius/both
+// fallback returns 569/585/635, face/edge count as the result test 620/563.
+// NOT kept: all raise the score and leave the count and clearance homes displaced.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

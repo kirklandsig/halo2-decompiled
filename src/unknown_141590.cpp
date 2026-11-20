@@ -527,6 +527,11 @@ static inline void quaternion_transform_vector(
 // All keep the 0x20 frame and miss the separate retail transform spill.
 // Coefficient local names in all six weight/projection orders, then cross-term names before
 // or after the weights: 201 each. The 0x20 frame and reused quadratic spill remain.
+// Existing real scale for cross/input/projection contributions 299/269/291,
+// cross and input/cross and projection/input and projection 319/296/316, all three
+// 361, all three with a staged output 461.
+// NOT kept: pairwise weighted vectors recover frame 0x24 with more bytes and a higher score.
+// The quadratic spill and the first half-angle registers still differ.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1599,6 +1604,10 @@ void function_143250(
 // Coefficient-local square products of weighted r2 or r5, or both families 1533/1589/1611.
 // Coefficient-local consumers of both dedicated-home products 1399; all four families 1579.
 // NOT kept: the forms raise the score and do not recover the 0x300 frame.
+// Stage the mixed/axial/square weights at coefficients 23 and 25, singly 1213/939/1213,
+// paired 1213/939/1213, all weights 939, and complete mixed terms through the final
+// factor 1154. NOT kept: no form recovers frame 0x300 and the shorter forms move
+// away from the retail extent.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
