@@ -447,6 +447,11 @@ extern real g_4c9798[36];
 // pairs in the first block 100/146/100 (two pairs: 1479 B, but the later planes' registers move and the flags and homes
 // stay). Slot reading on that form: retail shares the extent's home with the width limit and the distance's with the
 // height limit, ours the other way round. Still BLOCKED-BY 0x48e70 (machine 1's file; lane 7 r178's held patch).
+// M3 lane 15 r119 (control 174 fast and plain; the reduced image builds the far-plane point block differently for this
+// function, so a gain needs the plain check): the distance test as `0.0f != distance` 175; the border's product kept
+// ahead of the divide by a cast on the product 180 (1491 B, plain: retail's multiply-then-divide, but the far-plane point
+// loads then reorder); the half-angle test, the second mode test and the two clamp tests with the constant on the left
+// 174 each.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

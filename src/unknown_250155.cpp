@@ -3188,6 +3188,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // in the second loop 95; the no-team flag at function scope 84 (same code); the first loop's player assigned after its
 // declaration 84 (same code). On the kept body: the slot helper taking the screen and reading its mode 87 (same code), with
 // the field-order default arm 95. Two further score lines stacked in this note were merged into the first.
+// M3 lane 15 r119 (H2M fast with 0x2507c3/0x22f042, both MATCH; control 87): the second loop's four players[i] reads
+// through one element pointer 198 (927 B); the first loop's two reads that way 87 (same code); the four widget lookups
+// each declared in its if condition 87 (same code); the first loop's search through local_player_find re-measured 251
+// (928 B); the slot-index helper plain `inline` 242 (862 B: one site stays a call); the first loop's search counter
+// declared in its for 87 (same code). Diagnostic, restored at once: 0x7f790's volatile parameter read made plain leaves
+// this body at 87 (0x7f790 itself 4), so the last loop's register choice does not follow that read.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

@@ -568,6 +568,12 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // differ, the third normalize's in-place scaling among them). None kept: a one-use local ahead of a call, and the
 // count rises. Sites 1 and 3 are both 0x2b400's shape in retail (scaling in place in the vector's own home), so the
 // function stays BLOCKED-BY 0x2b400 (machine 1's file this round).
+// M3 lane 15 r119 (H2M fast; control 286): the blend rows through the existing vector3f_scale and vector3f_add_scaled
+// 325 (1870 B); local_19 as one ternary where its if stands 275 (1865 B), at its declaration 323 (1866 B). Not kept:
+// retail loads the 0.05 into XMM5 ahead of the 0x47c test and tests `comiss xmm0, xmm5; movaps xmm5, xmm0`, which is
+// main's declaration-plus-if form (ours colours local_19 XMM6 and local_24 XMM5, where retail gives local_24 XMM1), so
+// the 275 only drops the early load and re-aligns later rows. The forward-gain clamp as `local_16 < local_30` 286; the
+// sign test as `0.0f > local_25` 286; local_18 declared ahead of local_19 286.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
