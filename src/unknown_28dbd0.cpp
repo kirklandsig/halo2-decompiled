@@ -676,6 +676,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // sine`) 231 (1196 B); the vector scale folded into the sums (`v.i * cos + axis.i + cross.i`) 221 (1213 B, frame 0x118
 // but the request at +0x2c for retail's +0x38); the axis scale folded into the sums 230 (1216 B); both folded 229 (1200
 // B); the projection as `(1.0f - cosine) * dot3f(...)` 173 (same code).
+// Published forward as rotation source with direct/staged cross at tilt or entry
+// 235/235, 256/256, 295/295, 271/271. The launch velocity field as the cross
+// workspace with scale at the producer or at the sums 276/276 and 252/252.
+// Completing the rotation in the same field scores 282/282 and 263/263.
+// NOT kept: the velocity-field forms lengthen and keep different frame and trig homes.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
