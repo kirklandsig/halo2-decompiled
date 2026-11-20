@@ -628,20 +628,20 @@ void function_d4e60(short bsp_index)
 }
 
 /* fills in the data a scenario object is made from */
-// score 135 (was 184): the volatile on type stays: without it this scores 63, and the same
-// length as retail, but LTCG then passes the caller 0xbf0f0's arguments in other slots and that
-// matched caller drops to 2 (also with type read once through a volatile local). With it, case 1
-// reading the datum's byte again (retail's mov al, [edi + 0x5a]) and the palette entry kept as a
-// pointer, as retail does, give 135. Without the volatile, retail keeps type in ebp and the palette
-// in ebx (ours the reverse), and sets or clears flag 8 at the end through a register in two exits;
-// the flag test as a shift, a bitfield view or an explicit read and write left that at 63.
+// Matched in a full build with stand-in SDK headers (was 135): type is a plain long (no volatile; the
+// caller 0xbf0f0 stays matched), the function has one return with the create / definition / palette
+// index tests nested around the rest (the two early returns gave another register convention: retail
+// has the palette in ecx and type on the stack), result is declared before definition, flag 8 is set
+// in two arms (the type mask, then the datum's flag byte tested as a byte) and cleared in the third,
+// and the rotation's address is held in a local that a const reference names, which keeps it out of
+// the call's argument evaluation.
 // @retail 0xd5060
-bool function_d5060(s_scenario_block *palette, volatile long type, long unknown10,
+bool function_d5060(s_scenario_block *palette, long type, long unknown10,
 	s_type_4f0dcc const *datum, bool unknown, s_object_placement_data *data)
 {
 	bool create = !((datum->flags >> 6) & 1);
-	s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
 	bool result = false;
+	s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
 
 	if (type == 6 && g_4e6948->state == 2)
 	{
@@ -676,37 +676,41 @@ bool function_d5060(s_scenario_block *palette, volatile long type, long unknown1
 		}
 	}
 
-	if (!create || !definition || datum->palette_index == NONE)
-		return result;
-	if (PIN(datum->palette_index, 0, palette->count - 1) != datum->palette_index)
-		return result;
-
-	s_scenario_palette_entry *entry = &((s_scenario_palette_entry *)palette->elements)[datum->palette_index];
-	long tag_index = entry->tag_index;
-
-	if (tag_index != NONE)
+	if (create && definition && datum->palette_index != NONE &&
+		PIN(datum->palette_index, 0, palette->count - 1) == datum->palette_index)
 	{
-		function_b7930(data, entry->tag_index, NONE, NULL);
-		data->position = datum->position;
-		data->scale = datum->scale > 0.0f ? datum->scale : 1.0f;
-		function_11df60(&datum->rotation, &data->forward, &data->up);
-		data->bsp_policy = (char)function_d5a70(datum);
-		result = true;
-		if (((1 << type) & 0x847) && (word)definition->scenario_datum_size >= 0x4c)
+		s_scenario_palette_entry *entry = &((s_scenario_palette_entry *)palette->elements)[datum->palette_index];
+		long tag_index = entry->tag_index;
+
+		if (tag_index != NONE)
 		{
-			data->unknown0c = datum->unknown34;
-			data->unknown74 = datum->unknown38;
-			for (long i = 0; i < 4; i++)
-				unpack_color3f(datum->field_3c[i], &data->field_3c[i]);
+			function_b7930(data, entry->tag_index, NONE, NULL);
+			data->position = datum->position;
+			data->scale = datum->scale > 0.0f ? datum->scale : 1.0f;
+			vector3f const *rotation = &datum->rotation;
+			vector3f const *const &kept = rotation;
+
+			function_11df60(kept, &data->forward, &data->up);
+			data->bsp_policy = (char)function_d5a70(datum);
+			result = true;
+			if (((1 << type) & 0x847) && (word)definition->scenario_datum_size >= 0x4c)
+			{
+				data->unknown0c = datum->unknown34;
+				data->unknown74 = datum->unknown38;
+				for (long i = 0; i < 4; i++)
+					unpack_color3f(datum->field_3c[i], &data->field_3c[i]);
+			}
 		}
+		data->unique_id = datum->unique_id;
+		data->unknown08 = *(long *)&datum->origin_bsp_index;
+		if (unknown && ((1 << datum->type) & 0x1883))
+			data->flags |= 8;
+		else if (((byte)(datum->flags >> 8) & 1))
+			data->flags |= 8;
+		else
+			data->flags &= ~8;
+		data->unknown10 = unknown10;
 	}
-	data->unique_id = datum->unique_id;
-	data->unknown08 = *(long *)&datum->origin_bsp_index;
-	if (unknown && ((1 << datum->type) & 0x1883) || (datum->flags & 0x100))
-		data->flags |= 8;
-	else
-		data->flags &= ~8;
-	data->unknown10 = unknown10;
 	return result;
 }
 
