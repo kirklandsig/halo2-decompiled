@@ -277,6 +277,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // push); the model started with no null test or flag test 139 (403 B; the push then reads `[esi + 0x34]` directly, as
 // retail, so our build keeps the call's ESI only inside one block); the animation type read ahead of the model call 166
 // (431 B); the same in the text loop 84 (431 B); a dead self-store of the text's value0a 23 (folded away).
+// M3 lane 16 r161 (h2m fast with 0x22facd, 0x230427, 0x22f6ca, 0x22fa5b, all MATCH; control 23): the model's animation
+// type named right after the model call, ahead of the null test, 23 (same code, the EAX copy stays); a `bool const` copy
+// of the flag for the model loop 23 (same code); the model call and its animation read through a `c_class_1473c9 *const
+// &` bound to the screen at the pane block's top 23 (same code); the text test written `animating && text` 26; the model
+// start under `animating && model` with the index store under its own null test 32 (420 B).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

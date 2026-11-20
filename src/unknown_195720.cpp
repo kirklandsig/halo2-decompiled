@@ -207,6 +207,11 @@ bool function_1946f0(s_bitstream *stream)
 // `byte &` to the masked byte bound before the bound test, the clear from its address plus one 46; the index as a `long
 // const &` bound to the temporary `saved / 8` 2 (same code). With a block-local data local the mask becomes `mov edi,
 // [esi]; add edi, edx` (data first, no LEA) where retail loads the data into EAX and adds it into the index's LEA.
+// M3 lane 16 r161 (h2m fast with 0x1957d0/0x195820, both MATCH each time): a data local read before the index and used
+// only through a `byte &` element reference in the bound block 9 (the load sinks into the block, `mov edi, [esi]; add
+// edi, edx`); a block pointer started at the field and advanced by the index with `+=` 9; a const data local read before
+// the index with a const pointer formed as `byte_index + data` 9; a block-local byte mask and data local 35 (memory
+// operands, no LEA); the clear's start as `&stream->data[byte_index + 1]` with `count * sizeof(byte)` 2 (same code).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

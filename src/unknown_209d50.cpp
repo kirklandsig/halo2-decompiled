@@ -265,6 +265,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // set only in an else arm of the test, NULL first in the arm 89 (277 B); the parameter count read once into a `long
 // count` for the size and the test, NULL first 90 (282 B), into a `short count` 83 (277 B). Every form keeps the first
 // allocation's frame load folded (`mov esi, [eax + ecx + 0x10]`) and has no spill slot.
+// M3 lane 16 r161 (h2m fast with 0x2099f0, which stays matched): with the volatile home, the result copy made just before
+// the initialisation test 93 (292 B), declared after the second allocation 90 (293 B), a `long *const` result with the
+// arm returning NULL 12 (same code); volatile-free, a `long *const` result with the arm returning NULL 90 (277 B), the
+// size passed as a short product with `result = NULL` between the element and the call 83 (277 B).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

@@ -3289,6 +3289,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // (`map_id != NONE && next(&iterator)`, no early test) 33 (76 B). Re-measured the NONE-default id 13 (NONE cached in
 // EAX, the id loaded straight into EBX). A byte scan of retail finds only three references to the field: the store in
 // 0x19a6f2, the read in 0x19a864 (loaded straight into ESI there) and this function's EAX load.
+// M3 lane 16 r161 (fast with 0x2c9a58, matched in each): the guard on the field with an `unsigned long` id copied from
+// it at the block's top 30, or assigned after the iterator set-up 30; the loop compare through a file-local by-value
+// (entry, id) predicate, `static inline` 32 (78 B: /O1 keeps it a call), `__forceinline` 30; the guard on the field
+// with a `long const` id read from the field inside the loop body 30 (LTCG keeps the one load in EBX across the calls);
+// a receiver copy declared first (used for the pool) with the else-return two-definition id 30 (same direct EBX load).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

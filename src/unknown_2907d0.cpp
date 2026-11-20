@@ -239,6 +239,11 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // bound once as `transform4x3f const *const &` for both arms 113 (453 B); the rotate helper's scale bound by const
 // reference 19; the address local itself const 19; the node arm's forward from the parameter directly 19; the else
 // arm's forward from the parameter directly 19 (the 19s the same code).
+// M3 lane 16 r161 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the position stored from a
+// `point3f const &` bound to the point 19 (same code); the position stored after the facing call, ahead of field1c, 41
+// (472 B). Diagnostics (reverted at once): the rotate helper scaling unconditionally 135 (436 B), no bounds test 170
+// (426 B), the point's y stored into four more fields 99 (496 B, y then in memory): the transform stays in EBX each time,
+// so neither the blocks it spans nor the y's use count decides the pair.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

@@ -929,6 +929,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // after the swap, just before the occupied test, 32; the occupied key through a `t_player_key const &` bound to
 // `collection->players[i].key` 32; a named occupant pointer taken ahead of the count step 40. The key sum stays (inverse
 // + cursor) + collection + 4 in each; the swap order alone re-measured 32.
+// M3 lane 16 r161 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; main's swap order): a named element
+// offset (`i * sizeof(player)`) shared by the loop-top player and the occupied key 294 (1083 B); a const `players` array
+// pointer named at the occupied block's top, the key as `occupant[i].key`, 36 (the key keeps our grouping); a const
+// occupant element pointer named right after the slot search 152 (1073 B), after the swap just before the occupied test
+// 205 (1069 B); the occupant element bound to a const reference at the else arm's top 329 (1097 B).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
