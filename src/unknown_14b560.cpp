@@ -1027,6 +1027,11 @@ bool function_e4050(long object_index);
 // 0x3d7f0, 0xc0c80, 0xc3ad0, 0x133790, 0x159690, 0x1ac610, 0x1ced00); `inline` on 0xe4050's loses 0xdd8e0 and 0xe3700
 // and leaves it unchanged: the link-time summaries of those callees are already retail's, so BLOCKED-BY 0xbaf80
 // concerns only its expansion here.
+// m3 lane 4 r235 (fast, control 43; aligned by difflib 25, 6 with registers masked): BLOCKED-BY 0xbaf80 still (its pin
+// is in src/unknown_0bad50.cpp, off limits this round too). The root walk in retail's shape with the walk index carried
+// in a one-member aggregate 109 (same code as the scalar walk, re-measured 109: the aggregate is folded and the first
+// step is still peeled); that shape as a `for` loop from the unit 109 (same code); the root started at the unit with
+// the walk from the unit 109 (same code); the walk started from the player record's field re-measured 171 (405 B).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
