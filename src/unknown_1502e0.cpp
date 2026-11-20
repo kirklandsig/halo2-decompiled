@@ -1276,6 +1276,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // result local 44 (140 B); `NONE != player->unit_index` 5; `NONE != slot && NONE != unit->weapons[slot]` 5 (same code).
 // Matched 0x151c10 and 0x151940 open the same way and fold the data load into the add; here the getter reload gives the
 // data two uses at code generation, so it is loaded into EDX first.
+// M3 lane 14 r133 (fast with 0x151aa0, 43 each time; control 5): the first player as the array element
+// `&((s_tail_player *)data)[index & 0xffff]` with the lookup's read through the getter 5 (same code); the slot and weapon
+// test through an inline helper taking the unit index as `long const &` 17; on the 17 form `short hand = primary ? 0 : 1`
+// 38 (139 B); the e68c0 arm as `if (call) result = true;` 65 (150 B); the lookup's getter assigned back into the player
+// pointer inside the call argument 26 (137 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
