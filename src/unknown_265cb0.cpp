@@ -363,8 +363,8 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// score 84 (was 84): r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax H (11-20): no new form, no lower score (84): six source forms measured this round (the clip amount's scope, the facing pair's declaration order, the distance's scope, the delta as a point3f, and the scale and the facing maxima initialized at the top) leave the homes where they are, except the two top-init forms that rise to 90 and 208/212; retail's homes run result 0x8, facing maxima 0x14/0x18, clip amount 0x1c, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and delta 0x4c/0x50/0x54, and ours run result 0xc, clip amount 0x10, range 0x18, scale 0x1c, facing maxima 0x20/0x30, seat cursor 0x34 and delta 0x48/0x4c/0x50.
-// score 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax R (11-17): no new form, no lower score (84): the seat loop's two cross products load their operands in the
 // other order (retail multiplies a term with the vector's component in the register and this build with the memory
 // operand), and the shared header helper's spelling fixes that order, so the products cannot be moved from here; the
@@ -967,6 +967,17 @@ real function_30bf0(vector3f *vector);
 // clipped point through the existing vector3f_add_scaled 90 (aligned 69); distance_squared `real const` 84 (same code);
 // the plane distance through dot3f 138 (1308 B, aligned 73); the delta through vector3d_from_points3d 142 (1308 B, aligned 79).
 // MiniMax A (11-20): no new form, no lower score (84); the clip amount and the squared distance still take separate cells where retail packs them into one, so delta and the probe outputs sit four bytes low and the motion cell sits four high; the earlier rounds' reused-variable and dead-local forms measure 81 or more.
+// M3 lane 6 r216 (fast with 0x263740/0x25c9d0, all MATCH; control 84): the defaults in an else arm of the second facing
+// test (copies first) 101; `result = 2;` then `if (distance_squared < 36.0f) result = 3;` 136 (1292 B); the posture scale
+// through a new forced-inline helper 84 (same code); the 3/2/1 level through a new forced-inline helper 234 (1268 B); the
+// vehicle seat scan through a new forced-inline helper with pointer maxima 196 (1318 B). A two-second LTCG frame lab (this
+// file's generated unit linked with the full build's caller and callee objects, frame homes read by name) reproduces this
+// frame exactly: 25 natural respellings (facing copies, defaults and negated arm, maxima order, result-chain spellings,
+// out-of-range arms, posture if/else, seat pointer or reference, world-up pointer, early forward pointer, delta through
+// vector3d_from_points3d, plane through dot3f, mode as a switch, the helpers above) and 131 pairs of them all keep the
+// clip amount sharing the seat counter's cell; a redundant `result = 0;` anywhere after entry emits no code and moves
+// result to retail's cell 0 only (match-only); only extra blocks after the seat loop (probes, not source forms) give the
+// squared distance the clip amount's cell as retail.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

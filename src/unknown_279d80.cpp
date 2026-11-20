@@ -2376,6 +2376,12 @@ void function_2818e0(void)
 // loads (even of one global) does; a load, multiply and store of one new global does not; the compiler's temporary
 // numbers do not correlate (0 to +3 on both sides). Retail's pair (EBX then ECX) and pass 1's (EDX then ECX) are both in
 // descending register order; ours in pass 0 is the one ascending pair.
+// M3 lane 6 r217 (fast with 0x27dff0 and the four matched walk users; control 2): the pair is pass 0's count (ECX) and bit
+// flags (EBX) reloaded inside the counter increment that every failed destination test joins; pass 1 reloads flags then
+// count as retail. Blend 2's rotation through a named rotation pointer used twice 352 (1685 B); the non-interpolated root
+// scale moved into the interpolation test's else arm 2 (same code); blend 2's translation through the existing vector3f_add
+// 4; a separate applied-destination local beside the kind-0 cursor 2 (0x289580 2); the kind-2 clamp as an unconditional
+// ternary self-assignment 2 (same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

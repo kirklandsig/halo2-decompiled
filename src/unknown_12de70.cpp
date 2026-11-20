@@ -731,6 +731,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // physical block local (no second lookup) 87 (248 bytes: the block pointer is kept, retail re-derives it from the pool);
 // the loop's block local bound to a const reference used for the argument 27, used for the linked test 27; the loop's
 // block local declared `register` 27; the arm's linked test as `!= false` 27 (all four the same code).
+// M3 lane 6 r215 (fast with 0x12e210, which stays matched; control 27): the release through a new inline wrapper taking
+// (block, base) 27; the release's group re-read from the field with the test on the loop's block local (no tail local)
+// 27; the tail's pointer formed from a second named block read inside its arm 27; `&& local_1` after the arm's linked
+// test 27 (all four the same code: the null test after the dereference folds before allocation and is not a second
+// use); a group local read before the tail's test and used for its pointer 51 (EDI/EBP swap).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

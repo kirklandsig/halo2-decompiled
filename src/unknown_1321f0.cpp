@@ -719,6 +719,11 @@ struct s_visibility_object_header
 // 4 (all the same code). This function's register parameter `data` declared second, third, fourth or last (definition and
 // the four calls) 4 each; 0x132fd0's stack radius declared first, second, third or fourth (definition and its three calls) 4
 // each, 0x132fd0 MATCH (all the same code here).
+// M3 lane 6 r215 (fast with 0x132fd0/0x132b10, both MATCH each time; control 4): behind's address taken into a pointer at
+// the top of the arm (ahead of the flag_b load) and passed to the plane call 4, the same for in_front 4 (the pointer folds
+// back to the lea, the address-taking point does not open the live range); behind read for the packer through a
+// pointer-taking inline accessor 4; flag_b copied to a `bool const` at the top of the arm and used for both calls 4 (all the
+// same code). Diagnostics: the two outputs as a two-element bool array 97; behind's packer read replaced by false 234.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

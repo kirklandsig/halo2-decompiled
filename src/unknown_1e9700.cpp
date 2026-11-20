@@ -404,6 +404,15 @@ struct s_object_damage_view
 // MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
 // MiniMax I (11-20): no new form, no lower score (353): the permuter ran over the function for 690 s and kept its baseline (350 differing instructions on the reduced image); the three small homes stay rotated (killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c there, victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c here) and the history cursor stays biased +4.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// M3 lane 6 r214 (fast with 0x197160 and 0xd9640, both MATCH throughout): on 0x197160's code parameter typed byte (the
+// listed lead, re-measured 354), each listed form: consideration flag 345, friendly flag 354, found-flag dedupe 366 (1528 B),
+// retail's arm order 363 (1532 B), team byte argument 354, `self` in the call 350 (1544 B), assist stores re-read 377, related
+// player re-read 355, amount local 454 (1578 B); both flags 345; both flags with the dedupe and the arm order 374 (1512 B), with
+// the related re-read as well 374 (1512 B; masked aligned count 32, the lowest so far), that plus the team byte 357 (1528 B),
+// plus the assist re-reads 383 (1528 B), plus both 365 (1544 B), plus a `&history[selected]` record pointer 416 (1547 B), plus
+// the amount local 417 (1547 B). Left on the 374 form: the +4 selection cursor, the selected block's record pointer, retail's
+// killer reloads at the two fallback merges, the team byte's paired movsx, the assist loop's +0xc cursor with its store
+// re-reads, and the object table load after the 0xbaf80 call. Body unchanged.
 // M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
 // after the selected block), ours in EBP through the killer block, which is what turns the three homes round. Both
 // flags in retail's shape (consideration true by default and cleared by the same-team test; friendly false by default

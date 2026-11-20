@@ -938,6 +938,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // 22; the opening as `!(flag && &machines && &players)` 22; the NULL-preset pair declared at the function top ahead of
 // `result` 46; on the preset pair the first pointer read through a `const &` bound to it 46; the variant as a
 // `const byte *const &` bound to the field 22 (the 22s the same code; both callers lost in each 46).
+// M3 lane 6 r215 (fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22): on the NULL-preset stored pair (re-measured
+// 46: register-masked 2, the opening, the summary lea and every scratch register retail's, the session in ESI so both
+// callers lost): the pair assigned players first 46; preset in an else arm instead of the initialisers 46 (both the same
+// code); the 0x49c8 argument through the class's existing getter 136 (503 B: its range test re-reads the state in the
+// loop); the variant read at the call with no local 49; a named player pointer for the test and the call 49 (the session
+// stays in ESI in each). On the current body the scratch registers follow the opening: once the second address is formed
+// in the first test's block (as retail and the pair form do), the rest of the rotation is retail's.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1401,6 +1408,15 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // M3 lane 8 r204 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9): `register` on the count, on
 // the indexed copy 195 and on this body 9 (same code each); on the indexed copy the player loop as `while (i < 16) { ...;
 // i++; }` 195, the count declared after the close call 201, the source as `current->players + i` 195.
+// M3 lane 6 r215 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9; re-measured: the destination
+// declared in the branch 195, `[count++]` 40): the destination declared in the branch with identities declared first in the
+// function 195; the destination in the branch with the mask test as an early `continue` 195; the destination in the branch
+// with `count++` ahead of the copy 203 (704 B); the destination before the branch with `count++` ahead of the copy 21; the
+// `[count++]` copy in a do/while loop (0x6fa60's loop) 382 (527 B, the loop is no longer unrolled four times), the indexed
+// copy with the step after it in that do/while 357 (559 B). Reading of the 40 listing: the preheader's `lea eax` and the
+// count/index colouring are retail's there; only the inline copy's two pointers swap (destination copy in ECX and source in
+// ESI, where retail forms the source in ECX and copies the destination to ESI). In the 195 forms the count is spilled
+// and the loop index kept in ESI (retail spills the index and keeps the count in EBX).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

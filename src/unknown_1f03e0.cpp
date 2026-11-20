@@ -1737,6 +1737,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // written out; that without the `!= 0` 234 (same code). Left as before: the damping bit's first extraction in ECX (retail
 // EDX), the crosses' operand sides, the expanded input length, and the general arm's k row in XMM2.
 // MiniMax A (11-20): no new form, no lower score (234); the first arm's cross still differs in one product's operand order (retail reads facing.j * up.k where ours reads up.k * facing.j), and writing the six products out gives 529.
+// M3 lane 6 r217 (fast with 0x1f0450 and 0x24590, both MATCH; control 234, aligned 158, masked 73): the contact flags word
+// read once into a dword local for its five uses 553 (3054 B); the first arm's scaled input computed before its cross 252;
+// both step products written rate first 234 (same code); the 469 form (general output through vector3f_add, direct rows as
+// statements; re-measured 469, aligned 154, masked 65, its k row still `addss xmm2, [eax + 8]`) with that flags local 611;
+// the first arm's up vector through a pointer local used by the cross and the last add-scaled 429 (3052 B). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
