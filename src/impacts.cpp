@@ -1052,8 +1052,8 @@ void impact_type_update(
 	rotation_threshold = physics_type ? 0.5f : 1.0f;
 
 	vector3f const *body_angular_velocity;
-	s_havok_component_rigid_body const *rigid_body_a = &component->rigid_bodies.data[rigid_body_index_a];
-	angular_velocity = rigid_body_a->angular_velocity;
+	s_havok_component_rigid_body const *first_body = &component->rigid_bodies.data[rigid_body_index_a];
+	angular_velocity = first_body->angular_velocity;
 	real rotation_speed = impact->unknown8c;
 	strength = 0.0f;
 	if (impact->component_b != NONE)
