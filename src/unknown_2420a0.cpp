@@ -2778,6 +2778,8 @@ void function_15e360(point3f const *point, long object_index);
 // cause-player setter 12, the existing out-of-line setter called 178 (565 B, not inlined), a chained
 // inline initializer returning the event with the inline setter 12, the event at function scope 12,
 // typed player-array indexing for the cause team 12.
+// Matched in a full build with stand-in SDK headers (was 12): the event is declared in a bare block around its five
+// statements instead of with the block's other declarations.
 // @retail 0x242ba0
 void function_242ba0(long marker_index, long object_index, long player_index)
 {
@@ -2799,7 +2801,6 @@ void function_242ba0(long marker_index, long object_index, long player_index)
 		{
 			point3f point;
 			s_slot_table *g;
-			s_event event;
 			s_slot_object *object;
 
 			function_2417a1(g_4e0350->marker_entries, marker_index, &point);
@@ -2817,11 +2818,15 @@ void function_242ba0(long marker_index, long object_index, long player_index)
 			g->flags[slot] |= 2;
 			ctf_globals_changed(0x200);
 
-			game_engine_event_initialize_inline(&event, 10, 13);
-			event.cause_player_index = player_index;
-			event.cause_team = event_player_get(player_index)->team;
-			event.effect_team = marker_team;
-			game_engine_event_send_inline(&event);
+			{
+				s_event event;
+
+				game_engine_event_initialize_inline(&event, 10, 13);
+				event.cause_player_index = player_index;
+				event.cause_team = event_player_get(player_index)->team;
+				event.effect_team = marker_team;
+				game_engine_event_send_inline(&event);
+			}
 
 			object = slot_object_get(object_index);
 			object->lc8 = NONE;
