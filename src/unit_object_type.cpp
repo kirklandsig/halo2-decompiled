@@ -5349,6 +5349,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax I (11-20): no new form, no lower score (169): the first difference is still inside the inlined cross-product helper of the shared header this lane may not edit (this build preloads up.i, retail loads up.k and up.j first), and the double x87 scales that reproduce retail's three rows still need a frame qword for the cosine; the body stays 768 bytes against retail's 767.
 // score 169 (was 169): The frame agrees at 0x50. The first cross loads up.i early, and the projection and x87 forward-scale lifetimes differ.
 // MiniMax E (11-16): no new form, no lower score (169): the first difference is still inside the shared cross-product helper, whose header this lane may not edit, so the products land in the other SSE registers; retail loads up.k and up.j before up.i where this build preloads all three, and the clamped angles still reuse the two incoming argument slots.
 // MiniMax D (11-14): no new form, no lower score (169): re-measured this round: the body is 768 bytes against retail's

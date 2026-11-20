@@ -75,6 +75,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax I (11-20): no new form, no lower score (76): reading the enable byte at each use point instead of through the bool local gives 103 (the reload then lands where retail has it), the old maximum as a nested ternary 108, and the increment before the row pointer 107 with the direct enable read and 85 alone (it swaps the EBP and EDI roles); what still differs is the old maximum's home (ECX there, EAX here), the 15-bit value read (a zeroed 16-bit move there, movzx here) and the row pointer's register order.
 // score 76 (was 76): Retail reloads enable after the player statistics write and carries the maximum in ECX.
 // The existing getter and setter live in a separate /Ob1 translation unit. The global layout affects alias analysis.
 // MiniMax B (11-20): no new form, no lower score (76): the enable byte's raw reload needs one address-taken object that src/unknown_1967d0.cpp holds (BLOCKED-BY 0x196960/0x1968b0); what still differs is that reload, the old maximum's home (EAX here, ECX in retail), the 15-bit value read (movzx against retail's xor/mov) and the row pointer's register order.
@@ -388,6 +389,7 @@ struct s_object_damage_view
 // the team test as a disjunction (`reported_player == NONE || !function_1df560(...)`) compiles to the same code (353), and
 // the three homes are not reachable from the expression's spelling.
 // MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
+// MiniMax I (11-20): no new form, no lower score (353): the permuter ran over the function for 690 s and kept its baseline (350 differing instructions on the reduced image); the three small homes stay rotated (killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c there, victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c here) and the history cursor stays biased +4.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
 // after the selected block), ours in EBP through the killer block, which is what turns the three homes round. Both
