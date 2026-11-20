@@ -516,6 +516,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 }
 
 // MiniMax B (11-20): no new form, no lower score (238): the frame is 0x40 where retail has 0x44, the node pointer's home is frame+0x14 where retail keeps frame+0x20, the 1..16 classifier folds its first compare where retail loads the word into ECX and compares the register, and the classifier's data is loaded once where retail reloads it; the form that reaches retail's frame needs the material output declared at function scope, a declaration move that is not keepable.
+// MiniMax H (11-20): no new form, no lower score (238): the frame is still 0x40 where retail has 0x44, the second
+// node is stored at frame+0x14 where retail keeps frame+0x20, and the node's type is still compared in memory
+// where retail loads it into ECX and compares the register; a named local for the type measures the same 238, as
+// the earlier rounds record.
 // score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax E (11-19): score 238 (was 238): no new form, no lower score. Read from the listing again: retail walks the
 // node chain with the next pointer already in a register and tests the last node's type and entity, then scans the
@@ -1096,9 +1100,22 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // member stores 325. With material beside the defaults 324/324/357/321.
 // NOT kept: the wider-scope material recovers 0x44 but the hit transport grows the body.
 // The second-node home and classifier loads still differ.
+// Scalar transformed plane offset 240; instance projection or signed distance 238 each; scalar offset plus signed
+// distance 240; direct projection, both projections or both signed distances 238 each; scalar-coefficient side
+// test before the normal stores 240. NOT kept: all retain frame 0x40 and the original length.
 // Late result bindings for found/position, normal/fraction, entity indices (subsets 1 through 7):
 // 270/268/279/236/277/275/378. One final result binding 396. NOT kept: the entity-index binding
 // gains two at 1244 bytes and retains frame 0x40. The second-node slot and frame still differ.
+// M3 lane 16 r158 (fast with 0x1829b0, 0x1821d0, 0x182800, all MATCH; control 238), the 1..16 classifier helper's
+// body only: `limited = 1; if (limited <= value) { limited = 16; if (limited >= value) limited = value; }` 320 (1243 B:
+// retail's `mov ecx, 1` / `mov ecx, 0x10` preloads, but `cmp value, limited` where retail compares `limited, value`, and
+// still one data load); the same reading the data field at each compare 321; as early returns of the comparison 336
+// (1228 B); the tests as `!(limited > value)` / `!(limited < value)` 320, as empty-then arms 320 (the compare operands
+// stay value-first in every spelling).
+// M3 lane 8 r204 (fast with the file's 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the hit distance
+// accumulated (`distance = contact->distance; distance += radius;`) 248; both plane-side tests with the zero on the left 238
+// (same code); the fraction test as `!(distance < fraction)` 238 (same code); the final test as `!(normal.k <= scale)` 240;
+// the position published by aggregate assignment alone 340 (1227 B), with the hit snapshot by components 310 (1249 B).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

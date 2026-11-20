@@ -543,6 +543,7 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // MiniMax B (11-19): no new form, no lower score (348): the first difference is still at +0x1de, inside the request
 // expansion whose body is in src/unknown_1dacb0.cpp, so the graph's EBX/EBP roles, the add of 0x34 and the lazy reload
 // into EBP cannot be moved from this file; the frame and both query temporaries' homes still agree.
+// MiniMax G (11-20): no new form, no lower score (348): the first difference is still at +0x1de inside the request expansion in src/unknown_1dacb0.cpp, so the graph's ebx/ebp roles, the add of 0x34 and the lazy reload into ebp cannot be moved from this file; the frame and both query temporaries' homes still agree.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
@@ -931,6 +932,20 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // it, a lead for that function only). What is left is unchanged: retail loads the graph for `graph + 0x34` before the
 // last found-name read and adds in place (EBX), then reloads the graph into EBP at each loop, as a value that has no
 // register of its own across the request; this build gives the graph one register for the whole request.
+// M3 lane 3 r280 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1dc8c0/0x1cccd0, all MATCH unless noted; control 348, 1782 B,
+// aligned differing rows 53 of 614). Reading: in the request's first (own-graph) group retail keeps the graph in its
+// stack home and loads it into EBP at each loop preheader, with graph+0x34 in EBX, while its inherited-graph group has
+// the inherited graph in EBX and `lea ebp, [ebx + 0x34]` as ours has in both; retail's status byte is stored at each
+// success site ([esp+0x13]) and returned unnormalised. bool success re-measured 478 (1809 B, aligned 102: a zero
+// register takes EBX, the graph EBP for the whole request, graph+0x34 formed per group). The request helper's two
+// levels written at the call (the kinds request, then the inheritance loop over it; a helper body written out,
+// diagnostic) 674 (1830 B, 0x1cccd0 10), with bool success 611 (1777 B). The failure path as an early
+// `if (!success) return success;` ahead of the request: byte success 546 (1787 B), bool success 317 at retail's
+// 1761 B, not kept: the count is positional (first difference moves up to +0x8e, aligned 460), the request is then
+// duplicated per success site with its default names as immediates, where retail has one request after the status
+// test. bool success passed as the request's urgent argument with `!success` as the other 1398 (2473 B). The cause
+// sits inside the shared inline request (src/unknown_1dacb0.cpp, held by another lane this round, and used by the
+// contributor's matched 0x1dc8c0).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

@@ -450,6 +450,11 @@ void function_3dd10(long object_index, bool force);
 
 // score 77 (was 97): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
+// MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
+// score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
+// blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
+// Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
 // The choice count, mask and blend use other homes. The first scan exits on inequality.
 // Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
 // the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
@@ -815,10 +820,62 @@ void function_3dd10(long object_index, bool force);
 // complementary admission 86/86/189/86 at the unequal bound. All four signed forms 645.
 // NOT kept: the signed bound unrolls the scan, and the other forms regress at retail length.
 // The ordinal zero, choice count and mask homes still differ.
+// M3 lane 3 r280 (fast with 0x1318d0/0x131a00/0x3dd10, all MATCH each time; control 77; [n] = aligned differing rows of
+// 291, control [33]). Diagnostic lead (a volatile local, reverted at once, never kept): `long volatile variant` with the
+// first scan as a plain `for (j = 0; j < choice_count; ++j)` 139 [5] at 1034 B: the scan stays rolled with retail's
+// jle/jl exits, the count in EBP, the mask at [esp+0x70] through ESI and the weight at [esp+0x10]. On that base: without
+// the outer `if (0 < count)` guard 131 [3] (the index's zero store is ahead of the jle as retail, registers unchanged);
+// the blend through the float overload of fmod, `fmod(seed, 1.0f)`, 136 [3] (the blend's fstp follows the variant byte
+// compare as retail); both 128 [1], both remainders through that overload 128 [1]: the one row left is retail's own
+// `movss xmm5, 1.0` at the selection loop's not-found exit. Volatile last instead 141 [7], weight 82 [36], mask 265
+// (1006 B); a volatile blend, selection or index outside the scan does not stop the unroll (649/638/683). So every
+// difference but that one row follows from the first scan staying rolled, and no plain form keeps it rolled.
+// Signed `for` first scan without a volatile (all unrolled by four, 1309-1384 B): alone 636, without the outer guard
+// 638; the variant lookup in an inline helper writing through `long *` (forceinline or inline) 638/638, through `long &`
+// 638, returning the name 649; the variant, last, weight, mask or count read through a reference bound to it 647 each;
+// the mask, variant or last as a one-element array 647 each; the four scan values in one local aggregate 647; one more
+// float compare, byte store or byte load inside the scan 737/638/712; with an opaque call after 0x131a00 641; without
+// the two fmod calls 522; without the three converter calls 669; the weight zeroed just ahead of the scan 587. The scan
+// as a do-while, with or without its own `if (choice_count > 0)`, 218 (1002 B: no pretest, the count spilled and the
+// mask in EBP as with `!=`); as a `while` 647.
+// For the not-found exit's 1.0 on the diagnostic base (control [1]): the inverse ahead of the selection loop 92 [18]; the
+// blend after the loop with the inverse between them, on a selected-choice pointer 155 [33] (1049 B), on a found flag
+// 171 [43] (1056 B), on `j < choice_count` 127 [65] (1039 B; none of the tests is threaded); the loop ended by a found
+// flag in its condition as do-while 994/997 (1606 B) or `for` 358 (1105 B); the loop as a `for` with `break` 148 [29]
+// (1034 B: same instructions, every 4-byte home one slot up, no pretest emitted, the 1.0 row still missing); that `for`
+// with the blend after it on the index, a pointer or a flag 1272/931/955 (the selection loop unrolls).
+// On main's body: the blend through the float overload of fmod 74 [31] (three points, not kept), both remainders 74
+// (same code); those without the outer guard 95 [61].
+// Later in r280: a compile-only sweep (30 spellings, then confirmed with the fast check) found the one signed spelling
+// that stays rolled without a volatile: the bound written count first, `for (long j = 0; choice_count > j; ++j)` (the
+// loop is then not counted and not unrolled; short, word, byte and char counters and `!=` are the other rolled forms,
+// every `j < bound` spelling, dword counters, `j <= choice_count - 1`, a `while`, a stepped pointer, `continue`, `1u <<
+// j`, `weight = weight + w` and narrower mask/last/variant types all unroll). With the enclosing test left as
+// `choice_count > 0` its pretest folds away, 227 (1002 B), without the outer guard 220; with the enclosing test spelled
+// `0 < choice_count` the pretest stays and the body is 1034 B with retail's jle/jl exits: 189 [34], with the float
+// remainder 74 [30] (three points, not kept), without the outer guard as well 95 [60] (the object and tint entry swap
+// ESI/EDI again), enclosing test `choice_count >= 1` 100, `entry->count > 0` 218 (1002 B). What is left on that form
+// is only the count/mask fight for EBP: with `long volatile last` as a diagnostic 139 [5], with the float remainder
+// 136 [3], without the outer guard as well 128 [1] (the 1.0 row); with a volatile variant instead 154 [8] (1019 B). So
+// retail's scan is that uncounted signed loop, and `last` (or the variant) is out of the register fight in retail.
+// For that fight, on the rolled form without the guard (95): the 24 declaration orders of last/mask/variant/weight 95
+// each; no model local 95; no choice local in the scan 95; no index local 95; `last == j` 96; no target local 197
+// (1037 B); last declared just ahead of the scan 202 (top registers as retail, output and delta swap EBX/EBP); the
+// mask declared there 190 (1020 B); the variant declared at the byte read 125. For the 1.0 row on the diagnostic base
+// ([1]): the selection loop as `for (j = 0; choice_count > j; ++j)` with `break` 150 [31] (`cmp ebp, ecx; jg`, homes one
+// slot up), as do-while `while (choice_count > j)` 130 [3], as `for` with `<` 148 [29]; without the `break`, or ended by
+// `j = choice_count` or `j = choice_count - 1`, 969-979 (1581 B).
 // Pre-guard bank ordinal with signed/unequal do-while latch 97/97, guarded ordinal with signed
 // do-while 77. Advance in latch 97, inclusive last bank ordinal 253, pretested unequal bank 97,
 // ordinal-based guard 97, nonzero bank guard 97. NOT kept: the pre-guard forms lose the native
 // object/tint register roles, and the inclusive bound shortens the body.
+// Weight, selection or both read-only choice references 77/77/77. Shared choice array and both
+// references, at scan entry or positive-count admission 89/272. Immutable scan-entry array 89.
+// Signed weight bound with reference or shared array 636/582. NOT kept: the signed forms unroll.
+// The reference and array forms leave the ordinal, weight and mask homes unresolved.
+// Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
+// alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
+// pre-guard zero store and the count/mask homes stay different at retail length.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

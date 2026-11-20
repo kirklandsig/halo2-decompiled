@@ -704,6 +704,21 @@ struct s_visibility_object_header
 // entry lookup 233 (behind then takes the object index's freed slot, in_front still the frame byte), without the else
 // arm's two flag loops 279 (both in the frame): behind wins every freed parameter slot, so no other part of the body
 // changes the pair's precedence.
+// M3 lane 8 r205 (fast with 0x132fd0/0x132b10, both MATCH each time; control 4): the visibility fallback as a separate
+// `if (...) visible = true;` after the call 171 (582 B); `short entry` with a cast at the lookup 4; the entry default
+// declared ahead of the packer call 123; the radius declared ahead of the centre 4; the mode test written `== 0` 4 (each 4
+// the same code, homes still behind-first).
+// M3 lane 11 r135 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): both outputs declared
+// `register` 4, in_front alone so 4; the packer's result kept as a `short` used by the add 4; the centre and radius
+// declared ahead of the filter 4 (all four the same code); the outer test with the global stamp on the left 200.
+// Permuter (600 s, 48 tries, annealing): best 2 only by passing behind first and in_front last to the packer (the two
+// bits exchanged: wrong values, not kept), which again shows the slot going to whichever output is read first.
+// M3 lane 14 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): 0x132fd0's two outputs as `bool &`
+// parameters (definition and all three calls) 4; in_front read for the packer through a `bool const &` bound ahead of the
+// plane call 4; `register` on in_front 4; both outputs declared in the outer block ahead of the three flags 4, after them
+// 4 (all the same code). This function's register parameter `data` declared second, third, fourth or last (definition and
+// the four calls) 4 each; 0x132fd0's stack radius declared first, second, third or fourth (definition and its three calls) 4
+// each, 0x132fd0 MATCH (all the same code here).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

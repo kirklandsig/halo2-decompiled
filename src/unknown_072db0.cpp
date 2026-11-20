@@ -2123,6 +2123,13 @@ bool function_1900a5(long index);
 // getters gives the same 720 at 2862 B with 0x199c47, 0x199c94 and the getters' 58 file-mates all still matched in
 // the fast check: retail's evidence fits getters that an /O2 caller may inline and /O1 callers keep out of line. The
 // cmovne row shift (an /arch:SSE question) still dominates the positional count.
+// M3 lane 7 r197 (fast with 0x641a0, 0x8df50, 0x1900a5, 0x192e60, 0x749b0, 0x75790, all MATCH each run; control 703 at
+// 2910 B, aligned 330 by difflib with addresses masked, register-masked 204). Only forms without a flag: the write poll's
+// pending range as an early return ahead of the state-2 test 720 (aligned 327); the read poll as `if (state < 0 || state
+// > 1) { if (state == 2) ... else ... }` 728 (2894 B, aligned 328); the free space named (listed) 711 (2894 B, aligned
+// 315); write + read polls 731 (2894 B, aligned 325); write + read + space 717 (2894 B, aligned 310); write + space 714
+// (aligned 312); read + space 714 (aligned 313). Each piece moves the body toward retail's (shorter, fewer aligned
+// lines) but the positional count rises behind the users loop's conditional-move shift.
 // Copied team key base 703, cached team key base 791, cached player array base 776. Copied/cached keys
 // 791, copied key/player array 776, cached key/player array 776, all three 776, cached owner and team
 // destinations 703. NOT kept: the ties leave the first difference in place and the other forms add
@@ -2167,6 +2174,16 @@ bool function_1900a5(long index);
 // check 0x193560 (another function's body, restored at once): its rating loop through a char pointer, and its result through a
 // reference to a local (the callee then summarised as writing) 746 / 784, and each loses most of the hopper check's matched
 // callers in the reduced image, so retail's reloads around 0x1934f0 are not that callee's write summary.
+// M3 lane 13 r129 (fast with 0x73a10, 0x749b0, 0x75790, 0x1900a5 and 0x192e60, all matched; control 703): `team`
+// declared before `valid` 703; the identity copied with memcpy 703; the group's values pointer declared after the two
+// bools 703; the owner compare and copy through `&values->owner` 703; the reset arm's test as `valid == false` 703 (all
+// the same code); the properties copied ahead of the identity re-measured 705. The slot test's cmovne still needs the
+// SSE file flag (a build-flag question). All restored.
+// MiniMax C (11-20): no lower score (703): retail reads the user flags dword at base+8 while the struct member is at base+9.
+// Shared logon task index 703; queried-or-absent status selected, initialized or assigned in separate arms 703/703/703.
+// Offline cleanup first with selected or initialized status 800/800; assigned connection result 819;
+// offline cleanup first with a short-circuit task query 703.
+// NOT kept: the connection result emits the decrement but materializes a Boolean; the offline-first status forms change the first branch and raise the score.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

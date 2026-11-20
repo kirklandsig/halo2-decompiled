@@ -601,6 +601,9 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
+// score lines below are merged into this one (m3 lane 11 r102).
+// MiniMax I (11-20): no new form, no lower score (675): the frame and the length (2986 bytes) are retail's and what is left is the entry's colouring - retail takes the path pointer into EBX after the pushes, keeps the success flag in the byte at [esp+0x13] and loads the source radius before the 0.2f constant, where this build takes the pointer into EAX before the pushes and keeps the result in a dword at [esp+0x64], and the homes of the radius, the maximum height and the count sit at different offsets.
 // MiniMax I (11-17, run 103): no new form, no lower score (675): retail still takes the path pointer into EBX after the
 // pushes, keeps the success result in the stack byte at [esp+0x13] and loads the source radius before the 0.2f
 // constant, where this build takes the path pointer into EAX before the pushes and keeps the result in a dword; the
@@ -608,7 +611,7 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // MiniMax R (11-17): no new form, no lower score (675): the frame probe over this body (dead locals of 4, 8,
 // 12, 16 and 32 bytes and a long) leaves the count at 675 and the width variants give 674 to 736; an annealed
 // permutation search found no variant below 675 and the radius as one ternary gives 708, so none was kept.
-// MiniMax D (11-16): score 675 (was 675), nothing kept: retail takes the path pointer into ebx after the
+// MiniMax D (11-16): 675 (was 675), nothing kept: retail takes the path pointer into ebx after the
 // pushes, keeps the success result in the stack byte at [esp+0x13] and loads the source radius before the 0.2f
 // constant, this build takes the path pointer into eax before the pushes, keeps the result in a dword and loads
 // the constant first, so the obstacle, search and step homes that follow differ from the first step block
@@ -625,8 +628,6 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // where this build takes the pointer into eax before the pushes, keeps the result in a dword at +0x64 and puts the
 // actor pointer at +0x54, the radius at +0x24 and the flag at +0x22; the out parameter's short type stays BLOCKED by
 // its declaration and the caller in path.cpp.
-// score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
-// score lines below are merged into this one (m3 lane 11 r102).
 // MiniMax R (11-14, run 65): no new form, no lower score (675): the retail disassembly of 0x2c41b0 confirms the
 // prologue's shape - the path pointer is taken into ebx after the pushes, the success result is kept in the stack
 // byte at [esp+0x13] and the source radius is loaded before the 0.2f constant - where this build takes the path
@@ -888,7 +889,7 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // [480, 357, 275]; the radius through the maximum helper 782 [482, 361, 279]. At retail's exact length the positional count only
 // falls when the whole frame lines up at once, so single structural fixes all raise it; the next round needs the whole body
 // rebuilt against retail by alignment (start from that shape: state left in its stack slot, count unregistered, NONE in EBX).
-// MiniMax B (11-18): score 675 (was 675): no new form, no lower score. Read the listing again: retail pushes ebx, ebp
+// MiniMax B (11-18): 675 (was 675): no new form, no lower score. Read the listing again: retail pushes ebx, ebp
 // and esi before it stores anything and edi after the radius compare, keeps the pathfinding pointer in ebx and stores it
 // at +0x44, writes the success result as a byte at +0x13, keeps the actor pointer at +0x4c (zeroed first), the radius at
 // +0x2c and the completion flag at +0x2b, while this build takes the pathfinding pointer into eax before the pushes and
@@ -940,6 +941,14 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // prologue with flags, at +0x68) 700, after maximum_height and ahead of flags 701; `bool result` with it 773, alone 754
 // (NONE then takes EBX as retail, but a zero is cached in EDI and the state pointer moves to ESI); `bool result` with the
 // radius as one ternary 765 (2968 B; the radius is then stored once, as retail).
+// M3 lane 4 r234 (fast with 0x270930 and 0x2c4030, both MATCH; control 675): `flags` as a dword 675; `final_complete` as
+// a byte 675; `previous_node` initialised to NONE 731; the actor pointer through the existing actor_get 675; `previous_point`
+// declared ahead of `previous_node` 675 (the same code each, apart from the NONE initialiser). Body unchanged.
+// M3 lane 14 r129 (fast with 0x270930 and 0x2c4030, MATCH each run; control 675, aligned 601): the step loop under a
+// redundant `if (0 < count)` 703 (2961 B, aligned 598: the guard is not free here, the loop's entry test changes); with
+// `bool result` 754 (aligned 610); the pathfinding pointer read from the state at both searches and the trace (no entry
+// local) 769 (2969 B); `*complete` read in `last` (no entry copy) 769 (2963 B); the actor's linked index read once into
+// a named `long linked` for the height and the flags 761 (aligned 606).
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

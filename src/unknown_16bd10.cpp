@@ -1372,6 +1372,18 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // plane guarded by self-dot 185, plane guarded by squared magnitude 421, early dot with zero-offset plane 417,
 // scoped length and plane constant 406, zero-first offset 407. NOT kept: the early dot loads j into XMM1 but
 // computes the length in XMM0 and reorders the normal copy. The guard forms also regress.
+// M3 lane 1 r137 (H2M_FAST with 0x142d10 and 0xa9b40, both MATCH; control 126): re-measured 0x142d10 as (out, forward,
+// up) 124 and that with the shared quaternion normalise summing i, j, k, w 122 (round 113's leads, a gain of 4, under the
+// bar). On that 122: case 2's test as `0.0f != length_squared` 121 (only the ucomiss operand text lines up; the registers
+// stay swapped), the timer as `0.0f != time_scale` 122, both 121, the yaw clamp as `0.0f < distance` 122, the animation
+// arm's two zero stores chained 122.
+// M3 lane 6 r211 (fast with 0x16c6f0/0x13cb40/0x142d10, all MATCH; control 126; a compile-only screen of the plane block
+// reproduces its left.k preload and XMM0 length, 22 differing xmm lines): the plane length through a local dot written in
+// all six term orders, either grouping (12 forms) 22 each (the sum is canonicalised: same code); the same with the two
+// arguments the other way round (12 forms) 33-37, (j, k, i) left-first confirmed 405 (1700 B); the distance numerator as
+// `dot3f(&plane.n, offset) - plane.d` 126 (same code), as `dot3f(offset, &plane.n) - plane.d` 394 (1700 B), against the
+// direction instead of the normal 37/37 (screen); the plane constant as `dot3f(&plane.n, position)` 22 (same code), against
+// the direction either way round 36/36 (screen). No spelling preloads left.j.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

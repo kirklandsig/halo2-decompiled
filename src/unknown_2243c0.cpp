@@ -217,6 +217,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax C (11-20): no new form, no lower score (117): read the earlier rounds' forms; the only lower one known is the
+// score-8 chain, and it rests on one-use element bindings and moved stores, so it is kept only with an exact match. The
+// stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged.
 // MiniMax B (11-20): no new form, no lower score (117): the fallback tag index is still zero-extended through
 // EAX where retail masks the 32-bit value in place (`and edx, 0xffff`); the in-place mask moves the tag table
 // from EDI into ECX and hoists its load above the frame (152), while the `(word)` cast keeps the table in EDI
@@ -823,6 +826,17 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // code); the group tests reading the instance at each use with no instance local 165; the group test negated with the
 // fallback arm first 117 (same code); the material tag named once for 0x1c590 and its lookup 146 (524 B); the stage and
 // pass indices named where they are summed 117 (same code).
+// M3 lane 3 r280 (fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH each time; control 117, aligned rows 56 of 165;
+// main's body unchanged). The four cache fields cleared by one memset of the record's tail (16 bytes) where retail has
+// its four stores, after the material lookup, 162 (the head's prologue changes, aligned 63); that memset ahead of the
+// pass definition lookup 119 (aligned 74), between the two definition lookups 163; the four stores as statements
+// together after the material lookup 120 (re-measure, aligned 51), together ahead of the pass definition 148 (aligned
+// 49). The head, stage and pass block headers copied whole into (count, address) aggregate locals and indexed from
+// them 163 (561 B: the three addresses are loaded up front), with the late memset 166 (563 B).
+// Unshifted pass-record base 164; shared material tag field address 152; native pass array header 117.
+// With grouped cache defaults those three give 161/153/120. Native pass array with unshifted
+// base or material field address 164/152. NOT kept: ties or regressions. The fallback still
+// zero-extends into EAX instead of masking EDX and the stage/pass loads still fuse.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
