@@ -311,7 +311,7 @@ long function_baf80(long object_index);
 long function_cbd50(long unit_index, short weapon_index);
 bool function_cd660(long unit_index);
 long function_1469f0(real seconds);
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction, long tag_index);
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale, long tag_index);
 void function_1d9240(s_1d9240 *p, char flag, real x);
 long function_16658d(long group_index, long key);
 real function_1d9430(s_1d9240 const *p);
@@ -608,7 +608,7 @@ void first_person_weapon_sound_event(long user_index, long field_x11c898, s_firs
 		{
 			s_first_person_weapon *weapon = &user->weapons[field_x11c898];
 
-			weapon->sound_index = function_189060(weapon->weapon_index, NONE, 1.0f, g_468788, g_4687a8, sound_tag_index);
+			weapon->sound_index = function_189060(weapon->weapon_index, NONE, g_468788, g_4687a8, 1.0f, sound_tag_index);
 			weapon->sound_animation = (short)weapon->animation.animation_name;
 		}
 	}
