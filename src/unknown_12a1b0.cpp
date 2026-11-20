@@ -1453,6 +1453,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // elements as references 24 and as `*const` 24 (same code each), the fading test as the plain bitfield 43 (206 B; 0x126df0 39),
 // the fade-in element read through a const reference at every use 27 (registers unchanged, the conversion sinks below the
 // stores; 0x126df0 3).
+// M3 lane 2 r118 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; `ret 8` and 210 B in both
+// builds, the 24 still only the index ESI / element EDI swap): `inline` on this file's 0x126df0 declaration 24 (same
+// code); 0xbfe40 (the inlined fading-bit setter) as one conditional-expression store 24 (0xbfe40 19, 0x1c35f0 10:
+// restored); the two iterator helpers plain `static` 77 (189 B: not expanded; 0x21b870 49, 0x21bd00 116); the curve
+// parameter typed long 24 (same code); a named element read through a `*const &` for the state test, call kept, 24.
+// 0x126df0's own reference counts (round 111's lead) sit in a file other lanes hold this round.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

@@ -1356,6 +1356,15 @@ bool __stdcall function_2399da(long controller_index)
 // record local with every use through it (the compiler treats it as the scalar). The dispatch as a plain static
 // function (not inline) with either parameter order 294 (276 B: it stays out of line). Left: a source form in which
 // the identity at the dispatch is loaded from memory the compiler does not own as a spilled scalar.
+// M3 lane 2 r118 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e and 0x239a3d, all MATCH; control 90): the
+// identity test inverted with the 0x5c dialog first 90; that test as an early return with the dispatch un-nested 90;
+// a second name for the identity at the dispatch, used for the test and the removal 90 (all the same code); the
+// member's rank store moved ahead of the rank-3 test 89 (the store only moves: identity ECX, rank EAX as before); the
+// store as the else arm of the rank-3 test 90; the getter re-called for the removal's identity 147 (465 B); the
+// may-change copy through memcpy 90 (same code). Kept: `have_member` assigned from the id test directly in place of the
+// preset-true, cleared-in-a-test form 90 (the same code, retail's two byte stores). Reading: the identity and the
+// 64-bit test temporary / rank pair are a two-colour choice for EAX and ECX; any register value stored into the member
+// wins EAX ahead of the identity here.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
@@ -1380,11 +1389,7 @@ void __stdcall function_2393ae(long controller_index, long rank)
 		xuid = online_selection_get_xuid(&selection);
 		name = function_148956((s_window_manager_text *)&selection);
 		function_14896e(&selected_team, (s_window_manager_df6 *)&member);
-		have_member = true;
-		if (!member.xuidTeamMember.qwUserID)
-		{
-			have_member = false;
-		}
+		have_member = member.xuidTeamMember.qwUserID != 0;
 		friends_lists_get_user(xuid, &arg_a721be, &is_player, &flags, &title_id, &in_session, NULL);
 		may_change = (bool)((flags >> 11) & 1);
 		if (have_member)

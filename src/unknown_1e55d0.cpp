@@ -363,6 +363,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // flag in shift form 318 (aligned 306), the rate read once 318 (aligned 312), the shape match as `compound ? a || b : a` 349
 // (1204 B, aligned 223, masked 123), all four 346 (1208 B, aligned 202, masked 115: the non-compound arm, rate and flag test
 // then as retail; the extra 44 bytes are 0x1c4a80 and the capsule destructor expanded where retail calls both).
+// M3 lane 2 r118 (fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319): the output flag word
+// bound once by reference for the shape block's three updates 319; the position base through a const reference to the
+// input's point 319; the velocity reference formed from the move parameter instead of the output alias 319 (all the
+// same code); case 6 ahead of 4/5 (retail's block order) re-measured 318; the capsule helper plain `static inline` 530
+// (968 B, it stays out of line); the position bounds as a negated `||` chain 319, the shape match folded into the `if`
+// 319, the active flag through TEST_FIELD_BIT 319, `NONE !=` on the parent test 319 (all the same code). Also
+// BLOCKED-BY 0xb77d0 this round: `inline` on its /Ob1 definition (so the link could expand it here as retail does, in
+// place of the written-out velocity block) needs src/unknown_0b7740.cpp, another lane's file this round.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

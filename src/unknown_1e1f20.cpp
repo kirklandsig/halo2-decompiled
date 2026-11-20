@@ -1000,6 +1000,13 @@ void swarm_leader_detach(long actor_index);
 // against the cached actor 208 at 958 B but aligned 113, masked 86 (the prop walk hoists the pool's data address; one shifted
 // region re-syncs, so not a real gain), the same through the existing prop_node_get at each use 208 (same code); bool with the
 // re-read 255; bool with the cached compare 327 (926 B, aligned 105, masked 63). Still BLOCKED-BY 0x26ed40.
+// M3 lane 2 r118 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236): the
+// memory walk's entry through the existing element_502424_get 236 (same code); the prop walk's node through the existing
+// prop_node_get view (next_index, view_index) 236 (same code); both 236; the slot loop with a slot pointer local as
+// matched 0x1e23c0 writes it 236 (same code); the prop walk through the 0x26be00/0x26be30 iterator with the node
+// re-derived through prop_node_get after the 0x1e2150 callback (retail's re-read) 285 (948 B). Still BLOCKED-BY
+// 0x26ed40 (expanded in retail, kept a call by its file's inline setting) and by `value` as bool, whose declaration in
+// src/unknown_1e3920.cpp sits in a file another lane holds this round.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

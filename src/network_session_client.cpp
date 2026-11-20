@@ -1367,6 +1367,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // (44, first difference +0x263; the store sinks to just before the call, so one more use of the count is what retail's
 // colouring needs); the destination declared in the branch plus that probe 48 (the lea then sits before the mask
 // stores); a constant store at the end of the else arm 113 (round 53's else-arm finding does not hold here).
+// M3 lane 2 r118 (fast with 0x6fcc0, 0x6f940, 0x6fa60, 0x5a520, 0x59e50, 0x5a220; control 9, the indexed copy re-measured
+// 195: state EBX from the top, the loop index kept in ESI with no spill, the count spilled; retail spills the loop index
+// around each copy and keeps the count in EBX). On the indexed form: every later state use through a `*const &` bound
+// to the parameter 195; the call's five part arguments through a const reference to the state's part 195; `joining`
+// declared after the close call (the close reading the owner) 166 (714 B); `current` declared after the identity clear
+// 210 (713 B); the count declared after the close call 201.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

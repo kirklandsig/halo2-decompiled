@@ -1307,6 +1307,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 580 (it stays out of line, 988 B here), forced inline 199 at 1382 B (first difference +0x2). With lane 1's preset
 // moved-away flag: on the by-value setter 94 (the lead's own code), on the direction local 176, on the goal copy 244
 // (1431 B). 1 to 7 unused (never referenced) locals on the flag form 145 each (dropped before they count). Nothing kept.
+// M3 lane 2 r118 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114; the first difference is still in the
+// rotation helper, whose file is another lane's this round): initial_cross's j row as `b->i * a->k - a->i * b->k`,
+// `b->i * a->k - b->k * a->i` and `a->k * b->i - b->k * a->i` 114 each (same code: the product operands are
+// canonicalised); both crosses through the existing cross3f 114 (same code); a second pointer name for the facing goal
+// used by the snap copy 140 at retail's 1382 B (the snap exit shortens, every rotation product turns); `rotated`
+// declared as the function's first local and assigned in place 114; the movement, angle and rotated locals all
+// declared at the function top 114 (same code).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
