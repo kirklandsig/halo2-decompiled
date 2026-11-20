@@ -733,6 +733,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // test reading `s->counter` 603 (same code); no count local, `s->counter` at its three uses 603 (same code); the count
 // read at the top of the active block ahead of the clamp 609 (2883 B); the scaled sample through the existing
 // vector3f_scale(&qr, globals->rate, &qr) after the displacement 683 (2871 B).
+// M3 lane 4 r229 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 603 = plain, aligned 458, register/offset-
+// masked 174): the 0.866 test as dot3f(&s->direction, d) 604; the output position filled from q as three component
+// statements 657 (2878 B); both 658; both with the zero-tick fallback as `q = counter == 0 ? g_4687a4 : q;` 658 (d keeps
+// EBX in all four, so q's and d's reference counts as written are not what ranks them). Diagnostic (reverted at once):
+// the d parameter qualified so that it stays in its stack home 659 (2890 B): the entry is then retail's (q loaded into
+// EBX from [esp + 0x38], first difference +0x1d), so d out of EBX is enough to give q the register; the count rises only
+// because the qualifier reloads d at every component where retail loads it once per site (0x1ebda0: one load for the
+// fallback copy, one for the 0.866 test and its copy). Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

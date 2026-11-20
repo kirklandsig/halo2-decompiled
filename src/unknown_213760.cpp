@@ -1956,6 +1956,20 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // directly, at the write, 5 (the 5 form's code: it is substituted back and the handle loads after the zero). On the
 // by-value write helper form: the close's handle test through either accessor's result with the unnamed argument 114
 // (same code), test and argument both through the accessor 114.
+// M3 lane 4 r229 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH each time; control 33; round 53's 7 form
+// rebuilt at 7: the write's flags zero in EAX ahead of the handle load, and the checksum load in EDX). The permuter on the
+// 7 form (annealing, one job, 911 s): 103 tries, none under 7 in the reduced or the full image (10 ties at 7, the rest 9 to
+// 157). New on the 7 form: the write as a forceinline helper taking the handle by value with a `bool result = false;`
+// set under `if (bytes_written == 0x800)` and returned, called as `written = helper(*handle, &done)` under
+// `if (resized)` 114 (917 B, aligned 6: the write is retail's, the close pushes EAX with no `mov ecx, eax`, the checksum
+// loads into ECX); that helper called inside `(!resized || !helper(...)) && open` 114 (same code); the helper taking the
+// handle's address and copying it into a local at its top 114 (same code); on the first of these the close's open test
+// through an inline predicate with a result variable, by value 114, by address 114, the query's open test through it
+// too 114 (same code each); the checksum compare through an inline helper with a result variable set under `if (stored
+// == read)` 77 (931 B); the read header's checksum through an inline getter with a result variable 7 (same code).
+// Reading from retail's other callers of 0x1a1050: matched 0x7fb50 loads its handle (ECX) ahead of the flags zero (EAX)
+// with the plain `function_1a1050(handle_global, ..., s_file_write_flags(0), ...)` call, so the order here is only the
+// two temporaries' registers: this body gives both EAX (the zero first), retail gives the handle EAX and the zero ECX.
 // @retail 0x213970
 void function_213970(void)
 {

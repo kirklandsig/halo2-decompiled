@@ -905,6 +905,19 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Native flags masked with either velocity selection gives 334/334. Word flags with a
 // bit-position test gives 417/417. NOT kept: the masks reproduce the folded address,
 // and the field and word forms regress. Effect address and gate/settings homes remain.
+// M3 lane 4 r229 (fast with 0x247fd0/0x248cc0, both MATCH; control 334, aligned 188, register-masked 72). The gate's
+// stored bool needs no qualifier: a bool with two definitions gives retail's `shr; and 1; mov [home]; jne` by itself
+// (the store is not removed). Measured: the gate through an inline helper with a result variable (`bool result = false;
+// if (effect_index != NONE) result = effect->flag3; return result;`) 351; that helper with an effect pointer local, with
+// a bool local for the bit as well, with the bit through the file's bool cast 351 each (same code); the gate bool as a
+// plain local started false, set from the effect's bit under the index test and tested after it 351; the same with the
+// byte read, shift and mask kept as on main 351; declared after the index 351 (same code); typed byte 351; with the
+// blend's `1.f - arg_5` named 351. In all of these the gate's instructions are main's exactly; the 17 points come from
+// six later products and sums whose operand sides flip (`movss xmm1, [mem]; mulss xmm1, xmm0` for main's and retail's
+// `movaps xmm1, xmm0; mulss xmm1, [mem]`, and the three position sums loading the field first), so the qualifier on
+// main acts on those sides, not on the gate. Also: the bit tested directly under `local_0 != NONE &&` 394 (no stored
+// bool, first difference +0x2); a block-scoped single-definition bool 395; the age copied through a named real 415
+// (1665 B). The effect address still folds in every form. Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
