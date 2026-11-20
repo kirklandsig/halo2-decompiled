@@ -73,6 +73,7 @@ static __forceinline class_3193c0 *contact_motion_direct_318c10(lane_a_contact_e
 // body's motion is read in place. Left: retail schedules the id, second and
 // rejected stores inside the first square-root statement and the first store
 // inside the second; the second motion pointer goes to edx (ours edi).
+// Score 28 (was 30) with stand-in SDK headers: the speed is stored before the properties, in retail's store order.
 // @retail 0x318c10
 unsigned short class_318e60::add(lane_a_contact_body const *first,
 	lane_a_contact_body const *second, void const *input, lane_b_contact_point const *point)
@@ -107,8 +108,8 @@ unsigned short class_318e60::add(lane_a_contact_body const *first,
 	event.manager = this;
 	event.second = second;
 	event.point = added_point;
-	event.properties = property;
 	event.speed = speed;
+	event.properties = property;
 	function_318320((listener_world_318320 *)world, (event_315d20 *)&event);
 	if (entity_a->listeners_60.size) function_315d20(entity_a, (event_315d20 *)&event);
 	if (entity_b->listeners_60.size) function_315d20(entity_b, (event_315d20 *)&event);
