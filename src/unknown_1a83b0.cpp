@@ -705,6 +705,12 @@ s_1a8a10 g_4453c0[] =
 // stores 17; the sums assigned through references bound to the array elements [0] and [2] 17; the two sums as the fields
 // of one 2D vector local 17; both negations named and the stores written [3], [1], [2], [0] 21; the sums reading the
 // rotated point through a `point2f const &` 17. Re-measured: the identifier, index, score initialisation order 15.
+// M3 lane 1 r137 (H2M_FAST; control 17): a grid of both sums' term orders x which sum comes first x the negated j from
+// the actor or the copy: the term orders never change the code; left first 17 (actor j) / 31 (copy j); forward first 31
+// (actor j, +0x75: the j reload appears but x takes XMM3 and the forward is scheduled first) / 89 (copy j). A second
+// aggregate copy of the facing for the forward sum 146 (564 bytes: the copy goes through the stack), with the negation
+// from the first copy 147; the left sum's i through a `vector2f const &` to the copy, through a `real const &` to its i,
+// and the negated j through a second const actor pointer 17 each (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
