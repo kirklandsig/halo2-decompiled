@@ -215,6 +215,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // straight to the record's short 25 (the helper's result takes its own home); the 0x1e5280 completion flag declared
 // inside its test 19 (its true store moves after the call); the rounding input declared at the top of the non-equal
 // branch 12 (same code); the result flag declared after the 0x261280 call 62.
+// M3 lane 6 r208 (`--fast 0x1af160 0x1e1f20`, control 12; reference bindings, each match-only): the 0x262b40 result's +0x14
+// field bound by const reference for its two tests 12; the actor bound by const reference for the 0x265c30 prop index 12;
+// the 0x262b40 result bound by const reference for the 0x210ac0 call 12; the long output bound by const reference for the
+// 0x2626b0 call 12; the marker pointer bound by const reference for the 0x1f4a20 call 12. 0x260670 (ours, on the bool
+// output's chain, in another lane's file this round) is still 440 at 3097 bytes against 3077.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
