@@ -3439,6 +3439,10 @@ struct s_ammo_conversion_entry
 // the count, a short pointer or reference to the unloaded count, `acquired = true` ahead of the conversion clamp (the cmov
 // becomes a branch), the leftover-rounds flag as an `||` chain (gives retail's loop-head registers but reads the flag).
 // Permuter on the 52 form (600 s, 43 tries): best 52.
+// Paired weapon references, source tag reference and magazine tag reference 190 each.
+// Source selected at capacity 208, reserve field reference 207, removal predicate 188,
+// shared weapon-kind predicate 214, shared type mask 190. NOT kept: the removal predicate
+// gains two with the same extent and saved-register divergence.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4764,6 +4768,10 @@ struct s_weapon_projectile_creation
 // Not kept: the forms that are acceptable without a match taken alone (in-place rotation, existing random functions,
 // if/else arms, field re-reads, the actor call in both arms, markers by index, long target type, short code) measure
 // 1191 (5156 bytes, frame 0x1e9c), a rise, and the rest are match-only forms; the body is main's.
+// Typed barrel tag, named projectile field, native barrel flags and aggregate placement owner 1121
+// each. Owner presence branch 1122 at 5199 bytes, admitted motion 1121, tracer from the two tests
+// 1119 at 5212 bytes, complete damage initializer 1121. NOT kept: tracer gains two and retains the
+// 0x1ea4 frame. The owner branch shortens the body and regresses.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

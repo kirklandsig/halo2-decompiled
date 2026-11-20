@@ -4664,6 +4664,9 @@ struct s_128ca0
 // sums retail gives the gain byte its register before the bits' copy (EDX then EAX; EAX in place then ECX), ours the
 // copy first; a form that evaluates the gain byte first should bring the pins, the field_c store and the tail together.
 // One or two named copy locals of the parameters (the symbol-count lever that moved 0xb93b0's XMM triple) 72 (same code).
+// Attenuated gain name, opening gain/pitch names, submission gain names, shared unpinned
+// level, read-only voice record, playback record reference, selected permutation reference,
+// and shared pinned level all 72. The two pin register pairs and packet store order stay put.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

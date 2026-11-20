@@ -932,6 +932,10 @@ void function_245400(s_source_245400 const *source, long index,
 // operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
 // Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
 // (retail loads the second normal first in four products and reuses the first normal's k in two).
+// Equal-code guard with combined facing predicate 164, sides before word comparison 215,
+// side comparison scoped to facing 197, signed-word plane ordinals 224, rotated and staged
+// edge setters 164 each, one edge scale read 164, signed ordinals with scoped facing 215.
+// The frame and code and side homes remain unresolved. NOT kept: ties and regressions.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

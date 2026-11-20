@@ -884,6 +884,11 @@ void __stdcall function_1160c0(real dt)
 // the loop bound as `i <= definition->segment_count` 286 (1368 B: the guard becomes a compare, the rest unchanged).
 // Diagnostic: the segments base read through a file-local forceinline accessor 144 (same code: the base stays in EDI,
 // so the one-step scratch rotation is not set by a temporary at the base's own load).
+// Node position reference and both references 144 each, short selected segment ordinal 252,
+// rest-vector reference with late copy 246, fixed-record exit and separate exits 144 each,
+// node base plus advance 144, final node point setter 335, signed tick assignment 144.
+// NOT kept: the short ordinal reaches retail length but changes the saves and regresses.
+// The frame agrees and the selected segment still needs EDX and its +0x14 spill.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
