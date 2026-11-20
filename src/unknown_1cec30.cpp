@@ -1707,6 +1707,16 @@ PRIVATE __forceinline real const &component_time_step()
 }
 
 // score 26 (was 26): the scaled acceleration lands in XMM1 where retail has XMM0, and the time step is loaded into a register where retail multiplies it from memory and keeps its address; rounds below.
+// M3 lane 11 r135 (fast; control 26): the magnitude helper taking its value by `real const &` 26; `target -= position`
+// through a forceinline helper writing through a pointer 26; the stop distance in a forceinline (velocity, step, `real
+// const *` time step) helper given `&delta_time` 26; the scale helper writing its result through an out parameter 26 (all
+// four the same code); `real distance = target - position;` used by the tests and the square root in place of the
+// adjusted target 29. Lead: retail's `add eax, 4` looks like a kill of the global load between the reads: a compile-only build
+// gives retail's `mulss xmm0, [eax + 4]` ... `add eax, 4` ... `[eax]` as soon as a store through an unknown float pointer
+// sits between them (a stand-alone test), but the link-time build does not (diagnostic: `*ratio = target;` after the
+// subtraction 142 at 476 B, still `[eax + 4]` twice): at link time the out pointer is known to address the caller's
+// locals. Retail's only stores between the reads are the step and target homes; matched 0x1b54d0, 0x1be6e0, 0x25ae40
+// and 0x267840 show the same fold-then-materialise shape for a point passed to vector3d_from_points3d from a call result.
 // MiniMax A (11-18): no new form, no lower score (43): the tail still keeps the scaled value in XMM1 where retail
 // holds it in XMM0 (retail divides XMM0 by XMM1 and multiplies the step in place with `mulss xmm0, [eax + 4]` and
 // `add eax, 4`, ours loads the step into XMM0 and multiplies it by the same memory operand), retail's second product
@@ -2540,8 +2550,18 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
-// score 8 (was 91): The frame and extent agree. The first scaled velocity store is late,
+// score 8 (was 8): The frame and extent agree. The first scaled velocity store is late,
 // and the zero property value uses EBX where retail uses EDI.
+// M3 lane 11 r135 (fast with 0x1d06c0, 0x1d0400 and 0x181db0, matched each time; control 8): the inline property setter
+// given the key as a parameter (all three sites pass the 2003 key) 8; the setter as a forceinline member of a derived
+// entity view (`this` the entity) 8; the material sample vector declared once ahead of its loop 8 (all three the same
+// code); the speed expression named and the velocity scaled by three compound statements, then set 385 (1439 B); the
+// scale in place with `set(velocity.i, velocity.j, velocity.k)` (no returned pointer) 279. A compile-only build gives
+// retail's EDI for the zero (the EBX choice comes from the link-time build), and keeps our last-block order for: the
+// set given (speed * i, j * speed, k * speed) with a named speed; the x store as its own statement ahead of compound j
+// and k scales; a separate scaled vector through havok_from_vector3d; the scale written into the result viewed as a
+// vector with w stored after; a named speed with the result pointer declared first; w passed as `0.0f * speed`.
+// Permuter on this body (600 s, 65 tries, annealing): best 8.
 // Earlier score 91 (was 91): what differs is the velocity block and the property zero's register; round 189 (m3 lane 8) reached 13
 // with match-only forms, detail first, older rounds below. The velocity's fields are ranked by how the code first
 // reaches them (0x1d3fc0's note): a field named in this body is "old" (scaled as `inverse * [x]`, reloaded on the short
@@ -3532,6 +3552,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // `position.set(...)` 15; the rotation part bound as an `hkRotation &` for the three columns 15; the translation copied
 // through `m_quad` 15 (all the same code); the converter reading the vector into i, j, k locals first 32 (the value in
 // XMM0 is still stored first, then the zero). Dead initialised locals K = 0..40 at the top: 15 at every K.
+// M3 lane 11 r135 (fast with 0x1d83e0, 0x1d77d0 22 and 0x1d0c20; control 15): the converter's parameters as (frame,
+// matrix) at its definition and all five calls 15; the converter as a member of a derived Havok-frame view (`this` the
+// frame) 15; the converter `__forceinline` on this body 15 (all three the same code); the pair's first frame named once
+// for both arms of the first half 265; both halves' pair frames so named 238 (1239 B). The first arm's order is a
+// scheduling choice: retail's column 0 loads k, i, j (neither argument order) and stores i, j, k, then the zero.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
