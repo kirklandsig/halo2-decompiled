@@ -39,6 +39,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax E (11-20): no new form, no lower score (286): the frame's homes are still permuted - this build keeps the
+// 1e5450 result at [esp+0x14] and the magnitude at [esp+0x10] where retail has them the other way round, the object
+// view at [esp+0x24] where retail has [esp+0x1c], and the two copied vectors the other way round too (ours copies the
+// actor's direction into [esp+0x38] and the global vector into [esp+0x44], retail the reverse), so declaring the two
+// vectors the other way round measures 290 (their copies then come out in the other order) and is reverted; site 1's
+// planar normalize still keeps its own zero path where retail calls the shared 0x2b400 helper (BLOCKED-BY 0x2b400),
+// so the body stands.
 // MiniMax S (11-19): no new form, no lower score (286): site 1 planar normalize written out with its own zero path measures 309, because retail reloads the second component after storing the first while ours folds that multiply into the memory operand; the frame homes still take each other slots and the working-vector group is still a rotation off retail, so the body stands.
 // MiniMax G (11-18): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24]
 // where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the

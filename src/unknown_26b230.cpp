@@ -1792,6 +1792,11 @@ void function_269250(long clump_index, long actor_index);
 // MiniMax G (11-20): no new form, no lower score (87 in the reduced image, 85 in the full one): the score is still taken and compared
 // outside the team arm with an SSE compare where retail compares inside the arm on the x87 stack, the walk's pool is still
 // reloaded from its slot at each step where retail hoists it into EBX, and the selection is still kept in EDI besides its slot.
+// MiniMax E (11-20): no new form, no lower score (87): the walk's pool load still stays in memory and the selection
+// still stays in EDI, where retail hoists the pool into EBX across the 0x268bb0 call and keeps the selection on the
+// stack only; calling data_datum_iterator_next_inlined on the walk's own iterator measures 164 (with the score path
+// common to both arms) and 160 (with the compare in the arm), because the found and not-found paths then stop merging
+// and the frame drops to 0x38, so the shared walk helper stays as it is (it has four matched users). The body stands.
 // MiniMax D (11-20): no new form, no lower score (87; 89 on this build's reduced image). The in-arm compare (126 at 480 B)
 // gives retail's x87 compare and retail's homes for the selection (+0x14), the score (+0x18) and the best (+0x1c), but ours
 // still keeps the walk's pool in memory and the selection in EDI (reloaded at the loop top), while retail hoists the pool into

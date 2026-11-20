@@ -431,6 +431,12 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax E (11-20): no new form, no lower score (404): retail's entry takes the actor index in EAX (`sub esp, 0xa0;
+// push ebx; mov ebx, eax`) and keeps it there, and its tail is a plain `ret` with no stack argument, while this body
+// takes the index from its stack slot and gives the frame 0xa4 against retail's 0xa0; that EAX convention belongs to
+// retail's own call graph and no spelling of this body reaches it, so the difference stays where it is:
+// BLOCKED-BY 0x2641c0 (its noinline declaration is in src/unknown_265cb0.cpp, another lane's file). The body's own
+// arithmetic and the rest of its homes are the same code; the score stands at 404.
 // MiniMax B (11-19): no new form, no lower score (412): the maximum as a long instead of a word gives 416 and the prior
 // state as a short instead of a word gives 413, so both were reverted and the body stands. What still differs is the
 // frame, 0xa4 against retail's 0xa0, and the actor index, which retail takes in EAX because it inlines 0x2641c0 at its

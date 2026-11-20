@@ -518,6 +518,7 @@ real g_55e618;
 // measure worse, and the permuter made five tries over this body without beating its baseline of 93 differing
 // instructions.
 // MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged.
+// MiniMax E (11-20): no new form, no lower score (102): the four homes still sit where this build puts them (ours sweep +0x38, perpendicular +0x44, collision +0xa4, tangent +0x100 against retail's tangent +0x38, sweep +0x44, perpendicular +0xa4, collision +0xb0), and the reflection block's spill order is unchanged; the dot's three products written the way retail adds them measures 103, the same sum written with explicit parentheses measures 191, the tangent kept as three scalars instead of one vector3f measures 188, and a 300-second permuter run over the body (15 tries) found nothing below the baseline, so all of them were reverted and the body stands.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
