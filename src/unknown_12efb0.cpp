@@ -845,10 +845,21 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // EBX and cluster in ESI as retail; the slot is still a word and NONE is in EDX), the same with a char slot 666 (3827 B:
 // retail's `mov cl` and byte compare, NONE in EDX against retail's EAX with the call result moved to EDX); the slot read
 // ahead of the three source resets 607 (same code).
+// M3 lane 8 r204 (fast with 0x130f60, 0x131030, 0x1317a0, all MATCH; control 607): a `char` slot compared with `(char)NONE`
+// 700 (3828 B); the 0x130f60 result typed `dword` 607 (same code); the tag flag declared ahead of the out value 609; the out
+// value declared at the loop body's top 607 (same code); the three source resets ahead of the out value and the call 713.
 // Current-cluster predicate after palette lookup, at its first publication, or before lookup 739/735/726.
 // Predicate shared across both sources after defaults, after the provider, or before the provider 733/733/750.
 // Shared cluster index for lookup and predicate 741; complementary predicate across both sources 733.
 // NOT kept: All grow and regress, with a first difference before the original loop span.
+// The provider result, palette width and selected record homes still differ.
+// Weighted palette/tag/either arm continues and common completion continue, short slot 634/706/774/607;
+// signed byte slot 631/691/771/700. NOT kept: the common short-slot continue ties and the other forms regress.
+// countdown for with advancing cluster cursor 607; countdown while with pointer then count 1442;
+// countdown while with count then pointer 1442; cluster pointer for with body countdown 607;
+// separate remaining count and cluster cursor 607; cluster cursor compared with end 831;
+// cluster cursor stopped at end 806; cluster cursor while with end 1508.
+// NOT kept: The for countdowns tie. The other walks increase the length and leave the provider, sentinel and palette allocation unresolved.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

@@ -932,6 +932,27 @@ void function_245400(s_source_245400 const *source, long index,
 // operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
 // Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
 // (retail loads the second normal first in four products and reuses the first normal's k in two).
+// M3 lane 5 r217 (the same one-file link-time screen, exact against the full build for this body; aligned rows on lane
+// 3 r271's lead, 40): the cross does move with the order its rows are stored in. Written out in place with rows in
+// each of six orders 84 to 96, in a file-local helper 40 (i, j, k), 44, 43, 47, 54 (k, i, j), 56 (k, j, i): with the k
+// row stored first all six products take retail's operand sides (second normal's k, i and j loaded against the first
+// normal's i and j, first normal's k loaded against the second's j and i), but the products then run k row first
+// where retail runs i, j, k. A staged cross (three scalars, then three stores) over every compute and store order:
+// 37 with i computed ahead of j and stores i, j, k (four of six products retail's), 40 with j ahead of i, 54 / 56
+// with k stored first. One normal component read into a local first (each of six) 41 to 59; four written operand
+// spellings of each form the same code. The facing value as one triple-product expression, four spellings, 80 each.
+// One to three parenthesis pairs on the dot's first product 45 / 67 / 80. Ten cross forms x 0 to 7 dead locals ahead
+// of the points: 35 with the staged i, j, k cross at 7 (only the two products of the first normal's k still face the
+// other way: retail loads that k once and multiplies it by the second normal's j and i from memory). A coordinate
+// descent from seven starts over the cross form, both dead-local counts, six dot spellings, the edge copies' order,
+// the scale arm's order and twelve spellings per rotation row: best 35, no match. Body unchanged.
+// First complete decode, second complete decode, second index before both addresses, and
+// second address/side paired 210 each. With shifted side bits 234/234/233/233.
+// NOT kept: the sign tests reach retail length but regress. The shifted forms are short
+// and all retain the 0x24 frame with the source and separate side homes displaced.
+// Scaled axis contributions in six orders 223/222/222/223/222/222; vector setter for their sum 223; aggregate
+// rotated direction 250. NOT kept: all grow past 783 bytes. The frame stays at 0x24 or grows past 0x2c to
+// 0x30 or 0x3c.
 // Equal-code guard with combined facing predicate 164, sides before word comparison 215,
 // side comparison scoped to facing 197, signed-word plane ordinals 224, rotated and staged
 // edge setters 164 each, one edge scale read 164, signed ordinals with scoped facing 215.
