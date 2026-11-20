@@ -934,6 +934,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // edge shift 344.
 // The 0xe4 prologue returns with indexed fill, but the completion flag still uses +0xf and the body grows.
 // The opening short scan and long link ordinal are restored.
+// The extra link cursor, predecessor homes and scan-latch reloads still differ.
+// Short-link test-set form with predecessor pointer alone/ordinal alone/unsigned word/parent first
+// 409/297/399/396; scan previous point/current step/both/previous ordinal 366/430/193/230.
+// Common flag and short-link copy 209; increment after copy, signed edge test, parent early and
+// signed edge with split increment 300/210/326/273. Direct link/both predicates/both with parent early 211/339/353.
+// NOT kept: the lower scores retain test-set flags, and the 193 form adds six bytes.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

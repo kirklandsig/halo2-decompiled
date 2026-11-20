@@ -1694,6 +1694,11 @@ struct s_item_flags_view_10b850
 // MiniMax E (11-19): no new form, no lower score (824, baseline): the frame is still 0x154 against retail's 0x12c, so
 // every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes (esp+8) where this
 // build holds them in registers and shifts one of them right by eight.
+// The frame remains 0x154 versus retail 0x12c and the entry flag bytes differ.
+// Paired integration/ray, with shared origin component, with query origin, and with typed gravity flag
+// 821/842/822/821. Copied origin and point difference, loop/scaled add 913/882;
+// direct scaled add with ray initializer/point difference 885/877.
+// NOT kept: the tied-length gains are below eight, and the helper forms change extent and regress.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

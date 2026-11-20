@@ -1568,6 +1568,10 @@ void function_143250(
 // Input/output/both slices advanced after the calls 1625/1725/1701.
 // Shared coefficient offset advanced after admission or the calls 1231/1231.
 // NOT kept: The advancing forms retain the 0x2fc frame and do not recover the displaced scalar homes.
+// The third-band scalar homes still leave the frame one word short. Running sums for paired mixed axial,
+// transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
+// outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
+// NOT kept: the accumulations leave the frame at 0x2fc and either tie or raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
