@@ -191,6 +191,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // stack slot is where update lives) 21; `(void)&update;` after its declaration 21; `(void)&priority;` 21 (same code each:
 // none takes update out of the allocator); the hidden bit read into a named bool ahead of force 237 (833 B); the object
 // read through a const reference to its header entry 21 (same code).
+// M3 lane 6 r206 (fast with 0x3d2c0 and 0xd1850, both matched; control 21, update right after the zero return re-measured
+// 216): the kept order with a redundant `update = false;` added at the top of the not-force arm 222 (object straight into
+// EBX, retail's homes and ESI/EDI timestamps, but the initialiser is then dead: the false store moves into that arm and the
+// force arm has no reload); that with update after the zero return as well 222; the arms inverted (`if (!force) { update =
+// false; if (hidden) return; } else update = true;`) 223; `bool update;` declared bare ahead of update elapsed and set in
+// both arms 222; declared bare right before the force test, set in both arms 222.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

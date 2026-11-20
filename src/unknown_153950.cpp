@@ -1021,9 +1021,9 @@ static inline real random_real_1546f0(dword *seed)
 
 static inline void point_set_1546f0(point3f *point, real x, real y, real z)
 {
-	point->x = x;
-	point->y = y;
 	point->z = z;
+	point->y = y;
+	point->x = x;
 }
 
 static inline void cross_product3d_1546f0(vector3f const *a, vector3f const *b, vector3f *result)
@@ -1038,30 +1038,29 @@ static __forceinline void rotation_from_axis_1546f0(transform4x3f *matrix, vecto
 {
     real s = (real)sin(angle);
     real c = (real)cos(angle);
-    real ii = axis->i * axis->i;
-    real jj = axis->j * axis->j;
-    real kk = axis->k * axis->k;
+    vector3f squares;
+    squares.i = axis->i * axis->i;
+    squares.j = axis->j * axis->j;
+    squares.k = axis->k * axis->k;
     vector3f sine_axis;
     sine_axis.i = axis->i * s;
     sine_axis.j = axis->j * s;
     sine_axis.k = axis->k * s;
     matrix->scale = 1.0f;
-    real forward_i = (1.0f - ii) * c + ii;
+    matrix->forward.i = (1.0f - squares.i) * c + squares.i;
     real t = 1.0f - c;
     real tij = (t * axis->j) * axis->i;
-    real left_i = tij - sine_axis.k;
-    real forward_j = tij + sine_axis.k;
-    real left_j = (1.0f - jj) * c + jj;
+    matrix->left.i = tij - sine_axis.k;
+    matrix->forward.j = tij + sine_axis.k;
+    matrix->left.j = (1.0f - squares.j) * c + squares.j;
     real tk = t * axis->k;
     real tki = tk * axis->i;
-    real up_i = tki + sine_axis.j;
-    real forward_k = tki - sine_axis.j;
-    real up_k = (1.0f - kk) * c + kk;
+    matrix->up.i = tki + sine_axis.j;
+    matrix->forward.k = tki - sine_axis.j;
+    matrix->up.k = (1.0f - squares.k) * c + squares.k;
     real tkj = tk * axis->j;
-    real up_j = tkj - sine_axis.i;
-    real left_k = tkj + sine_axis.i;
-    matrix3x3 rotation = {{forward_i, forward_j, forward_k}, {left_i, left_j, left_k}, {up_i, up_j, up_k}};
-    matrix->rotation = rotation;
+    matrix->up.j = tkj - sine_axis.i;
+    matrix->left.k = tkj + sine_axis.i;
     matrix->position.z = 0.0f;
     matrix->position.y = 0.0f;
     matrix->position.x = 0.0f;
@@ -1089,6 +1088,13 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
+// score 244 (was 484) in a full build with stand-in SDK headers: the speed flags are loaded once and tested with &
+// 1 / & 2 (retail 0x15470e), the slot flags as & 2 / & 4, the clamp is if / else-if assignments, the three random
+// draws are inlined calls in the arguments of 0x141ce0 and of the point setter (retail stores the seed three times
+// at 0x1547cc-0x154806 and reads the first two values back from memory), and the rotation helper writes its nine
+// elements straight into the transform. The frame is now retail's 0x98. Left: the transform at [esp+0x28] against
+// retail's 0x1c, the z/y conversions of the position triple, `xor eax, eax` before both 0x17ca10 curve loads.
+// Before:
 // score 484 (was 521): flags 5 and others read through a word bitfield view give retail's load-and-shift; the rest still differs.
 // @retail 0x1546f0
 void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
@@ -1096,48 +1102,46 @@ void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
     if (local_index == NONE)
         return;
     s_game_speed *speed = g_510c5c;
-    if (speed->flags & 1)
+    dword flags = speed->flags;
+    if (flags & 1)
     {
         real amount = *(real *)&speed->value20;
         transform4x3f transform = *g_4687d0;
         if (speed->timer24 > 0)
         {
-            if (TEST_FIELD_BIT(((s_flag_word_bits *)&speed->flags)->bit1))
+            if (flags & 2)
                 amount *= (real)speed->timer24 / (real)speed->timer26;
             else
                 amount *= 1.0f - (real)speed->timer24 / (real)speed->timer26;
         }
-        amount = 0.0f > amount ? 0.0f : (amount > 1.0f ? 1.0f : amount);
+        if (0.0f > amount)
+            amount = 0.0f;
+        else if (amount > 1.0f)
+            amount = 1.0f;
         s_random_globals *random = g_4e7408;
         g_502120->value228 = amount;
-        /* retail advances the seed three times and then reads it once for all three axes
-           (0x1547cc-0x154806, again at 0x154888-0x1548d0): the third draw scales every axis */
-        random_real_1546f0(&random->seed);
-        random_real_1546f0(&random->seed);
-        real shake = random_real_1546f0(&random->seed) * 2.0f - 1.0f;
-        function_141ce0(shake * speed->angles[0] * amount, shake * speed->angles[1] * amount,
-            shake * speed->angles[2] * amount, &transform);
-        random_real_1546f0(&random->seed);
-        random_real_1546f0(&random->seed);
-        shake = random_real_1546f0(&random->seed) * 2.0f - 1.0f;
-        point_set_1546f0(&transform.position, shake * speed->point.y * amount, shake * speed->point.x * amount,
-            shake * speed->point.z * amount);
+        function_141ce0((random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[0] * amount,
+            (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[1] * amount,
+            (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[2] * amount, &transform);
+        point_set_1546f0(&transform.position, (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.y * amount,
+            (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.x * amount,
+            (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.z * amount);
         function_142a60(matrix, &transform, matrix);
     }
     else
     {
         s_speed_slot *slot = &speed->slots[local_index];
-        if (slot->timer80 > 0 || TEST_FIELD_BIT(((s_flag_word_bits *)&slot->flags)->bit1))
+        if (slot->timer80 > 0 || (slot->flags & 2))
         {
             real amount;
-            if (TEST_FIELD_BIT(((s_flag_word_bits *)&slot->flags)->bit1))
+            if (slot->flags & 2)
                 amount = 1.0f;
             else
             {
                 real duration = slot->bounds.duration;
                 real elapsed = (duration - (real)slot->timer80) / duration;
                 real priority = slot->priority9c;
-                amount = priority * function_17ca10(1.0f - elapsed, *(short *)&slot->bounds.unknown04[0]);
+                amount = function_17ca10(1.0f - elapsed, *(short *)&slot->bounds.unknown04[0]) * priority;
             }
             transform4x3f transform;
             vector3f axis;
@@ -1153,19 +1157,19 @@ void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
             transform.position.z = slot->vector.k * amount + offset.k;
             function_142a60(matrix, &transform, matrix);
         }
-        if (slot->timer82 > 0 || TEST_FIELD_BIT(((s_flag_word_bits *)&slot->flags)->bit2))
+        if (slot->timer82 > 0 || (slot->flags & 4))
         {
             transform4x3f transform = *g_4687d0;
             s_game_time_globals *time = g_510c54;
             real amount;
-            if (TEST_FIELD_BIT(((s_flag_word_bits *)&slot->flags)->bit2))
+            if (slot->flags & 4)
                 amount = 1.0f;
             else
             {
                 real duration = slot->values50.value[0];
                 real elapsed = (duration - (real)slot->timer82 * time->rate) / duration;
                 real priority = slot->priority98;
-                amount = priority * function_17ca10(1.0f - elapsed, *(short *)&slot->values50.value[1]);
+                amount = function_17ca10(1.0f - elapsed, *(short *)&slot->values50.value[1]) * priority;
             }
             real elapsed = (slot->values50.value[0] - (real)slot->timer82 * time->rate) / slot->values50.value[5];
             real curve = function_17c900(*(short *)&slot->values50.value[4], elapsed);

@@ -962,6 +962,10 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+/* Retail passes the transform in EAX, the index in ECX and the component in EBX (a plain `ret`). Link-time code
+   generation gives this function that convention only while no out-of-line function calls it directly: its two
+   callers, 0x1d0c20 and 0x1d5120, reach it through s_havok_component::rigid_body_transform_set, the inline member
+   spelling in include/unknown_1cec30.h. With a direct call from either of them the component arrives on the stack. */
 // MiniMax A (11-19): no new form, no lower score (65): the component still arrives on the stack, so the frame is still 0x84 against retail's 0x88 and the copy of the transform is still a block copy against retail's four aligned moves; the argument registers are still chosen by LTCG over the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files.
 // MiniMax H (11-19): no new form, no lower score (65): the transform copy is still a block copy where retail stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX; the frame stays 0x84 against retail's 0x88.
 // MiniMax B (11-18): no new form, no lower score (65): the transform copy is still a block copy here where retail
@@ -1221,7 +1225,9 @@ void function_1d1540(s_havok_component *component);
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
-	hkTransform local = *transform;
+	hkTransform local;
+
+	local.set(*transform);
 	if (TEST_FIELD_BIT(component->transformed))
 	{
 		hkTransform inverse;
@@ -1229,8 +1235,8 @@ void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_com
 		inverse.transform_set_to_inverse(component->transform);
 		local.transform_compose_in_place(inverse);
 	}
-	s_havok_component_rigid_body const *slot = &component->rigid_bodies[rigid_body_index];
-	if (slot->rigid_body->m_fixed && TEST_FIELD_BIT(component->flag5))
+	hkRigidBody *body = component->rigid_bodies[rigid_body_index].rigid_body;
+	if (body->m_fixed && TEST_FIELD_BIT(component->flag5))
 	{
 		function_1d1260(component);
 		havok_component_rigid_body_get(rigid_body_index, component)->motion_transform_set(local);
@@ -1238,7 +1244,7 @@ void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_com
 	}
 	else
 	{
-		slot->rigid_body->motion_transform_set(local);
+		body->motion_transform_set(local);
 	}
 }
 
@@ -1253,92 +1259,15 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
-// MiniMax A (11-19): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX; that is 0x1d0cf0's convention and is decided with the bodies of its call cycle, which are in other files. BLOCKED-BY 0x1d0cf0.
-// MiniMax H (11-19): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided across a call cycle whose other bodies are in other files.
-// MiniMax B (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
-// component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided
-// across a call cycle whose other bodies are in other files: BLOCKED-BY 0x1d0cf0.
-// MiniMax H (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
-// component still travels on the stack where retail keeps it in EBX; the copy in the callee written as an assignment
-// instead of a construction moves this function to 40, so that form was restored and the callee's convention
-// remains the one difference: BLOCKED-BY 0x1d0cf0.
-// score 38 (was 38): The transform setter receives stack arguments where retail uses registers, including EBX for the component.
-// MiniMax A (11-12): no new form, no lower score (38); every difference is still the frame (0x50
-// against retail's 0x5c) and the callee's convention, which hands the component over in ebx where
-// this build pushes it; retail's own arguments here are the matrix in EAX, the index in ECX and the
-// component on the stack, taken into EBX, with a plain ret 4.
-// MiniMax S (11-11): no new form, no lower score (38): every difference is the frame (0x50 against retail's 0x5c) and the callee's convention, which hands the component over in ebx where this build pushes it.
-// MiniMax H (11-10): no new form, no lower score (38): every difference is the frame and the callee's
-// convention (retail keeps the component in EBX, ours pushes it), and that choice is made by LTCG over
-// the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files:
-// BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
-// MiniMax E (11-11): no new form, no lower score (38): the frame and the callee's convention are the only differences (retail keeps the component in EBX, ours pushes it); that choice is made by LTCG over the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
-// MiniMax G (11-13): no new form, no lower score (38): retail's body is this body's twelve movss stores
-// and one movaps in the same order, with the frame's local at esp+0x20 and the 16-byte translation temp
-// at esp+0x10 (twelve bytes of slack below them), where this build has the local at esp+0x10 and the
-// temp at esp+0x00, so every store offset differs by 0x10; the frame's size follows from the same
-// convention that makes this build push the component and the index.
-// MiniMax G (11-13): no new form, no lower score (38): retail loads the component into EBX at the call
-// (mov ebx,[ebp+8]) after a push ebx in the prologue and passes the index in ECX, this build pushes the
-// component and the index; the frame 0x50 against retail's 0x5c follows from that alone, so this function
-// is BLOCKED-BY 0x1d0cf0's convention and needs no change of its own.
-// MiniMax I (11-14): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX; that convention is chosen by LTCG across the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
-// MiniMax C (11-14): no new form, no lower score (38): retail's own argument order is (matrix, index,
-// component), the matrix in EAX and the index in ECX, while this build takes the index and the component on
-// the stack; the frame is still 0x50 against retail's 0x5c and every store offset follows from that, and
-// the convention is the one 0x1d0cf0's own list sets across the call cycle in other files.
-// MiniMax D (11-16): no new form, no lower score (38): the body is retail's twelve movss stores and one movaps;
-// what differs is the frame (0x50 against retail's 0x5c) and the component, which this build pushes where retail
-// hands it over in EBX - the same convention 0x1d0cf0 does not take here.
-// MiniMax D (11-16): no new form, no lower score (38): retail's own arguments here are (the matrix in EAX, the index
-// in ECX and the component on the stack, taken into EBX after `push ebx`), so this function's body is retail's
-// instruction for instruction and its frame (0x5c against this build's 0x50) and its store offsets follow from the
-// one thing it does not match - the component, which this build pushes where retail hands it over in EBX:
-// BLOCKED-BY 0x1d0cf0's convention.
-// MiniMax R (11-17): no new form, no lower score (38): the body is still retail's twelve movss stores and the one
-// movaps; every difference is the frame (0x50 against retail's 0x5c) and the callee's convention, which hands the
-// component over in ebx where this build pushes it, and that choice belongs to 0x1d0cf0's own body: BLOCKED-BY
-// 0x1d0cf0.
-// Earlier 38 (was 38): MiniMax R (11-15): no new form, no lower score; the body is otherwise retail's instruction for
-// instruction, and the frame (0x50 against retail's 0x5c) and the component's travel (on the stack where retail keeps
-// it in EBX) follow 0x1d0cf0's convention, which is set across the call cycle in other files: BLOCKED-BY 0x1d0cf0.
-// Earlier 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
-// stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
-// body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
-// 64/61/84; rotation workspace/initialized workspace/initialized transform with workspace 78/106/107;
-// position input value 77; rotation input values 143; external matrix/component records 38/38;
-// complete frame set/initialization/library copy 81/71/71; translation memcpy 70; aligned forward/up
-// column values 49/49; defined ahead of 0x1d0cf0 38; native left/all/left-up/forward-left columns
-// 48/69/58/59; SIMD translation/rotation/all/left-plus-translation 38/69/69/48. Through 0x1d0cf0
-// (not kept): its retail body (vector copy, body pointer, m_fixed first) 40 (component stays on the
-// stack there); flag5 first 49; body fetched first 49/49; every form that makes the component a
-// register argument puts it in EDI, not EBX, and costs matched 0x1d1b60. Round 33: the shared
-// world-to-local transform step as a force-inline helper (also used by 0x1d0ee0, which stays matched)
-// 38, with 0x1d0cf0's retail body 40; that with a volatile read of 0x1d0cf0's component at the
-// 0x1d1540 call/the 0x1d1260 call/the second body fetch 40/40/40. Round 89: through the existing
-// component_matrix_frame converter 38 (same code, kept), with 0x1d0cf0's retail body 40.
-// Round 28 (lane G): retail's arguments here are (matrix, index, component) as in 0x1d0cf0; the
-// declaration order does not change the registers LTCG picks (0x1d0cf0 81 and this 38 either
-// way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
-// Permuter (25 min on #1044 round 2, about 650 variants): only a volatile transform pointer with a
-// (short) index argument gave 34; not kept (volatile without a match, and the cast narrows the index).
-// Scalar then intrinsic transform aggregates, direct/separate rotation/separate translation/both separate: 51/65/70/114/70/113/112/162.
-// NOT kept: all eight regress. Direct construction omits the retail translation scratch, separate aggregate values move the frame away, and the component call transport remains.
-// Original executable body restored.
-// MiniMax D (11-17): no new form, no lower score (38): the wrapper is still retail's two calls in the same
-// order, and every remaining difference is the one 0x1d0cf0 has, because this function only passes the
-// index and the component on to it; the memberwise copy form of the callee (38 -> 40) was worse and was
-// restored. The component's transport is decided with 0x1d0cf0's own call cycle in other files.
-// M3 lane 12 r150: no form of its own lowers it (38); through 0x1d0cf0's 88 body (retail's code there except the stack
-// component) this function is 40 and, like it, retail's line for line except that it pushes the component where retail
-// loads it into EBX: BLOCKED-BY 0x1d0cf0. The forms tried through 0x1d0cf0 this round are in its note.
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {
 	hkTransform transform;
+	/* read through its address: retail takes the component on the stack and loads it into EBX at the call */
+	s_havok_component *const *home = &component;
 
 	component_matrix_frame(matrix, &transform);
-	havok_component_rigid_body_transform_set(rigid_body_index, component, &transform);
+	(*home)->rigid_body_transform_set(rigid_body_index, &transform);
 }
 
 /* a member: every retail caller sets up the component (ESI) last, as for a member whose `this` comes first */
@@ -1896,6 +1825,15 @@ PRIVATE __forceinline real const &component_time_step()
 // 74/40; the scaled value assigned back into `acceleration`, step-first 17/14 and stop-first 36/36 (same code each);
 // stop-first with the step started as the scale result and multiplied in place 36/36; stop-first with the stop tick
 // count and the per-tick travel named 36/36, plus the final change named 36/36 (same code each).
+// M3 lane 15 r112 (one-file harness, exact: 17/14 = 26; fast 26): the scale written in the body as an if/else on
+// `scaled_acceleration` 26 (fast, same code); that with the power's base and the power named 26 (same code); bare
+// declarations of next_velocity, fraction, stop_distance, magnitude and step at the top 26 (same code); the time step
+// through a getter defined in another source (inlined at link time) read at each use, bound as a reference or as a
+// pointer 26 each (same code), its value in a local 461 B, 90/48; `target - position` named at the top 467 B, 76/69.
+// Diagnostic (dead locals, not kept): the head is retail's for 3 mod 8 extra symbols numbered before the time-step
+// binding (465 B, 104/6; stop-first 105/29: then only the XMM2/XMM3 swap and `add eax, 4` differ). Dead locals after
+// the binding never give it; a named base or power in the body counts one each, locals inside the inline helpers and
+// bare declarations count nothing. A pointer with a second, live definition in the low-step arm still folds both reads.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -3547,6 +3485,10 @@ byte *__fastcall function_30c170(hkWorld *world);
 // at the composed matrix, with one converter call after the test 313 (1023 B); the first half's rigid-body entry named
 // once for the count, first node, child search and body store 314 (1165 B); the entry reads through the array's
 // operator[] 15 (same code).
+// M3 lane 15 r112 (same harness, 15 as the check): the converter passing w explicitly 15; the translation built with
+// `position.set(...)` 15; the rotation part bound as an `hkRotation &` for the three columns 15; the translation copied
+// through `m_quad` 15 (all the same code); the converter reading the vector into i, j, k locals first 32 (the value in
+// XMM0 is still stored first, then the zero). Dead initialised locals K = 0..40 at the top: 15 at every K.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3690,6 +3632,16 @@ struct s_1cf531
 // the correction in place in local_13 measures 23 (the store goes to 0x30 but the reload after 0x183dc0 is a separate
 // movaps, never folded), the correction as a named hkVector4 and the correction declared earlier both give the same 2,
 // the final product's operands swapped 19, and a plain correction sharing local_13's slot grows the frame to 0x64 (94).
+// MiniMax B (11-20): no new form, no lower score (2): the corrected vector still spills to 0x40 and the final
+// mulps folds that slot, where retail keeps the corrected vector in the argument vector's own slot (0x30) and
+// folds its reload. The cause is now pinned: in retail the copy of local_7, the corrected vector and the scaled
+// vector all live in the one slot at 0x30, so the argument vector is corrected in place and MSVC folds the
+// reload of that slot into the mulps; in this build the in-place form (23, and 19 with the operands swapped)
+// makes MSVC reload the vector right after the get_inverse_scale call instead, because the argument's address
+// escapes and the x87 store of the scale factor may then alias it. A plain __m128 for the corrected vector folds
+// the way retail does but takes its own slot (94 with a named argument, 93 with a materialized temporary whose
+// slot MSVC does not share with the plain one), and the copy-propagation spelling (94) grows the frame. The two
+// remaining differences are the spill address and the folded operand address.
 // score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
 // uses the saved impulse slot at 0x30.
 // Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and

@@ -684,9 +684,29 @@ union s_185be7
 // code); the fraction declared without a value and cleared in an else arm of the span test 942 (3740 B), with the
 // if/else clamp too 942; the quotient clamped inside one PIN expression 932 (3791 B); the exponent named for the test
 // and the power call 634.
+// M3 lane 6 r205 (fast, 0x24590/0xc8880/0x185ab0/0x185b00/0x185b30/0x187b30/0x1a4900/0x186ab0 MATCH throughout; base 396
+// [aligned 102]): KEPT, same code: the havok component through the existing havok_component_get in place of the offset
+// written out. Not kept: `inline` redeclared for magnitude3d in this file only 396 (same code: the caller's declaration
+// does not make 0x24590 opaque); the 0.64 sum written field_40 first 396 (same code); that sum through the existing
+// dot_product2d over the stick pair 396 (same code); the scaled turn products written scale first 396 (same code); the
+// parent object's havok index through object_header_get or object_get 396 (same code); the field_93 latch as
+// `(...) ? 1 : 0` 390 [100] (retail's `mov eax, 1` / `xor eax, eax` before the byte store; a gain of 6, under the keep
+// bar, so it waits for the 0x24590 fix). With that latch form: the weapon helper 672 [88], + the else-arm default 906,
+// the else-arm default alone 913, the long mask local 676, + the else-arm default 847, weapon helper + long mask +
+// else-arm default 545 [84] (552 without the latch form). What is left is the block after 0x24590 (retail remakes zero in
+// XMM1/XMM6, does not cache the conversion constant and reloads the first angle limit into XMM7 only after the block),
+// one scratch-rotation step at the parent object's lookup (retail EDX, ours ECX; it carries through both vector copies)
+// and the loop pads, which follow the 27 bytes this body is short before the first mask loop.
 // MiniMax B (11-19): no new form, no lower score (396): retail treats 0x24590 as clobbering the XMM registers, which is
 // what fixes the whole block from the speed fraction to the stick clamps; the `inline` lead on 0x24590 is measured above
 // (384 [65], one shift left) and is not kept because six of its other callers' counts rise - BLOCKED-BY 0x24590.
+// M3 lane 6 r207 (fast with 0x186ab0, 0x187b30, 0x185b30 and 0x24590, all MATCH throughout; body unchanged): the angle
+// pair scaled through the existing planar_scale helper ahead of the record copy 957 (same registers, one `add` more),
+// after the copy 415; the second hold time as `arg_2 + field_7c` or `field_7c + arg_2`, or both hold times argument-first
+// 396 (same code: retail loads the field first, ours the argument); the second hold time accumulated ahead of its rate
+// scale 402; the parent object through a named pointer, through the shared header view, or the unit's object named 396
+// (same code: the scratch rotation stays one step off at the parent lookup). Still BLOCKED-BY 0x24590 (its file was on
+// the avoid list again).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -819,7 +839,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                         long local_19 = *(long *)(function_185be2(local_18) + 0xb4);
                         if (local_19 != NONE)
                         {
-                            s_havok_component *local_20 = (s_havok_component *)(g_51e9b8->data + (local_19 & 0xffff) * 0xa0);
+                            s_havok_component *local_20 = havok_component_get(local_19);
                             long local_24 = function_0b67a0((s_small_index *)local_20);
                             if (local_24 != NONE)
                             {

@@ -602,6 +602,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // in mode's home, so the order of the induction variables' first uses does not decide it); the entry loop in a
 // forceinline helper taking (cache_index, first, selection) 2; the part context declared at the function top 2; the
 // selection in 0x40e90's spelling (`long`, NONE, then the ternary) 2 (all the 2s the same code).
+// M3 lane 7 r191 (fast with 0x404b0/0x3fdf0; control 2): an explicit entry cursor declared before the `for` and stepped in its
+// increment (`++n, ++entry`) 5 (first at +0x14 as retail; the cursor start and its spill sit above the loop guard); the
+// same cursor declared right after first, ahead of the copy, 163 (490 B); a pointer-bounded loop over the entries with the
+// index from `first + (entry - entries)` 165 (528 B); material declared at block scope after the selection and assigned
+// NONE in the loop 2; the entry as `entries + n` 2 (both the same code).
 // M3 lane 11 r127 (fast with 0x404b0, which is 186 in the reduced image either way; control 2): the copy's source named
 // as an entry cursor (after or before first), passed to the copy and stepped at the end of the loop body, 163/163 (490
 // bytes: cache_index then arrives in ECX, and 0x404b0 rises to 206); the block's entry array named as a pointer after or
@@ -614,6 +619,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // across the cursor's range) 36 (517 B): first then leaves mode's home, so its slot follows a range overlap, and
 // retail's preheader order (the cursor's start ahead of first's last read) is what gives that overlap without code.
 // Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 2 at every K (not a symbol-count tie).
+// M3 lane 4 r228 (fast with 0x404b0; control 2): the index start read through a `long const &` bound to first 2; the
+// index declared once ahead of the loop and assigned in the body 2; first declared `long const` 2; the entry pointer
+// declared once ahead of the loop 2; the entry pointer and the index both declared ahead of the loop 2 (all the same
+// code: first keeps the mode parameter's home). Permuter (fast, annealed, 600 s): 55 tries, none below 2.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

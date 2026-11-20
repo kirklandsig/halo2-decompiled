@@ -7,6 +7,7 @@
 #include "props.h"
 #include "unknown_2551c0.h"
 #include "unknown_0259a0.h"
+#include "unknown_26b230.h"
 
 /* the slot state of handler 0x76 */
 struct s_slot_76_state
@@ -421,62 +422,24 @@ bool function_256790(long prop_ref_index)
 	return result;
 }
 
-struct s_prop_ref_iterator_256810
-{
-	long next_index;
-	long index;
-};
+struct s_node_view;
+void function_26be00(long actor_index, s_iterator *iterator);
+s_node_view *function_26be30(s_iterator *iterator);
 
-static inline s_prop_datum *prop_ref_iterator_next_256810(s_prop_ref_iterator_256810 *iterator)
-{
-	s_prop_datum *prop_ref = 0;
-
-	if (iterator->next_index != NONE)
-	{
-		prop_ref = prop_ref_get(iterator->next_index);
-		iterator->index = iterator->next_index;
-		iterator->next_index = prop_ref->next_index;
-	}
-	return prop_ref;
-}
-
-// score 107 (was 107): retail keeps the actor pointer in a stack slot and the prop loop's current index in
-// ebp; ours keeps the actor in ebp and spills the index, so our frame is smaller (both read g_4f55f0). Retail's
-// front is 16 bits (movzx dx from facing, word store, cmp word at the end): `short front` gives exactly that
-// but scores 166 (the index is still spilled and the actor kept in ebx, next_index moving to ebp), so it is
-// left as bool. Tried with short front: index used straight from the iterator, other declaration orders,
-// iterator fields swapped or index copied first, one index variable shared by both loops (166-169); for or
-// while loops over next_index rotate the loop (202, 205).
-// Native marker position 107; scalar native marker with short facing 166;
-// const actor with short facing 166; const actor and prop-reference views 107;
-// candidate declared in the while condition 107; nested marker eligibility 107;
-// short facing with a branch at the store 166; saved rear predicate as a word 164.
-// The actor spill and current-index register remain different.
-// M3 lane 15 r110 (fast with 0x256790 and 0x2566c0, both MATCH; control 107, short front re-measured 166): the loop
-// body with `continue` on the failed tests 107, with short front 166; `distance < best_distance` 107 / 166; the index
-// declared at function scope 107 / 166; the actor looked up with actor_get at each of its three uses 211 (754 B, not
-// merged); the iterator's next() reading the next index into a local first (as the file's 0x25d510 sibling does) 107;
-// the iterator fields in the other order 107, both 107; the best index stored from the iterator's field 107 (each 107
-// the same code); the actor looked up at the function's top, ahead of the active test, 117 (with short front 164: the
-// actor then takes EBX and the next index EBP, the index is still spilled). One-object screen (this file's unit linked
-// alone, 0x256790 and 0x2566c0 kept out of line; it reproduces the 107 loop): all 720 orders of the six block
-// declarations with bool or short front, and 0-12 dead locals, never give retail's EBP index copy; without the actor's
-// loop use the index takes EBX and the next index EBP; one more index use spills the next index instead.
 // @retail 0x256810
 short __stdcall function_256810(long actor_index, s_slot *slot)
 {
 	if (g_4f55d0->active && ((s_ai_globals_256810_view *)g_4f55d0)->unknown36a <= 0xd)
 	{
 		long best_prop_ref_index = NONE;
-		bool front;
+		short front;
 		s_actor_view *actor = actor_get(actor_index);
 		real best_distance = 3.4028235e38f;
-		s_prop_ref_iterator_256810 prop_iterator;
+		s_iterator prop_iterator;
 		s_prop_datum *prop_ref;
 
-		prop_iterator.next_index = actor->first_prop_index;
-		prop_iterator.index = NONE;
-		while ((prop_ref = prop_ref_iterator_next_256810(&prop_iterator)) != 0)
+		function_26be00(actor_index, &prop_iterator);
+		while ((prop_ref = (s_prop_datum *)function_26be30(&prop_iterator)) != NULL)
 		{
 			long index = prop_iterator.index;
 			s_object_marker markers[1];
@@ -506,12 +469,11 @@ short __stdcall function_256810(long actor_index, s_slot *slot)
 			s_ai_object_iterator iterator;
 			s_handler_object_view *object;
 			point3f origin;
-			long best_object_index;
+			long best_object_index = NONE;
 			real nearest = 3.4028235e38f;
 
 			iterator.next_index = perception_get(((s_handler_actor_view *)actor)->perception_index)->object_index;
 			function_b9dd0(prop_ref->object_index, &origin);
-			best_object_index = NONE;
 			while ((object = swarm_creature_iterator_next(&iterator)) != NULL)
 			{
 				s_object_ai_256810_view *data;

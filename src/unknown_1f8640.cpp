@@ -967,6 +967,12 @@ struct s_1f8a70_actor
 // and 4 386, shared reference for 5 and 6 with conditional movement 398, shared forced-route tail through frame
 // reference 451. NOT kept: Sharing the forced-route tail scores 244 and still leaves the dispatch after case 7.
 // The other case pairs and the frame reference raise the score further.
+// M3 lane 5 r213 (fast with the file's ten other functions and 0xe70b0, matched throughout; control 182, aligned 31): the
+// zero-route node test through a file-local inline returning `frame->destination_node != NONE` 182 (same code: retail
+// materialises only that half with `setne`, here it still folds), with the dispatch ternary's arms swapped 182 (aligned
+// 39); the node test held in a named bool ahead of the test 182 (same code); case 7's node and radius read into named
+// values in retail's order (node first) 360 (1640 B), with case 6's `route_mode = 1` as the else arm 366 (1624 B, aligned
+// 29: case 6 then shares case 5's tail, the dispatch still follows case 7).
 // Mode-six route conditional 312, shared override assignment 402, one selected route update 415,
 // and separate fallback search and direct-bit result 393. The same with mode-seven node before radius
 // 364/402/412/393. NOT kept: all regress. The route dispatch remains after the mode-seven block.

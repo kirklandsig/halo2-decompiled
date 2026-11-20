@@ -448,11 +448,16 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 77 (was 97): The zero ordinal store falls after the guard in this build and before it in retail.
-// Earlier (97, was 123): The object and tint entry exchange EDI and ESI.
+// score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
+// blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
+// Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
 // The choice count, mask and blend use other homes. The first scan exits on inequality.
 // Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
 // the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
+// Earlier 77 (was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
+// The zero ordinal store falls after the guard in this build and before it in retail.
+// Earlier (97, was 123): The object and tint entry exchange EDI and ESI.
 // Earlier (77, was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
 // spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
 // The late variant byte restores the output/delta registers and keeps retail length.
@@ -785,6 +790,16 @@ void function_3dd10(long object_index, bool force);
 // 404 (0xd1a30 149, 0x131d60 52, 0xc0c80 319 lost); with a forceinline declaration of it in this file still a call 398;
 // the choices read through an inline element accessor with a signed `<` first scan 638 (unrolled, 1309 bytes); the
 // three clamps through a by-reference pin helper 197.
+// M3 lane 15 r113 (fast with 0x3dd10/0x1318d0/0x131a00/0x14bfc0/0x2c0b70, all MATCH; control 77): the choice count read
+// from the entry field at its test and both scan bounds 77 (same code); the three channel clamps through a forceinline
+// by-reference pin helper with early returns (the form a matched neighbour uses) 189 (the running sum becomes a memory
+// add); the scan count bound by `long const &` for the first scan's bound 86, the mask updated through a `dword &`
+// 86, the weight summed through a `real &` 86 (all three the same code: only the found block's hue registers swap).
+// Indexed tint entry after the white store 238; advancing tint entry 307;
+// independent live choice-count and array lookup 180; guarded choice count 97;
+// supplied-color test before the tint entry 106; signed scan with conditional mask accumulation 873;
+// separate selection admission and threshold 219; positive weight predicate first 108.
+// NOT kept: The saved object/tint roles, signed scan and blend publication still differ.
 // Unequal bank bound with and without the guard 77/97. Named stored-color count or byte
 // extent 86/86. Tag lookup after extent or after address 260/87. One supplied/default
 // color assignment by value or by source address 298/298. The choice count and mask
