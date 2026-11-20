@@ -75,6 +75,14 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax S (11-20): score 72 (was 76): the increment is now the address expression `++*(short *)((byte *)statistics +
+// index * 0x1c + 0x16)` and the row pointer is formed after it, which gives retail's `inc word ptr [eax + edx + 0x16];
+// lea edi, [eax + edx]`, and the clamp's limits are longs, which gives retail's two `movzx word ptr` reads and its
+// thirty-two-bit comparison; the old maximum's read moves after the increment (it reads the same counter, which the
+// increment does not touch). What still differs: the enable byte is still cached in a bool local where retail reloads
+// it into AL and CL, the old maximum is still in EAX where retail keeps it in ECX and the consecutive count in DX
+// where retail keeps it in AX, the fifteen-bit counter is read with movzx where retail uses `xor eax, eax; mov ax,
+// [mem]`, and the game-time load keeps this build's registers.
 // score 76 (was 76): Retail reloads enable after the player statistics write and carries the maximum in ECX.
 // The existing getter and setter live in a separate /Ob1 translation unit. The global layout affects alias analysis.
 // MiniMax B (11-20): no new form, no lower score (76): the enable byte's raw reload needs one address-taken object that src/unknown_1967d0.cpp holds (BLOCKED-BY 0x196960/0x1968b0); what still differs is that reload, the old maximum's home (EAX here, ECX in retail), the 15-bit value read (movzx against retail's xor/mov) and the row pointer's register order.
@@ -315,6 +323,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // maxima 99, nested enabled maximum 99, early clamp input promotion 99,
 // and limits before the index check 95. The 434-byte forms still carry
 // enable across the increment and leave the maximum in EAX.
+// MiniMax S (11-20), NOT kept: 72 (was 76), a 4-point gain, under the 8-point bar for a function above 30.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
