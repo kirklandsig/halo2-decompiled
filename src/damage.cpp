@@ -3311,6 +3311,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax B (11-20): no new form, no lower score (5): the two cold exits keep this build's order (the stack reload
+// before the xmm1 copy) where retail copies xmm1 first and lets the stack reload fall into the shared epilogue; the
+// no-team exit written as an early return (`team == NONE || state != 1`) measures 5 and lays the blocks out the same
+// way, so the source order of the two returns does not decide the block order.
 // MiniMax B (11-19): no new form kept, no lower score (5): this round tried the two early-return spellings of the
 // team test - the team test as an early return, and both tests as early returns with a braced enemy block - and both
 // compile to the same bytes and leave the same order of the two cold exits, so that order is the scheduler's and not
@@ -3411,6 +3415,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // before the xmm1 copy) where retail copies xmm1 first; four return shapes were measured (an early return for the
 // not-enemy case 16, the enemy test with an else return 5, a merged single return 24, and the outer return in an else
 // of the team test 5 with byte-identical code), so the order of the two returns does not decide the block order.
+// score 5 (was 5): only the order of the two cold exits differs.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {

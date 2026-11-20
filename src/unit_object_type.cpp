@@ -8951,6 +8951,12 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
    delay and stun, the timer +0x2bc, its death direction, the player and
    betrayal bookkeeping, the hit animation, the actor's perception of the
    attacker, its camera shake and, when it was a killing blow, its death */
+// MiniMax B (11-20): no new form kept, no lower score (62): the three statement-order forms this lane measured - the
+// owner's two fields stored in the other order, the damage record's byte store before the owner store, and the shake
+// call's direction taken through a named pointer - measure 56 together, but they are statement order, kept only with a
+// match, so the file was restored to the body that scores 62; the stun block's add rate written with its operands
+// swapped (report->scale * the definition's +0x34) measures 56 with the same code, so the product's operand order
+// does not move it, and the shake's fields are still named locals where retail re-reads the definition's +0x58.
 // MiniMax E (11-14): the shake's minimum (the definition's +0x5c) named as a local and read twice: 116 -> 62 (1602 bytes,
 // retail's length); the stun block then follows retail's instructions; left is the shake's own load order (retail reloads
 // the definition's +0x58 for its division), the owner and damage store orders and the 0xc98a0 call's register roles.
@@ -9023,6 +9029,9 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // re-reads them from memory (dropping both names measures 383, re-reading only the divisor measures 116), the 0xc98a0
 // call still sets its pointer argument after the other three pushes where retail sets it first, and a 300 s permuter
 // run over the body found nothing below 62.
+// score 62 (was 62): only register allocation and the block layout are left - the 0xc98a0 call sets its pointer
+// argument after the three pushes where retail sets it first, and the shake and stun blocks take their pointers in
+// other registers.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
