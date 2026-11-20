@@ -2170,6 +2170,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // `radius * radius` at its one use and no square local 552 (2883 B); with the four declared first and assigned in that
 // order 550; with the prism index declared after them 550; with the nearest distance declared after them 550 (all
 // one point, moved declarations: not kept).
+// Prism while, ordinal before the fill, square at prism entry or clearance, edge while, both while
+// loops, and both with the square at prism entry or clearance 551/553/548/543/551/551/548/543.
+// Last-index prism bound with square at entry 573. Named square at clearance with the original for
+// loop 543 reduced and 543 ordinary.
+// NOT kept: the clearance-local square was already rejected as a moved one-use local without a
+// match. Its alternate loop forms produce the same score and square slot. The count and clearance
+// homes still differ.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
