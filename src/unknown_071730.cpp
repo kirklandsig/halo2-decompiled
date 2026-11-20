@@ -65,6 +65,9 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// MiniMax G (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line for the session data where this
+// build expands it at the call site, and the second session state still sits in ESI where retail keeps it in EAX; the
+// 0x5b080 body lives in another file, so the two paths diverge from the first difference on. BLOCKED-BY 0x5b080.
 // MiniMax H (11-20): no new form, no lower score (376): retail calls 0x5b080 out of line where this build expands get_data_4a00; the second session state sits in ESI against retail's EAX.
 // MiniMax E (11-20): no new form, no lower score (376): the secondary state still lives in esi where retail keeps it in eax, because 0x5b080 is expanded here and called out of line in retail; 0x5b080 lives in src/unknown_05b040.cpp, which this lane may not edit, so the difference is not reachable from this file.
 // score 376 (was 376; 387 before round 127): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
@@ -429,6 +432,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // (diagnostic, flags) the file without /Ob1 376 (same code). Retail calls the getter unconditionally right after
 // 0x192e60, so its source has one more two-way split ahead of that point than this body, and no form here supplies one
 // without emitting a test or repeating one. Still BLOCKED-BY 0x5b080's call-site calibration.
+// M3 lane 1 r138 (fast with 0x72140/0x71ff0/0x71e00/0x5b080/0x706f0, all MATCH; control 376): 0x5b080's own body respelled
+// (its file is machine 3's) to move its inline cost here, nested `if (state > 2) { if (state <= 8) ...` 376, a state local
+// with one three-part test 376 (both the same code; 0x5b080, 0x6d380 matched, 0x6e720 22 and 0x7e210 871 unchanged); the
+// members-ready live test as `!session_state_is_live(local_2) || !local_2->flag49e8` 376 (same code); the property value
+// as `= {0}` in place of the memset 387 (1597 B); the not-ready block's live test as two nested ifs 376 (same code). All
+// restored; still BLOCKED-BY 0x5b080 calibration.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

@@ -1281,6 +1281,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // result has no register for the found block.
 // MiniMax C (11-20): no new form, no lower score (35): the message pointer is in eax where retail has ecx and the flags in cx against ax;
 // the polarity and else forms give retail registers but fold the window NONE init (43, 45).
+// Resend result set before publication with return selection 129, or assigned ordinary type when none 120.
+// Separate query/empty-window and active-scan outcomes 36; ordinary type snapshot 20, with sole exit 23.
+// Bind time destination, name size at publication, or both 89/89/89.
+// Resend goes straight to the common return, with ordinary type read at exhaustion 120.
+// NOT kept: the 20 and 23 forms move the type read ahead of the admission branches and replace the early stack reads with ECX.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -565,6 +565,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// MiniMax G (11-20): no new form, no lower score (34): retail's parameter order begins with the party list (it arrives in
+// ECX) and the two counts after it, while ours begins with the player count and the party list second, and a declaration
+// may not change; the player count therefore still arrives in EDX where retail puts it in EAX, which is the caller's
+// choice (0x7e210, in src/unknown_07a9a0.cpp) and out of this lane's reach. BLOCKED-BY 0x7e210.
 // MiniMax A (11-19): no new form, no lower score (34): the sum written with the extra count first compiles to the same
 // bytes, and the two counts still take the other registers - the player count arrives in edx where retail puts it in
 // eax - so the copy loop, the rep stosd fill, the call setup and the final clamp all follow from that one exchange;
@@ -1036,6 +1040,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // count then stays on the stack); that with the fill bound written `player_count + extra_count` 74 (same code); the
 // fill value in a `long const` local declared after the copy loop 34 (same code). Nothing kept; the cause stays the
 // fill value's load ahead of the count and destination, as the rounds above describe.
+// M3 lane 1 r138 (fast with 0x91e30 MATCH and 0x7e210 871 unless given; control 34): the copy stored first and the maximum
+// taken from the copy (`parties[i] + 1`) 75 (0x7e210 879); the maximum test as `next_party - 1 <= party_indices[i]` 53
+// (next_party then held in EAX through the copy loop); the copy first with the maximum as one ternary on the copy 75
+// (0x7e210 879); the strict test `next_party < party_indices[i] + 1` 35; `party_indices[i] >= next_party - 1` 53. The
+// player count still arrives in EDX in every form. All restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
