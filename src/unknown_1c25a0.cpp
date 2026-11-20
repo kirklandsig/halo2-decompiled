@@ -1594,6 +1594,10 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // the impulse arm to the end of every iteration 150 (862 B); the mirror typed `volatile int` 1 and `volatile dword` 1 (same
 // code); `local_0 = i + 1;` ahead of `++i` 11 (870 B); no mirror with a plain saved copy of the index around the impulse
 // call 126 (858 B, the copy folds away). Still BLOCKED-BY 0x1d1160 (its file was on this round's avoid list).
+// M3 lane 6 r209 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300, all MATCH; control 1): the fill loop and the count
+// reading the rigid-body size at each use 1; the fill loop counting straight into the count 140 (872 B); the mirror declared
+// ahead of the index array and zeroed after the label 1; the mirror and the size local renamed 1/1 (all the 1s the same
+// code). Still BLOCKED-BY 0x1d1160 (its file was on this round's avoid list again).
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

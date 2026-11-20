@@ -1144,6 +1144,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax A (11-19): no new form, no lower score (529 plain, 602 on the reduced image): retail takes the block in
+// EAX, the type in ECX and the query in EDX, and this build takes the block in EDX and the query in EAX, so the
+// entry's register roles, the frame (0x2c against retail's 0x28) and every later register differ; the parameter
+// order is fixed by the rules, so retail's order is reported here. The base and lightmap arguments exchanged at
+// the definition and at the call compile to the same bytes, so the exchange cannot be measured from this file;
+// the body is unchanged.
 // score 529 (was 529): The 0x2c frame has an extra word. The selection result spills and the block and query use exchanged registers.
 // Previously noted: frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax I (11-17): no new form, no lower score (529): the reduced build of this function is not faithful on its
@@ -2331,6 +2337,13 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // MiniMax H (11-18): no new form, no lower score (542): the frame is 0x90 as in retail and the calls and their
 // arguments are in retail's order, but the status, mesh, colour and sample homes still sit in other stack slots and
 // the selective helper expansion still differs.
+// MiniMax G (11-20): score 542 (was 542): no new form, no lower score; the first arm matches retail instruction for
+// instruction, but our status and mesh homes sit 0xc above retail's (ours 0x30/0x2c, retail 0x24/0x20) because our
+// base u/v pair takes the two lowest slots, and in the second arm the three unpacked sample points land in other homes
+// (ours a 0x8c, b 0x68, c 0x4c against retail's a 0x8c, b 0x34, c 0x68), where retail materialises each short sample
+// pointer and we keep the base and the scaled index apart; the three sample offsets in a, b, c order score 587, the
+// short pointers formed inline from each vertex index 618, and swapping the sample point declarations or the red/blue
+// weight order gives the same 542, so the body stands.
 // score 542 (was 542): frame 0x90 agrees. The status, mesh, color and sample homes and selective helper expansion differ.
 // Earlier score 555.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
@@ -2665,6 +2678,12 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // through the existing vector3f_scale 657; the final rescale through vector3f_scale 657; the dynamic-first form with
 // per-format sample pointers formed from each vertex index (one-use pointers, match-only) 619 (3081 B, aligned 269 and
 // register-masked 246 against the control's 974/855).
+// M3 lane 16 r153 (fast with 0xd2a50/0xd2bb0 and the callees in this file, all MATCH; control 542, 475 with stack
+// offsets masked): the first arm differs from retail only in its frame homes (ours: base colour lowest, then mesh and
+// the shared status/part slot; retail: mesh lowest, then that slot); the dynamic arm still builds its sample offsets
+// apart from retail's. New: the mesh pointer declared at function scope 545; the first arm's colours and normal declared
+// lightmap, base, normal 553; `result` declared ahead of the triangle 542 (same code); the dynamic normal declared ahead
+// of the dynamic colour 542 (same code); the second arm's normal declared ahead of its base colour 542 (same code).
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

@@ -1341,45 +1341,15 @@ struct s_polygon_context_173910
 short function_120850(vector3f const *v);
 bool function_23a220(point2f const *points, short count, point2f const *point, real epsilon);
 
-// score 3 (was 69): the side test uses EAX instead of AL, and the final call sets up the two
-// argument addresses in reverse order.
-// Earlier at 69: logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
-// of the context origin onto the plane, the two axis indices from g_440b94[axis * 2 + (plane[axis] > 0)], the 2d copy
-// of every vertex, point-in-polygon with 0.0001f); no behaviour difference found. Retail makes the 0/1 an int
-// (mov 1 / xor), tests it at once (test al, al) and builds the index with setne later; that and the early
-// `mov edi, [polygon+0x1c]` (count) and the origin pointer (retail addresses [eax+0x60] directly, we form
-// eax+0x60) still differ. Tried: long positive = cond ? 1L : 0L with an `axes` pointer (126, 129 direct), bool positive
-// (127 / 130), bool positive with `positive != 0` or byte/char positive (60 but the compiler then passes both
-// parameters on the stack, `ret 8`: not usable), long positive with `!= 0` (77), short positive (69, this form),
-// all 48 operand/sum orders of the origin dot product (135 each: the order does not change the code), origin
-// as a local pointer vs context->origin->position.x directly (126 vs 135).
-// Permuter (25 min on r622): best 58, only with a (char) cast of the count passed to 0x23a220; retail reads it as
-// a zero-extended word (0x173ac5) and (char) would turn a count of 128 negative, so it isn't kept. A (word) cast and
-// the plane declared first are 69.
-// Round 575: the axis and side still occupy the wrong registers across projection. NOT kept:
-// projection index before origin 128 or after distance 104; side as row bit 117; default-zero side 121;
-// shared point projection 136; vertex base before the loop 156; query point initializer 69;
-// three-coordinate projection loop 69.
-// Tried comparison widened directly 69, unsigned-short side 69, normalized side local 120, early copy bound 122,
-// byte side with early copy bound 137, native postprojection indices 127, native predicate return 70, named axis component 122,
-// byte side normalized early 118, normalized side with origin record 7, normalized byte with origin record 40,
-// normalized long with origin record 3, normalized signed byte with origin record 40, normalized bool with origin record 40.
-// Tried side ternary 3, side branches 135, side-bit mask 46, side equality 8, byte conversion 4,
-// query before projected workspace 3, named predicate 5, named call count 5, normalization after distance 126.
-// NOT kept: the byte conversion recovers the test but reverses the x product operands.
-// The AL side test and the final call address order remain. Low-byte mask 13, complementary side predicate 123,
-// signed-byte normalization 4, byte side with scalar-first x product 4, staged normal-first x product 4,
-// origin-first x sum 4, complete point initializer 4, selected axis-table row 92, shared query address 3,
-// staged distance-first x product 4.
-// NOT kept: byte normalization recovers the AL test but exchanges the x product inputs.
+// Retail makes the side a 0/1 integer, tests its low byte at once and forms the table index from that test
+// later (`mov eax, 1` / `xor eax, eax`, `test al, al`, `setne cl`): a one-byte 0/1 converted to bool.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
 	point2f points[128];
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
 	short axis = function_120850(&plane->n);
-	long positive = plane->n.n[axis] > 0.0f ? 1 : 0;
-	bool use_positive_side = positive != 0;
+	bool use_positive_side = (byte)(plane->n.n[axis] > 0.0f ? 1 : 0) != 0;
 	s_polygon_context_173910::s_origin const *origin = context->origin;
 	real distance = 0.0f - plane_distance_to_point(plane, &origin->position);
 	point3f projected;
@@ -1662,7 +1632,9 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 134 (was 205): The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return still differ.
+// score 134 (was 205): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
+// The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return
+// still differ.
 // Earlier comparison at 221.
 // the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
 // (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
@@ -1753,6 +1725,11 @@ struct s_pool_view_172840
 // separate head capture and increment 145; read-only projection 145. NOT kept: the field
 // selection gains six, grows by one byte and loads through the selected address where retail
 // selects the short value before extending it.
+// flags before result 59, byte result 241, result before storage 55, conditional cluster selection 55,
+// allocation pointer before reservation 140, single queue-wrap store 235, head shared with guard 251, wrap
+// branch before increment 90.
+// NOT kept: The 55 forms recover the flag homes at 870 bytes, with a different cluster store schedule and five-
+// byte sentinel load.
 // With independent failure stores and a signed destination: reserved index for success,
 // rollback or both 142/135/255. Reserved address for success or both 149/260.
 // Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
@@ -2051,6 +2028,13 @@ struct s_camera_reference_171830
 // return 270; post-tested refinement count 273; clear the narrow-ray mask bit 270.
 // NOT kept: integral sign gains two at retail length. The point still occupies EBX and the
 // 0xbc frame still has the sample spill.
+// complete midpoint fraction and guarded update 320; midpoint fraction field and guarded update 310;
+// midpoint fraction field and latch 310; explicit midpoint hit and miss endpoints 289; sample offset by
+// reference 270; separate sample acceptance guards 270; one unsigned sample bit view 270; weighted final
+// contributions 270.
+// NOT kept: midpoint forms shrink the frame to 0xb0 and raise the score. Three pass the point in EDI and
+// the fourth retains EBX. The sample and blend forms tie. Retail still passes the point on the stack and
+// reserves 0xb8.
 // Shared inline zone test 267, with the location scoped 267. Typed cluster and zone tables with
 // unsigned snapshot 270, signed snapshot 270 or global bases at use 270. Signed cluster field at each
 // test 261. Winning fraction declared beside center fraction 270, refinement fraction read at each use
@@ -2337,6 +2321,13 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // view receiver for calibration and derivative transform 313; shared clamp destination 370.
 // The collision point stays in EBX. Keeping the view receiver shortens the body and sharing
 // the clamp destination lengthens it.
+// horizontal normalizer through shared planar scaler 295; paired horizontal offset products 366; y
+// correction live to field-of-view publication 296; horizontal outputs published together after field of
+// view 321; shared point setter for channel displacement 388; named point-transform products 383; named
+// vector-transform products 295; named point and vector transform products 387.
+// NOT kept: the alternate planar scaler and named vector-transform products tie. The later horizontal sum
+// forms preserve length and increase the score. Point-transform product names shorten the body. The
+// collision point still arrives in EBX and displaces the state base.
 // Published location receiver 295, combined changed-cluster guard 325, nested user-cluster bounds 295,
 // typed cluster count 295. Direct input-up address 363, later normalization-through-copy forward
 // pointer 379, output-axis pointers at normalization 446, adjusted projection depth snapshot 295.

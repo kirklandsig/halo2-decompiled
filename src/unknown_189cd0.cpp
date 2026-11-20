@@ -274,12 +274,24 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // (value-wrong diagnostic) 160 (535 bytes: the tag then takes EBP as retail, but the object holds ESI for the whole
 // function, so a longer object range alone does not demote it); every read plain with `__assume(tag_index != NONE)` before
 // the started dispatch 152, before the request arm's 0x189fe0 call 152, at both 152 (535 bytes each: tag EDI, object EBP).
+// M3 lane 15 r114 (plain; every form without the reference, object reads plain, control 116 at 531 bytes): the object
+// index, the scale and the two unused words as one 16-byte by-value aggregate parameter built by the five callers
+// (diagnostic for a memory-resident object index) 116 (scalarised like the plain parameters; all five callers lose their
+// match); the spatialization pointer bound to a const reference for the description test 116; two sound_class locals (one for
+// the spatialization flag test, one for the address) 116; the positioned arm's object reads through a const reference
+// bound at the arm's top 116; the tag's reads after the slot lookup through a const reference 116 (all the plain code).
 // M3 lane 7 r192 (plain; every form without the reference, object reads plain, control 116 at 531 B): no duration local
 // (both uses through the parameter) 116; `bool attached` (request and marker tests) declared just before the clamp 107
 // (523 B: the first 0x92 bytes are then retail's, tag EBP, spatialization EDI, and the late half is retail's; only the bool's
 // `cmp esi, -1; setne al` and its two `test al, al` remain, the request's zero bytes stored from AL); that bool declared at
 // the slot block's top 153 (537 B); the bool before the clamp also for the started test 117 (530 B); a plain `long` copy of
 // the object used only by the two early tests 116 (folds back into the parameter).
+// M3 lane 4 r231 (plain, with the five matched callers and 0x109220/0x189340/0x1892a0/0xb8d30; every form without the
+// reference, object reads plain; the reduced image builds this function differently, 94): the playback call, started test and
+// dispatch in a forceinline helper taking the object, tag, positioned flag, description, scale, label and slot 154 (528 bytes,
+// frame 0xa4, tag EDI); the started test inside a forceinline notify helper around 0x109220 116; `__assume(object_index !=
+// NONE)` at the top of the marker block 152, before the dispatch 152; `__assume(object_index == NONE)` in the request arm
+// 152 (535 bytes each). All restored.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

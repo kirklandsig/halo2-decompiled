@@ -272,6 +272,11 @@ void function_254200(void)
 // point copy still ahead of them 20 (the colour products' spill slots swap, the pair unchanged); the point copy after the
 // calls with the size ahead 16; both after Begin 116 (1093 B); the chosen bitmap selected ahead of the readiness test 52;
 // the choice as `if (!arg_4) ... else ...` 4 (same code). All restored.
+// M3 lane 2 r116 (single-address fast, control 4): the point copy declared ahead of the size 15 (the copy's two dword
+// moves land after the size product, the colour spills swap); the colour helper's products computed red, green, blue
+// 9 (the colour loads and stores reorder); the products written straight into the helper's 4f call 4 (same code); the
+// products stored into a scaled colour aggregate 28 (first +0xe: it takes a frame home); the colour by `color3f const &`
+// 4 (same code). The constant and y + size still reload in our order after the second and third reservations.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -656,6 +661,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // lower locals declared after the quad's start call 398 (2264 B), declared before 0x1cf50 382 (2258 B); the last quad's size as an
 // if/else 2 (same code); the alpha converted straight to a byte 2 (same code); the point read as `arg_0->x`/`arg_0->y`
 // at each use without the coordinate pointers 18 (the y fold returns). All restored.
+// M3 lane 4 r231 (screened with 0x254490 4 and 0x254200 matched; control 2): the colour pointer read through a
+// `color3f const *const &` binding 2 (same code); the colour components named red, green, blue after Begin 7 (first
+// difference +0x2da); named blue, green, red (the order retail reads them) 2 (same code); that with a named `real alpha = 1.f`
+// 466 (2159 bytes, first difference +0xe); the mip LOD bias stage value as a zero real read as a dword 443 (2271 bytes).
+// All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

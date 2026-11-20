@@ -253,6 +253,15 @@ void function_22fba9(c_class_1473c9 *screen)
 // M3 lane 3 r274 (fast, control 23): on main's body the text loop on its own counter declared in its `for` 23, the model
 // loop so 23, both 23; the flag as `bool const` 23; a `continue;` closing the model loop's `if (model)` block 23 (all five
 // the same code).
+// M3 lane 3 r276 (fast with the file's 10 matched functions, control 23): the text loop on its own `int` counter 23; the
+// model loop on its own `int` counter 23 (both the same code); `long i;` declared after the flag inside the pane block and
+// zeroed by the first loop's `for (i = 0;` 66, that with the text loop's own `int` counter 66 (one zero register, EBX,
+// for the whole function, every reset `mov`); `long i = 0;` above the pane call with the model loop on its own counter
+// zeroed just ahead of it 25 (the text reset becomes retail's `and`, the model reset stays `and` with the EAX copy).
+// M3 lane 6 r210 (fast): the model call given an explicit base-widget cast of the screen 23; the model loop as
+// `if (!model) continue;` then the start and the store 23; the third loop's inner counter declared in its `for` 23; the
+// text result typed as the text helper's return type 23, with the block-24 and block-18 results typed as theirs too 23
+// (all the same code). Diagnostic: 1-8 unused initialised locals after `long i = 0;` 23 each (not a numbering effect).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

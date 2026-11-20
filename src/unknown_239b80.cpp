@@ -230,6 +230,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax E (11-20): no new form, no lower score (144): the frame is still 0x18 against retail's 0x14 because the
+// departure flag is a dword local here and a byte in retail's dead indices home (our hull count then takes a dead
+// argument home at +0x34 where retail has its own slot at +0x10), and the count stays in EBX across the candidate scan
+// where retail re-reads it from its home before the index store. The body stands.
 // score 144 (was 144): earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
 // hull count still live in their own homes where retail keeps them in the dead argument homes. One note, the rounds' entries below.
 // M3 lane 14 r112 (fast with 0x239d50; control 144, aligned 137, masked 65): retail's pass loop is the hull count itself,
@@ -848,6 +852,22 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // with other registers. Retail loads the count into EBX only as the classifier's argument, copies it to EDX for the lowest
 // scan, reads its home again for `current = count` after the call and compares it from memory either side of the index
 // store; EBX then caches the hull count.
+// M3 lane 2 r115 (fast with 0x239d50 and 0x239b80, both MATCH each time; control 144, aligned 58 with registers and
+// slots masked; body unchanged). Reading of retail's entry: EBX and EDI are only the classifier's argument registers;
+// after the call the count is copied EBX -> EDX for the lowest scan, `current` is loaded again from the count's home
+// (so `short current = count;` stands ahead of the call and is rematerialised after it), and from the pass loop on the
+// count has no register at all (three compares against its home per pass) while the hull count owns EBX with its cell
+// at +0x10. Re-measured: the one-counter body with main's gotos 265 (759 B); the completion-flag body (match-only)
+// with `current` after the call 216 (791 B, aligned 84 unmasked), with `current` ahead of the call 116 (784 B). In both
+// flag bodies ours gives the count a callee-saved register for the pass loop (EBX or EDI) and the hull count only ECX.
+// Diagnostics, each reverted at once (an unreachable call taking the address, or the address stored to a global): the
+// hull count's address taken unreachably on the one-counter body 230 (762 B: `inc dword [hull count]`, the scan's
+// bound compared from memory, the loop still rotated); with the count's as well 238 (792 B); with all three parameters'
+// too 252; the count's address taken unreachably on the flag body 216 (same code) and on the `current`-first flag body
+// 212 (784 B: the count still cached in EDI); stored to a global on the flag body: both 240 (784 B, aligned 182), the
+// hull count's alone 242 (768 B), the count's alone 178 (807 B, aligned 88), both on the `current`-first body 245. So
+// neither an address-taken nor an escaping count or hull count gives retail's allocation; what ranks the hull count
+// above the count for the fourth callee-saved register is still open.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1433,6 +1453,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // distance at the loop end 258; the crossing written through a pointer to its output element 129; the previous point as
 // `points + count - 1` with the inside copy written per member 129; the epsilon test as `epsilon < distance` 129.
 // Diagnostic (reverted): a volatile previous side 149 (the frame moves, the entry is not retail's).
+// M3 lane 8 r202 (fast; control 129, aligned 89, register-masked 28): on the repeated-guard graph (match-only), re-measured guard +
+// if/else fraction 92 (890 B, aligned 36: the zero made late in XMM1, `i = 0` after the guard's branch, the crossing's dy
+// copy, the tail's count in ECX) and guard + clamp inside + dx at its uses 151; new on the 92 form: `inside` after the epsilon
+// tests 101, the entry side as an if/else assignment 92 and `fraction` declared ahead of the deltas 92 (same code each), the
+// guard spelled `0 < count` 251 (880 B) and `count >= 1` 271 (906 B).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

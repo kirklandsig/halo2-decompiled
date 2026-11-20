@@ -75,6 +75,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 76 (was 76): Retail reloads enable after the player statistics write and carries the maximum in ECX.
+// The existing getter and setter live in a separate /Ob1 translation unit. The global layout affects alias analysis.
+// MiniMax B (11-20): no new form, no lower score (76): the enable byte's raw reload needs one address-taken object that src/unknown_1967d0.cpp holds (BLOCKED-BY 0x196960/0x1968b0); what still differs is that reload, the old maximum's home (EAX here, ECX in retail), the 15-bit value read (movzx against retail's xor/mov) and the row pointer's register order.
 // score 76 (was 76): BLOCKED-BY 0x196960/0x1968b0 (retail inlines both here; their file is /Ob1 and was on
 // this round's avoid list) and the enable reload's aggregate; earlier notes below.
 // MiniMax B (11-19): no new form, no lower score (76): reading the enable byte at both use points instead of through
@@ -307,6 +310,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // Compute the new recent count from the threshold and store it once 102.
 // Index the statistics table directly and bind the time field locally only for its two uses 85.
 // NOT kept: Direct table indexing reaches the retail extent at 85. All eight forms raise the score and move the first mismatch into the prologue. The original enable and maximum lifetimes remain.
+// Exhaustive maximum branches in long/short/word 95/95/98,
+// those branches with direct enable uses 100, exhaustive player and team
+// maxima 99, nested enabled maximum 99, early clamp input promotion 99,
+// and limits before the index check 95. The 434-byte forms still carry
+// enable across the increment and leave the maximum in EAX.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -374,6 +382,11 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax E (11-20): no new form, no lower score (353): the three small homes stay rotated (retail keeps victim_team at
+// +0x18, killer_team at +0x14 and the damage code byte at +0x1c, ours at +0x14, +0x1c and +0x18) and the pool record's base
+// is built as a +0x2f0 offset against retail's +0xc, so the body stays four bytes longer than retail. Measured and dropped:
+// the team test as a disjunction (`reported_player == NONE || !function_1df560(...)`) compiles to the same code (353), and
+// the three homes are not reachable from the expression's spelling.
 // MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
@@ -803,12 +816,25 @@ struct s_object_damage_view
 // Test the table validity through the existing statistics record 353.
 // Use the existing player, object and statistics record layouts together 353.
 // NOT kept: The existing record types preserve the frame and all measured call-site controls. They leave the three rotated scalar homes and the amount-biased history cursor.
+// Timestamp at record entry/after player read/for a present player/after team admission
+// 417/417/459/353. Eligibility in those positions 463/463/459/353. NOT kept: earlier
+// reads or decisions grow the frame to 0x54 or 0x58. The late forms tie with the
+// amount-biased history cursor and rotated credited-player, victim-team and code homes.
 // M3 lane 15 r112 (fast = full 353, with the file's functions and 0xd9640): the consideration flag as `reported_player ==
 // NONE || !same_team(...)` 353; the assist loop's counter as a short 353 (same code each); the victim team as a ternary
 // initialiser 422; killer declared before killer_team 354; the fallback as a nested valid test followed by `if (killer !=
 // NONE && killer == reported_player)` 355. Probe only (it resets the damage code when the killer and the reported player
 // are both NONE, which retail does not): `if (killer == NONE && valid) killer = reported;` then `if (killer ==
 // reported_player)` 332.
+// Record reference advanced inside the selection scan, assist scan, or both 479/375/469. Both scans from
+// one base as references or pointers 469/469. Pointer-end selection, assist, or both scans 499/379/526.
+// NOT kept: Every cursor form changes the 0x50 frame. The assist-only reference stays at 1548 bytes with
+// frame 0x4c.
+// Winner/fallback/both as record addresses in the indexed scan 445/483/476.
+// Winner/fallback/both with an end-sentinel cursor 539/491/511.
+// Both with a bounded cursor 511.
+// Indexed single-record join before recovering the ordinal 500.
+// NOT kept: The cursor restores the record base but pointer-valued selection adds code and displaces the native short ordinals.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

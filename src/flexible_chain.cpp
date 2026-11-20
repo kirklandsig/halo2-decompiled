@@ -235,6 +235,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
 // score 144 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
 // earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
@@ -878,6 +879,11 @@ void __stdcall function_1160c0(real dt)
 // before stores 213, three cross products staged j/k/i 144.
 // NOT kept: the 113 form gets within one byte of retail, but raises three shared users’ scores
 // and loses two matches. The selected segment and length-ratio spill still differ.
+// M3 lane 13 r126 (fast with 0x116750, 0x116010, 0x1160c0 and 0x115ff0, matched throughout; control 144): the dt test
+// as `0.f < dt` 144 and `node->ticks++` 144 (both the same code); the first node's copies with the direction first 152;
+// the loop bound as `i <= definition->segment_count` 286 (1368 B: the guard becomes a compare, the rest unchanged).
+// Diagnostic: the segments base read through a file-local forceinline accessor 144 (same code: the base stays in EDI,
+// so the one-step scratch rotation is not set by a temporary at the base's own load).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

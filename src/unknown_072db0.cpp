@@ -2156,6 +2156,17 @@ bool function_1900a5(long index);
 // `properties_used += record->count` ahead of the fill 731 (2846 B); the same with `+= 6` ahead of it 731 (2846 B); bound
 // `record->count` with `+= 6` after the fill 718 (2862 B: retail's rolled loop, but the frame grows from 0xc0 to 0xc8);
 // with `+= record->count` after it 718 (same code). Body unchanged.
+// M3 lane 15 r115 (fast with 0x1900a5, 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60, 0x647a0, 0x647d0; control 703, aligned
+// 500 by difflib with addresses masked). Retail evidence read this round: in the request loop the identity is three registers at
+// the record write in both arms, and only the team arm stores it to the users loop's +0x34 slot for the duplicate scan and
+// reloads it after, so the scanned key is a separate local from a by-value identity. Forms: a by-value identity with a separate
+// key for the scan (an index scan, `if (k == records_used)` for the write) 839 (2974 B, aligned 518); the same with the pointer
+// scan 792 (2942 B, aligned 469); the index form with lane 7's rolled fill through a properties pointer 741 (2894 B, aligned
+// 474); the index form with the request test as a flag set from state 1 and the state-4 elapsed test 861 (2990 B, aligned 528);
+// the identity selected by value with a ternary and the key copied from it 837 (2974 B, aligned 466). Diagnostics on the hopper
+// check 0x193560 (another function's body, restored at once): its rating loop through a char pointer, and its result through a
+// reference to a local (the callee then summarised as writing) 746 / 784, and each loses most of the hopper check's matched
+// callers in the reduced image, so retail's reloads around 0x1934f0 are not that callee's write summary.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

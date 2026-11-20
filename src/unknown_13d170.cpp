@@ -888,10 +888,26 @@ struct s_physical_block_iterator
 // insufficient candidate continues to that increment 201. NOT kept: the 182 form brings the
 // cases inside the loop, but uses pointer masks instead of retail's shared AL test,
 // moves the first difference earlier and shortens to 1193 bytes.
+// Paired unsigned elapsed values with conditional ages, assigned ages, named products or compound products
+// with the original and split case-zero tie tests 373/299/373/373 and 373/299/373/373.
+// Written-differs at 201. NOT kept: Six forms reach 1213 bytes at 373 with the first difference moved
+// into the prologue. The assignment forms score 299, change the frame and no longer reproduce the policy
+// layout. All four controls stay exact. The opening body is restored.
 // Eager older-or-tied, eager rejection complement, eager non-later gate and
 // short-circuit age with eager tie 231/232/227/233; with both age masks
 // 222/217/223/244. The rejection complement with both masks reaches 1213 bytes,
 // but changes the earlier stack layout and still misses the common AL join.
+// M3 lane 6 r209 (fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): lane 1 r124's 40 lead rebuilt on
+// today's file 40 (1213 B, first difference +0x356). On it: the head flag as a `long` 93 (1214 B), as `bool const` 40 (same
+// code), the second stage on `!at_head` with its arms swapped 93, the flag declared between the pool and entry pointers 46
+// and ahead of both 46 (first difference +0xcc each).
+// M3 lane 1 r135 (fast with the file's six functions and 0x13d320, all MATCH; round 124's 40 lead re-applied, 40 at +0x356):
+// on it, 1 to 7 dead longs at the top 40 each (no phase effect on this integer code); the walk test through `long const
+// start`/`end` named in the loop, through a block pointer local, as two nested ifs, with the block's end named, 40 each
+// (same code: the second compare still re-reads best.offset where retail keeps it in EDI with a `mov edx, edi` copy); one
+// test of best.previous with the head arm's next/first stores in both of its sub-arms and the predecessor re-read through
+// a fresh pool base 100, with those stores once after the sub-arms 96 (first difference back to +0x338: the walk's scan
+// registers flip), both with a named `long previous` 100/96 (same code). Main's body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -226,8 +226,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// score 195 (was 195): one note (the stacked score lines merged, r184, and again r116); r155, r116 unchanged.
 // MiniMax C (11-19): no new form, no lower score (195): frame 0x30 against retail's 0x2c, the two zeroed floats at [esp+0xc] and [esp+0x38] against retail's [esp+4] and [esp+8], and the three b-sums take the other side of the add.
-// score 195 (was 195): one note (the stacked score lines merged, r184); r155 unchanged.
 // MiniMax B (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both
 // inverse defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the
 // transformed points still take the opposite component order. The shared point transform at the origin,
@@ -235,6 +235,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // and the in-place displaced transform and the perspective-only inverse locals measure 263 and 261. No form
 // found this round.
 // Earlier findings. one note (the stacked score lines merged, r184).
+// Merged header (r184): 195 (was 195), one note.
 // Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
 // defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills
@@ -702,6 +703,11 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Direct inverse factors with the bypass 217, early exit 208, or in-arm test 204.
 // View-owned admission result with factor copies 210 or direct inverses 204.
 // NOT kept: all forms retain the extra spill word and raise the score.
+// M3 lane 2 r116 (fast with 0x30bf0 and 0x30710, both MATCH; control 195): the point helper's scale test written
+// `1.f != camera->scale` 263 (995 B); the factor test written `0.f != fa && 0.f != fb` 211 (978 B); the factors defaulted
+// to 1 at their declaration with the else arm dropped 261 (906 B); the zero outputs as one chained assignment 195 (same
+// code); the displaced and transformed points renamed point/origin/displaced (name order reversed) 195 (same code: the
+// frame does not follow these names). All restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

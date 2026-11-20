@@ -1552,6 +1552,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
+// MiniMax E (11-20): no new form, no lower score (60): retail holds the player bit in EBP and the entry size in EBX,
+// this build holds the bit in EBX and the size in EBP, and retail's size is a compare and setne on the mask byte where
+// this build loads the declared bool parameter with a movzx; the compare and setne needs a mask value whose range is
+// unknown, which the bool parameter does not give. The head order kept, capacity, size, written scores 143 (the kept
+// mask in EAX and the capacity in EBP), so the head stands.
 // MiniMax C (11-16): no new form, no lower score (60): the head still keeps the player bit in ebx where retail keeps
 // it in ebp, makes the entry size in ebp where retail makes it in ebx, shifts before the word load instead of after it,
 // tests include_mask after the entry copy instead of before it, and ends with an extra zero-return exit block.
@@ -2009,6 +2014,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // typed `byte` with `11 + 2 * (include_mask != 0)` 139 [0] (460 B); the clamp as one nested ternary 118 [0] (same code);
 // the written-first orders WSKC 144 (443 B) [13], WSCK 153 (434 B) [13], WKSC 144 (443 B) [13] (the player goes to the
 // stack in each).
+// Word reduction using indexed for/while, entry cursor or captured count 170/170/170/172.
+// Dword reduction using those four walks 159/159/159/155.
+// NOT kept: The local reduction shrinks the native frame and changes the matched caller.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2152,6 +2160,11 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax G (11-20): no new form, no lower score (64): the outer body matches retail instruction for instruction with the
+// flags-first order (both ready bytes read up front, the remote mask in esi, the mode in ecx), and the muted-word-first order
+// with plain ready-byte reads in the two port-flag queries reproduces retail's inner loop exactly up to the last query, which
+// is still called out of line; that order moves the outer body to a reloaded second ready byte and the remote mask in edx,
+// and the plain ready-byte reads alone (85 to 94) do not lower the score, so the flags-first body stands.
 // score 64 (was 85): r209 unchanged. left: retail tests the muted-word bit first, then the first port flag reusing the second
 // MiniMax B (11-19): no new form, no lower score (64): retail's inner loop is muted-word bit, first port flag, second
 // port flag, with the second query expanded in place (two calls of 0x53be0); re-measuring retail's test order here gives

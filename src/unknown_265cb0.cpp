@@ -363,6 +363,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// MiniMax H (11-20): no new form, no lower score (84): six source forms measured this round (the clip amount's scope, the facing pair's declaration order, the distance's scope, the delta as a point3f, and the scale and the facing maxima initialized at the top) leave the homes where they are, except the two top-init forms that rise to 90 and 208/212; retail's homes run result 0x8, facing maxima 0x14/0x18, clip amount 0x1c, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and delta 0x4c/0x50/0x54, and ours run result 0xc, clip amount 0x10, range 0x18, scale 0x1c, facing maxima 0x20/0x30, seat cursor 0x34 and delta 0x48/0x4c/0x50.
 // score 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax R (11-17): no new form, no lower score (84): the seat loop's two cross products load their operands in the
 // other order (retail multiplies a term with the vector's component in the register and this build with the memory
@@ -954,6 +955,9 @@ real function_30bf0(vector3f *vector);
 // fraction test 153, named motion squared 150, condition-local intersection status 84.
 // NOT kept: the narrowed scopes tie and the initialized output grows the body.
 // The result slot and the clip output’s spill partner still differ.
+// M3 lane 13 r126 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH; control 84): the clip amount, the squared
+// distance, the delta or the seat count declared at the top of the function (or of the facing block for the count) 84
+// each (same code: scope does not move these homes); the settings lookup ahead of the actor pointer 310 (1308 B).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

@@ -2030,7 +2030,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 433 (was 433): r209, r155 unchanged. The dispatch-default branch span, return placement and timer and request scheduling
+// score 433 (was 433): r209, r155, r116 unchanged (one note: a second header line further down merged, r116). The dispatch-default branch span, return placement and timer and request scheduling
 // still differ. The 0x1c frame and entry register ownership agree.
 // r209 unchanged. The dispatch-default branch span, return placement and timer and request scheduling still
 // differ. The 0x1c frame and entry register ownership agree.
@@ -2535,6 +2535,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // aggregate copy with case 4's facing read from the state at each use measures 624 (2400 bytes, masked 84 in an
 // earlier round). No form found this round.
 //
+// Further forms (433 base):
 // Select the observed zero zoom 433; explicit zoom branches 592; raw busy byte by identity branch 493;
 // busy default with same-actor update 493; zero-zoom selection and raw busy byte 493; zero-countdown
 // fallthrough 506; countdown result before fallthrough 504; fallthrough to sole return 448.
@@ -2571,6 +2572,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // for 18/21 604, 21/14 609, or all four request cases 626; shared dispatched type 626;
 // pending assigned on request admission 433. NOT kept: the shared requests shorten past
 // retail and move the dispatch or entry. The other forms tie or raise the score.
+// M3 lane 2 r116 (fast with 0x110ab0, 0x258cf0 and 0x25a130; control 433): case 6 through a typed slot-0x4c record (the
+// layout the slot-0x4c setters elsewhere use: element, seat, flags byte at +0x22, two reals) 433 (same code: the two
+// ORs still fold to `or 0x69`), with the 0x29 set ahead of the two 1000.f stores 433; case 20's first arm as a
+// conditional clear of the result (`if (ac || d0) result = false`) 433 (same code); that arm as a direct return 1
+// through the shared exit with the result cleared after it 502 (2432 B); its else arm as a conditional clear 537
+// (2440 B). Retail compares the actor field first in cases 9 and 11 only (`cmp [ebx + 0x18], reg`; cases 5, 6, 7/8
+// compare arg_1 first); listed above at 432. All restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

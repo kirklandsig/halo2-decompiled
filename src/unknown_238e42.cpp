@@ -1339,6 +1339,23 @@ bool __stdcall function_2399da(long controller_index)
 // 90 (same code: the two calls are cross-jumped back into one block); the identity bound by a const reference for the
 // removal call 90; the rank read through a const reference in the whole dispatch 90; the removal under an implied
 // `if (xuid)` with the task index preset to NONE 90 (all the same code).
+// M3 lane 14 r126 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e and 0x239a3d, all MATCH; control 90, aligned 13
+// lines, 3 with registers masked; body unchanged). Diagnostics first (reverted at once), because they say what kind of
+// value the identity is in retail: with the identity as a third parameter, declared after or before the rank, it takes
+// EAX and the rank ECX (retail's roles; 164 at 423 B from the changed frame); a fresh local read from a member of the
+// membership block after the 0x18ffc3 call, or from the member block before it, used for the test and the removal, the
+// same (160 at 426 B / 163 at 423 B); so the rank outranks the identity only while the identity is the reload of a
+// scalar local that was spilled across the calls, and loses to any value loaded from real memory at that point. The
+// identity local declared volatile (diagnostic only, reverted at once) 71 at 432 B: each read then loads again where
+// retail loads once, so retail's local is not simply kept in memory. Forms, all 90 with the same code: the dispatch
+// from the 0x18ffc3 call on as a forced-inline helper with the parameters (controller, identity, team, member,
+// membership, may_change, rank), (controller, rank, identity, ...) and (identity, rank, controller, ...); the selection
+// getter writing through an out pointer, as `static inline` and as a plain static function; the getter as a plain
+// static function returning the pointer; the identity read through a const reference to the pointer bound at the test (for the
+// test and the removal, the test only, the removal only) or right after the getter; the identity held in a one-member
+// record local with every use through it (the compiler treats it as the scalar). The dispatch as a plain static
+// function (not inline) with either parameter order 294 (276 B: it stays out of line). Left: a source form in which
+// the identity at the dispatch is loaded from memory the compiler does not own as a spilled scalar.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
