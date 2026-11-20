@@ -738,6 +738,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // compound reciprocal weights 162, both compound weight pairs 162.
 // NOT kept: staging both pivot contributions grows the frame. The best forms leave the blend spill
 // and fixed-arm displacement different.
+// M3 lane 14 r122 (fast with 0x2243c0, MATCH; control 162): the blend read through a `real const &` in the aspect
+// block 162 (same code); the blend uninitialised and set to 0 at the top of each 0x10000 arm 497 (1953 B); the second
+// UV set encoded before the first 256; the width as `aspect_x*context->width` 162 (same code); the aspect pair as one
+// `point2f` initialised to 1, 1 158 (1938 B, the colour and aspect homes move: first difference at +0x199).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -75,7 +75,7 @@ void function_2232a0(void)
 // index in the register and folds the base into the displacement), the tail call's arguments still need 0x2b5d0's own
 // body, which is stubbed in src/stubs/lane_k.cpp: BLOCKED-BY 0x2b5d0, and part of the reduced-image count is the
 // pushed global addresses, which the reduced image places at other addresses than retail's.
-// score 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
+// Earlier first line (47, was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // MiniMax C (11-15): no new form, no lower score (79, was 79): retail's outer loop carries a pretest our do-while lacks, the slot scan holds its pointer in EDX and its predicate in CL where ours holds them in ECX and AL, the terminal stores fold the record base into the displacement where ours adds it to the index register, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found
 // arm, a doubled store kept only with a match; the pretested while alone 168, local_5 zeroed once 110; code back to
@@ -401,6 +401,10 @@ void function_2232a0(void)
 // the record pointer is formed (`lea`) only for the type store and the two copy pointers; the integer and x87 streams
 // interleave the same way in both builds, so the difference is in address selection, not scheduling. Still BLOCKED-BY
 // 0x2b5d0 (its blockers 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 are all unmatched today).
+// M3 lane 14 r122 (fast with 0x223240/0x2232a0 MATCH, 0x223080 2 throughout; control 47): a terminal record pointer local
+// `g_47f0f8 + view_count` declared with the view count 163 (598 B); the view count as a `short` 79; the record passed as
+// the address of its first field 47; both 0x2b5d0 and terminal records as `g_47f0f8 + n` 47; the loop's records as
+// `g_47f0f8 + 1 + local_0` 47 (same code each). The stub still takes the count in EDX where retail passes EAX.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

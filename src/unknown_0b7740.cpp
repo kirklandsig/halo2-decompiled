@@ -1670,6 +1670,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // `inline` on 0xb8bd0 394 (1373 B: both sites expanded, 0x18c3b0 157). Diagnostic, reverted: `__assume(parent_index !=
 // NONE)` after the flag read 392. Retail keeps the pool in ECX while the defaults (EAX, DL) are live across the lookup,
 // so its index has to take ESI; ours spends ECX on the index and reloads the pool.
+// M3 lane 14 r122 (fast with 0xb8bd0/0xbdc40/0xbc820/0xbd020/0xbee60/0xbfa40/0xbdb60, all MATCH; control 20): the no-model
+// lookups through a `long const &` bound to the parent index 20 (same code); one parent-object local read through a
+// `const &` to it 44 (1390 B, data from EDI); the declaration defaults kept with a repeated `else { parent = 0;
+// parent_mirrored = false; }` 18 (1394 B, the else-arm form above: the initialisers are dropped); the parent node read
+// into a local before the parent test 20 (same code); parent, flag and index declared once for both arms with the
+// no-model defaults in an else arm 18 (1394 B, same code as the else-arm form).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
