@@ -453,6 +453,14 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Row aggregate assignment in the same orders 716/719 and 713/718.
 // NOT kept: the setter forms retain +0xe7 and shorten the body, while
 // row aggregate stores move the first difference to the prologue and grow it.
+// M3 lane 8 r206 (h2m fast with 0x246cd0 and 0x142eb0, both MATCH; control 219, register/offset-masked aligned 163):
+// retail's first-copy flow read again (k^2 spilled at once to +0x24, k*s, i^2, j*s, s*i, forward.i, ij, left.i, forward.j,
+// j^2, k*complement spilled to the dead scale slot +0x90, left.j, ik, up.i, forward.k, up.k, jk; cosine read from +0x80 at
+// each use). In the helper: forward.i after the i sine product and left.j after the j square together (that whole flow)
+// 368 (1812 B, masked 114: cosine now takes a register, 24 bytes short); that with a named k*complement shared by ik and jk
+// 457 (frame changes); that flow with sine and cosine by const reference 368 (same code); that flow with the cross terms in
+// the first copy's text (`axis->j*(1-c)*axis->i`, `axis->k*(1-c)*axis->i`, `axis->j*(axis->k*(1-c))`) 347 (1816 B, masked
+// 137); that flow with up.k moved up beside left.j 246 (1804 B, masked 119).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

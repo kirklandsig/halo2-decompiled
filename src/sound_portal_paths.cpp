@@ -576,6 +576,17 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Reacquire destination after travel, geometry, or at the range gate 359/359/359;
 // reacquire start after travel or geometry 369/369; reacquire both after travel, geometry,
 // or at their consumers 405/370/366. NOT kept: all raise the score and retain the extra frame word.
+// M3 lane 8 r206 (h2m fast with 0x18d730 and 0x14b240; 0x14b240 MATCH, 0x18d730 287 each time; control 295): the frame
+// word is the cached cluster-table base (spilled at +0x24; retail reloads `bsp` and both table bases each entry, and
+// 0x14b240 takes register arguments, so it is a link-time-compiled callee whose body retail summarised as writing memory).
+// Diagnostic, reverted: 0x14b240's in-plane offset through a reference-bound local alone (bytes unchanged) 372 (1346 B;
+// 0x18d730 370, 0x18ae80 846 -> 911), so today's body still needs the held rewrite. Tried: the sort scratch as `long`
+// 295 and declared at the top 295 (same code); the output counter declared `long i = 0;` ahead of the limit with the
+// loop as `for (; i < limit; i++)` 290 (retail's counter store before the limit compare and the capped arm threaded past
+// the entry test; under the bar, not kept), ahead of the count reset 294; on the 290 form: `dword encoded` 291, the count
+// reset after the limit 300, a named environment element pointer for the gain (retail forms that element's address in a
+// dead `lea`) 290 (same code), the limit capped by an `if` 295, the counter declared ahead of the sort 296. The gain
+// helper's degenerate arm is laid out first here and second in retail (an arm swap with the test negated, match-only).
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

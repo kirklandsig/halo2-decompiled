@@ -218,6 +218,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // `bool const &` for its test 21 and for the 0xd1850 argument 21; the hidden test's object through a `byte *const &` 21, on
 // update-first 216 (same code each); update assigned in both arms re-measured 222 (aligned: only the false store's place in
 // the not-force arm and the missing force-arm reload differ); that with the object looked up again in the force arm 226 (813 B).
+// M3 lane 8 r206 (h2m fast with 0x3db00 and 0xd1850, both MATCH; control 21, aligned 12): the elapsed clamp between the
+// force flag and `bool update = false;` 24 (aligned 12: the false store moves below the clamp); `bool update = false;` and
+// the clamp ahead of force 239 (816 B); force computed ahead of the object lookup 241 (830 B); `bool update = false;`
+// between the object lookup and force 218 (the update-first code: entry homes and EBX as retail, but ESI/EDI swapped for
+// the two timestamps and the late object index, no force-arm reload); the hidden test through its own lookup with the
+// object local declared after the force block 250 (838 B: the lookup is not merged).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
