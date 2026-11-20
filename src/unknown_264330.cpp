@@ -466,6 +466,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // that held this one back now match, so what is left is the actor index's home and the frame.
 // MiniMax E (11-16): no new form, no lower score (412): the frame is still 0xa4 against retail's 0xa0 and retail still takes the actor index in EAX where ours loads the argument from the stack, so the body stays four bytes longer than retail's.
 // score 404 (was 404; 412 before lane 14 r124): the frame is 0xa4 against retail's 0xa0; retail takes the actor
+// MiniMax H (11-20): no new form, no lower score (404): retail takes the actor index in EAX (mov ebx, eax right after the first push) while ours reads it from its stack home at esp+0xac; that difference follows from the inlined 0x2641c0, whose noinline declaration sits in another lane file, so the forms of this body cannot move it; the frame stays 0xa4 against retail 0xa0 and the body 1624 bytes against retail 1616.
+// score 404 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
 // Frame 0xa4 versus 0xa0; stacked actor and node/workspace homes still differ.

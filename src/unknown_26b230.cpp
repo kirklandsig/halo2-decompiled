@@ -2285,6 +2285,14 @@ void function_269250(long clump_index, long actor_index);
 // storing the selection before the best; the compare written `best < score`; the selection and best declared at
 // function scope and set per actor; the score declared ahead of the team test; the walk step reading the activity flag
 // from the global at each step as 0x268840 does.
+// M3 lane 16 r154 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0/0x26ae30/0x268c90/0x268510,
+// all MATCH each run; control 87): the in-arm compare re-measured 126 (480 B). On it: the walk declared once outside the
+// actor loop 126; the activity flag read ahead of the walk's initialiser 126; the walk step given `g_4f55d0->active`
+// directly with no local 126 (same code each: the read is shared with the initialiser's test); the walk initialiser
+// `__forceinline` in place of `static inline` 126 (its other users unchanged); the selection and best declared ahead of
+// the walk 129. Retail's listing: the pool sits in EBX from the initialiser (the inactive path loads EBX from the walk's
+// uninitialised home), the bit scan borrows EBX for its mask and reloads the pool after it, and the selection is only
+// ever in its +0x14 home; ours gives EDI to the selection and reads the pool from the walk's home at each use. Body unchanged.
 // attachment result with guards, selection first 147, selected attachment with guards, selection first 146,
 // optional attachment result, selection first 113, optional selected attachment, selection first 122,
 // attachment result with guards, creation first 147, selected attachment with guards, creation first 147,

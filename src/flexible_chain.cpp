@@ -235,6 +235,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
 // score 144 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
 // earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
