@@ -4141,6 +4141,41 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // and bool logical OR 1415/1415/1414/1409. Independent contribution in the same four forms
 // 1416/1416/1414/1420 (reduced control 1412). NOT kept: the three-point seeded logical gain
 // leaves frame 0x34 and the opening pool, offset and dual-state homes.
+// M3 lane 4 r229 (fast, control 1412 = plain; aligned = difflib count, masked = registers and stack slots masked too;
+// control aligned 910, masked 521). Small forms on this body: the animation state's byte 0x11 read into a long ahead of
+// the 0x14 test (retail's `movzx eax` at 0xfe121) 1429; the ramp sound tag as `increasing ? [+0x248] : [+0x250]` (retail
+// loads each field in its own arm) 1412 (masked 517); both 0x18c ramp clamps as value selects (`x = x > t ? t : x` and
+// `x = x > t ? x : t`: retail's shared `movss` copy at 0xfe2e0, that section then exact) 1427 (5668 B), with the tag
+// arms 1411. A whole body in retail's forms (bool result; blocked false at entry and set in the block that clears +0x174;
+// no complement local, `1.0f - scale` in the two barrel arms; the 0x16c and 0x16e words as word bitfields; down/up false
+// first and filled under `if (!blocked)`; primary/secondary read from the trigger definition at each use through two
+// by-value inline helpers (ready test, then the barrel's flag0 through an element pointer); the barrel selects of
+// behaviours 4 and 5 as two arms each; behaviour cases 0 1 4 5 2 3, both action switches 0 3 1 2, states 0 1 2 3/7 4 5 6;
+// `value_170 <= 0 && value_171 <= 0`; the barrel's +0x10 as the field at each use; finished/stopped ahead of the blocked
+// test with the four 0x103e60 calls as an else-if chain; the +0x20 clamps against double 1.0 / 0.0 and the +0x1c clamps
+// as value selects) with the trigger fields written `weapon->triggers[i].x` 1682 (5888 B, aligned 705, masked 306: the
+// entry is then retail's, pool EDI, offset ESI, dual BL, but the flag word is addressed `[weapon + (i*3 + 0x84)*4]`
+// because 0x210 divides by 12, so i takes ESI and the weapon leaves EBP); that with the trigger flags as a dword and mask
+// tests 1709; with the trigger pointer local kept (this body's form) 1661 (5872 B, aligned 724, masked 293: retail's
+// `[i*12 + weapon + 0x20e]` addressing, saved as build/r229/lead-fdfb0-reconstruction.patch). What is left on that form:
+// the magazine loop hoists weapon_index into EBP (retail loads it from its home in the loop and keeps the weapon in EBP
+// to the end of the trigger loop), so every trigger access reloads the weapon (about 180 bytes); retail's result sits in
+// BL with a store to its home at each definition, here in memory only. Diagnostics on the 1661 form: without the magazine
+// loop 1471 (5704 B, masked 222: the trigger loop is then retail's, weapon EBP, i*12 EBX, the definition entry ESI); the
+// loop index `volatile` 1833; one function-scope index for the three loops 1661 (same code); `bool result = false;` as
+// the first declaration 1661 (result then BL with retail's stores, weapon_index EBP from the entry); the eight scalars
+// declared uninitialised at the top in seven orders 1667 each (same code: declaration order alone is no lever); the
+// charge branch of behaviour 2 as an inline helper 1856. `(void)&weapon_index;` 1412 here and 1682 on the fields-in-full
+// form, the magazine call's index read through a pointer to the parameter 1682 on that form (same code each: the read
+// is forwarded). Re-measured: bool result alone 1494
+// (5616 B, memory only, no BL), with its loop stores through a pointer to it 1490. Retail's frame, from the listing:
+// dwords offset 0x24, loop index 0x28, definition 0x2c, player index 0x30, weapon 0x34, scale 0x38, target 0x3c, the
+// x87 sum's old value 0x40 and an unreferenced cell at 0x44; pressed 0x1c, released 0x20; bytes result 0x13, down and
+// finished 0x14, up and the barrel's active 0x15, blocked 0x16, target entry and stopped 0x17, press/hold/release
+// 0x18-0x1a, and behaviour 4's control bit 6 stored (never read) at 0x1b. Two readings from compile-only screens of other
+// bodies this round: a bitfield returned through a bool-returning inline function gives retail's `mov; shr; test 1` (a
+// direct test of a narrow bitfield gives `test byte [mem], mask`), and a bool with two definitions that is tested at once
+// keeps its store (retail's `shr al, 6; and al, 1; mov [esp + 0x1b], al; jne` at 0xfe7cf needs no qualifier). Body unchanged.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

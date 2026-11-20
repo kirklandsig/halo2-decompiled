@@ -5461,6 +5461,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // sums 169; complete transverse vector 272; scaled-vector addition for forward, left or both
 // 272/276/276; staged forward vector 275. NOT kept: the per-row sums tie, and every full-vector stage
 // grows the body.
+// Replacement forward published between/after crosses 217/212; separate adjusted up 219;
+// paired/separate angle bounds 169/169; forward/left scale updates 169/169; component-wise forward
+// copy 173.
+// NOT kept: the replacement basis vectors grow the frame to 0x5c. The component copy reaches 767 bytes
+// with frame 0x50 but raises the score and leaves the first cross schedule different.
 // m3 lane 11 r130 (a compile-only screen of this file reproduces both blocks exactly; fast with 0xc60c0, 0xde190, 0x1fe120):
 // retail's forward term `fld [m]; fmul st(n)` is the pattern of a float times a double (the float operand is converted
 // first), and its k row consumes up_scale and left_scale but not forward_scale: forward_scale double, the other two
@@ -7242,6 +7247,12 @@ done:
 // Shared planar normalization with the current, next or both accessors 181/181/181.
 // NOT kept: the scale sequence matches but gains six. The weapon lookups still merge and the flag
 // bytes and state slot differ.
+// shared planar scaler 181; scoped toward point with shared scaler 181; source-vector toward with shared
+// scaler 181; component-initialized toward with shared scaler 240; turn assigned from action-state result
+// with shared scaler 218; default side before angle bounds with shared scaler 182; point setter for all
+// rotations with shared scaler 220; state flag updates through byte helper with shared scaler 181.
+// NOT kept: the shared planar scaler recovers the reciprocal and both multiplies at retail length but gains
+// only six. The direction branch span, flag-result bytes, state home and weapon reloads still differ.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8946,6 +8957,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // 57 (masked 11), fraction + owner order 121 (1598 bytes, masked 8), globals + owner order 89 (1606 bytes); the cap's
 // upper test as `cap > 1.0f` 116 (other code, masked 15). The low counts are positional; only the owner order (a
 // statement order, kept only with a match) and the fraction's stun multiply order move masked lines.
+// MiniMax E (11-19): no new form, no lower score (62, baseline): the owner's two fields are still read in the opposite
+// order (ours +0xc8 then +0xc4, retail +0xc4 then +0xc8), the shake's fields are still named locals where retail
+// re-reads them from memory (dropping both names measures 383, re-reading only the divisor measures 116), the 0xc98a0
+// call still sets its pointer argument after the other three pushes where retail sets it first, and a 300 s permuter
+// run over the body found nothing below 62.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -9541,6 +9557,11 @@ struct s_unit_melee_collision
 // staged cross 531, positive hit-publication guard 531, positive boarding admission 520,
 // and conditional damage values 494. NOT kept: seven forms recover the 0x17c frame at shorter
 // extents and higher scores. The conditional pair shrinks the frame to 0x178.
+// range reference 533; range address 533; range reference with shared scaled addition 480; aim and range
+// references 533; range reference at fan entry 533; chained index defaults 483; candidate trace time shared
+// by test and publication 484; collision classification by tests 486.
+// NOT kept: the live range forms recover the 0x17c frame but shorten the body. The scaled-add form gains
+// four at 2201 bytes, and chained defaults gain one at 2229. Retail's unit and fan counter homes remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

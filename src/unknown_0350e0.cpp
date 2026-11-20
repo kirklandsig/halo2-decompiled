@@ -438,6 +438,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Separate symmetric matrix, with final aggregate, in-place correction, field transfers or row setters:
 // direct sine products 429/374/358/348; sine-axis vector 379/377/353/353.
 // NOT kept: all change the 0x90 frame and raise the score. The axis-square spills remain.
+// Early samples for squares and sine only, with cross terms reading the axis separately. Grouped scalars
+// in i/j/k or i/k/j order 382/382, separately scoped 360/362. Vector copy with direct products or
+// shared scaler 383/404, component initializer 364/382. NOT kept: all change the retail frame
+// and lengthen the body. The saved axis and square registers still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2289,9 +2293,12 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
-// score 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
+// score 281 (was 417): The frame and output homes agree. The delta/forward schedule, draw-point X load, and loop XMM assignments still differ.
+// Earlier (417, was 492): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // product operand sides, the loop's XMM numbering (lead at the end of this note).
 // MiniMax I (11-19): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10 and the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order.
+// Earlier (492, was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
+// score 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // Earlier 492 (was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // MiniMax S (11-17): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still
 // 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at
@@ -2649,6 +2656,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Clamp results through pointer/reference with a joined store 492/492;
 // complete bound-arm stores 512/512; input-first stores 537/537; in-place clamps 535/535.
 // NOT kept: each retains frame 0x90 and the direction/draw-point overlap.
+// Field, chained, or attenuation-sourced color defaults after the delta 495/495/495/495.
+// Reflected aggregate 417, shared component setter 281, aggregate difference then scale 504,
+// projected aggregate with shared scaled difference 500. On the reflected setter, shared draw-point
+// setter or aggregate 281/281, or a shared delta setter 284. The reflected setter gives retail’s
+// separate draw-point Y and Z loads and stores, with X still loaded separately.
 // M3 lane 4 r227 (fast with 0x2f2d0/0x2e3f0/0x222d0, = full 417; a/s/r = LCS-aligned unmatched lines exact / stack
 // offsets masked / registers masked too, main 136/128/46). Lane 14 r121's helper-form lead re-measured 445 at 2288 B
 // (54/50/16). On it: `size` computed before `opacity` 447 (48/44/22: the angle then takes retail's XMM4, the amount
@@ -2692,9 +2704,9 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
     delta.j = position.y - g_4b9da0.y;
     real forward = g_4b9dac.j * delta.j + delta.i * g_4b9dac.i + delta.k * g_4b9dac.k;
     vector3f reflected;
-    reflected.i = (g_4b9dac.i * forward - delta.i) * 2.0f;
-    reflected.j = (g_4b9dac.j * forward - delta.j) * 2.0f;
-    reflected.k = (g_4b9dac.k * forward - delta.k) * 2.0f;
+    vector3f_assign(&reflected, (g_4b9dac.i * forward - delta.i) * 2.0f,
+        (g_4b9dac.j * forward - delta.j) * 2.0f,
+        (g_4b9dac.k * forward - delta.k) * 2.0f);
     real attenuation = 1.0f;
     real near_distance = *(real *)(definition + 0x18);
     if (near_distance != *(real *)(definition + 0x1c))
@@ -5358,7 +5370,8 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 }
 
 // MiniMax I (11-19): no new form, no lower score (231): the frame is still 0xd0 against retail's 0xe0 and the radius, the negated radius and the scaled zero still take other spill slots; the four-channel colour and the `-radius` forms recorded below still land at 225/226 with a longer body, so the body is unchanged.
-// score 231 (was 231): Frame 0xd0 versus 0xe0. The radius, negative radius and scaled zero occupy other spill slots.
+// score 231 (was 231): The frame is 0xd0 against retail’s 0xe0. The radius, negative radius, and scaled zero still occupy different homes.
+// Earlier (231, was 231): Frame 0xd0 versus 0xe0. The radius, negative radius and scaled zero occupy other spill slots.
 // MiniMax H (11-06): no new form, no lower score (231).
 // The corner geometry does not match retail: retail's four corners are (-r,-r), (-r,+r), (+r,+r) and
 // (+r,-r), while ours twists the quad as (-r,-r), (+r,-r), (+r,+r), (-r,+r), and the vertex writes follow
@@ -5560,6 +5573,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // helper reading i/j/k) 231 (same code). The colour form gives retail's frame and aggregate order (matrix, corners,
 // colour, collision: by name, descending), but the spill cells stay y 4 / z 8 / radius 0xc / -radius 0x10 against
 // retail's y 4 / radius 8 / -radius 0xc / z 0x10, with z in XMM1 where retail's is XMM7. Body unchanged.
+// Remaining coverage before matrix, after matrix, after first corner, or before last corner
+// 409/407/401/399 with scalar alpha and 411/406/396/396 with four-channel color.
+// NOT kept: all regress and grow. The last color form recovers frame 0xe0 but runs to 1841 bytes.
 // M3 lane 4 r227 (fast with 0x141710/0x1697c0, both MATCH; control 231; a/s/r = LCS-aligned unmatched lines exact /
 // stack-masked / register-masked too, control 165/160/61). Retail keeps the offset's y of corners 2 and 3 in that
 // corner's own output y (stores the radius to +0x64 and +0x70, then reads +0x70 back in corner 3's scaled path),

@@ -806,6 +806,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1687 (6528 B); the contact count named once for the query test and the loop bound 1355 (6238 B, aligned 1395); the
 // wheel count named once for the bound and the wave term 1432 (6238 B); the velocity pair declared local_5, local_4 or
 // in two statements 1346 (same code: the homes do not move).
+// degenerate spring result 1346, falling spring result 1346, rising spring result 1346, explicit spring
+// results 1346, spring coefficient default 1359, steering sign result 1391, steering deadband arms 1346,
+// compression default and adjustment 1406, direct wide magnitude products 1566.
+// The 0x58c frame and native velocity homes remain unresolved. Direct wide magnitude products reduce the
+// frame to 0x590 and shorten the body to 6022 bytes.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

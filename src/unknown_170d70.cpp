@@ -258,7 +258,8 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 
 /* advances the player's motion channels by the elapsed time, then rebuilds the forward and up
    vectors at current[10] and current[13] as an orthonormal pair when they drift */
-// score 64 (was 72): the current pointer is declared before the values, and the new up's j is stored as soon as it
+// score 64 (was 72): The 0x5c frame agrees. The deadline cursor and signed group ordinal spill in the opposite order, and the basis correction still differs.
+// Earlier (64, was 72): the current pointer is declared before the values, and the new up's j is stored as soon as it
 // is computed (the permuter found both: 70 and 66 alone). Before (72, was 81): the loop matches but for two slots
 // (the time pointer the compiler makes and
 // the group counter are swapped) and the order of the current and value pointer setup; after it
@@ -332,6 +333,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // deviations 121, early basis addresses 121, or early signed ordinal 135. NOT kept:
 // the shared basis base gives 1401 bytes and restores the traversal through +0x2b7.
 // The orientation tail still differs. Separate width cursors grow the frame.
+// Independent deadline with a shared side-vector setter 125, corrected up-vector setter 124, or both 124.
+// Plain while traversal 125, player-state reference 125, rotation group first 376, deadline advance
+// beside the target advance 158, or side-vector aggregate 125, all with the independent deadline.
+// NOT kept: the 125 forms recover the first 0x2b8 bytes but grow the correction at 1413 bytes.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -843,7 +848,8 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	}
 }
 
-// score 129 (was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. Cluster creation stays inline in the build.
+// score 129 (was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. The build still places cluster creation ahead of traversal.
+// Earlier (129, was 142): Retail saves EBX for the cluster slot and defers EBP for the signed volume index. Cluster creation stays inline in the build.
 // The save at entry and the signed volume index still exchange EBX and EBP, and cluster creation stays before the loop.
 // Earlier score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
 // limit, the 163db0 call, the volume/entry/cluster stores and the list walk all equal retail 0x172ee0-0x17308f).
@@ -935,6 +941,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // postincrement 142, failed admission first 142, map-cell reference 142, wide count 150,
 // fixed camera record extent 142, and one resolved plane store 142. NOT kept: these
 // shared-return forms shorten the body and change the matched caller.
+// Traversal pointer after index 129, between clears via record reference/pointer 129/129, through
+// indexed count clear 123 or indexed index store 129. Between-clear bind with short record subscript,
+// retained map cell, or preincremented signed count 129/129/129.
+// NOT kept: the indexed count clear gains six. It still creates the cluster before traversal.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1161,7 +1171,8 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
-// score 346 (was 346): Logic walked block by block against retail: every call, constant and field offset agrees.
+// score 334 (was 346): The 0x50 frame and retail length agree. Unity still starts in XMM7 instead of XMM5, and two first-axis squares spill.
+// Earlier (346, was 346): Logic walked block by block against retail: every call, constant and field offset agrees.
 // The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
 // rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
 // 0x172233). For i it uses ((i,k),j) / ((k,j),i) / ((k,j),i) / ((i,k),j), for j ((k,j),i) / ((i,k),j) / ((k,j),i) /
@@ -1247,6 +1258,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Up-field pointer at first rotation or entry 362/361. Both pointers early or up bound later 360/360.
 // Both field references or both pointers at first rotation 361/359. NOT kept: all regress, and six
 // forms also demote the matched initializer.
+// Named horizontal half-angle 346, projected half-angle before doubling 337 reduced and 334 plain,
+// named vertical field with a following field read 349, both fields before publication 363,
+// published half-angle expression at each use 337, scaled tangent accumulators 345, referenced
+// horizontal field 356, shared original-direction setter 380.
+// NOT kept: the repeated half-angle is 1454 bytes and duplicates a computed value. The original-direction
+// setter demotes the matched initializer.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1254,7 +1271,8 @@ void function_171d90(s_view_setup *view)
 	s_rotation_matrix m;
 
 	view->ratio = view->field_of_view / g_54e854;
-	view->vertical_field_of_view = (real)(atan2((double)(tan(view->field_of_view * 0.5f) / view->aspect), 1.0) * 2.0);
+	double projected_half = atan2((double)(tan(view->field_of_view * 0.5f) / view->aspect), 1.0);
+	view->vertical_field_of_view = (real)(projected_half * 2.0);
 
 	real half = view->vertical_field_of_view * 0.5f;
 	real angle_a = (real)atan(tan(half) * view->scale_x);
@@ -1644,7 +1662,9 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 134 (was 205): The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return still differ.
+// score 134 (was 205): The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
+// The 0x30 frame and early AL/ESI setup agree. The result and flag homes, signed cluster spill and false return
+// still differ.
 // Earlier comparison at 221.
 // the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
 // (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
@@ -1735,6 +1755,11 @@ struct s_pool_view_172840
 // separate head capture and increment 145; read-only projection 145. NOT kept: the field
 // selection gains six, grows by one byte and loads through the selected address where retail
 // selects the short value before extending it.
+// flags before result 59, byte result 241, result before storage 55, conditional cluster selection 55,
+// allocation pointer before reservation 140, single queue-wrap store 235, head shared with guard 251, wrap
+// branch before increment 90.
+// NOT kept: The 55 forms recover the flag homes at 870 bytes, with a different cluster store schedule and five-
+// byte sentinel load.
 // With independent failure stores and a signed destination: reserved index for success,
 // rollback or both 142/135/255. Reserved address for success or both 149/260.
 // Committed reservation end 260. Joined bitset rejection 55. Point-capacity upper bound 248.
@@ -2033,6 +2058,13 @@ struct s_camera_reference_171830
 // return 270; post-tested refinement count 273; clear the narrow-ray mask bit 270.
 // NOT kept: integral sign gains two at retail length. The point still occupies EBX and the
 // 0xbc frame still has the sample spill.
+// complete midpoint fraction and guarded update 320; midpoint fraction field and guarded update 310;
+// midpoint fraction field and latch 310; explicit midpoint hit and miss endpoints 289; sample offset by
+// reference 270; separate sample acceptance guards 270; one unsigned sample bit view 270; weighted final
+// contributions 270.
+// NOT kept: midpoint forms shrink the frame to 0xb0 and raise the score. Three pass the point in EDI and
+// the fourth retains EBX. The sample and blend forms tie. Retail still passes the point on the stack and
+// reserves 0xb8.
 // Shared inline zone test 267, with the location scoped 267. Typed cluster and zone tables with
 // unsigned snapshot 270, signed snapshot 270 or global bases at use 270. Signed cluster field at each
 // test 261. Winning fraction declared beside center fraction 270, refinement fraction read at each use
@@ -2319,6 +2351,13 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // view receiver for calibration and derivative transform 313; shared clamp destination 370.
 // The collision point stays in EBX. Keeping the view receiver shortens the body and sharing
 // the clamp destination lengthens it.
+// horizontal normalizer through shared planar scaler 295; paired horizontal offset products 366; y
+// correction live to field-of-view publication 296; horizontal outputs published together after field of
+// view 321; shared point setter for channel displacement 388; named point-transform products 383; named
+// vector-transform products 295; named point and vector transform products 387.
+// NOT kept: the alternate planar scaler and named vector-transform products tie. The later horizontal sum
+// forms preserve length and increase the score. Point-transform product names shorten the body. The
+// collision point still arrives in EBX and displaces the state base.
 // Published location receiver 295, combined changed-cluster guard 325, nested user-cluster bounds 295,
 // typed cluster count 295. Direct input-up address 363, later normalization-through-copy forward
 // pointer 379, output-axis pointers at normalization 446, adjusted projection depth snapshot 295.
