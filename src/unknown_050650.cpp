@@ -994,6 +994,10 @@ struct s_collision_result_buffer_1697c0
 // clear carrier, each with unpublished result or positive fraction first at fallback 344/335 each.
 // NOT kept: all raise the score at retail length and change the matched caller. The 344 forms
 // also shrink the 0xa8 frame.
+// Round 498: zero-first comparison, named axis length, scoped axis length, separate initial best-vector assignment, scaler result in the trace call, named obstruction, sampling names, immutable hit fraction.
+// Fast scores in order 270/270/270/270/270/270/270/270.
+// NOT kept: All eight trials tie at 270 and 1431 bytes. Every control keeps its opening score.
+// The frame stays 0xa8 on the opening body. The zero register, pitch-axis j preload and shared random/trig transfer word still differ.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

@@ -7268,6 +7268,10 @@ done:
 // definition gate 181, conditional side selector 181, named weapon eligibility 208.
 // NOT kept: the scale sequence agrees at 181 and retail length, but gains six. Flag bytes, state home and
 // independent weapon lookups remain.
+// Round 498: absolute-angle scope; direction/angle scope; angle after vectors; signed/absolute angle names; request/retained/output direction names; requested vector first; fixed state-flags pointer; action predicate names.
+// Fast scores in order 187/190/190/187/187/187/187/187.
+// NOT kept: Six forms tied at 187 and the two that moved the angle declaration regressed to 190.
+// The frame remains 0x24. The reciprocal/load order, definition-flag bytes, state at +0x14 and independent weapon lookups still differ.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -9586,6 +9590,10 @@ struct s_unit_melee_collision
 // basis and ordinal names 531.
 // NOT kept: all recover 0x17c but shorten to 2205 bytes and raise the score. The early pool load and fan
 // register allocation remain.
+// Round 498: weapon before unit tag, explicit across normalization, live range with weapon first, explicit normalization, shared cross, trace reset at declaration, fixed unit pointer or independent scale scopes.
+// Fast scores in order 479/555/532/493/531/530/531/511.
+// NOT kept: Weapon lookup first gains five at 2229 bytes, below the eight-point gate. Five live-range trials recover 0x17c but shorten the body and raise the score. Explicit normalization by address enlarges the frame.
+// The opening frame is 0x180. Reading the range at each product still needs the retail unit/tag/fan homes and extent.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
