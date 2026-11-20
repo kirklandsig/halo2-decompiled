@@ -948,6 +948,12 @@ void swarm_leader_detach(long actor_index);
 // 0x1e1a00 -> 0xcbf60 -> 0xcc810 -> 0x1bbdf0 -> 0x1e1a00; with 0x1fb510 emptied, diagnostic, still 297, so 0x1fb360's
 // path decides it); 0x1e1a00's definition moved to the end of its file 297.
 // Permuter on the 4 (600 s): no better variant. Alone on the original body, `value` as bool 288.
+// M3 lane 5 r212 (fast on round 189's full-image list: 0xf0fd0, 0x1fb360, the callers and callees, all as before; control 236
+// [masked 41, exact 82]): `(bool)value` at the 0x203ed0 call 236 (same code); `actor_get(actor_index) != other` 236 (same
+// code); `!unit[0xaa]` 236 (same code); the memory walk through the cached actor pointer 308 (942 B), with a short index 308.
+// Diagnostic (reverted): the memory walk removed 397 (862 B): the head then loads the pool into ECX and the offset into EAX
+// as retail (actor_index moves to EBX), so the walk's shape is what sets the head. Still BLOCKED-BY 0x26ed40 (retail expands
+// it here) and the bool parameter's declaration in src/unknown_1e3920.cpp (avoided this round).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
