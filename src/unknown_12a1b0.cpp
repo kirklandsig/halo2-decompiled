@@ -336,6 +336,7 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax H (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
 // MiniMax I (11-19): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail calls it out of line, and its definition is in src/unknown_11bed0.cpp, which this lane may not edit; the one form that reaches 0 needs the redundant `&& data && sound` pointer tests, which the redundant-test ruling rejects. BLOCKED-BY 0x11bed0.
 // MiniMax E (11-15): no new form, no lower score (93): the call boundaries agree with retail's except that 0x11bed0 is expanded here where retail calls it out of line, and its definition is in src/unknown_11bed0.cpp. BLOCKED-BY 0x11bed0.
@@ -346,7 +347,6 @@ void function_11bed0(s_location *location, point3f const *point);
 // MiniMax E (11-16): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where
 // retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane
 // may not edit, so the call boundary and the register homes that follow it stand. BLOCKED-BY 0x11bed0.
-// score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // MiniMax C (11-14): no new form, no lower score (93): the location query is still expanded here and the walk still keeps the iterator struct where retail keeps a packed datum index, so the call boundary and the register homes behind it stand; the callee's inline eligibility is fixed in another file.
 // MiniMax H (11-12): no new form, no lower score (93); 0x11bed0 stays expanded in every form tried, so retail's call is not caused by our spelling of it.
 // MiniMax A (11-11): no new form, no lower score (93); the location query (0x11bed0) is still expanded here while
@@ -478,6 +478,11 @@ void function_11bed0(s_location *location, point3f const *point);
 // call), through an inline step with the inline scan 127 (258 B: the header is not duplicated, so retail's folded
 // first step needs two sites); the real 0x16bbc0 for the first step with the inline scan at the latch 118 (249 B).
 // BLOCKED-BY 0x11bed0's inline decision: with it out of line round 88's walk is retail's code.
+// Skip ineligible entries before each update, update consecutive eligible runs,
+// seek before entry and at the latch, or skip at entry and after updates:
+// element cursor 206/215/227/225; salted datum cursor 311/318/353/355.
+// NOT kept: the additional scan paths increase the score and leave the
+// location query expanded. Original traversal restored.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -2875,11 +2880,6 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
-// MiniMax G (11-19): no new form, no lower score (339): the gain sum as the existing s_decibels operator+ measures
-// 484 on this body, and the 322 lead of lane 15 r105 needs the track value and the source scale read into locals
-// ahead of the pitch, which the review list rejects; the permuter's 312 lead rests on a local holding the constant 2
-// and on a flag set by one test and read by the next, which the review list rejects too, so the frame stays 0x4b4
-// against retail's 0x4bc.
 // score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
@@ -2888,6 +2888,11 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // inlined 0x221810 (BLOCKED-BY 0x221810, another file) and the inlined 0x12a420 at the
 // stop_channel site remain (0x12a420 now stays out of line, as retail has it).
 // stop_channel site remain.
+// MiniMax G (11-19): no new form, no lower score (339): the gain sum as the existing s_decibels operator+ measures
+// 484 on this body, and the 322 lead of lane 15 r105 needs the track value and the source scale read into locals
+// ahead of the pitch, which the review list rejects; the permuter's 312 lead rests on a local holding the constant 2
+// and on a flag set by one test and read by the next, which the review list rejects too, so the frame stays 0x4b4
+// against retail's 0x4bc.
 // MiniMax C (11-14): no new form, no lower score (339): the frame is still eight bytes short of retail's and the homes are not a shifted copy of each other; the two helpers retail keeps out of line live in other files, so their call boundaries stand where they are.
 // MiniMax H (11-14): no new form, no lower score (339): the frame is still 0x4b4 against retail's 0x4bc, the
 // stack slots are still not a shifted copy of each other, and the inlined 0x221810 and 0x12a420 stay as they are;
@@ -3066,8 +3071,13 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // scalar, primary and last-chunk homes still differ; the 322 form needs the source scale and the track value read into
 // one-use locals ahead of the pitch, which the coordinator does not keep, and without them the same stack measures 445;
 // 0x12a420 is still expanded at one stop site (its file's flags) - BLOCKED-BY 0x12a420.
-// @retail 0x21c400
 // MiniMax C (11-17): no new form, no lower score (339): the frame is 0x4b4 against retail's 0x4bc, so the track value and the source scale still sit in the wrong slots ([esp+0x44] and [esp+0x34] against retail's [esp+0x4c] and [esp+0x3c]), and the calls to 0x221810 and 0x12a420 are still expanded here while retail keeps them out of line; both callees are declared in files this lane may not edit (src/unknown_221490.cpp and src/unknown_124f90.cpp), and taking the two early snapshots into locals moves every slot (476).
+// Track gain bits, source scale bits, or both before pitch 480/342/483;
+// both with separate clears, aggregate initialization, or a mixed gain bits
+// accumulator 495/494/495; scale before signed pitch bounds and track gain
+// after them 483; separate clears and explicit class query 499.
+// NOT kept: these early bit copies do not recover the frame or lower the score.
+// @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
 	s_looping_voice_view *voice = &((s_looping_voice_view *)g_4e6378)[voice_index];

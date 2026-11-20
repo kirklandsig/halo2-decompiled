@@ -5472,6 +5472,12 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // schedule ignores operand order: all 64 product orders of either cross product through a pointer helper, written
 // out in place (35 or more), staged, statement orders, `left` at function scope, forward declared before up, and both
 // crosses in one inline helper all leave up.i preloaded.
+// Basis left, forward, or up in the final transform 205/173/190; separate
+// three-axis basis 209, with projection in its forward member 205, or with
+// a separate left vector 177; transform forward and up 173; forward copy
+// from memcpy directly to the first cross 169.
+// NOT kept: the forward member delays up.i but shrinks the frame to 0x44.
+// The direct memcpy result keeps the early up.i load. The x87 lifetime remains.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
