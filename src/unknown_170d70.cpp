@@ -1284,6 +1284,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // ratio store after projected angle 337 reduced, and retained ratio through slope 392.
 // NOT kept: the best ties the 337 reduced control at retail length, still spills
 // two squares, and leaves unity in XMM7. The other forms shorten the body.
+// Axis-square constants 337; component square accumulators 339; staged diagonal contributions 381;
+// pair-local cross products after their diagonal 357; square as first diagonal summand 337;
+// diagonal-first publication 384; cosine bound to diagonal scope 384; joint trig declaration 337.
+// NOT kept: reduced control 337, full 334. Unity and two axis-square homes remain different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {

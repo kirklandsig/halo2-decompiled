@@ -823,6 +823,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // code); the group tests reading the instance at each use with no instance local 165; the group test negated with the
 // fallback arm first 117 (same code); the material tag named once for 0x1c590 and its lookup 146 (524 B); the stage and
 // pass indices named where they are summed 117 (same code).
+// Unshifted pass-record base 164; shared material tag field address 152; native pass array header 117.
+// With grouped cache defaults those three give 161/153/120. Native pass array with unshifted
+// base or material field address 164/152. NOT kept: ties or regressions. The fallback still
+// zero-extends into EAX instead of masking EDX and the stage/pass loads still fuse.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -875,6 +875,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // subsets 144. Direct post-test hull walk 267. NOT kept: equality leaves the
 // 0x18 frame, and the post-test walk reaches 0x14 but shortens the body to
 // 759 bytes and moves the caller to 80.
+// Start index held for one output pass, each candidate, the lazy tie result, or the ranking rejection.
+// Short and long start indices: 263/249/144/144/237/229/247/247.
+// NOT kept: The short read before ranking reaches frame 0x14 but passes count in EAX and raises the score. The two short tie-only forms tie. The pass bound still adds a frame word, and the count and departure homes differ.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

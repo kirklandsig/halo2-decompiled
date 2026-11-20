@@ -846,6 +846,9 @@ struct s_object_damage_view
 // Killer and threshold/killer and code/threshold and code 436/459/446.
 // All three in the selected or absent arm first 469/478. NOT kept: the
 // explicit defaults raise the score and leave the rotated homes unresolved.
+// Keep separate slots at the maximum test, update shared slot in the reported arm, conditional update,.
+// and validate other players first. Initial-maximum and no-greater-maximum tests: 380/412/412/412/378/394/394/394.
+// NOT kept: The maximum tests all raise the score. The separate-slot forms and the initial-maximum shared forms add 16 bytes. The victim-team/credit/code homes and amount-biased history cursor differ.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

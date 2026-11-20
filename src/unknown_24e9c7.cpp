@@ -656,6 +656,9 @@ struct s_24e9c7_points
 // across i as `size * (0.0f - forward_j)` 138 (739 B); both across values through const references with `0.0f -` 139
 // (742 B); the size through a const reference 125 (same code); the forward pair copied into a point local first and
 // read from it for the across and upper products 147 (752 B, 0x24e59f still MATCH).
+// Shared external origin pointer or lvalue 125/125; with the first, both upper or all four
+// base copies before half-width conversion 123/124/129 for either form. NOT kept: two-point best
+// gain. The first copy uses EDX earlier, but the across-Y spill and return home still differ.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

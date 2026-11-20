@@ -5478,6 +5478,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // schedule ignores operand order: all 64 product orders of either cross product through a pointer helper, written
 // out in place (35 or more), staged, statement orders, `left` at function scope, forward declared before up, and both
 // crosses in one inline helper all leave up.i preloaded.
+// Squared horizontal radius, component squares, both stages, and radius before vertical projection.
+// Separate and paired view-angle homes: 169/169/169/169/169/169/169/169.
+// NOT kept: All eight forms tie at 768 bytes with frame 0x50. The first cross still preloads up.i and the final row consumes the forward scale.
 // Basis left, forward, or up in the final transform 205/173/190; separate
 // three-axis basis 209, with projection in its forward member 205, or with
 // a separate left vector 177; transform forward and up 173; forward copy

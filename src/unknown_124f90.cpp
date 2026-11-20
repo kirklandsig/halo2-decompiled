@@ -1821,6 +1821,9 @@ long function_2197f0(real gain);
 // independent release component, or attack accumulator 92/92/92/92. Retaining the attack
 // divisor for the final quotient instead gives 92/92/92/92. NOT kept: all raise the score;
 // the 0xc frame and length hold, and elapsed and gain loading still differ.
+// Composite release or normalized overlap staged, each with initialized or accumulated attack time.
+// Guarded and eager fractions: 87/87/87/87/143/143/143/143.
+// NOT kept: The guarded stages tie at 87. The eager stages shorten to 681 bytes and raise the score to 143. The elapsed/reciprocal allocation, separate gain load and final gain join still differ.
 // @retail 0x127010
 long function_127010(short class_index)
 {
