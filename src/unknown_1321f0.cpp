@@ -704,6 +704,10 @@ struct s_visibility_object_header
 // entry lookup 233 (behind then takes the object index's freed slot, in_front still the frame byte), without the else
 // arm's two flag loops 279 (both in the frame): behind wins every freed parameter slot, so no other part of the body
 // changes the pair's precedence.
+// M3 lane 8 r205 (fast with 0x132fd0/0x132b10, both MATCH each time; control 4): the visibility fallback as a separate
+// `if (...) visible = true;` after the call 171 (582 B); `short entry` with a cast at the lookup 4; the entry default
+// declared ahead of the packer call 123; the radius declared ahead of the centre 4; the mode test written `== 0` 4 (each 4
+// the same code, homes still behind-first).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

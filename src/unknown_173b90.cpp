@@ -2161,6 +2161,12 @@ bool function_17afd0(long effect_index, long value);
 // available;` cleared by `owner == NONE || g != owner || !same_view` 119 (501 B); same_view from a forceinline (owner,
 // available) helper with a false result set by the conjunction 141 (513 B), a true result cleared by the test 141 (513 B),
 // an early `return false` then `return available` 56 (498 B); P with same_view declared at function scope 138 (P's code).
+// M3 lane 8 r205 (fast with 0x174420/0x1751d0; control 12; P = the plain conjunction): P with every later read of
+// same_view through a `bool const &` 138 (510 B: the reference is forwarded, NONE stays in EBX), with only the 0x174420
+// argument through it 138; same_view declared bare and assigned the conjunction through a `bool &` bound ahead of the
+// availability 151 (509 B); the true default moved to the arm's top, ahead of the effect-index read, 25 (the store moves up);
+// a false default ahead of the availability with `same_view = available;` under the owner/view test 102 (493 B: one
+// `mov [x], bl` where retail stores 1 and 0 on branches), with an inner if/else of constants on the availability 149 (519 B).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
