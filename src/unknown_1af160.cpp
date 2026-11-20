@@ -244,6 +244,12 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // long 25 (same layout as the helper); the saved reference copy declared const 12 (same code). On 0x260670's chain (with
 // that function's five trials of this round: the sort scratch in its own block, the two flags in one declaration, the flags
 // declared after the best score, the evaluator-loop flag declared at the top, a long sorted index) this function stays 12.
+// M3 lane 11 r140 (H2M_FAST with 0x1e1f20, MATCH; control 12): the homes now differ as two swapped pairs, actor/offset
+// temporary at +0x24/+0x28 (retail +0x28/+0x24, the 0x262b40 result sharing the temporary's cell) and prop node/bool output
+// at +0x30/+0x34 (retail +0x34/+0x30). The late actor flag clear re-fetched into the actor local 12; through a new const
+// actor local 12; the actor and node locals `*const` 12; the actor local declared, then assigned 12; the bool output declared
+// ahead of the long output 12 (all the same code). Diagnostics, reverted: the late clear through the actor local 257 (954 B);
+// the rounding as a plain C cast (no asm block) 209, with both pairs still swapped, so the asm block does not order them.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

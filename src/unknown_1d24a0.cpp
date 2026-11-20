@@ -64,8 +64,9 @@ PRIVATE __forceinline real function_1d24a6(vector3f const *arg_0, vector3f const
 }
 PRIVATE __forceinline vector3f *function_1d24a2(vector3f const *arg_0, real arg_1, vector3f *arg_2)
 {
- for (short component = 0; component < 3; ++component)
-  arg_2->n[component] = arg_0->n[component] * arg_1;
+ arg_2->i = arg_0->i * arg_1;
+ arg_2->j = arg_0->j * arg_1;
+ arg_2->k = arg_0->k * arg_1;
  return arg_2;
 }
 PRIVATE __forceinline void function_1d24a3(vector3f *arg_0, vector3f const *arg_1)
@@ -104,7 +105,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field (see the end of this note). Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
+// score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
 // pointer in EAX and the field in ECX; the frame is 0x1f0 against retail's 0x1d4, the second activity flag sits
 // at +0xa where ours has +9, and the record pointer and the counter sit at other homes.
 // MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
@@ -563,6 +564,67 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // attached object index named at its tests 895 (same code), named right after the element pointer 901; the angular
 // coefficients read from the record at each use 916 (4210 B, aligned 348). Left: retail pushes EBX at entry and keeps the
 // element pointer (shl/add) in a stack home with the attached index in EDI; the frame is 8 bytes over retail's 0x1d4.
+// M3 lane 11 r139 (h2m fast = check.py --fast = plain; aligned unmatched [exact/stack-masked/register-masked], control 895
+// [498/375/209]): kept, 895 -> 838 at 4255 B [340/196/92], first difference +0x9 (retail's entry registers), frame 0x1d8:
+// the scale helper as three statements and the motion position copied field by field (round 116's lead, re-measured 895
+// at 4240 B [352/184/104]); the validity tests (attached index, object, component index) as one `if` around the component
+// lookup with the slot clamp nested in it, the body ending in `continue` and the swap-remove after both (retail jumps
+// straight to the removal and never tests the component pointer); the slot index read from the element at the clamp and
+// at the first rigid-body lookup, its long local defined where retail re-reads it after the object-type calls (retail
+// keeps the byte in AL at the clamp and re-reads `[element + 1]`); the angular residual scaled by -1.0 and then added
+// through the file's scale and add helpers (retail multiplies by -1.0 and adds; the fused add-scaled call folds to a
+// subtract). Steps on the lead: slot from the field 898 [323/185/104]; slot in a signed-char local 914; nested tests with
+// the long slot local at the clamp 980; nested with the field 857 [344/206/102]; nested with a signed-char local 862. On
+// 857: the scale helper's products as `scale * component` 857 (same code); the five coefficient and rate products with
+// their sides swapped, one at a time and together, 857 each (same code: the compiler orders them itself); one, two or
+// three redundant paren pairs around the first block's x difference 862/871/857 and around the first solver product
+// 857/862/871 (a three-state phase, each state flips other product pairs; not keepable); the angular coefficients read
+// from the record at each use (retail's [record + 0x58] and [record + 0x5c] reads) 893 at 4205 B [322/199/98]; the
+// scale-then-add alone 838; both 871 at 4225 B [312/189/88], frame 0x1cc (the lead for the next round). On 838: the
+// aggregate position copy again 868; the helper's loop again 1033; the attached index in a named local after the element
+// pointer 973, after the record pointer 970; the slot index read from the element at every use (no local) 938 (first
+// difference back to +0x1). Diagnostic, reverted at once: an opaque call after the attached-object lookup on the 871 form
+// gives retail's loop head (list in EBX, element pointer formed by shl/add and spilled) 899 [319/190/75], so BLOCKED-BY
+// 0xbadc0 stands (its file is another lane's this round), and with it the attached index wants a named local (retail
+// keeps it in EDI across the call). Left on 838 besides that head: the operand order of the float products and sums
+// (retail loads the vector component and multiplies by the scale in the first two blocks, the other way round in the
+// third), the object-type byte read with movzx, EBX saved at entry, and ECX/EDX swapped in the tail's level arithmetic.
+// Also on 838: the object-type mask computed at each of its two tests from the byte field (no mask local) 852 (4259 B,
+// retail's length; still `mov cl`); from a long type local 834 (4256 B, retail's `movzx` read; under the bar and a
+// computed value written out at each use, so not kept).
+// M3 lane 11 r141 (h2m fast = check.py --fast = plain; aligned unmatched [exact/stack-masked/register-masked], control 838
+// [340/196/92]): kept, 838 -> 780 at 4264 B [282/139/70]. The loop head was not blocked by 0xbadc0: retail keeps the list
+// in EBX from the loop top to the removal and re-reads its data pointer there, which is the component's list field read
+// once at the loop top (for the element pointer) and once more at the removal into the list local (four uses there):
+// 786 [287/145/73], with retail's head (`shl eax, 3`, the attached index in EDI, `add esi, eax`, the element pointer
+// spilled) and retail's removal block byte for byte. The same code from a private swap-remove helper taking the list
+// (786, a new one-caller helper, not needed) and from the old top-of-loop local with the field read again at the removal
+// (786). Other removal spellings on the 838 body: only the size decrement through the component's field 788 (head
+// retail's, removal 5 rows off); the decrement inside the index expression through the field 932; every removal read
+// through the field 932 (4281 B, the list is reloaded after the size store); no list local at all 932 [323/166/79]; the
+// copy through the element pointer 838 (same code), with the decrement through the field 956; the list local at
+// function scope, set before the entry test, or also used by the final free 838 each (same code); the counter at
+// function scope 838; a named data pointer 838. On 786: the second simulating query through the existing
+// havok_component_rigid_body_get 780 (retail forms the body pointer before the result-buffer push), the owner body and
+// the motion position through it too 780 (same code; all three kept); the record's bit-1 flag declared ahead of its
+// bit-2 flag 773, with the getter 767 (retail copies the flags word for bit 1 and shifts the original for bit 2, as it
+// does for bits 25 and 26 in that order; a declaration order, so not kept); the angular coefficients read from the
+// record at each use 815 at 4231 B [272/138/69], frame 0x1cc (retail's reads, positional rise), with the bit-1 flag
+// first 804. On 780: the list local at function scope (declared only, or set for the entry test) 780 (same code); the
+// scale of the first limit arm in a named local 793 [305/163/74], of the second 780 (same code), both 793; the
+// object-type byte in a long local 780 (same code). Tail forms on the 838 body (same code unless a count is given): the
+// step arms as a ternary, with `<=` and the arms swapped, with the compare turned round; the two levels declared in
+// the other order; the clamps in named locals; the else arm's two steps or the two step locals in the other order; the
+// final clamp as a ternary; the first clamp testing the upper bound first 834 (4259 B); the first level's step ahead of
+// the target test 807 at retail's 4259 B (not kept: a statement order, and the tail is then not retail's; it is the one
+// form that uses EBX outside the loop, which moves `push ebx` to the entry as retail has it).
+// Left on 780: retail saves EBX with ESI and EDI at the entry though it uses EBX only inside the loop, exactly where
+// this build does (the same 18 rows), and this build saves it around the loop with EBP (one row of shift from the
+// third push to the loop, and one at the exit); the frame is 0x1d8 against 0x1d4 with the two angular coefficient
+// homes retail does not have; the flag pairs' copy roles and the argument loads at the marker calls; `mov cl` against
+// retail's `movzx` for the object type; the operand sides of about a dozen float products (retail loads the vector
+// component and multiplies by the scale at both limit arms); and the tail (retail keeps the first level in EDX with its
+// clamp result in ECX, and loads the second step into ESI only in the add arm).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
@@ -584,180 +646,184 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
    byte *local_11 = *(byte **)(local_7 + 0x44) + local_10->field_0 * 12;
    s_1d24a1 *local_12 = &(*(s_1d24a1 **)(local_7 + 0x2c))[*(short *)(local_11 + 8)];
    byte *local_13 = local_10->field_4 != NONE ? (byte *)function_badc0(local_10->field_4, (dword)-1) : NULL;
-   s_havok_component *local_14 = NULL;
    if (local_10->field_4 != NONE && local_13 && *(long *)(local_13 + 0xb4) != NONE)
-    local_14 = havok_component_get(*(long *)(local_13 + 0xb4));
-   long local_15 = local_10->field_1;
-   long local_16 = local_14 ? (local_15 < 0 ? 0 : local_15 > local_14->rigid_bodies.size ? local_14->rigid_bodies.size : local_15) : NONE;
-   if (!local_14 || local_16 != local_15)
    {
-    --local_9->size;
-    ((s_1d24a0 *)local_9->data)[local_8] = ((s_1d24a0 *)local_9->data)[local_9->size];
-    --local_8;
-    continue;
-   }
-   bool local_17 = (bool)((local_12->field_0 >> 2) & 1);
-   bool local_18 = (bool)((local_12->field_0 >> 1) & 1);
-   hkRigidBody *local_19 = arg_0->rigid_bodies.data[local_10->field_3].rigid_body;
-   bool local_20 = (!local_19->m_fixed && local_19->body_is_simulating().m_bool) || local_1;
-   bool local_21 = local_14->rigid_bodies.data[local_15].rigid_body->body_is_simulating().m_bool || local_20;
-   bool local_22 = (bool)((local_12->field_0 >> 25) & 1);
-   bool local_23 = (bool)((local_12->field_0 >> 26) & 1);
-   s_object_marker local_24;
-   if (!function_b8d30(arg_0->object_index, local_12->field_8, &local_24, 1, false))
-    function_ba160(arg_0->object_index, &local_24.matrix);
-   if (!local_21) continue;
-   vector3f local_25 = *g_4687a4;
-   real response_fraction;
-   byte *local_26 = g_4e0300->data + (local_14->object_index & 0xffff) * 12;
-   dword local_27 = 1 << local_26[3];
-   if (local_27 & 1) function_def30(local_14->object_index);
-   else if (local_27 & 0x1000) function_119250(local_14->object_index);
-   local_15 = local_10->field_1;
-   point3f const *local_76 = (point3f const *)((byte *)local_14->rigid_bodies.data[local_15].rigid_body->m_motion + 0x70);
-   point3f local_28 = *local_76;
-   vector3f local_29;
-   vector3f local_30;
-   havok_component_rigid_body_angular_velocity_get(local_14, local_15, &local_29);
-   havok_component_rigid_body_linear_velocity_get(local_14, local_15, &local_30);
-   if (local_12->field_20 != 0.0f && local_12->field_24 != 0.0f)
-   {
-    vector3f local_75;
-    local_75.i = local_24.matrix.position.x - local_28.x;
-    local_75.j = local_24.matrix.position.y - local_28.y;
-    local_75.k = local_24.matrix.position.z - local_28.z;
-    vector3f local_31 = local_75;
-    real local_32 = function_30bf0(&local_31);
-    if (local_32 == 0.0f) local_31 = *g_4687b0;
-    real local_33 = function_1d24a1(&local_30, &local_31);
-    real local_34;
-    real local_35 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
-     local_32, arg_1 * local_12->field_20, local_33, local_12->field_24, local_12->field_1c,
-     local_12->field_18, local_22, &local_34);
-    real local_36 = g_510c54->rate * local_12->field_20;
-    vector3f local_37;
-    function_1d24a2(&local_31, local_35, &local_37);
-    if (!local_17 && local_36 > local_35)
+    s_havok_component *local_14 = havok_component_get(*(long *)(local_13 + 0xb4));
+    long local_16 = local_10->field_1 < 0 ? 0 : local_10->field_1 > local_14->rigid_bodies.size ? local_14->rigid_bodies.size : local_10->field_1;
+    if (local_16 == local_10->field_1)
     {
-     real local_38 = g_51e9c4->unknown0 * g_510c54->rate;
-     real local_39 = local_36 - local_35;
-     if (!(local_38 > local_39)) local_39 = local_38;
-     local_37.k += local_39;
-    }
-    if (local_32 - local_12->field_1c >= 0.0f)
-    {
-     vector3f local_40;
-     function_1d24a2(&local_31, local_33, &local_40);
-     local_40.i = local_30.i - local_40.i;
-     local_40.j = local_30.j - local_40.j;
-     local_40.k = local_30.k - local_40.k;
-     real local_41 = magnitude3d(&local_40);
-     if ((local_41 >= 0.0f ? local_41 : 0.0f-local_41) > 0.001f)
+     bool local_17 = (bool)((local_12->field_0 >> 2) & 1);
+     bool local_18 = (bool)((local_12->field_0 >> 1) & 1);
+     hkRigidBody *local_19 = havok_component_rigid_body_get(local_10->field_3, arg_0);
+     bool local_20 = (!local_19->m_fixed && local_19->body_is_simulating().m_bool) || local_1;
+     bool local_21 = havok_component_rigid_body_get(local_10->field_1, local_14)->body_is_simulating().m_bool || local_20;
+     bool local_22 = (bool)((local_12->field_0 >> 25) & 1);
+     bool local_23 = (bool)((local_12->field_0 >> 26) & 1);
+     s_object_marker local_24;
+     if (!function_b8d30(arg_0->object_index, local_12->field_8, &local_24, 1, false))
+      function_ba160(arg_0->object_index, &local_24.matrix);
+     if (!local_21) continue;
+     vector3f local_25 = *g_4687a4;
+     real response_fraction;
+     byte *local_26 = g_4e0300->data + (local_14->object_index & 0xffff) * 12;
+     dword local_27 = 1 << local_26[3];
+     if (local_27 & 1) function_def30(local_14->object_index);
+     else if (local_27 & 0x1000) function_119250(local_14->object_index);
+     long local_15 = local_10->field_1;
+     point3f const *local_76 = (point3f const *)((byte *)havok_component_rigid_body_get(local_15, local_14)->m_motion + 0x70);
+     point3f local_28;
+     local_28.x = local_76->x;
+     local_28.y = local_76->y;
+     local_28.z = local_76->z;
+     vector3f local_29;
+     vector3f local_30;
+     havok_component_rigid_body_angular_velocity_get(local_14, local_15, &local_29);
+     havok_component_rigid_body_linear_velocity_get(local_14, local_15, &local_30);
+     if (local_12->field_20 != 0.0f && local_12->field_24 != 0.0f)
      {
-      if (local_41 > local_36)
+      vector3f local_75;
+      local_75.i = local_24.matrix.position.x - local_28.x;
+      local_75.j = local_24.matrix.position.y - local_28.y;
+      local_75.k = local_24.matrix.position.z - local_28.z;
+      vector3f local_31 = local_75;
+      real local_32 = function_30bf0(&local_31);
+      if (local_32 == 0.0f) local_31 = *g_4687b0;
+      real local_33 = function_1d24a1(&local_30, &local_31);
+      real local_34;
+      real local_35 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
+       local_32, arg_1 * local_12->field_20, local_33, local_12->field_24, local_12->field_1c,
+       local_12->field_18, local_22, &local_34);
+      real local_36 = g_510c54->rate * local_12->field_20;
+      vector3f local_37;
+      function_1d24a2(&local_31, local_35, &local_37);
+      if (!local_17 && local_36 > local_35)
       {
-       real local_42 = local_36 >= 0.0f ? local_36 : 0.0f-local_36;
-       function_1d24a2(&local_40, 1.0f - (local_41-local_42)/local_41, &local_40);
-       function_1d24a4(&local_37, &local_40);
+       real local_38 = g_51e9c4->unknown0 * g_510c54->rate;
+       real local_39 = local_36 - local_35;
+       if (!(local_38 > local_39)) local_39 = local_38;
+       local_37.k += local_39;
       }
-      else
-       function_1d24a4(&local_37, &local_40);
-     }
-     if (!(local_3 > local_34)) local_3 = local_34;
-     local_2 = true;
-    }
-    function_1d24a3(&local_25, &local_37);
-   }
-   if (local_12->field_28 != 0.0f && local_12->field_2c != 0.0f)
-   {
-    vector3f local_43;
-    real local_46 = function_1d24a7(&local_24.matrix.position, &local_28, &local_24.matrix.forward, &local_43);
-    if (local_46 != 0.0f)
-    {
-     real local_47 = function_1d24a1(&local_43, &local_30);
-     real local_49 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
-      local_46, local_12->field_28 * arg_1, local_47, local_12->field_2c, local_12->field_1c,
-      local_12->field_18, local_22, &response_fraction);
-     vector3f local_50;
-     function_1d24a2(&local_43, local_49, &local_50);
-     if (local_46 - local_12->field_1c >= 0.0f)
-     {
-      real local_51 = function_1d24a6(&local_30, &local_24.matrix.forward);
-      vector3f local_52;
-      function_1d24a2(&local_24.matrix.forward, local_51, &local_52);
-      local_52.i = local_30.i - local_52.i;
-      local_52.j = local_30.j - local_52.j;
-      local_52.k = local_30.k - local_52.k;
-      vector3f local_53;
-      function_1d24a2(&local_43, local_47, &local_53);
-      function_1d24a4(&local_52, &local_53);
-      real local_54 = magnitude3d(&local_52);
-      if ((local_54 >= 0.0f ? local_54 : 0.0f-local_54) > 0.001f)
+      if (local_32 - local_12->field_1c >= 0.0f)
       {
-       if (local_54 > local_12->field_28 * g_510c54->rate)
+       vector3f local_40;
+       function_1d24a2(&local_31, local_33, &local_40);
+       local_40.i = local_30.i - local_40.i;
+       local_40.j = local_30.j - local_40.j;
+       local_40.k = local_30.k - local_40.k;
+       real local_41 = magnitude3d(&local_40);
+       if ((local_41 >= 0.0f ? local_41 : 0.0f-local_41) > 0.001f)
        {
-        real local_55 = local_12->field_28 >= 0.0f ? local_12->field_28 : 0.0f-local_12->field_28;
-        function_1d24a2(&local_52, 1.0f-(local_54-local_55*g_510c54->rate)/local_54, &local_52);
-        function_1d24a4(&local_50, &local_52);
+        if (local_41 > local_36)
+        {
+         real local_42 = local_36 >= 0.0f ? local_36 : 0.0f-local_36;
+         function_1d24a2(&local_40, 1.0f - (local_41-local_42)/local_41, &local_40);
+         function_1d24a4(&local_37, &local_40);
+        }
+        else
+         function_1d24a4(&local_37, &local_40);
        }
-       else
-        function_1d24a4(&local_50, &local_52);
+       if (!(local_3 > local_34)) local_3 = local_34;
+       local_2 = true;
       }
-      if (!(local_3 > response_fraction)) local_3 = response_fraction;
+      function_1d24a3(&local_25, &local_37);
+     }
+     if (local_12->field_28 != 0.0f && local_12->field_2c != 0.0f)
+     {
+      vector3f local_43;
+      real local_46 = function_1d24a7(&local_24.matrix.position, &local_28, &local_24.matrix.forward, &local_43);
+      if (local_46 != 0.0f)
+      {
+       real local_47 = function_1d24a1(&local_43, &local_30);
+       real local_49 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
+        local_46, local_12->field_28 * arg_1, local_47, local_12->field_2c, local_12->field_1c,
+        local_12->field_18, local_22, &response_fraction);
+       vector3f local_50;
+       function_1d24a2(&local_43, local_49, &local_50);
+       if (local_46 - local_12->field_1c >= 0.0f)
+       {
+        real local_51 = function_1d24a6(&local_30, &local_24.matrix.forward);
+        vector3f local_52;
+        function_1d24a2(&local_24.matrix.forward, local_51, &local_52);
+        local_52.i = local_30.i - local_52.i;
+        local_52.j = local_30.j - local_52.j;
+        local_52.k = local_30.k - local_52.k;
+        vector3f local_53;
+        function_1d24a2(&local_43, local_47, &local_53);
+        function_1d24a4(&local_52, &local_53);
+        real local_54 = magnitude3d(&local_52);
+        if ((local_54 >= 0.0f ? local_54 : 0.0f-local_54) > 0.001f)
+        {
+         if (local_54 > local_12->field_28 * g_510c54->rate)
+         {
+          real local_55 = local_12->field_28 >= 0.0f ? local_12->field_28 : 0.0f-local_12->field_28;
+          function_1d24a2(&local_52, 1.0f-(local_54-local_55*g_510c54->rate)/local_54, &local_52);
+          function_1d24a4(&local_50, &local_52);
+         }
+         else
+          function_1d24a4(&local_50, &local_52);
+        }
+        if (!(local_3 > response_fraction)) local_3 = response_fraction;
+        local_2 = true;
+       }
+       function_1d24a3(&local_25, &local_50);
+      }
+     }
+     if (local_12->field_30 != 0.0f && local_12->field_34 != 0.0f)
+     {
+      real local_56;
+      real local_57 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
+       10000.0f, local_12->field_30 * arg_1, function_1d24a6(&local_30, &local_24.matrix.forward),
+       local_12->field_34, local_12->field_1c, local_12->field_18, local_22, &local_56);
+      vector3f local_58;
+      function_1d24a2(&local_24.matrix.forward, local_57, &local_58);
+      function_1d24a3(&local_25, &local_58);
+      if (!(local_3 > local_56)) local_3 = local_56;
       local_2 = true;
      }
-     function_1d24a3(&local_25, &local_50);
+     if (local_17) local_25.k += g_510c54->rate * g_51e9c4->unknown0;
+     local_14->rigid_body_linear_velocity_change(local_15, &local_25);
+     if (!TEST_FIELD_BIT(local_14->flag1))
+     {
+      if (local_12->field_c != 0x7000001)
+       function_b8d30(arg_0->object_index, local_12->field_c, &local_24, 1, false);
+      vector3f local_59 = *g_4687a4;
+      real coefficient_58 = local_12->field_58;
+      real coefficient_5c = local_12->field_5c;
+      if (coefficient_58 != 0.0f && coefficient_5c != 0.0f)
+      {
+       transform4x3f local_60;
+       local_14->rigid_body_matrix_get(local_10->field_1, &local_60);
+       function_142b80(&local_60.rotation, &local_60.rotation);
+       matrix3x3 local_61;
+       quaternionf local_62;
+       function_141f60(function_142eb0(&local_60.rotation, &local_24.matrix.rotation, &local_61), &local_62);
+       vector3f local_63;
+       real local_64;
+       function_11d790(&local_62, &local_64, &local_63);
+       /* retail 0x1d31a6-0x1d31f2 adds this x87 dot product as (i + k) + j (the other two: (k + j) + i) */
+       real local_65 = (real)(((double)local_63.i * local_29.i + (double)local_63.k * local_29.k) + (double)local_63.j * local_29.j);
+       real local_67 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_10->field_1, local_14),
+        local_64, coefficient_58 * arg_1, local_65, coefficient_5c, 0.0f,
+        local_12->field_54, local_23, &response_fraction);
+       function_1d24a2(&local_63, local_67, &local_59);
+       vector3f local_68;
+       function_1d24a2(&local_63, local_65, &local_68);
+       vector3d_from_points3d((point3f const *)&local_68, (point3f const *)&local_29, &local_68);
+       function_a75d0(&local_68, g_510c54->rate * coefficient_58);
+       function_1d24a2(&local_68, -1.0f, &local_68);
+       function_1d24a3(&local_59, &local_68);
+       if (!(local_3 > response_fraction)) local_3 = response_fraction;
+       local_2 = true;
+      }
+      function_1d24a3(&local_29, &local_59);
+      havok_component_rigid_body_angular_velocity_set(local_10->field_1, local_14, &local_29);
+     }
+     continue;
     }
    }
-   if (local_12->field_30 != 0.0f && local_12->field_34 != 0.0f)
-   {
-    real local_56;
-    real local_57 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_15, local_14),
-     10000.0f, local_12->field_30 * arg_1, function_1d24a6(&local_30, &local_24.matrix.forward),
-     local_12->field_34, local_12->field_1c, local_12->field_18, local_22, &local_56);
-    vector3f local_58;
-    function_1d24a2(&local_24.matrix.forward, local_57, &local_58);
-    function_1d24a3(&local_25, &local_58);
-    if (!(local_3 > local_56)) local_3 = local_56;
-    local_2 = true;
-   }
-   if (local_17) local_25.k += g_510c54->rate * g_51e9c4->unknown0;
-   local_14->rigid_body_linear_velocity_change(local_15, &local_25);
-   if (!TEST_FIELD_BIT(local_14->flag1))
-   {
-    if (local_12->field_c != 0x7000001)
-     function_b8d30(arg_0->object_index, local_12->field_c, &local_24, 1, false);
-    vector3f local_59 = *g_4687a4;
-    real coefficient_58 = local_12->field_58;
-    real coefficient_5c = local_12->field_5c;
-    if (coefficient_58 != 0.0f && coefficient_5c != 0.0f)
-    {
-     transform4x3f local_60;
-     local_14->rigid_body_matrix_get(local_10->field_1, &local_60);
-     function_142b80(&local_60.rotation, &local_60.rotation);
-     matrix3x3 local_61;
-     quaternionf local_62;
-     function_141f60(function_142eb0(&local_60.rotation, &local_24.matrix.rotation, &local_61), &local_62);
-     vector3f local_63;
-     real local_64;
-     function_11d790(&local_62, &local_64, &local_63);
-     /* retail 0x1d31a6-0x1d31f2 adds this x87 dot product as (i + k) + j (the other two: (k + j) + i) */
-     real local_65 = (real)(((double)local_63.i * local_29.i + (double)local_63.k * local_29.k) + (double)local_63.j * local_29.j);
-     real local_67 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_10->field_1, local_14),
-      local_64, coefficient_58 * arg_1, local_65, coefficient_5c, 0.0f,
-      local_12->field_54, local_23, &response_fraction);
-     function_1d24a2(&local_63, local_67, &local_59);
-     vector3f local_68;
-     function_1d24a2(&local_63, local_65, &local_68);
-     vector3d_from_points3d((point3f const *)&local_68, (point3f const *)&local_29, &local_68);
-     function_a75d0(&local_68, g_510c54->rate * coefficient_58);
-     vector3f_add_scaled(&local_59, &local_68, -1.0f, &local_59);
-     if (!(local_3 > response_fraction)) local_3 = response_fraction;
-     local_2 = true;
-    }
-    function_1d24a3(&local_29, &local_59);
-    havok_component_rigid_body_angular_velocity_set(local_10->field_1, local_14, &local_29);
-   }
+   --local_9->size;
+   ((s_1d24a0 *)local_9->data)[local_8] = ((s_1d24a0 *)local_9->data)[local_9->size];
+   --local_8;
   }
  }
  if (arg_0->unknown94 && !arg_0->unknown94->size)

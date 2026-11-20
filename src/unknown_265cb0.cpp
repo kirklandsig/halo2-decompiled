@@ -978,6 +978,11 @@ real function_30bf0(vector3f *vector);
 // clip amount sharing the seat counter's cell; a redundant `result = 0;` anywhere after entry emits no code and moves
 // result to retail's cell 0 only (match-only); only extra blocks after the seat loop (probes, not source forms) give the
 // squared distance the clip amount's cell as retail.
+// M3 lane 11 r140 (H2M_FAST with 0x263740/0x26d370, both MATCH; control 84): the squared distance through dot3f of the delta
+// with itself 84 (same code); declared, then assigned 84 (same code); read through a `real const &` at its five tests 150
+// (1312 B); the clip test `amount >= 0.0f` for `!(0.0f > amount)` 236. Diagnostic (a file-local copy of the cross helper
+// with the subtracted products written a first, not keepable): 84, the same code, so the seat-loop cross products' operand
+// sides do not follow the helper's spelling.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

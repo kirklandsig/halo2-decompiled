@@ -1573,6 +1573,12 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // call and read back twice); no member store 90 (re-measure). Still BLOCKED-BY 0x1c4b00's bool formal: three of its 14
 // declarations sit in files other lanes hold this round (src/bipeds.cpp, src/items.cpp, src/unknown_0a76b0.cpp), and by
 // 0x1ec690 (still a disabled draft behind its stub) for the copy's hoisted loads; lane 3 r258's held form (6) stands.
+// M3 lane 11 r138 (fast with 0x119bc0 and 0x1c4b00, matched throughout; control 14): the 0x119bc0 result held in
+// a `byte` 14, a `char` 14 (same code), stored to the member and the local in one chained assignment 14 (same code),
+// passed as `local_force != false` 95 (1038 B), the object's +0x88 copy through a named vector pointer 14 (same code).
+// Still BLOCKED-BY 0x1c4b00: retail has no member store; it keeps the result in its own stack byte and pushes the
+// containing dword, which only a bool last parameter gives, and that definition's file and seven of its declaration
+// files are other lanes' this round.
 // MiniMax H (11-20), NOT kept at review (statement order is match-only; code is main's): moving the move output's byte member store after the +0x88 copy scores 11 (was 14), so the byte store sinks past the force push as retail does; the tail still differs where retail keeps the copy's destination in EAX and spills the 0x119bc0 result to a stack byte that it pushes as a dword, which needs 0x1c4b00's bool formal in src/unknown_1c25a0.cpp and in its other declarations.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)

@@ -2036,7 +2036,7 @@ long function_cbd50(long unit_index, short weapon_index);
 void __stdcall function_c6f80(long unit_index, long ticks, long flags);
 void function_101a10(long weapon_index, real fraction);
 void function_1018b0(long weapon_index, short const *rounds);
-void __stdcall function_1e1a00(long actor_index, long value);
+void __stdcall function_1e1a00(long actor_index, bool value);
 long function_1e1f20(long actor_index);
 void *function_1e5240(long actor_index);
 PRIVATE inline long equipment_current_weapon_r21(long unit_index)

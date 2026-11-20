@@ -1721,6 +1721,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 0x73530, 0x63220 or 0x66050. So this link expands 0x192e60 at every depth-0 call site, where retail keeps it out of line at
 // depth 0 in three functions (here, 0x73530, 0x66050) and expands it only inside this function's player loop: a link-wide
 // inline choice, not a source form of this body or of the callee.
+// M3 lane 11 r138 (fast with 0x73530; control 871 at 2780 B, session in EAX and `ret 4` as retail): the capacity
+// test through an inline copy of 0x193300's five-case switch (retail expands that switch here: table at 0x7ec90) 865
+// (2836 B, aligned 813, masked 465; the session then takes a stack home and 0x73530 drops to 8); that with `long
+// histogram[16]` and a memset ahead of the first count 903 (frame 0xb0, 0x73530 8); the dword histogram alone 936;
+// the opening test setting `result = false` with the rest under `if (result)` 1024 (2968 B: the loop then expands
+// 0x631f0, both 0x1931a0 and 0x193250, 0x73530 8), with the switch 1117; the switch plus the loop lookup through
+// 0x192e60 903; the loop lookup through 0x192e60 alone 1013. Diagnostics (restored at once): the switch with the top
+// 0x192e60 kept out of line by a constant test 903 (aligned 798, masked 438, 0x73530 MATCH): the session keeps EAX
+// once the top lookup is a call, and the call set then differs from retail only in 0x631f0 (called here, expanded in
+// retail). Loop frequency decides the loop's set: the player value through 0x63220 stays a call with the opening
+// test as returns (also with two of its five conditions) and expands with everything else when the test is a value
+// or sets `result`; a test at 0x71730's call changes nothing.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

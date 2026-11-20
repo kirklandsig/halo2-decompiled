@@ -2260,6 +2260,18 @@ long function_1fa7f0(void);
 // `while (end < count && points[end].type == NONE) ++end;` then `if (end < count)` 475 (1765 B); `candidate + 1 == count` 400
 // (same code); no data as an early return at the top 457 (1747 B, 285/188/67); the `count <= 1` arm first 467 (1754 B);
 // `short type = step->type;` at the loop top with no store in the typed branch 456 at 1746 B (304/183/57).
+// M3 lane 11 r139 (h2m fast with 0x270930 and 0x2c2a70, both MATCH throughout; aligned unmatched [exact/stack-masked/
+// register-masked], control 400 [275/178/56]): the side flipped in place ahead of the second tangent call re-measured 440
+// (1727 B, frame 0x10c) [223/160/52]; that with `edge = 0xffff` again at the scan hit re-measured 369 (1740 B, first
+// difference +0x14) [225/160/52], still not kept (the store repeats the value the edge holds, though retail has that store
+// at 0x2c219e). On the 369 form: the first conversion in the nested two-copy shape 424 (1762 B) [229/168/60]; the output
+// index read ahead of the origin in both fallback arms 383, between the origin and the sector 382, ahead of the origin in
+// the first arm only 370; the step pointer declared ahead of the loop 369 (same code), and without the second store 440
+// (same code as the flip alone). Reading on the 369 form: the frame, the attempt loop and the emit agree with retail but
+// for registers; retail's scan keeps the index in EDI, NONE in ESI and the scan cursor in EAX and reads the count from
+// [ebp+0xc], where ours keeps the count in BX, the cursor in ESI and the step pointer in EDI; retail's emit keeps the
+// output element in EAX, its point in ESI and the emitted count in EBX; the tail is 0x210a30's inlined body (BLOCKED-BY
+// 0x210a30, as above). Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

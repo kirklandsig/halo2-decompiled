@@ -890,6 +890,19 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // condition 316 (1892 B); the split-screen test as `count >= 2` 116, with the bool timer 193 (flags still -0xe/-0xd/-2);
 // the status block reusing `player` for its second lookup 535 (1861 B). Diagnostic: an extra read of origin.x 491, the
 // scripted byte stays at -2 (the packing does not follow origin's reference count). Body unchanged.
+// M3 lane 11 r141 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, matched each time; control 114, aligned
+// differing rows 102, 18 with the frame offsets masked, 12 with registers masked too; body unchanged). LEAD for the
+// tutorial colour, the first spelling that gives retail's block (flag test, the a4 load, the bit test jumping back to
+// it, the a8 load): the selection nested with the inner test negated, `flag ? a4 : (!(bit) ? a4 : a8)`, 108 (masked 15
+// and 9; six points, under the keep bar by itself). Same code as the body: the inner arm's a4 read through the global
+// 114, the whole selection inverted (`!flag ? (bit ? a8 : a4) : a4`) 114. Other instructions: the flag folded into a
+// bool selection first, `(flag ? true : !(bit)) ? a4 : a8` 406 (1898 B), `(flag ? false : (bit) != 0) ? a8 : a4` 403
+// (1896 B). On the 108 form: `left` as a `short const` initialised where it is computed 108 (same code); the bool timer
+// 185 (1888 B, masked 13 and 6); the bool timer with left and the first top as the two elements of a `short
+// position[2]` (round 99's locals-grouping lead) 103 at retail's 1889 B (masked 12 and 5: what is left with the offsets
+// masked is the argument order at the three 0x24ce9d and four 0x1fa30 calls); that lead without the nested selection
+// 109 (re-measure). The frame homes are still the open part: retail allocates split flag, origin, then the scripted,
+// tutorial and timer bytes, where this build puts the scripted byte between the split flag and the origin.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

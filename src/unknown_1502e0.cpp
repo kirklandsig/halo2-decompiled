@@ -1691,6 +1691,10 @@ void function_150820(dword *bits, bool local_only)
 // and at the 0xcd7b0 argument scores 18 (was 43) and gives the player ESI and the hand EDI, but it rereads a value the
 // player local already holds (kept only with a byte match), so the code is main's. What is left is the player address folded
 // into one LEA instead of retail's add and move, the unit index read a second time, and the policy byte in DL.
+// M3 lane 11 r140 (H2M_FAST with 0x151b80, 5 throughout; control 43): one fewer use of the hand, to let the player outrank
+// it for ESI: `!primary` in place of the hand only at the 0xcd4e0 argument 89 (200 B); only at the held-slot index 43
+// (same code: CSE'd with the hand); at the 0xcd4e0 and 0xa8f80 arguments 82 (207 B); at the 0xcd4e0 argument and the
+// modes index 89 (200 B); at the held-slot and modes indexes 43 (same code).
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
