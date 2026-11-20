@@ -2904,6 +2904,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 164; the decay through a short local with one unconditional store 159; the players iterator's two NONE fields stored
 // ahead of its table pointer 160. Diagnostic: 1 to 7 unused long locals at the top
 // 168 each (the +0x5c base/index order does not follow the symbol count).
+// MiniMax H (11-20): no new form, no lower score (158): the relative dot still reads the direction's components from
+// memory where retail keeps them in registers (it loads the direction's j and k before the branch), the players
+// iterator still takes the table pointer in eax where retail takes it in ecx, and neither the operand order in the
+// three dots nor copying the direction's components into scalars changes anything; a permuter run found no variant.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

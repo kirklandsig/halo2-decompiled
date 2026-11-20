@@ -563,6 +563,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // attached object index named at its tests 895 (same code), named right after the element pointer 901; the angular
 // coefficients read from the record at each use 916 (4210 B, aligned 348). Left: retail pushes EBX at entry and keeps the
 // element pointer (shl/add) in a stack home with the attached index in EDI; the frame is 8 bytes over retail's 0x1d4.
+// MiniMax H (11-20): no new form, no lower score (895): the frame is still 0x1f0 against retail's 0x1d4 and the first
+// difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, this build
+// the other way round), so the stack homes below the top stay out of step: BLOCKED-BY 0xbadc0 in another file.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
