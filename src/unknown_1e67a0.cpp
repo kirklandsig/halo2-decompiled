@@ -689,6 +689,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax S (11-20): no new form, no lower score (114): the first difference is inside the inlined rotation helper, whose body lives in src/unknown_1eb8a0.cpp, a file this lane may not edit; the block copies, the side crosses and the snap exit's copy follow from it.
 // MiniMax B (11-18): no new form, no lower score (114): the first difference is still inside the shared inlined rotation helper, whose source is in another lane's file, so the block copies, the side crosses and the small-turn exit remain.
 // MiniMax B (11-19): no new form, no lower score (114): the first difference is still inside the shared rotation
 // helper, whose source is in src/unknown_1eb8a0.cpp, so the block copies, the side crosses and the small-turn exit are

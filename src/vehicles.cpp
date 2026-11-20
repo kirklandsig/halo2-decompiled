@@ -533,6 +533,7 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax S (11-20): no new form, no lower score (107): the 1.0 constant takes XMM2 where retail takes XMM3 (retail loads it right after the first add of the entry magnitude), and every normalize's registers follow from that.
 // MiniMax I (11-20): no new form, no lower score (107): the frame, the length and the layout are retail's and what is left is the colouring of the entry magnitude - this build loads the 1.0 constant into xmm2 where retail has xmm3 and adds the first two squares after the square root, and the difference cascades through the rest of the xmm allocation; the permutation search over the body found no lower form.
 // MiniMax D (11-19): 107 (was 116): the velocity copy x first and the speed's squares accumulated make both retail's;
 // MiniMax G (11-19): no new form, no lower score (116): what is left is the velocity copy's colouring (i in ECX where
@@ -3271,6 +3272,7 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// MiniMax S (11-20): no new form, no lower score (672): the frame is 0x100 where retail has 0xfc; the two vector3f_scale calls on the mass field recover retail's frame and its first difference but score 710.
 // MiniMax I (11-19): no new form, no lower score (672): the frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the transform position is still cleared as one twelve-byte region where retail uses three four-byte zero stores; the two leads that reach retail's frame (the mass field read at each use and the final force and torque scaling) each score worse, so the body stands.
 // MiniMax H (11-20): no new form, no lower score (672): the frame is 0x100 against retail's 0xfc, one dword more, and the homes are not one uniform shift (retail's dt at 0x10, the linear-velocity address at 0x14, the acceleration scale at 0x34, the maximum speed at 0x3c and the angular-velocity address at 0x44 against ours at 0x20, 0x38, 0x58 and 0x68), so no single local accounts for the gap; the permuter tried sixteen forms in 523 s without a gain.
 // MiniMax R (11-20): no new form, no lower score (672, 3244 bytes, retail 3244): the frame is 0x100 against retail's
@@ -6612,6 +6614,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
 // MiniMax G (11-20): no new form, no lower score (978): the frame is 0xfc against retail's 0xd8, so the prologues differ first, and the index/offset and vector/rotation homes after it are still not retail's; no form of the body I tried moves them.
+// MiniMax S (11-20): no new form, no lower score (978): the frame is 0xfc where retail has 0xd8, and this build pushes EDI where retail does not (retail indexes with ESI and EDI straight from [esp + 0xe8]).
 // MiniMax I (11-20): no new form, no lower score (978): the frame is 0xfc against retail's 0xd8, so the prologues differ first, and the index/offset and vector/rotation homes after it are still not retail's; I found no form of the body that moves them.
 // score 978 (was 990): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
 // V1A: statement-by-statement walk against all of retail's 1180 instructions found no logic difference (fields,

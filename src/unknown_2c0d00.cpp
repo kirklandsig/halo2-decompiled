@@ -222,6 +222,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // order of the three head byte stores, and the deferred type-0 second branch with the type 1/7/11 arms.
 // M3 review (11-20, MiniMax E): 849 came from `straight` declared without a value and set true in two added else arms (aligned,
 // beside it, keeps its initializer); statement placement is match-only, so code is back to main (925).
+// MiniMax S (11-20): no new form, no lower score (925): retail's prologue reads the first stack argument into EBX and compares it with -1 where this build reads it into EBP, and the frame is 0x2cb0 against retail's 0x2cac; the parameter order may not change, so retail's order is reported instead.
 // score 925 (was 925): after later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // MiniMax R (11-20): no new form, no lower score (925 fast, 917 plain): the frame is 0x2cb0 against retail's 0x2cac and
 // the function-scope homes are not one uniform shift (retail's actor pointer at F+0x14, the range_min short at F+0x30,

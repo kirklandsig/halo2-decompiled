@@ -3299,6 +3299,7 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
+// MiniMax S (11-20): no new form, no lower score (597): retail reads the flags byte after the four pushes and masks it with the constant 1 there, where this build hoists the byte load to the entry; four explicit listener-gain stores instead of the memset score 767.
 // MiniMax B (11-20): no new form, no lower score (597): the entry still hoists the flags byte into BL where retail masks it with 1 after the pushes (reading `alternate` inside the definition guard reproduces retail's entry but measures 615) and the track loop still holds the index in ESI, the track definition in EBP and NONE in EBX where retail keeps the index in memory, the track in EBP and NONE in ESI; what still differs is that entry mask, the creation arm's compare order and the track loop's register roles.
 // score 597 (was 597): Retail delays the request-byte load until after the definition test, then keeps one in EBX. The track and state register roles still differ.
 // Earlier score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop

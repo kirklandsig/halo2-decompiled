@@ -556,6 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax S (11-20): no new form, no lower score (114): retail writes its three message flags as consecutive bytes at -0xf, -0xe and -0xd and the left coordinate as a word at -0x3c, where this build writes a dword at -0x14, bytes at -0xd and -2 and a dword at -0x50; the tutorial colour's block order and 0x24ce9d's argument setup are the only other differences.
 // score 114 (was 114): earlier 115 (was 115), 115 (was 114), 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
 // The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // M3 lane 3 r268 (fast with 0x24ce9d, 0x15f120, 0x24cedf, all MATCH; control 115): the bool timer with `left` bound to a
