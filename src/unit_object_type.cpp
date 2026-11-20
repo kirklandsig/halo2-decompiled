@@ -7219,6 +7219,12 @@ done:
 // 207. Left on the 171 form: the scale block's x multiply (`movaps xmm3, xmm0; mulss xmm3, [x]`), the first weapon index
 // in a frame slot with the unit looked up again for the second, the state pointer's home (+0x14), the dead base `add`
 // after the animation flag, and unit_index in ESI from the bit-1 test to the facing call.
+// shared planar scaler 181; scoped toward point with shared scaler 181; source-vector toward with shared
+// scaler 181; component-initialized toward with shared scaler 240; turn assigned from action-state result
+// with shared scaler 218; default side before angle bounds with shared scaler 182; point setter for all
+// rotations with shared scaler 220; state flag updates through byte helper with shared scaler 181.
+// NOT kept: the shared planar scaler recovers the reciprocal and both multiplies at retail length but gains
+// only six. The direction branch span, flag-result bytes, state home and weapon reloads still differ.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -9508,6 +9514,11 @@ struct s_unit_melee_collision
 // 476; read-only tags 484; conditional damage pair 519; staged fan sum 486; separate fan ordinals and
 // reversed trace workspace order 484. NOT kept: the 476 form shortens to 2215 bytes with frame 0x180.
 // The conditional pair recovers the 0x17c frame at 2233 bytes but increases the score.
+// range reference 533; range address 533; range reference with shared scaled addition 480; aim and range
+// references 533; range reference at fan entry 533; chained index defaults 483; candidate trace time shared
+// by test and publication 484; collision classification by tests 486.
+// NOT kept: the live range forms recover the 0x17c frame but shorten the body. The scaled-add form gains
+// four at 2201 bytes, and chained defaults gain one at 2229. Retail's unit and fan counter homes remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
