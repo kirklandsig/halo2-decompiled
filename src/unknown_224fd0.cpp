@@ -436,6 +436,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // once in the kept order 452 (1756 B); the output parameter first in the helper and both calls 219 (same code); the
 // squared and sine vectors as one two-element array (bound by reference) 471 (1740 B); diagnostic, reverted: the rotation
 // switch without its `__assume(0)` default 228 (1836 B, first difference +0x56 at the added bounds test).
+// Complete rows through the vector setter, forward/left/up or forward/up/left
+// 445/449 from direct expressions and 450/449 from named component results.
+// Row aggregate assignment in the same orders 716/719 and 713/718.
+// NOT kept: the setter forms retain +0xe7 and shorten the body, while
+// row aggregate stores move the first difference to the prologue and grow it.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

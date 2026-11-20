@@ -2598,6 +2598,11 @@ __forceinline char unit_action_round(real value)
 // 335, a shared projected header 293, and a word slot with the active and
 // short hand helpers 320. The shared header reaches 1189 bytes with the
 // displacement in ECX and the hand comparison still at byte width.
+// A header byte displacement shared at all lookups, only at entry, or from
+// entry to the final lookup 234/234/234, with the existing short hand
+// getter 297/297/297. A stable entry pool and a fresh final pool with
+// the shared displacement 311, or 325 with the short hand getter.
+// NOT kept: the stable entry pool forms move the first difference to +0x7.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

@@ -928,6 +928,11 @@ real g_55e618;
 // top beside the cache 110; keep computed just ahead of the final rows 138 (1534 B, frame changes); the velocity copy as
 // three scalar reals 102 (same code); the final rows as a plain component loop 102 (unrolled, same code). Ours still
 // spills perp.j (+0x48) and tangent.i (+0x100), retail tangent.i/j (+0x38/+0x3c) and perp.k (+0xac).
+// One vector for the displacement and sweep, seeded from the scaled
+// components or with the shared scaler. Back up and extend per coordinate
+// 247/247. Back up then extend by component stores, the in-place particle
+// scaler or the point setter and shared scaler 246/246 in all three forms.
+// NOT kept: all reach 1541 bytes but leave the sweep and hit record displaced.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
