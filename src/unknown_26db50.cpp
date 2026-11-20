@@ -1102,6 +1102,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // moved between the trace endpoint and the 0.5 lift 25; with the entry pointer after them, still ahead of the lift, 20
 // (every remaining difference inside the rotation's dot; the marker, entry and point stores are then retail's); that
 // with the lift as x, y, z `+=` statements 179 (1082 B). Not kept: statements moved, no match.
+// M3 lane 11 r129 (fast with 0x1ecf50 and 0x26dde0, MATCH each time; M = lane 12 r147's block: the collision record and
+// its marker store, then the entry pointer, between the trace endpoint and the 0.5 lift loop, re-measured 20). On M the
+// 0.1 offset statements x, z, y 6 and z, y, x 6 (rotation and marker schedule retail's; left: only the offset stores in
+// that order, retail x, y, z), z, x, y 9, y, z, x 29; the offset as a component loop 39, through real_point3d_set 20; the
+// k term, the k product or the whole z value named ahead of the x statement 20 each (forwarded). The rotation through
+// 0x170d70's exported helper (crosses ahead of the dot) on M 20, on M with the offset loop 39, with the setter 20, on main's
+// block with the offset loop 45: the helper's own term order does not count. On M the lift as statements (`+=` or
+// product-first) x, z, y 71, z, y, x 187, x, y, z 179 (1085/1088/1082 B: the head changes, so the lift is a loop).
+// Reading: the rotation's dot takes k ahead of j only when this body names the axis's k before its j in a live tree.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

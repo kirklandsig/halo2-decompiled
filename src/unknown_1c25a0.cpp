@@ -1567,6 +1567,14 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // 1 with the selected arm storing only the index 10; the loop's rigid-body index declared ahead of the for 1; the two
 // change vectors declared at the function's top 1; the impulse and velocity-change calls nested under one `if
 // (change_a)` 115 (857 B). Restored.
+// M3 lane 11 r129 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300): R = the change vectors and the loop index as the
+// members of one local record (a, b, index) with a plain `for` and no mirror, re-measured 106 (864 B; the callees MATCH).
+// On R, 0x1d1160's velocity conversion as `_mm_set_ps(0, k, j, i)` 106 (0x1d1160 41, 203 B), as `_mm_setr_ps(i, j, k, 0)`
+// 106 (0x1d1160 42, 203 B), both conversions through `_mm_setr_ps` 106 (0x1d1160 57, 213 B): value intrinsics do not mark
+// the argument written; per-component `_mm_store_ss(&impulse.m_quad.m128_f32[n], _mm_load_ss(&velocity->n))` gives this
+// function its reload (MATCH) but 0x1d1160 204 B (a `lea` per store, 43). Diagnostic re-measured: R with a dead
+// `_mm_load_ss(&velocity->i);` after 0x1d1160's conversion MATCH here and in all four callees (not keepable: a dead
+// statement). Every write-marking form found is either dead code or costs 0x1d1160's bytes.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

@@ -1923,6 +1923,16 @@ static inline bool unit_dual_wielding(long unit_index)
 // (the getter's local order is irrelevant); 0xc9d00 written with UNIT_GET at both uses or a header-array local in place
 // of its pool copy (scratch copies of its file, which is not ours this round) gives the put-away lookup retail's
 // offset-first order but drops retail's `mov eax, ecx` copy (13). The permuter cannot search this form (reduced 48, full 2).
+// M3 lane 11 r129 (fast with 0xc9d00, MATCH each time), on lane 9 r143's 2 form re-measured (2: the animation-test lookup
+// offset-first where retail is data-first, the put-away lookup data-first where retail is offset-first; the two always
+// flip together): the put-away written out at each use 2; the tail through the holder helper's result 2; the holder
+// helper through a header pointer without its NONE test 2, with a named index and headers local 2, through the getter 2;
+// the dual-wield helper with a result flag 2, a headers local 2, a named index 2, a header pointer 2; the animation test
+// through a header pointer 2, through the getter 2; the put-away through the getter 2; the put-away pointer declared at
+// the top (either side of `result`) 2, at the top of the gate block 2; `long i` declared first 2. Retail's 0xc9d00 is
+// data-first standalone and the put-away flip follows its pool-copy form (r143), so the lead stays in its file. Also on
+// the 2 form: the put-away read through a pool copy local 2, through a headers local 2; one pool copy for the animation
+// test and the put-away 219 (593 bytes).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
