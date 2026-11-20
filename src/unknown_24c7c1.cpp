@@ -876,6 +876,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 191; the count declared after `left` 191; all three 191; `left`, the tick count, `top` in that order 191 (six forms,
 // all the bool timer's code: `left` is still stored as a dword at -0x4c and no short is packed with it; the homes do not
 // follow where the shorts are declared).
+// MiniMax C (11-20): no lower score (114): the frame homes and the left coordinate word store differ; a word for left scores 482.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

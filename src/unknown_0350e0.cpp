@@ -2261,6 +2261,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // 0x2e9e0 is reworked against this callee (492 -> 420, see its note). Also measured on it: the parameters as (position,
 // direction, mode, scale), the order retail's call sets them up in (scale pushed, mode, direction, position), with
 // the call changed too 177 (0x2e9e0 420, the same counts; its two `lea`s then come in retail's order): not kept, a tie.
+// MiniMax C (11-20): no new form, no lower score (142): the x sum operand order changes nothing and the y sum orders score worse.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {

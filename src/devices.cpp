@@ -1749,6 +1749,7 @@ bool function_108530(long device_index, long name)
 // MiniMax B (11-20): no new form, no lower score (116): the initial velocity still reaches the clamp on the stack
 // where retail passes it in XMM6, so the clamp's own convention keeps the ramp-down slot and the duration and
 // position registers displaced; every form that moves the velocity off the stack loses a matched caller.
+// MiniMax C (11-20): no new form, no lower score (116): the velocity still reaches the clamp on the stack, retail in xmm6.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2721,6 +2722,7 @@ bool function_0b6760(s_index_pair const *pair);
 // running sum and the unit byte is tested as `<= 0`; what still differs sits at the two channel-1 0xb6760 calls,
 // whose convention is fixed in another file.
 // MiniMax H (11-20), NOT kept: 58 (was 61), a 3-point gain, under the 8-point bar for a function above 30.
+// MiniMax C (11-20): no new form, no lower score (61): the channel-1 call loads the device index into eax, retail into ecx.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

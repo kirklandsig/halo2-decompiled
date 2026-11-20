@@ -839,6 +839,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax C (11-20): no new form, no lower score (35): the only shape that gives retail's message register, flags register and byte OR is the second result variable recorded in the notes above (10 at retail's 225 bytes), left aside because it repeats the same assignment in both arms of the send test; what is still left is the order of the last two exit blocks (ours lays the send-and-empty-window exit ahead of the loop's zero-trip exit, retail after it).
 // score 35 (was 35): The message and saved flags use EAX and CX. Retail uses ECX and AX and updates the low byte
 // in place.
 // Earlier score 35 (was 35): earlier 60. The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
@@ -1260,6 +1261,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the resend bit in the message; the in-place update reaches retail's byte OR (or byte ptr [ecx+0xe], 2) but frees the
 // flags word and changes the whole allocation (89), the ternary message pointer with the in-place update is 90, and
 // the ternary alone keeps retail's registers but lays the arms out with the address in the fall-through (45).
+// MiniMax C (11-20): no new form, no lower score (35): the message pointer is in eax where retail has ecx and the flags in cx against ax;
+// the polarity and else forms give retail registers but fold the window NONE init (43, 45).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
