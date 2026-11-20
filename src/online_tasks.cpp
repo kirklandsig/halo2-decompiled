@@ -1098,10 +1098,9 @@ static __forceinline long online_task_next_absolute_index(s_record_pool *data, l
  return result;
 }
 
-static __forceinline s_type_9df9da *online_task_next(s_record_pool_iterator *iterator)
+static __forceinline s_type_9df9da *online_task_next(s_record_pool_iterator *iterator, s_record_pool *data)
 {
- s_record_pool *data = iterator->data;
- long index = online_task_next_absolute_index(data, iterator->index + 1);
+ long index = online_task_next_absolute_index(iterator->data, iterator->index + 1);
  s_type_9df9da *result;
  if (index != NONE)
  {
@@ -1118,6 +1117,9 @@ static __forceinline s_type_9df9da *online_task_next(s_record_pool_iterator *ite
  return result;
 }
 
+// Matched in a full build with stand-in SDK headers (was 62): the pool global is read a second time after the
+// iterator is set up and passed to the step helper for the element address, while the bitmap scan reads
+// iterator->data. Retail keeps the pool pointer in two registers (ebp for the scan, ebx for the element).
 // @retail 0x6b4a0
 void function_6b4a0(void)
 {
@@ -1129,7 +1131,8 @@ void function_6b4a0(void)
    s_record_pool_iterator iterator;
    s_type_9df9da *task;
    online_task_iterator_new(&iterator);
-   while ((task = online_task_next(&iterator)) != 0)
+   s_record_pool *data = g_4cf78c;
+   while ((task = online_task_next(&iterator, data)) != 0)
    {
     if (!function_6c560(task, iterator.datum_index))
      break;
