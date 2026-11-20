@@ -1789,6 +1789,16 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax D (11-20): no new form, no lower score (87; 89 on this build's reduced image). The in-arm compare (126 at 480 B)
+// gives retail's x87 compare and retail's homes for the selection (+0x14), the score (+0x18) and the best (+0x1c), but ours
+// still keeps the walk's pool in memory and the selection in EDI (reloaded at the loop top), while retail hoists the pool into
+// EBX and keeps the selection on the stack only; the score local hoisted out of the team arm measures the same 126. Body
+// restored to the kept form.
+// MiniMax D (11-20, added): the two forms combined - the in-arm compare with the selection taken from
+// `groups.iterator.datum_index` instead of the walk's copy - measures 128 (480 B): the selection is memory-only and the pool
+// is hoisted, but into EDI rather than retail's EBX, the selection/best/score homes rotate to +0x1c/+0x18/+0x14 and the
+// walk's not-found step threads to the exit instead of keeping the null clump live in EAX. With the walk's copy the in-arm
+// form is 126 with the same two register differences, so neither reaches the kept form's 87. Body restored.
 // score 87 (was 87): Retail keeps the pool in EBX and the selected handle on the stack. The score comparison uses x87.
 // round 112 (m3 lane 12) note at the end.
 // M3 lane 6 r188 (fast with the file's functions and 0x1e46c0/0x268bb0/0x269580/0x2694d0/0x269250, control 87): on the
@@ -2245,6 +2255,9 @@ void function_269250(long clump_index, long actor_index);
 // a never-taken call, removed at once): the selection at its declaration 143 (488 B, the pool then hoisted into EBX but the
 // not-found path threads), selection and best 174, the walk record after the loop 231, both 255, the selection after the loop
 // only 124 (480 B). Body unchanged.
+// Raw actor, raw clump or both step conditions 87/87/87. Raw actor or both raw steps with read-only
+// views 87/87. Typed read-only actor with raw clump 87, raw actor with typed read-only clump 87,
+// raw clump with per-use view 87. NOT kept: All tie. Pool, selection and score transport still differ.
 // M3 lane 3 r270 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0/0x268510/0x268c90/0x26ae30, all
 // matched each time; control 87, aligned 54, masked 45; the in-arm compare re-measured 126 at 480 B, the datum-index
 // selection on it 128). New on the in-arm form: a phase scan of one to seven unused initialised locals 126 at every count
@@ -2264,6 +2277,14 @@ void function_269250(long clump_index, long actor_index);
 // Created-arm index before creation, after creation or after its success test 87/87/87.
 // Separate indices at transfer/success, arm entry, or transfer/after creation 87/87/87.
 // NOT kept: All capture lifetimes tie and retain the SSE score comparison and pool reloads.
+// M3 lane 15 r113 (fast with 0x268840/0x1e46c0/0x268bb0/0x269040/0x269250/0x2694d0/0x269580, all MATCH; control 87):
+// the in-arm compare re-measured 126 (480 B: retail's x87 score compare and the selection/score/best homes at
+// +0x14/+0x18/+0x1c, but the selection also held in EDI, the pool read from the walk at each use where retail caches it
+// in EBX, and the found-bit block placed after the score code where retail places it ahead of the clump test; matched
+// 0x268840 gets retail's walk layout from the same helper). On the in-arm form, each the same code (126): the found arm
+// storing the selection before the best; the compare written `best < score`; the selection and best declared at
+// function scope and set per actor; the score declared ahead of the team test; the walk step reading the activity flag
+// from the global at each step as 0x268840 does.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

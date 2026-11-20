@@ -1442,6 +1442,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // one read of the index there keeps retail's pair and two undo it. So the pair follows a weighted reference count taken
 // before local CSE, in which a read in the block that defines the inlined element counts about half of one after the
 // join; retail's element carries about two post-join references more than ours.
+// M3 lane 13 r124 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; `ret 8` and 210 B in both
+// builds): 0xbfe40 (the inlined fading-bit setter) with a plain `if (value)` 24 (0xbfe40 18, 0x1c35f0 21); in 0x126df0: both
+// elements as references 24 and as `*const` 24 (same code each), the fading test as the plain bitfield 43 (206 B; 0x126df0 39),
+// the fade-in element read through a const reference at every use 27 (registers unchanged, the conversion sinks below the
+// stores; 0x126df0 3).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -2080,7 +2085,11 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
-// score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
+// score 305 (was 305): the second pitch-range loop's registers (retail NONE in EBX, track definition in EBP, the
+// two indices pushed from memory), the first loop's set and bound addresses, the mask update, the ring walk's
+// scratch registers and the gain store's two entry addresses still differ; r153 at the end of this note has the
+// form that gives the second loop's registers (336, not kept).
+// The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // MiniMax B (11-18): 450 -> 448: the detail request's tail grows to 0x94 bytes (six bytes after
 // tracking_data_size, which sits at 0x8c), which makes this function's frame 0x128, retail's. The frame
 // follows the tail's size: 0x8e and 0x92 to 0x94 give 0x128, 0x96 and 0x98 give 0x12c, 0x9c gives
@@ -2120,6 +2129,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax S (11-16): score 305 (was 305): no new form; the length 1923 agrees but this build's frame is 0x11c
 // against retail's 0x128, so every stack slot is off by 0xc from the first store on; the missing locals are what
 // keep the two apart.
+// Earlier at 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // score 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // Earlier: the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
@@ -2499,6 +2509,45 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // the 0x94 tail dropped as well 305 (frame 0x11c), the tail dropped alone 460 (1939 B). On 305: the mask bit tested at
 // each use in the second loop 415; with the sounds by memset(NONE) 423; with the gain sum through s_decibels operator+
 // 408 (1939 B); with a count in each pitch-range for-init too 351; with the pitch sum split (lower bound added after) 349.
+// M3 lane 12 r153 (plain where marked; "fast" is the reduced image with 0x128020, 0x21a250, 0x126df0, 0x126c30 and
+// 0x127d00 added to the checked list, which builds this body as the full image does, 305 at 1923 bytes; its positional
+// count still moves with the gain approach's add, so fast trials are ranked on aligned counts: exact / register-masked).
+// New cause: the links' last byte typed `char` and set to NONE in the range loop (`entry->loop.unknown07 = NONE;`, the
+// field declared `char unknown07`; it is a byte set to 0xff here) makes NONE a register value in the second pitch-range
+// loop. On lane 18's 246 form (re-measured 246 plain, aligned 120 / 41) it gives 336 plain at 1923 bytes, aligned 134 / 34:
+// `or ebx, -1` ahead of the loop and every NONE compare and the sounds[i] clear from EBX, the track definition in EBP,
+// the index and the track index pushed from their homes, and retail's homes for the mask (0x30), the definition index
+// (0x3c), the pitch (0x40), the track index (0x24), the index (0x1c), the track definition (0x28) and the two arrays
+// (0x50 / 0x74). Not kept: the positional count rises, and the 246 form's mask test at each use and long gain copy are
+// match-only. How it works (diagnostics, reverted): a constant takes a register in that loop only when the loop stores
+// it twice (the created sound's level set to NONE in place of -64 gives the same registers); with the creation call
+// given 0 for both indices and one NONE store, NONE stays an immediate (track definition EBX, -64 EBP; with the level
+// store removed too, the selected range in EBP); `NONE`, `(byte)NONE` or `(char)NONE` into the byte-typed field folds to
+// 0xff (same code as 0xff); the creation result defaulted to NONE and assigned under the test 246 (same code); the
+// initializer-list fill in place of the memset keeps NONE in EDX through the ring walk and an immediate in the loop.
+// Natural combinations with the char field, plain: the field and its NONE store alone 426 (1907 B); with a count in each
+// for-init and the memset 374 (1907 B); with those, 0x21b940's bounds pointer, the split pitch sum and the gain store as
+// `*(s_decibels *)&entry->track_value = *(s_decibels *)&track_definition->value08 + *(s_decibels *)&gains[i]` (the
+// decibel type's by-value operator, retail's stack copy of gains[i]) 360 (1909 B), with the mask bit tested at each use
+// 343 (1923 B, aligned 132 / 31); the gain stored through a second getter with the entry pointer kept for the byte 342
+// (1923 B) and with the mask at each use 416 (1925 B, aligned 110 / 28: the replacement arm and the track loop's latch
+// are then retail's). On the 336 form, fast (aligned exact / masked, 138 / 35 with the operator sum): the gain store
+// through a by-value setter helper, through the playing-sound view's gain field, or with the entry through that view,
+// 104 / 24 each (1909 B, the same code: both lookups merge, where retail forms the entry address and the store address
+// from one data load and two index products, and the copy and the sum share one slot where retail has 0x28 and 0x4c); the
+// byte stored ahead of the gain 139 / 38; a named decibel sum 132 / 31. The mask update through a one-dword flags
+// aggregate with inline set and test members, or through a pointer-taking setter, 132 / 31 (same code: still load / or /
+// store where retail ORs into memory), through bit_vector_set 133 / 32 (ORs into memory but indexes the word). The
+// four setup statements in all 24 orders: only the fills' order moves (the zero, the mask store, -64's register and the
+// ring's first index: `X S C(eax) P G M I(eax)` for mask, sounds, gains, iterator, where retail has `X S C(eax) P M G
+// I(ecx)`; none gives the mask store ahead of the gains with the index copy after them). The first loop's range pair
+// through `short const *range = &...bounds[...].minimum` 138 / 32 (retail's `lea ebx, [..+2]` and [ebx] / [ebx+2]);
+// with the bound index read through the indexed set (a typed view of the set table, or a named range index) and the set
+// address formed for the call 132 / 28 (the set pointer is still formed first and read at +2, where retail reads
+// [sets + index*12 + 2] and forms the pointer afterwards); the bound pointer formed after the attenuation call 148 / 44.
+// Left on the 336 form: the setup block's order, the ring walk's EAX/ECX, the first loop's set address, the mask OR
+// (one scratch temporary more than retail, which rotates the creation call's and the replacement arm's scratch
+// registers), the gain store's two index products and the track loop's latch.
 // paired table reads per element 305; retained pitch-pass table 305; paired named pitch-table view 305; retained table with named bounds view 305; retained table with first pass count 427; retained table with independent pass counts 368; retained table with complete request 305; retained table and pass counts with complete request 368.
 // NOT kept: The paired table forms tie. The full request reaches 0x12c and the full request with both counts reaches 0x138. The frame and playback homes still differ. All seven checked callees retain their opening status.
 // Y643: creation-edge guard 305; missing replacement continue 305; vacancy-first range branch 411; shared range bit
@@ -2826,6 +2875,11 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
+// MiniMax G (11-19): no new form, no lower score (339): the gain sum as the existing s_decibels operator+ measures
+// 484 on this body, and the 322 lead of lane 15 r105 needs the track value and the source scale read into locals
+// ahead of the pitch, which the review list rejects; the permuter's 312 lead rests on a local holding the constant 2
+// and on a flag set by one test and read by the next, which the review list rejects too, so the frame stays 0x4b4
+// against retail's 0x4bc.
 // score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
@@ -3182,6 +3236,7 @@ point3f *function_142700(transform4x3f const *matrix, point3f const *point, poin
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
 // score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
+// [r153: see the m3 lane 12 r153 entry at the end of this note]
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
 // initial result 694 reduced, 597 plain (kept); independent request state 811 reduced;
@@ -3581,6 +3636,21 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // (... != NONE || ... || (flags & 0x14))` expression 614 (2519 B); the seed pointer chosen after track_alternate 629 (2508 B);
 // track_alternate computed after the created block 641; track_definition declared after the track and seed pointers 596
 // (a declaration move under the keep bar).
+// M3 lane 12 r153 ("fast" = the reduced image with 0x128020, 0x126df0, 0x126c30, 0x127d00, 0x21be20 and 0x21b0e0's
+// callers on the checked list, 597 at 2518 bytes as the full check; second pair the aligned exact / register-masked
+// counts, 307 / 161 for 597). Diagnostics first (reverted): `(short)0` for every `(short)i` argument 671 (2486 B), the
+// track definition and NONE keep EBP / EBX, so the loop index's uses are not what holds NONE out of ESI; the track
+// definition written as `definition->tracks[i]` at each use 797 (2647 B, NONE EDI, no spilled pointer forms), the track
+// written as the indexed storage element at each use 732 (2636 B, 294 / 149). New forms: the three state pairs through an
+// inline `track_state_set(track, state)` setter 597 (same code); the replacement fade as one call, `if (state != 0 ||
+// (flags & 1)) function_126df0(1, replacement, NONE, state != 0 ? 0.5f : fade_in);` 634 (2523 B, 273 / 142: NONE then
+// takes ESI as in retail, the start arm holds the constant 1 in EBX as retail, the index leaves ESI; but the ternary's
+// value goes through a stack temporary, frame 0x40); the start arm's `field_c_4 = 0; next_state = field_c_4;` written at
+// the end of each of its two arms 658 (2506 B, 271 / 125: the track takes EBP as in retail, the track definition ESI,
+// NONE EBX); that with the one-call fade 664 (2518 B, 259 / 145, NONE back in EBX); that with the fade's arms swapped
+// (`if (state == 0) { if (flags & 1) ... } else ... 0.5f`) 658 (2506 B, 266 / 120); the arm swap alone re-measured 595
+// (300 / 157, lane 7 r161's form). Retail holds NONE in ESI, the track in EBP and the state in EBX across the loop top,
+// with the track definition in the sound-flags home; no form here gives both the track in EBP and NONE in ESI.
 // Y643: successive request shifts 605; two masked stores 661; playback byte carried through all three stores 597; one
 // store for the last two bits 661; one store for all three bits 680; guarded alternate and successive shifts 642;
 // guarded alternate and carried playback byte 644; guarded alternate and two masked stores 689.

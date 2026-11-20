@@ -724,6 +724,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // post-increment choice reference; full-width choice count with captured ordinal; full-width counts
 // with header increment; target count as conversion ordinal; target count published after conversion: 932/932/950/967/954/941/914/951.
 // NOT kept: The entry zero, accepted count register and the separate count and buffer homes remain displaced.
+// Inside from an accepted choice 927, or from a nonempty query 920;
+// first-choice reference through repair 913; matching neighbor through both repair stores 948;
+// shared neighbor gain 965; one post-distance repair-flags read 846;
+// primary published during conversion 953; shared neighbor record and gain 961.
+// NOT kept: The ESI count and the target, primary and query-array homes remain different.
 // M3 lane 12 r152 (fast with 0x18bb80/0x18ab70; control 846): the detail tag as a ternary initializer 845 (one point, not
 // kept); `bool inside` computed right after the query count 927; the override's logarithmic gain computed once ahead of
 // its loop 959 (3380 B); the pool global read at the function top 966 (3355 B); `primary` declared ahead of the target
@@ -758,6 +763,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // instructions short of retail, frame 0x4e8 against 0x4e0, 130 aligned hunks left: the first loop's sound pointer and
 // flag loads, the fraction clamp's order, the step loaded once per target, the 0xfdff word AND). Not kept: every step
 // raises the score.
+// Nest valid index, valid tag, unique choice, or tag and uniqueness 846/846/846/846. Full-width accepted
+// count with these guards 964/964/964/964. NOT kept: the short forms tie. The full-width forms recover the
+// ESI zero but shorten the body and raise the score. The target-count and query-buffer homes still differ.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

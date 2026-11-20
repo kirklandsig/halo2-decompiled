@@ -188,9 +188,8 @@ struct s_path_result_view
 	s_path_location_view location;
 };
 
-bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
-	s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
-	s_type_c3b527 const *parent_point, long parent_node_index,
+bool function_26f3f0(long actor_index, s_type_c3b527 const *entry, s_type_f17a25 *state,
+	s_pathfinding_data *pathfinding, long surface_index, s_type_c3b527 const *parent_point, long parent_node_index,
 	long *parent_node_index_out, s_type_c3b527 *out, long *out_node_index);
 void __stdcall function_2c2060(s_type_f17a25 *state, short count, s_path_step_view const *steps,
 	short *out_count, s_path_step_view *out, bool *complete);
@@ -915,6 +914,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 396, also with the widened edge bit 396, then with one transition type read 332.
 // NOT kept: the 0xe4 forms lose the matched caller. The single type read recovers that
 // caller and restores the extra frame word. None matches or improves the opening score.
+// m3 lane 11 r130 (fast with 0x270930, 0x270750, 0x210a30, 0x2104b0, 0x26f3f0; both builds end in `ret 0x24`): lane 1
+// r122's saved two-flag lead applied to this file is 2 again (the latch's two reloads, j from [esp + 0x10] and steps from
+// [esp + 0x104], in the other order). Retail's traversal latch stores `previous` into [esp + 0x10], the slot the scan's j
+// reuses, and previous_index into the margin's slot. On the lead: j declared at function scope, just before the margin
+// and just after it 2/2/2 (same code); the fill loop as main's pointer walk with the if clamp 235; `previous` without
+// its NULL initialiser 378 (1372 B).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -976,9 +981,8 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				steps[node->depth - 1].type = node->target.type;
 				steps[node->depth - 1].link_index = (short)node->target.index;
 				s_path_node_key_view *parent = &lookup->nodes[node->parent];
-				function_26f3f0((s_pathfinding_data *)state->pathfinding,
-					node->target.index, &node->entry_point, actor_index, state,
-					&parent->entry_point, parent->node_index, &parent->node_index,
+				function_26f3f0(actor_index, &node->entry_point, state, (s_pathfinding_data *)state->pathfinding,
+					node->target.index, &parent->entry_point, parent->node_index, &parent->node_index,
 					&steps[node->depth - 1].point, &steps[node->depth - 1].node_index);
 			}
 			else if (node->target.type == 2)

@@ -678,6 +678,10 @@ struct s_visibility_object_header
 // 4 (same code); the centre and radius chosen by two ternaries 36; the object pointer declared ahead of the three flags
 // 8 (only the init stores move); the plane call and the packer in a forceinline helper owning the two outputs 291 (671
 // bytes). Retail's frame from the top: object +0x10, first +0xc, radius +8, second +4, behind +3, contained +2.
+// M3 lane 7 r191 (fast with 0x132fd0/0x132b10/0x132e60/0x133390, all MATCH each time; control 4): `inline` on 0x132b10's
+// definition 4; `inline` on 0x132fd0's definition 4 (both stay out of line, same code); behind read for the packer through
+// a `bool const &` bound before the plane call 4; the pair in one declarator `bool in_front, behind;` 4; `dword flags;`
+// declared ahead of the pair and assigned from the packer 4 (all the same code, homes still ours).
 // M3 lane 11 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): `in_front = in_front;` or
 // `behind = behind;` right after the plane call 4/4 (same code: the self-copy is dropped before the homes are picked);
 // the pair in one declaration, in_front first or behind first, 4/4; the packer's result declared ahead of the pair and
@@ -688,6 +692,11 @@ struct s_visibility_object_header
 // (behind still an out-parameter) 168 (582 B, the helper stays out of line), forced inline 291 (671 B, the listed
 // helper's code). Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 4 at every K (not a
 // symbol-count tie; rounds before covered 1 to 8).
+// M3 lane 4 r228 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): the plane call through a
+// forceinline wrapper taking (data, center, in_front, behind, radius) 291 (671 B: 0x132fd0 is then expanded); behind's
+// address through a pointer local set before the plane call 4; in_front alone in an inner block with the plane call and
+// the packer (behind outside) 4; behind alone in that inner block 4; one loop index for the three else-arm loops 4; one
+// index for the flag_a/flag_b loops only 4 (all the 4s the same code).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

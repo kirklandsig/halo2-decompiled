@@ -27,11 +27,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
     arg_2->j = g_4b9e14.right.j * scaled.i + g_4b9e14.up.j * scaled.j + g_4b9e14.forward.j * scaled.k;
     arg_2->k = g_4b9e14.right.k * scaled.i + g_4b9e14.up.k * scaled.j + g_4b9e14.forward.k * scaled.k;
 }
-// score 221 (was 221; earlier 234): Frame 0x20 versus retail 0x14. The second displacement and first rotation coefficients still have different homes.
+// score 221 (was 221): Frame 0x20 versus retail 0x14. The second displacement and first rotation coefficients still have different homes.
+// Earlier 234.
 // MiniMax C (11-19): no new form, no lower score (221): the two offset loops written as explicit component assignments
 // reach 218 (1115 B) on the reduced image, three points under the keep bar, so the loops stay; no other new form lowers
 // the score.
-// score 221 (was 234): Frame 0x20 versus retail 0x14. The second displacement and first rotation coefficients still have different homes.
 // MiniMax R (11-16): no new form, no lower score (206): re-measured in this round's nine-address set, the body is 1140 bytes against retail's 1136 and the frame is 0x18 against retail's 0x14; retail keeps the first point's three offsets in registers (XMM1, XMM3 and XMM5) and spills the second point's, where this build materialises both offset vectors in the frame, and the orthographic dot still runs i, j, k where retail runs j, k, i.
 // MiniMax C (11-16): no new form, no lower score (206): retail keeps the first point's three offsets in registers
 // (xmm1, xmm3, xmm5) and spills the second point's (frame 0x14), where ours materialises both offset vectors and
@@ -655,6 +655,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // NOT kept: the pointer and reference forms tie with the default copy and in-place scale.
 // A separate raw snapshot or branch-owned copy raises the score and grows past retail length.
 // The original 0x20 frame, raw displacement homes and coefficient schedule remain.
+// First depth limit before the second transform 268, with both first lateral squares 274,
+// first cone predicate 265, first depth sign 250, independent first lateral predicates 262,
+// complete first visibility 274, paired cone predicates 264, and paired visibility 276.
+// NOT kept: all regress and preserve the extra frame space. The depth-sign form reaches retail length.
 // M3 lane 5 r211 (fast with 0x30290, 0x30bf0, 0x142640, all MATCH; control 221). Slot count: ours uses +0x1c (the first
 // view's k spilled to the first offset's home) and keeps the second view in the second offset's home; retail's first
 // view never gets a home (XMM3/5/1 through the second view) and its 0x14 frame is the second offset at +8..+0x10 plus two
@@ -678,6 +682,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // depth limits as named locals 260 (masked 88); the second offsets computed first 249 (masked 65); the scale read
 // once into a local ahead of both views 256 (masked 93); the scale step written out per component in the macro 252
 // (same code). Lead saved as build/r201/lead-0x501e0.patch; nothing kept (every form is above 221).
+// Caller scale test at each view, its own scale sample, one shared test, or one shared sampled scale and
+// test 278/283/282/308. Selecting the complete scaled vector in the two arms on those forms
+// 311/319/310/306. NOT kept: all raise the score. The 0x20 frame, second displacement and coefficient
+// homes still differ.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

@@ -532,6 +532,10 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // keepable): 286 (270 / 420: site 1's branch order and in-place scaling are then retail's, the zero still has its own
 // home), with the split product 326 (272 / 422). Still BLOCKED-BY 0x2b400 for site 1; the frame homes and the turn
 // dot's operand order remain as the earlier notes describe.
+// M3 lane 14 r122 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286): the output vector declared
+// bare, bound to a `vector3f &` and assigned through it after the working vector's copy 286; the output vector copied
+// from the second global copy 286; both global copies by one chained assignment 286; the forward correction as an
+// aggregate initializer 286; the second global copy initialised from the output vector 286 (same code each: no home moves).
 // M3 lane 5 r209 (fast with 0x29b2e0 at 176, 0x1f9760 at 1, 0x1e5450/0x30bf0/0xb9dd0 MATCH; control 286, aligned 234,
 // register-masked 191): the turn factor's half width named (`half_width`, squared into the numerator) instead of
 // reusing local_20, with the gain as one expression 325 (1868 B), the gain then halved 326 (1871 B), with the named
