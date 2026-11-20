@@ -742,6 +742,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 672/672, conditional pointer 674/674, branched vector copy 622/623, conditional vector copy 667/670.
 // NOT kept: all regress and shorten the body past retail length. The supplied direction still takes
 // EBX at entry. Original sample selection and body restored.
+// Round 444. Direct cap assignments for initial/second/both activation phases 692/692/692;
+// output only 693; initial-output/second-output/all three 597 each; explicit floor arms 710.
+// Reduced control 597. NOT kept: ties and regressions with the supplied direction still in EBX.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

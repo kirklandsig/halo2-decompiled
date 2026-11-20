@@ -507,6 +507,10 @@ static inline void quaternion_transform_vector(
 // computed ahead of the copy from the shared 2.0 and stored twice, where retail computes it after the copy with a fresh
 // 2.0); m first, then the dot and the cross terms, w2 last 245 (1312 B); `real w = q->w;` read once for w2 and m 201 (same
 // code), with m first 247 (1317 B); m first with the helper `__forceinline` 247.
+// Round 444: Persistent forward/up/left destination pointers 243/243/209, paired forward/up,
+// forward/left, up/left 204/204/199; all three pointers/references 248/248 (reduced control 201).
+// NOT kept: the two-point up/left gain reaches 1317 bytes, but the frame stays 0x20 and the
+// quadratic coefficient still lacks its separate retail spill.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

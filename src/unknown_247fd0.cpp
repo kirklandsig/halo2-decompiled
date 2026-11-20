@@ -930,6 +930,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // independent objects 444, and independent objects with a branch-local query 447.
 // NOT kept: the full result alone enlarges the frame. The retail-frame forms shorten and regress.
 // The effect lookup still folds and the gate byte stays off retail's slot. Original body restored.
+// Round 444. Position/direction/matrix receiver pointers 335/369/355; position-direction,
+// position-matrix, direction-matrix 371/355/359; all pointers or references 359/359.
+// Reduced control 334. NOT kept: regressions. The effect address remains folded and the
+// matrix receiver exchanges the opening EBX and ESI roles.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
