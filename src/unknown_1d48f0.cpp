@@ -47,6 +47,10 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax B (11-19): no new form, no lower score (298): the first difference is still at +0x21, where 0x11bed0 is
+// expanded into this body but called out of line in retail; that expansion boundary belongs to src/unknown_11bed0.cpp,
+// which this lane may not edit, so the optional-state homes stay four bytes off (ours [esp+0x2c]/[esp+0x3c] against
+// retail's [esp+0x30]/[esp+0x40]) and the direction block's two divisions stay.
 // score 298 (was 298): earlier rounds' entries follow in order, m3 lane 9 r142's last.
 // MiniMax G (11-18): no new form, no lower score (298): the first difference is still at +0x21 and 0x11bed0 is
 // still expanded here where retail calls it out of line; that expansion boundary is settled in
@@ -389,6 +393,15 @@ const dword g_455978[81] = {
 // read once into a short local 297 (0x11bed0 5), an early return for the no-bsp case 298 (0x11bed0 still matches, still expanded
 // here), the arms swapped 311 (0x11bed0 90 bytes), the cluster preset to NONE and set under `if` 295 (0x11bed0 76 bytes). 0x11bed0
 // restored. Still BLOCKED-BY 0x11bed0's expansion here and 0x279740's first-release expansion (its file's inline restriction).
+// M3 lane 1 r129 (fast with 0x11bed0, 0x11be90, 0x14a280, 0x1d43d0 and 0x279740, all matched throughout, and 0x21a100 93;
+// control 298, aligned 144/136 = unmatched instructions ours/retail, masked 67/59; body unchanged). Lane 9 r142's
+// always-true guard keeps 0x11bed0 out of line, so natural spellings that put its call one level deeper were tried:
+// the rest of the loop body after the query under `if (!local_12.found) { ... }` in place of the `continue` 298, the
+// same for the ray test 298, both 298 (same code each: the nesting leaves the flow graph as it was, so the link-time
+// expansion does not move); the loop ended through its condition (`local_13 < local_6 && !local_0`, no break) 311
+// (2047 B, first difference +0xd: the result lives in memory and is tested at the loop top); the tail as
+// `if (cluster != NONE) { local_0 = true; break; }` 513 (2114 B, first difference +0x8). Still BLOCKED-BY 0x11bed0's
+// expansion here and 0x279740's first-release expansion.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

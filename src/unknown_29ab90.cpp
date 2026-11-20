@@ -39,6 +39,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax S (11-19): no new form, no lower score (286): site 1 planar normalize written out with its own zero path measures 309, because retail reloads the second component after storing the first while ours folds that multiply into the memory operand; the frame homes still take each other slots and the working-vector group is still a rotation off retail, so the body stands.
 // MiniMax G (11-18): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24]
 // where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
 // magnitude), the working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has
@@ -512,6 +513,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // ours magnitude +0x10, settings +0x14, a planar pair +0x18/+0x1c, object +0x20, a planar pair +0x24/+0x28: the three
 // scalar homes and the two planar pairs trade places together, and retail's first planar vector is normalised in
 // place in its home (the 0x2b400 shape). Still BLOCKED-BY 0x2b400.
+// Round 145 (m3 lane 16, fast, control 286): site 1 is 0x2b400's shape in retail (normalizing path first, the magnitude
+// kept in the dead arg_8 home [esp+0x94], the zero stored there out of line at 0x29ae10), which this build cannot inline
+// (0x2b400 is declared noinline for 0x2c2a70's call): BLOCKED-BY 0x2b400. Homes: retail's 12-byte order from ESP is the
+// first global copy, the +0x290 copy, the second global copy, local_12, with local_15/local_13 at 0x1c/0x24; ours puts the
+// +0x290 copy first and local_12 below the second global copy. local_4/local_5/local_6/local_7 each renamed to sort first
+// 286 each (same code); local_12 declared at function scope 286; local_7 declared first 286; local_15 initialised before
+// local_13 289 (1869 bytes).
 // M3 lane 6 r201 (fast with 0x29b2e0, 0x1f9760, 0x1e5450, 0x30bf0, 0xb9dd0; control 286; aligned-equal of retail's 454
 // with addresses / also registers and stack offsets masked, base 270 / 413; all restored). New finding: retail does not
 // fold the gain's constants. Its last product is `(1 - floor) * 0.5`, times the gain, times 4.0 (mulss by the 0.5
