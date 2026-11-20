@@ -5,6 +5,8 @@
 #include <math.h>
 #include "unknown_124f90.h"
 // @flags /O2 /arch:SSE /Gr
+#include "axis_rotation.h"
+#include "normalize3d.h"
 
 real function_11ce20(vector3f const *arg_0, vector3f const *arg_1);
 real function_11cc90(vector2f const *a, vector2f const *b);
@@ -34,24 +36,11 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
     return 0.0f;
 }
 
-PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
-    vector3f const *arg_1, real arg_2, vector3f *arg_3)
-{
-    real sine = (real)sin(arg_2);
-    real cosine = (real)cos(arg_2);
-    real projection = ((arg_1->i * arg_0->i + arg_1->k * arg_0->k) + arg_0->j * arg_1->j) * (1.0f - cosine);
-    real cross_i = arg_0->j * arg_1->k - arg_0->k * arg_1->j;
-    real cross_j = arg_0->k * arg_1->i - arg_0->i * arg_1->k;
-    real cross_k = arg_0->i * arg_1->j - arg_0->j * arg_1->i;
-    real i = arg_0->i * cosine + projection * arg_1->i - cross_i * sine;
-    real j = arg_0->j * cosine + projection * arg_1->j - cross_j * sine;
-    real k = arg_0->k * cosine + projection * arg_1->k - cross_k * sine;
-    arg_3->i = i;
-    arg_3->j = j;
-    arg_3->k = k;
-}
-
-// score 176 (was 176): r121, r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// score 151 (was 176): frame 0x2c, the prologue and everything up to the first rotation now agree (1696/1706 bytes; first
+// difference +0x101). Left: the two rotations' product order and XMM scheduling, the first rotation's sine and cosine homes
+// (+0x3c and +0x10 for retail's +0x10 and +0x3c), the yaw clamp's zero copy below its branch and one store pair's order in
+// the second normalization.
+// Earlier at 176: r121, r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax D (11-19): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the XY vector read before the second copy measures 169 (seven points, under the eight-point bar), the same helper with the original vector order 171 and the two-exit helper with the early vector 174, the length taken from the helper's return 265 and the rotation rows written with the projection term first unchanged, all dropped; the magnitude and the aim length still sit at +0x10 where retail keeps them at +0xc, the final pitch takes a local slot where retail uses the fourth argument's home, and the rotations' sine, cosine and vector copies keep different slots.
 // Earlier score 176 (was 176): r123 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
@@ -703,6 +692,31 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // interleaves with the cross axis. On it: the second pitch angle computed before the first 270 (1711 B, aligned 151); the
 // rotated copy stored before the two angles 186 (aligned 142); only the first normalization through normalize3d 266
 // (1717 B, aligned 205). Body unchanged.
+// M3 lane 5 r215 (fast with 0x29b990, 0x11ce20, 0x11cc90, 0x1e5450, all MATCH unless given; control 176; plain check 151
+// with 0x29b990 MATCH, 0x29ab90 286 and 0x29bab0 489 unchanged). KEPT, 151 (1696 B): both normalizations through the
+// existing normalize3d after the k store, both rotations through the existing in-place helper of axis_rotation.h with the
+// sine and cosine as its arguments, and the turned facing built in the first copy's variable (local_3; the separate
+// local_7 is gone, as is the private rotation helper nothing else used). Retail keeps the turned vector in the first
+// copy's home (+0x20) and has two 12-byte vector homes; with a separate result variable this body measures 234 (1687 B,
+// frame 0x28: the result is packed with the second copy and one 4-byte cell is missing), whatever the three vectors'
+// declaration order (result declared first, between the copies, ahead of everything, second copy declared first: 234
+// each, same code). On the kept body the final pitch sits in the scale argument's home, the roots, the arc-cosine result
+// and the yaw share +0xc, the second rotation's sine and cosine are at +0x10 and +0x3c and the tail is retail's.
+// Measured on the way: normalize3d alone 186; with the final pitch a new block local read by the second rotation and
+// copied to local_9 at the arm's end 160, copied right after the add 179 (first difference +0x101), copied ahead of the
+// second rotation 188; that final-pitch local on the old body 203; a final-yaw local as well 232, alone 161; the pitch
+// change in a block local with the function-scope pitch first assigned by the final add 186, on the old body 176; the
+// change kept in the first angle's variable 186 (old body 176), in the second angle's 186 (same code each: the homes follow
+// values, not variables); block-local change plus final-pitch local copied at the end / at once / mid 160 / 179 / 188.
+// The shared rotation helper on the old body 244, on normalize3d with the sine and cosine as arguments 234, as two locals
+// reassigned for the second rotation 244, declared at the function top 244. With the turned vector in the first copy:
+// sine and cosine as arguments 151 (kept), as reassigned locals 234 (frame 0x28), declared at the top 234, as two named
+// pairs 224, a named sine with the cosine as argument 151 (same code), a named cosine with the sine as argument 179; with
+// the final-pitch local copied at the end 176 (1721 B), at once 193, with two named pairs 178; the cross axis through the
+// existing cross3f 171; the old normalizer with the shared rotation 237; the private rotation with normalize3d 162, with
+// the final-pitch local 159; the turned vector in the second copy's variable 162 (1707 B); the copy made ahead of the yaw
+// clamp 428 (0x29b990 48). On the kept body: the XY vector read ahead of the second copy 149 (first difference +0x179; a
+// two-point gain, not kept), after the depth clear 151 (same code), built from the copy 316.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
@@ -711,12 +725,12 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     s_slot_object_view *local_1 = object_get(arg_1);
     s_29b2e0 const *local_2 = (s_29b2e0 const *)function_1e5450(arg_0, *(long *)local_1);
     vector3f local_3 = *arg_3;
-    real local_4;
-    function_29b32b(&local_3, &local_4);
+    local_3.k = 0.0f;
+    real local_4 = normalize3d(&local_3);
     vector3f local_5 = *arg_2;
     vector2f local_6 = { arg_2->i, arg_2->j };
-    if (function_29b32b(&local_5) == 0.0f) local_5 = *arg_2;
-    vector3f local_7;
+    local_5.k = 0.0f;
+    if (normalize3d(&local_5) == 0.0f) local_5 = *arg_2;
     real local_8;
     real local_9;
     if (local_4 > 0.0f && normalize2d_fast(&local_6) != 0.0f)
@@ -743,24 +757,25 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
         if (!(0.0f > *(real *)((byte *)local_0 + 0x660) * local_9)) pitch_limit *= arg_4;
         local_9 = PIN_126660(local_9, -pitch_limit, pitch_limit);
         local_9 += *(real *)((byte *)local_0 + 0x660);
-        local_7 = *arg_2;
-        function_29b6c0(&local_7, g_4687b0, local_8, &local_7);
+        /* the turned facing is built in the first copy: retail keeps it in that copy's home and has two vector homes */
+        local_3 = *arg_2;
+        function_x84d9e8(&local_3, g_4687b0, (real)sin(local_8), (real)cos(local_8));
         vector3f const *local_17 = (vector3f const *)((byte *)local_1 + 0x7c);
         vector3f local_18;
         local_18.i = local_17->k * local_1->forward.j - local_17->j * local_1->forward.k;
         local_18.j = local_1->forward.k * local_17->i - local_1->forward.i * local_17->k;
         local_18.k = local_1->forward.i * local_17->j - local_1->forward.j * local_17->i;
-        function_29b6c0(&local_7, &local_18, local_9, &local_7);
+        function_x84d9e8(&local_3, &local_18, (real)sin(local_9), (real)cos(local_9));
     }
     else
     {
-        local_7 = *(vector3f *)((byte *)local_0 + 0x290);
+        local_3 = *(vector3f *)((byte *)local_0 + 0x290);
         local_8 = 0.0f;
         local_9 = 0.0f;
     }
     *(real *)((byte *)local_0 + 0x65c) = local_8;
     *(real *)((byte *)local_0 + 0x664) = local_9;
-    *arg_5 = local_7;
+    *arg_5 = local_3;
 }
 
 // @retail 0x29b990

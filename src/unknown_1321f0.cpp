@@ -697,6 +697,13 @@ struct s_visibility_object_header
 // address through a pointer local set before the plane call 4; in_front alone in an inner block with the plane call and
 // the packer (behind outside) 4; behind alone in that inner block 4; one loop index for the three else-arm loops 4; one
 // index for the flag_a/flag_b loops only 4 (all the 4s the same code).
+// M3 lane 13 r126 (fast with 0x132fd0/0x132b10/0x132e60/0x132220; control 4): `word flags` from the packer 4 (same code);
+// the filter as one ternary 186; the visibility fallback as a second statement 161 (repeats the listed fallback form).
+// Diagnostics, restored at once, homes read from the plane call's two lea operands: without the mode update of `second`
+// 205, with false for flag_b at the visibility call 202 (both outputs then in the frame, flag_b stays live), without the
+// entry lookup 233 (behind then takes the object index's freed slot, in_front still the frame byte), without the else
+// arm's two flag loops 279 (both in the frame): behind wins every freed parameter slot, so no other part of the body
+// changes the pair's precedence.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

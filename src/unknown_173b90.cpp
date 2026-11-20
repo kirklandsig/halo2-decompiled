@@ -2145,6 +2145,15 @@ bool function_17afd0(long effect_index, long value);
 // cluster and the effect index read at each use 101 (NONE and the owner share EBP there, but the availability takes AL and
 // same_view BL); the owner as `if (effect_index == NONE) NONE else lookup` 12 (same code); the false default ahead of the
 // availability with a NONE-defaulted owner 123 (500 B). All restored.
+// M3 lane 11 r132 (fast with 0x174420/0x1751d0; lane 10 r129's one-object LTCG screen rebuilt): retail's allocation (availability
+// BL, same_view on the stack, NONE and the owner sharing EBP) appears only with a false default ahead of the availability and
+// same_view copied from the availability in the owner-ok arm (screen: `= available` 6, `available ? true : false`, `available !=
+// false` and `!!available` 5 each); any constant store there gives the conjunction's allocation (nested `if (available) same_view =
+// true;` 49, the three-way test 49, if/else of the copy 48, an inner if/else of constants 77). Fast: the false default with
+// `same_view = available ? true : false` 98 (496 B: `test bl, bl; setne` where retail stores 1 and 0 on branches, every register
+// retail's), with `available != false` 98; same_view false at the loop body's top set by the three-way test 141 (502 B); `bool
+// same_view = available;` cleared by the owner/view test 56; the true default kept with the copy in an if/else on the owner/view
+// test 56. All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

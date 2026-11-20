@@ -531,6 +531,7 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax G (11-20): no new form, no lower score (59): the alpha parity is still masked in sixteen bits where retail masks it in a thirty-two bit register; the colour literal is still built with a shift and an add where retail keeps its two bytes apart; the run of two is still folded into the count as an immediate where retail adds the register.
 // score 59 (was 85): The 0xc frame agrees. Dword opacity parity, literal two-byte assembly and the packed run
 // register still differ.
 // Earlier score 59 (was 85): the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where

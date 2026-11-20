@@ -640,6 +640,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // with the add-scaled updates and the offset vector, 1217-1230 B), frame 0x114 in all of those. Retail keeps the heading's i
 // and j in XMM6/XMM4 from the caller's cross to their last uses and drops the zero k (a literal at 0x28ddf4, zeroed again
 // in XMM7 at 0x28de1e); every form here evicts the heading's j and keeps the zero, so one cross term fewer is spilled.
+// M3 lane 4 r229 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173, aligned 131, register/offset-masked 41):
+// function_28dbd2 taking both vectors by reference 173 (same code); the axis by value (a copy the helper scales) 293 (1262
+// B); the two row sums through the existing vector3f_add, in place 233 (1200 B, masked 41); sine and cosine as const
+// locals taken first, sine first 182 (masked 41); the heading's zero k assigned ahead of its cosine and sine 173 (same
+// code). Retail's rotation, read from the listing again: the tilt's sine is taken first and stored after the dot's
+// products; when `1 - cosine` is formed all eight XMM registers are busy (the first product of cross j, `axis.k * v.i`,
+// is already in XMM7), so the 1.0f takes the zero's XMM3 and the three later uses of the heading's zero k become a
+// literal and a fresh `xorps xmm7`; here XMM7 is still free at that point, so the zero survives. Body unchanged.
 // M3 lane 15 r112 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173, of which 42 are the frame offset alone):
 // the helper's dot as `dot3f(arg_2, arg_1)` 173; the projection as `(1.0f - cosine) * dot` 173; the rows as `+=` of the
 // axis and cross terms 173; the rows summed axis, cross, vector 173 (all the same code); the trig through cosf/sinf 185;
