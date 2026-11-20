@@ -1546,6 +1546,30 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // parameter's address passed to a call on the default path 427 (1500 B: every use then reads the home, the first two
 // and case 0's as well, so retail's parameter is not address-escaped); one more direction use in the fallback 48 or
 // after the aim call 58 (the direction stays in EBX: not a use-count tie).
+// MiniMax A (11-19): score 36 (was 72): retail has two exit blocks, the plain one at 0x296aaa that returns the
+// result flag and the failure one at 0x296d22 that stores 0 to the result flag before returning it, and the
+// failure block is reached from the two remembered-branch failures (0x2969e0 and 0x296ae3) and from the two
+// normalize failures (0x296a6a and 0x296d16), while this source has one `done` label, so the failure paths
+// never stored the flag and the two Boolean homes came out the wrong way round (this build's result flag
+// landed above the presence byte). Storing the flag on the four failure exits as retail does - `result =
+// false;` before the trailing `goto done` of cases 1 and 2 and before the two normalize failures - gives
+// retail's homes, and `point_valid = result = false` at the entry gives retail's store order (the result
+// flag first). Round 264's diagnostic measured the same idea at 38 and called it a diagnostic; it is retail's
+// own failure block, so it is kept here. The matched neighbours 0x297a50, 0x297660 and 0x2980d0 stay matched
+// and every other function of the queue keeps its score. What is left is one instruction: the body matches
+// retail's instruction for instruction up to the weapon block, where retail loads the direction into EDI and
+// reloads the actor index from its home (`mov eax, dword ptr [esp + 0xbc]`, 7 bytes) for the 0x1ffbd0
+// argument, while this build keeps the actor index in EDI (`mov eax, edi`, 2 bytes) and gives the direction
+// EBX; that five-byte difference makes the body 1440 bytes against retail's 1444, so the jump table sits four
+// bytes earlier and the branches to the failure block name a different address. The forms tried for it (the
+// weapon locals scoped in the block, the 0x1ffbd0 result assigned inside its test, `aiming && (weapon_index =
+// ...) != NONE`, the fallback as `if (result) goto output_point;`, the actor index read through its address, a
+// local copy of the actor index, the two calls through a forceinline helper, a local for the direction pointer)
+// all compile to the same code, so this is the register allocator's choice and not the source's. A full-image
+// permuter run on this body was stopped at its time limit without scoring a variant (baseline 33 differing
+// instructions in the full image; the reduced image cannot score this function at all, as it builds it 36
+// bytes shorter there). The two 0xcafc0 blocks now match again.
+// MiniMax A (11-19), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -2191,6 +2215,28 @@ struct s_actor_looking_structure_view
 // parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's
 // projection staged (`projection = dot; projection *= 1 - cos;`) 141 (927 B; 0x296e60 282); the helper's product written
 // `(1 - cos) * dot` 23 (same code); the fraction as a ternary after the trace 144 (re-measure of round 27's form).
+// M3 lane 11 r126 (fast, this function alone; control 23): redundant parens (no grouping change) move the inlined
+// rotation's operand orders, since its nodes follow every node of this body: one pair around the angle argument or the
+// first score product gives the dot retail's order and orientation (axis j first, j, i, k) but moves its accumulator,
+// the cross and row orientations and the 0x26c590 pushes (132/128, 928 B); 1/2/3 nested pairs on the angle 132/150/89, on
+// the score products 128/144/62, on the clamp product 60/144/141; around plain leaves no effect. The 4 x 4 x 4 grid of
+// angle/score/clamp pair counts: best 21 (two score products and the clamp twice; the score's middle term then retail's),
+// then 23, 29, 31, 56, 60, 62. Under the four clamp shifts: the vector argument as `directions + i` the same code as
+// `&directions[i]` (23/60/144/141); the up axis through a pointer local 70/146/146/135. The angle with the conversion
+// implicit 23 (same code); the score as (i + k) then += j, or (k + i) then += j, 124/124 (928 B).
+// M3 lane 12 r152 (fast with 0x296e60 270, 0x2980d0, 0x297660; control 23): the score as two statements on its local, `(j + k)`
+// then `+= i` 142 (928 B), `(i + j)` then `+= k` 128 (928 B), `(i + k)` then `+= j` 124 (928 B, lane 11 r126's two-stage form);
+// three statements i, k, j 143 (928 B). Redundant pairs shift every float product by their count mod 4 wherever they sit
+// (around the clamp product, the fraction product or a helper product alike; around the parenthesized ternary they count
+// nothing): `(i + k)` then `+= j` at shifts 0-3 124/143/59/9. LEAD at 9 (924 B, steering parens, not kept): the dot and
+// the score are retail's; left are three rotation products: cross k's first loads v.i where retail loads axis j, cross i's
+// second loads axis j where retail loads v.k, and the j row accumulates axis j * projection where retail accumulates
+// v.j * cosine. Other cycles at shifts 0-3: `(j + k) += i` 142/143/58/46; `(i + j) += k` 128/130/62/31; parens inside
+// the score's products, best 23/31/33; the axis through a const pointer local 169/67/168/144; a named `direction`
+// pointer for the copy, rotation and trace 143/68/19/128 (with the score through it 145/68/40/145); the helper's cross i
+// second product parenthesized (odd counts, 0x296e60 270 -> 282) best 35, with the score's k product too best 22.
+// Natural spellings on the `(i + k)` then `+= j` form (clamp compare reversed, fraction-first clamp product, `0.2f *
+// distance`, constant-first angle, fraction declared before the copy, `best_score < score`) 124 each (same code).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -2320,6 +2366,11 @@ struct s_actor_looking_turn_request
 
 // score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
 // of the call keeps it out of line (r131, below), which still leaves the valid flag's type and the per-path publications.
+// MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
+// 0xc8 and the local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines
+// below it, where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four
+// bytes higher - so every stack home differs; 0x1fdd90 is still expanded here where retail calls it out of line:
+// BLOCKED-BY 0x1fdd90.
 // MiniMax B (11-18, round 2): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
 // local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines below it,
 // where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four bytes

@@ -2118,6 +2118,12 @@ bool function_17afd0(long effect_index, long value);
 // lookup's two arms, then cleared by the same test 145 (516 B); the view compare written `owner != g_4b9ed8` 12 and the
 // query as `!function_155760(g_4b9ed8)` (0x3e9c0's spelling) 12 (same code each); the clearing test as
 // `same_view = same_view && owner != NONE && g_4b9ed8 == owner && available;` 138 (510 B, the plain conjunction's code).
+// M3 lane 7 r190 (fast; control 12, P re-measured 138 at 510 B: owner EDI with a `mov edi, ebx` NONE copy, the conjunction
+// materialised in BL and spilled, where retail stores 1/0 to the flag's slot in each arm with NONE and the owner sharing
+// EBP): P with the availability read through a `bool const &` 138, with the owner through a `long const &` 138; on this
+// body the availability through a result-style forceinline helper 12 (same code), as one `g != NONE && query(g) == 0`
+// initialiser 96, `draw = view_pass == same_view` 13, the true default between the availability's clear and its test 12
+// (same code), attached as a false default set by one `if` 133 (510 B). All restored.
 // M3 lane 10 r129 (fast with 0x174420 and 0x1751d0; base 12): the true default moved down to just after the second definition
 // call 22 (the store moves exactly where it is written, the rest is retail: retail's store sits in the owner-ok path, after
 // the availability); the plain conjunction re-measured 138, with the attached flag defaulted false and set by its test 146

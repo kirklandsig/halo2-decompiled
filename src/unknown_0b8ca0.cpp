@@ -623,7 +623,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return data_datum_index(data, function_16bc00(data, index == NONE ? 0 : (index & 0xffff) + 1));
 }
 
-// score 76 (was 165): the object flags load, the cluster table load, the definition, zoom and offset registers, the
+// score 76 (was 76; 165 before m3 lane 2 r104): the object flags load, the cluster table load, the definition, zoom and offset registers, the
 // atan2 reload order and the latch differ; the forms of this round are listed in M3 lane 2 r104 at the end of this note.
 // MiniMax D (11-17): no new form, no lower score (165): the body is retail's 895 bytes and the lower-scoring forms
 // other lanes found all rest on forms this round excludes (a 'visible' flag tested after the cluster loop, a (real)
@@ -962,6 +962,25 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // definition-EAX row 38 or worse.
 // Also on the screen: the arm's named index masked in place (`model_index &= 0xffff`, long or dword) 38, masked at its
 // initialiser 38, the outer named index masked in place 2, the low half read as a 16-bit field 38.
+// M3 lane 12 r149 (fast with 0xbf2c0/0x268c90/0xb8a80/0xb8b20/0xcaf60/0xc8880/0x30bf0; control 76, aligned 21). LEAD at 2
+// (aligned 2, 895 B; build/r149/lead-bba80-2.patch in lane 12's worktree), all of these together: the root object pointer
+// for the two flag reads and the cluster bit table pointer ahead of the first query (r104's pair, 69); the zoom level
+// read into a `long` local for 0xc8880 (retail's `movsx ebx`; the second offset block and the latch step then take
+// retail's scratch rotation) 67; `(real)atan2` (fadd dword) 67; g_4e8c24 read at each use with no `players` copy
+// (the latch loads the global ahead of the NONE test as retail) 67, aligned 7; the normalise result in a named `real
+// distance` used in atan2 (the radius load is still hoisted above the call and spilled as a qword; the magnitude is then
+// loaded first, the radius reloaded and swapped, as retail) 2. Left: the object definition pointer in EDX where retail
+// reuses EAX (`mov eax, [eax+ecx+8]; mov eax, [eax+0x38]`). Not kept: the pointer, zoom local, cast and distance local
+// are match-only. Also tried: atan2 with one implicit conversion (compile error, ambiguous); `(double)(real)` on the
+// call 67; atan2l 262 (877 B); a double-returning inline around the normalise 262; named `double radius` with the
+// named distance 250 (EBP becomes a register, the frame stops self-aligning); an inline angle helper with a double,
+// inline-double or real radius parameter 67 each; no definition local 67; `byte *` definition 67. Screened on the
+// 2 form with a one-object LTCG link of the real callee objects (faithful but for 0xc8880's argument register), 512
+// combinations, none 0: the model index read through the definition at each use (or a mix) gives EAX for the
+// definition but the model lookup then takes ECX and four later blocks swap scratch registers (41 there, real fast
+// build 45); definition/model names, `const`, `register`, declaration order, a model pointer, a shared tag pointer,
+// range-zero default, swapped range arms, inline range/model-index helpers, dead locals 1..8 and the zoom block's
+// spellings leave EDX (2). Removing the zoom block altogether (diagnostic) gives EAX, so the choice is global.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -1745,174 +1764,12 @@ done:
     return result;
 }
 
-// score 17 (was 17): entry agrees; in the placement tail retail keeps the type in ecx, the palette offset in
-// ebx and the size in eax (sign-extended at its load, the definition copied to esi first); ours keeps the
-// type in esi and the size as a word in bx (237 bytes against 236).
-// Tried: no volatile (name index stays in ebp, result spilled) 76; function_bb760 call for the lookup, same
-// 76; result declared after the force block 81; long/inline definition fields with a block local 43, 34;
-// long size only 38. Copy + volatile name reload 26; result declared before the lookup 83; no result
-// variable 78; result declared in the tail 85; long size 27; long offsets + palette at the call + datum
-// local 27; the 0xb7300 placement-block helpers (both orders, both product orders) 23; lookup via 0xbb760
-// 17. Test-produced result 78; with wide stride/call-use palette/both 76/44/42; with direct
-// offsets/type name/read-only descriptor/read-only wide 78/78/78/76. Canonical descriptor fields through
-// mutable/const pointers and references all 17; the same four contracts with a promoted stride all 27
-// (236 bytes). Shared type home 17; promoted placement index 28; both 28; shared type plus stride 27;
-// promoted index/stride 36; shared type/index/stride 36; shared type with call-use palette 37; shared
-// type/index with call-use palette 26. Plain/typed aliases 17/17; typed name 17; promoted datum index
-// 19/236; typed block 17; direct name-index reads 31/236; early field/base declarations 17/17; definition
-// declaration/initialization first 17/17; register type/size 17/17; alias with wide stride 27/236;
-// definition/type-definition before guard 17/17; placement-type name 17.
-// Round 14 (0xa73b0's lookup forms): definition read at each use with a datum local 33 (236 bytes);
-// definition local with a datum local 33; long stride with the placements pointer 27 (236 bytes, the
-// product then extends the index into eax); the product's operands either way round, no effect (17/27).
-// Round 101 (lane 7), `--fast`: palette address at the call 37 (240 bytes); a screen of palette offset short/long x
-// palette local/at the call x size short/long x placement offset short/long 17/17/27/27/37/37/26/26 (short palette
-// offset) and 17/17/27/27/25/25/32/32 (long); short type 115 (267 bytes); a named datum local 33 (236 bytes: size
-// sign-extended into EAX at its load and the palette added just before its push as retail, but scenario ESI,
-// definition ECX, type EDI, index BX), and on it the same width/palette screen with both product orders and the
-// palette declared before or after the datum 27/33 (palette local) and 17/27 (palette at the call).
-// Round 80: a second descriptor receiver for size and placement offset 17; with wide size 27 (236 bytes);
-// with all offsets wide 27; all offsets wide and palette at the call 32; with a wide index 32; with a
-// datum local 31; the second receiver for size only 17, for placement offset only 17. Restored.
-// Round 57 (lane 10): retail reads palette, size, offset, with the type in ECX, the definition copied
-// to ESI after its first read, and the palette added and the size multiplied late. All offsets long
-// with the palette at the call 32 (236 bytes); the same with a long index declared at each of seven
-// points 30/31/26/26/27/27/32 (236 bytes; after the definition: size in EAX, palette in EBX, index in
-// EDI as retail, but type ESI, definition ECX, no copy, which shifts the tail), the product either way
-// round the same; first table read in place of the definition local, on those, 31/26/26/27/27/32; table
-// read at each use 31/26/27/27; definition re-assigned after the palette read, at seven index points
-// 26/31/26/31/27/27/32 (the copy propagates); first table read in place on this body 17 (237 bytes);
-// the 0xb7300 helpers again with a long index at each point 26/23/23/26/23/23, with a short index
-// 23/23, the global passed to them 25/21/23/23, 23, scenario local kept for the name 25/21 (21: scenario
-// EBX and a dead block add); inline datum helpers over the definition 26/26/27/27/27/27, over the type
-// 31/27, an elements helper with an out size 31/27.
-// Round 147 (lane 5, fast): the type read from the name entry at each use, no type local, 17 (same code);
-// every placement read at the call with only the definition local 67 (236 bytes, EBX pushed lazily); the
-// type at each use with the palette added at the call 37 (240 bytes), with a long size 27 (236 bytes);
-// the type local with the definition table read at each use, all at the call, 67 (236 bytes).
-// Round 54 (lane 2, fast; palette added at the call, long size; all 236 bytes): type local or read at each use x
-// definition local, read at each use or first read in place x offset long or inline: placements local 27 (long
-// index), 32 (short index), placements at the call 28 (long index), 28 or 34 (short index). With the type and
-// definition locals, a long index at seven points 30/31/26/26/27/27/32 (26: size EAX, palette EBX, index EDI as
-// retail; left: type ESI, definition ECX, no copy). Palette and block through local helpers of 0xd5260's shape
-// (out-parameter size), palette first or last, global or scenario local, inline or forced: short or late long
-// index 23 (scenario ESI, index BX, a dead block add), long index ahead of the helpers 25/26. The palette offset
-// through an inline read, then the definition local, long index at five points: placements local 31/26/26/27/27,
-// at the call 32/28/28/28/34; the palette pointer through it: local 33/32/32/33/33, at the call 33/32/32/33/27.
-// Lead: retail's `mov esi, eax` fits a definition local taking a value already read, with the size coalesced to
-// EAX for the product; every form above propagates the copy, so the type never reaches ECX.
-// Round 77 (lane 10, fast): the type read beside the placement index, ahead of the NONE test, 23 (238 bytes);
-// that with long offsets and size and the palette at the call 32 (236 bytes); the palette pointer formed after
-// the placements read 26 (237 bytes); the placement block address named before its element read 17 (same
-// code); long palette offset and size with the palette local where it is 27 (236 bytes).
-// Round 156 (lane 5, fast): on a datum local (retail's statement order: size into EAX at its load, product before
-// the pushes, palette added at its push), the scenario from the global at each use 33, with the type re-read too
-// 33 (index back in DI; scenario EBX, type ESI, definition ECX); a screen of scenario local/global x type
-// local/re-read x definition local/table at each use x palette local/at the call x size short/long: palette
-// local 33 in all sixteen (236 bytes), palette at the call 17 with the scenario local and 25 with the global (237).
-// Round 81 (m3 lane 1, fast with 0x29fd40/0x2a12f0): palette added at the call with a long size and the placement
-// offset read inline 26 (scenario moves to ECX, index to SI); the type and definition locals renamed to sort the
-// other way 17 (same code); the definition bound as a const reference to its table entry 17 (same code); a named
-// datum with the palette added at the call 17; palette and size declared ahead of the definition 17.
-// Round 67 (m3 lane 2, fast): a datum local (size * index) with the palette added at the call, re-measured 17 (short
-// palette offset) and 27 (long palette offset, 236 bytes). The 27 form is retail's code but for two registers: scenario
-// EDX, placements EBP, index DI, the product before the pushes and the palette add at its push all agree; only the type
-// takes ESI (retail ECX), so the definition takes ECX and the size is read first (retail loads the definition into EAX,
-// reads +0xc, copies it to ESI). With the type push replaced by 0 (diagnostic) the type takes ECX. On the 27 form, forms
-// listed above for other bases re-measured: a long index at its read 31; no type local (name field at both uses) 27 (same
-// code); the first table read in place 27 (same code); the definition through an inline getter 27 (same code); the type
-// read ahead of the NONE test 30; palette and block both through helpers, palette first, 33 (scenario ESI, index BX). New:
-// the size and datums through a block helper of 0xd5260's shape with the palette offset read in the caller, from the
-// definition local or the table, 27/27 (same code).
-// Round 174 (m3 lane 5, fast): matched 0xa5bd0 shows retail's `mov edi, ebx` definition copy before its +0xe/+0xa reads
-// (its source reads the table again at the later uses); that idiom here (definition local for the palette offset, size and
-// placement offset through g_468630[type] again) on the 27 form 27 (same code), with the palette pointer as a local at its
-// read 27, on main's body 17 (same code): the re-reads CSE into the definition and the copy never survives. On the 27 form:
-// the palette offset read after the datum 27; the definition renamed to sort after the type 27 (same code, re-measure);
-// an early `return result` on NONE with the call returned directly 81 (244 bytes).
-// Round 86 (m3 lane 13, fast): the 27 form re-measured (long offsets and size, datum local, palette added at the call):
-// it reads size, palette offset, placement offset through the definition in ECX with the type in ESI, where retail keeps
-// the type in ECX, loads the definition into EAX for the palette offset and moves it to ESI only when the size takes EAX
-// (a definition that is not planned around the size's EAX). On it: the table indexed by the type at each read 27 (same
-// code); the datum as one expression (product first) after the palette offset local 27 (same code). Every table read
-// inside the call statement 67 (236 bytes: loads after the pushes, EBX never used); palette then block helpers with an
-// out size into locals 23; datum and palette helpers called in the argument list, taking the scenario 23, reading the
-// scenario global themselves 23 (all three: scenario ESI or EDI, index BX, the datum built after the pushes).
-// Diagnostic: the type not pushed 28 (type EAX, definition still ECX).
-// m3 lane 14 r90 (fast): on main's body the call's result returned inside the placement test 78 (245 bytes). On the 27
-// form (re-measured 27 at 236 bytes): the type local `long const` 27, the name entry read as a short array (fields
-// [0x10]/[0x11]) 27, the three definition reads in the orders size, palette, placement and placement, size, palette
-// 27/27 (all four the 27 form's code); the call returned inside the test 81 (244 bytes, round 174's code).
-// Round 105 (m3 lane 10, fast; on the 27 form unless noted): the definition declared bare before the type 27 (same
-// code); one inline wrapper doing the table reads and the call 30; the placements pointer stepped in place by the
-// product 27; the scenario global read for the palette only 34; two definition locals, one per read group, 27. A
-// 600 s permuter run (57 tries) on the 27 form found 21 only with a volatile datum and swapped call arguments. Reading:
-// retail's `mov esi, eax` copy is the shape of matched 0xa5bd0 (`mov edi, ebx` before its +0xe/+0xa reads), where the
-// re-reads sit in a later block than the first read; here every read is in one block and CSEs into one value.
-// Diagnostic: `__assume(type >= 0)` before the table read 27 (no change).
-// M3 lane 16 r121 (fast with 0xbf0f0/0xbf090): the 27 form re-measured 27 (236 bytes: type ESI, definition ECX, no copy);
-// on it a `short` type local 27, the definition read as a short array ([6], [7], [5]) 27, the datum as
-// `&placements[index * size]` 27 (all the 27 form's code); one function-scope `type` assigned in the force path and the
-// placement block, on main's body 17 and on the 27 form 27 (both the same code).
-// Round 108 (m3 lane 1, fast with 0xbf0f0/0xbf090): the 27 form re-measured 27 (236 bytes: retail's code but for the
-// `mov esi, eax` copy; type ESI, definition ECX). One pointer variable for the definition that is then assigned the
-// datum (long offsets and size, palette added at the call) 32: the definition takes EAX as retail's does, but the
-// product is built in the index's register (`movsx eax, si`, index pushed before the imul), the size goes to EBX and no
-// copy is needed; the product written size first 32 (same code); with a long index declared after the definition 26,
-// after the palette offset 26 (size EAX and `imul eax, edi` as retail, the definition back in ECX); one variable for
-// the definition, the placements and the datum (`data += index * size`) 27 (the 27 form's code). Lead: retail looks like
-// the definition preferring EAX (as when it shares the datum's variable) while the size is the product's destination.
-// Round 107 (m3 lane 11, fast with 0xbf0f0/0xbf090): one table-entry pointer that is first the name entry and then
-// the definition (so the definition would start in the name's EAX) 17 on main's body and 27 on the 27 form (both the
-// same code as their bases: the reuse does not tie the homes). On the 27 form: the type and definition read above the
-// NONE test 30; the placements' scenario read from the global again 34; the placements read folded into the datum
-// with the offset read before the size 27 (same code).
-// Round 187 (m3 lane 6, fast with 0xbf0f0/0xbf090): the placement-block type renamed `object_type` 17 (same code);
-// long palette offset, size and placement offset with a `size * index` datum local added to the placements and the
-// palette formed at the call 33 (the size is then read after the placement offset, no definition copy, but the
-// index takes ESI and the type EDX); main's body with only the size as a long 27 (236 bytes: the index is
-// sign-extended into EAX, pushed and used as the imul destination, where retail extends it in place in EDI), with
-// the product written size first 27 (same code); main's body with the palette formed at the call 37 (240 bytes).
-// M3 lane 5 r190 (fast with 0xbf0f0/0xbf090): the 27 form re-measured 27 (236 B: type ESI, definition ECX, size read
-// first, no copy). Palette and block through local helpers of 0xb7300's shape (palette first, out-parameter size) 23
-// (re-measured: scenario ESI, index BX, a dead block add, no copy). Long palette offset local with the size read inline in
-// the call's datum expression 33 (236 B): the definition then loads into EAX as retail's does, but the scenario moves to
-// ECX, the index to SI and the type to EDX; long palette offset and size locals with the placement offset read inline in
-// the placements load 32 (definition EAX again; size EBX, the index extended into EAX and used as the product's
-// destination after its push); the same with the product written size first 32 (same code); the same with a named datum
-// before the call 27 (the 27 form's code: once the datum is named the definition avoids EAX). Reading: retail's
-// definition-in-EAX-then-ESI copy needs the size's EAX claim to appear only after the definition is placed, with the
-// product still formed ahead of the pushes; no tried form gives both.
-// M3 lane 10 r114 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x2a12f0, all matched each time): on main's body the palette
-// offset alone as a long 17, the placement offset alone as a long 17, the size read ahead of the palette offset 17 (all three
-// the same code); the palette pointer formed after the placements read 26 (237 B). On the 27 form (re-measured 27, 236 B: type
-// ESI, definition ECX, size read first, no copy): one function-scope placement type declared at the top and assigned in the
-// placement block 27 (same code).
-// Round 98 (m3 lane 2, fast with 0xbf0f0/0xbf090; on the 27 form, re-measured 27 at 236 B: type ESI, definition ECX, size
-// read first, no copy): the type local for the table index with the name field read again for the push 27; the palette
-// offset read through the table in place with the definition local declared after it for size and placement offset 27;
-// the size as a dword 27; the definition typed as the object type definition (the 0xa offset through its field, the
-// header included) 27; the placement index widened once into a long local for the product and the push 32.
-// M3 lane 3 r260 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x29fd80/0x2a12f0/0x2a1340): the 27 form re-measured 27 (236 B);
-// on it the three definition reads in one declaration 27, the datum in one expression with the placement offset read inline
-// 27, the placements read folded into the datum with a placement-offset local 27 (all the 27 form's code); the slot lookup
-// as `NONE` then an `if` (for the ternary) 59 (243 B), that on the 27 form 59 (240 B).
-// Round 181 (m3 lane 7, fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x2a12f0, all matched): long palette offset, size
-// and placement offset with an `index * size` datum local and the palette formed at the call 33 (236 bytes: the definition
-// stays in EAX and the size is read last, so no copy; type EDX, scenario ECX, index SI), with `size * index` 33, with the
-// call adding `datum + placements` 33; the datum named before the placement offset read 30 (placements become the add's
-// destination); the palette pointer named after the datum 30.
-// M3 lane 12 r145 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x29fd80/0x2a12f0/0x2a1340; the 27 form re-measured 27):
-// on the 27 form the table indexed by the name field with the type local declared after the three reads 27 (same code);
-// `if (placement_index == NONE) return result;` before the call block 81 (244 B); reads in the order palette, placement
-// offset, size 27; the definition and its reads in an inner block assigning outer palette offset and datum 27; a short
-// type local 27; on main's body a short type local 115 (267 B). Retail's load, use, copy (`mov esi, eax`) shape occurs
-// nowhere else in the image, and no out-of-line getter of the type table exists to inline.
-// M3 lane 16 r143 (fast with 0xbf0f0/0xbf090): an inline taking the definition pointer that reads size and placement
-// offset and returns the datum, the palette offset read in the caller, 32 (scenario ECX, index SI, type EDX); the
-// palette through an inline taking the definition pointer on the 27 form 33; on main's body the placement offset and
-// the placements read ahead of the size 18 (237 B), that with the size as a long 27 (236 B, type still ESI); the 27 form
-// with 1-8 unused initialised locals 27 each (not a symbol-count state: the type stays ESI in every count).
+/* makes the scenario object a name refers to (forced: resets the existing
+   object's placement first; otherwise nothing when it already exists) and
+   returns its index; NONE when the name has no placement. The palette offset
+   is read through the type's definition, and the definition is read again
+   through the name entry's type for the datum size and offset, so the first
+   read and the second share one load with a register copy. */
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1939,14 +1796,14 @@ long __stdcall function_bb670(short name_index, bool force)
     if (placement_index != NONE)
     {
         long type = *(short *)(name + 0x20);
-        byte *definition = (byte *)g_468630[type];
-        short palette_offset = *(short *)(definition + 0xc);
-        s_scenario_block *palette = (s_scenario_block *)(scenario + palette_offset);
-        short placement_size = *(short *)(definition + 0xe);
-        short placement_offset = *(short *)(definition + 0xa);
+        long palette_offset = *(short *)((byte *)g_468630[type] + 0xc);
+        byte *definition = (byte *)g_468630[*(short *)(name + 0x20)];
+        long placement_size = *(short *)(definition + 0xe);
+        long placement_offset = *(short *)(definition + 0xa);
         byte *placements = *(byte **)(scenario + placement_offset + 4);
-        result = function_bf0f0((s_type_4f0dcc *)(placements + placement_index * placement_size),
-            type, placement_index, palette, true, false);
+        byte *datum = placements + placement_index * placement_size;
+        result = function_bf0f0((s_type_4f0dcc *)datum,
+            type, placement_index, (s_scenario_block *)(scenario + palette_offset), true, false);
     }
     return result;
 }
@@ -2345,6 +2202,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // for both the parent and the header 318 (1224 B); the same local read from g_4e0300 300 (1228 B); only the header from
 // g_4e0300->data 298 (1241 B); the `allowed` test ahead of the ancestry walk 314 (1238 B); the walk's match clearing
 // `allowed` and breaking, one return after it 343 (1290 B). BLOCKED-BY 0xb8bd0 as before.
+// M3 lane 12 r149 (fast with 0xb8ee0 and 0xb8bd0's matched callers; control 285): `inline` on 0xb8bd0's own definition
+// 348 (1272 B) and it loses 0xbcc20, 0x11b710 and 0x18c3b0 (reverted); the node matrix through this file's existing
+// node-matrix inline on a fresh parent lookup 348 (1272 B), on the early parent pointer 324 (1245 B); the ancestry walk
+// as a while loop 285 (same code); the `allowed` exit ahead of the walk 314 (1238 B).
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {
