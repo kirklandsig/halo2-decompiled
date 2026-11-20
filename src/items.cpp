@@ -1181,6 +1181,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // with setter / staged output axis with setter: 130/248/207/160/130/130/133/117/281/130/117.
 // NOT kept: the two 117 forms recover the 0xb4 frame but spill the intermediate axis k to the
 // result k home before its final store. Retail keeps that intermediate in a register.
+// Scaled-axis scalars 130; forward scalars 130; separate shared-scale output 204; cross numerators
+// staged together 130; reciprocal before cross 205; doubled half-root before projection 184;
+// conditional point selections 130; normalized vector value 246.
+// NOT kept: the scalar forms that tie retain frame 0xc0. The separate scaled vector, reciprocal and
+// vector value grow the body, and the earlier doubled half-root regresses.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

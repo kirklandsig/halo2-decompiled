@@ -5457,6 +5457,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // sums 169; complete transverse vector 272; scaled-vector addition for forward, left or both
 // 272/276/276; staged forward vector 275. NOT kept: the per-row sums tie, and every full-vector stage
 // grows the body.
+// Replacement forward published between/after crosses 217/212; separate adjusted up 219;
+// paired/separate angle bounds 169/169; forward/left scale updates 169/169; component-wise forward
+// copy 173.
+// NOT kept: the replacement basis vectors grow the frame to 0x5c. The component copy reaches 767 bytes
+// with frame 0x50 but raises the score and leaves the first cross schedule different.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

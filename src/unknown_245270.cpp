@@ -912,6 +912,11 @@ void function_245400(s_source_245400 const *source, long index,
 // all geometry names with the plane table after the edge 166. NOT kept: the late
 // table still reserves 0x24 and raises caller 0x245aa0 to 3.
 // MiniMax C (11-19): no gain (164, baseline; body restored). Retail reads the second surface index (field_0a) before the first (field_08) and homes the two decoded material codes as dwords at +0x14 and +0x18 with the first index at +0x1c, which is the 0x2c frame; ours has two homes and the 0x24 frame. Reading the two material codes in retail order measures 163, a gain of one and under the bar.
+// End vertex record 164; retained start vertex 164; both vertex bindings 164; both bindings with late
+// plane table 205; retained primary material 164; both material bindings 164; primary material with
+// late output point selection 164; bound vertices with shifted side bits 232.
+// NOT kept: the late plane-table form lengthens the body and raises caller 0x245aa0 to 3. The shifted
+// side bits shorten it to 752 bytes. The record bindings leave the frame at 0x24.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
