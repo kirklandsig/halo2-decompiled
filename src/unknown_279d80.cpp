@@ -2095,6 +2095,18 @@ void function_27dd10(void)
 // Diagnostics: a used float literal in the blend-1 scale arm fixes this pair (one or two of them); a non-literal float
 // multiply there does not; `g_5044bc += 3` there fixes this pair but reverses pass 1's (EDX flags, ECX count); 15 to 24
 // dead initialised locals in this body 2 each. All restored.
+// M3 lane 7 r190 (fast with 0x281b60 and the four matched walk users): g_504430 declared ahead of g_504410 2; pass 0
+// given the count straight from the settings global, the local count only for passes 1-2, 286 (1742 bytes, every walk
+// user regresses); the bit-flags pointer stepped in the outer for's increment 414 (1751 bytes); in function_288572 the
+// bit-flags selection ahead of the output-cursor store 2 (0x288570 3, 0x289580 78); the blend's sign mask with external
+// linkage 2. All restored.
+// M3 lane 16 r146 (compile-only build of the file, exact here: this function 2, 0x281b60 2, 0x285750 0): only pass 0's
+// pair is reversed (count, flags); pass 1's (EDX flags, ECX count) is already retail's. The flip from a float operation in
+// the scale arm (`+ 1.0f`, `+ 2.5f`, `* 2.5f`, a negate; diagnostics) does not need a new constant (1.0f is already used
+// earlier in the file), so it follows the float work in the function, not a new symbol. Same pair, no change: the scale
+// blend's fraction by value 2; the vector blend's fraction by value 138 (pair unchanged); both 138; the interpolation's
+// translation fraction read once into a local 2; interpolate_real's fraction by const reference 2; all three of its
+// parameters by const reference 2. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2277,6 +2289,17 @@ void function_2818e0(void)
 // float code. interpolate_real's fraction as `real const &` 2; the blend weight passed to function_288573 as a parameter
 // 2 (0x27dff0 147, 0x285750 157); quaternion_blend's fraction copied into a local the asm reads 2; the saved frame
 // fraction `real const` 2; component_interpolate's fraction read once into a named local 2 (0x288570 120). All restored.
+// M3 lane 8 r197 (fast with 0x27dff0 and the matched walk users; a compile-only screen of this file is exact here, 2):
+// the blend asm split into two blocks at the fraction load 2; the multiply asm split after its first operand load 2;
+// the interpolation's blend fraction named before the blend call 2; the blend asm's sign constant as a const SSE
+// vector initialised `{ -0.0f, 0, 0, 0 }` 2 (0x285750 33), non-const 2 (screen); the blend asm loading the source
+// before the destination 4 (screen). Diagnostics (screen): 1 to 8 dead locals at the top of function_288573,
+// of function_288572 or of the wrapper move every symbol number by up to 400 and never flip the pair (pass 0 count
+// first, pass 1 flags first throughout), so it is not a symbol-number tie; any float constant in emitted code
+// flips pass 0 (`* 2.0f` on the blend-2 scale 1, one extra instruction; 1, 2 or 3 distinct constants alike), a
+// double negation 6, while an extra product with a float global, an int store to a new global or a folded
+// `* 1.0f`, `+ 0.0f`, `- 0.0f`, `/ 1.0f` do not. With both blend-3 arms written as blend 2's, 0x285750 gets the
+// pair reversed too; either of its arms alone keeps retail's order. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

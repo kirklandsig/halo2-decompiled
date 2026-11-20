@@ -1575,6 +1575,13 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // load intrinsic on the velocity's first member added after the conversion (diagnostic, a dead statement) MATCH with
 // 0x1d1160 still matched. So the caller's write summary of 0x1d1160 is taken before dead code goes, and any
 // address-taking intrinsic on the velocity counts as a write; retail's 0x1d1160 needs such a use that leaves no code.
+// M3 lane 15 r110 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300; R = the record {a, b, index} with a plain `for` and no
+// mirror, re-measured 106 at 864 B): 0x1d1160's mass broadcast as `_mm_load1_ps(&mass)` (an address-taking intrinsic on its
+// own local) 106 on R and 1 on this body, 0x1d1160 28 (209 B); as `_mm_set1_ps(mass)` 106 on R, 0x1d1160 5 (199 B): the
+// summary stays per argument. On R, 0x1d1160's velocity read with `_mm_load_ss` on each member and stored with
+// `_mm_store_ss` into the quad's components: MATCH here, 0x1d1160 43 (204 B: a `lea` per store into the stack quad);
+// read with `_mm_load_ss(...).m128_f32[0]` into set(): MATCH here, 0x1d1160 83 (231 B). Retail stores the components
+// with plain `movss [esp+..]`, so its write mark on the velocity is not a store intrinsic on a local. BLOCKED-BY 0x1d1160.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

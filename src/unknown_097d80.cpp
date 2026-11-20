@@ -636,6 +636,19 @@ struct c_aggregate : c_child
 // v5 call. Same frame as the control: the query in a file-local inline info getter, the query and release in one
 // inline helper, the whole item release as an inline helper taking the item. Fast: the count as a by-value parameter
 // of an inline collection helper (its own address passed on) 146 (389 B, frame 0x8024).
+// M3 lane 13 r119 (fast with the six file-mates, all still matched; control 31): v5's count parameter as `long &` 31; v5
+// declared without its empty body 31; its count parameter as `void *` 31; the count declared `register` 31 (all the same
+// code); the collection step as a forceinline helper owning the count and returning it, the error through a pointer or a
+// reference 146/146 (389 B; the count keeps its own slot at +0x1c inside the inlined scope too). v5 pure virtual does not
+// compile (the aggregate is instantiated). Still BLOCKED by the build flag.
+// Available capacity as collection state 151; output pointer plus end-derived capacity 165;
+// output pointer plus carried capacity 166; total plus carried capacity 143; capacity state
+// with published child boundary or terminal table bound 150/150; output pointer through
+// cleanup 186 or through dispatch and cleanup 190. NOT kept: the isolated callback count
+// home still differs, and these forms enlarge the 373-byte body.
+// Per-child dispatch range with first/count 161/124, first/end 163/141,
+// end/count 163/148, and first/saved count 161/139, with independent/field output.
+// NOT kept: the range table leaves the frame oversized and increases the score.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

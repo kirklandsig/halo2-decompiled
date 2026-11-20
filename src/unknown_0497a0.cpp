@@ -19,6 +19,10 @@
 // MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
 // retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
 // after the product, which no plain spelling of the wave expression reproduces.
+// MiniMax G (11-19): no new form, no lower score (536), body unchanged. A 300 s permuter run (22 tries) reached 535 only
+// by naming the 0.5 factor in a local that holds nothing else (`real tmp0 = 0.5f;` used by the wave product, the k factor,
+// the default arm and the PIN calls), which is a form the coordinator rejects, so it is not kept; the frame stays 0x54 against
+// retail's 0x60 and the wave's three dead x87 factors stay behind retail's product.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // and late x87 factor lifetimes remain, at retail length 2622.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
@@ -534,6 +538,31 @@
 // both add-scaled products 536 (same code); the two wave values as the members of one point2f 634 (2672 B, retail's
 // 0x60 frame, stored and reloaded into XMM as retail but the body grows); the mixed wave halved as `/ 2` 536; the two
 // wave values declared at function scope 536; the plain sine's sum written `x * 5.6f + (double)y` 536 (all same code).
+// M3 lane 3 r270 (fast with 0x4a1e0; control 536 = baseline, aligned 593, masked 201; both builds end `ret 0x20`): both
+// wave values passed as real arguments to a forceinline helper doing the two scaled adds 535 (the arguments are
+// substituted back: the same code but for one line); the two values returned as a two-real aggregate from a forceinline
+// helper 734 (2714 B, frame 0x68: s1 first and both stored as floats as retail, but the returned copy gets cells of its
+// own); the two values written through a `vector2f *` by a forceinline helper taking the camera point 615 (2622 B,
+// retail's frame 0x60 and retail's offsets for the first three vectors, aligned 551, masked 187: s1 is evaluated first
+// and both are stored as floats and scaled in SSE as retail; left: the pair is overlaid on w's cells at +0x28 where
+// retail has two 4-byte cells at +0x18/+0x1c, the fourth basis vector at +0x4c for retail's +0x64, the first cross's i
+// in a cell of its own for retail's w cell, and the x87 factor order), that with the first cross through
+// cross3f_staged 615 (same code), with the first cross written into w 637 (2607 B, frame 0x5c). Compile-only: the helper
+// with two `real *` or two `real &` outputs, or one helper per value, compiles as this body does (folded); the two
+// `real *` helper reading the local copy keeps only s1 stored. Reading: retail's cells are s0 +0x18, s1 +0x1c, the first
+// cross's j and k +0x20/+0x24 and its three shared products +0x28..+0x30, with the first cross's i overlaid on w; the
+// wave values are not substituted into the scaled adds, which this build does only across a block boundary or for
+// memory-resident values (round 249), and the three factors popped late need a use that is removed late (rounds 170
+// and 257), so no plain spelling is left here.
+// m3 lane 8 r198 (fast with 0x4a1e0; control 536 at 2622 B, both builds end `ret 0x20`; difflib-aligned 593): the two
+// shape pointers declared ahead of the inverse 536 (same code: retail stores the NULL shape before the inverse, ours
+// after it either way); the inverse declared after the shape selection 549; declared just ahead of its switch 676 (2626
+// B, frame 0x50); v4 declared ahead of v3 (retail's homes run v1, v2, w, v3, v4) 554; w declared ahead of v3 and v4 536
+// (same code); w first and v4 ahead of v3 554. The frame stays 0x54 against 0x60 in all of them.
+// Secondary shape selected before projection, after projection, after the side basis or after the special path:
+// short discriminator 703/707/703/690; primary shape test 700/698/688/607.
+// NOT kept: the earlier placements reach frame 0x58 and the late placements keep 0x54.
+// The primary shape slot, rounded wave storage and x87 factor lifetimes still differ.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -856,6 +885,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // the eight-byte homes at the top of the frame, and the first-edge Y, the half-width, the cursor and the colour
 // homes differ with them. The helper this body calls at 0x131e50 has its declaration fixed in another file, which
 // this lane may not change: BLOCKED-BY 0x131e50.
+// MiniMax D (11-19): no new form, no lower score (351): the colour packer retail uses here is the link-time inlined
+// 0x131e50 and its own asm homes come with it (the alpha at +0x84, the red at +0x94, the green at +0x9c, the blue at
+// +0xa0, the scale at +0x98 and the colour pointer at +0x88, stored and reloaded), which this file's front-end inlined
+// ribbon_pixel copy does not reproduce, so the frame stays four bytes short at 0xa8 against retail's 0xac.
 // score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
 // declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:

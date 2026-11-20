@@ -360,12 +360,39 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // compiler's own helper call) 39: the link expands that loop too, with 0x215b40 matched. So the flag stands in for the
 // native helper and the one-object block; with both in place 0x215880 needs no flag and this function is free.
 // Re-measured: round 141's body under the present flags 52 (aligned 35; not kept, as round 141 says).
+// M3 lane 5 r207 (fast with 0x2157e0, 0x215880, 0x2163d0 and 0x1249f0, all MATCH; control 114): both scans storing the
+// handle and stepping the count as two statements 114; the unit step's no-controller cases as the switch's default (no
+// assumed default) 175 (580 B); the drive letter declared at the function top 114; `long const` unit count with the
+// cached scan's type test written type first 114; the unit scan's type test written type first 114 (all 114s the same
+// code). Masked, the rest is the entry cache/zero registers, the pass-latch cache reload and the packing chain.
+// Round 438: Cache/zero registers and the disk iterator index still differ. Test the controller traversal with the original scans.
+// Put the two single-device cases first in the switch: 114.
+// List the numbered controller cases in descending order: 172.
+// Use NONE as the shared single-device selector for the limit and switch: 185.
+// Use 0xff as the shared single-device selector for the limit and switch: 209.
+// Choose the first controller card by switch and derive the current unit from its ordinal: 229.
+// Choose the first controller card by switch and advance through its paired slots: 229.
+// Select the current controller card by switch only on the two non-disk passes: 259.
+// Compute the current unit directly from the controller port and card ordinal: 276.
+// NOT kept: The sentinel-first switch ties at retail length. Changing the controller cursor or hoisting selector normalization raises the score and changes the extent. The cache still reloads after the built-in guard.
+// Common next-unit store 135, adjacent-unit default 177, pass advanced before selection 172,
+// separate next pass 183, pre-incremented output count for disk/built-in 213/164,
+// three-pass and one-pass defaults followed by adjustments 114/114. Cache and zero registers still differ.
+// Matches now that src/unknown_215880.cpp builds as a link-time object (M3 coordinator, 11-19): no native object
+// names g_51ea14 any more, so the compiler carries it in EDX from the entry test to the cached block and reloads it
+// only at the pass latch, as retail does (with a native object naming it, it was reloaded at each use: 114).
+// The forms the match needs, each checked alone on the matching body: the count declared bare and zeroed first
+// thing in the cache block and in the else (the block's first zeroed long takes the zero register, retail's EBX;
+// `long count = 0;` 170); `current` read before the increment, with the generation read through the getter inside
+// the handle's or-chain (a `generation` local 138); the cached index declared ahead of the cached count (declared
+// in the for 4).
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {
-	long count = 0;
+	long count;
 	if (g_51ea14)
 	{
+		count = 0;
 		long units = controller == NONE || controller == 0xff ? 1 : 3;
 		long unit = 0;
 		for (long pass = 0; pass < units && count < *capacity; pass++)
@@ -382,12 +409,10 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 					s_saved_game_file_location location;
 					if (!saved_game_location_iterator_get(&iterator, &location))
 						break;
-					iterator.index++;
+					long current = iterator.index++;
 					if (location.type == type)
 					{
-						long generation = saved_game_storage_get_cache()->generation;
-						indices[count++] = (type & 0xf) | ((unit & 0xf) << 4) |
-							(((iterator.index - 1) & 0x1fff) << 8) | ((generation & 0x1ff) << 22);
+						indices[count++] = (((((saved_game_storage_get_cache()->generation & 0x1ff) << 14) | (current & 0x1fff)) << 4 | (unit & 0xf)) << 4) | (type & 0xf);
 					}
 				} while (count < *capacity);
 			}
@@ -405,8 +430,9 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 		if (include_cached)
 		{
 			s_cached_location_table *files = (s_cached_location_table *)g_51ea14;
+			long index = 0;
 			long cached_count = files->count;
-			for (long index = 0; count < *capacity && index < cached_count; index++)
+			for (; count < *capacity && index < cached_count; index++)
 			{
 				if (files->entries[index].type == type)
 				{
@@ -417,6 +443,10 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 			}
 			sort_4byte(&cached_count, indices, count, function_2163d0, NULL);
 		}
+	}
+	else
+	{
+		count = 0;
 	}
 	*capacity = (word)count;
 }

@@ -264,6 +264,10 @@ void function_254200(void)
 // M3 lane 4 r223 (single-address fast, control 4): the size as `arg_2 * 2` 4 and as a copy doubled in place
 // (`size *= 2.f`) 4 (same code each); the point copied by an aggregate initialiser from its two fields 88 (1117 B,
 // float loads); the cull mode spelled with its enumerator 4; the size as a copy added to itself 15 (addss).
+// M3 lane 7 r190 (single-address fast, control 4): the shared y + size bound to a `real const &` for vertices 1-2 64
+// (1113 B); the point copied member by member 88 (1117 B); the depth constant through a no-code forceinline accessor at
+// all eight uses 4; every positive sum, x and y, written size first 4; every device call of the body in member form
+// (Begin, 2s, 4f, render state, End) 4. All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -629,6 +633,20 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // (same code); the readiness test as two nested ifs 3 (first difference +0x95); the colour as a `real const *` indexed 2;
 // the table getter called once into a named local for both lookups 545 (2233 bytes: retail calls it twice); the colour
 // getter through End in their own block scope 2 (same code). All restored.
+// M3 lane 11 r127 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant of the first quad written
+// `(real)0xffffff` 2; through a file-scope `static real const` 2 (both the same code); the depth-0 inline start moved one
+// call earlier (before the second vertex) 356 (2190 bytes). Diagnostics, restored: an unused local holding the lower
+// coordinate ahead of the colour fetch or of the first texture call 2/2 (same code: creating the lower value's common
+// subexpression first does not reorder the pair); the first vertex's two depth constants made different 25 (the
+// constant is then no longer carried into the third vertex, so the pair disappears). Retail's skip branch lands after
+// both reloads (0x254d0c), so the pair is call-path compensation code; other functions with an adjacent reload swap
+// (0x3a5c0, 0x185be0, 0x217c40, 0x4e260) show retail in both register orders, so it is not a fixed register order.
+// M3 lane 13 r119 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant written `(real)0xffffff`
+// 2 (same code); file-local forceinline accessors returning the lower and upper texture coordinates from the scale, in
+// all four texture calls 324 (2275 B), the lower one only 298, the upper one only 338, both in the first two calls only 2,
+// the lower one in the first two calls only 2 (the accessors spend the inline budget once they reach the third call).
+// Diagnostic: 1, 3, 5, 6 or 7 stores of one integer global to a probe array at the success block's top leave the pair
+// in our order (aligned). Restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

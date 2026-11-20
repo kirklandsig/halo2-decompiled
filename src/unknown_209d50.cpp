@@ -206,10 +206,24 @@ static inline void *function_xc5914d(long thread_index, short size)
 // stepped by the size the same five; with a size local and no result local (`frame->size = offset + size; return
 // data + offset`) 92/92/83/92/92 (264, 264, 272, 264, 264 bytes); with no frame local (the frame read at each use)
 // 112/112/106/103/112 (248-256 bytes). No form spills the pointer: the allocator's locals do not decide it.
+// M3 lane 5 r207 (fast with 0x2099f0, which stays matched; volatile-free forms; control 12, volatile-free 95 at 266 B):
+// the arm stepping the pointer to the current slot (`arguments += argument_index`) with the result kept separate 95,
+// that with `result = NULL` first in the arm 83 (277 B); the result taken from the frame data ahead of the allocation 115
+// (298 B); the arm as a forced-inline step returning whether it evaluated, `if (step(...)) result = NULL;` 95; `result =
+// NULL` right after the evaluation call 93 (268 B). Re-measured: a done flag with a ternary return 95 (284 B; the
+// convention then takes the parameter count in EDX, `ret 0xc`, and the frame loads through the reference in EBX).
+// Reading: retail's frame takes EAX because the result copy is made only after the second frame load; every volatile-
+// free form gives the pointer and the result one web, so the pointer takes EAX and the frame ESI.
 // Round 116 (m3 lane 13, fast with 0x2099f0; volatile-free forms, control re-measured 95 at 266 bytes): a `long *const *`
 // to the pointer with the element read through it 95; the result filled by `memcpy(&result, &arguments, sizeof(result))`
 // 95; `(void)frame;` ahead of the initialisation test 95; the pointer declared `long *const` 95; the size as
 // `(long)parameter_count * sizeof(long)` 95 (12 with the volatile, the same code). All promoted into one register.
+// M3 lane 10 r130 (fast with 0x2099f0; volatile-free forms): a dead `(void)&arguments;` 95 (266 bytes) and the pointer held
+// in a one-element array 95 (both promoted like a scalar, diagnostics); `register` on the result copy 95; the pointer declared
+// `long *const` 95. The first difference of every volatile-free form is the first allocation's frame load: ours folds it as
+// `mov esi, [eax + ecx + 0x10]` ahead of the reference's lea and gives EAX to the merged pointer/result, where retail loads
+// the frame through the reference into EAX, so its result copy can take EAX only after the frame dies. A permuter run from
+// the volatile-free body (180 tries, 2100 s) found nothing below 70 (full-image baseline 86).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

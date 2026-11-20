@@ -297,6 +297,16 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // and costs matched 0x1ea770 (26), 0x1e9ce0 (179), 0x1e9df0 (129) and 0x15ca10 (46), which call it in retail: the
 // setter must stay as it is. Diagnostic: a file-scope pointer to g_510ca0, set by an initialiser or by a store in an
 // uncalled function, gives no reload in this build (86 both).
+// Round 438: Enable reload and maximum transport remain separate from the statistics row shape. Test the existing short-row layout.
+// Use the existing short row layout for both counters and the timestamp 86.
+// Bind the actual fourteen-short player row as an array reference 86.
+// Index the existing statistics table at every row use 85.
+// Use the native row and bind the time field for the threshold test and store 86.
+// Use the native row and bind the recent count through its update branches 86.
+// Bind both updated fields of the native row in the final streak update 86.
+// Compute the new recent count from the threshold and store it once 102.
+// Index the statistics table directly and bind the time field locally only for its two uses 85.
+// NOT kept: Direct table indexing reaches the retail extent at 85. All eight forms raise the score and move the first mismatch into the prologue. The original enable and maximum lifetimes remain.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -364,6 +374,7 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
 // after the selected block), ours in EBP through the killer block, which is what turns the three homes round. Both
@@ -774,6 +785,24 @@ struct s_object_damage_view
 // index and datum locals 403 (1596 B), all three validations written that way 403 (same code as the first: the two
 // locals alone move the frame); the selection loop's index as a long with the slots cast 355; `best` declared ahead
 // of `selected` 353 (same code); the object lookup ahead of the two tick windows 424.
+// M3 lane 14 r119 (fast with 0x1e9ce0/0x1ea770/0x1ea880, all MATCH each time; control 353): the assist stores reading
+// the record's player index again (retail's `mov edx, [ebx]` at each store) 392 (1564 B, the frame moves: first
+// difference +0x8); with the related player re-read for its store 392; retail's arm order (`if (killer != NONE) {...}
+// else if (reported valid)`, re-measured 363, 1532 B) with the assist re-reads 377 (1548 B); retail's arm order with the
+// team byte passed to 0x1df560 at the call 354 (1548 B); all four together 393 (1564 B). Note for later rounds: the
+// related-unit block loads the object table's data pointer before the 0xbaf80 call into ESI, where retail loads it
+// after the call into EDX (0xbaf80 only reads memory; matched callers 0xbba20/0x1c35f0 keep the pointer across it,
+// 0x138ab0 reloads it after).
+// Round 438: Victim-team, credited-player and damage-code homes remain rotated. Test the existing record layouts.
+// Read the victim team through the existing player record type 353.
+// Read the candidate team through the checked player record type 353.
+// Use the player record type for the credited team and unit in both credit branches 353.
+// Read the validated assisters through the player record type 353.
+// Use the real player record for the related-unit award team lookup 353.
+// Use the existing object header fields for all three object-header observations 353.
+// Test the table validity through the existing statistics record 353.
+// Use the existing player, object and statistics record layouts together 353.
+// NOT kept: The existing record types preserve the frame and all measured call-site controls. They leave the three rotated scalar homes and the amount-biased history cursor.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
