@@ -56,6 +56,7 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
 // MiniMax D (11-19): no new form, no lower score (61): retail still keeps two 0x212bc0 call sites with their own g_54e49c stores and their own copy into g_54e4a0, calls the name copy out of line at 0x13fac0 and passes the controller index in ECX to 0x238c69, while ours keeps one call site with the choice in a byte slot, the copy in place and five stack arguments; the out of line copy lives in a file this lane may not edit.
+// MiniMax G (11-20): no new form, no lower score (61): retail has two 0x212bc0 call sites and calls the name copy out of line at 0x13fac0; ours has one call site and expands the copy in place.
 // MiniMax G (11-19): no new form, no lower score (61): retail's second half still has two 0x212bc0 call sites (the
 // default arm inline, the selected arm out of line at 0x2ca467), each with its own g_54e49c store and its own copy
 // into g_54e4a0, and it calls the name copy out of line at 0x13fac0; ours keeps one call site with the

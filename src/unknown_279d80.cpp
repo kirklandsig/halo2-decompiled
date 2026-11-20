@@ -2113,6 +2113,11 @@ void function_27dd10(void)
 // interpolation arm 2; both 2; in function_288573 the blend-1 weight through a `real const &` for the three arms 2; the
 // blend-1 arms as a switch on the component 2 (all the same code; 0x281b60 2 throughout). The screen still flips pass 0
 // with `+= 1.0f` in the blend-1 scale arm (diagnostic). All restored.
+// M3 lane 2 r116 (fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2/2): the vector and
+// scale blends' bodies through the existing interpolate_real 159 (1735 bytes; 0x288570 120); the walk's inheritance
+// parameter by value instead of `const *const &` 399 (1745 bytes; 0x281b60 389, 0x285750 427); the interpolation's
+// scale arm through interpolate_real instead of the scale blend 2 (0x285750 17); the map-index test bound-first
+// (`index < count && index >= 0`) 16 (0x281b60 16, 0x285750 12); the root offset scale as `*=` 2 (same code). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

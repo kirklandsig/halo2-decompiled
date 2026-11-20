@@ -90,6 +90,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // code), the found flag declared first in the pass 359 (masked 74). Left on the 359 form: local_2 compared as a dword
 // (retail a word), the found flag's byte (+0x12) and the result byte (+0x13 against retail's +0xb), and the table/point
 // registers at the 0x29de20 call. Body unchanged.
+// score 367 (was 382): The 0x64 frame agrees. First +0x11 begins the displaced selected-index stores. The group index uses EBP instead of EBX, and both bitmap operations recompute the address and mask.
 // frame 0x64 agrees and so do the marker position, the bitmaps and the group record pointer; six selected-index
 // and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
 // separate byte rather than the dead argument slot.
@@ -713,6 +714,13 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // The three selected-index homes then sit at +0x40/+0x20/+0x1c against retail's +0x44/+0x28/+0x24 (retail's order, still
 // four and eight bytes low); the found flag keeps its own byte where retail reuses the dead by-value argument's slot.
 // MiniMax G (11-19): the group bitmap cleared with memset and the group index tested and set through the shared bit vector helpers (the index kept as a long): 382 -> 367.
+// Single long/short group index through the indexed link 462/412.
+// long/short through one link pointer 462/412.
+// long/short with link pointer and joined reject 462/412.
+// long/short with link pointer and nested admission 462/412.
+// Written-differs at 367. NOT kept: All eight forms shorten the function away from retail and leave the
+// first default store displaced. The long and short captures reproduce 462 and 412 across the admission
+// forms, respectively. All five controls stay exact. The opening body is restored.
 // M3 lane 6 r206 (fast with 0x29e730 and 0x29de20, both matched; control 367, difflib-aligned 308, register/offset-masked
 // 157): the found flag renamed `found`, local_29 renamed start_point or zz_29, 367 each (same code: names do not pick the
 // byte that takes the dead by-value argument slot at 0x80, which retail gives the found flag and ours gives local_29); the
