@@ -64,6 +64,7 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)&g_47f0f8[0]);
 }
 
+// MiniMax A (11-20): no new form, no lower score (47); retail folds the record base into the six stores' displacement and materializes it with a lea after them, where this build folds every use of the address into the displacement, and the tail's 0x2b5d0 call takes its count in another register (BLOCKED-BY 0x2b5d0, whose stub is in src/stubs/lane_k.cpp).
 // score 47 (was 47; 79 earlier): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // m3 lane 4 r224: a one-object LTCG screen (this file plus the real objects of 0x223080, 0x2f800, 0x2c8a0, 0x13f10,
 // 0x68290, 0x2f6b0, 0x2c490, 0x3f450 and the 0x2b5d0 stub) reproduces the full build's listing exactly (0 rows); against
@@ -87,6 +88,7 @@ void function_2232a0(void)
 // index in the register and folds the base into the displacement), the tail call's arguments still need 0x2b5d0's own
 // body, which is stubbed in src/stubs/lane_k.cpp: BLOCKED-BY 0x2b5d0, and part of the reduced-image count is the
 // pushed global addresses, which the reduced image places at other addresses than retail's.
+// Earlier first line (47, was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // Earlier 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
 // MiniMax C (11-19): no new form, no lower score (47): retail folds the record base into the displacement of the terminal stores (eax keeps the scaled index) where this build adds the base to the index register first, and typing the global's element as the callee's own record type (so the cast disappears) does not change it; the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // score 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
@@ -415,11 +417,21 @@ void function_2232a0(void)
 // the record pointer is formed (`lea`) only for the type store and the two copy pointers; the integer and x87 streams
 // interleave the same way in both builds, so the difference is in address selection, not scheduling. Still BLOCKED-BY
 // 0x2b5d0 (its blockers 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 are all unmatched today).
+// M3 lane 14 r122 (fast with 0x223240/0x2232a0 MATCH, 0x223080 2 throughout; control 47): a terminal record pointer local
+// `g_47f0f8 + view_count` declared with the view count 163 (598 B); the view count as a `short` 79; the record passed as
+// the address of its first field 47; both 0x2b5d0 and terminal records as `g_47f0f8 + n` 47; the loop's records as
+// `g_47f0f8 + 1 + local_0` 47 (same code each). The stub still takes the count in EDX where retail passes EAX.
 // M3 lane 13 r119 (fast with 0x223240, 0x2232a0 and 0x223080; control 47, aligned 20): the terminal record as
 // `(s_223080 *)(g_47f0f8 + view_count)` 47, through a typed table-element local 47, through a `(void *)` cast 47, the
 // view count `long const` 47 (all the same code); the terminal record indexed `[local_2 + 1]` with the view count kept for
 // the stub call 183 (583 B). Diagnostic: the stub call removed still adds the table base into the register before the
 // terminal stores, so the base fold is not the stub's register need. Still BLOCKED-BY 0x2b5d0 for the tail.
+// M3 lane 5 r214 (fast with 0x223240/0x2232a0, both MATCH; control 47, aligned 20): view_count declared after the loop
+// where it is first used 40 (aligned 23: only the zero-byte stores change, a positional gain of 7 that is a moved
+// declaration, so not kept), the same as `long const` 40, with the stub's count written `local_2 + 1` 120; the scan loop
+// as a plain `for` 47, the stub's count as `local_2 + 1` alone 47, the layout as one conditional expression 47 (same code
+// each); dead longs K = 0..7 at the top 47 each. Still BLOCKED-BY 0x2b5d0 (activation loses 0x223240, 0x12b450 and
+// 0x12b690 while 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600 stay unmatched).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

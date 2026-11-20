@@ -802,6 +802,14 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // 726 B (zero still in EBP); on it: definition and section cleared by statements after the declarations 208; the empty
 // count's early return giving `result` 208; `if (!section) return result;` with the loop unnested 212; the count test
 // as `!= 0` around the rest of the arm, no early return 227 (707 B); the section declared as a const pointer 208.
+// m3 lane 11 r130 (fast with 0x14a8e0, 0x14af40 and 0xd47d0, all matched): lane 7 r123's form rebuilt, 208 at 726 B. Why
+// the zero takes EBP: retail's type-1 arm keeps range in EBP across the 0x12de70 call (stored to its home just before the
+// call, reused at the join), so with BSP, cluster, range and the cleared definition every callee-saved register is busy
+// there and no zero register can form; ours spills range at once (EDX) and VC gives the free EBP to the zero used by the
+// section's NULL store, the count test, the section test and the clear. On the 208 form: the cluster indexed straight
+// from the range table with range taken after it 208 (same code); range taken after the call 254 (755 B); the type-3
+// instance read from the collision record 208; the loop index at function scope 208; `section != NULL` with the count
+// test as `!count` returning result 208 (same code each).
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

@@ -864,6 +864,20 @@ void __stdcall function_1160c0(real dt)
 // all three 332/332/332/144/144/332. All three with aggregate prior copy 144 and
 // prediction setter 332. NOT kept: the vector forms tie or move the frame and extent
 // farther from retail, with the segment spill still different.
+// M3 lane 16 r152 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged): the
+// segment through a file-local inline accessor taking the definition and the index (`(byte *)segments + index * size`)
+// 144; that accessor doing the last-segment clamp on its own index parameter 144; `segment` declared ahead of the node
+// pointer and assigned after it 144; the non-initial position read as `record->nodes[i].position` 144 (all four the
+// same code); the tick increment as `++record->nodes[i].ticks` 275 (1372 B) and the physics call's velocity as
+// `&record->nodes[i].velocity` 276 (1372 B): both keep `record + i * 32` in EDX and the segments base then takes EBP;
+// the last-segment index named ahead of the node pointer 280 (the base still takes EDI although EDX is unused in that
+// block). In every form here the base goes to a free callee-saved register (EDI, else EBP) ahead of ECX and EDX, so
+// its register is not a scratch-rotation step and does not come from EDX being busy.
+// Shared rotation first cross at its store 144, with the later crosses staged k then j 113.
+// Complete vector, axis or both inputs 216/144/216. Staged projection 143, complete output
+// before stores 213, three cross products staged j/k/i 144.
+// NOT kept: the 113 form gets within one byte of retail, but raises three shared users’ scores
+// and loses two matches. The selected segment and length-ratio spill still differ.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

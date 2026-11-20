@@ -691,6 +691,10 @@ s_1a8a10 g_4453c0[] =
 // and 1-12 inside the block ahead of the array 31 each (flat: x keeps XMM3 and the copy's one-use j still loads at its
 // use, so the xmm ranks there are no symbol-count state); i in a scalar with j read in place in both sums, forward first
 // 36 (left first re-measured 31).
+// M3 lane 16 r151 (fast with 0x1a8c30, MATCH): the left sum as `(0 - copy.j) * x + actor.i * y` with the forward sum
+// from the copy 38; that with the forward sum's j read from the actor 47; the left sum entirely from the copy with the
+// forward sum's i from the actor 30; the first form with the left terms written i * y first 38; the table pointer (a
+// constant initialiser) declared at the function's top 17 (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

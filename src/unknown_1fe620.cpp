@@ -23,7 +23,7 @@ static __forceinline long real_to_long(real value);
 // build still keeps the random-state pointer in ESI from the first draw where retail holds the third settings
 // pointer in ESI and the random state in ECX, so the third input is still reloaded from its stack slot; the
 // random-state pointer read through the global instead of through the named local scores 423 and was restored.
-// MiniMax D (11-16): score 373 (was 373), nothing kept: retail's frame is 0x48 and it takes the third settings
+// MiniMax D (11-16), at 373: nothing kept: retail's frame is 0x48 and it takes the third settings
 // pointer in esi from the entry, this build has a 0x4c frame and takes the random-state pointer in esi instead,
 // so the third input is reloaded from its stack slot and the state pointer is kept in a register across the
 // draws; retail also forwards the seed from the sign test through the three range draws in eax and stores it
@@ -307,6 +307,11 @@ static __forceinline long real_to_long(real value);
 // the state local declared before the 0x1fe410 test 428; the 0x210850 call with all three draws through
 // function_259d0 on the state local 452. Next lead: what makes retail's 0x2104b0 call clobber the random-state
 // global (its callees 0x210d60 and 0x142570 are matched leaves).
+// M3 lane 1 r131 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, control 373, register-masked aligned 64): the
+// final state copy as `= *local_3` 380; the timer count read into a long 427 (1855 B); the timer draw through
+// slot_random_range 395; the timer count read from its field at each of its four uses (no short local) 378 (masked
+// 63); the +0x84 scale product written `scale * value` 373. The largest masked block left is the three range draws
+// (retail forwards the seed through them with one store; ours reloads and stores it per draw).
 // M3 lane 6 r204 (fast with 0x2104b0, 0x210850, 0x1fdce0, 0x1fe410, 0x259d0, all MATCH each run; control 373, difflib counts as
 // [exact, stack offsets masked, registers masked] [237, 193, 64]; body unchanged, the best form saved as
 // build/r204/lead-1fe620-composite-body.cpp in worktree m3-lane6). The lead above is answered: retail's 0x2104b0 call does not
@@ -331,6 +336,13 @@ static __forceinline long real_to_long(real value);
 // displacement in XMM1 to XMM3 and the side vector after it). Nothing kept: the composite needs the +0x14/+0x18 locals (one
 // use each) and the resolver's two-arm body, so it is match-only, and each part alone raises the count.
 // MiniMax C (11-19): no gain (373, baseline; body restored). The head differs in the pool load (retail reloads the random-state global after the calls to 0x2104b0 and 0x1fe410, ours keeps the pointer in ESI across them, an LTCG modref decision in another file compilation) and in the transport of the 0x7a argument (ECX against EDX), which the caller in another file decides. Binding the second parameter to one settings local for its five uses measures 415.
+// M3 lane 13 r124 (fast with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373, difflib
+// [exact, stack masked, registers masked] 324/258/116): the third draw's range read before the first draw as one
+// `real_bounds` value (two member uses) 417 (1869 B); the second draw through function_259d0 like the other two 413
+// (1861 B, but aligned 298/227/89: closer in shape); both 439 (1865 B); with all limits read in retail's load order
+// (+0x10, the +0x14 range, +0x1c, +0xc, +0x38 named for its two uses) 437 (1864 B, 352/255/84); the negated limits
+// written in the draw calls in place of their one-use locals 389. The head still needs the seed forwarded through
+// the draws (retail's single store), which only the match-only composite gives.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

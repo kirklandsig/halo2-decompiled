@@ -807,6 +807,12 @@ struct s_object_damage_view
 // 417/417/459/353. Eligibility in those positions 463/463/459/353. NOT kept: earlier
 // reads or decisions grow the frame to 0x54 or 0x58. The late forms tie with the
 // amount-biased history cursor and rotated credited-player, victim-team and code homes.
+// M3 lane 15 r112 (fast = full 353, with the file's functions and 0xd9640): the consideration flag as `reported_player ==
+// NONE || !same_team(...)` 353; the assist loop's counter as a short 353 (same code each); the victim team as a ternary
+// initialiser 422; killer declared before killer_team 354; the fallback as a nested valid test followed by `if (killer !=
+// NONE && killer == reported_player)` 355. Probe only (it resets the damage code when the killer and the reported player
+// are both NONE, which retail does not): `if (killer == NONE && valid) killer = reported;` then `if (killer ==
+// reported_player)` 332.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -175,6 +175,12 @@ bool function_1946f0(s_bitstream *stream)
 // as `(byte)(-1 + (1 << (saved % 8)))` 2 (both the same code); the position test as `stream->bit_position > saved`
 // 4; the index computed ahead of the unknown2c store 54; the size bound by `long const &` for the bound test and the
 // count 11. Both LEAs stay data-first in each (compile-only listing).
+// M3 lane 3 r274 (fast): an early data local (before the index) with the masked byte through a byte pointer `data +
+// byte_index` 9; a block-local data local in the mask block with the masked byte through `&data[byte_index]` 9; an early
+// data local for the masked-byte pointer and the clear 40; the masked byte through the dword buffer member, the clear
+// through a block-local data local and a named start pointer 2 (same code); one data local declared before the index and
+// assigned in each block re-measured 35. Compile-only: the body compiled as C keeps both LEAs data first; an early data
+// local used only by the mask is sunk into the mask block and becomes the add's destination (`add edi, edx`).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

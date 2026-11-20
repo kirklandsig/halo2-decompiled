@@ -802,6 +802,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // these forms 1393/1393/1375. Selected speed before/after coefficient reads 1371/1663.
 // NOT kept: captured conditional gains one at retail length with frame 0x5d0. Late speed
 // reaches frame 0x5c8 at 6502 bytes. The component and velocity homes remain displaced.
+// M3 lane 15 r112 (fast = full 1346, 0x2056e0 matched; difflib aligned 1399): the contact loop's counter as a short
+// 1687 (6528 B); the contact count named once for the query test and the loop bound 1355 (6238 B, aligned 1395); the
+// wheel count named once for the bound and the wave term 1432 (6238 B); the velocity pair declared local_5, local_4 or
+// in two statements 1346 (same code: the homes do not move).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
