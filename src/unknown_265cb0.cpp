@@ -2239,11 +2239,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // encodes its address with the base and the index the other way round, the object table's pointer still takes ECX where
 // retail keeps EAX, and the player search further down still reads another global and keeps its counters in other
 // registers.
-// score 158 (was 168): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
+// score 158 (was 158; 168 before lane 2 r119): the 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding;
 // the players iterator loads its table into ECX (retail EAX) and the direction is not held in XMM1..XMM3 across the two dots.
 // Earlier first line: 168 (was 168): r200 unchanged.
 // MiniMax A (11-20): no new form, no lower score (168): the 0x80 frame agrees and the first difference is still the contact head's reversed base and index in the address encoding (ours `[eax + ecx + 0x58]`, retail `[ecx + eax + 0x58]`), which comes from the inlined 0x26be00's `object->value58` read of the clump table - that helper lives in src/unknown_26bda0.cpp, so the roles cannot be changed from this file; the rest of the gap is the players iterator's table pointer, which retail loads into EAX and stores at once (a five-byte load against this build's six-byte one into ECX, which moves the loop pad and every row after it), and the per-case scratch rotations; the two NONE stores in the other order measure 170 and the two player searches merged into one 829, so the two separate searches and the store order are retail's.
-// score 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// Earlier stacked line, merged here: 168 (was 168): r200 unchanged. The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
 // M3 lane 8 r189 (fast with 0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 168): the first difference is the
 // inlined 0x26be00, whose head load retail addresses as [table + slot offset + 0x58] and ours as [offset + table + 0x58]
 // (the slot offset is shared with the actor lookup). Forms: the byte alias `data` dropped for `(byte *)actor` 168; the
@@ -2904,6 +2904,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 164; the decay through a short local with one unconditional store 159; the players iterator's two NONE fields stored
 // ahead of its table pointer 160. Diagnostic: 1 to 7 unused long locals at the top
 // 168 each (the +0x5c base/index order does not follow the symbol count).
+// M3 lane 3 r283 (fast, control 158; body unchanged): the scoring block as `if (established) { ...; positive = score > 0; }
+// else if (visible && !(far && slow)) positive = score > 0;` with no outer `visible || established` test 186 (2853 B); the
+// vehicle-type test as `!(type == 0 || type == 1 || type == 4)` 158 (same code); the vehicle definition named and its type
+// read at each of the three compares 363; `retain` assigned directly in the decay arm (`retain = !(count > limit || age <
+// threshold);`) 201 (2882 B); the established block's approach bonus tested ahead of the distance bonuses 232. Reading:
+// every instruction ahead of the players loop is retail's, yet the loop's table pointer is one scratch-rotation step off
+// (ECX for retail's EAX); lane 2 r119's 377 form already gives the loop retail's registers behind that one-byte-longer load.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
