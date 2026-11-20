@@ -1200,6 +1200,11 @@ real function_30bf0(vector3f *v);
 // still differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7); retail spills the discriminant
 // base and two_a where this build keeps them in registers, and the forced-speed and time-scale parameters are still read
 // through a pointer to themselves, a form the rules only allow with a match.
+// MiniMax G (11-20): no new form, no lower score (232): the frame is still 0x28 against retail's 0x30, the SSE
+// registers still differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7), retail
+// still has one stack operand more (ret 0x2c against this build's ret 0x28) and spends EDX at entry on the gravity
+// value's address where this build keeps the time-scale pointer, so the parameter order is retail's to declare;
+// what is left of the body is retail's two x87 divisions by two_a and its rounding of the horizontal length.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1517,6 +1522,10 @@ extern vector3f *g_4687ac;
 // start) and its opposite end lands in the side's slots, so this build's 0x48 frame, with the end and the opposite end
 // materialised, cannot be 13 dwords; dropping the end point and computing the offset inline measures 182 to 191 with a 0x3c
 // frame, and the opposite end does not take the side's slots here.
+// MiniMax G (11-20): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, because this
+// build keeps the end point and the opposite end as locals of their own where retail computes the end in registers
+// only and lands the opposite end in the side's slots; the three ray queries still inline 0x16a040, whose defining
+// file is not this lane's: BLOCKED-BY 0x16a040.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {

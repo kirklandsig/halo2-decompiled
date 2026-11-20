@@ -4582,6 +4582,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // success;` 227, `return success;` 243; the false edge and the reason-9 arm sharing a `return result;` inside the block
 // with the true edge jumping to a label after the block or at the final return 119 each (the two returns merge and the
 // test goes); `if (!result) goto` a second final `return result;` 48 (the 48 form again).
+// MiniMax G (11-20): no new form, no lower score (295): the exits still sit at other offsets from the first
+// branch on, so every later branch differs as well, the invalid-type exit still returns the constant where retail
+// reads the result byte back, and the acknowledgement block is still placed before retail's: the byte homes of the
+// result, the identity and the better flag are not yet recovered.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
