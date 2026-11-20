@@ -36,7 +36,9 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
     return 0.0f;
 }
 
-// score 151 (was 151): frame 0x2c, the prologue and everything up to the first rotation now agree (1696/1706 bytes; first
+// score 151 (was 151): The 0x2c frame agrees. The projected J and depth stores exchange order at +0x101.
+// Rotation scheduling and first trig homes still differ.
+// Earlier detail: frame 0x2c, the prologue and everything up to the first rotation now agree (1696/1706 bytes; first
 // difference +0x101). Left: the two rotations' product order and XMM scheduling, the first rotation's sine and cosine homes
 // (+0x3c and +0x10 for retail's +0x10 and +0x3c), the yaw clamp's zero copy below its branch and one store pair's order in
 // the second normalization.
@@ -747,6 +749,8 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // retail's +0x10/+0x3c homes), with the second rotation's named as well 141; not kept: the one-use call-result locals are
 // needed for the gain (lead saved as build/r134/lead-0x29b2e0.patch). Diagnostic: 1..8 dead initialised locals at the top
 // 151/151/214/214/214/214/214/170 (the first rotation's dot stays j, i, k at every count; retail's is i, k, j).
+// Sized copies at second 3D, XY, both, first 3D, both 3D, XY with first 3D, all three and all with
+// the degenerate restore: 256/378/378/256/256/378/378/378. They grow the frame and do not recover the ordered stores.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
