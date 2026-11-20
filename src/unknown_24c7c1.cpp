@@ -885,6 +885,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // shares the flash value's home with the row counter (-0x18) and gives the message height its own (-0x4c); ours shares
 // the timer, flash and message height (-0x14): the packing follows the lifetimes, not the declarations.
 // MiniMax C (11-20): no lower score (114): the frame homes and the left coordinate word store differ; a word for left scores 482.
+// M3 lane 6 r217 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 114): one local for
+// g_510c94 across the timed, tutorial and default colour arms 480 (1868 B); the row loop's active test in the for
+// condition 316 (1892 B); the split-screen test as `count >= 2` 116, with the bool timer 193 (flags still -0xe/-0xd/-2);
+// the status block reusing `player` for its second lookup 535 (1861 B). Diagnostic: an extra read of origin.x 491, the
+// scripted byte stays at -2 (the packing does not follow origin's reference count). Body unchanged.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

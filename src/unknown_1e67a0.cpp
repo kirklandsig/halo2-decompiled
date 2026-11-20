@@ -1318,6 +1318,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // Calculate sine, cosine, sine then cosine, or cosine then sine before copying
 // forward: 125/136/163/166. The same with the shared axis-rotation helper:
 // 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
+// M3 lane 6 r217 (fast with 0x24590/0x1cd6c0/0x1ecf50/0x1e5af0, all MATCH; control 114 at 1389 B, aligned 61, masked 36):
+// the side dots from the `up` parameter 201 (1369 B); the alignment dot and old cross from the `forward` parameter 257 (1395 B,
+// masked 33); a named pointer to the state's forward for the copy, both turn reads and both exits 165 (1382 B); the velocity
+// scale from the `speed_scale` parameter 366 (1365 B); the velocity copied from the movement and scaled in place 213 (1390 B).
+// Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

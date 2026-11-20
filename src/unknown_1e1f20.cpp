@@ -1011,6 +1011,11 @@ void swarm_leader_detach(long actor_index);
 // Signed/unsigned byte-displacement for/do walks 297 each. End-bounded screen with a
 // fresh entry from byte distance, element distance, short index or advanced byte
 // displacement 285/362/341/296. The actor-pool load and scaled-index register remain.
+// M3 lane 6 r217 (fast with 0xf0fd0/0x1fb360/0x26be00/0x26be30/0x203ed0/0x1e22d0/0x26ed40, all MATCH; control 236, aligned
+// 82, masked 41): the invitation test through the entry actor with the body through the re-derived entry 319 (1006 B), that
+// as a `for (short ...)` walk 339 (1022 B); the first prop index read through the cached actor 309 (942 B); the invitation
+// index as short in the do-while 236 (same code); the invitation walk as a plain `for (long ...)` 526 (1182 B). Still
+// BLOCKED-BY 0x26ed40.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
