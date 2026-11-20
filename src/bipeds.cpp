@@ -2815,6 +2815,10 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax E (11-20): no new form, no lower score (63): the +0x3aa byte tested in place with the count read again at
+// the call through BIPED_GET gives 68 (249 bytes), the header's main-rigid-body getter on that graph 91, and a local
+// component index on it 68; the extra EBP for the Havok base, the widened count test and the hoisted 0x9fff word
+// clears remain.
 // MiniMax B (11-19): no new form tried this round, no lower score (63): the differing pairs are structural and not
 // stack slots alone - the extra EBP (the Havok base loaded early), the count transport and the hoisted 0x9fff flag
 // clears - and the settling count still travels in EAX to 0x1d5120, whose declaration lives in another file:
@@ -4077,6 +4081,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
 // MiniMax I (11-19): no new form, no lower score (537): the frame is still 0x7c against retail's 0x78 - the definition's row pointer is taken into ebx where retail takes it into ebp - so the changed flag byte sits at [esp+0x12] against retail's [esp+0x11] and the flight threshold's home at +0x14 against +0x18.
+// MiniMax E (11-20): no new form, no lower score (537): the frame is 0x7c against retail's 0x78 - this build keeps the definition's row pointer in ebx and homes the index offset at [esp+0x1c] where retail keeps it in ebp; a single index local used at all three lookups measures 644 and both weapon reads taken from the biped local 670, so the body stands.
 // score 537 (was 548): The 0x78 frame agrees. The changed byte is at +0x12 versus +0x11, then the flight
 // threshold uses +0x14 versus +0x18 and the vector schedules differ.
 // MiniMax E (11-17): no new form, no lower score (548): the frame is still 0x7c against retail's 0x78, and the definition's row pointer is still taken into ebx where retail takes it into ebp and pushes ebp as well, so the definition, biped and state homes sit four bytes apart and the flight call's arguments stay one register out.
@@ -4673,6 +4678,395 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // origin is overwritten with the point before the shift is taken off; the stepped-back x row multiplies the stepped value
 // itself where the y and z rows read t; and the grouping parentheses of the placed and back rows only set the operand
 // order of the rotated pivot's products (matrix element first).
+// MiniMax E (11-20): no new form, no lower score (308): the first difference is still the stack home of the matrix local, +0x60 here against retail's +0x50, with the origin at +0x44 against +0x40; the same set of locals is given its slots in another order, and moving the declarations' order or scope to reach it is a form this lane may not use.
+// score 308 (was 336): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// M3 lane 16 r148 (fast with 0xe1b60/0xe23e0/0x24590, all MATCH each time; plain agrees), KEPT 336 -> 308 (1931 B, aligned
+// 291 -> 227): the pivot offset through the existing vector3d_from_points3d (point to world pivot) and the reach distance
+// through the existing magnitude3d (plain: the offset alone 338 at 1928 B, magnitude3d alone the same code as before).
+// Not kept: delta through vector3d_from_points3d and the move test's squared length through length_sq3f give this
+// function's code unchanged but flip an EAX/ECX add in contributor 0x1c4590 (6 -> 11) in the full image. On 308 (with
+// those two): back through vector3f_scale 308 (other
+// code: some rotated-pivot products take retail's matrix-first order); the collision arms through vector3f_add_scaled 308
+// (same code); the root arm with a shift vector through vector3d_from_points3d, point minus shift, 307; retail's root arm
+// (shift first, origin overwritten by *point, z lowered, position = origin - shift) 311 at 1921 B, aligned 196: that arm is
+// then retail's, both arms leave y/z in xmm1/xmm0 and the tails merge as retail's (`jmp 0xe2397`), the first property takes
+// +0x4c, but origin goes to +0x34 (retail +0x40) and the matrix stays +0x60; on it the select as if/else 366, back through
+// vector3f_scale 319, both 366; the if/else select alone 369 (1943 B). K = 1..16 dead longs on 308: 316 (K 1-2), 314
+// (K 11-12), else 308.
+// MiniMax I (11-19): no new form, no lower score (336): the first difference is still a stack home (this build's matrix receiver at [esp+0x60] against retail's [esp+0x50]), and the origin and the matrix shift together with it although the 0x12c frame and the body length agree.
+// Earlier 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// Earlier score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// score 336 (was 356): The 0x12c frame agrees. The origin and matrix are at +0x44/+0x60 here and +0x40/+0x50 in retail. The travel test and pivot slots still differ.
+// MiniMax A (11-18): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and the matrix, placed-point and property homes shift together although the 0x12c frame agrees.
+// MiniMax E (11-17): no new form, no lower score (336): this build's locals still sit 0x10 higher in the frame than retail's (the matrix receiver at esp+0x44 against retail's esp+0x40, the argument block at esp+0x60 against esp+0x50), so the home sequence and the jumps after it land elsewhere.
+// MiniMax I (11-16): no new form, no lower score (336): the first difference is a stack home (this build's vector workspace at
+// [esp+0x60], retail's at [esp+0x50]); the frame and the body are the same length.
+// MiniMax G (11-13): no new form, no lower score (356): the diff re-read this round puts the first difference at the pivot transform's output home (+0x60 here, +0x88 in retail) and then at the matrix rows, which retail reads through a register where this build copies them through the frame, with our two results at +0x20 and +0x24 against retail's +0x14 and +0x18, so the body stands.
+// MiniMax B (11-13): no new form, no lower score (356): the frame agrees (0x12c) and the first difference is at +0x71, where the entry block's register choice differs; the body is one byte longer than retail's.
+// MiniMax H (11-12): no new form, no lower score (356): the two pivot roles swapped measure 356, the same code, so the body stands.
+// MiniMax G (11-12): no new form, no lower score (356): nothing new this round; the origin, the first property/distance, the
+// matrix, the second property/limit and the placed homes are still in another order.
+// MiniMax G (11-12): no new form, no lower score (356): the origin, the first property/distance, the matrix, the
+// second property/limit and the placed homes are still in another order.
+// MiniMax S (11-15): no new form, no lower score (336): the permuter tried 25 spellings of the body and none lowered the
+// 326 differing instructions of the baseline; the stack homes are still ours (the body matrix at 0x60 against retail's
+// 0x50, the origin at 0x44 against 0x40, the first contact property and the distance at 0x40 against retail's 0x4c, the
+// second property at 0x60 against 0x88, the travel limit at 0x5c against 0x84 and the placed pivot at 0x50 against 0x88),
+// the pivot select still takes EAX and ESI where retail takes ECX and EDI, and the body is 1924 bytes against retail's
+// 1937 because retail keeps the travel test as a byte flag.
+// Earlier score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
+// MiniMax B (11-18): no new form, no lower score (336): the frame 0x12c and retail's 1937-byte length still agree, but the matrix home (0x60 against retail's 0x50), the origin (0x44/0x48/0x4c against 0x40/0x44/0x48) and the pivot select's register pair (EAX/ESI against ECX/EDI) are still ours; no new spelling of the homes was found this run.
+// (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
+// (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
+// Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
+// MiniMax E (11-16): no new form, no lower score (336); the frame 0x12c and retail's 1937-byte length still agree, but
+// the stack homes stay ours: the origin sits at esp+0x44 against retail's 0x40, the matrix at 0x60 against 0x50 and the
+// 16-byte placed object at 0x88 against 0x84.
+// MiniMax D (11-11): no new form, no lower score (371); the frame still agrees at 0x12c and the length still
+// matches retail's 1937, but the stack homes are still ours: the origin sits at esp+0x44 against retail's 0x40,
+// the matrix at 0x60 against 0x50 and the 16-byte placed object at 0x88 against 0x84, and every home from 0x94
+// up agrees. The homes only move when the declaration order of the locals moves, which the earlier rounds
+// measured as a placement trick and reverted; the pivot ternaries and the materialized travel test that would
+// take the other homes are the same match-only forms.
+// MiniMax E (11-11): no new form, no lower score (371); the frame's locals sit at [esp+0xc8] and [esp+0xd4] where
+// retail uses [esp+0xd4] and [esp+0xc8], and the two tails cross-jump at the z store and the call.
+// Earlier first line: at 356 (from 371): round 112 (m3 lane 12) note at the end. Earlier at 354 (was 354): origin, distance, matrix, limit and
+// placed homes in another order; the pivot select and the materialized travel test differ.
+// MiniMax B (11-07): no new form, no lower score (354); our origin, distance and matrix homes are 0x44, 0x34 and
+// 0x60 against retail's 0x40, 0x4c and 0x50, while every home from 0x94 up agrees.
+// MiniMax C (11-07): round 53: no new form, no lower score; the transform's matrix, origin and distance homes stay where the earlier rounds left them.
+// Earlier at 371 (was 354): MiniMax D (11-05): no new form, no lower score; our origin, distance and matrix homes are 0x44, 0x34
+// Earlier 354 (was 354): MiniMax D (11-05): no new form, no lower score; our origin, distance and matrix homes are 0x44, 0x34
+// and 0x60 against retail's 0x40, 0x4c and 0x50, while every home from 0x94 up agrees.
+// Earlier at 368: NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
+// frame 0x12c agrees, 1940 bytes against 1937, first +0x71. Earlier NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
+// (frame 0x12c and 1937 bytes agree, first +0x71 the body-matrix home, +0x60 versus +0x50), but retail compares once:
+// a repeated test picked by score, match only; the if/else restored. Earlier: 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
+// placement subtracts the pivot rotated by the turned axes alone (0xe2260-0xe2312: no scale, no position, with the
+// out-alias test `cmp edi,[esp+0x10]` of function_2477b1), so it goes through function_2477b1 instead of a second
+// scaled point transform (505). Which pivot is parent follows retail's registers (0xe1d33-0xe1d6f: esi/edi
+// outputs of 0x1cff80, equal property -> parent is the edi one; it writes the same point to both, so values agree)
+// (494). Verified against retail with no difference: 0x1417b0 call (0xe220c-0xe221c: ecx = delta, edx = back,
+// matching `(&rotation, &delta, &back)`), 0x142eb0 register setup, both 0x30bf0 orders, 0x1697c0 argument order,
+// 0x168f40 argument order, offset/target/placed/delta sign and operand order, constants (0.025, -1, 0, 1e-6),
+// the branch holding each piece, callers 0xe1b60/0xe23e0 (still MATCH). Tried after: scalar x/y/z locals in the
+// point transform (549), limit computed after the distance (512).
+// Frame 0xfc versus 0x12c; origin/index carriers, pivot-transform
+// expansion, native homes and final rotation/translation scheduling differ. Early collision material
+// initialization/lifetime 499; with entry false result 499, point setter 504, workspace names 499;
+// origin setter alone 486; existing point-transform calls 1108; guarded single result 514;
+// limited-scope material initialization 500; full point-difference producers 504;
+// late parameter-only travel limit 482 (frame 0x12c, below keep margin).
+// Native origin source view 512, with guarded result 527; named limit result 507;
+// native origin/limit result/differences 527; explicit existing-helper inline 488,
+// with late limit 482; late limit/native origin 496; late limit/native origin/result 512.
+// Round 192, kept together (494 -> 368; frame 0x12c and the entry now retail's, first difference +0x71): the
+// collision's unknown24 = NONE stored at the top of the parent block (retail 0xe1d0b; ours never stored it) 492, the
+// origin through real_point3d_set as sibling 0xe1a80 (retail's load-all movss copy) 479, single exit with `result`
+// false at entry (retail's `xor bl, bl` / `mov al, bl`; the lane wrote it with one goto, the coordinator rewrote it as
+// the plain `if (started || ...)` block, same bytes at the end: 368 both) 405, the limit computed after the distance 396,
+// the rotation built from a copy of delta (`direction`; retail copies delta's home to 0x34 by dwords and normalizes
+// the copy, back takes delta's home) 368. Tried on that: biped_matrix_transform as 0x142570's body (x/y/z locals,
+// `scale * x`, retail's register shape) 421; pivot ternaries 398 (with that body 431); collision declared first
+// 396; world_pivot/child_world swapped 368; `real limit;` at the block top 368; the collision target as written-out
+// if/else arms 433, as two vector3f_add_scaled calls 434, with a named `reached` test 450, `limit > distance ||
+// !hit` 447. Remaining: retail pairs world_pivot's home with delta/back and child_world's with the copy (ours the
+// reverse), property_b's with limit; retail keeps 1.0f in xmm4 across both pivot transforms; retail materializes
+// `limit > distance` in AL before the target copy; the pivot select (`mov ecx, edi; je` to an out-of-line lea).
+// M288: On the retained exact-frame graph, pivot-result/body-transform/property-placement
+// role names separately and all together 368/368/368/368; complete scaled-point setter
+// 421, with all role names 421; setter plus default pivot selection 424, with all names 424.
+// Original helper, selection and executable body restored; origin/matrix and paired point homes remain.
+// Round 514: native input memcpy/memmove with direct output 368/383; aggregate
+// input with output memcpy/memmove 895/875; paired input/output copies 895/895/875/875.
+// Original helper and body restored; matrix/pivot homes and scalar transport remain.
+// Round 324: last-use scopes for parent matrix/world pivot/child world, subsets 1-7,
+// then all with matrix declared before origin: 368 each. Original scopes restored.
+// Round 359: Independent pivot transform order, delayed direction copy and existing back scale,
+// subsets 1/2/4/3/5/6/7, then all with entry limit: 381/388/369/407/382/388/408/431.
+// Original producer order, scalar lifetimes and complete body restored; matrix/origin homes remain.
+// Round 326: Cached scale/shared scale producer/branch-owned scaled point in
+// the existing pivot helper, subsets 1-7: 369/369/369/366/367/367/367; all with
+// the native point declaration first 367. Two-point lead rejected; original
+// alias-safe helper and body restored. Matrix/origin and paired pivot homes remain.
+// Round 365: Shared world-offset/placement-difference-plus-origin/final-displacement
+// producers, subsets 1-7: 364/387/388/368/364/369/363; all with shared contact scaled
+// sum 364. Exact-length 364/363 gains are below threshold. Original complete body
+// restored; matrix/origin and paired pivot/property homes remain.
+// Round 371: Native travel-limit decision before original target copy,
+// byte/short/word/long 372/376/376/375; complementary truth representation
+// 372/376/376/375. Original predicate and body restored; matrix/pivot homes remain.
+// Round 373: Complete up/left/forward product lifetimes in every transform row,
+// seven subsets then complete row projections: 370/370/370/370/369/370/895/895. NOT kept: product
+// temporaries do not reproduce retail; original helper/body restored.
+// M317: Sequential parent/rotation, origin/placed and pivot/target workspace reuse subsets 1/2/4/3/5/6/7, all
+// with consumed-direction reuse; root relocation offset with aggregate copy/point setter:
+// 369/401/395/401/395/428/428/428/396/379.
+// Matrix/origin and paired point/property homes remain. Original executable body restored.
+// Round 375: Collision fraction from candidate update/owned candidate/full branches/named distance,
+// storage at producer/parent-block entry: 368/368/368/369/368/368/368/369. Original conditional and whole
+// body restored; frame 0x12c, matrix/pivot/property homes and first +0x71 remain.
+// M325: Nested normalization admissions, real/bool/long results, shared short-circuit/progressive/false-default
+// outcome and early real-result declarations 368/369/369/369/369/369/369/369. All restored;
+// matrix/origin and paired pivot/property homes remain; result carriers do not recover them.
+// Lane 1 round 62, kept: the pivots as two ternaries 351 at 1937 bytes (retail compares once, its child pivot's lea
+// out of line). Declaring the properties at the top in three orders 368 (frame unmoved). On the ternaries, each
+// positional score against aligned mnemonic differences (base 135): x/y/z locals in the transform 414/106, with the
+// target's two arms written out 382/93, plus a bool of limit > distance ahead of the target copy 396/60, plus retail's
+// else arm (the offset from the position, origin overwritten by *point, z lowered; also through
+// vector3d_from_points3d) 378/33. With the if/else select instead of the ternaries 329/42, with its defaults assigned
+// first 326/42, with only the child default 372/42. Lead 326: retail's shape, but the bool is one-use (not kept
+// without a match). Without it: arms 363/69, no arms 391/91, default select with arms 364, without 394.
+// P293: Admission-produced placement result in bool/byte/short/long, entry-default then query-boundary
+// lifetime: 973/961/954/956/973/961/954/956. Original complete body and helpers restored; no qualifying
+// gain.
+// M338: Native scale/transform-row/complete point-geometry ordinal loops, subsets 1/2/4/3/5/6/7 and final
+// pivot translation: 369/369/364/369/364/364/364/364. Original helper and body restored;
+// matrix/origin/pivot homes remain. NOT kept: four-point lead above 30 fails the eight-point gate.
+// DH322: Final pivot in consumed offset, component/difference/setter/loop: 368/368/368/368;
+// in final position: 363/363/363/363, 1937 bytes, matrix home 0x50 and first +0x7d; origin four bytes high.
+// NOT kept: five-point nonmatch gain above 30 fails the eight-point threshold; original
+// output workspace, helper and complete body restored, matrix/origin/pivot/property homes remain.
+// AC504: Both pivots through existing alias-safe/scalar-input/axis rotations, with
+// component/shared/in-place translation: 895 each (1412 bytes, helper outlined).
+// Native inline expansion on four producer forms: 389/389/389/391; all regress.
+// Original helper/body restored; matrix/origin, pivot/property homes remain.
+// DL254: Two-use pivot output-pointer contract, direct/scalar/setter/aggregate producers, ordinary then forced inline:
+// 895/421/895/895/368/421/369/367. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
+// P302: Existing pivot-helper actual matrix/input/output references, seven subsets then forced-inline
+// complete reference graph: 368/368/368/368/368/368/368/368. All tie; original pointer contracts/helper/body restored;
+// native matrix/origin and paired pivot/property homes remain.
+// M369: Completion-owned common matrix setter, bool/byte/short/long, original/entry default:
+// 406/403/400/401/406/403/400/401. NOT kept: all regress and shorten away from retail;
+// original result, admission and publication restored; matrix/origin and paired pivot homes remain.
+// DL259: Existing pivot helper point/matrix/returned-point value ownership,
+// seven subsets then immutable point input: 853/866/858/823/817/820/781/781.
+// NOT kept: native aggregate contracts miss byte equality. Original helper and
+// complete body restored; matrix/origin and paired pivot/property homes remain.
+// M372: Origin/matrix/false-result declarations at function entry, seven
+// subsets then all with the original collision declared at entry: 368 each.
+// Original declarations and complete body restored; native matrix/origin and
+// paired pivot/property homes remain; frame 0x12c still agrees.
+// Round 588: Position/property/collision last-use scopes, seven subsets, then all with
+// earlier inner rotation declaration: 368 each. NOT kept: no native-home repair; original
+// complete body restored. Matrix/origin and paired pivot/property homes remain.
+// F386: Static existing component-array observations of scaled pivot, transform rows
+// and full geometry, seven subsets then all forced: 369/368/369/369/369/369/369/369.
+// NOT kept: tie/regressions; original helper/body restored, matrix/origin/pivot homes remain.
+// B442: Root-first parent/root order, bool/byte/short/long completion results,
+// false-default 383/417/414/415; true-default 443/444/437/437. NOT kept: all regress;
+// true-default frame grows to 0x130. Original order, result and full body restored.
+// P342: Complete offset/delta squared products, alone/both, real-root overload and complete immutable
+// products: 369/369/369/368/369/369/369/369. NOT kept: no byte match or eligible native allocation gain;
+// original reductions, root expression and whole body restored. Matrix/origin and paired pivot/property
+// homes remain.
+// Round 214 (m3 lane 3), kept: the transform as 0x142570's x/y/z body, the target's two arms written out as retail has them, the pivot select
+// with its defaults first: 368 -> 354 at 1940 bytes (masked aligned 106 -> 93). Steps: x/y/z 421 [100]; arms 361 [94]; plain select with both 361;
+// arms alone 433; arms and select 428. Match-only, not kept (each a one-use flag or a repeated test): `reached` ahead of the target copy 329 [50],
+// default select 326 [49], retail's else arm through origin 364 [70] alone and in those; two pivot ternaries 309 [40]: then the select is byte
+// exact. Arms through vector3f_add_scaled, one or both, 326 [48/49]; collision.t in place 378; one row set after adjusting t 368 (1918 bytes);
+// length_sq3f in both squared sums 309 (same code); limit named ahead of the pivots 406; `real limit;` with the other locals 309.
+// Diagnostics: limit's second use spelled as the difference 309 [29], the rotated-pivot products become retail's memory-second shape; three fewer
+// `placed` reads or nine more matrix references put the matrix at retail's +0x50 but leave limit and property_b above placed, where retail has
+// them below it. Left on the 309 form: that slot order, the second transform's point loads, t's register in the arms and the else arm.
+// On the kept 354: length_sq3f in both squared sums 354, `real limit;` with the other locals 354, the first arm through vector3f_add_scaled 354, the arms inverted 354 [99],
+// the two pivot pointers declared the other way 354: five without a gain.
+// Round 70 (m3 lane 14, fast with 0xe1b60/0xe23e0): renames to move same-size stack slots, the matrix as body_matrix
+// 354, the origin as body_origin 354, the two properties as first/second_property 354, the distance as pivot_distance
+// 354, all four 354 (identical code: names do not order this frame). Only 17 of the 351 differing lines are offset-only;
+// the masked diff starts at the pivot select and retail's materialized `limit > distance` (AL) before the target copy.
+// Lane 1 round 79 (fast): offset through vector3d_from_points3d 370 (1944 bytes); the no-parent arm as a shift vector
+// from origin to the matrix position added to the lowered point 392 (1962 bytes); back through vector3f_scale 356; delta
+// through vector3d_from_points3d 354; offset and delta both 370. With a collision-result constructor (unknown24 = NONE;
+// it matches 0xdef60 but loses 0x54590, not kept) 354.
+// P363: Current scalar-input pivot rows through two-term/first-term/projection/complete accumulators,
+// ordinary then forced inline: 354/353/354/353/354/353/354/353. NOT kept: one-point leads
+// miss the margin and native matrix/origin homes; original helper and complete body restored.
+// P374: Complete parallel impact products, placement shifts and root-origin shifts,
+// seven subsets then immutable full expression parts: 354/354/354/354/354/354/354/354. NOT kept: no gain;
+// original complete body restored; matrix/origin/distance homes remain displaced.
+// P376: Selected parent/child/both point values; both setter/memcpy/memmove/const; final child value:
+// 371/383/403/386/403/407/403/366. NOT kept: regressions, native matrix/origin/pivot homes differ.
+// Original selected addresses, scalar-input helper and complete body restored.
+// P378: One parent/root clearance owner at entry/component/position/matrix boundaries,
+// mutable/readonly: 463/463/463/463/463/463/433/433. NOT kept: all regress and shorten away
+// from native; early owners also lose both exact callers. Original full body restored.
+// P381: Terminal rotated output in consumed back/direction/delta/placed/world-pivot/
+// child-world/origin/parent-position homes: 354/354/354/354/356/354/389/357.
+// NOT kept: no native matrix/origin/alias-copy home repair; original independent
+// output, every prior vector value and complete body restored.
+// P385: Contact-selection outcome bool/byte/short/long, positive then complementary:
+// 354/354/354/354/354/354/354/354. NOT kept: no native matrix/origin or paired property/pivot home repair;
+// original single test, selected addresses and complete body restored.
+// T73: Consumed selected parent-pivot and child-world/placement outputs, alone/both,
+// complete placement setters and forced existing pivot expansion: 391/356/398/391/358/398/391/398.
+// NOT kept: every form regresses; parent reuse grows frame to 0x130 versus native 0x12c.
+// Original independent outputs, input captures, helper annotation and complete body restored.
+// P395: Existing target/direction/both transfers through memcpy 354/354/354;
+// origin transfer alone/with target/with direction/with both 381/381/381/381;
+// all three transfers through memmove 504. NOT kept: no native home repair;
+// original value producers, complete body and existing helper preserved.
+// M3 lane 4 r176 (fast with 0xe1b60/0xe23e0, both stay matched; base 354 at 1940). Retail's frame: origin +0x40, the
+// first property +0x4c alone (the travel distance later shares that slot), matrix +0x50, limit +0x84, placed +0x88 with
+// the second property's address four bytes into it; ours has origin +0x44, the properties at +0x40/+0x60 and the matrix
+// +0x60. The two properties declared in their own block around the pivot select 360 (1945 bytes, slots unmoved).
+// Re-measured as diagnostic bases: two pivot ternaries 343 (1949), with the `reached` bool 331 (1959), the ternaries with
+// retail's no-parent arm (shift from the position, origin overwritten by *point, z lowered) 331 (1944: origin +0x40 and
+// the first property +0x4c as retail, matrix still +0x60); on that base placed through real_point3d_set 331, delta
+// through vector3d_from_points3d 331, both 331 (same code). On the kept body, the no-parent arm as a shift local with
+// origin overwritten 364 (1935), as a lowered copy of the point with the shift through vector3d_from_points3d 373
+// (1929), as a lowered copy with the differences in place 369 (1933). All restored.
+// M3 lane 5 r167 (fast with 0xe1b60/0xe23e0, both stay matched; base now 371 at 1931, aligned 229, masked 156): the two
+// properties declared at function scope 371, the matrix declared before the origin 371, the collision at function scope
+// 371 (M372's entry collision re-measured), the distance declared at its computation 371, back at the top of the parent
+// block 371, the target declared at its copy 371, rotated_pivot and the rotation matrix at the top of the parent block
+// 371/371 (the rotation one may repeat round 588's earlier rotation declaration), the collision call joined to the limit test with `&&` 371, the move test
+// split into two nested ifs 371 (all the same code: scopes and declaration order move no slot). The limit computed
+// before the distance (undoing round 192's order) 357 at 1935 bytes, but aligned 230 and masked 157: a length effect,
+// and a moved declaration, so not kept. All restored.
+// M3 lane 13 r74 (fast with 0xe1b60/0xe23e0): parent pivot as one conditional on the property and the child by a
+// pointer test on it 376 (1947 bytes, masked aligned 224 -> 207); `limit <= distance` 370 (1944); distance declared
+// at its assignment 354, the compare as `parent_body_index == property_a` 354, the pivot pointers declared with
+// their defaults 354 (same code). Frame, low to high: retail origin 0x40, property_a/distance 0x4c, matrix 0x50,
+// property_b/limit 0x84, placed 0x88; ours property_a/distance 0x40, origin 0x44, placed 0x50, property_b/limit
+// 0x5c, matrix 0x60.
+// M3 lane 12 r112 (fast with 0xe1b60/0xe23e0, both matched; base 371 at 1931, aligned 229, masked 91). Diagnostic, not
+// kept (each part is match-only): the two pivot ternaries, a `reached` bool ahead of the target copy and retail's no-parent arm
+// (shift from the position, origin overwritten by *point, z lowered) together 318 at 1980 bytes, masked 46 (the pivot select
+// and the travel test are then retail's). What is left there: retail cross-jumps the two arms' tails (the position y/z stores
+// and the 0x1d0c20 call, entered from the parent arm by `jmp 0xe2397`) because both arms leave y in xmm1 and z in xmm0; our
+// parent arm loads the target into xmm1/xmm0/xmm5 (retail xmm2/xmm1/xmm0) with the rotated-pivot sums one register lower, so
+// its tail stays a separate copy (the extra 43 bytes); the collision arms' products also take the other operand form (ours
+// copy t and multiply by the offset in memory, retail loads the offset and multiplies by t in the first arm). Frame: retail
+// packs the rotated pivot into the world-pivot/delta/back slot (+0x10) with the target at +0x1c; ours packs it into placed's
+// slot with the target at +0x10. Trials on that cause. On this body: the target copied into matrix.position before the
+// rotation and the rotated pivot taken off with `-=` 360 at 1927 bytes (aligned 268, masked 105: positional only, the matrix
+// moves to +0x44 and the tails stay apart; not kept); that with retail's no-parent arm 349 at 1932 bytes (masked 80; the two
+// tails now cross-jump at the z store and the call, but the arm reuses origin for the new point and computes the one-use
+// shift ahead of the stores, so it is match-only). On the 318 form: the final rows written z, y, x 318 (one line moves); the
+// target copied into matrix.position, then `-=` 340 at 1958 bytes (masked 53; the tails cross-jump at the z store and the
+// matrix home becomes retail's +0x50, but the copy is ours, not retail's register loads); the copy through real_point3d_set
+// 318 (same code as the 318 form: its stores fold away). Retail's tail needs the parent arm's target loads in xmm2/xmm1/xmm0.
+// MiniMax B (11-11): at 356 (from 371): the pivot select now tests `property_a != parent_body_index` and takes
+// pivot_b first, which is the order retail keeps the two pivots in; what still differs is the pairing of the stack
+// slots (ours takes the two addresses at esp+0x48 and esp+0x88 where retail takes esp+0x4c and esp+0x60), our
+// select compares in eax/esi and reads cmp [esp+0x40],ecx where retail compares in ecx/edi and reads the frame,
+// retail's travel test is materialized as a bool where ours branches on the raw comparison, and the second
+// transform puts the scale in xmm2/z where retail uses xmm3/xmm2.
+// MiniMax B (11-11): no new form, no lower score (371): what still differs is the pairing of the stack slots
+// (ours takes the two addresses at esp+0x48 and esp+0x88 where retail takes esp+0x4c and esp+0x60), the
+// order of the two pivots (ours keeps the first in esi and the second in edi, retail the other way round),
+// and the shape of the 0xdc3a0 call.
+// M3 lane 13 r85 (fast with 0xe1b60/0xe23e0, both stay matched). Diagnostics: the two pivots' names swapped through the body,
+// and the two properties' names swapped, 356 each (same code: names do not order these address-taken slots). Trials through
+// existing helpers: delta through vector3d_from_points3d 356 (same code); back through vector3f_scale(&offset, -1.0f) 356 (same
+// code); offset through vector3d_from_points3d 372 (1942 bytes); both collision arms' target through vector3f_add_scaled 356
+// (same code); placed through real_point3d_set 356 (same code).
+// MiniMax A (11-12): no new form, no lower score (356); the first difference is at +0x71, where this build's origin
+// sits at [esp+0x44] and its matrix at [esp+0x60] while retail's origin sits at [esp+0x40] and its matrix at
+// [esp+0x50], so every slot below the matrix sits four bytes higher although both frames are 0x12c bytes; moving a
+// local to shape the frame is not allowed.
+// P438: Original component/position bindings, limit/lowered/distance producers and
+// the existing transform matrix/input/output bindings fixed independently: eight 356.
+// NOT kept: matrix/origin/property homes unchanged; complete body and helper restored.
+// MiniMax A (11-13): no new form, no lower score (356): the frame agrees (0x12c) and the first difference is at +0x71, where the
+// register choice in the entry block differs; the body is one byte longer than retail's.
+// M3 lane 4 r196 (fast with 0xe1b60/0xe23e0, both stay matched; plain agrees). KEPT 356 -> 336 (1924 B): the pivot select as
+// defaults `parent_pivot = &pivot_a; child_pivot = &pivot_b;` then `if (property_a != parent_body_index)` swapping them (retail
+// copies pivot_a's register into the parent register before the compare, `mov ecx, edi; je`); the pivots then take retail's
+// +0xc8/+0xd4 (the first reference in the select orders them). Diagnostics: the select as `==` with both arms 364 (pivots
+// right too), the target and world-pivot names swapped 336 (same code), the pivot declarations swapped 336 (same code), the
+// rotated pivot named aaa_/zzz_ 336 (same code). On 336: rotated_pivot declared with the other parent-arm locals 336,
+// back/direction declared at the parent-arm top 336, target declared at function scope 336 (all the same code), the first
+// collision arm as `t * offset.i` 336 (same code), the first arm through vector3f_add_scaled 336 (same code). Cause found
+// (diagnostic, not kept: a name reused): the rotation written into `delta` 331, the world-pivot group then takes retail's
+// +0x10 and the matrix +0x54: retail packs the rotated pivot and the alias-safe helper's copy into the world-pivot/delta/
+// back slot, ours into placed's slot (a compile-only TU harness, build/r196/h/cb.py of m3-lane4, shows the same packing;
+// names, declaration places and scopes do not move it). Next: a natural form that ends placed's memory life after the
+// rotation or starts the rotated pivot's earlier.
+// P475: Whole-coordinate standard range origin/target/direction producers, seven subsets
+// then all backward: 399/440/390/496/411/438/488/485. NOT kept: native
+// matrix/origin/pivot homes not recovered; original transfers and complete body restored.
+// P497: Actual offset/placed/delta last-use scopes, seven subsets then complete graph with early normalization rotation: 336/336/336/336/336/336/336/336.
+// NOT kept: no native matrix/origin or low pivot-home repair; original complete body restored.
+// P499: Standard binary coordinate offset/placement/displacement transforms, seven subsets, then both collision
+// target producers: 345/442/315/421/386/434/477/401. NOT kept: The 315 lead adds an out-of-line transform absent
+// from retail and moves origin to +0x54 versus native +0x40; other forms regress or enlarge the frame. Original
+// complete executable body restored.
+// P502: Collision-target fallbacks, nested then short-circuit, each native/setter/memcpy/memmove:
+// 307/386/307/403/334/351/334/418. NOT kept: 307 moves default copies after the collision query; retail copies
+// before it. Matrix/origin homes remain displaced. Original body/helper restored.
+// P505: Actual complementary pointer standard/iterator/ordinary exchange, then contact-record
+// standard/iterator/range/ordinary/plain-loop exchange: 393/393/336/424/424/421/379/377. NOT kept: Every exchange
+// ties or regresses; payload exchanges disturb native frame homes, and no form recovers native matrix/origin
+// storage. Original complete executable body restored.
+// P508: Actual first/second/both contact-property zero defaults at declaration or query,
+// then paired NONE defaults at those sites: 351/336/351/358/336/358/377/368.
+// NOT kept: defaults add code or tie without native origin/matrix/property-home equality; original full body restored.
+// P510: Actual contact-target/placed/root-displacement/terminal-position output stages, coordinate then
+// whole-vector phases: 336/322/336/330/336/335/336/336. NOT kept: 322 grows to 1952/1937 bytes;
+// six/one-point leads fail the margin, native origin/matrix homes remain. Original full body restored.
+// P512: Actual clearance-query hit/clear result in bool/byte/short/long, after the original
+// pre-query target copy: eight 336 at 1924/1937 bytes. NOT kept: one-use receivers do not repair
+// native matrix/origin/property homes; original complete executable source restored.
+// P529: Actual origin/offset/placed/delta/back/target/direction coordinate aggregate
+// initialization, then complete construction graph: 343/336/336/336/336/446/331/441.
+// NOT kept: direction gains five above 30; no native matrix/origin/pivot-home equality.
+// Original complete executable body restored.
+// P531: Existing two-use pivot helper with complete branch-owned scalar outputs,
+// direct/captured inputs, repeated/cached scale and unity/nonunity-first arms:
+// 404/360/404/360/404/360/404/360. NOT kept: native matrix/origin/property
+// homes do not recover; original helper and complete executable body restored.
+// P561: Existing pivot-helper scalar capture orders xzy/yxz/yzx/zxy/zyx
+// 344/343/348/346/344; pivot/scaled/coordinate scalar names 336/336/336.
+// NOT kept: no native matrix/origin/property-home recovery or exact bytes;
+// original alias-safe helper and complete executable body restored.
+// P582: Rounded distance/clearance/collision-fraction promoted receiver storage, seven
+// subsets, then immutable original-site distance/clearance: 344/345/379/342/379/371/376/376. NOT kept: no exact native
+// matrix/origin/property/pivot-home recovery; original real receivers and complete body restored.
+// Round 178 (m3 lane 8, fast with 0xe1b60/0xe23e0, both stay matched), on lane 4 r196's lead (end placed's memory life or
+// start the rotated pivot's earlier): the placed point computed in matrix.position (no placed local; the parent arm always
+// overwrites it) and tested there 368 (1906 bytes, the frame moves); the rotated pivot declared with the other parent-arm
+// locals 336 (same code), with the placed change 368; the second collision arm's pulled-back fraction as its own local 336
+// (same code); collision.t read at the first arm's uses with the second arm's fraction a new local 336 (same code).
+// Round 407: shared y/z stores 379; all final components at join 388; placement point at join 350; shared point
+// setter 388; whole root point snapshot 342; root coordinate snapshot 336; root point snapshot with shared y/z
+// stores 350; early placement rejection 470.
+// NOT kept: shared stores shorten the body and raise the score. Independent root coordinate reads tie. The body
+// matrix and origin retain their baseline slots.
+// MiniMax R (11-17): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and a permuter run over the body (15 tries, 326 s) found nothing below the baseline.
+// The matrix, placed-point and property homes shift together although the 0x12c frame agrees.
+// Terminal pivot: scalar-snapshot helper 384, copied then rotated in place 393,
+// selected pivot in place 376 or through the scalar helper 345. Shared final difference
+// 336 or with scalar helper 384. Rotating into the matrix position then subtracting
+// directly or through the shared difference 335/335. NOT kept: one-point gain above 30.
+// origin in actual point query record 353; placement in actual point query record 362; both point
+// queries with their records 373; origin address from existing point setter 336; placement address from
+// existing point setter 336; both point addresses from existing setters 336; result lifetime starts
+// after body matrix query 339; target copy initialized at travel test 336. NOT kept: one complete query
+// record grows the frame to 0x148, and two grow it to 0x164. Setter returns and initializer changes tie
+// or regress. The original body was restored.
+// Unused-property scope 336, paired property scope through selection 336. Scoped first-pivot
+// decision with default/conditional/if-else assignments 336/368/364, second-pivot decision
+// 336/368/356. First/second decisions outside only the unused-property scope 336/336.
+// NOT kept: none recovers the matrix, origin or property slots. Complete arms move the call setup.
+// Shared travel limit before component lookup, after component lookup or after origin pointer
+// 446/446/446, after origin copy 414, after matrix query 392, inside accepted placement 403.
+// Const limit inside accepted placement 403. Shared local initialized separately on each path 336.
+// NOT kept: common evaluation grows the frame to 0x130. Separate evaluations tie with unchanged matrix/origin homes.
+// Direct matrix member for body, parent or both 336/336/336, matrix declared at its query 336, at direct query 336.
+// Origin pointer scoped to the setter 336, result declared after the setter 337, aggregate origin with direct queries 368.
+// NOT kept: direct queries leave the slots in place. The aggregate copy moves the divergence earlier and shortens the body.
+// Transform names in body/anchor/turn and rigid-body/support/alignment order 308/308; contact outputs
+// and pointer roles 308; projected pivots and target roles 308; displacement and rotation roles 308;
+// properties and pivot bounds 308; position and projected-pivot roles 308; all contact workspace roles
+// 308.
+// Placed-coordinate results held through the stores and displacement 308, with the setter 308.
+// Displacement before point stores 306, per-coordinate calculation before the setter 306,
+// point constructed only on the ray path 320, per-coordinate publication 308, displacement before
+// the setter 306, aggregate after displacement 306. NOT kept: the 306 forms grow to 1946 bytes,
+// a two-point gain, and do not move the matrix or origin slots. Original body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5376,6 +5770,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax E (11-20): no new form, no lower score (79): the first difference is still at +0x107, inside the inlined rotation helper rotate_direction, whose body lives in src/unknown_1eb8a0.cpp and may neither be edited nor written out by hand here; retail multiplies the axis by the forward x in two of the three cross terms where the helper multiplies the forward by the axis, and axis_rotation.h measures 134.
 // score 79 (was 79): Frame 0x24 agrees. The first rotation spills its cosine complement too early and the final cross reloads forward j.
 // MiniMax A (11-18): no new form, no lower score (79): the frame is 0x20 against retail's 0x24 and this build pushes ebx before it masks the character index where retail masks it first; the first rotation spill and the final cross reload still differ.
 // Earlier: The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
