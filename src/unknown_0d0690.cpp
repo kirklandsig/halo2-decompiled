@@ -1907,6 +1907,10 @@ real function_30bf0(vector3f *vector);
 // unpacked lightmap first 446; with the mobile flag as a test-set (match-only) 430 (1870 B, first difference +0x57); the
 // bounds as `color3f const` locals 378 (same code); the mobile test written into the `k` ternary (no `mobile` local) 487
 // (0x3db00 drops to 12, 0x3dfe0 to 45).
+// Static lower bound 446, static upper bound 446, implicit zero-fill aggregate 464, chained bound
+// stores 378, reversed bound declarations 378, destination address table pins 641, member table pins
+// 648, destination table with input snapshot 648. Either static bound recovers frame 0x40 and 1870
+// bytes at a higher score. The input snapshot changes both checked callers in the reduced image.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

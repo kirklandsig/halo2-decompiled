@@ -1631,6 +1631,10 @@ struct s_item_flags_view_10b850
 // helper on the original collision origin 824, Point-difference helper on the shared collision origin 823. NOT
 // kept: Paired fields cut the frame to 0x148 but score 904 at 4051 bytes. The ray helper with the shared origin
 // saves one difference, below the retention threshold. The opening body is restored.
+// Lateral response scope 824, correction step after lateral projection 845, shared reversed step 850,
+// shared lateral magnitude and correction sign 878, branch-local lateral step 859, longitudinal step
+// 892, or both 883, shared carrier addition 824. The 0x148 forms fall short of retail extent and raise
+// the score. The motion frame remains 0x154.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

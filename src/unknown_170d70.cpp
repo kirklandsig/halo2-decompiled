@@ -1641,6 +1641,10 @@ struct s_pool_view_172840
 // Selected exclusion mask 217, traversability conditional 207, one state read with independent limit results 249.
 // Chained narrow publication then signed index 134, signed index first 86, with independent limits 243/241.
 // NOT kept: the 86 form shrinks to 860 B and retains the displaced flag homes. Independent limits recover 868 B at 241.
+// Pool/queue/projection failures as bytes 134/134/134, all unsigned or signed failure bytes 134/134,
+// widened cluster producers and independent result tests 145, signed ring entry with original result
+// tests 134, shared pool entry base 266. The widened form restores the result and flag byte homes, then
+// grows to 873 bytes and changes the cluster select.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1921,6 +1925,10 @@ struct s_camera_reference_171830
 // long displacement ordinal gains one at retail length. The long and byte sample counts, quotient and
 // remainder, and pair comparison recover the 0xb8 frame while preserving the EBX point ingress and moving
 // away from retail length.
+// File-local resolver 270, byte ray mode 306, separate ordinal/axis and ray mode names 270, center and
+// winning sample names 270, near/far bracket names 270, split plane sides with zero on the left 270,
+// short sample polarity 301, side cross before the center query 309. The 0xbc frame and point in EBX
+// remain.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -2172,6 +2180,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // 388. Addressed view for the cluster lookup only 357. NOT kept: The view reference restores the opening EBX
 // state base and delays the first difference to +0x2c, but shortens the body by 96 bytes and raises the
 // score. The indexed state reference ties. The other receiver scopes regress.
+// Declared array element 295, follow-distance and output-axis names 295, separate input/output axis
+// names 295, view receiver for projection 384, view receiver for clamps and location 371, same receiver
+// through final depth 461, follow-distance clamp macro 295, sampled field-of-view clamp 434. The state
+// stays in EBP and the collision point in EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
