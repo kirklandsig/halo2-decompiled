@@ -1992,6 +1992,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Query/write/both mismatch via XOR 164/121/167 or split inequalities 171/118/183.
 // Negated inclusive bounds for query/write 171/118. NOT kept: comparison
 // forms retain the slot difference or add instructions and raise the score.
+// Conditional count, conditional failure, conditional success 178/188/188; absent-count store 89;
+// skipped/short/full write outcome with default, exhaustive or separate tests 112/112/90;
+// conditional completed count local 157. NOT kept: the outcome forms recover both slots
+// at retail length but raise the score. The failed-resize branch and write registers still differ.
 // @retail 0x213970
 void function_213970(void)
 {

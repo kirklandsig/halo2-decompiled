@@ -1789,6 +1789,9 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax G (11-20): no new form, no lower score (87 in the reduced image, 85 in the full one): the score is still taken and compared
+// outside the team arm with an SSE compare where retail compares inside the arm on the x87 stack, the walk's pool is still
+// reloaded from its slot at each step where retail hoists it into EBX, and the selection is still kept in EDI besides its slot.
 // MiniMax D (11-20): no new form, no lower score (87; 89 on this build's reduced image). The in-arm compare (126 at 480 B)
 // gives retail's x87 compare and retail's homes for the selection (+0x14), the score (+0x18) and the best (+0x1c), but ours
 // still keeps the walk's pool in memory and the selection in EDI (reloaded at the loop top), while retail hoists the pool into
