@@ -779,6 +779,11 @@ void function_3dd10(long object_index, bool force);
 // 404 (0xd1a30 149, 0x131d60 52, 0xc0c80 319 lost); with a forceinline declaration of it in this file still a call 398;
 // the choices read through an inline element accessor with a signed `<` first scan 638 (unrolled, 1309 bytes); the
 // three clamps through a by-reference pin helper 197.
+// Indexed tint entry after the white store 238; advancing tint entry 307;
+// independent live choice-count and array lookup 180; guarded choice count 97;
+// supplied-color test before the tint entry 106; signed scan with conditional mask accumulation 873;
+// separate selection admission and threshold 219; positive weight predicate first 108.
+// NOT kept: The saved object/tint roles, signed scan and blend publication still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

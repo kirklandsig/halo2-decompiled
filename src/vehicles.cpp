@@ -822,6 +822,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // magnitude after the copy 109, heading as a planar copy 113, dt or dt and the bound folded into the call 107 (same),
 // 1 unused local 107 and 2-24 (long or real) 217. Left on it: the 1.0 constant takes XMM2 where retail takes XMM3 (so
 // retail can load it right after the first add of the entry magnitude), and every normalize's registers follow.
+// Raw length with branch-owned direction 318, with copy at normalization 306;
+// scalar raw pair with branch-owned direction 239; immutable raw pair with branch-owned direction 284;
+// ordered absolute-speed predicate 135; three-component norm with zero vertical input 218;
+// scalar raw pair with fallback arm first 242; immutable raw pair before control magnitude 284.
+// NOT kept: The velocity receivers and early unity placement remain displaced.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -5827,6 +5832,12 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Local rejection square, engine ratio, all five magnitude boundaries and separate clamp output 749 each.
 // Activity from the dispatched value before its clamp 748. NOT kept: a one-point gain with a different
 // activity operand from retail. The early zero/result registers, entry definition and unity loads still differ.
+// Existing limit query for paired steering angles 805, paired turn rates 814, maximum turn 926,
+// maximum speed 1192, combined steering angles 837, or all three steering limits 883.
+// Braking and action predicates converted to real 737/778.
+// Braking chooses real constants 773 or retains the default in its false arm 749.
+// NOT kept: The 737 braking form converts integers to real where retail loads 1.0 and copies the shared zero.
+// The entry definition, zero register and remaining unity loads still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
