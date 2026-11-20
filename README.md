@@ -65,13 +65,13 @@ Analysis, documentation and review do not need it.
 
 ## Status
 
-Decompilation is under way, and 10775 retail functions now match byte for
+Decompilation is under way, and 10791 retail functions now match byte for
 byte. The checker reports:
 
 ```
-matched 10775 of 11326 game functions (2126381 of 2786206 bytes, 76.32%)
+matched 10791 of 11326 game functions (2137263 of 2786206 bytes, 76.71%)
 matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
-matched 12242 of 17654 functions in scope (2412918 of 3904218 bytes, 61.80%)
+matched 12258 of 17654 functions in scope (2423800 of 3904218 bytes, 62.08%)
 ```
 
 Matched code so far includes:
@@ -243,18 +243,27 @@ Thank you to everyone who has contributed to this project so far:
   assault objects.
 - [@RWayne93](https://github.com/RWayne93): online messages, a documented
   near miss, and the match of 0x119280, the creature death timer.
-- [@andrewnakas](https://github.com/andrewnakas): the inventory fixes that
-  took WMADEC's data tables and the DSOUND, XNET and D3D section tails out of
-  the function list, and dozens of fixes checked against retail in the render
-  state, sound, AI and camera code, including disabled drafts brought to
-  compile and behave as retail.
+- [@andrewnakas](https://github.com/andrewnakas): more than 120 matches, most
+  of them in the late stages, when only the hardest functions were left: over
+  80 in Havok, many of them long-standing near misses taken from hundreds of
+  points to a match, then a run of long-standing game near misses; new permuter
+  mutations; a guide to matching near misses with an agent and parallel lanes
+  (`docs/MATCHING_WITH_LANES.md`); the inventory fixes that took WMADEC's data
+  tables and the DSOUND, XNET and D3D section tails out of the function list;
+  and dozens of fixes checked against retail in the render state, sound, AI
+  and camera code, including disabled drafts brought to compile and behave as
+  retail.
 - [@Roasted-Codes](https://github.com/Roasted-Codes): the first contributor
-  matches in Havok, the physics library: its collision-pair dispatch and
-  collision agents, constraint serialization, motion steps, and the
-  library's file streams and string helpers.
-- [@ccgman123](https://github.com/ccgman123): a careful diagnosis of seven
-  near misses, the cleanup that removed an in-body pragma from 0x9d1c0, the
-  match of 0x1f3230, and the tools that keep disabled drafts out of the ready
+  matches in Havok, the physics library, and more than 200 of its functions in
+  all: its collision-pair dispatch and collision agents, constraint
+  serialization, motion steps, and the library's file streams and string
+  helpers.
+- [@ccgman123](https://github.com/ccgman123): matches in the game and Havok
+  (0x9d1c0, 0x1f3230, 0xd6790, 0xf0f90, 0x29f400, 0x26f060, 0x755d0,
+  0x1de6d0, 0x2de0a0, 0x61ef0, 0x869a0, 0x1733e0 and more); score cuts and
+  careful notes on what still differs in dozens of near misses; better, faster
+  and more reliable permuter searches; tools that sweep a file's build flags and probe
+  a function's frame; and the tools that keep disabled drafts out of the ready
   and open-work lists.
 - [@marioag0412](https://github.com/marioag0412): matches across the game,
   starting with 0x1e3480 (an object's actor index) and taking in the global
@@ -263,9 +272,15 @@ Thank you to everyone who has contributed to this project so far:
   near misses.
 - [@averycpawelek](https://github.com/averycpawelek): matches in the unit
   code and nearby (0xc7100, 0xe5840, 0xe2d80 and more) and near misses
-  brought closer, then much of Havok: its constraint helpers, ragdoll and
-  hinge descriptions, service lifecycle and stream helpers, and shared
-  physics helpers.
+  brought closer, then much of Havok (about 150 matches there): its
+  constraint helpers, ragdoll and hinge descriptions, service lifecycle and
+  stream helpers, and shared physics helpers.
+- [@alosec](https://github.com/alosec): behaviour fixes checked against
+  retail: the camera's pull-in rays, the closest-point collector and the
+  collectors of swapped tree queries, projectile material effects, stuck
+  projectiles, dead units' players, recent damage fading and attached light
+  volumes; and retail names for the script enum tables, the Live error strings
+  and the current map global.
 
 [@kirklandsig](https://github.com/kirklandsig) maintains the project: runs the
 build, reviews and merges every pull request, and keeps the

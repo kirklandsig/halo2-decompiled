@@ -1382,6 +1382,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // `while (count > 0)` with the step and `--count` at the body's end, count and offset first, 1 (same code); the first
 // loop's count and offset declared bare at the function's top 1 (same code); SSS with the success flag declared just
 // ahead of the first loop 127 (375 B).
+// M3 lane 7 r187 (fast with 0x13a532, 0x1393f3; SSS control 118): SSS with loop 1's condition result named 118 (same
+// code); SSS with 0x13ad48's anchor re-formed from the field (`local_2->field_24 + local_8 + 4`) 14 (365 B: the load is
+// merged across the condition call and `field + offset` with the element, so the anchor is retail's `lea eax, [esi+4]`
+// and all three loops get retail's registers, but the merged load is its own temp: `mov eax, [edi+0x24]; lea esi,
+// [eax+ebx]` against retail's `mov esi, [edi+0x24]; add esi, ebx`); that with the element formed in two statements 14;
+// that with the anchor as `&local_2->field_24[local_8 + 4]` 14.
 // M3 lane 3 r266 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): on the current body the count
 // declared before the offset 1, the count in the for initialiser 1 (same code). On SSS, loop 1's mask argument formed
 // from the field again (`local_2->field_24 + local_8 + 8`, also written offset-first or as `&field_24[local_8 + 8]`)
@@ -1391,6 +1397,17 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // add esi, ebx`, the field load now a shared temp). The draw call's element re-formed from the field 92 (367 B, reloaded
 // after the calls). So retail's loop 1 holds one more reference (definition pointer or offset) than SSS, not through a
 // second field load.
+// M3 lane 2 r112 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): loop 1 as count-first with its
+// guard read through a `long const &` to the count 42 (365 B, the plain count-first code); SSS with loop 1's tests through
+// a `*const &` to the definition pointer 118 (folds); SSS with the draw call's element re-formed from the field 92 (367 B);
+// SSS with the colour call's element re-formed (`field_24 + offset + 4`) 14 (365 B: every loop takes retail's allocation
+// and only loop 1's element is formed as `mov eax, [edi+0x24]; lea esi, [eax+ebx]`, as round 266's mask-argument form);
+// SSS with one mask zeroed as `= false` 118, with three zeroed as `(word)0u` 118.
+// M3 lane 8 r197 (fast with 0x13a532, 0x1393f3; round 157's letters, E = guarded do-while stepping an element pointer
+// from the field, control F S S 1): J S J 118, J J S 118, S J S 118 (375 B, the zero kept in EBX); S S E 43 and J S E
+// 43 (357 B: loops 1 and 2 exactly retail's, the guard compares with the zero in EBX and it dies into loop 1's offset;
+// loop 3 then walks the pointer); J E S 75, S E S 75, E S S 110. So a third loop with one zero use (the guard) frees
+// loops 1 and 2, as round 204's G, F, X and W forms do, but each of those changes the third loop's own code.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
