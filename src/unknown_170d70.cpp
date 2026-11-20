@@ -2040,6 +2040,13 @@ struct s_camera_reference_171830
 // return 270; post-tested refinement count 273; clear the narrow-ray mask bit 270.
 // NOT kept: integral sign gains two at retail length. The point still occupies EBX and the
 // 0xbc frame still has the sample spill.
+// complete midpoint fraction and guarded update 320; midpoint fraction field and guarded update 310;
+// midpoint fraction field and latch 310; explicit midpoint hit and miss endpoints 289; sample offset by
+// reference 270; separate sample acceptance guards 270; one unsigned sample bit view 270; weighted final
+// contributions 270.
+// NOT kept: midpoint forms shrink the frame to 0xb0 and raise the score. Three pass the point in EDI and
+// the fourth retains EBX. The sample and blend forms tie. Retail still passes the point on the stack and
+// reserves 0xb8.
 // Shared inline zone test 267, with the location scoped 267. Typed cluster and zone tables with
 // unsigned snapshot 270, signed snapshot 270 or global bases at use 270. Signed cluster field at each
 // test 261. Winning fraction declared beside center fraction 270, refinement fraction read at each use
@@ -2326,6 +2333,13 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // view receiver for calibration and derivative transform 313; shared clamp destination 370.
 // The collision point stays in EBX. Keeping the view receiver shortens the body and sharing
 // the clamp destination lengthens it.
+// horizontal normalizer through shared planar scaler 295; paired horizontal offset products 366; y
+// correction live to field-of-view publication 296; horizontal outputs published together after field of
+// view 321; shared point setter for channel displacement 388; named point-transform products 383; named
+// vector-transform products 295; named point and vector transform products 387.
+// NOT kept: the alternate planar scaler and named vector-transform products tie. The later horizontal sum
+// forms preserve length and increase the score. Point-transform product names shorten the body. The
+// collision point still arrives in EBX and displaces the state base.
 // Published location receiver 295, combined changed-cluster guard 325, nested user-cluster bounds 295,
 // typed cluster count 295. Direct input-up address 363, later normalization-through-copy forward
 // pointer 379, output-axis pointers at normalization 446, adjusted projection depth snapshot 295.
