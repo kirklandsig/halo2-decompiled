@@ -433,6 +433,11 @@ long g_55e6c0;
 // stores 159 (493 bytes); on main's body the height store right after the clamp's store 98 (480 bytes); the lead's whole
 // else body in a forceinline helper taking the entry and every parameter 31 (same code); no entry local (every access
 // through the global array) 144 (528 bytes; 0x1db10 4, 0x1dc40 1, 0x1d770 55).
+// M3 lane 1 r137 (H2M_FAST with 0x1dc40/0x1db10, both MATCH; on the round-51 signed pitch/packed lead, re-measured 29 at
+// 484 bytes with 0x1ddd0's `value = linear ? value : 0;` select): the clamp as a raw-count store then two independent
+// `if (count < 0)` / `if (count > 4)` field overwrites 133 (485 bytes); the entry as a reference 29 (same code); the format
+// call's linear argument from the stored flag field 29 (forwarded); the loop's per-level bytes from the stored width and
+// height fields 152. Re-measured: round 122's header-pointer form 28 (484 bytes, a gain of one, not kept).
 // M3 lane 6 r211 (fast with 0x1dc40/0x1db10, both MATCH; base: round 122's lead re-measured 31 at 484 bytes, the pitch part
 // scheduled ahead of the height part): on it the clamp as `count < 0 ? 0 : count >= 4 ? 4 : count` 32; as `count <= 0 ? 0 :
 // count >= 4 ? 4 : count` 33; as if / else-if / else with the `<= 0` and `>= 4` bounds 33; upper bound first (`count > 4 ? 4 :

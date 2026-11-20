@@ -12,6 +12,7 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax I (11-20): no new form, no lower score (373): the frame is 0x4c against retail's 0x48; retail holds the third settings pointer in ESI and the random state in ECX, this build keeps the random state in ESI and reloads the third input from its stack slot; the +0x7a word is passed in ECX against our EDX.
 // MiniMax B (11-19): no new form, no lower score (373): reading the random state through the global instead of
 // through the named local gives 423 (the same form MiniMax G measured on 11-18), so the body is back as it was. What
 // still differs is the 0x4c frame against retail's 0x48, retail holding the third settings pointer in ESI from the

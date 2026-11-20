@@ -234,6 +234,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // departure flag is a dword local here and a byte in retail's dead indices home (our hull count then takes a dead
 // argument home at +0x34 where retail has its own slot at +0x10), and the count stays in EBX across the candidate scan
 // where retail re-reads it from its home before the index store. The body stands.
+// MiniMax I (11-20): no new form, no lower score (144): the departure flag as a bool gives retail's frame of 0x14 and a byte flag in a dead argument home, but the home is then the count's (the count is kept in a register) where retail re-reads the count from its own home and keeps the flag in the indices home, and the score rises to 264 (762 bytes against retail's 784); the body stands.
 // score 144 (was 144): earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
 // hull count still live in their own homes where retail keeps them in the dead argument homes. One note, the rounds' entries below.
 // M3 lane 14 r112 (fast with 0x239d50; control 144, aligned 137, masked 65): retail's pass loop is the hull count itself,
@@ -874,6 +875,16 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // head) 345 (655 B: the two difference tests merge into one); with a long flag 295 (683 B); with a short hull counter
 // 343 (657 B); the plain return-exit form re-measured 269 (747 B); on it `short current = count;` at function scope
 // ahead of the classifier call 271 (748 B). Body unchanged.
+// Compaction after the complete walk uses input count 195, republished result 264, separate
+// compacted count 250, or named input bound 195. Starting each scan at the first index with
+// a predecessor gives 195/257/247/195. NOT kept: all retain the extra frame word and raise the score.
+// Equality bounds in lowest scan, hull walk and candidate scan, all seven
+// subsets 144. Direct post-test hull walk 267. NOT kept: equality leaves the
+// 0x18 frame, and the post-test walk reaches 0x14 but shortens the body to
+// 759 bytes and moves the caller to 80.
+// Start index held for one output pass, each candidate, the lazy tie result, or the ranking rejection.
+// Short and long start indices: 263/249/144/144/237/229/247/247.
+// NOT kept: The short read before ranking reaches frame 0x14 but passes count in EAX and raises the score. The two short tie-only forms tie. The pass bound still adds a frame word, and the count and departure homes differ.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1086,6 +1097,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // is fixed by the declaration in src/unknown_17d9a0.cpp, which is not this lane's file.
 // MiniMax D (11-16): no new form and no lower score (129): a `count > 0` guard in front of the loop does give retail's count load (`mov ecx, dword ptr [ebp + 8]`, `movsx edi, cx`) and its `test cx, cx` guard, but the flow then differs elsewhere - `i = 0` is stored after the guard where retail stores it before the `jle`, the zero constant stays in XMM4 against retail's XMM2 and the function grows to 893 bytes (211; 92 only together with retail's fraction if/else and `current->x * plane->n.i`); the guard repeats the loop's own `i < count` test, so it may be kept only with a byte match and is restored here; the permutation search over the body (44 tries, 409 s, annealed, one job) reached 128, one point better than the baseline.
 // MiniMax C (11-19): no new form, no lower score (129): retail reads the count argument as a dword and narrows it to a short for the indexing (`mov ecx, dword ptr [ebp + 8]`, `movsx edi, cx`, `test cx, cx`) where this build reads it as a word; the count's width is this function's signature and the caller in src/unknown_17d9a0.cpp declares the same short parameter, so widening it here is a signature change this lane may not make (a measurement with a dword count and a narrowed short scored 332 and 826 bytes).
+// MiniMax I (11-20): no new form, no lower score (129): retail reads the count's home as a dword and narrows it afterwards, while this declaration's short count is read as a word and sign-extended at once; the prototype is also declared in a file this lane may not edit, so the count's width is BLOCKED-BY.
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // MiniMax D (11-11): no new form, no lower score (129); retail reads the count argument as a dword home (`mov ecx, [ebp+8]; movsx edi, cx`) where this declaration's short count is read as a word, and that parameter type is declared in src/unknown_17d9a0.cpp, so the first difference stays.
