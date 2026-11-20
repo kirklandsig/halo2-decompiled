@@ -1352,6 +1352,9 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax H (11-19, round 95): no new form, no lower score (87): the permuter over this function's forms made no gain either
+// (best was the baseline), and the fade block still keeps 1.0f/fade_in_time in xmm2 where retail keeps it in xmm3, so the join
+// with the (elapsed - hold) * inverse * fade_out term stays in other registers than retail's.
 // MiniMax I (11-19): no new form, no lower score (87): the fade block still keeps 1.0f/fade_in_time in xmm2 and joins (ambience_fade - elapsed) with the (elapsed - hold) * inverse * fade_out term in other registers than retail, and the body stays 684 bytes against retail's 678.
 // score 87 (was 87): The first composite elapsed and reciprocal registers, separate gain load and final release-to-attack join still differ.
 // Elapsed and reciprocal registers, the separate first gain load and the release-to-attack join still differ.
@@ -3281,6 +3284,9 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax H (11-19, round 95): no new form, no lower score (96): the permuter over this function's forms made no gain either
+// (best was the baseline), and the result byte still sits in a stack slot at [esp+0xf] where retail keeps it in AL and BL, so
+// the frame stays four bytes larger than retail's and the failure join still differs.
 // MiniMax I (11-19): no new form, no lower score (96): the saved byte result still takes four extra frame bytes and the entry load order and the failure join still differ; the body stays 437 bytes against retail's 430.
 // score 96 (was 96): The saved byte result takes four extra frame bytes. The entry load order and failure join still differ.
 // The result byte takes four extra frame bytes. The entry loads and failure tail still differ.
@@ -4718,6 +4724,10 @@ struct s_128ca0
 };
 
 // MiniMax I (11-19): no new form, no lower score (81): both gain pins still trade scratch registers, the controller compares still use an immediate and the second flag3 test still shares a word load with the flag6 store; the one-use low-byte view that reaches 50 was reverted, so the body is unchanged.
+// MiniMax H (11-19, round 95): no new form, no lower score (81): an annealing permuter over this function's forms made no
+// gain either (39 tries, its best was the baseline), and what is left is the same: both gain pins trade scratch registers,
+// the controller compares use an immediate where retail has one in the second block only, and the second flag3 test shares
+// a word load with the flag6 store.
 // score 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
 // [r153: see the m3 lane 12 r153 entry at the end of this note]
 // and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).

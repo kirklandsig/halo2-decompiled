@@ -308,6 +308,11 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// MiniMax H (11-19, round 95): no new form, no lower score (390): retail's register ranking is the result in ESI, the token
+// length in EDI, the event in EBX and the remaining count in EBP, with the token re-read from its stack slot for every
+// compare, while this build keeps the result in a volatile slot, so the constant zero takes EBP and the frame is 0x208.
+// An ordinary result does give retail's 0x204 frame and its ESI result, but it merges the name and team copy tails (691),
+// and no reordering of the four name arms avoids that merge, so the body stands.
 // score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // MiniMax B (11-18, round 2): no new form, no lower score (390): the frame is still 0x208 against retail's 0x204 and
 // the token preload still differs; the permuter over the body (one job, --fast, 300 s) tried 24 forms and its best is

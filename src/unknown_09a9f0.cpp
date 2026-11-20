@@ -226,7 +226,17 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): r200 unchanged (r123 too). The entry saves EBP instead of EBX for the byte result. The header flag and object reads
+// MiniMax H (11-19, round 95): no new form, no lower score (8): the store between the header test and the object read is what
+// makes this build reload the table's data pointer, and every copy of the index is forwarded, so the two lookups keep sharing
+// one address. The second store removed measures 71 with the word cast and 77 without it (the header test loses its EBP window
+// and the frame changes), the object read through the entity's field or through a copy of the index measures 42 each, and the
+// flagged arm joined into a retest of the stored index measures 55; all restored.
+// MiniMax H (11-20): the false result is now set before the creation call and the true one at the attachment, the entity's index is
+// stored again between the header test and the object read, and the object read's index is a word, so the two addresses are formed
+// independently; the second store is one more than retail makes and the object read masks with movzx where retail masks with and.
+// score 8 (was 49): the entry saves EBX for the byte result as retail does, and the header flag and object addresses are now formed
+// independently with the table's data pointer reloaded. The object read masks its index with movzx where retail masks with and,
+// and the index is stored once more than retail stores it.
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
@@ -961,15 +971,17 @@ void c_turret_entity_definition::v21(s_entity *entity)
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
     long value = d;
+    bool result = false;
     long object_index = v29(b, info, &value, e, f);
     entity->object_index = object_index;
-    long result = object_index != NONE;
-    if (result)
+    if (object_index != NONE)
     {
         if (!(OBJECT_HEADER(object_index)->flags & 0x10))
         {
-            OBJECT(object_index)->field_d4 = entity->field0;
+            entity->object_index = object_index;
+            OBJECT((word)object_index)->field_d4 = entity->field0;
             object_dispatch_attach_simulation_entity(object_index);
+            result = true;
             if (value)
             {
                 v31(entity->object_index, value, e, f);
@@ -978,7 +990,6 @@ bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info
         else
         {
             entity->object_index = NONE;
-            result = false;
         }
     }
     return result;
