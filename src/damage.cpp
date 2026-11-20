@@ -5281,6 +5281,8 @@ struct s_damage_object_creation
 // score 167 (was 167): The section bound and primary mask exchange registers, which rotates the later scratch registers;
 // the node loop's head then sits one byte early and loses retail's alignment pad, and the search lacks retail's NONE start.
 // Earlier header 178 (was 146): the bitmap zero preceded node-scan admission.
+// MiniMax B (11-20): no new form, no lower score (167): the section loop still rotates retail's EAX bound, EDI first mask and EDX bit into our EDI bound, EDX mask and EAX bit, and that one rotation is the whole 13-byte difference - the pad it drops misaligns every later row; this round's spellings of the section loop (condition reversed, or-assign, both, nested tests, operands reversed, cast dropped, store as or) all measure 167, the bound read straight from info->unknowne0 179 and as an int local 179, an int count local 167, a short count local 171, the piece search as a for/break and as a while/break 223 each, a two-use dword mask local (the loop test and the later guard) 173, and the one-use mask local that gives 166 with retail's EAX/EDI registers is match-only; what still differs is that rotation, the zero store ahead of the states call, the piece search entry and the last two lookups' scratch registers.
+// score 178 (was 146): The section bound and primary mask exchange registers, and the bitmap zero precedes node-scan admission.
 // m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
 // Earlier header 178 (was 146). Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
 // Codex F429: a one-use unsigned first-mask local (`dword m = (word)section_mask_a;` ahead of
