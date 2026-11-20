@@ -1274,6 +1274,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // the nine rotation products: retail multiplies the copied vector component by the axis from memory everywhere except the
 // vector's i against the axis' j and k, where it loads the axis; ours loads the axis first whenever its component is j or k.
 // Body unchanged.
+// M3 lane 2 r114 (fast with 0x1eb640; control 114): a same-file copy of the rotation helper, so it is inlined at compile
+// time instead of at link time (diagnostic) 114 (same code: the inlining stage does not place the rotation products);
+// the rotated vector renamed turned / direction / new_forward / a_rotated 114 each (same code); one vector for the
+// sampled movement and the rotated forward (on the rotate_direction body) 176 (1385 B: the axis loads are hoisted even
+// further, so retail's memory operands do not come from the vector being address-exposed); no `animation` cast local
+// (cast at each use, a symbol-count diagnostic in the direction the dead-local scan never took) 145 (1397 B); no
+// `state` cast local 145 (1397 B).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

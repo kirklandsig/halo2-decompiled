@@ -899,6 +899,13 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // declaration 483; the index zeroed at its declaration with the loop as a while 256 (aligned 9: re-measure of lane 10's
 // form: retail's roles, left the early zero store and retail's ECX zero at the loop entry). Only an index live from the
 // request's start moves the graph out of its register, and that form stores its zero early, which retail does not.
+// M3 lane 2 r114 (fast with 0x1ddd00/0x1dc8c0, both MATCH; control 348): bool success re-measured 478 (1809 B: the graph
+// is loaded into EBP as retail, but graph+0x34 is re-formed with `lea eax` per group and EBX holds a found name, whose
+// copies take the other dead parameter slots); the graph read through a `s_graph_tag *const &` for every use after its
+// declaration 348 (same code; for the request alone it is DL240's first form, 348 again); the three fallback name locals
+// declared mode, class, type 549 (first difference +0xf9); the graph local as a const pointer 348 (same code); bool success
+// with the request's graph through the const reference 478; the request's graph fetched again from graph_get() 633
+// (`this` stays live and the head changes).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
