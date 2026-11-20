@@ -2118,6 +2118,12 @@ void function_27dd10(void)
 // parameter by value instead of `const *const &` 399 (1745 bytes; 0x281b60 389, 0x285750 427); the interpolation's
 // scale arm through interpolate_real instead of the scale blend 2 (0x285750 17); the map-index test bound-first
 // (`index < count && index >= 0`) 16 (0x281b60 16, 0x285750 12); the root offset scale as `*=` 2 (same code). All restored.
+// M3 lane 11 r136 (fast with 0x281b60 and the four matched walk users, all unchanged): function_288573 ending in `else
+// { __assume(0); }` 2 (the method is a constant, so it folds); function_288571/2/3 `static` 2; the bit test as
+// `(local_2 & 1) != 0` 2; function_288573's parameters const 2; the empty group ending in `continue;` with the other
+// arm unnested 2 (same code each). Diagnostics (fast): `__assume(local_2 >= 0)` after the flags read 348 (1733 bytes,
+// every walk user regresses: the node tests no longer fold); with node_flags_test returning its expression 2 (0x281b60
+// 39, 0x288570 120, 0x289580 2), so a run-time assume flips the pair only together with the unfolded tests. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
