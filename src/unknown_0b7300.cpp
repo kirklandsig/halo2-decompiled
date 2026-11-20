@@ -197,16 +197,18 @@ PRIVATE inline s_scenario_block *function_x6e4ccb(void *scenario, long type)
 // the only caller, 0xd4e60 (score 74), whose call site loads the type into edx
 // in retail and eax here. Permuter (17 min, 262 tries, seed 999): no form
 // below 10.
+// Matched in a full build with stand-in SDK headers (was 10): there is no `definition` local; the type's placement
+// record is named through OBJECT_TYPE_PLACEMENT(type) at each of its four uses, and the datum size and block address
+// are written out instead of going through function_x71bcc9.
 // @retail 0xd5260
 s_type_4f0dcc *function_d5260(long type, long index)
 {
-	s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
 	s_type_4f0dcc *result = NULL;
 
-	if (definition->scenario_datums_offset != NONE && definition->scenario_palette_offset != NONE)
+	if (OBJECT_TYPE_PLACEMENT(type)->scenario_datums_offset != NONE && OBJECT_TYPE_PLACEMENT(type)->scenario_palette_offset != NONE)
 	{
-		long size;
-		s_scenario_block *block = function_x71bcc9(g_4e0350, type, &size);
+		long size = OBJECT_TYPE_PLACEMENT(type)->scenario_datum_size;
+		s_scenario_block *block = (s_scenario_block *)((byte *)g_4e0350 + OBJECT_TYPE_PLACEMENT(type)->scenario_datums_offset);
 
 		if (PIN(index, 0, block->count - 1) == index)
 			result = (s_type_4f0dcc *)(block->elements + size * index);
