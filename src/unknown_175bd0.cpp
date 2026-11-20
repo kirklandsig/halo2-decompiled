@@ -2361,6 +2361,29 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // initialised record ahead of the colour reads 184 (572 B); that first form with both queries as the colour call's
 // arguments and no inner block 187 (568 B); the system parameter declared `*const` with the colours read after the spawn
 // stores and the queries as arguments 181 (568 B); the first form with `multiplied` queried ahead of `tinted` 182 (572 B).
+// M3 lane 13 r130 (fast with 0x178eb0/0x179020, both matched throughout; control 128; "lead" = the early-colour shape:
+// the location index named, the scale and location-index stores, both colours read into locals, the unknown store, both
+// type queries in the colour call, location_point_in_zone_inline; re-measured 185 at 568 B). Diagnostics, reverted at
+// once, locate the cause as a ranking tie and not a second variable or a hidden block boundary: a null test with a
+// return after the 0x1751d0 call 195, after the 0x137bd0 call 192 (a boundary alone leaves the system in EDI); one more
+// unconditional use of colour B (a store of it) 172 with retail's whole entry and type block (the system cached in ESI
+// and evicted when the type object takes ESI, reloaded from its home for the colour call; colour B in EDI; colour A at
+// +0x10; frame 0x44); that plus one more system use 187 (back to EDI); a conditional extra colour B use 190 (no effect);
+// the colour call given another pointer 133 at 552 B (entry retail's), the colour call and the loop call 146, the loop
+// call only 169; the location index not read from the system 160 and 0x1751d0 called on another pointer 43 at 552 B
+// (colour B in EDI, but the system is then loaded at each use); set_location on another pointer 189 (no effect). So
+// ahead of the loop the system ranks exactly one counted reference above colour B (its three unconditional uses against
+// colour B's read and use; conditional uses add nothing) and a tie goes to colour B. Natural forms on the lead, all 185
+// and the same code unless given: the 0x1751d0 result, or the type object, through an inline returning a one-pointer
+// aggregate; the first three system uses through a const reference to a named copy, or to the parameter; the later uses
+// through a const reference to the parameter; the spawn record returned by value from an inline 204 (584 B); the
+// colours declared first with a local system copy declared after them and used everywhere, or ahead of the loop only;
+// the colours declared at the function top; the colours in a two-element array, copied as a two-member pair, copied by
+// memcpy, both or colour B alone initialised at the declaration and then assigned; colour A as a member of one
+// aggregate with the spawn record; colour B alone read early with colour A at the call 152 (552 B); the type lookup,
+// the location setup with the first spawn stores, and the colour call each through an inline taking the system, alone
+// and together. Next: a natural extra unconditional reference to colour B, or one fewer for the system that keeps its
+// three early uses; retail's 0x177040 shows the same preference of colour B over colour A.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4036,6 +4059,19 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // code); with both queries as the colour call's arguments 120 (325 B, 0x176f60 25); that with the mode cached as a long
 // 120 (same code); with the colours read at the call 134 (310 B, 0x176f60 25); that with both queries as arguments and the
 // mode as a long 135 (309 B, 0x176f60 25).
+// M3 lane 13 r130 (fast with 0x176f60, [0] = caller still matched; control 93 [0]): the mode per call re-measured 108
+// [25]; the plain shape (spawn-record cursor, colours after it, both queries in the colour call, mode per call)
+// re-measured 103 [25] at 331 B; on it the colours read ahead of the cursor store 103 [25], and the three loads and two
+// stores ahead of the second 0x1751d0 call are then in retail's order (cursor into ECX, colour A into EAX, colour B
+// into EDI; cursor stored, then colour A), so retail reads the colours before it sets the cursor; the next-location
+// call through an inline taking the definition 103 [25] (same code), through an inline taking the mode as a short 113
+// [25] (329 B), the mode cast to short at the call 103 [25] (same code); the particle-location step through an inline
+// taking the spawn record 103 [25] (same code), with the tint named 109 [25] (338 B), with the matrix call as its
+// argument 106 [25]; colours first with the tint named and no helper 109 [25]. Diagnostics, reverted: one more
+// unconditional colour B use (the lever that gives 0x178c80 retail's entry) on the per-call body 123 [0], on the cached
+// body 105 [0], with both queries in the call 107 [0]: system ESI and next index EDI as retail, but the definition then
+// takes EBX and the type object EDI, so it is not the lever here. Left as before: the convention (retail: system index
+// in EAX, effect index on the stack with the tint and node-flag bytes in its dead home, EBX saved at entry).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

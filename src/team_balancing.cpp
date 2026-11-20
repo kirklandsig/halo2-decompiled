@@ -1028,6 +1028,14 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // `long i` 34 (same code). First-pass (/Gd compile-only) screen: the player count stays in EBX (the maximum takes EAX
 // with cmovle) for the declaration order and the sum order; the named entry moves it to EDX and the party list to EDI.
 // Still BLOCKED-BY 0x7e210 (src/unknown_07a9a0.cpp, another lane's file this round).
+// M3 lane 13 r130 (fast with 0x91e30 MATCH and 0x7e210; control 34). Diagnostics, reverted: one more unconditional
+// player-count use (a store into the last slot) 40, two more 44 (193 bytes), one more extra-count use 29 (191 bytes; the
+// extra count then moves to EDI after arriving in EAX): the arrival registers do not follow reference counts here (the
+// player count stays in EDX in all three). Natural: open slots written against both counts (`team_count *
+// maximum_team_size - player_count - extra_count`) 71; the fill under `if (0 < extra_count)` 74 (198 bytes; the extra
+// count then stays on the stack); that with the fill bound written `player_count + extra_count` 74 (same code); the
+// fill value in a `long const` local declared after the copy loop 34 (same code). Nothing kept; the cause stays the
+// fill value's load ahead of the count and destination, as the rounds above describe.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
