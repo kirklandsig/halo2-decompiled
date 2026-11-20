@@ -94,6 +94,14 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// MiniMax G (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the near arm's y row written as one
+// expression (arg_3->x * local_12 + arg_3->y * local_11) takes the y row in SSE as retail does, but the cosine goes into
+// the register and the facing y into the memory operand (retail the other way round), the y*cos product moves after the
+// sine branch (retail hoists it before) and the two field_c stores come out reversed: 365 (1745 bytes), the same code with
+// the sum staged or written with the y term first. Copying the facing vector into two locals keeps the products on x87 at
+// 374 and 375, and holding the trig pair in a local point2f measures 382; the staged x*sin first form measures 365. The
+// first difference is still the constant 1.0f in XMM1 where retail keeps it in XMM2, and the candidate count is still a
+// byte against a short.
 // MiniMax R (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the first difference is still the
 // register that carries the constant 1.0f, which this build loads into XMM1 where retail loads it into XMM2, and the
 // reciprocal copy and the two product registers follow that one choice, so the float register assignment of the whole
