@@ -639,7 +639,7 @@ struct s_location;
 #include "impacts.h"
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	c_type_47f957 material, long effect_value, s_location const *location, real scale);
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction,
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale,
 	long tag_index);
 
 
@@ -3179,14 +3179,14 @@ void __stdcall function_ceee0(long unit_index, long definition_index, short mate
 	long tag_index = *(long *)(global_material_get(material_index) + 0x64);
 	if (tag_index != NONE)
 	{
-		function_189060(unit_index, NONE, 1.0f, g_468788, g_4687a8, tag_index);
+		function_189060(unit_index, NONE, g_468788, g_4687a8, 1.0f, tag_index);
 	}
 	if (definition_index != NONE)
 	{
 		tag_index = *(long *)(g_4e3b44[definition_index & 0xffff].bytes + 0xac);
 		if (tag_index != NONE)
 		{
-			function_189060(unit_index, NONE, 1.0f, g_468788, g_4687a8, tag_index);
+			function_189060(unit_index, NONE, g_468788, g_4687a8, 1.0f, tag_index);
 		}
 	}
 }
