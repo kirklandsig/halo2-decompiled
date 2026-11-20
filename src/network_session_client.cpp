@@ -900,6 +900,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // and the summary above the opening 32. Compile-only first pass (lane 5's round 175 harness): a 0-16 dead-local sweep on
 // the preset pair keeps ESI, and mask or 0x49c8 pointer locals named before the summary are propagated back (ESI), so
 // the preset pair's flip is a ranking change, not a symbol-count tie.
+// M3 lane 11 r129 (fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22), aimed at retail's second opening `lea`
+// placed ahead of the first branch: the two stored addresses passed to a new inline presence test taking both pointers
+// 22, the same test in result style 22 (the address arguments fold before allocation, same code), the flag and both
+// addresses through one such test 218 (361 bytes, both callers lost); the member count read ahead of the variant and the
+// summary 126; the copy's output pointer declared with the machine buffer ahead of the summary 22 (same code).
 // M3 lane 5 r210 (fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22, register-masked 2): the two buffers declared
 // at function scope 22 (same code); the NULL-preset stored pair in the state block re-measured 46 (masked 1, session ESI),
 // with a plain `for` copy 108; the plain `for` copy alone 100 (477 B: its copy loop is then retail's exactly with the
@@ -1349,6 +1354,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // * 12, ...)` 40; the walked destination filled by three dword stores from a source dword pointer 225 (684 B). Reading of
 // the indexed listing: the state takes EBX for the whole function (reloaded after the loop) and `current` ESI at the top,
 // so count, state and `current` compete for the two callee-saved registers that survive the close call and the clear.
+// M3 lane 7 r193 (fast with 0x6fcc0, 0x6f940, 0x6fa60 and the callees 0x5a520, 0x59e50, 0x5a220, whose files the reduced
+// image otherwise leaves out; control 9): with the callees in the image the indexed copy re-measures 195, the full build's
+// result, so this image is the faithful screen (a caller-only fast check is not). On the indexed copy: the arm reading the
+// session through a second named pointer 195; the session id zeroed by `= {0}` 197; the player array named in the arm 196;
+// the copy as a `continue` arm 195; a list pointer formed before the branch and passed to the call 195.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

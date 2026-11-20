@@ -1690,6 +1690,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // (same code: helper text order does not reach the products); the low arm's cross on the `forward` copy 380 (3053 B); the
 // basis copied after the cross 348 (3070 B); the input pointer declared after the four flags 250; no input pointer, every
 // read through state->input, 543. Body unchanged.
+// M3 lane 7 r193 (fast with 0x1f0450 and 0x24590, both MATCH; control 234): the input pointer between the flag
+// declarations (untried middle positions; f = flying, d = direct, m = damping, g = gravity, i = input): f i d m g 244,
+// f d i m g 230 (the r184 best's code: damping in EDX, first difference +0x31, the first arm's two `up.k` products and
+// its last scale row still load the other side first), f d m i g 262; the first arm's scale reading `&state->input` in
+// place of the pointer 486 (3055 B), that on f d i m g 482. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

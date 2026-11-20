@@ -350,6 +350,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // exact 136, register-masked 55). Left on that: the input register (BLOCKED-BY 0x1ec690), and 0x1c4a80 and the 0xdc370
 // destructor expanded here where retail calls both (open: retail also expands 0xb77d0 here, which its /Ob1 file keeps
 // a call in this build, or the link's inline threshold sits one level deeper than retail's, as at 0x25d740).
+// M3 lane 4 r227 (fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319; a/s/r = LCS-aligned
+// unmatched lines exact / stack-masked / register-masked, control 214/207/131): the active flag as
+// `(bool)((flags >> 8) & 1)` 319 (same code: ours already emits retail's `shr ebx, 8; and bl, 1`); that with the 0x20
+// input flag in shift form 319 (215/208/131); the countdown stored as `(byte)real_to_long(ticks)` with no `rounded`
+// local 319 (same code); the velocity reference declared ahead of the first output store 331; the active flag read as
+// the flags' second byte (`object[5] & 1`) 304 at retail's 1164 bytes but 220/212/133 (a byte read where retail
+// shifts the dword, so a realignment, not kept). Still BLOCKED-BY 0x1ec690: its draft sits under `#if 0` in a file on
+// this round's Avoid list, and no stub convention passes the input in EDI.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

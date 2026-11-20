@@ -257,6 +257,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // `kind == 1` and availability tests 15; a `bool received = request->kind == 1;` passed to the selector 32; the kind
 // compared with a named enum constant, plain read, 32 (95 B). The identical-arm chain that matched (r104) stays out by
 // the 11-18 ruling: retail shows one compare of the kind, not one per value.
+// M3 lane 11 r129 (fast with 0x8c5b0, MATCH each time; control 4), all with plain reads: the selection as a switch with
+// one case and a default 13 (95 bytes, folded compare), seeded `setting = 1` with a one-case switch 17, the switch written
+// in place on the request's field with the unavailable case falling into the default 19; the selection as an inline const
+// member of the request, called ahead of the index read 30, after it 32 (95 bytes each, folded).
 // M3 lane 14 r119 (fast with 0x8c5b0, MATCH each time; control 4), plain reads (no volatile): the controller index, the
 // controller and its old setting read ahead of the selector, the field passed straight, 31 (95 B); the selector as early
 // returns (`if (kind != 1) return 1; if (!available) return 1;`) 36 (104 B); the changed flag declared first 29 (91 B);
@@ -267,6 +271,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // change test as an inline setter returning `changed`, with the volatile read 4 (same code), with a plain read 32 (95 B).
 // Re-measured: the index read first with the volatile read 5 (request EAX, kind AX: the request dies before the kind
 // loads), with a plain read 32.
+// M3 lane 7 r194 (fast with 0x8c5b0/0x8c660, both MATCH each time), plain reads: `register short kind` 32 (95 B); the
+// availability part as its own inline helper (seeded, `if (available) setting = block;`) called as `kind == 1 ? helper() : 1`
+// 30 (94 B); that helper with early returns under `if (kind == 1) ... else setting = 1;` 32 (95 B); seeded `setting = 1` with
+// `switch (kind) { case 1: if (available) setting = block; break; }` 17 (95 B, `movsx; dec`); the same switch on the field
+// itself with the index read after it 26 (95 B).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

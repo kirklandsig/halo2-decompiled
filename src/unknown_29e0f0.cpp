@@ -703,6 +703,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // The three selected-index homes then sit at +0x40/+0x20/+0x1c against retail's +0x44/+0x28/+0x24 (retail's order, still
 // four and eight bytes low); the found flag keeps its own byte where retail reuses the dead by-value argument's slot.
 // MiniMax G (11-19): the group bitmap cleared with memset and the group index tested and set through the shared bit vector helpers (the index kept as a long): 382 -> 367.
+// M3 lane 6 r206 (fast with 0x29e730 and 0x29de20, both matched; control 367, difflib-aligned 308, register/offset-masked
+// 157): the found flag renamed `found`, local_29 renamed start_point or zz_29, 367 each (same code: names do not pick the
+// byte that takes the dead by-value argument slot at 0x80, which retail gives the found flag and ours gives local_29); the
+// point bitmap tested and set through bit_vector_test/bit_vector_set as the group bitmap now is 367 (aligned 293), cleared
+// by memset 367, both 367 (aligned 293, masked 157); on this base local_29 `long` 418 at retail's 1596 bytes (frame 0x68,
+// aligned 242, masked 161), `short` 420 (aligned 246, masked 161).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
