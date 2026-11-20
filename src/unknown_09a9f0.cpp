@@ -985,6 +985,27 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // index folds to the same value as the header's, so both lookups share one index computation (42). What still
 // differs is that instruction, the inner store of the object index that retail does not repeat, and two bytes
 // of padding after the last return.
+// M3 lane 1 r141 (fast with 0xa5b10, 0x108e10 and 0xbb780, matched throughout; control 8, left: `movzx ecx, ax`, the second
+// store and the data reload where retail has the reload, `mov ecx, eax` and `and ecx, 0xffff`). On this body: the object
+// read indexed `(short)object_index`, `(long)(word)object_index`, `(word)(short)object_index` or through a word local
+// declared after the first store 8 / 8 / 8 / 8 (the same code: every narrowing spelling gives the movzx); the word cast on
+// the header test and the plain index at the object read 14; the attach given the entity's field 21; the second store as
+// a self-assignment of the entity's field with the object read through that field 42 (the store stays, the index is
+// forwarded and shared); the second store kept with the object read through the entity's field and no cast 42. With no
+// second store: the object read through the entity's field 77 (160 B); `(short)object_index` 71; the header test behind
+// `object_index == NONE || !(flags & 0x10)` under the NONE test 75 (160 B), that guard on the entity's field 75; the
+// flagged clear under one `object_index != NONE && (flags & 0x10)` test with the valid block in `else if
+// (entity->object_index != NONE)` 75, with the block's lookups and attach through the entity's field 82 (157 B), every
+// index read from the field 82, the valid block nested as `if (object_index == NONE || !flagged) { if
+// (entity->object_index != NONE) ... } else clear` 75, the else-if on the local 75 (each retest of the stored field is
+// forwarded and threaded before the lookups are merged, so no join is left in front of the object read). Diagnostic,
+// removed at once (a made-up 16:16 bit-field view of the index): at the object read from the field or the local, with
+// and without the second store, at both lookups, at the header test only 42 / 77 / 42 / 77 / 77 / 77 (a bit-field
+// read is canonicalised to the same mask and shared). The store and attach through the existing 0xbb780 (retail's code
+// from the object read to the attach call is that function's body): with the second store kept 42, given the entity's
+// field 42, given `(word)object_index` 45 (179 B); with no second store and the flagged arm clearing the local and
+// storing it 77 (160 B), given the entity's field 77 (the expanded lookup is merged with the header test's each time).
+// A 1200 s permuter run (121 tries) found nothing below 8. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

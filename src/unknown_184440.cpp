@@ -513,6 +513,18 @@ __forceinline bool function_184448(long arg_0)
 // minus 965 (same code); the plane copied first and negated in place under the flip test 987 (4602 B), with unary minus 987;
 // the else arm's copy written field by field 1017 (4544 B); the three magnitudes through fabsf 965 (same code), computed
 // k, j, i 965 (same code).
+// M3 lane 1 r141 (fast with the callers 0x9cca0 / 0x184060 and 0x184250, all MATCH unless said; control 965, aligned 938,
+// register-masked 459, frame 0x11d4). Lane 11 r131's 952 lead re-applied and re-measured 952 (frame 0x11cc, aligned 890,
+// masked 371; still a moved-declaration form, not kept). Reading of the head on that lead: retail loads the start face
+// into EDI for the head only (later uses read its parameter home, `cmp eax, [ebp + 0x14]`), never gives the record
+// pointer a register (an immediate zero or EAX stored to its home in each arm, reloaded at each test) and takes the group
+// count into EBX for `cmp eax, ebx`; the lead takes the start face in EBX and carries the record pointer in EDI to one
+// store at the join. On this body: the record pointer cleared at its declaration and set only in the instance arm 966;
+// the instance arm written first with the world arm in the else 986 (both callers lose their match, 15 each: arg_0
+// moves); the group count read into a named long for the bounds test 965 (same code); the start face through an element
+// pointer for its group read 965 (same code). On the 952 lead: the named count and the element pointer together 954
+// (aligned 886, masked 358); the record pointer cleared ahead of the test 970 (4600 B). Still BLOCKED-BY 0x48e70 (its
+// file is another machine's this round) for the reloads after each of its calls. Body unchanged.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

@@ -676,6 +676,31 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // sine`) 231 (1196 B); the vector scale folded into the sums (`v.i * cos + axis.i + cross.i`) 221 (1213 B, frame 0x118
 // but the request at +0x2c for retail's +0x38); the axis scale folded into the sums 230 (1216 B); both folded 229 (1200
 // B); the projection as `(1.0f - cosine) * dot3f(...)` 173 (same code).
+// M3 lane 1 r141 (fast with 0x28dab0 and 0x256bd0, both MATCH throughout; control 173 at 1209 B, aligned 183, register-masked
+// 66, frame 0x11c; each form below: count (bytes, frame) [aligned / masked]). Reading: retail gives the heading's zero k
+// XMM3 and drops it for the 1.0 at the end of the dot (the later zeros are a memory 0.0 and an `xorps xmm7`), keeping
+// the heading's i and j in XMM6 / XMM4 to the end and spilling cross j and k; every form here gives the zero XMM5 or XMM6
+// and takes the 1.0 into XMM4 or XMM7, dropping the heading's j (or i) and reading it back from its home, so one value
+// fewer is spilled. Rotation forms of function_28dbd2, all in place on the heading unless noted: sine and cosine passed
+// as argument expressions with the cross through cross3f 226 (1209, 0x120) [170 / 71]; the angle passed, sine, dot3f,
+// cosine, `projection *= 1 - cosine`, cross3f vector 213 (1209, 0x11c) [159 / 71]; that with scalar cross j and k and
+// cross i in row i 228 (1194, 0x114) [177 / 50] (re-measured); its locals renamed so their names sort as retail's slots
+// (cosine, cross k, sine, cross j) 228 (same code: names do not order these homes); cross k declared ahead of cross j 226
+// (1209, 0x114) [183 / 68]; the helper forming the axis itself from the up vector 231 (1209, 0x114) [191 / 57]; the
+// heading set through the existing vector3f_assign 240 (1188, 0x114) [146 / 43]; the up vector copied to a local for the
+// outer cross 240 (1215, 0x120); a const input with the result pointer aimed at the same vector 228 (1211, 0x120); three
+// scalar cross terms declared i, j, k 232 (1189, 0x114) [206 / 49], with the rows into a separate result vector 251
+// (1188, 0x114), that with sine and cosine as arguments 251, with the cross through cross3f 226 (1209, 0x120), with the
+// rows written straight into the velocity field and scaled there 224 (1209, 0x114). Jitter arm and position updates: a
+// zero-k offset vector with named draws added through the existing vector3f_add_scaled (scale 1.0) 241 (1235); its
+// members drawn directly 222 (1217) [180 / 61]; that with both 0.1 updates through vector3f_add_scaled 252 (1243). Lead,
+// not kept (7 under the base at 1211 B, and aligned worse): the three scalar cross terms (i, j, k; sine, dot3f, cosine,
+// `projection *= 1 - cosine`) with the directly drawn jitter offset and both 0.1 updates through vector3f_add_scaled
+// 166 (1211, 0x114) [200 / 40]; on it the velocity through vector3f_scale 166 (same code), the rows with the vector term
+// first 166 (same code), without the updates 213, without the jitter offset 232, sine, cosine, projection 234 (1214),
+// cosine, sine, projection 237, the dot first or named 236 / 236, sine and cosine as arguments 236, the named-draw
+// jitter 234 (1227), cross terms declared j, k, i 226 (1216) [171 / 41], include/axis_rotation.h's statement shape 234
+// (1216). No form reaches the 0x118 frame with the zero in XMM3. Helper and body unchanged.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

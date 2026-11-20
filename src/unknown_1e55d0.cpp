@@ -384,6 +384,15 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // 319 each, shared payload with scoped state and countdown declared in the test 318.
 // NOT kept: the shared payload reaches 1164 bytes with at most a two-point gain and
 // keeps the entry register exchange.
+// M3 lane 1 r141 (fast with 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0 and 0x1c4a80, all MATCH each run; control 319 at 1176 B,
+// aligned 321, register-masked 236). Still BLOCKED-BY 0x1ec690 (ours; its draft under `#if 0` in src/unknown_1eb8a0.cpp is
+// far off and, switched on, loses 0x2901e0, 0xb77d0, 0x1c4b00 and 0x1ed340, rounds 30 / 58 / 138 / 201 above) and by the
+// written-out 0xb77d0 / 0xb7430 bodies (0xb77d0's /Ob1 file is another lane's this round; 0xb7430 is still a stub). Forms:
+// the velocity pointer as a local read once through its own address, the way the real 0xb77d0 keeps its parameter, 319
+// (same code: the null test still folds); that with the shape match as `compound ? (a || b) : a` 335 (1204 B, aligned
+// 229, masked 113: round 138's form re-measured, the pointer read changes nothing on it); the input's flag word pointer
+// read into a local ahead of the shape block 323 (1180 B); the object index read ahead of the shape block 325 (1180 B);
+// the mode byte read into a named long ahead of the countdown 321. Body unchanged.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
