@@ -1312,7 +1312,8 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
-// score 824 (was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
+// score 824 (was 813): Frame 0x154 versus 0x12c. The entry Boolean and motion workspaces still differ.
+// Earlier (824, was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
 // stack homes still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so
 // forty bytes of frame are unaccounted for and every stack home sits further out than retail's; the entry flags are
@@ -1653,6 +1654,10 @@ struct s_item_flags_view_10b850
 // helper on the original collision origin 824, Point-difference helper on the shared collision origin 823. NOT
 // kept: Paired fields cut the frame to 0x148 but score 904 at 4051 bytes. The ray helper with the shared origin
 // saves one difference, below the retention threshold. The opening body is restored.
+// Point setter for pre-impact, bounce or both nudges 904/821/911. Bounce on the copied
+// point with scalar adds, the point setter, both point setters or shared scaled addition
+// 817/825/894/817. Named bounce displacement vector 870. NOT kept: the 821 and 817
+// gains are below eight, and the 817 forms are three bytes past retail with frame 0x154.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
