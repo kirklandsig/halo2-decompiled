@@ -798,6 +798,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // `ret 8`, but it is loaded after the component lookup and EBX/EDI swap); this function 1658 at 6496 bytes (the contact
 // counter is no longer an induction variable although only a copy of it is passed, so every indexed use re-multiplies:
 // the contact pointer form above is what turns that into retail's three).
+// Captured slip with branch/conditional/direction selection 1348/1345/1374. Published slip with
+// these forms 1393/1393/1375. Selected speed before/after coefficient reads 1371/1663.
+// NOT kept: captured conditional gains one at retail length with frame 0x5d0. Late speed
+// reaches frame 0x5c8 at 6502 bytes. The component and velocity homes remain displaced.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

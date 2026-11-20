@@ -803,6 +803,10 @@ struct s_object_damage_view
 // Test the table validity through the existing statistics record 353.
 // Use the existing player, object and statistics record layouts together 353.
 // NOT kept: The existing record types preserve the frame and all measured call-site controls. They leave the three rotated scalar homes and the amount-biased history cursor.
+// Timestamp at record entry/after player read/for a present player/after team admission
+// 417/417/459/353. Eligibility in those positions 463/463/459/353. NOT kept: earlier
+// reads or decisions grow the frame to 0x54 or 0x58. The late forms tie with the
+// amount-biased history cursor and rotated credited-player, victim-team and code homes.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

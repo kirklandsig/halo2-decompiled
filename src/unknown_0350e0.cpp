@@ -3361,6 +3361,10 @@ real magnitude3d(vector3f const *v);
 // as a real 170 (the double copy stays: inlining exposes the same conversion); the dot as `dot3f(&first, &second)` 170;
 // the arccosine of the pinned dot 292 (1091 B). Diagnostic: the two lengths, or the dot/angle/sine/cosine, under other
 // names 170/170/170 (no home moves: the raw current length still shares the clamped length's slot).
+// Length gate before dot/current unit/target unit/both units 198/204/203/204.
+// Separate current-first magnitude/unit gates 267/202, target-first 271/267.
+// NOT kept: all retain frame 0x38 but regress. The raw current root and promoted
+// dot still occupy different homes from retail.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4454,6 +4458,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // M3 lane 5 r205 (fast, control 486): the old position advanced in place as the moved point (no `moved` local) 535 (1985 B,
 // frame 0x5c); the two projections as const locals 486; the offset updates as `+=` 486; the current position projected
 // before the moved point 546 (2097 B); `old` copied through the position pointer declared ahead of it 486.
+// Size before velocity/limit/offset or after offset 488/499/486/487. Scaled add 518,
+// with size before velocity/limit/offset 493/517/518. NOT kept: the scaled add
+// shrinks the frame to 0x50 and the body to 2001 bytes. Both velocity roots and
+// the 0x38 frame still differ.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
