@@ -842,6 +842,27 @@ void function_1537f0(s_profile_record *record);
 // links[3]`) 18 (base +0x5e: through the pointer the base follows the link stores' order, never +0x4c); the heads as two
 // chained pairs in retail's store order with the `entry->` links as chained pairs 49 (NONE now in EBP from the head stores),
 // with main's link pointer 18 (same code).
+// M3 lane 4 r231 (fast with 0x7f8b0, 0x1537f0 and 0x80490, all matched each time; control 18): the link pointer taken
+// as `&entry->next - 1` 18; the entry pointer `const` 18; the identity cleared as `memset(&record, 0, sizeof(record.identity))`
+// 18; the first link set to NONE and the other three copied from it through the pointer 18 (all the same code, base +0x5c);
+// the four link statements through the pointer in the order 1, 0, 3, 2 18 (base +0x5e, the second non-zero offset again).
+// All restored.
+// M3 lane 12 r158 (h2m fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): the four list heads as two
+// chained pairs in retail's store order (`g_4cf97c = g_4cf980 = NONE; g_4cf988 = g_4cf984 = NONE;`) with main's link
+// pointer 18 (same code); those head pairs with the `entry->` links as two chained pairs in retail's order and the two
+// counters chained 49 (NONE hoisted into EBP); the `entry->` link pairs inside their own braces 49; the `entry->` link
+// pairs set from `(short)-1` 49; the builder's view taken from `g_4cf98c[index]` with the `entry->` link pairs 46.
+// M3 lane 15 r117 (fast with 0x7f8b0, 0x1537f0 and 0x80490, all matched each time; control 18): the tail as one chain
+// (`entry->field_64 = entry->flags = 0;`) 18; the record declared ahead of the loop 18; the view passed as the entry
+// pointer cast 18 (the three 18s the same code); the link pointer from the array element with the rest through `entry`
+// 45. Lead (match-only, a mix of the element and the `entry` copy): the builder's view taken from the array element
+// (`&g_4cf98c[index].player`) with the links and the tail through `entry` 14: the builder's stores then keep retail's
+// order and registers (the record's words in EBP/EBX, no NONE hoist). On it: the links as `links[0] = links[2] = NONE;
+// links[1] = links[3] = NONE;` 14 (plain 14 too), where every row left is a displacement (base +0x5e); `entry`
+// declared after the builder call 14; the link stores as statements in retail's order 14; the link pointer declared at
+// the top of the body 14; `entry->` links as chained pairs 46, as four statements 46 (NONE hoisted). No `entry` local
+// at all (view, link pointer and tail from the element, the links in retail's pairs) 44. The base still follows the
+// link pointer.
 // @retail 0x7f930
 void function_7f930(void)
 {

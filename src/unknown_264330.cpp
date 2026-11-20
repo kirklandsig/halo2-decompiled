@@ -466,6 +466,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // that held this one back now match, so what is left is the actor index's home and the frame.
 // MiniMax E (11-16): no new form, no lower score (412): the frame is still 0xa4 against retail's 0xa0 and retail still takes the actor index in EAX where ours loads the argument from the stack, so the body stays four bytes longer than retail's.
 // score 404 (was 404; 412 before lane 14 r124): the frame is 0xa4 against retail's 0xa0; retail takes the actor
+// MiniMax H (11-20): no new form, no lower score (404): retail takes the actor index in EAX (mov ebx, eax right after the first push) while ours reads it from its stack home at esp+0xac; that difference follows from the inlined 0x2641c0, whose noinline declaration sits in another lane file, so the forms of this body cannot move it; the frame stays 0xa4 against retail 0xa0 and the body 1624 bytes against retail 1616.
+// Earlier at 404 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
 // Frame 0xa4 versus 0xa0; stacked actor and node/workspace homes still differ.
@@ -853,6 +855,20 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // callers stay matched; restored); `sample = update = true` as two statements 404 (same code); the final block on one
 // `current` local tested twice 409 (1616 B, the second test folds away, as lane 14's ternary form); `sampled_one` declared
 // ahead of `maximum` 404 (same code); `update` declared ahead of `sample` 402 (1620 B; a declaration order, not kept).
+// M3 lane 1 r136 (fast with 0x1e34e0 25 throughout; control 404): retail's loop is top-tested (the NONE test of the next
+// index at the loop head, every tail branch jumping back to it), ours is rotated; lane 6's walk gives that shape. Trials: 0x25c820
+// reading the prop through prop_ref_get at each use (so our link would stop expanding it at the release site) 423 and 0x25c820
+// itself 25 (restored); 0x2641c0's noinline declaration dropped with its perception index in a named local 511 (0x2641c0 2,
+// 0x264210 still expands it, 116; restored); the motion and context records at function scope 404, at the loop-body top 404
+// (same code each); the prop's fields through the typed s_prop_datum members (all but the short at +0xc) 404 (same code). Body
+// unchanged.
+// M3 lane 12 r159 (fast with 0x1e34e0 (25 throughout); control 404 at 1624 B): the release block's two calls under a
+// redundant `if (index != NONE)` (the loop already guarantees it; a frequency diagnostic) 439 (1620 B, retail's frame
+// 0xa0, but 0x25c820 still expands at the release site and the actor index stays stacked); only the release's 0x25c820
+// call under that test 449 (1640 B); the last block's view lookup through `node` instead of a second prop lookup 430
+// (retail's 1616 B); `motion` and `context` declared at function scope 404 (same code); the first `next` read from the
+// `actor` local instead of a second actor lookup 442 (1616 B). Blockers unchanged: the release site's 0x25c820
+// expansion and 0x2641c0's noinline declaration (dropping it expands 0x264210's call too).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -1143,8 +1159,8 @@ void __stdcall function_263210(long actor_index)
 }
 
 long function_baf40(long object_index);
-short __stdcall function_1c8df0(short source_cell, short target_cell, point3f const *target,
-	long object_index, point3f const *source, long mode, bool narrow, bool attached, bool alternate,
+short __stdcall function_1c8df0(short source_cell, point3f const *source, point3f const *target,
+	short target_cell, long object_index, long mode, bool narrow, bool attached, bool alternate,
 	long *hit_object);
 short function_25c9d0(long actor_index, long prop_ref_index, bool player, short sight,
 	void *point, byte *sample, long reported);
@@ -1245,8 +1261,8 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 			root = function_baf40(*(long *)(unit + 0x14));
 		else
 			root = function_baf40(reference->object_index);
-		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), *(short *)((byte *)motion + 0x28),
-			&motion->field_0, root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
+		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), (point3f const *)sample,
+			&motion->field_0, *(short *)((byte *)motion + 0x28), root, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 			current ? (long *)(actor + 0x348) : NULL);
 		if (*(long *)(actor + 0x7c) != NONE && prop->unknown25 && 25.0f > reference->unknown28 &&
 			(sight == 0 || sight == 1))
@@ -1264,8 +1280,8 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 				if (!view->unknown88)
 				{
 					short other_sight = function_1c8df0(*(short *)((byte *)sample + 0x28),
-						*(short *)((byte *)state + 0x2c), (point3f const *)((byte *)state + 0x30),
-						root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
+						(point3f const *)sample, (point3f const *)((byte *)state + 0x30),
+						*(short *)((byte *)state + 0x2c), root, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 						current ? (long *)(actor + 0x348) : NULL);
 					view->unknown8c = (short)other_sight;
 					view->unknown8a = function_263810((point3f const *)sample, actor_index, (point3f const *)((byte *)state + 0x30), NULL, 2, (short)other_sight, true, NULL);

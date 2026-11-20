@@ -482,6 +482,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax H (11-20): no new form, no lower score (23): the old team mask still reloads narrowly for the compare and
+// once more for the change block where retail reloads its word spill once into ECX ahead of the first jne and shares
+// that register with the OR for the store; a dword mask with a dword OR and a word store (33), the same with the
+// compare narrowed on the mask side (82-83), the word mask with the OR uncast on the present teams (24) and with the
+// present teams first (24), the word mask with the store written as one expression (77) and a dword mask stored
+// inline (82) all score worse, so the body stays as it is.
 // MiniMax G (11-19): 23 (was 32): the kept form was re-measured with a plain check (23, same 10774 matched) and the
 // mask's type was tried once more around it: a dword mask with a dword OR and a word store (33), the same with the
 // compare narrowed on the mask side (83), the same with the present teams cast to a word (83), the dword mask in one
@@ -899,6 +905,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // moves); the OR's operands swapped 23 (same code); the mask pointer and old mask declared above the old playing teams
 // 28. Re-measured on this base: the uncast present in the dword local 24; a plain present 63 (384 B); diagnostic, the
 // one-use team-bit carrier 20 (aligned 17: the loop is retail's).
+// M3 lane 12 r158 (h2m fast with 0xb58c0 and 0x196780, both matched each time; control 23): the change test with both
+// compares' operands swapped (`old_playing_teams != playing_teams || old_team_mask != present_teams`) 24; the added mask
+// computed after the two field stores 23 (same code); an early return when neither mask changed, the change block
+// unindented 23 (same code); no team local, the team field read at each use 42 (382 B); the team mask as a `word &`
+// bound to the field in place of the pointer 23 (same code).
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5928,6 +5939,12 @@ void __stdcall function_d6bc0(long object_index);
 // vector and distance shared by the reset and case-0 tests 172; the release test reading the object type into a named
 // char used by both type tests 172 (7 on the label form); 1..6 dead locals (diagnostic) 172 each, so the EDI/EBX choice
 // between `entries` and the timer is not a symbol-count tie.
+// M3 lane 3 r277 (fast with 0x15c150, 0x15ac50 and 0x15aad0, all matched each time; base 29): the flag recipe rebuilt 7
+// (869 B); on it with the field test 172 (858 B: the switch test on the field and case 1 in AL as retail, but `entries`
+// held in EDI from the reset block through the zero and index tests and the timer in EBX); with no loop-top index local
+// 172; a named `short *` timer for the zero test, delay store and countdown 172, with the countdown's `= 1` too 177 (854
+// B); the timer as a `short &` 177 (854 B); the parameter read once through its address into a second pointer used for
+// every access 172 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

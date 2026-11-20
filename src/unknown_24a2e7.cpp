@@ -358,6 +358,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // 67/67/67/67/67. Early plain exit with indexed clear 84, with advancing comparison cursor 67.
 // Entry range with indexed clear and shared exit 64. NOT kept: the range groups base and
 // count and gains three points at 207 bytes.
+// On the per-iteration entry and indexed clear form, a copied bound 75,
+// scoped out-count 75, native wide suffix 75, array extent for all limits 75,
+// end-pointer bound 73, shared plain/copy name 93, count and suffix names 75,
+// and result before indexed clear 75. The end bound restores the 0x28 frame
+// and base spill at 213 bytes but holds the search pointer in ESI across the loop.
 // M3 lane 16 r153 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; main 67, aligned 26). Reading:
 // with the terminator through `buffer`, i is dead before the calls, so it stays in ECX and EBX becomes a zero register
 // (`cmp byte [ebp+0xc], bl`, `mov word [edi+0x62], bx`); any indexed terminator shares `entries + i*0x248` (or the
@@ -365,6 +370,20 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
 // count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
 // 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
+// M3 lane 11 r134 (fast with 0x24a64d, 0x24a763, 0x24a52b, 0x24a7bf and 0x24a09b, all MATCH; control 67): the suffix
+// declared at function scope 66 (195 B); `long count = 0;` 83 (192 B); the loop index as `short` 46 (202 B, aligned 20:
+// i then stays in EBX and the found entry and plain arm are formed again from it as retail, but every use of i gains a
+// `movsx`, which retail never has, so retail's index is 32-bit; diagnostic only); the entries pointer `const` 67 (same
+// code); `buffer` named ahead of the suffix conversion 76 (196 B).
+// Immutable suffix text with cached/indexed clear 95/90, named display choice 95/90, and plain-name
+// break 95/90. Selecting an empty suffix when append is off gives 59/63; append-scoped suffix 67/84.
+// NOT kept: the 59 form adds an empty-string selection absent in retail, keeps the 0x24 frame
+// and omits the entry-base spill and the final ordinal multiply.
+// Round 452: Scan produces the successful ordinal or NONE, tested for equality
+// or signed validity 72/73, or the count, tested for equality or the bound 72/72.
+// The same four forms with a separate comparison cursor also give 72/73/72/72.
+// The terminator uses a direct zero and the body reaches 205–206 bytes, but the
+// 0x24 frame still lacks the base spill and EBX carries the scaled entry address.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

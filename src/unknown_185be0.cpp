@@ -4,6 +4,7 @@
 #include "unknown_11cb00.h"
 #include "unknown_11cc90.h"
 #include "slot_handler.h"
+#include "unknown_1e1f20.h"
 #include <math.h>
 #include <string.h>
 // @flags /O2 /Ob1 /arch:SSE /Gr
@@ -132,7 +133,14 @@ union s_185be7
 };
 
 // MiniMax H (11-20): no new form, no lower score (396): the two angle conversions take swapped XMM registers, retail's unit-record copy sits between the products and the two stores, and the body is 21 bytes shorter.
-// score 396 (was 396): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
+// score 838 (was 838): Frame 0xe0 and the head agree; with 0x24590 expanded inline (main since 11-20) the record copy, the
+// stick-scale branch layout and the field_93 latch shift the body, and register ties remain (see r134 below).
+// retail's 3777 bytes. Left: the input-record copy is scheduled after the two angle stores here
+// (retail before them), 1.0 and zero remade in the other order after pow, the second hold-time add loads the argument
+// first, the quotient in XMM4 and 1.0 in XMM3 (retail the other way round), the else arm loads local_16 first, one
+// scratch step at the parent lookup, the first mask in EAX (retail EDX) and the 0.64 sum squares field_40 first.
+// Earlier 396 (was 396, before 0x24590 became inline on main): Frame 0xe0, the head and the flag block agree. The XMM
+// state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
 // M3 lane 3 r268 (fast): the input-record copy ahead of the two angle conversions 395 (the copy then precedes the angle
 // stores as retail, registers unchanged); that copy first with the second angle converted first 393 (the pair then takes
 // retail's XMM7/XMM0 and only the conversion constant stays in XMM2 where retail has XMM1, which retail frees because it
@@ -708,6 +716,60 @@ union s_185be7
 // scale 402; the parent object through a named pointer, through the shared header view, or the unit's object named 396
 // (same code: the scratch rotation stays one step off at the parent lookup). Still BLOCKED-BY 0x24590 (its file was on
 // the avoid list again).
+// M3 lane 11 r133 (fast with 0x24590, 0xc8880, 0x185ab0, 0x185b00, 0x185b30, 0x187b30, 0x1a4900 and 0x186ab0, all MATCH
+// throughout; control 396, aligned 138, register-masked 50; body unchanged). Held state (diagnostic `inline` on 0x24590's
+// definition, saved with the forms below as build/r133/held-0x185be0.patch): this body 836 (3772 B, aligned 101, masked 21);
+// with the else-arm default, the unit_get_current_weapon helper and the long mask local 76 (lane 15 r98's lead, 3774 B);
+// with the field_93 latch as `? 1 : 0` too 60 (retail's 3777 B, masked 12); with the input-record copy ahead of the two
+// angle conversions 57; with the else arm's two assignments in the order local_17, local_16 (retail loads +0x1c first) 55;
+// with the havok components bound by `s_havok_component *const &` to the pool's data (0xb8ca0's form: the pool load then
+// precedes the index scaling) 53 (aligned 75, masked 6). On the 55 form: the 0.64 sum written field_40 first 55 (same code);
+// the quotient written out at both uses in place of local_18 552 (3768 B); local_18 declared after local_19 and local_20
+// 77 (aligned 64: the quotient then loads late and other registers move); the second hold time as `arg_2 + field_7c` or
+// `field_7c + arg_2` 55 (same code). Left at 53: retail adds the argument to field_7c field first (ours argument first, though
+// field_78 is field first in both); the quotient in XMM3 and 1.0 in XMM4 (ours the other way round, 18 lines); the parent
+// object's pointer in EDX, reusing the header table's register, where ours takes ECX (one scratch step that carries through
+// the pool load and both vector copies); the 0.64 test squares field_44 first.
+// On main's state (no `inline`): the else-arm order 394; the pool reference 394; both 392; with the latch form 386; with the
+// record copy first too 385; with the else-arm default, weapon helper and long mask local as well 547. Not kept: the
+// statement orders and the reference are match-only forms and the latch form alone is 390. Still BLOCKED-BY 0x24590.
+// M3 lane 11 r134 (fast with 0x24590, 0xc8880, 0x185ab0, 0x185b00, 0x185b30, 0x187b30, 0x1a4900 and 0x186ab0, all MATCH;
+// plain where noted; body unchanged at 838, aligned 103): r133's lead rebuilt on today's main (0x24590 now inline) 53 fast,
+// 55 plain (the full image adds one tie: after the pow call retail loads 1.0 into XMM4 before zeroing XMM6, ours the other
+// way). On that lead: the parent object's havok index read through object_get 53, through object_header_get(...)->object
+// 53, the parent read through object_get as well 53 (same code each); havok_component_get in place of the pool reference
+// with object_get 55; 1..7 dead initialised locals at the top 53/55/55/55/55/55/53 (diagnostic: only the post-pow pair
+// moves), 1..4 before the quotient 53, 1..3 before the havok index 53 (no symbol-count tie); the two angle products
+// clamped where they are formed (`PIN(local_15.i * local_18, ...)`) 64; the second hold-time add ahead of its scale 59.
+// On main's body: unit_get_current_weapon alone 840 (3774 B, aligned 88); a long field_c mask local 837, as a word 836
+// (aligned 100/101). On the lead: the 0.64 sum's two squares parenthesized, either order, 53/53, the second hold-time add
+// as `field_7c = (field_7c + arg_2)` 53 (same code each). Left on the lead: the second hold-time add's operand order, the quotient/1.0 pair in XMM4/XMM3 for
+// retail's XMM3/XMM4, one scratch step at the parent lookup (retail EDX, ours ECX, through the pool load and both vector
+// copies), the word mask's zero-extension register (EDX, ours EAX) and store order, and the 0.64 sum's square order.
+// Lead saved as build/r134/lead-0x185be0.patch (match-only forms: record copy first, else-arm default, swapped else
+// assignments, the pool reference, the latch spelling).
+// M3 lane 14 r128 (0x24590 inline on main; fast with 0x24590, 0x185b30, 0x186ab0 and 0x187b30, all MATCH; this body
+// builds differently in the fast image, so kept forms are plain-confirmed; start 838 plain, 836 fast). KEPT: the 1.0
+// default of the rescale factor in an else arm (retail copies 1.0 only on the two failure edges) 382 fast alone; the
+// existing unit_get_current_weapon for the hand-written lookup 840 fast alone, 79 with the else arm; a separate long
+// local for the field_c mask (the word mask local is no longer reused) 837 alone, 379 with the else arm; all three 76
+// fast, 78 plain; the field_c mask read from the field in the loop instead of any local 60 fast on the 60 form (the
+// reused word local 63; kept: the field read); with the latch as `? 1 : 0` (retail's full-width `mov eax, 1` /
+// `xor eax, eax`) 60 fast, 62 plain at
+// 3777 bytes. On 62 (fast 60): local_20 computed before local_19 611; the quotient computed after local_19 49 (1.0 then
+// takes XMM4 and the quotient XMM3 as retail, but the quotient is scheduled after the first clamp); the record copy
+// first 73; the else arm's loads swapped 74; both 55; those two with the quotient after local_19 44; and the pool
+// through a const reference 42 (all match-only orders and forms).
+// M3 lane 14 r131 (fast control 60, plain 62; fast CAVEATs this function): the input-record copy ahead of the two
+// angle conversions 57 fast; the else arm storing local_17 before local_16 58 fast; the quotient after local_19 49
+// fast (retail's XMM3/XMM4, scheduled after the first clamp), after local_20 82, as an expression at both uses 554
+// (3768 B); `local_18 * i` 60 and `k * PIN(...)` 60 (same code); the 0.64 squares written field_40 first 60 (same
+// code); the parent's component index through object_header_get, havok_object_get or object_get, a named object or a
+// named parent pointer 60 (same code each: the parent lookup's scratch rotation, ours ECX where retail reuses EDX,
+// does not move); the second hold-time add as `field = field + arg_2` or `arg_2 + field` 60 (same code). Lead
+// (statement order only, match-only): copy first + else-arm order + quotient after local_19 46 plain (44 fast);
+// left there the 1.0/zero remake after pow, the second hold-time add, the quotient's early schedule, the parent
+// lookup's rotation (through the flag loop's mask) and the 0.64 squares.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -764,13 +826,14 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         {
             real local_8 = (real)fabs(local_2.field_44);
             real local_9 = (real)fabs(local_2.field_40);
-            real local_10 = 1.0f;
+            real local_10;
             if (local_8 > 0.1f && local_9 > 0.1f)
             {
                 if (local_8 > local_9) { local_9 /= local_8; local_8 = 1.0f; }
                 else { local_8 /= local_9; local_9 = 1.0f; }
                 local_10 = (real)sqrt(local_9 * local_9 + local_8 * local_8);
             }
+            else local_10 = 1.0f;
             real local_11 = PIN(local_10 * local_2.field_40, -1.0f, 1.0f);
             real local_12 = PIN(local_10 * local_2.field_44, -1.0f, 1.0f);
             s_185be7 local_13;
@@ -880,10 +943,9 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                 }
             }
         }
-        local_8 = local_1->field_c;
         for (long local_24 = 0; local_24 < 16; local_24++)
         {
-            if (!(local_8 & (1 << local_24)))
+            if (!(local_1->field_c & (1 << local_24)))
             {
                 local_3[local_24] = local_2.field_0[local_24];
                 local_4[local_24] = local_2.field_10[local_24];
@@ -900,13 +962,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         if (local_10 && local_1->field_2e == NONE && arg_4->field_0)
         {
             long local_11;
-            if (local_1->field_0 != NONE)
-            {
-                byte *local_12 = function_185be2(local_1->field_0);
-                short local_13 = *(char *)(local_12 + 0x212);
-                local_11 = NONE;
-                if (local_13 != NONE) local_11 = *(long *)(local_12 + local_13 * 4 + 0x218);
-            }
+            if (local_1->field_0 != NONE) local_11 = unit_get_current_weapon(local_1->field_0);
             else local_11 = NONE;
             if (((byte *)arg_4->field_0)[6] > 0x7f || ((byte *)arg_4->field_0)[7] > 0x7f) local_10 = false;
             if (local_11 != NONE && !function_100f70(local_11) && local_2.field_44 * local_2.field_44 + local_2.field_40 * local_2.field_40 > 0.64000004529953f) local_10 = false;
@@ -947,7 +1003,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         SET_FLAG(arg_5->field_18, 2, local_3[5] != 0);
         SET_FLAG(arg_5->field_18, 20, local_3[5] != 0);
         SET_FLAG(arg_5->field_18, 25, local_3[5] != 0);
-        local_1->field_93 = local_3[0] && ((g_510c50 && ((byte *)g_510c50)[5]) || local_1->field_93);
+        local_1->field_93 = (local_3[0] && ((g_510c50 && ((byte *)g_510c50)[5]) || local_1->field_93)) ? 1 : 0;
         SET_FLAG(arg_5->field_18, 1, local_3[0] && !local_1->field_93);
         SET_FLAG(arg_5->field_18, 4, local_3[4] != 0);
         SET_FLAG(arg_5->field_18, 5, local_3[4] != 0);

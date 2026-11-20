@@ -258,6 +258,20 @@ void function_22fba9(c_class_1473c9 *screen)
 // zeroed by the first loop's `for (i = 0;` 66, that with the text loop's own `int` counter 66 (one zero register, EBX,
 // for the whole function, every reset `mov`); `long i = 0;` above the pane call with the model loop on its own counter
 // zeroed just ahead of it 25 (the text reset becomes retail's `and`, the model reset stays `and` with the EAX copy).
+// M3 lane 6 r210 (fast): the model call given an explicit base-widget cast of the screen 23; the model loop as
+// `if (!model) continue;` then the start and the store 23; the third loop's inner counter declared in its `for` 23; the
+// text result typed as the text helper's return type 23, with the block-24 and block-18 results typed as theirs too 23
+// (all the same code). Diagnostic: 1-8 unused initialised locals after `long i = 0;` 23 each (not a numbering effect).
+// M3 lane 7 r199 (fast with 0x22facd/0x22fa5b, both MATCH): the model's animation type named in its animating block
+// 23 (same code); the model's value0a store ahead of the start, re-measured, 11 at 414 B (the model then stays in EAX
+// and is tested with `test eax, eax`; retail stores after the call); the model array named before its loop (`models =
+// pane->models`) 38 (407 B), the text array so 41 (415 B), both 57 (406 B).
+// M3 lane 16 r156 (fast with 0x22facd, 0x230427, 0x22f6ca; control 23): the text loop's test written
+// `pane->text_count > i` 25 (check.py --fast agrees); the model's animation start reading the screen through a
+// `c_class_1473c9 *const *` to the parameter 23 (same code, the EAX copy stays); a `continue;` after the model's value0a
+// store 23 (same code). Diagnostics (not kept): the block-18 loop deleted 229 (327 B; the copy appears in the bitmap,
+// block-24 and model loops), the bitmap loop deleted with the block-24 loop starting from the shared zero 194 (353 B; the
+// model reset becomes `mov` as retail, but its EAX copy of the screen stays).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

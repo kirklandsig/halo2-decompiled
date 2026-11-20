@@ -1789,6 +1789,9 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax G (11-20): no new form, no lower score (87 in the reduced image, 85 in the full one): the score is still taken and compared
+// outside the team arm with an SSE compare where retail compares inside the arm on the x87 stack, the walk's pool is still
+// reloaded from its slot at each step where retail hoists it into EBX, and the selection is still kept in EDI besides its slot.
 // MiniMax D (11-20): no new form, no lower score (87; 89 on this build's reduced image). The in-arm compare (126 at 480 B)
 // gives retail's x87 compare and retail's homes for the selection (+0x14), the score (+0x18) and the best (+0x1c), but ours
 // still keeps the walk's pool in memory and the selection in EDI (reloaded at the loop top), while retail hoists the pool into
@@ -2285,6 +2288,14 @@ void function_269250(long clump_index, long actor_index);
 // storing the selection before the best; the compare written `best < score`; the selection and best declared at
 // function scope and set per actor; the score declared ahead of the team test; the walk step reading the activity flag
 // from the global at each step as 0x268840 does.
+// M3 lane 16 r154 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0/0x26ae30/0x268c90/0x268510,
+// all MATCH each run; control 87): the in-arm compare re-measured 126 (480 B). On it: the walk declared once outside the
+// actor loop 126; the activity flag read ahead of the walk's initialiser 126; the walk step given `g_4f55d0->active`
+// directly with no local 126 (same code each: the read is shared with the initialiser's test); the walk initialiser
+// `__forceinline` in place of `static inline` 126 (its other users unchanged); the selection and best declared ahead of
+// the walk 129. Retail's listing: the pool sits in EBX from the initialiser (the inactive path loads EBX from the walk's
+// uninitialised home), the bit scan borrows EBX for its mask and reloads the pool after it, and the selection is only
+// ever in its +0x14 home; ours gives EDI to the selection and reads the pool from the walk's home at each use. Body unchanged.
 // attachment result with guards, selection first 147, selected attachment with guards, selection first 146,
 // optional attachment result, selection first 113, optional selected attachment, selection first 122,
 // attachment result with guards, creation first 147, selected attachment with guards, creation first 147,
@@ -2293,6 +2304,19 @@ void function_269250(long clump_index, long actor_index);
 // 146, team-local score with optional attach 112.
 // The optional attachment with a team-local score recovers EBX, the x87 compare and the slot at +0x14. The
 // found-block and transfer schedule still differ.
+// M3 lane 1 r138 (fast with 0x268840/0x268bb0/0x269580/0x269250/0x2694d0/0x269040/0x1e46c0, all matched each run; control 87):
+// the in-arm compare re-measured 126 (480 B); the team mismatch and the no-improvement case each as `continue` (score
+// taken only for the team, improvement assigned straight after) 128 (480 B); the in-arm form with the post-walk test
+// turned round (`selected == NONE` creates first, then `else if (selected != actor->unknown07c)`) 130 (480 B); the walk
+// loop's clump declared in the while condition (`while (s_clump_activity_view *group = ...)`) on the in-arm form 126 and on
+// this body 87 (same code each); the in-arm form with the walk record declared once ahead of the actor loop and the
+// activity flag read from the global at each step, no local, 126. All restored.
+// M3 lane 3 r278 (fast with the ten matched callees and walk users in the image; a single-address fast image builds
+// 0x269580 with the other register convention and shows this function's two 0x269580 calls with their arguments
+// reversed, which the full build does not: keep the callees in the image): the in-arm compare re-measured 126; on it the
+// selection and best declared ahead of the walk 129; the team test as `if (team != ...) continue;` 126; the score declared
+// at loop scope 126; the activity flag read ahead of the walk's start 126; the walk record at function scope 126 (all
+// four the same code).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -420,6 +420,33 @@ extern real g_4c9798[36];
 // border product in parentheses as well 265; the border product in parentheses alone 180 (1491 B: the multiply then
 // comes first, as retail); that with the height limit as a long (retail's dword) 243 (1481 B); the mode as one nested
 // ternary 174 (same code).
+// M3 lane 11 r133 (fast; control 174, aligned 89, register-masked 77; body unchanged). The fixed-size test named once as a
+// bool for both limits and the later branch 333 (1489 B, the entry changes at +0x2); that with the height limit as a long
+// 295 (1461 B); both limits set in one if/else 346 (1458 B); the two rounded sizes as a call statement and a rounding
+// statement each 174, with both calls ahead of both roundings 174 (same code each); the border test as `mode != 0` 175.
+// Frame reading (two pushes down): retail has the size at +8, the mode at +0xc, the converted width limit at +0x10 and the
+// extent, later the width limit, at +0x14; ours has the mode, the converted limit and the extent one cell lower each and the
+// size at +0x14, because retail's size lives in memory across the two 0x48e70 calls and ours in XMM0. Still BLOCKED-BY
+// 0x48e70 (machine 1's file).
+// M3 lane 14 r128 (fast with 0x48e70 and 0x1ddd0, both MATCH): the border as `0.75f * (real)width / maximum` 174,
+// `(real)width / maximum * 0.75f` 174, `0.75f * width / maximum` 174 (all the same divide-then-multiply code); the border
+// scaled in one statement and divided in the next 227 (1489 B); the mode defaulted to 0 at its declaration with the two
+// set arms 180. Still BLOCKED-BY 0x48e70 (its file is machine 1's again this round).
+// M3 lane 16 r157 (fast with 0x48e70, 0x1cf50 and 0x1ddd0, all MATCH; control 174, aligned 70, masked 33; body unchanged).
+// Screened without touching 0x48e70's file: as a diagnostic the two rounding calls went to an undefined stand-in declared
+// in this file (the reduced link leaves it unresolved, so this caller treats it as opaque; restored after every trial).
+// Stand-in alone 181 (1501 B, aligned 50). With lane 7 r178's held forms (long height limit, the raw size and one nested
+// ternary clamp, the border product in parentheses) and the near distance read at each use with the second plane's normal
+// copied straight in and its dot taken on the plane 128 (1479 B, aligned 17, masked 7: that round's 130). With the near
+// distance kept in its named local instead (those forms, the second plane straight in, the dot on the plane) 100 at
+// 1481 B, aligned 9, masked 0: only the flags in EDX for retail's EAX (4 instructions) and the distance and extent homes
+// exchanged (5), the state lane 7 reached with an `__assume`; with the real callee defined inline that round measured the
+// same forms at 148, so the near products' operand order moves with the symbol count. On the 100 form: the products
+// written near distance first 100 (same code); the inverse read from the state field instead of the distance local at
+// both uses, at the quotient only, at the test only 335/328/335 (the entry reloads the field); 1/2/3 redundant paren
+// pairs in the first block 100/146/100 (two pairs: 1479 B, but the later planes' registers move and the flags and homes
+// stay). Slot reading on that form: retail shares the extent's home with the width limit and the distance's with the
+// height limit, ours the other way round. Still BLOCKED-BY 0x48e70 (machine 1's file; lane 7 r178's held patch).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

@@ -280,6 +280,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax B (11-20): no new form, no lower score (164): our frame is 0x24 against retail's 0x2c, retail homes the two decoded material codes as dwords and the first index as a dword where this build keeps two shorts, and retail materialises each side bit as its own stack byte where ours merges the two tests; retail also receives the source in ECX and copies it to ESI, which the declaration in the caller's file decides.
 // score 164 (was 164): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
 // and independently decoded side homes differ.
 // Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
@@ -931,6 +932,37 @@ void function_245400(s_source_245400 const *source, long index,
 // operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
 // Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
 // (retail loads the second normal first in four products and reuses the first normal's k in two).
+// M3 lane 11 r137 (fast with 0x245aa0, 0x245400, 0x244de0, all MATCH; control 164, aligned 193): the dot through the
+// existing dot3f(&local_12, &local_6) 207 at retail's 783 B (aligned 156), with the operands the other way round 207 (same
+// code); lane 1 r119's second-material pointer head alone (compare and codes through `second`) 211 (783 B), with dot3f
+// 223 (768 B); the sides from the short material codes (`first_material < 0`) 213 (783 B). On lane 5 r213's best body
+// (fast 50 at 789 B, re-measured): cross3f_staged 50 (same code); the first normal's k in a local for a written-out cross
+// 190 (801 B; retail's single k load needs more than a named k).
+// M3 lane 5 r217 (the same one-file link-time screen, exact against the full build for this body; aligned rows on lane
+// 3 r271's lead, 40): the cross does move with the order its rows are stored in. Written out in place with rows in
+// each of six orders 84 to 96, in a file-local helper 40 (i, j, k), 44, 43, 47, 54 (k, i, j), 56 (k, j, i): with the k
+// row stored first all six products take retail's operand sides (second normal's k, i and j loaded against the first
+// normal's i and j, first normal's k loaded against the second's j and i), but the products then run k row first
+// where retail runs i, j, k. A staged cross (three scalars, then three stores) over every compute and store order:
+// 37 with i computed ahead of j and stores i, j, k (four of six products retail's), 40 with j ahead of i, 54 / 56
+// with k stored first. One normal component read into a local first (each of six) 41 to 59; four written operand
+// spellings of each form the same code. The facing value as one triple-product expression, four spellings, 80 each.
+// One to three parenthesis pairs on the dot's first product 45 / 67 / 80. Ten cross forms x 0 to 7 dead locals ahead
+// of the points: 35 with the staged i, j, k cross at 7 (only the two products of the first normal's k still face the
+// other way: retail loads that k once and multiplies it by the second normal's j and i from memory). A coordinate
+// descent from seven starts over the cross form, both dead-local counts, six dot spellings, the edge copies' order,
+// the scale arm's order and twelve spellings per rotation row: best 35, no match. Body unchanged.
+// First complete decode, second complete decode, second index before both addresses, and
+// second address/side paired 210 each. With shifted side bits 234/234/233/233.
+// NOT kept: the sign tests reach retail length but regress. The shifted forms are short
+// and all retain the 0x24 frame with the source and separate side homes displaced.
+// Scaled axis contributions in six orders 223/222/222/223/222/222; vector setter for their sum 223; aggregate
+// rotated direction 250. NOT kept: all grow past 783 bytes. The frame stays at 0x24 or grows past 0x2c to
+// 0x30 or 0x3c.
+// Equal-code guard with combined facing predicate 164, sides before word comparison 215,
+// side comparison scoped to facing 197, signed-word plane ordinals 224, rotated and staged
+// edge setters 164 each, one edge scale read 164, signed ordinals with scoped facing 215.
+// The frame and code and side homes remain unresolved. NOT kept: ties and regressions.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

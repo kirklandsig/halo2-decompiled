@@ -906,6 +906,9 @@ struct s_item_collision_bsp
 // assignment (the two component loads at [esp+0x30] and [esp+0x34] land in xmm3 and xmm4 here and in xmm2 and xmm4 in
 // retail, and every row's product and sum then differs by one register), the body is still 1366 bytes against retail's
 // 1361, and the branches inside the function still reach their blocks at other offsets.
+// Left products seeded from the axis or coefficient in all rows, field/scalar 195/195 and 193/193.
+// Naming each up product gives 191 on all four forms. NOT kept: the normal coefficient and
+// contact registers still differ at the 1366-byte extent.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1187,6 +1190,7 @@ void function_1420f0(transform4x3f *out, point3f const *position, vector3f const
 void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f const *new_parent);
 
 // MiniMax E (11-20): no new form, no lower score: our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the inverted threshold test with a split dot scores 199.
+// MiniMax B (11-20): no new form, no lower score (130): the cross result keeps a 12-byte stack home because its address is passed to the scale helper, which makes our frame 0xc0 against retail's 0xb4 and our locals sit 12 bytes higher; retail multiplies the dot as j, i, k and keeps the cross in registers, and a dot written as a separate statement reaches that product order but moves the old vector's components into other registers. Writing the cross out in place gives retail's frame and 848 bytes but scores 159.
 // score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
 // depth one 130; size preference 277; complete rotated vector 207; fallback vector initializer 130.
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
@@ -1693,6 +1697,11 @@ struct s_item_flags_view_10b850
 // MiniMax E (11-19): no new form, no lower score (824, baseline): the frame is still 0x154 against retail's 0x12c, so
 // every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack bytes (esp+8) where this
 // build holds them in registers and shifts one of them right by eight.
+// The frame remains 0x154 versus retail 0x12c and the entry flag bytes differ.
+// Paired integration/ray, with shared origin component, with query origin, and with typed gravity flag
+// 821/842/822/821. Copied origin and point difference, loop/scaled add 913/882;
+// direct scaled add with ray initializer/point difference 885/877.
+// NOT kept: the tied-length gains are below eight, and the helper forms change extent and regress.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -2317,6 +2326,16 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // instruction, but that is a cast of the field's own address. Retail computes the release impulse twice, once in
 // each branch, with the two flag clears around the two copies, where this build shares one copy - BLOCKED-BY the
 // transform helper's own file.
+// Direct spin with separate active/inactive defaults 190, separate
+// active result 206, release success before the queries 180, countdown success
+// after decrement 190, returned contact point 191, center workspace used directly
+// 189, returned center for both event points 171, and owner copied after flag and
+// scale 190. The shared center form reaches the retail return-byte slot and length
+// with the release-byte clear and impulse branches still differing.
+// MiniMax G (11-20): no new form, no lower score (140): the returned flag still sits one byte lower in the
+// frame than retail's, retail still clears the release flag with one byte read-modify-write where this build
+// loads it, masks it and stores it back, and retail still keeps two copies of the release impulse where this
+// build shares one: BLOCKED-BY the transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

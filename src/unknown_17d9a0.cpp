@@ -501,7 +501,18 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax C (11-20): no new form, no lower score (535): the tag still spills at frame+0xb4 where retail has +0x94, the zero
+// counter and the constant one still sit eight bytes below retail's, and the entry still takes the object pointer in EDX and
+// the table global in ECX the other way round, so every later home is one slot off.
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// M3 lane 4 r230 (plain each; base 535, aligned 672, register/offset-masked 355). Retail keeps 1.0f (XMM0), 0.0f and the
+// three scaled axis components (XMM5-7) live from the normalize through the sign and the angle clamp: its equal-normals
+// path jumps past the reloads that follow the arccosine call, so the sign's cross product has only XMM1/XMM3/XMM4 and
+// reloads the selected normal per product. Forms aimed at that block's pressure: the quad normal named once as a
+// pointer for the cross and the angle 561 (3631 B, masked 345); the quad plane named once as a pointer for the two edge
+// distances, the cross and the angle 623 (frame 0x21d4, 3599 B, aligned 555, masked 354; the secondary count then takes
+// retail's +0x54); that pointer for the two edge distances only 566 (3631 B, aligned 680, masked 344); the selected
+// normal named as a pointer for the cross and the angle 535 (same code); both normals named 559 (3631 B). Body unchanged.
 // MiniMax E (11-19): score 535 (was 535): no new form, no lower score. Read from the listing again: the entry agrees
 // (the tag index from the stack into EAX, the table global into ECX, the tag's bytes into EBX, the output into EDI), so
 // the remaining offset is in the locals' homes and not in the call: the tag spills at frame+0xa8 against retail's
@@ -1012,6 +1023,18 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // using the secondary guard 533/533, flag then while 532/532, flag early exit 532/532,
 // or transfer before phase admission 537/537.
 // NOT kept: score gains are at most three and the definition spill stays at +0xb4.
+// M3 lane 13 r129 (plain each; base 535): the component scale as `inverse * axis.n[component]` 535; the length test as
+// `0.0f < length` 535; the angle as `sign * angle` 535 (all three the same code); the short-axis test as
+// `fabs(length) >= 0.0001f` 552; the sign as `real sign = 1.0f;` cleared to -1 by an `if (dot >= 0.0f)` 661 (first
+// difference +0x7). All restored.
+// The tag still spills at +0xb4 against retail's +0x94. Signed mode field through a typed
+// tag pointer or reference 535/535, with mode locals at the face calls, the limit tests,
+// or both 570/620/631 for either type.
+// Seed an empty primary worklist by append or indexed store and increment.
+// Existing collection loop 563/563; for-loop step after submission 576/576;
+// mandatory first pass with the step after submission 546/546 or with the
+// face read 533/533. NOT kept: 533 gains two at retail length and leaves
+// the definition and count homes displaced.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

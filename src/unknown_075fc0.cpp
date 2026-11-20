@@ -370,6 +370,13 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // form): the connection so 401 at 1369 bytes; the channel pointer so 480 (1419 B); the channel index so 352 (1373 B); the
 // index and the connection 410 (1359 B). None gives retail's entry (NONE in ESI, `this` in EDI, the index in EBP), so the
 // entry's register split is not a memory-homed local.
+// M3 lane 6 r212 (fast with 0x75910 MATCH in every form; control 356). Reading: retail's two zero-register byte stores
+// ahead of the has-host call are local_7 and local_8 (local_16's false comes later with the -1.0 default), so the
+// has-host flag starts false and is set in the call's arm (match-only); the counter snapshot is a plain 8-byte copy that
+// the later low/high reads do not reuse, where ours composes it into EBX:EBP up to the reset. 0x75910 returning bool with
+// local_16 declared beside local_7 and the chained has-host arm 352 (four points, not kept); with the flag form 403; the
+// flag form alone on the bool callee 403; the snapshot and reset through `*(__int64 *)&g_4e6398` 429 (1330 B), with the
+// flag form 419; the flag form with the connection read through link_connection_get at each use 397.
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,

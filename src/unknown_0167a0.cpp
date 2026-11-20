@@ -388,6 +388,32 @@ PRIVATE inline byte const *material_parameters(long tag)
 // direct form `&second` passed to an out-of-line call at the end of the function 46 (992 B), and `second` still loads
 // ahead of the entry store, so retail's late load is not the store aliasing an exposed parameter. A /GL- compile-only
 // build does not reproduce this block (word loads through `xor edx, edx; mov dx`, other registers).
+// M3 lane 1 r135 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, control 5 at +0x19e): the direct entry
+// store re-measured 5 (+0x1a7: `third` loads into EBX and `fourth` into EDX as soon as each register frees, in both builds,
+// but retail holds `second` behind the entry store and both base loads where ours loads it as soon as the lea frees ESI);
+// on it the three restore bases through a file-scope typed tables header 5 (+0x1a7), the chain and pass bases named after
+// the packed read 5 (+0x1a7); on the reference form the typed header 5 (+0x19e) and the pass published through a
+// reference and read back 5 (+0x19e) (all four their base form's code); the chain lookup in 0x174d0's spelling with the word
+// address kept in a local read through its address (`word *const *chain_reference = &chain;`), on the direct store 177 and
+// on the reference form 179 (974 B, first difference +0x148).
+// M3 lane 15 r118 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7): on the direct store, the
+// tail's shader record read from the field at each of its five uses (no reference) 5 (same code; on main's body 5 at
+// +0x19e); the two mask words written as two statements 163 (977 bytes); the range published without its reference and
+// read back from the field for the two calls 162 (977 bytes); both 176; the pass definition folded into the records
+// expression 5, with the top block's entry folded into the packed read as well 5 (same code). Diagnostics (reverted at
+// once), all on the direct store: with the five shader-record calls of the tail removed the restore block is exactly
+// retail's (`second` then loads after the chain and pass bases, 905 bytes otherwise); with only 0x18a90's call removed
+// 62, only 0x19be0's 63, the other four 114, the 0x17420 call 56, the four argument-free calls 49, all still loading
+// `second` early. So the late load depends on the whole group of shader-record calls (a threshold, not one callee's
+// summary); 0x18a90 (a contributor's, 146 at 715 bytes against 736) saves the same registers as retail's.
+// M3 lane 2 r119 (fast; control 5 at +0x19e): the restore block's entry computed into the existing `entry` local, stored,
+// and its word read through the local 181 (975 B); the direct entry store with the entry word read inside the chain index
+// (no `packed` assignment) 5 (+0x1a7, the direct form's code); the tables stored and the three bases read through one
+// `byte *&` to the tables field, entry stored directly, 6 (the reload waits for the entry store and `second` loads early,
+// both differences at once); the entry reference typed `word *&` (the store as a word pointer) 5 (+0x19e, main's code);
+// on the direct store the chain base offset by `second` before the packed index 5 (+0x1a7, same code). Reading: the
+// reload of the tables field leaves the entry store's shadow only when that store is written directly (no reference),
+// and `second` then loads as soon as the entry lea frees ESI; retail has the first without the second.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

@@ -52,7 +52,7 @@ const dword g_455978[81] = {
 // expanded into this body but called out of line in retail; that expansion boundary belongs to src/unknown_11bed0.cpp,
 // which this lane may not edit, so the optional-state homes stay four bytes off (ours [esp+0x2c]/[esp+0x3c] against
 // retail's [esp+0x30]/[esp+0x40]) and the direction block's two divisions stay.
-// score 298 (was 298): earlier rounds' entries follow in order, m3 lane 9 r142's last.
+// score 268 (was 298): earlier rounds' entries follow in order, m3 lane 9 r142's last, then m3 lane 4 r230's.
 // MiniMax G (11-18): no new form, no lower score (298): the first difference is still at +0x21 and 0x11bed0 is
 // still expanded here where retail calls it out of line; that expansion boundary is settled in
 // src/unknown_11bed0.cpp, which this lane may not edit, so the optional-state homes (ours [esp+0x2c]/[esp+0x3c]
@@ -416,6 +416,29 @@ const dword g_455978[81] = {
 // today's body: the entry ESI/EDI swap and the homes stay off); the length test as `0.0001f > fabs(...)` 298 and the
 // radial height as `local_17 * 0.0f` 298 (same code each). With registers masked, what is left is the expanded
 // 0x11bed0, retail's expanded 0x279740 range check at the first release, the second length test and that ray copy.
+// M3 lane 4 r230 (fast, faithful here; base 298, difflib-aligned 205, register/offset-masked 108). Kept: the table entry
+// copied whole as a vector3f (retail copies three dwords at 0x1d4c97-0x1d4cb9) and normalised through normalize2d_fast
+// on its planar part, without the explicit `fabs(local_16) < 0.0001f` test (normalize2d_fast already returns 0 below
+// that length, and the `local_16 == 0.0f` test then continues): 268 (2085 B, retail's 486 instructions, masked 93; the
+// loop head and the single reciprocal are retail's). Tried: the upper bounds written `local_4 + arg_3->x` 298 (same code);
+// the copy with k cleared through normalize3d 323 (2094 B, masked 100), with vector3f_scale for the arg_6 scale 323,
+// with the commuted upper bounds 323; on 268: the radial as `local_17 * 0.0f` 268 (same code); the ray start copied from
+// `*arg_11` and moved by `+=` 350, the arg_6 test as `0.0f < arg_6` 268 (same code), through vector3f_add (either operand order) 350/350 (2111 B; the ray copy then sits at
+// retail's +0x1c and the direction block's homes become retail's +0x2c/+0x44/+0x48, masked 92, but arg_9/arg_10 and the
+// loop's table pointer swap ESI/EDI against retail). Left: retail's square order i then j in the planar length (ours j
+// first), its zero register reused for the radial product (ours reads 0.0f from memory), the 0x11bed0 expansion here and
+// retail's expanded 0x279740 range check at the first release.
+// M3 lane 1 r136 (fast with 0x11bed0, 0x14a280 and 0xc5460, all MATCH; 0x21a100 93 throughout; control 268): the always-true
+// `if (arg_11)` guard (diagnostic, 0x11bed0 then out of line) on today's body 373 (2011 B: the kept planar copy fits only the
+// expanded form; arg_11 then takes EDI where retail has EBX); the two direction copies' names swapped (diagnostic for
+// name-ordered homes) 268 (same code); a typed `directions` table pointer for both copies 268 and one `direction` entry pointer
+// for both 268 (same code each); 0x11bed0 given `&local_22.position` in place of arg_11 273 (2090 B). Body unchanged.
+// M3 lane 12 r159 (fast; control 268 at 2085 B, homes +0x24/+0x48 for retail's +0x30/+0x40): the direction count
+// declared with the two optional-state locals at the top 481; the transform volume pointer declared ahead of the transform
+// 268 (same code); the presence declared inside the loop body 311 (retail's 2083 B); the found test as `if (cluster !=
+// NONE) { result = true; break; }` 485 (2076 B); a redundant `if (0 < count)` around the direction loop 373 (2011 B:
+// 0x11bed0 is then called out of line as in retail, but the entry's EBX/EDI swap and the homes stay), which confirms the
+// expansion follows the loop site's estimated frequency; no natural no-code test was found that lowers it.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
@@ -465,9 +488,8 @@ bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long
   vector3f local_14 = ((vector3f const *)g_455978)[local_13];
   if (arg_6 > 0.0f)
   {
-   vector2f local_15 = *(vector2f const *)((vector3f const *)g_455978 + local_13);
-   real local_16 = normalize2d_fast(&local_15);
-   if (fabs(local_16) < 0.0001f) continue;
+   vector3f local_15 = ((vector3f const *)g_455978)[local_13];
+   real local_16 = normalize2d_fast((vector2f *)&local_15);
    real local_17 = 1.0f / local_16;
    real radial_height = 0.0f * local_17;
    if (local_16 == 0.0f) continue;
