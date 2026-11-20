@@ -18,6 +18,7 @@
 #include "normalize3d.h"
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // and late x87 factor lifetimes remain, at retail length 2622.
+// MiniMax A (11-20): no new form, no lower score (536): the frame is 0x64 against retail's 0x60
 // MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
 // retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
 // after the product, which no plain spelling of the wave expression reproduces.
