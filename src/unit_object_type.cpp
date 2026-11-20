@@ -5484,6 +5484,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // from memcpy directly to the first cross 169.
 // NOT kept: the forward member delays up.i but shrinks the frame to 0x44.
 // The direct memcpy result keeps the early up.i load. The x87 lifetime remains.
+// Aim getter 227; separately copied forward axis 202, through the aim getter 250; second cross
+// overwrites the left vector before up normalization 227, or stays there through normalization 233;
+// uncorrected up snapshot 212, with aim getter 257; separate fallback producer and normalization 169.
+// NOT kept: the copy and workspace forms increase the length. The fallback split ties, and the
+// early first-cross up.i load and final x87 scale lifetime remain.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

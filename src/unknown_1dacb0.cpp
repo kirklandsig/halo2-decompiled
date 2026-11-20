@@ -1559,6 +1559,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // result.index` in both tests 828; the iterator's two entry pointers cleared by one chained `= NULL` 828; `if (named !=
 // NULL)` without braces 828 (all the same code); no per-pass candidate, `result = named ? named->animation_id :
 // c_type_709360();` 978.
+// Default result index or graph word for the class rejection 828 each, also supplying the three output
+// defaults 828 each, and result index first in the comparison 828. Candidate published in the for step
+// with reset at lookup 932, reset on a missing name 998, and a persistent empty identifier for the
+// selection and latch 978. NOT kept: the for forms reach retail length with a larger frame. The class,
+// resolved outputs and candidate still have different homes.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

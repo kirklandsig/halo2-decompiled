@@ -1984,6 +1984,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // NOT kept: The query-and-write and resize-and-write forms reach 32 at retail length. Both retain the first stack-
 // slot difference and use one-use handle copies, so the one-point gain is excluded. The other six tie or raise the
 // score.
+// Scoped write count with conditional, branched, default-invalid, or failure-first close handle
+// 124 each. Raw selected/default-invalid close handle 124/124. File pointer selected from the
+// write outcome or failed resize first 115/137. NOT kept: correct count slots with the by-value
+// handle forms, but the body shortens. The pointer forms regress at retail length.
 // @retail 0x213970
 void function_213970(void)
 {

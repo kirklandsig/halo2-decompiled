@@ -1092,6 +1092,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 0x40); the hit copied member-wise 323 (aligned 166); both 361 (1260 B); the distance sum written radius first 238 (same
 // code); the valid flag and the two indices declared ahead of the fraction test 328 (1243 B, aligned 222); the hit copy
 // after the distance 305 (1245 B, aligned 137).
+// Independent hit coordinates with setter XYZ/YXZ 322/322, YXZ aggregate 355 and YXZ
+// member stores 325. With material beside the defaults 324/324/357/321.
+// NOT kept: the wider-scope material recovers 0x44 but the hit transport grows the body.
+// The second-node home and classifier loads still differ.
 // Late result bindings for found/position, normal/fraction, entity indices (subsets 1 through 7):
 // 270/268/279/236/277/275/378. One final result binding 396. NOT kept: the entity-index binding
 // gains two at 1244 bytes and retains frame 0x40. The second-node slot and frame still differ.

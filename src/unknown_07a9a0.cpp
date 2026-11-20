@@ -1695,6 +1695,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // file without /arch:SSE plus the 0x63220 call 1013 (no change in the inline set); the disabled 0x6d4c0 draft linked in
 // place of its stub (with 0x6e910 listed so its file is in the image) 871 (no change). Retail's EAX session follows from
 // the top call staying out of line (EAX carries its argument); every form above that expands it moves the session.
+// Shared upper selector 865; split capacity gates 865, individual admission gates 865,
+// named upper result 865. Dword cells 876, with both library clears 903, split capacity
+// gates 876 and type retained across the lower check 876.
+// NOT kept: the selector expands but the opening lookup still expands, and all eight
+// move the session onto the stack and disturb the matched caller. The dword frame is 0xb0.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

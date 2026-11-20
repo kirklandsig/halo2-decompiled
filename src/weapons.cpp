@@ -3439,6 +3439,10 @@ struct s_ammo_conversion_entry
 // the count, a short pointer or reference to the unloaded count, `acquired = true` ahead of the conversion clamp (the cmov
 // becomes a branch), the leftover-rounds flag as an `||` chain (gives retail's loop-head registers but reads the flag).
 // Permuter on the 52 form (600 s, 43 tries): best 52.
+// Residues captured after both stores or one at a time 190/190 with sequential tests,
+// 191/191 with both predicates evaluated, 189/189 with sticky accumulation. Calculated
+// residues carried into both stores or published as calculated 209/209. NOT kept: one-point
+// gain at 189, with destination and conversion search register homes unchanged.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4764,6 +4768,15 @@ struct s_weapon_projectile_creation
 // Not kept: the forms that are acceptable without a match taken alone (in-place rotation, existing random functions,
 // if/else arms, field re-reads, the actor call in both arms, markers by index, long target type, short code) measure
 // 1191 (5156 bytes, frame 0x1e9c), a rise, and the rest are match-only forms; the body is main's.
+// Shared rotation for the axis only 1140, direction only 1143. In-place rotation with all direction
+// components captured or just the first two 1205/1205, with both vectors captured 1229. Projection
+// before trig 1121, with in-place direction snapshots 1204. Separate range and turn scopes 1121.
+// The in-place snapshots recover the 0x1e98 frame and move the first difference to +0x79,
+// but finish 93-97 bytes short. The original separate clipping workspace remains.
+// Ordinary-case exclusion 1138, synchronized-only first 1143, exhaustive ordinary-first conditional
+// 1140, default network case first 1153; independently computed synchronization 1143 and independent
+// synchronization/network results 1157. Switch with case 2 first or default first 1121 each.
+// NOT kept: the conditionals lengthen the body, and neither switch order changes the 0x1ea4 frame.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

@@ -2143,6 +2143,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // keep the two apart.
 // Earlier 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier at 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
+// Earlier at 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // MiniMax B (11-20): no new form, no lower score (305): our frame is 0x11c against retail's 0x128; retail keeps NONE, the track definition and the active bit in registers through the second pitch-range loop and indexes sounds[i] at each use, where this build hoists the datum index and the track index into EBX and EBP and keeps the sounds address in EDI with the active bit spilled; the listed forms (the count in each for-init, the pitch bounds pointer, the per-use reads, the byte-typed NONE field) all measure 305 or more.
 // score 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
@@ -2582,6 +2583,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // current range handle carried through both admissions 412; full request with both track bindings 305.
 // NOT kept: the range handle reduces the frame to 0x11c and loses the indexed loads. Complete request
 // storage reaches 0x12c while retail reserves 0x128.
+// Exhaustive clamp result 305; lower-initialized clamp 305; pitch-initialized upper/lower tests 291;
+// shared clamp macro 305. With complete request storage 305/305/291/305.
+// NOT kept: the 291 form moves the default pitch copy ahead of the lower test and splits the upper
+// copy. Retail shares the bound result register and copies the pitch after both tests. Frame and
+// playback homes remain. The complete request reserves 0x12c.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

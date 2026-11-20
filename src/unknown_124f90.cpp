@@ -1817,6 +1817,10 @@ long function_2197f0(real gain);
 // gain then assigned 87 (same code), returned from the arm 174 (668 B); arm 3's sum stored through the long view 87
 // (same code). Reading: ours has exactly one sum with the gain in a register (arm 4, fed across the join) and retail
 // exactly one too (arm 1, loaded there); the other three add the gain from memory in both.
+// Retained release duration with scaled overlap, staged subtraction/normalization/scaling,
+// independent release component, or attack accumulator 92/92/92/92. Retaining the attack
+// divisor for the final quotient instead gives 92/92/92/92. NOT kept: all raise the score;
+// the 0xc frame and length hold, and elapsed and gain loading still differ.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4664,6 +4668,10 @@ struct s_128ca0
 // sums retail gives the gain byte its register before the bits' copy (EDX then EAX; EAX in place then ECX), ours the
 // copy first; a form that evaluates the gain byte first should bring the pins, the field_c store and the tail together.
 // One or two named copy locals of the parameters (the symbol-count lever that moved 0xb93b0's XMM triple) 72 (same code).
+// Both pin objects assigned 72, direct-initialized 72, decoded real member accumulated 181,
+// signed gain initialized then summed into its member 201, pin argument from the value member 72.
+// Named started test 72, scoped pitch/gain setup 72, scoped permutation lookup 72. The tied forms
+// keep both scratch register exchanges. Real-member arithmetic shortens the pin input copies.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

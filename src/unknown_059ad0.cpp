@@ -4246,7 +4246,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 #pragma inline_depth(0)
 // score 295 (was 295): r275 unchanged. Frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // MiniMax H (11-20): no new form, no lower score (295): retail reads the accepted byte back at every exit where this build folds it; the acknowledgement block comes last in retail; the timeout spill needs 0x769a0.
-// score 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
+// Earlier at 295 (was 305): frame 0xd8 and the length agree; the tie-break written as separate statements puts the three
 // flag bytes on retail's homes (better +9, same/identity +0xa, result +0xb) and the exit after the disconnect returns
 // directly (1264 B). Left: retail reads the accepted byte back at every exit where ours folds it at the reason-1/2/9
 // exits, the acknowledgement block is laid out last in retail, the timeout call lacks retail's owner spill (the earlier
@@ -4561,6 +4561,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // jump to their own `mov al, 1` return). Reading: retail's return at 0x5e891 (the state-8 exit's epilogue) gathers every path
 // on which the result is true (state 8, the kept arms with AL = 1, the post-disconnect `jne`) and the false edge has its own
 // epilogue, as if the final return were threaded on the result by a test whose other part is unknown on the proceed path.
+// Direct reason 3/5/8 returns 345/301/297, both timeout returns 299, all five policy returns 362.
+// Shared range rejection or admission 370/370, shared rejection with five direct returns 387.
+// The result byte at +0xb holds, but the first branch displacement and the return layout still differ.
 // M3 lane 11 r133 (fast with 0x5e3f0, MATCH each run; body unchanged at 295). Round 208's 96 body re-measured 96 (1264 B,
 // aligned 20: only the end of the received block differs). Reading of retail's end: the refused path (result still false)
 // and the accepted path with neither kept arm (result just set) meet at the disconnect, so the read, test and `jne` after

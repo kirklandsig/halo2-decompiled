@@ -891,6 +891,10 @@ void __stdcall function_1160c0(real dt)
 // base copy is propagated); the ternary of two element addresses 304 (1387 B). New: the selected pointer read through a
 // `s_chain_segment *const &` binding 144 (same code). Reading: retail's segment variable takes EDX with ECX free; ours
 // takes ECX unless the variable is already live where ECX holds the count.
+// Squared separation first, reach first, root first and root after reach all 144;
+// with rest-offset components through the vector setter all 273.
+// NOT kept: the ratio stages tie. The setter changes the entry saves while retaining
+// the 0xa4 frame. The segment carrier and ratio/sine home remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -946,6 +946,10 @@ void function_245400(s_source_245400 const *source, long index,
 // other way: retail loads that k once and multiplies it by the second normal's j and i from memory). A coordinate
 // descent from seven starts over the cross form, both dead-local counts, six dot spellings, the edge copies' order,
 // the scale arm's order and twelve spellings per rotation row: best 35, no match. Body unchanged.
+// First complete decode, second complete decode, second index before both addresses, and
+// second address/side paired 210 each. With shifted side bits 234/234/233/233.
+// NOT kept: the sign tests reach retail length but regress. The shifted forms are short
+// and all retain the 0x24 frame with the source and separate side homes displaced.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
