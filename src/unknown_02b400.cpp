@@ -76,6 +76,11 @@ struct s_2f970_view
 
 bool g_4ba019;
 
+struct s_short_bounds_3f660
+{
+	short top, left, bottom, right;
+};
+
 // @retail 0x2f970
 bool function_2f970(s_2f970_view const *view, real *out)
 {
@@ -538,10 +543,12 @@ void function_146b80(void);
 extern byte *g_510c44;
 extern bool g_510c48;
 
+// Matched in a full build with stand-in SDK headers (was 97), without the five volatile reads: the rectangle is
+// copied as a struct and the cluster index is a named local behind a barrier reference.
 // @retail 0x3f660
 void function_3f660(transform4x3f const *matrix)
 {
-    byte volatile restore = g_47989c != NULL;
+    bool restore = g_47989c != NULL;
     if (restore)
         function_146de0();
     byte *collection = g_510c44;
@@ -552,16 +559,13 @@ void function_3f660(transform4x3f const *matrix)
     s_2f970_view view;
     function_2f800((s_2f800_view *)&view, (s_2f800_source const *)setup, NULL, NULL);
     view.top = view.left = 0;
-    view.bottom = 480;
     view.right = 640;
-    view.outer_top = view.top;
-    view.outer_left = view.left;
-    view.outer_bottom = view.bottom;
-    view.outer_right = view.right;
-    view.outer_left = (short)(*(short const volatile *)&view.outer_left + 48.0f);
-    view.outer_top = (short)(*(short const volatile *)&view.outer_top + 48.0f);
-    view.outer_right = (short)(*(short const volatile *)&view.outer_right - 48.0f);
-    view.outer_bottom = (short)(*(short const volatile *)&view.outer_bottom - 48.0f);
+    view.bottom = 480;
+    *(s_short_bounds_3f660 *)&view.outer_top = *(s_short_bounds_3f660 const *)&view.top;
+    view.outer_left = (short)(view.outer_left + 48.0f);
+    view.outer_top = (short)(view.outer_top + 48.0f);
+    view.outer_right = (short)(view.outer_right - 48.0f);
+    view.outer_bottom = (short)(view.outer_bottom - 48.0f);
     view.crop = false;
     view.center_x = view.center_y = 0.0f;
     view.offset = false;
@@ -571,8 +575,10 @@ void function_3f660(transform4x3f const *matrix)
     byte projection[0xc0];
     function_2fd90((s_2f800_view *)&view, &clip, projection);
     s_planar_camera camera;
+    long cluster_index = *(short *)(setup + 0x10);
+    long const &kept = cluster_index;
     function_441b0((s_planar_camera_source const *)&view, &camera, projection);
-    function_173130(1, (byte *)&camera, *(short *)(setup + 0x10), (s_view_collection_1733e0 *)collection);
+    function_173130(1, (byte *)&camera, kept, (s_view_collection_1733e0 *)collection);
     byte *structure = (byte *)g_4e0348;
     for (long i = 0; i < *(short *)(collection + 0xa6c); ++i)
     {
