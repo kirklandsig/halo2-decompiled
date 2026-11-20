@@ -2665,6 +2665,12 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // through the existing vector3f_scale 657; the final rescale through vector3f_scale 657; the dynamic-first form with
 // per-format sample pointers formed from each vertex index (one-use pointers, match-only) 619 (3081 B, aligned 269 and
 // register-masked 246 against the control's 974/855).
+// M3 lane 16 r153 (fast with 0xd2a50/0xd2bb0 and the callees in this file, all MATCH; control 542, 475 with stack
+// offsets masked): the first arm differs from retail only in its frame homes (ours: base colour lowest, then mesh and
+// the shared status/part slot; retail: mesh lowest, then that slot); the dynamic arm still builds its sample offsets
+// apart from retail's. New: the mesh pointer declared at function scope 545; the first arm's colours and normal declared
+// lightmap, base, normal 553; `result` declared ahead of the triangle 542 (same code); the dynamic normal declared ahead
+// of the dynamic colour 542 (same code); the second arm's normal declared ahead of its base colour 542 (same code).
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
