@@ -1904,6 +1904,8 @@ void function_0bfe20(dword *flags, long bit, bool value);
 // use 291; on the 166 lead the two vectors declared ahead of `position` 166 (same code). Reading: retail stores each forward
 // row before the next one and reloads the object's components per row, so its rotate's output is treated as possibly
 // aliasing the source (ours defers the three stores and spills the copies). Body unchanged.
+// score 67 (was 192, r924 stand-in image): the body runs inside `if (allowed) { ... }` (one return at the end) instead
+// of `if (!allowed) return;` before it; 1240 bytes (retail 1236). The BLOCKED-BY note above still describes the rest.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, long index, short node)
 {

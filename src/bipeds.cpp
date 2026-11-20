@@ -5772,6 +5772,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
    facing and up square */
 // MiniMax E (11-20): no new form, no lower score (79): the first difference is still at +0x107, inside the inlined rotation helper rotate_direction, whose body lives in src/unknown_1eb8a0.cpp and may neither be edited nor written out by hand here; retail multiplies the axis by the forward x in two of the three cross terms where the helper multiplies the forward by the axis, and axis_rotation.h measures 134.
 // score 79 (was 79): Frame 0x24 agrees. The first rotation spills its cosine complement too early and the final cross reloads forward j.
+// MiniMax G (11-20): no new form, no lower score (79): the permuter and the diff both put the first difference at +0x107, inside the
+// inlined rotation helper whose body lives in src/unknown_1eb8a0.cpp and is not this lane's file; the body is seven bytes longer than retail's.
 // MiniMax A (11-18): no new form, no lower score (79): the frame is 0x20 against retail's 0x24 and this build pushes ebx before it masks the character index where retail masks it first; the first rotation spill and the final cross reload still differ.
 // Earlier: The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
 // before the axis copy; the final cross has the same memory-operand difference for forward y.
@@ -6122,6 +6124,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // side and final crosses with ordinary/staged final output 98/91. Both rotations
 // before normalization with staged side 270; initialize the up copy before
 // normalization 176. The first complement spill and final forward load remain.
+// M3 lane 1 r138 (fast with 0x1ecf50/0x30bf0/0xe3c90, all matched; control 79): the rotation helper's declaration here marked
+// `__forceinline` 79 (same code); both crosses written out component by component (side, then the up field directly) 226
+// (903 B); side through cross3f and the final cross written out into i, j, k locals then stored 240 (915 B); up and side
+// declared in a block opened after the forward normalize 79 (same code); the forward pointer set between the angle and
+// the trig calls 85 (first difference +0xc6). All restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

@@ -1315,6 +1315,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // used by the snap copy 140 at retail's 1382 B (the snap exit shortens, every rotation product turns); `rotated`
 // declared as the function's first local and assigned in place 114; the movement, angle and rotated locals all
 // declared at the function top 114 (same code).
+// Calculate sine, cosine, sine then cosine, or cosine then sine before copying
+// forward: 125/136/163/166. The same with the shared axis-rotation helper:
+// 122/133/163/166. Two early trig results reach 1382 bytes at higher scores.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

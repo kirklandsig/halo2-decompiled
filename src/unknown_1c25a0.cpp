@@ -1417,195 +1417,6 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
  contact_vector_set(out, (*value)(0), (*value)(1), (*value)(2));
 }
 
-// score 1 (was 1): earlier 1 (was 3); retail tests the loop count against zero at entry; ours compares
-// it with the zeroed index register. The member call now matches retail's register setup.
-// MiniMax B (11-18): no new form, no lower score (1): the entry guard still compares the count with the zeroed index register where retail tests the count against zero; dropping the volatile mirror folds the guard into retail's test but also loses the index reload after the 0x1d1160 call (126, 858 bytes), and a positive guard, a while, a do-while and the increment in the for clause all merge back into the register compare, so the last byte needs the write through the velocity pointer in 0x1d1160's impulse branch, in another file.
-// Further trials: shared scale helper for both vectors 3; shared scale and output
-// assignment helpers 65; shared scale plus named progress and body count 3; native int
-// selected count 3; named saved iteration index 3; named selected and available counts 3;
-// shared scale plus all named loop state 3; available count read at every use 3.
-// Round 213: positive-guard exact-count long/int/short/word [4, 4, 132, 132]; positive-guard
-// last-index long/int/short/word [156, 156, 164, 164]. Count test and matched-callee setup
-// remain.
-// Round 88: while loop 3; index shared with the fill loop 3; mirror initialised from the index 3;
-// `count > i` 5; count initialised 3. This is 0x1d10b0's only caller, so its parameters can be
-// reordered to (component, index, change) in src/unknown_1cec30.cpp for the register-argument order.
-// Round 42 (0x1d10b0's file on the avoid list again): index declared before the mirror 3; mirror declared with
-// the selection locals 3; index declared outside the for 3; int index 3; fill loop counting into count 139.
-// Lane 10 round 42: the EBX compare comes from the mirror's zero (with no mirror at all the entry test is
-// retail's `test eax, eax`, 125 diagnostic; no reload in the impulse path 106 diagnostic); index initialised
-// before the selection 162; mirror zeroed before the selection 166; mirror stored at the top of each iteration
-// 111; default-NONE selected index in place of the goto 3; selected index stored before the count 5.
-// BLOCKED-BY 0x1d10b0 (its file on the avoid list; free in lane 15 round 42, form below, not kept).
-// Lane 15 round 42: 0x1d10b0's parameters as (component, index, velocity) in a free function 1, but 0x1d10b0
-// itself 1 (`[edx+ecx+0x40]`); as a member of s_havok_component (`component->...(index, &b)`, its siblings
-// 0x1d0bb0/0x1d0c00/0x1d0b20 are members and retail addresses `[index*0x60+data+0x40]`) 1 with 0x1d10b0 still
-// matched (plain check): the setup-order pair goes and only the entry `cmp eax, ebx` is left. Not kept (a gain
-// of 2 without a match). With no mirror at all the body is retail's except the index spills: the two stores,
-// the reload after the impulse call and the 4-byte frame slot (126 positional, 858 bytes, all three aligned).
-// Entry test, compile-only: the zero of the mirror store is shared with the compare in that block, so mirror
-// typed dword/int/unsigned, declared apart, set from the index, `i = local_0 = 0`, `local_0 = i = 0`, an
-// int index, store-through-index before the test all keep `cmp eax, ebx`; `(local_0 = i) < count` re-reads the
-// volatile; the mirror set in each selection arm gives `test eax, eax` but `mov [slot], 0` (+4 bytes); stored at
-// the top of each iteration with a store after the loop `test eax, eax` but no head merge. Plain loop with
-// `inline` on 0x1d1160's definition 126; with an unused fifth parameter on 0x1d1160 126. Fast, from 3: a positive
-// guard around the for 3; the mirror set in each selection arm 36 (872 bytes); the mirror stored at the top of each
-// iteration and after the loop 119 (870 bytes); `i = local_0 = 0` 161 (882 bytes); int index 3.
-// Round 124: uninitialised loop state inside a positive do guard 39; `_count`, vector names and count
-// declared first 39 each; reversed guard and initialised count 39 each; guarded for 39. Guard only around
-// the mirror 5, braced 5, nonzero 143 (882 bytes), induction in the for initializer 147 (882), literal zero 5;
-// the same-scope while with 0x1d10b0 as a component member 3 (the member stays matched). Restored.
-// m3 lane 9 r76 (fast): the fill loop bounded by count itself 139 (872 B); count declared before the indices 3;
-// `local_0 = ++i;` 3; the mirror declared at the top of the component block and zeroed at the label 3; the node
-// guard as nested ifs 3. Restored.
-// Round 127 (lane 7, fast): no mirror 125 (858 bytes), the same with `inline` on 0x1d1160's definition 125, with
-// 0x1d1160's aligned locals in a force-inline helper 232 (0x1d1160 35); mirror declared at the function's top and
-// zeroed at the label 3; `i = 0` then `if (i < count)` around a mirror set from i 5; a named count before the mirror
-// 3; a named count with i declared before the mirror 3. Restored.
-// Round 137 (m3 lane 8; plain unless fast): 0x1d10b0 as a member of s_havok_component (index, velocity), retail's ecx-then-edx
-// setup, 1 plain with 0x1d10b0 still matched (not kept: 2 points without a match); on it: no mirror 126 (858 bytes, fast);
-// `inline` on 0x1d1010's definition 249 (0x1d1010, 0x1d1160 and 0xe5300 lost); the goto as a default-NONE selected index 1
-// (same code, fast); `local_0 = ++i` as the for increment 1; `local_0 = i = 0` with i declared before the for 1; a volatile
-// copy of i saved just around the impulse call 100 (fast). Retail's +0x30 slot is a register spill of i (the entry test
-// uses the constant, the store follows it), as if LTCG believed 0x1d1160 clobbers EBX; no source store reproduces that.
-// Round 137 (lane 7, fast): the selected index stored before the count 5; the mirror declared then assigned 0 3; the index
-// declared at the top of the component block 3; the rigid-body count initialised at its declaration 3; the mirror stored in the
-// for statement's increment clause (`++i` at the end of the body) 3.
-// Round 75 (m3 lane 14, fast): re-measured the while loop 3, a positive guard around a do/while 3 and the mirror set from i 3;
-// an early `return result` for no rigid bodies 281 (902 bytes); the node index stored in the selection's condition 6; no mirror
-// with i at function scope 125 (858 bytes, round 127's no-mirror code); the component flag in a named bool for both tests 240
-// (894 bytes); the main-body comparison as `index == main index` 4; one rigid-body fetch shared by the linear and angular reads
-// 67 (861 bytes). Retail's 0x1d1160 (ends at +0xc5) never touches EBX; its only direct call, 0x1d1010, saves it, so the index
-// spill is no callee clobber in the bytes.
-// Round 175 (m3 lane 5, fast with 0x1d10b0 0x1d1160 0x1d1010 0xe5300; plain agrees): the cause of the index spill. The two
-// vectors and the loop index as the members of one local record (a, b, index, in that order: retail's frame) with a plain
-// `for` and no mirror give retail's `test eax, eax` entry and the index store at each definition; positionally 105 (864
-// bytes), aligned only the 4-byte reload after the 0x1d1160 call and the 0x1d10b0 setup pair are missing. The reload
-// appears (868 bytes, 2: the pair alone) as soon as the compiler takes 0x1d1160 to write through its velocity argument,
-// while 0x1d1010 and 0x1d10b0, given the same record's addresses, stay known not to. What makes it so in 0x1d1160
-// (each with the record form here; 0x1d1160 loses its match in every one): a real store through the pointer
-// (diagnostic); the vector conversion through a plain function of this file that stores through its output pointer
-// (under /Ob1 it stays out of line, even with one call site: 0x1d1160 146-176 bytes); an SSE load intrinsic on the
-// velocity's members (`_mm_load_ss(&velocity->i)`: 0x1d1160 204-240 bytes in six spellings, since the store intrinsic
-// goes through a `lea` and the member read through a stack copy). What does not (105, no reload): a non-const velocity
-// pointer; 0x1d1010 defined after 0x1d1160; `inline` on 0x1d1160; 0x1d1160 defined in this file; the conversion helper
-// as `inline` or `__forceinline`; the conversion (vector alone, or point and vector) through plain functions defined
-// in src/unknown_1cfb90.cpp, which is built without /Ob1 (they are inlined at link time, 0x1d1160 still matches, and
-// the caller then sees no write); local copies of the point and the vector; an early `return` on the first path; the
-// set intrinsics; a load intrinsic on the point only; the vector by value (copied to the stack, 252). So the callee
-// must keep, when this function is compiled, a call or intrinsic that takes the velocity pointer and may store, yet
-// end with retail's bytes: not found. With it the recipe is this record, 0x1d10b0 as a component member (index,
-// velocity) and that callee form.
-// Round 194 (m3 lane 4, fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300): 0x1d10b0 as an s_havok_component member (index,
-// velocity) re-measured 1 with 0x1d10b0 matched (not kept: two points without a match). Diagnostic on it: no `i = local_0;`
-// reload in the impulse arm still gives `cmp eax, ebx` (107, 864 B), so the entry compare comes from the mirror's zero store
-// sharing EBX, not from the index's induction status. On the member form: no mirror with the two changes as one
-// `vector3f changes[2]` 126 (858 B); the mirror kept with `changes[2]` 1 (same code); `long i = 0; while (i < count)` 1
-// (re-measure of round 124's member-form while, 3); an
-// `if (count > 0)` guard around the for 1; the mirror declared with count and zeroed in each selection arm 34 (872 B). Restored.
-// Round 83 (m3 lane 2; fast unless plain): the rigid-body index read from the array at each use 166 (878 B); the node's
-// rigid body stored straight into indices[0] and tested there 6; permuter (600 s, 61 variants) nothing below 3. Lead,
-// MATCH in the plain check but not kept (it needs a dead store): the two vectors and the loop index as the members of
-// one local aggregate (no mirror), 0x1d10b0 as an s_havok_component member (index, velocity), and in 0x1d1160's impulse
-// branch `*(vector3f *)velocity = *velocity;` (0x1d1160 stays matched: the copy is dropped from its code, but LTCG's
-// summary of 0x1d1160 still records a write through the velocity pointer, so the caller reloads the index after the
-// call, retail's spill). The aggregate and the self-copy without the member form 2 (the setup pair). A compiler
-// barrier in 0x1d1160 in place of the self-copy 106 (864 B, no reload; 0x1d1160 5). Patch: build/r83/lead-0x1c4c50.patch
-// in the m3-lane2 worktree. What retail's 0x1d1160 source had that LTCG counted as a write through velocity is the open
-// question.
-// Round 127 (m3 lane 12, plain over both files): 0x1d10b0 as a member of s_havok_component (`component->
-// rigid_body_linear_velocity_add(index, &b)`, kept: retail sets up ECX (the index) before EDX (the component), the order
-// a member's `this` declared first gives, and its siblings 0x1d08e0/0x1d0b20/0x1d0bb0/0x1d0c00 are members; 0x1d10b0 stays
-// matched) 1. Only the entry `cmp eax, ebx` is left. Permuter on it (600 s, 61 variants) nothing below 1.
-// On it (fast): the two changes and the index as one local record {a, b, index} with a plain `for` and no mirror 106 (864 B);
-// as {index, a, b} 126 (864 B); as {count, a, b, index} (retail's frame from +0x14 is count, a, b, index, indices) 106 (864 B).
-// The last with `inline` on 0x1d1160's definition 106 (864 B, 0x1d1160 still matched).
-// Register- and offset-masked, each leaves one difference: retail's index reload after the 0x1d1160 call.
-// J262: carried loop predicate 1; clamped fallback/traversal count 149/156; conditional singleton index 16;
-// append via count 3; save the next ordinal 11; continue with common step 1; named positive guard with equality 2;
-// remaining count as local/condition 18/18. Kept the shared object-tag acceleration scale fields at 1.
-// M3 lane 11 r115 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, all MATCH in every trial; the record form {a, b, index}
-// with no mirror re-measured 106 at 864 bytes, aligned one line: the reload after the 0x1d1160 call). The mirror cannot
-// reach retail's entry test: a volatile store in the block keeps the index compare from folding to `test eax, eax`, so
-// the cause is the callee's summary alone. On the record form, none gives the reload (106 each): 0x1d1160 as a member of
-// s_havok_component (index, point, velocity) at its definition, declarations and both calls (it and 0xe5300 stay matched;
-// retail sets up its component register last, as for its member siblings); `velocity` and 0x1d1010's `change` both
-// non-const; the forwarded argument in 0x1d1160's velocity-change arm written as the address of the vector's first member,
-// or as its component array. The member form with the mirror 1 (same code). All four files restored.
-// Descending count with saved or ordinary ascending ordinal 155/168; bounded pointer range 171;
-// endpoint advanced during selection 165; saved ordinal as sole induction variable 125;
-// count of populated indices 2; fill cursor distance as count 157; nonnegative unsigned extent 156;
-// inclusive next position test 23. The populated count changes the count store and retains the entry compare.
-// M3 lane 15 r99 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, 0x1c4b00, 0x1d0dd0; MATCH unless noted). On the record
-// form {a, b, index} with a plain `for` and no mirror (re-measured 106 at 864 B, aligned one line: the reload after the
-// 0x1d1160 call), what 0x1d1160 does with its velocity argument: its components read through the vector's component array
-// 106; a by-value copy of the vector converted instead 106; the components read through a reference-returning accessor on
-// a non-const view 106 (none gives the reload). Diagnostics: a self-copy through 0x1d1160's point argument 106 and a
-// self-store of a component field 106, so the summary is per argument and only a store through the velocity pointer counts
-// (the self-copy through it re-measured: MATCH here with every callee matched, a dead store, not kept); a store through
-// 0x1d1010's change argument 150 (862 B: the index is then killed by the direct 0x1d1010 call as well, so retail's 0x1d1010
-// has none and the cause is in 0x1d1160 alone); 0x1d1160's velocity parameter read once through its own address 80 (862 B;
-// the parameter moves to the stack, 0x1d1160 and 0xe5300 lose their matches), its point parameter read that way 19 (868 B,
-// the point is then pushed; 0x1d1160 and 0xe5300 lost).
-// M3 lane 7 r180 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, 0x1c4b00, 0x1d0dd0; R = the record {a, b, index} with a
-// plain `for` and no mirror, re-measured 106 at 864 B, aligned one line: the reload after the 0x1d1160 call): on R, 0x1d1160's
-// mass scale stored through a reference bound to its own impulse local 106 (callees MATCH; a store through a reference to the
-// callee's own local does not count, the summary is per argument); the velocity pointer passed straight to the virtual
-// impulse call (diagnostic) 177, still no reload (an escape into unknown code is not what retail records); the index array
-// in the record too 106. On this body the loop index bound to a `long &` for the loop test 1 (same code).
-// M3 lane 16 r141 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, all MATCH; 0x1d1160's file is on this round's avoid list, so only
-// this body moved): the loop index started from the mirror (`long i = local_0`) 161 (882 B); the mirror declared and zeroed
-// ahead of the node selection (both paths) 166 (882 B); the mirror reloaded in the velocity-change arm as well 33; the reload
-// ahead of the impulse call 5; the rigid-body index declared outside the loop 1 (same code). Still BLOCKED-BY 0x1d1160.
-// M3 lane 13 r113 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, all MATCH each time): the count bound to a `long &`
-// for the loop test 1; the fill count as a `long const &` to the rigid-body size 1; a `long const` copy of the count as
-// the loop bound 1 (all the same code); the increment in the for clause with `local_0 = i + 1;` ending the body 11 (870 B);
-// a `0 < count` guard enclosing the mirror and the loop 37. Retail's +0x30 store is a spill made after allocation, so no
-// IR constant store shares the entry block; any source store of the zero there feeds the compare's `cmp eax, ebx`.
-// M3 lane 1 r126 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, all MATCH; control 1; 0x1d1160's file was on the
-// avoid list): a `vector3f const *change = &a;` local for both change-a calls 1 (same code); the count initialised to
-// 1 with the selected arm storing only the index 10; the loop's rigid-body index declared ahead of the for 1; the two
-// change vectors declared at the function's top 1; the impulse and velocity-change calls nested under one `if
-// (change_a)` 115 (857 B). Restored.
-// M3 lane 11 r129 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300): R = the change vectors and the loop index as the
-// members of one local record (a, b, index) with a plain `for` and no mirror, re-measured 106 (864 B; the callees MATCH).
-// On R, 0x1d1160's velocity conversion as `_mm_set_ps(0, k, j, i)` 106 (0x1d1160 41, 203 B), as `_mm_setr_ps(i, j, k, 0)`
-// 106 (0x1d1160 42, 203 B), both conversions through `_mm_setr_ps` 106 (0x1d1160 57, 213 B): value intrinsics do not mark
-// the argument written; per-component `_mm_store_ss(&impulse.m_quad.m128_f32[n], _mm_load_ss(&velocity->n))` gives this
-// function its reload (MATCH) but 0x1d1160 204 B (a `lea` per store, 43). Diagnostic re-measured: R with a dead
-// `_mm_load_ss(&velocity->i);` after 0x1d1160's conversion MATCH here and in all four callees (not keepable: a dead
-// statement). Every write-marking form found is either dead code or costs 0x1d1160's bytes.
-// M3 lane 4 r223 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300; control 1). R = the two changes and the index as
-// one local record with a plain `for` and no mirror: 106 (864 B, no reload after the 0x1d1160 call). On R, in 0x1d1160's
-// impulse arm: the self-copy through the velocity re-measured, both MATCH (a dead store, not kept); the velocity's three
-// components loaded with the SSE load intrinsic and stored with the store intrinsic, this MATCHES but 0x1d1160 43 (204 B, a
-// `lea` per store); loaded with the intrinsic and stored through the vector's set() 79 (231 B, stack copies); one unused
-// load intrinsic on the velocity's first member added after the conversion (diagnostic, a dead statement) MATCH with
-// 0x1d1160 still matched. So the caller's write summary of 0x1d1160 is taken before dead code goes, and any
-// address-taking intrinsic on the velocity counts as a write; retail's 0x1d1160 needs such a use that leaves no code.
-// M3 lane 15 r110 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300; R = the record {a, b, index} with a plain `for` and no
-// mirror, re-measured 106 at 864 B): 0x1d1160's mass broadcast as `_mm_load1_ps(&mass)` (an address-taking intrinsic on its
-// own local) 106 on R and 1 on this body, 0x1d1160 28 (209 B); as `_mm_set1_ps(mass)` 106 on R, 0x1d1160 5 (199 B): the
-// summary stays per argument. On R, 0x1d1160's velocity read with `_mm_load_ss` on each member and stored with
-// `_mm_store_ss` into the quad's components: MATCH here, 0x1d1160 43 (204 B: a `lea` per store into the stack quad);
-// read with `_mm_load_ss(...).m128_f32[0]` into set(): MATCH here, 0x1d1160 83 (231 B). Retail stores the components
-// with plain `movss [esp+..]`, so its write mark on the velocity is not a store intrinsic on a local. BLOCKED-BY 0x1d1160.
-// M3 lane 7 r194 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300, all MATCH; control 1): the index reload moved from
-// the impulse arm to the end of every iteration 150 (862 B); the mirror typed `volatile int` 1 and `volatile dword` 1 (same
-// code); `local_0 = i + 1;` ahead of `++i` 11 (870 B); no mirror with a plain saved copy of the index around the impulse
-// call 126 (858 B, the copy folds away). Still BLOCKED-BY 0x1d1160 (its file was on this round's avoid list).
-// M3 lane 6 r209 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300, all MATCH; control 1): the fill loop and the count
-// reading the rigid-body size at each use 1; the fill loop counting straight into the count 140 (872 B); the mirror declared
-// ahead of the index array and zeroed after the label 1; the mirror and the size local renamed 1/1 (all the 1s the same
-// code). Still BLOCKED-BY 0x1d1160 (its file was on this round's avoid list again).
-// M3 lane 2 r119 (fast with 0x1d10b0, 0x1d1160, 0x1d1010 and 0xe5300, all MATCH; control 1; 0x1d1160's file was on the
-// avoid list again): the loop test written `count > i` 3 (the latch compare flips too); the mirror assigned from the
-// increment (`local_0 = ++i;`) 1; the index declared ahead of the loop with the mirror initialised from it and a
-// `while` 1; the array element read into a `long const` 1; one function-scope index shared by the fill loop and the
-// main loop 1 (all the 1s the same code). Still BLOCKED-BY 0x1d1160.
-// M3 lane 5 r216 (fast screen; 0x1d1160's file on this round's avoid list again): the loop tested `i != count` 3;
-// `indices[0] = index;` ahead of `count = 1;` 3; `long i = 0; volatile long local_0 = i; while (i < count)` 1 (same code);
-// the fill loop as a while over its own counter 1 (same code); the loop test `0 < count - i` 18 (870 B). Still BLOCKED-BY 0x1d1160.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
@@ -1617,12 +1428,19 @@ bool __stdcall function_1c4c50(long object_index, long node_index, point3f const
  {
   long root_index = function_baf80(object_index);
   s_havok_object *root = headers[root_index & 0xffff].object;
-  vector3f a;
-  vector3f b;
+  /* the two changes and the loop's rigid-body counter in one record (retail's frame: count, the
+     changes, the counter, the indices); the impulse call may write the first change, so the counter
+     is reloaded after it */
+  struct
+  {
+   vector3f a;
+   vector3f b;
+   long i;
+  } changes;
   if (change_a)
-   a = *change_a;
+   changes.a = *change_a;
   if (change_b)
-   b = *change_b;
+   changes.b = *change_b;
   if (root->havok_component_index != NONE)
   {
    s_havok_component *component = havok_component_get(root->havok_component_index);
@@ -1635,15 +1453,15 @@ bool __stdcall function_1c4c50(long object_index, long node_index, point3f const
      real scale = root_definition->acceleration_scale / definition->acceleration_scale;
      if (change_a)
      {
-      a.i *= scale;
-      a.j *= scale;
-      a.k *= scale;
+      changes.a.i *= scale;
+      changes.a.j *= scale;
+      changes.a.k *= scale;
      }
      if (change_b)
      {
-      b.i *= scale;
-      b.j *= scale;
-      b.k *= scale;
+      changes.b.i *= scale;
+      changes.b.j *= scale;
+      changes.b.k *= scale;
      }
     }
    }
@@ -1667,22 +1485,20 @@ bool __stdcall function_1c4c50(long object_index, long node_index, point3f const
     indices[i] = i;
    count = local_1;
 selected:
-   volatile long local_0 = 0;
-   for (long i = 0; i < count;)
+   for (changes.i = 0; changes.i < count; ++changes.i)
    {
-    long index = indices[i];
+    long index = indices[changes.i];
     hkRigidBody *body = havok_component_rigid_body_get(index, component);
     if (!body->m_fixed && body->m_motion->kind_code() != 6)
     {
      if (point && change_a && !TEST_FIELD_BIT(component->flag1))
      {
-      havok_component_rigid_body_point_impulse_apply(index, component, point, &a);
-      i = local_0;
+      havok_component_rigid_body_point_impulse_apply(index, component, point, &changes.a);
      }
      else if (change_a)
-      component->rigid_body_linear_velocity_change(index, &a);
+      component->rigid_body_linear_velocity_change(index, &changes.a);
      if (change_b && !TEST_FIELD_BIT(component->flag1))
-      component->rigid_body_linear_velocity_add(index, &b);
+      component->rigid_body_linear_velocity_add(index, &changes.b);
      if (havok_component_main_rigid_body_index_get(component) == index)
      {
       *result_object = component->object_index;
@@ -1699,8 +1515,6 @@ selected:
       result = true;
      }
     }
-    ++i;
-    local_0 = i;
    }
   }
  }
