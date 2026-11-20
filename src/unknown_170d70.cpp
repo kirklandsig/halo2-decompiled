@@ -1169,13 +1169,6 @@ static inline void rotation_matrix_transform(s_rotation_matrix const *m, vector3
 	out->k = in->j * m->m21 + in->k * m->m22 + in->i * m->m20;
 }
 
-static inline void view_cross_product(vector3f const *a, vector3f const *b, vector3f *result)
-{
-	result->i = a->j * b->k - b->j * a->k;
-	result->j = a->k * b->i - b->k * a->i;
-	result->k = b->j * a->i - a->j * b->i;
-}
-
 /* the rotation of `angle` about `axis` */
 static __forceinline void rotation_matrix_from_axis_angle_171d90(s_rotation_matrix *m, vector3f const *axis, real angle)
 {
@@ -1215,7 +1208,7 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
-// score 334 (was 346): The 0x50 frame and retail length agree. Unity still starts in XMM7 instead of XMM5, and two first-axis squares spill.
+// score 334 (was 334): The 0x50 frame and retail length agree. Unity still starts in XMM7 instead of XMM5, and two first-axis squares spill.
 // Earlier (346, was 346): Logic walked block by block against retail: every call, constant and field offset agrees.
 // The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
 // rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
@@ -1326,6 +1319,12 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Horizontal/vertical angle names, deviation component names, late matrix declaration,
 // and second axis declared beside matrix 337 each (reduced control 337).
 // The square spills and early EDI save survive all eight forms.
+// M3 lane 3 r282 (H2M_FAST, reduced control 337 against full 334): 1 to 7 dead longs at the top
+// 337/370/353/365/356/358/357 (the length moves, unity and the square spills stay); sine and cosine through
+// an inline out-pointer helper 337 (one row's operand order moves); the squares written at their uses with
+// no named squares 364 (1449 B); the axis components read once into locals 377 (1427 B); the second axis
+// through cross3f_staged 339 (1456 B). KEPT: the second axis through the shared cross3f in place of the
+// file's private copy of it (same code, 337 reduced; the copy removed).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1345,7 +1344,7 @@ void function_171d90(s_view_setup *view)
 	rotation_matrix_transform_171d90(&m, &view->up, &view->up);
 
 	vector3f axis;
-	view_cross_product(&view->forward, &view->up, &axis);
+	cross3f(&view->forward, &view->up, &axis);
 	rotation_matrix_from_axis_angle_171d90(&m, &axis, angle_b);
 	rotation_matrix_transform_171d90(&m, &view->forward, &view->forward);
 	rotation_matrix_transform_171d90(&m, &view->up, &view->up);
