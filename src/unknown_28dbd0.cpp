@@ -647,6 +647,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // In the rotation helper, a planar heading snapshot for projection/cross/cosine scale,
 // alone, each pair, all three, and all three through the vector setter. All eight score 226 at 1209 bytes.
 // NOT kept: frame stays 0x11c, with the request and transform displaced. Original helper and body restored.
+// Heading draw and vector names 173, tilt draw and axis names 173, both draw families 173, named request and
+// transform 173, those workspaces with named heading 173, returned scale pointers 227, named trig outputs
+// through the coordinate setter 218, named heading aggregate and tilt axis 173.
+// NOT kept: the frame stays 0x11c with the extra cross home. The returned scale pointers shorten the body, and
+// the heading setter raises its score at retail length.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

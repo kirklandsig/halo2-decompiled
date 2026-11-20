@@ -974,6 +974,10 @@ static inline long font_character_pixel(long alpha, long color)
 // Compare with packed run 59, run to pair end 163, pair class arity 193, shared packed prefix arity 171.
 // With full-width parity 203/213/191/219. NOT kept: the run comparison ties, and the other forms raise the
 // score. Packed parity width, run register reuse and literal byte assembly still differ.
+// Forward fill countdown at packed/ordinary/both 175/175/167, with dword parity 236/236/240. Dword parity with
+// packed countdown and ordinary end pointer 209; packed end pointer and ordinary countdown 187.
+// NOT kept: the countdowns change the opening register assignment. Dword parity gives the packed bit
+// operations but shortens the body and displaces the packed run. Literal assembly still differs.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
