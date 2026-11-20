@@ -620,11 +620,35 @@ struct c_aggregate : c_child
 // the collection count reused as the cleanup bound 70/70. Count declared at cleanup scope 31/31. NOT
 // kept: shared call output reaches 0x8020 with the low homes exchanged, while reusing it for the bound
 // grows to 381 bytes. The callback output still needs the retail spill home.
+// M3 lane 4 r225. The flag lead measured to its end: this body, 0x97f00 and 0x97f30 in a file of their own built
+// without link-time code generation (a measurement, restored; build/r225/held-0x97d80.patch) matches all three and
+// keeps the four other functions of this file (fast), but the full check then loses matched 0x90880, 0x94bf0,
+// 0x95410, 0x96ed0, 0x976f0 and 0x992d0 (they read g_4d87f8, which a native object naming it exposes): retail's body
+// is not in a native object, and the flag is no way out. Round 80's rule is not general either: in a one-file link
+// of a small copy (three child calls, a count whose address goes to a virtual callee, two spilled loops, a query
+// with an escaped output) the count is packed with the later spills in every variant (callee only declared, inline,
+// overridden, an override that keeps the pointer). One-file link of this file (control exact: frame 0x8024, count at
+// +0x1c, query output at +0x20), the cleanup varied: no call in it, or its query or release made through a child's
+// virtual in place of g_4d87f8, packs the count at +0x10 with the dispatch cursor and the cleanup count as retail
+// does (frames 0x801c/0x8020; with both the child query and the real release 0x8024, the children base then live to
+// the end); the query alone, the release alone or the query with a null output, each through g_4d87f8, leave the
+// count alone at +0x1c. So the count's slot is kept by the cleanup's calls through the allocator global, not by the
+// v5 call. Same frame as the control: the query in a file-local inline info getter, the query and release in one
+// inline helper, the whole item release as an inline helper taking the item. Fast: the count as a by-value parameter
+// of an inline collection helper (its own address passed on) 146 (389 B, frame 0x8024).
 // M3 lane 13 r119 (fast with the six file-mates, all still matched; control 31): v5's count parameter as `long &` 31; v5
 // declared without its empty body 31; its count parameter as `void *` 31; the count declared `register` 31 (all the same
 // code); the collection step as a forceinline helper owning the count and returning it, the error through a pointer or a
 // reference 146/146 (389 B; the count keeps its own slot at +0x1c inside the inlined scope too). v5 pure virtual does not
 // compile (the aggregate is instantiated). Still BLOCKED by the build flag.
+// Available capacity as collection state 151; output pointer plus end-derived capacity 165;
+// output pointer plus carried capacity 166; total plus carried capacity 143; capacity state
+// with published child boundary or terminal table bound 150/150; output pointer through
+// cleanup 186 or through dispatch and cleanup 190. NOT kept: the isolated callback count
+// home still differs, and these forms enlarge the 373-byte body.
+// Per-child dispatch range with first/count 161/124, first/end 163/141,
+// end/count 163/148, and first/saved count 161/139, with independent/field output.
+// NOT kept: the range table leaves the frame oversized and increases the score.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

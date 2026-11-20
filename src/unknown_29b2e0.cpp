@@ -52,6 +52,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 }
 
 // score 176 (was 176): r121, r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// r123, r125 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// MiniMax D (11-19): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the XY vector read before the second copy measures 169 (seven points, under the eight-point bar), the same helper with the original vector order 171 and the two-exit helper with the early vector 174, the length taken from the helper's return 265 and the rotation rows written with the projection term first unchanged, all dropped; the magnitude and the aim length still sit at +0x10 where retail keeps them at +0xc, the final pitch takes a local slot where retail uses the fourth argument's home, and the rotations' sine, cosine and vector copies keep different slots.
+// score 176 (was 176): r123 unchanged. frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
 // stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
 // return value 267 and the length local initialised before the call 171, all dropped; the helper's locals renamed
@@ -648,6 +651,14 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // current-vector copy or XY copy 408/402/420. Early failure test 387; test after
 // current normalization with component copies 279. NOT kept: early heading
 // and failure tests recover unity in XMM4 but still spill the root at +0x10.
+// M3 lane 7 r188 (fast with 0x29b990; control 176, aligned 229, register-masked 179): the private normalizer as `k = 0;
+// m = normalize3d(v);` (include/normalize3d.h) 245 at 1719 B: the XMM numbering of all three normalizers is then retail's
+// (the first 155 rows differ only by the root cell, +0x10 against +0xc), but the yaw scale multiplies into a copy and the
+// matched sibling 0x29b990 drops to 10; the 2-D root written out with vector3f_scale and one exit 245 (same code), with the
+// early return 255; the two angles declared in the turning block with their two stores written in both arms 251 (1743 B),
+// with the normalize3d form 300. Reading: retail stores everything that comes off the x87 stack (the three roots, the
+// arc-cosine result) into the cell the yaw then lives in (+0xc); ours gives those +0x10 (shared with the first pitch angle)
+// and keeps +0xc for the clamped cosine and the yaw in every one of these forms, block scope included.
 // M3 lane 13 r121 (fast with 0x29b990, 0x29ab90, 0x29bab0, 0x11ce20, 0x11cc90, 0x1e5450; control 176 = plain, aligned 229):
 // the length, yaw, pitch or first-angle local renamed to sort first or last, or all three given natural names, 176 each
 // (same code); the rotated result, the cross axis or either normalised copy renamed 176 each (same code): neither the
@@ -674,6 +685,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // +0x3c) and the roots stay at +0x10; a parameter reused for another value, not kept. Reading: retail gives the pitch its
 // home after the first rotation's sine and cosine have theirs (roots and yaw +0xc, first pitch angle and both sines +0x10,
 // both cosines in the first stack argument's home, the pitch in the scale's home); ours homes the pitch first. Body unchanged.
+// MiniMax C (11-19): no gain (176, baseline; body restored). The single-exit normalizer with the XY vector before the second copy is the known 169, a gain of seven and under the bar; on it the roots and the inlined 0x11cc90 arc-cosine result sit at +0x10 where retail packs them at +0xc with the clamp input and the yaw. Re-measured here: the single-exit normalizer written with a result local and a length store 404, with a bool and ternaries 270, and the XY vector before the second copy 174.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

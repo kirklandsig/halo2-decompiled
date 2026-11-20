@@ -540,6 +540,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // request expansion is the inlined graph_resources_request from another lane's file; the permuter's 34 tries
 // over the reduced image found nothing below the 332 baseline.
 // MiniMax B (11-18): no new form, no lower score (348): the remaining differences all sit inside the inlined graph_resources_request, whose body is in another lane's file, so the graph's EBX/EBP roles, the add of 0x34 and the lazy reload into EBP are not ours to move from here.
+// MiniMax B (11-19): no new form, no lower score (348): the first difference is still at +0x1de, inside the request
+// expansion whose body is in src/unknown_1dacb0.cpp, so the graph's EBX/EBP roles, the add of 0x34 and the lazy reload
+// into EBP cannot be moved from this file; the frame and both query temporaries' homes still agree.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
@@ -856,6 +859,11 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // unknown_1dacb0.cpp) the inherited graph named before its group request 348 (same code; 0x1dc8c0 stays MATCH: that
 // matched user of the helper also keeps the graph in EBX and graph+0x34 in EBP, so the swap here comes from this caller);
 // the found names copied into an aggregate for the request 504 (1766 B, the frame changes).
+// Separate fallback with an identifier or byte gate 608/615. Byte formed after alternate
+// lookup with byte or identifier gate 662/589. Byte set in each lookup outcome with byte
+// or identifier gate 566/547. Separate failure return 612, Boolean phase result 664.
+// NOT kept: the split phases lose the matching lookup prefix. The Boolean form offsets EBX
+// in place with a different frame and different graph reloads.
 // M3 lane 10 r125 (fast with 0x1ddd00/0x1ddc70/0x1db120/0x1cccd0/0x1dc8c0, all MATCH unless noted, 0x1cd070 210 and
 // 0x1db170 828 unchanged; control 348, aligned 53). The three request helpers copied into this file under other names
 // (a private copy of the shared request) 348 (same code); on that copy: the urgent loop's resource table read into a local
@@ -1137,6 +1145,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax H (11-19): no new form, no lower score (210): the two id slots are still the other way round (retail keeps the transition id at frame+0x14 and the animation id at frame+0x18) and the blend-query byte is still computed after the 0xe6800 call where retail computes it before; the forms that align more instructions all raise the positional score.
 // MiniMax H (11-18): no new form, no lower score (210): the two id slots are still the other way round (retail keeps
 // the transition id at frame+0x14/0x16 with its stores in the block and the animation id at frame+0x18/0x1a with its
 // stores at the entry), the blend-query byte is still computed after the 0xe6800 call where retail computes it before,
@@ -1398,7 +1407,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {
-	byte result = false;
+	bool result = false;
 	s_animation_names names;
 	s_animation_names found;
 	c_type_709360 animation_id;
@@ -1430,14 +1439,10 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			transition_id = transition_find(names.mode, names.set, &blend);
 			blend &= !(flags & 1);
 			blend &= (((dword)state_flags >> 10) & (channel_valid(&channels[0]) && !function_0e6800(&channels[0]))) & 1;
-			if (blend)
-			{
-				unknown6e |= 1;
-			}
-			else
-			{
-				unknown6e &= ~1;
-			}
+		}
+		if (blend)
+		{
+			unknown6e |= 1;
 		}
 		else
 		{
@@ -1449,10 +1454,12 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			if (((state_flags & 0x20) || (state_flags & 0x40)) && channel_valid(&channels[0]))
 			{
 				real frame_count = (real)channels[0].function_1c6440()->frame_count - 0.0001f;
+				real frame_position = channels[0].frame_position;
 
 				if (frame_count > 0.0f)
 				{
-					fraction = PIN(channels[0].frame_position, 0.0f, frame_count) / frame_count;
+					frame_position = PIN(frame_position, 0.0f, frame_count);
+					fraction = frame_position / frame_count;
 					if (state_flags & 0x40)
 					{
 						fraction = 1.0f - fraction;
@@ -1471,12 +1478,12 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 			{
 				bool unflagged;
 
+				result = true;
 				unflagged = channels[0].is_unflagged0() & loops;
-				if (transition_id.index != NONE && graph_tag_index != NONE)
+				if (transition_id.index != NONE)
 				{
-					if (channels[2].set(graph_tag_index, 0x15, variant_get(transition_id), names.set, NONE, NONE, 3))
+					if (channel_start(&channels[2], transition_id, names.set, NONE, NONE, 3, 0x15))
 					{
-						channels[2].set_frame_position(0.0f);
 						if (channels[0].flags & 1)
 						{
 							channels[0].unknown11 |= 1;
@@ -1503,36 +1510,39 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 				{
 					flags &= ~0x10;
 				}
-				if (blend_id.index != NONE && graph_tag_index != NONE)
+				if (blend_id.index != NONE)
 				{
-					if (channels[1].set(graph_tag_index, 0x3c0, blend_id, transition_set, NONE, NONE, 0))
+					if (channel_start(&channels[1], blend_id, transition_set, NONE, NONE, 0, 0x3c0))
 					{
 						unknown80 = 0.0f;
 					}
 				}
-				flags &= ~1;
-				result = true;
-				goto names_store;
 			}
 		}
 	}
-	if (!(state_flags & 4))
+	if (!result)
 	{
-		goto animation_done;
+		if (state_flags & 4)
+		{
+			result = true;
+		}
 	}
-	result = true;
-
-names_store:
+	else
 	{
-		s_animation_names *names_out = &stored_names;
-		bool changed = (names_out->mode != names.mode) | (names_out->weapon_class != names.weapon_class) | (names_out->weapon_type != names.weapon_type);
+		flags &= ~1;
+	}
+	if (result)
+	{
+		bool mode_changed = stored_names.mode != names.mode;
+		bool class_changed = stored_names.weapon_class != names.weapon_class;
+		bool type_changed = stored_names.weapon_type != names.weapon_type;
 
-		*names_out = names;
-		if (changed)
+		stored_names = names;
+		if (mode_changed || class_changed || type_changed)
 		{
 			if (graph_tag_index != NONE && !(flags & 1))
 			{
-				resources_request(names_out->mode, names_out->weapon_class, names_out->weapon_type, true, true);
+				resources_request(stored_names.mode, stored_names.weapon_class, stored_names.weapon_type, true, true);
 			}
 			if (!channel_valid(&channels[2]))
 			{
@@ -1545,7 +1555,6 @@ names_store:
 			}
 		}
 	}
-animation_done:
 	return result;
 }
 

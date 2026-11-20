@@ -988,6 +988,11 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // `forward`) 235 (same code; kept). Unused initialised locals at the top (diagnostic only) 1-7: 236/285 (1229 B: the
 // rotation dot's fold goes, the first cross recolours)/232 (1240 B)/235/235/235/235. The settings alias dropped 235;
 // the old-forward alias dropped 235; both 235; the rotation and acceptance dots unparenthesized i, j, k 248 (1243 B).
+// M3 lane 16 r146 (fast, 0x1e5af0 and 0x30bf0 matched in each): `limited` declared ahead of `axis` and assigned in the
+// rotation block 235; `limited` copied from `state->up` 235; `axis` declared ahead of `up` 235; one cross vector for the
+// rotation block and the outer crosses 235; `limited` ahead of `axis` with the shared cross 235 (all the same code).
+// Diagnostic, unused initialised locals at the top, K = 0-3 and 8-16: 235/236/285 (1229 B)/232 (1240 B), then
+// 235/236/285/232/235/235/235/235/235: the pattern repeats every eight, so no symbol count reaches below 232.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -1084,6 +1089,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax B (11-19): no new form, no lower score (234): the permuter over this body tried three rewrites in 363 s and left
+// the baseline at 234. The shared out.k store does reproduce retail's tail - with the disabled arm's last row left in a
+// register and the three arms ending in one shared store of out.k, the disabled arm jumps to retail's store and the
+// direct arm keeps its own copy - but the direct and general arms' rows then take the other operand side and other
+// register homes (the direct arm's speed product, the general arm's current add), so the body loses 24 bytes and the
+// score rises to 596, and to 590 with the two arms left as they are and their k read back. Left: the damping bit's first
+// extraction in ECX, the two cross products that keep up.k on the other side, and the general arm's k row ending in XMM2
+// where retail's ends in XMM0.
 // score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
@@ -1671,6 +1684,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // rate reads 568 (3030 B, aligned 199, masked 91); the getter with the input length through magnitude3d 557 (aligned 185),
 // through the input pointer 560, with the history length 568, with both 566/560 (aligned 227/246); both lengths without the
 // getter, re-measured, 485 (aligned 280). Body unchanged.
+// M3 lane 15 r109 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; control 234): retail's low-normal arm loads the
+// basis side first in four of the cross's six products (state->basis.k read as [esi + 0x120], the rest through the lea),
+// ours the up side; the input length is magnitude3d's inlined block. The low arm's cross through the shared cross3f 234
+// (same code: helper text order does not reach the products); the low arm's cross on the `forward` copy 380 (3053 B); the
+// basis copied after the cross 348 (3070 B); the input pointer declared after the four flags 250; no input pointer, every
+// read through state->input, 543. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

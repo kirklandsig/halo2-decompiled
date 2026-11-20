@@ -506,6 +506,7 @@ done:
 #include "props.h"
 #include "unknown_11cc90.h"
 #include "vector2f_products.h"
+#include "vector2f_normalize.h"
 #include "axis_rotation.h"
 
 void __stdcall function_26c2d0(long prop_index);
@@ -514,24 +515,6 @@ extern vector3f *g_4687b0;
 /* the cosine of the quarter turn the facing is turned by */
 static real const k_quarter_turn_cosine = 0.0f;
 
-/* a planar vector times a scale, into out (which may be the vector itself); the vector counterpart of the
-   point pair in src/unknown_0a76b0.cpp */
-static inline void planar_scale(vector2f const *vector, real scale, vector2f *out)
-{
-	out->i = scale * vector->i;
-	out->j = scale * vector->j;
-}
-
-/* makes a planar vector unit length and returns the length it had, or 0 for one too short to scale */
-static inline real planar_normalize(vector2f *vector)
-{
-	real magnitude = magnitude2d(vector);
-
-	if (fabs(magnitude) < 0.0001f)
-		return 0.0f;
-	planar_scale(vector, 1.0f / magnitude, vector);
-	return magnitude;
-}
 /* the actor's desired velocity toward the target: its aim direction at its speed; an actor with no field 0x26c
    whose facing points away from that direction turns the facing a quarter turn toward it instead and moves along
    the result at the same planar length. Returns the prop's object when the prop node counts one or more.

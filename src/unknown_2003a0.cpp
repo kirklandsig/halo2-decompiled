@@ -3103,6 +3103,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // half's definition pointer NULL at the top and assigned in an `if` 107 (578 B: the NULL test is threaded away, the
 // reload stays); the first arm's unlock test as a forceinline predicate with early `return true` 179 (594 B, the lock
 // byte is loaded and tested in a register); the threshold as `mode == 0 ? 1 : count` 50 (same code). The reload stays.
+// M3 lane 2 r109 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, all matched; control 50): the threshold started at 1 and
+// overwritten when the list's first word is nonzero 100 (578 B: a store ahead of the test); the compute arm's task and delay
+// tests nested 50 (same code); the squad looked up as `squad_get((word)arg_1)` 104 (578 B, `movzx esi, bp`); the squad's
+// 0x40 flag read once into a bool for both first-half tests 189 (594 B); the threshold declared bare at the top 50 (same
+// code). Diagnostic (value-wrong, reverted): the follow-up returning early when the event is NONE 54 (583 B, reload stays).
+// The first follow-up still reloads the index from its home in each.
 // M3 lane 1 r126 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20, all matched; control 50, aligned one line): the else-if
 // written as `else { if (...) }` 50; the reset index declared before the pending word 50; the delay out-value declared
 // after the two words 50 (all the same code); the compute arm's delay test as `>= 1` 55 (580 B, `cmp cx, 1; jl`, the
@@ -3119,13 +3125,17 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // dominating use of the constant 1 (round 169's lead) with compares that might fold to their zero form: the delay test as
 // `< 1` 51 (`cmp ..., 1; jge`), the count test as `!(count < 1)` 55 (580 B), the trigger byte as `!= true` 116 (578 B);
 // none folds, and the reload stays in each.
+// Matched in a full build with stand-in SDK headers (was 50): the first test reads the definition's bit as bit 8 of
+// the word at +0x23 instead of bit 0 of the byte at +0x24. The compiler narrows it to the same `test byte [..+0x24], 1`,
+// but only after register candidates are formed, and that keeps the squad pointer in ebp across the block (retail's
+// `mov eax, ebp`) instead of reloading it.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
     byte *local_1 = (byte *)squad_get(arg_1);
     if (arg_0 != NONE && (!(local_1[2] & 0x40) ||
         *(short *)(local_1 + 0x2a) == NONE ||
-        !((*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(local_1 + 0x2a) * 0x7c)[0x24] & 1)))
+        !(*(word *)((*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(local_1 + 0x2a) * 0x7c) + 0x23) & 0x100)))
         function_202e90(arg_1, (short)arg_0, false);
     else if ((local_1[2] & 0x40) && *(short *)(local_1 + 0x2a) != NONE)
     {

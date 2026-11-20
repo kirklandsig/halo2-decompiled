@@ -1382,6 +1382,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // `while (count > 0)` with the step and `--count` at the body's end, count and offset first, 1 (same code); the first
 // loop's count and offset declared bare at the function's top 1 (same code); SSS with the success flag declared just
 // ahead of the first loop 127 (375 B).
+// M3 lane 7 r187 (fast with 0x13a532, 0x1393f3; SSS control 118): SSS with loop 1's condition result named 118 (same
+// code); SSS with 0x13ad48's anchor re-formed from the field (`local_2->field_24 + local_8 + 4`) 14 (365 B: the load is
+// merged across the condition call and `field + offset` with the element, so the anchor is retail's `lea eax, [esi+4]`
+// and all three loops get retail's registers, but the merged load is its own temp: `mov eax, [edi+0x24]; lea esi,
+// [eax+ebx]` against retail's `mov esi, [edi+0x24]; add esi, ebx`); that with the element formed in two statements 14;
+// that with the anchor as `&local_2->field_24[local_8 + 4]` 14.
 // M3 lane 3 r266 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): on the current body the count
 // declared before the offset 1, the count in the for initialiser 1 (same code). On SSS, loop 1's mask argument formed
 // from the field again (`local_2->field_24 + local_8 + 8`, also written offset-first or as `&field_24[local_8 + 8]`)
@@ -1391,10 +1397,14 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // add esi, ebx`, the field load now a shared temp). The draw call's element re-formed from the field 92 (367 B, reloaded
 // after the calls). So retail's loop 1 holds one more reference (definition pointer or offset) than SSS, not through a
 // second field load.
+// Matched in a full build with stand-in SDK headers (was 1): the success flag's initial store goes through a reference
+// to its address, and the first loop is a guarded do-while counting down (the form of the second loop).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
-	bool success = true;
+	bool success;
+	bool *const &kept = &success;
+	*kept = true;
 	s_13a532 const *local_2 = (s_13a532 const *)g_4e3b44[arg_1 & 0xffff].bytes;
     word local_3 = 0;
     word local_4 = 0;
@@ -1402,19 +1412,23 @@ bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
     word local_6 = 0;
     s_13ad48_item const *local_7;
     function_13a050(arg_3, arg_2, arg_4, &local_7, &local_3, &local_4, &local_5, &local_6);
-    long offset = 0;
-    long count = local_2->field_20;
-    for (; count > 0; --count)
+    if (local_2->field_20 > 0)
     {
-        byte const *local_9 = local_2->field_24 + offset;
-        if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
-            local_6, (s_condition_subject const *)local_7, local_5))
+        long local_8 = 0;
+        long local_11 = local_2->field_20;
+        do
         {
-            real local_10[4];
-            function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
-            if (!function_22b7dd(local_9, arg_2)) success = false;
+            byte const *local_9 = local_2->field_24 + local_8;
+            if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
+                local_6, (s_condition_subject const *)local_7, local_5))
+            {
+                real local_10[4];
+                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
+                if (!function_22b7dd(local_9, arg_2)) success = false;
+            }
+            local_8 += 0x50;
         }
-        offset += 0x50;
+        while (--local_11);
     }
     if (local_2->field_8 > 0)
     {

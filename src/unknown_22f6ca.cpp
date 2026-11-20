@@ -239,6 +239,17 @@ void function_22fba9(c_class_1473c9 *screen)
 // class's inline function_22e957 wrapper 23, both loops through it 23 (all the same code). Diagnostics: the text helper
 // given a constant 0 for its index 47 (420 bytes: the text loop's counter moves to memory and the offset to ESI, the
 // model loop unchanged, still `and` and the EAX copy); without the model's value0a store 54 (re-measured).
+// M3 lane 2 r112 (fast with the file's 10 matched functions; control 23): `register long i` 23; the model's value0a
+// through a `short index` named in its `if (model)` block 23; the model tests as `!= NULL` and `!= false` 23; the model
+// loop as `i = 0; if (i < count) do ... while (++i < count);` 23 (all four the same code); the model loop walking a
+// definition pointer stepped at the body's end 32 (412 B). Diagnostics: the text loop deleted (369 B) or without its
+// animation start (395 B) moves the model to ESI and reloads the screen from its home, so the model loop's copy depends
+// on the text loop. A compile-only build (no /GL) gives `and` resets in both loops and does not reproduce this function.
+// M3 lane 8 r197 (fast with 0x22facd, 0x230427, 0x22f6ca): the screen parameter typed as the base widget (downcast for
+// the pane getter and the two screen-typed helpers, the declaration in screen_widget_core.cpp changed to match) 23;
+// the model definition as `pane->models + i` 23; the text and model loops stepping `++i` 23; the model's value0a
+// store without the cast 23; the text call's definition as `pane->texts + i` 23 (all the same code). Compile-only (no
+// LTCG conventions) gives both the text and model resets as `and` and reads the text loop's screen without a copy.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

@@ -796,6 +796,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // frame 0x14 as retail, but the loop is inverted); the same with a long counter 264; the declarations after the lowest scan
 // 266; the three exits as returns 265 (749 B); short counter with a long flag 242 (759 B). The loop's end written as
 // `if (!left_start || points2d_differ(...)) continue; goto finished;` on that body (screen only) loses 25 rows.
+// Still-at-start state as bool/byte/short/long with short-circuit update 264/264/265/265;
+// explicit update 262/262/260/263. NOT kept: the 0x14 frame returns, but each form shortens
+// the body by at least 21 bytes and changes the matched caller's convention.
+// The pass bound still occupies a separate word. The result and departure homes differ. shared short ordinal for
+// lowest/candidate 144, lowest/duplicate row 144, lowest/duplicate search 144, candidate/duplicate row 144,
+// candidate/duplicate search 144, lowest/candidate/duplicate row 144, lowest/candidate/duplicate search 144,
+// shared long lowest/candidate ordinal 651. NOT kept: The seven shared short scan ordinals tie without moving any
+// stack home. The shared long ordinal lengthens the function to 1095 bytes.
 // M3 lane 4 r219 (fast with 0x239d50 and 0x239b80, both MATCH each time; control 144): the count read once through
 // `short const *const count_home = &count;` for the classifier, a bool flag and the compaction through memcpy (retail
 // calls the CRT memcpy) 256 (767 B); count_home with memcpy 145; count_home alone 144 (same code). One hull counter
@@ -826,6 +834,20 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // main's gotos 265 (759 B, aligned 118), with a long flag 252 (752 B), with `return (short)hull_count` 269 (same code).
 // Reading: retail's hull count and count both behave as values the candidate scan's sqrt/atan2 may change (reloaded after
 // it, never held across it), which no folded spelling reproduces. Body unchanged.
+// M3 lane 2 r111 (fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 84, masked 36): the
+// completion-flag body (match-only; bool departure and done flags and the heading ahead of the lowest scan, one long
+// counter in `while (!done && (short)hull_count < count)`, positive closure, compaction under `if (!done)`) rebuilt 210
+// (784 B, frame 0x14, masked 19: left are the count in EBX, the hull count cached in ECX and the pass test repeated at the
+// foot). A grid of {short, long with casts} counter x {`indices[hull_count++] = current`, store then increment} x {flag
+// exits, three returns}: the append spelling never changes the code; long + flags 210, short + flags 236 (762 B, the count
+// arrives in EAX, 0x239d50 80), long + returns 269 (747 B), short + returns 265 (749 B). Diagnostics, all removed: the
+// `standard` marker on main's body and on the four flag/return bodies 221/231/292/265/295 with 0x239d50 at 34 each; the
+// count's address stored to a global gives retail's memory compare in the candidate scan and a reload after it, but the
+// count is still cached in EBX through the pass loop (flag body 171 at 794 B, masked 22; short counter 222 at 784 B; main's
+// body 234); the hull count's address stored to a global gives retail's top-tested pass loop behind a jump (240 at 784 B)
+// with other registers. Retail loads the count into EBX only as the classifier's argument, copies it to EDX for the lowest
+// scan, reads its home again for `current = count` after the call and compares it from memory either side of the index
+// store; EBX then caches the hull count.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1026,6 +1048,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // and keeps the bool in CL; the home is read as a dword only when the parameter is a thirty-two-bit type, and that width
 // is fixed by the declaration in src/unknown_17d9a0.cpp, which is not this lane's file.
 // MiniMax D (11-16): no new form and no lower score (129): a `count > 0` guard in front of the loop does give retail's count load (`mov ecx, dword ptr [ebp + 8]`, `movsx edi, cx`) and its `test cx, cx` guard, but the flow then differs elsewhere - `i = 0` is stored after the guard where retail stores it before the `jle`, the zero constant stays in XMM4 against retail's XMM2 and the function grows to 893 bytes (211; 92 only together with retail's fraction if/else and `current->x * plane->n.i`); the guard repeats the loop's own `i < count` test, so it may be kept only with a byte match and is restored here; the permutation search over the body (44 tries, 409 s, annealed, one job) reached 128, one point better than the baseline.
+// MiniMax C (11-19): no new form, no lower score (129): retail reads the count argument as a dword and narrows it to a short for the indexing (`mov ecx, dword ptr [ebp + 8]`, `movsx edi, cx`, `test cx, cx`) where this build reads it as a word; the count's width is this function's signature and the caller in src/unknown_17d9a0.cpp declares the same short parameter, so widening it here is a signature change this lane may not make (a measurement with a dword count and a narrowed short scored 332 and 826 bytes).
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // MiniMax D (11-11): no new form, no lower score (129); retail reads the count argument as a dword home (`mov ecx, [ebp+8]; movsx edi, cx`) where this declaration's short count is read as a word, and that parameter type is declared in src/unknown_17d9a0.cpp, so the first difference stays.

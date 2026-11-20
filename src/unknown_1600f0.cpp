@@ -1210,9 +1210,12 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
-// score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
-// score 679 (P622: a one-use caption-phase local at the division gives 671, match-only, reverted): Frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
-// score 679 (was 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// score 679 (was 679): Frame 0x798 versus retail 0x79c. Viewer and origin slots,
+// scroll-limit conversion and initial divisor spill still differ. Earlier fast check 678.
+// One-use caption phase at the division 671 (requires a match, reverted).
+// Frame 0x798 versus retail 0x79c. Viewer and coordinate homes,
+// the scroll-limit conversion and the initial divisor spill still differ. Earlier reduced check 678.
+// One-use caption-phase local at the division 671 (match-only, restored).
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
@@ -1555,6 +1558,21 @@ PRIVATE inline long score_string_list_1608e0()
 // initialised `{ x, (short)y }` 679, with far edges / far edges and += / all edges / += only 679 each; initialised with
 // all four title edges from row_position and += 698 (2888 B: the player index then loads into EBX first as retail and
 // row_position[1] is reloaded after the call, but the panel takes EBX and the frame stays 0x798).
+// M3 lane 14 r120 (fast; control 679, 714 instructions against retail's 718; cut at the 20 calls and masked, 521
+// differ with registers kept and 223 without). Between the title's two calls retail has 71 instructions to our 63: it
+// keeps 1.0 in XMM2 for the fade division and both clamps (ours loads it three times), stores the row number 2 before
+// the widths, computes the score width before the time width (ours the time width first) and advances the row's top in
+// its register (`add edi, 0x18`, later `add edi, 0x19` for the left edge). Forms: `long row_number = 2;` ahead of the
+// title's text call 685; right after the fade count 685; the row's top advanced in place (`y += 0x18; row_position[1]
+// = y;`) 679 (same code); the time width declared before the score width 692 (2888 B, 711 instructions); the title's
+// four edges from the row position 679 (same code); that with the in-place advance 679 (same code). Body unchanged.
+// Saved horizontal origin through first/remaining/all captions with advance from
+// origin or cursor 678/678, 700/700, 694/694. Copy origin after title, before caption
+// fade or at caption geometry 680/681. NOT kept: the one-point gain adds nine bytes
+// and leaves frame 0x798. Viewer and separate origin homes still differ.
+// Named score-buffer member and typed receiver 679/679, typed conditional 719, native team offset 681,
+// player score record 691, native team/player records 693, early player record 687, named player fields 691.
+// The 0x798 frame and viewer in EDI remain in the retail-length forms.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

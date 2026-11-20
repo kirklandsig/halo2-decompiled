@@ -330,6 +330,20 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // (1373 B); the send test with the has-host term first 419 (1356 B); diagnostic, the has-host flag started false and set
 // in the call's arm (match-only) 402 (1376 B); the reliable window passed straight into the ratio 356 (same code).
 // 0x75910's byte result stays BLOCKED-BY 0x75910 (its file was another lane's this round).
+// M3 lane 5 r208 (fast with 0x75910, 0x76520, 0x765c0, 0x77940, all MATCH each run; control 356, difflib-aligned 195).
+// Nothing kept. The channel's first flag read at each of its five uses, no local copy, 429 (1388 B: retail's two
+// separate tests for the two budget picks, but each reloads the flag where retail tests BL); the forced-send store
+// written between the two budget picks 442 (1392 B), ahead of both 356 (same code); the secondary output flag as a
+// copy of the forcing flag at its one set 416 (1356 B; frame 0x34 as retail, registers as before); 0x75910 returning
+// `bool` (`return owner && owner->active;`, its declaration here to match: its file was free this round and 0x75910
+// still matches) 355, retail's `test al, al`, one point, not kept, so the BLOCKED-BY 0x75910 item is now only that one
+// point. Reading of retail's exits: the `rate == 0` test sits out of line just ahead of the shared exit and falls
+// into it; the first threshold is `setge; test; je` with no result store and the second a plain `jl`; the
+// reliable-bytes failure stores `false` in two separate arms; the `budget < 0` exit is a literal `xor al, al` return
+// of its own. The reliable-bytes failure as two nested tests with `local_2 = false` in each failing arm (retail's two
+// stores) 402 at 1369 B, retail's length, aligned 195 as the control (a higher count, not kept); the same with the
+// failing arms first 413 (1380 B). The byte homes differ only in the last pair (retail: the secondary output flag +0x16, the packet flag
+// +0x17, which it also keeps in BL; ours the reverse).
 // M3 lane 13 r122 (fast with 0x75910/0x76520/0x765c0/0x77940/0x89030, all MATCH each time; control 356, aligned 194):
 // `bool local_16 = false;` declared beside `local_7` ahead of the has-host call (a constant initialiser moved up; retail
 // stores two false bytes from a zero register there) 353 (1370 bytes: `xor ebx, ebx`, `cmp [eax], ebx` in the search and
