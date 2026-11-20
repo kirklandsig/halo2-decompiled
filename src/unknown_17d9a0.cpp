@@ -40,6 +40,9 @@ struct s_decal_bsp_17e490
 	s_decal_bound_17e490 *bounds;
 };
 
+// Score 32 in a full build with stand-in SDK headers (was 120): result is set before the memset, the float test is
+// written as statements (total radius, then x, y, z; distance summed x, z, y), count is set before the first cluster,
+// and the loop runs to a cluster_count local. Left: retail keeps the g_4e7414 counter in EAX and steps it before the pushes.
 // @retail 0x17e490
 long function_17e490(long excluded, short cluster_index, point3f const *point, real radius, long maximum_count, s_decal_bound_17e490 **output)
 {
@@ -58,16 +61,17 @@ long function_17e490(long excluded, short cluster_index, point3f const *point, r
 		}
 		else
 		{
-			clusters[0] = cluster_index;
 			count = 1;
+			clusters[0] = cluster_index;
 		}
 	}
+	long cluster_count = count;
 	dword visited[32];
-	memset(visited, 0, sizeof(visited));
 	long result = 0;
+	memset(visited, 0, sizeof(visited));
 	if (excluded != NONE)
 		visited[excluded >> 5] |= 1 << (excluded & 31);
-	for (long i = 0; i < count; ++i)
+	for (long i = 0; i < cluster_count; ++i)
 	{
 		s_decal_cluster_17e490 *cluster = &((s_decal_bsp_17e490 *)g_4e0348)->clusters[clusters[i]];
 		for (long j = 0; j < cluster->count; ++j)
@@ -77,12 +81,14 @@ long function_17e490(long excluded, short cluster_index, point3f const *point, r
 			if (!(visited[index >> 5] & bit) && result < maximum_count)
 			{
 				s_decal_bound_17e490 *bound = &((s_decal_bsp_17e490 *)g_4e0348)->bounds[index];
-				real x = point->x - bound->center.x;
-				real z = point->z - bound->center.z;
-				real y = point->y - bound->center.y;
-				real distance = x * x + z * z + y * y;
 				real total_radius = bound->radius + radius;
-				if (total_radius * total_radius >= distance)
+				real x = point->x - bound->center.x;
+				real y = point->y - bound->center.y;
+				real z = point->z - bound->center.z;
+				real distance = x * x;
+				distance += z * z;
+				distance += y * y;
+				if (distance <= total_radius * total_radius)
 				{
 					output[result++] = bound;
 					visited[index >> 5] |= bit;
