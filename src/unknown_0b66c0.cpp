@@ -575,6 +575,12 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // to the result (`result = start + count <= length; if (result)`) with the volatile string 40 (104 bytes) [6]; the sign
 // and clamp tests as `count >= 1` and `count >= 0x201` 23 [match] (compares with immediates; the walk ECX / counter EDX
 // split unchanged); a plain string with one volatile read of its own address at the scan, the early source plain, 39 [6].
+// M3 lane 16 r159 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; volatile string kept): no early
+// source, the string read into a `long text` after the clamp and added into start (`start += text`) 27 [6] (start arrives
+// in EDX and stays, the walk EDI, the counter ECX as retail; the sum lands in the text's EAX); no early source, a `char
+// const *text = string;` named after the clamp with `text + start` at the copy 27 [6] (same code); that local named
+// before the compare 40 [35]; the source as `(char const *)(start + (long)string)` at the copy 28 [6]; `start = (long)string
+// + start;` after the clamp 40 [match] (start ECX for life, the string folded into the add).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

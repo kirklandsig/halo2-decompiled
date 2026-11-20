@@ -259,6 +259,12 @@ static inline void *function_xc5914d(long thread_index, short size)
 // volatile-free body built /O2 /arch:SSE /Gr 95 and /O2 /Ob1 /Gr 95 (the file's flags do not decide the merge). Retail
 // never writes EAX between the early copy and the arm's reload of the home into EAX, so its result and pointer are two
 // variables where every volatile-free form here makes them one.
+// M3 lane 16 r159 (h2m fast with 0x2099f0, which stays matched; volatile-free forms): the frame reference declared after
+// the second allocation, the element taken from `result` and `result = NULL` between them 89 (272 B); the result copy made
+// after the initialisation block with `result = NULL` first in the arm 83 (277 B); `long *result;` declared first and
+// set only in an else arm of the test, NULL first in the arm 89 (277 B); the parameter count read once into a `long
+// count` for the size and the test, NULL first 90 (282 B), into a `short count` 83 (277 B). Every form keeps the first
+// allocation's frame load folded (`mov esi, [eax + ecx + 0x10]`) and has no spill slot.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

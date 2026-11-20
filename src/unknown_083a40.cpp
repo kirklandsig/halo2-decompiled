@@ -923,6 +923,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `sizeof(t_player_key)` 28 (same code); the swap's update as `updates + ++*count - 1` 28 (same code). Reading (from the
 // preheader): the two stack cursors are watcher + 0xb0 stepped by 0xb4 and its negation -(watcher + 0xb0), so the key's
 // `i * 0xb4` is their sum; retail adds `collection` to the negated start first, ours adds the two cursors first.
+// M3 lane 16 r159 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): the occupied key indexed by the
+// stored `update->player_index` 103 (the store is forwarded on the swap order (collection, player, update, other), 32);
+// on that swap order: `collection` dropped from the slot search and swap (both given `&watcher->players`) and declared
+// after the swap, just before the occupied test, 32; the occupied key through a `t_player_key const &` bound to
+// `collection->players[i].key` 32; a named occupant pointer taken ahead of the count step 40. The key sum stays (inverse
+// + cursor) + collection + 4 in each; the swap order alone re-measured 32.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

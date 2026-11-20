@@ -303,6 +303,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // plain-read form (no reference): the started test `NONE != object_index` 116, the request test `NONE == object_index`
 // 116, the marker test `NONE != object_index` 116, all three 116 (531 B, the plain-reads code); on the kept form the
 // request and marker tests constant-first 11 (same code). The operand side does not move the object/tag contest for EBP.
+// M3 lane 16 r159 (plain, with the five matched callers, all matched each time; on the kept form): the started test
+// written `NONE != *object_reference` 11 (same code); an early `if (tag_index == NONE)` exit with its own duration reset
+// in place of the outer tag block 11 (same code, the resets merge); the playback label call named before 0x189340 16
+// (526 bytes); the audible argument as `positioned + 1` 40 (521 bytes: the flag is read with `movzx` and the late
+// object load moves ahead of the push, where retail reads the flag into BL first); the audible argument as an if-set
+// `long audible` 37 (532 bytes).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
