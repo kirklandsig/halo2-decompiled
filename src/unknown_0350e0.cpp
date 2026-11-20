@@ -5601,8 +5601,13 @@ void function_32ce0(long object_index, real opacity)
     }
 }
 
+// Score 307 in a full build with stand-in SDK headers (was 322): the two record pointers were crossed. Retail receives
+// the camera (read at +0x50..+0x84) in EAX and the source (whose type word it reads) in ECX, so the parameters are
+// (camera, source, ...) and 0x404b0 passes them in that order. The forward vector is copied through a named pointer,
+// the resource arm's tail is a vector3f copy, and top / bottom are declared at their clamps. Left: retail stores the
+// globals before each following load through a pointer (they may be fields of address-taken struct globals).
 // @retail 0x4a1e0
-void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_index,
+void function_4a1e0(s_view_camera *camera, s_view_source *source, long resource_index,
     s_view_flags *flags, real unused_scale, bool enabled, real scale)
 {
     /* the unused scale stays on the stack */
@@ -5619,12 +5624,13 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
         g_4858cc = *(long *)(resource + 0x4c);
     else
         g_4858cc = NONE;
-    byte *input = (byte *)source;
+    byte *input = (byte *)camera;
     g_485944 = *(vector3f *)(input + 0x50);
-    g_485950 = *(vector3f *)(input + 0x5c);
+    vector3f const *forward = (vector3f const *)(input + 0x5c);
+    g_485950 = *forward;
     g_48595c = *(real *)(input + 0x68);
     g_485960 = 0.0f;
-    g_4858c8 = *(short *)camera;
+    g_4858c8 = *(short *)source;
     if (resource)
     {
         g_485a30 = *(real *)(input + 0x74);
@@ -5654,10 +5660,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
             && clip_rect[3] >= bounds.y0 && bounds.y1 >= clip_rect[2])
         {
             real left = bounds.x0, right = bounds.x1;
-            real top = 0.0f - bounds.y1, bottom = 0.0f - bounds.y0;
             if (clip_rect[0] > left) left = clip_rect[0]; else if (left > clip_rect[1]) left = clip_rect[1];
             if (clip_rect[0] > right) right = clip_rect[0]; else if (right > clip_rect[1]) right = clip_rect[1];
+            real top = 0.0f - bounds.y1;
             if (clip_rect[2] > top) top = clip_rect[2]; else if (top > clip_rect[3]) top = clip_rect[3];
+            real bottom = 0.0f - bounds.y0;
             if (clip_rect[2] > bottom) bottom = clip_rect[2]; else if (bottom > clip_rect[3]) bottom = clip_rect[3];
             short screen_left = g_485a8a.a.v1, screen_right = g_485a8a.a.v3;
             bounds.x0 = (screen_right - screen_left) * (left - clip_rect[0]) / (clip_rect[1] - clip_rect[0]) + screen_left;
@@ -5677,7 +5684,8 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
             g_485964[5] = 0.0f - *(real *)(context + 0x74);
         }
         g_4858d0 = true;
-        memcpy(g_485934, resource + 0x18, sizeof(g_485934));
+        *(vector3f *)g_485934 = *(vector3f *)(resource + 0x18);
+        g_485934[3] = *(real *)(resource + 0x24);
     }
     else
     {
@@ -6393,7 +6401,7 @@ void function_133390(s_bit_vector_pool const *visibility);
 void __stdcall function_133520(s_bit_vector_pool *visibility);
 void function_133720(s_bit_vector_pool *visibility, bool enabled);
 void function_44720();
-void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool special, real weight);
+void function_31170(long tag, s_view_source *source, long resource, s_view_camera *camera, bool special, real weight);
 
 // @retail 0x31c80
 void function_31c80()
@@ -6447,8 +6455,8 @@ void function_31c80()
         function_133520(state);
         function_133720(state, true);
         function_44720();
-        function_31170(*(long *)(light + 4), (s_view_camera *)shape, light_index,
-            (s_view_source *)(light + 0x84), special, *(real *)(records[i].data + 3));
+        function_31170(*(long *)(light + 4), (s_view_source *)shape, light_index,
+            (s_view_camera *)(light + 0x84), special, *(real *)(records[i].data + 3));
     }
 }
 
@@ -6581,17 +6589,17 @@ extern dword g_4b843c;
 // publication and the late flag reads, and the body stays fourteen bytes short of retail because no spelling of the bit-0 and
 // bit-1 steps reproduces the store retail keeps before the branch.
 // @retail 0x31170
-void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool enabled, real scale)
+void function_31170(long tag, s_view_source *source, long resource, s_view_camera *camera, bool enabled, real scale)
 {
     byte *definition = g_4e3b44[tag & 0xffff].bytes;
     function_40e90(0);
     if (enabled) enabled = (g_4c1a48[2].flags & 0x400) != 0;
-    function_4a1e0(source, camera, resource, (s_view_flags *)definition, 1024.0f, enabled, scale);
+    function_4a1e0(camera, source, resource, (s_view_flags *)definition, 1024.0f, enabled, scale);
     g_4ba018 = 1;
     g_4ba014 = 0;
     if ((!g_510c50 || !((byte *)g_510c50)[5]) && *(short *)(definition + 4) == 0)
         g_485950.i = g_485950.j = g_485950.k = 0.0f;
-    g_4ba014 = *(short *)camera == 0 ? 1 : 0;
+    g_4ba014 = *(short *)source == 0 ? 1 : 0;
     bit_vector_set(&g_4ba014, 1, g_485950.i > 0.009999999776482582f || g_485950.j > 0.009999999776482582f || g_485950.k > 0.009999999776482582f);
     if (enabled && !(bool)((g_4ba014 >> 0) & 1))
     {
@@ -6602,7 +6610,7 @@ void function_31170(long tag, s_view_camera *camera, long resource, s_view_sourc
     g_4ba014 = g_4ba014 & ~0x10;
     if ((bool)((g_4ba014 >> 2) & 1))
     {
-        function_48ee0((byte const *)source, (byte const *)camera, definition);
+        function_48ee0((byte const *)camera, (byte const *)source, definition);
         draw_configured_pass_r18(10);
     }
     if ((bool)((g_4ba014 >> 2) & 1) || (bool)((g_4ba014 >> 1) & 1) || (definition[0] & 0x20))
@@ -7335,7 +7343,7 @@ bool __stdcall function_32350(long index, real input_alpha)
                 g_4c5008 = g_47fda0;
                 g_4ba014 = 0x14;
                 function_30ca0(false, 5);
-                function_4a1e0((s_view_source *)g_47fd18, (s_view_camera *)shape, NONE,
+                function_4a1e0((s_view_camera *)g_47fd18, (s_view_source *)shape, NONE,
                     (s_view_flags *)g_47fda0, 1.0f, true, 1.0f);
                 function_48ee0(g_47fd18, shape, g_47fda0);
                 g_485a30 = alpha;

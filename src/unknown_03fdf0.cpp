@@ -152,7 +152,7 @@ void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil
 bool __stdcall function_44370(long mode);
 void __stdcall function_174220(bool enabled);
 bool function_c17f0(long light_index, s_light_shape_ab *shape, bool respect_engine);
-void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_index,
+void function_4a1e0(s_view_camera *camera, s_view_source *source, long resource_index,
     s_view_flags *flags, real unused_scale, bool enabled, real scale);
 
 // score 2 (was 2): only first's spill slot differs (retail +0x14, ours the mode parameter's home, shared with the entry cursor).
@@ -813,7 +813,7 @@ bool function_404b0(long mode)
                 parent = *(long *)(*(byte **)(g_4e0300->data + (parent & 0xffff) * 12 + 8) + 0x14);
         }
         function_402b0(cache_index, mode);
-        function_4a1e0((s_view_source *)&shape, (s_view_camera *)(light + 0x84), light_index,
+        function_4a1e0((s_view_camera *)(light + 0x84), (s_view_source *)&shape, light_index,
             (s_view_flags *)definition, 1024.0f, false, 1.0f);
         g_4ba018 = true;
         dword flags = (short)shape.kind == 0 ? 1 : 0;
