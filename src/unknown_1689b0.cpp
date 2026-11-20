@@ -2164,6 +2164,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // MiniMax B (11-20): no new form, no lower score (551): the count and clearance homes are still displaced and the
 // radius square is still computed before the clearance branch where retail computes it after; the four-point indexed
 // leads stay above 30 and the live-count forms tie at 547 or 551.
+// M3 lane 7 r199 (fast with 0x120790/0x2469b0, both MATCH): the counts and radii declared as edge pairs then face pairs
+// (edge count, edge radius, face count, face radius: retail's store order at the head) 550 (the head stores come out
+// count, radius, count, radius at our homes 0xb0/0xa8/0xb4/0xac against retail's 0xac/0xa8/0xa4/0xb0); that with
+// `radius * radius` at its one use and no square local 552 (2883 B); with the four declared first and assigned in that
+// order 550; with the prism index declared after them 550; with the nearest distance declared after them 550 (all
+// one point, moved declarations: not kept).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

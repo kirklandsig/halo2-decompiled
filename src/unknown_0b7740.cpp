@@ -1196,6 +1196,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // (837 B, first difference +0xa: object_index then takes ESI, the +0xb3 byte BL with EBX pushed before it and
 // `definition` is stored at once, as retail, but final's home is stored at entry from EAX where retail stores it late
 // from EDX). Diagnostic: the object-type test through a fresh definition lookup 170 (merges with `definition`).
+// M3 lane 1 r136 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): retail's entry
+// load of the parameter (EDX) is one value shared by `result` (the EDI copy) and the late final_matrices store; object_index
+// takes ESI only because EAX/ECX/EDX then hold the header, the object and that load. Lane 4 r225's 170 lead differs from it
+// only in that choice (the parameter in ESI, object_index in EDX). final_matrices declared and initialised at the top and
+// assigned again before the mask copy 240 (same code: the dead first assignment goes with its load), on the 170 lead 170
+// (same code); the parameter renamed to sort first or last on the lead (diagnostic) 170/170; round 132's 283 form with
+// `result` initialised from final_matrices 283 (same code). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1732,6 +1739,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // cast) 20; the parent index read through the typed object view 20 (same code each). Lead: on 0xbba80 one `const &`
 // binding moved a tag entry into retail's EAX but rotated every later scratch choice, and a second binding right
 // after it rotated them back (match); untried here.
+// M3 lane 12 r159 (fast, control 20 at 1399 B): the no-model matrix through this file's typed header-array lookup with
+// the flag through object_get 20; the current-object lookup spelled through object_get 20; the matrix and flag lookups
+// through two separate `long const &` bindings of the index 20 (all the same code); the whole no-model block as an
+// inline helper taking the object index and the output 123 (stays a call, 1313 B), forceinline 263 (1390 B: the object
+// pointer moves to EDI); the flag statement before the matrix with the defaults first 25. Reading: with the defaults
+// live in EAX/DL across the index test, retail's index has to take ESI because the pool still holds ECX; ours lets
+// the index take ECX and reloads the pool, so the pool's carried value loses its register to the index here.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

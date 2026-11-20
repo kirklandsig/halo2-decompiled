@@ -1042,6 +1042,7 @@ static __forceinline long real_to_long(real value);
 // then the prediction, the dot in the k, j, i order with the length after the sum, and the half applied last), so
 // what still differs is the false exit's place, the facing pointer that retail forms late through the view pointer
 // in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
+// MiniMax E (11-20): no new form, no lower score (382): the false exit still lands after the main exit instead of at 0x1aac35 and 0x25d740 stays expanded here where retail keeps it out of line; 0x25d740 lives in src/unknown_25d690.cpp, which this lane may not edit, so the difference is not reachable from this file.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
 // M3 lane 4 r230 (fast with 0x25d740/0x25d690, both MATCH; control 382, difflib-aligned 155, register/offset-masked 86).
 // On today's tree the early `return false` for the three flags keeps 0x25d740 out of line (still a call) but folds the

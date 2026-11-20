@@ -428,6 +428,17 @@ const dword g_455978[81] = {
 // loop's table pointer swap ESI/EDI against retail). Left: retail's square order i then j in the planar length (ours j
 // first), its zero register reused for the radial product (ours reads 0.0f from memory), the 0x11bed0 expansion here and
 // retail's expanded 0x279740 range check at the first release.
+// M3 lane 1 r136 (fast with 0x11bed0, 0x14a280 and 0xc5460, all MATCH; 0x21a100 93 throughout; control 268): the always-true
+// `if (arg_11)` guard (diagnostic, 0x11bed0 then out of line) on today's body 373 (2011 B: the kept planar copy fits only the
+// expanded form; arg_11 then takes EDI where retail has EBX); the two direction copies' names swapped (diagnostic for
+// name-ordered homes) 268 (same code); a typed `directions` table pointer for both copies 268 and one `direction` entry pointer
+// for both 268 (same code each); 0x11bed0 given `&local_22.position` in place of arg_11 273 (2090 B). Body unchanged.
+// M3 lane 12 r159 (fast; control 268 at 2085 B, homes +0x24/+0x48 for retail's +0x30/+0x40): the direction count
+// declared with the two optional-state locals at the top 481; the transform volume pointer declared ahead of the transform
+// 268 (same code); the presence declared inside the loop body 311 (retail's 2083 B); the found test as `if (cluster !=
+// NONE) { result = true; break; }` 485 (2076 B); a redundant `if (0 < count)` around the direction loop 373 (2011 B:
+// 0x11bed0 is then called out of line as in retail, but the entry's EBX/EDI swap and the homes stay), which confirms the
+// expansion follows the loop site's estimated frequency; no natural no-code test was found that lowers it.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

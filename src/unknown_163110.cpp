@@ -625,6 +625,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // negation's zero sits in xmm4, while we keep the copied i in xmm4 and read the coefficient into xmm3 late; every XMM role
 // after that point is swapped with it.
 // Earlier m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115.
+// Earlier at 115 (was 115; merged from a second score line; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier status line, merged in r127 (115, was 115; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax E (11-20): no new form, no lower score (115): retail copies t for the intersection's x and scales y and z in place, and that form (`t * delta.i + p0->x`, `delta.j * t + p0->y`, `delta.k * t + p0->z`) matches the intersection block exactly here but scores 119, because the first plane's dot then keeps the copied normal's i in xmm4 and reads view->vector_e4.i late where retail loads the coefficient into xmm4 before the copy; a permuter run (34 tries) found nothing below 115.
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
@@ -1188,6 +1189,13 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // MiniMax B (11-20): no new form, no lower score (115): retail keeps the clip deltas in the order x, z, y and ours
 // keeps them x, y, z, so the three product rows and the plane normal loads still differ; the form that reorders them
 // needs the delta helper written out by hand, which is only allowed on an exact match.
+// M3 lane 11 r136 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115; the two stacked score lines merged
+// into the first line above): one `segment_count` for the clip and projection loops 468 (1855 B, first +0x6); `total` typed
+// short 115 (same code); the far plane's normal set through vector3f_assign from the negated forward components (no
+// `negated` local) 504 (1766 B); the `negated` vector in a block of its own 115 (same code); the outside flags typed char
+// 115 (same code); re-measured: the clip store through `*(outside0 ? p1 : p0)` 368 (1867 B). Diagnostic: lane 12 r123's
+// match-only 18 form rebuilt 18; one to seven unused uninitialised locals on it 18 each (only initialised ones shift it,
+// as lane 5 r203 found). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

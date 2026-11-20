@@ -72,6 +72,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // a planar vector 706 (frame moves); vector3f_add's operands swapped 489 and local_13 declared before local_11 489 (both
 // the same code); the side distance as an if/else assignment 489 and the flip as `local_21 = local_22 ? local_21 :
 // !local_21` 489 (both the same code). All match-only or worse; body unchanged.
+// MiniMax C (11-20): no new form, no lower score (489): the position and the sum still take each other's homes (the
+// position at +0x8c where retail has +0x80), and the normaliser still squares k, j, i where retail squares i, k, j;
+// that order is fixed in include/vector_products.h, which this lane may not edit.
 // MiniMax C (11-19): no new form, no lower score (489): the position and the sum still take each other's homes (the
 // position at +0x8c where retail has +0x80); neither declaring the position ahead of the sum nor hoisting the sum's
 // declaration to the top of the body moves that slot, and the normaliser still squares k, j, i where retail squares i, k, j.
@@ -758,6 +761,13 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // 0x26c180 call 489; local_9 declared bare and assigned from the input 489; local_9 declared ahead of local_8 and
 // assigned after the position query 489 (all the same code: neither moves the position's +0x8c home); local_7
 // declared ahead of local_6 495.
+// Position remains at +0x8c for retail's +0x80. Both path vectors declared together before
+// the heading, before the position, before or after its query, or after normalization 489 each;
+// one path vector before the position or before or after its query 489 each.
+// Shared planar radial and heading vector with direct/helper subtraction
+// and copied/assigned heading 671/727/503/727. The same workspace as a
+// point 671/727/503/727. The 671 forms reach retail's 3499 bytes.
+// NOT kept: the initial position still goes to +0x8c and every score rises.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

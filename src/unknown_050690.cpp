@@ -588,6 +588,11 @@ void __stdcall function_508d0(void *payload_data)
 // +508d0; exponent as `exponent - 2 < 0 ? 0 : exponent - 2` (retail's exact sequence) 688 / 633; `weight + weights[i]`
 // 680 fast, unchanged. The caller loads the flag as a raw byte (0x5123d), no != 0 test, so the parameter may be a byte;
 // the callee only tests cl (0x516e0), so no behaviour difference.
+// MiniMax G (11-20): no new form, no lower score (626): this build still stacks the mode argument and returns
+// with ret 0x1c where retail takes the mode in CL and returns ret 0x18, its frame is still the unaligned 0x1468
+// against retail's self-aligned 0x1474, and retail still keeps its static limits in xmm7 and xmm4 across the
+// 0x1420f0 call where this build re-reads them at each use; retail's only caller has no source, so the calling
+// convention cannot be coordinated from here.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

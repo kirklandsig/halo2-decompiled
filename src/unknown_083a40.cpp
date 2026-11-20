@@ -911,6 +911,18 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // as `&collection->players[i]` 267 (1064 B); the swap's update named first (`update = &updates[++*count - 1];` then the
 // call) 28 (same code); the occupied key copied from `&collection->players[i]` 28 (same code); the occupied key copied
 // through the loop's `player` pointer (the same element) 291.
+// M3 lane 7 r199 (fast with 0x84e90/0x84c90/0x83c90, all MATCH): the occupied key read through
+// `watcher->players.players[i]` with `collection` kept for the calls 294 (1064 B); the swap's count step as its own
+// `++*count;` with `&updates[*count - 1]` 28 (same code); the swap's update as `&updates[(*count)++]` 40 (1056 B); the
+// occupied key through a named `occupant` element pointer 41; the swap's update as `updates + ++*count - 1` 28 (same
+// code).
+// M3 lane 16 r156 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): the occupied key copied element by
+// element from `collection->players[i].key[0..2]` 280 (1066 B; diagnostic, a copy written out); a const occupant pointer
+// (`collection->players + i`) named after the type and index stores 41; the swap's update named from `&updates[*count]`
+// before a separate `++*count;` 40 (1056 B); the occupied key from `&collection->players[i].key[0]` with
+// `sizeof(t_player_key)` 28 (same code); the swap's update as `updates + ++*count - 1` 28 (same code). Reading (from the
+// preheader): the two stack cursors are watcher + 0xb0 stepped by 0xb4 and its negation -(watcher + 0xb0), so the key's
+// `i * 0xb4` is their sum; retail adds `collection` to the negated start first, ours adds the two cursors first.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

@@ -3282,6 +3282,13 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // as `while (map_id != NONE && next(&iterator))` 35 (88 B; 0x2c9a58 then 8); the id started NONE and set from the field
 // inside a guard on the field 30; the loop compare on the field with the guard on the local 30. Diagnostic, not
 // keepable: a compiler barrier intrinsic after the read 30 (all 30s the same direct EBX load).
+// M3 lane 16 r156 (fast with 0x2c9a58, matched in each): the preferences' saved-map field typed `dword` in its header
+// (0x19a6f2 and 0x19a864 still matched) 30; a `list` copy of the receiver declared first and used for the pool and the
+// selection 30; the id read through a const reference to the preferences' current block 30; `register` on the id 30
+// (all four the same direct EBX load); the iterator set up ahead of the test and the id tested in the loop condition
+// (`map_id != NONE && next(&iterator)`, no early test) 33 (76 B). Re-measured the NONE-default id 13 (NONE cached in
+// EAX, the id loaded straight into EBX). A byte scan of retail finds only three references to the field: the store in
+// 0x19a6f2, the read in 0x19a864 (loaded straight into ESI there) and this function's EAX load.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

@@ -1993,6 +1993,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // shrink-wrap: ESI/EDI are popped right after the weapon loop, before the flag tail; still BLOCKED by the stand-in.
 // MiniMax B (11-20): no new form, no lower score (188): the channel pointer still differs at every channel use and
 // the look pair still needs an aggregate slot of its own, so the frame stays 0x30 against retail's 0x2c.
+// M3 lane 11 r136 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the look pair as two scalars
+// declared at the function's top 196, declared at their clamps 196 (frame 0x28 both: they share the spring slots); the
+// end-of-loop flag test reading the first weapon through `first_weapon` 188; the weapon counter declared at the function's
+// top 188; `unit` declared bare at the function's top and assigned in place 188 (same code each). Still BLOCKED by the
+// stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
