@@ -928,6 +928,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 126/126/154; with sine before axis 154/126/154. Early binding with table indexing,
 // axis between sine and cosine or before both 152/152. NOT kept: the sampler's four-point
 // gain is below the bar, and all forms retain the 0x1c frame and later seed load.
+// M3 lane 7 r193 (fast with 0x118140, 0x117c80, 0x30bf0, 0x2551f0, 0x1ff360, all MATCH each time; control 130, aligned 65
+// by difflib with addresses masked): the wind output through the existing vector3f_scale with the strength converted to
+// real 154 at 880 B (aligned 68; one instruction earlier, the tail unchanged); `axis` declared bare ahead of the frame test
+// and assigned in it 130 (same code); the draw inside the angle product after the oscillation (no fraction local) 199 (880
+// B, aligned 69); the fraction declared after the oscillation 201 (885 B, aligned 67); the strength as a real local with
+// float rows 130 (same code). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
