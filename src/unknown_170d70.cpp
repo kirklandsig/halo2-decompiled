@@ -1341,45 +1341,15 @@ struct s_polygon_context_173910
 short function_120850(vector3f const *v);
 bool function_23a220(point2f const *points, short count, point2f const *point, real epsilon);
 
-// score 3 (was 69): the side test uses EAX instead of AL, and the final call sets up the two
-// argument addresses in reverse order.
-// Earlier at 69: logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
-// of the context origin onto the plane, the two axis indices from g_440b94[axis * 2 + (plane[axis] > 0)], the 2d copy
-// of every vertex, point-in-polygon with 0.0001f); no behaviour difference found. Retail makes the 0/1 an int
-// (mov 1 / xor), tests it at once (test al, al) and builds the index with setne later; that and the early
-// `mov edi, [polygon+0x1c]` (count) and the origin pointer (retail addresses [eax+0x60] directly, we form
-// eax+0x60) still differ. Tried: long positive = cond ? 1L : 0L with an `axes` pointer (126, 129 direct), bool positive
-// (127 / 130), bool positive with `positive != 0` or byte/char positive (60 but the compiler then passes both
-// parameters on the stack, `ret 8`: not usable), long positive with `!= 0` (77), short positive (69, this form),
-// all 48 operand/sum orders of the origin dot product (135 each: the order does not change the code), origin
-// as a local pointer vs context->origin->position.x directly (126 vs 135).
-// Permuter (25 min on r622): best 58, only with a (char) cast of the count passed to 0x23a220; retail reads it as
-// a zero-extended word (0x173ac5) and (char) would turn a count of 128 negative, so it isn't kept. A (word) cast and
-// the plane declared first are 69.
-// Round 575: the axis and side still occupy the wrong registers across projection. NOT kept:
-// projection index before origin 128 or after distance 104; side as row bit 117; default-zero side 121;
-// shared point projection 136; vertex base before the loop 156; query point initializer 69;
-// three-coordinate projection loop 69.
-// Tried comparison widened directly 69, unsigned-short side 69, normalized side local 120, early copy bound 122,
-// byte side with early copy bound 137, native postprojection indices 127, native predicate return 70, named axis component 122,
-// byte side normalized early 118, normalized side with origin record 7, normalized byte with origin record 40,
-// normalized long with origin record 3, normalized signed byte with origin record 40, normalized bool with origin record 40.
-// Tried side ternary 3, side branches 135, side-bit mask 46, side equality 8, byte conversion 4,
-// query before projected workspace 3, named predicate 5, named call count 5, normalization after distance 126.
-// NOT kept: the byte conversion recovers the test but reverses the x product operands.
-// The AL side test and the final call address order remain. Low-byte mask 13, complementary side predicate 123,
-// signed-byte normalization 4, byte side with scalar-first x product 4, staged normal-first x product 4,
-// origin-first x sum 4, complete point initializer 4, selected axis-table row 92, shared query address 3,
-// staged distance-first x product 4.
-// NOT kept: byte normalization recovers the AL test but exchanges the x product inputs.
+// Retail makes the side a 0/1 integer, tests its low byte at once and forms the table index from that test
+// later (`mov eax, 1` / `xor eax, eax`, `test al, al`, `setne cl`): a one-byte 0/1 converted to bool.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
 	point2f points[128];
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
 	short axis = function_120850(&plane->n);
-	long positive = plane->n.n[axis] > 0.0f ? 1 : 0;
-	bool use_positive_side = positive != 0;
+	bool use_positive_side = (byte)(plane->n.n[axis] > 0.0f ? 1 : 0) != 0;
 	s_polygon_context_173910::s_origin const *origin = context->origin;
 	real distance = 0.0f - plane_distance_to_point(plane, &origin->position);
 	point3f projected;

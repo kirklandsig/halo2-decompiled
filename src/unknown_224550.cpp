@@ -96,6 +96,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 
 // score 162 (was 162): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // Earlier score detail: 194 before.
+// score 162 (was 162): the statement order already matches retail (the blend remainder sits between the two
+// aspect tests, where retail computes it into XMM2); what is left is the allocation - retail carries the blend
+// in XMM5 through the aspect block, ours computes it in XMM2 and spills the remainder to [esp+0x74]; removing
+// the two named inverse terms so the sums read inline measures 322 and is reverted.
+// score 162 (was 162; 194 before): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A second header line, "score 162 (was 162): earlier 194", merged here in m3 lane 7 r187.)
 // Earlier score 162 (was 162): earlier 194; tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
 // (A third header line, "score 162 (was 162): earlier 194", with the same text, merged here in m3 lane 14 r124.)

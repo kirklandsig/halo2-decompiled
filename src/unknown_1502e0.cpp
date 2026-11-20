@@ -1648,6 +1648,16 @@ void function_150820(dword *bits, bool local_only)
 // displacement with shared unit index 43, both typed remainders 43, both byte displacements 43, named typed
 // remainder 43, named byte-displacement remainder 43. NOT kept: All eight forms preserve the full-width mask and
 // tie at 210 bytes. The player, hand and initial unit index keep their opening registers.
+// M3 lane 1 r134 (fast with 0x151b80, 17 throughout; control 43, register-masked aligned 1: the hand's copy into its
+// saved register sits ahead of the unit index's mask in retail and behind the `lea` in ours). One to seven dead
+// initialised locals 43 each (same code: not a local-symbol-count state); a named unit_index local for the test, the
+// lookup and the 0xcd7b0 argument, declared after or ahead of the result, 43 / 43 (same code); a true
+// `__assume(player != NULL)` ahead of the result, after it or inside the block 43 each; `__assume(unit != NULL)` after
+// the lookup 43; `__assume(hand == 0 || hand == 1)` 43 (all the same code). Reading across the two functions: in both
+// the value live from the entry block and the block's own value exchange ESI and EDI against retail, but in opposite
+// directions (here retail gives the entry-level player ESI and the hand EDI; in 0x151b80 it gives the entry-level
+// unit index EDI and the slot ESI), so no single rule of "first value takes ESI" or of reference counts with one
+// weight for nested blocks fits both; the unit index's scratch register (EDX in retail, ECX in ours) moves with it.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
