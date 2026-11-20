@@ -1587,6 +1587,11 @@ void function_143250(
 // transverse diagonal, axial-transverse, four axial diagonal, weighted-square interior, weighted-component
 // outer/interior, and transverse conversion coefficients 939/939/1253/939/939/939/1095/939.
 // NOT kept: the accumulations leave the frame at 0x2fc and either tie or raise the score.
+// capture with matrix store for r1 1740; capture with matrix store for r4 1721;
+// capture with matrix store for r1, r4 1748; capture with matrix store for r0 1717;
+// capture with matrix store for r0, r1 1766; capture with matrix store for r0, r4 1742;
+// capture with matrix store for r0, r1, r4 1788; capture with matrix store for r0, r1, r3, r4, r8 1832.
+// NOT kept: The early matrix stores displace the capture and spill schedule, miss the retail frame and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

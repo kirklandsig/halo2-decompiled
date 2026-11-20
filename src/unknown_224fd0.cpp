@@ -446,6 +446,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // 204/204/219, or corrections and diagonals after both products of each axis 204/219.
 // NOT kept: the table moves to its retail address but only two executable rows improve,
 // and the first rotation arm still lacks retail's early squared-k spill.
+// Complete rows through the vector setter, forward/left/up or forward/up/left
+// 445/449 from direct expressions and 450/449 from named component results.
+// Row aggregate assignment in the same orders 716/719 and 713/718.
+// NOT kept: the setter forms retain +0xe7 and shorten the body, while
+// row aggregate stores move the first difference to the prologue and grow it.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

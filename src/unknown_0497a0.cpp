@@ -594,6 +594,12 @@
 // 705/659/658/717. With primary/secondary/both guarded shapes read through the source 666/706/628.
 // Both shape pointers initialized conditionally with the shared predicate 709.
 // NOT kept: The forms reach frame 0x58 or 0x5c, grow past retail length and all regress.
+// compound depth reciprocals 536; compound paired perspective reciprocals 536;
+// compound depth and perspective reciprocals 536; independent compound perspective reciprocals 536;
+// compound depth reciprocals with named extent 537; compound depth reciprocals with named span 537;
+// compound depth reciprocals with named denominators 535;
+// compound perspective reciprocals initialized before crosses 536.
+// NOT kept: The one-point gain is below the retention threshold. The 0x54 frame and retail inverse allocation remain unresolved.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -4481,7 +4481,7 @@ struct s_128ca0
 // pin joins remain.
 // B440: Existing gain operators at raw nested/argument/inner/update producers
 // 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
-// MiniMax H (11-06): score 167 (was 222): the caller's gain and the location's unknown08 are added
+// MiniMax H (11-06) reached 167 from 222. The caller's gain and the location's unknown08 are added
 // to the playback's gain through the decibels type (s_decibels' operator+, as 0x21e330's reverb sums do),
 // and the scale is read once into a real local. The frame is retail's 0x494 and the scale stays in xmm2.
 // Not kept: reading the pitch bounds as a pair through &pitch_lower (local_18[0]/[1]) gave 164, three
@@ -4678,6 +4678,9 @@ struct s_128ca0
 // Attenuated gain name, opening gain/pitch names, submission gain names, shared unpinned
 // level, read-only voice record, playback record reference, selected permutation reference,
 // and shared pinned level all 72. The two pin register pairs and packet store order stay put.
+// Synchronization count as short/word/dword with the separate decrement or postdecrement
+// 116/120/122 either way. The inactive-controller branch assigns a short/dword default 116/122.
+// NOT kept: word reaches the retail length but keeps separate NONE comparisons, and dword widens the count extraction.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

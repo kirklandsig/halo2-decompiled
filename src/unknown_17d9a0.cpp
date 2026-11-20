@@ -1023,6 +1023,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // The tag still spills at +0xb4 against retail's +0x94. Signed mode field through a typed
 // tag pointer or reference 535/535, with mode locals at the face calls, the limit tests,
 // or both 570/620/631 for either type.
+// Seed an empty primary worklist by append or indexed store and increment.
+// Existing collection loop 563/563; for-loop step after submission 576/576;
+// mandatory first pass with the step after submission 546/546 or with the
+// face read 533/533. NOT kept: 533 gains two at retail length and leaves
+// the definition and count homes displaced.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

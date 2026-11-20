@@ -2601,6 +2601,11 @@ __forceinline char unit_action_round(real value)
 // The pool and slot still take the wrong registers, and the hand test differs in width.
 // Metadata name first 237, valid metadata with fallback else 239, name-miss branch first 242,
 // and block-local metadata name 239. With the short-slot hand getter 250/250/256/250.
+// A header byte displacement shared at all lookups, only at entry, or from
+// entry to the final lookup 234/234/234, with the existing short hand
+// getter 297/297/297. A stable entry pool and a fresh final pool with
+// the shared displacement 311, or 325 with the short hand getter.
+// NOT kept: the stable entry pool forms move the first difference to +0x7.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

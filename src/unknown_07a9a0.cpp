@@ -1707,6 +1707,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // and counted fills 993; two independently cleared dword histogram scopes 936. NOT kept: adjacent
 // scopes recover 0xb4 with the session still in EAX and shorten the body to 2652–2668 bytes. The
 // opening lookup still expands.
+// Dword bucket updates by explicit first/second/both assignments 911/911/911. Named first/second/both
+// bucket indices 928/911/928. First or both bucket addresses 911/911. NOT kept: all shorten the
+// body and increase the score. The frame reaches 0xb0 and the first variant lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

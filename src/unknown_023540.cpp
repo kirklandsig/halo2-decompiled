@@ -3494,6 +3494,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // schedule does not follow symbol numbering); the corner helper writing through two output pointers 54 (same code); both
 // trig pairs first with the two sets' corners interleaved 284 (2069 B); the helper returning a point2f by value 463
 // (1936 B); the corner signs passed as `long` 54 (same code); the scale passed to the helper by const pointer 54 (same code).
+// returned corner pair 463; returned corner pair with named rotation 569;
+// returned corner pair with named scale 569; returned corner pair with named rotation, scale 569;
+// returned corner pair with named bias 569; returned corner pair with named rotation, bias 569;
+// returned corner pair with named scale, bias 569;
+// returned corner pair with named rotation, scale, bias 569.
+// NOT kept: Returning the pair shrinks the frame to 0x40 and the body moves away from retail length. The corner instruction schedule still differs.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

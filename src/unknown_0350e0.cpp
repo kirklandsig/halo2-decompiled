@@ -479,6 +479,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Const square, cross-coefficient and cosine-complement locals, alone or grouped,
 // and all three with const angle products 334 each. The 0x90 frame agrees and the
 // axis and square registers and their early spills still differ.
+// Round 452: Caller-produced cosine complement, evaluated per turn or for both
+// turns first. With both sine and complement passed as expressions 378/382;
+// named complement 340/351; named sine 340/346; named sine and complement
+// 340/357. The frame stays 0x90, but the first axis register and square spills
+// remain and every form increases the length.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2361,6 +2366,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Earlier (492, was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // Earlier 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // Earlier score 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
+// Earlier comparison 417 (was 417; 492 before lane 14 r121): frame 0x94 and every stack offset as retail; left: the delta/forward/reflected schedule, the
 // Earlier 492 (was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // MiniMax S (11-17): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still
 // 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at
@@ -2746,6 +2752,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Camera displacement, reflection and animated tint local renames, alone and in pairs
 // or together, and forward-distance rename 281 each. The 0x94 frame agrees and the
 // delta/reflection XMM allocation and unity-store schedule stay unchanged.
+// Round 452: Distance ratio through the bounds macro or explicit bound arms 501/501;
+// equality-first with helper or bound arms 496/507; bound selected raw ratio or conditional
+// input 417/418; named distance span and numerator with helper or bound arms 487/501.
+// The distance result still does not bring the unity store forward with the three tint stores.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

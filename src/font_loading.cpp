@@ -975,6 +975,13 @@ static inline long font_character_pixel(long alpha, long color)
 // Compare with packed run 59, run to pair end 163, pair class arity 193, shared packed prefix arity 171.
 // With full-width parity 203/213/191/219. NOT kept: the run comparison ties, and the other forms raise the
 // score. Packed parity width, run register reuse and literal byte assembly still differ.
+// full parity with counted down packed fill 236; full parity with counted down ordinary fill 236;
+// full parity with both fills counted down 240; full parity with packed fill consumes output to end 187;
+// full parity with ordinary fill consumes output to end 207;
+// full parity with both fills consume output to end 231;
+// full parity with both fills publish end after stores 226;
+// full parity with packed countdown and ordinary end fill 209.
+// NOT kept: Full-width parity with these fill traversals shortens the decoder and changes the packed-run allocation. The literal-byte assembly still differs.
 // Forward fill countdown at packed/ordinary/both 175/175/167, with dword parity 236/236/240. Dword parity with
 // packed countdown and ordinary end pointer 209; packed end pointer and ordinary countdown 187.
 // NOT kept: the countdowns change the opening register assignment. Dword parity gives the packed bit

@@ -348,6 +348,9 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // named deadline, staged orthogonality 92, direct j/k/i stores 117, shared basis 115, aggregate side
 // vector 94. NOT kept: the named deadline restores the traversal through +0x34a at 1396 bytes, but the
 // dot product and basis correction still raise the score.
+// Linear coefficient advanced in the loop step, after the constant, or by capturing the
+// next pointer at the latch or width read: indexed deadline 347/68/92/92, independent
+// deadline 367/144/140/140. NOT kept: the spill order still differs and all scores rise.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -966,6 +969,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // dword plane table 133, relative pool entry address 133, or early full-cluster guard 126. NOT kept:
 // the guarded form gains three at 431 bytes and still exchanges the register saves. The other shared-
 // result forms raise the score.
+// Publish the traversal pointer after both clears through the created pointer, reference,
+// checked-count indexing or checked-count pointer: 129/129/124/129. Shared capacity result:
+// 125/125/118/125. NOT kept: the 118 form restores EBX and BP but puts the cluster creation
+// before traversal and spills the traversal pointer after clearing the heads.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1780,6 +1787,10 @@ struct s_pool_view_172840
 // 55/133; positive reservation block 55; continue on full queue 59; named publication key 55. NOT kept:
 // the 96 forms reorder the clip arms and grow one byte; the 55–59 forms grow two bytes and retain the
 // five-byte sentinel load.
+// Independent failure stores with the link after the first cluster read and key after/before
+// short selection, branch/conditional: 133/57 and 133/57. Link before the read: 60/60 and
+// 129/60. NOT kept: the 57 forms grow to 870 bytes. The 60 forms recover the short sentinel
+// at 868 bytes but publish the link and cluster ahead of their retail positions.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

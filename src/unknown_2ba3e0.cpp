@@ -937,6 +937,11 @@ real g_55e618;
 // copy ahead of the normal pointer and keep 102; the perpendicular as a three-term aggregate initialiser 102 (all the
 // same code); the +0x34 scale ahead of the three final rows 103; the tangent through the existing vector3d_from_points3d
 // (perpendicular to velocity) 102.
+// One vector for the displacement and sweep, seeded from the scaled
+// components or with the shared scaler. Back up and extend per coordinate
+// 247/247. Back up then extend by component stores, the in-place particle
+// scaler or the point setter and shared scaler 246/246 in all three forms.
+// NOT kept: all reach 1541 bytes but leave the sweep and hit record displaced.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
