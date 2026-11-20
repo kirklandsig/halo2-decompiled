@@ -1400,8 +1400,8 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // plain-checked with 0x2108a0, 0x210770, 0x210d10, 0x26c590, 0x298c30 and 0x29a190 MATCH, 0x298d90 305 and 0x29cbb0 378 as
 // before; all restored, body unchanged). LEAD, not kept: 108 at 3374 B (al 30), and 236 at retail's 3372 B (al 32) without
 // its last step. It still needs the match-only pieces below (the nested body, two one-use locals, an arm order, the new
-// rotation helper, the helper's added parameter); the natural pieces alone on this body, with the early NONE return,
-// score 715 to 729. Built on the r201 lead (`inline` on 0x2108a0's definition, the body under `if (local_11 != NONE)
+// rotation helper, the helper's added parameter); the natural pieces alone on this body, with the early NONE return, score
+// 715 to 729. Built on the r201 lead (`inline` on 0x2108a0's definition, the body under `if (local_11 != NONE)
 // { ... return local_0; } return true;`, 490), each step on the one before:
 // - sweep arms: the true arm with one `scale` local assigned before each `planar_scale(&local_6, scale, &local_17)` call
 //   (then local_18, local_19), the false arm with the three named scales first and then the three planar_scale calls: 761
@@ -1462,6 +1462,16 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // body with planar_scale in both arms, the false arm or the true arm 708 / 574 / 780; the same with `inline` on 0x2108a0
 // 737 / 726 / 751 (726 control). The patches are build/r207/lead-299460-w10.patch (108) and
 // build/r207/lead-299460-w9.patch (236) in the lane 6 worktree.
+// M3 lane 14 r129 (fast; control 569; all restored, body unchanged). The w10 lead re-applied 108 (3374 B, aligned 30): left
+// are the first distance site's squares (ours y then z, retail z then y), the obstacle offset's 2-D squares, the two sine
+// products and the exchanged +0x18/+0x44 homes. On it: 0 to 7 unused `long` locals at the top 108 / 188 / 188 / 188 / 178
+// / 178 / 236 / 240 (the obstacle offset's squares are retail's from 4 to 7, but two other x87 sums after it flip; the
+// first distance site and the sine products never move); the distance helper's sum spelled `(z*z + y*y) + x*x`,
+// `x*x + (z*z + y*y)`, `z*z + y*y + x*x` or `x*x + y*y + z*z` 108 each (same code: the sum is canonicalised); both
+// distances through the existing inline distance3d (0x3ea30) 247 (3372 B: its vector local squares destructively, with
+// fmulp); the first or the second distance passed straight into its trace call (no named local) 640 / 657 (the whole
+// allocation moves), with 1 to 7 unused locals 640 to 738. The exchanged homes: the rotated side's and the offset's names
+// swapped 108, the rotated side declared ahead of the offset 108, or at the top of the function 108 (all the same code).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

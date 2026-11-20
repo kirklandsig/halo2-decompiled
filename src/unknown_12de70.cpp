@@ -707,6 +707,10 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // the count stored to the async field 73 (266 bytes: the count takes EDI, the cache block EBP, the 24-byte index EBX); a
 // trivial forceinline identity (diagnostic) around the task count, the block read, the busy call's index, the release
 // address's index or the time compare 27 each (same code: identities fold before allocation, no rotation step).
+// Round 129 (m3 lane 14, fast with 0x12e210, which stays matched; control 27): the release address from the entry's
+// physical block local (no second lookup) 87 (248 bytes: the block pointer is kept, retail re-derives it from the pool);
+// the loop's block local bound to a const reference used for the argument 27, used for the linked test 27; the loop's
+// block local declared `register` 27; the arm's linked test as `!= false` 27 (all four the same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
