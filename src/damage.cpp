@@ -3765,18 +3765,21 @@ enum
 // (203), the multiplier in a local or `amount *=` (203), calling function_188690 for the check too (259, not
 // inlined), the check's result in a local (203); `scale = 1` as the initial value with the PIN inside the if
 // (270), PIN as a ternary (216), the PIN's lower/upper tests as statements (216).
+// Friendly output second 203, material field pointer/reference 203/203, named armor groups 213.
+// Conditional adjustment 203, separate adjusted amount 213, shared point difference 209, named model index 330.
+// NOT kept: the material index remains in DI through both lookups, and naming the model index shifts the object spill.
 // @retail 0xd82e0
 void __stdcall function_d82e0(s_type_1e6529 *data, real damage, long object_index, s_damage_region_accumulator *accumulator)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
-	byte *object_definition = g_4e3b44[object->tag_index & 0xffff].bytes;
+	s_object_definition *object_definition = (s_object_definition *)g_4e3b44[object->tag_index & 0xffff].bytes;
 	s_damage_info *info = (s_damage_info *)function_d5b60(object_index);
 	s_damage_definition *jpt = (s_damage_definition *)g_4e3b44[data->definition_index & 0xffff].bytes;
 	s_damage_effect_definition *definition = (s_damage_effect_definition *)((byte *)jpt + 0x10);
 
-	if (info && *(long *)(object_definition + 0x38) != NONE)
+	if (info && object_definition->model_tag_index != NONE)
 	{
-		byte *model = g_4e3b44[*(long *)(object_definition + 0x38) & 0xffff].bytes;
+		byte *model = g_4e3b44[object_definition->model_tag_index & 0xffff].bytes;
 		long marker_count = 0;
 		byte marker_indices[k_maximum_damage_markers];
 		real marker_scales[k_maximum_damage_markers];
@@ -5299,6 +5302,8 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
+/* marks damage sections destroyed, and splits off the model nodes no
+   longer joined to the object's root as new objects */
 // score 167 (was 167): The section bound and primary mask exchange registers, which rotates the later scratch registers;
 // the node loop's head then sits one byte early and loses retail's alignment pad, and the search lacks retail's NONE start.
 // Earlier header 178 (was 146): the bitmap zero preceded node-scan admission.
@@ -5322,8 +5327,6 @@ struct s_damage_object_creation
 // MiniMax G (11-14): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the
 // search's entry test and the scratch registers of the last two lookups still differ.
 // MiniMax A (11-12): no new form, no lower score (156): the mask zero is still stored ahead of the states call where retail stores it in the node loop preheader, and the piece loop guard order, the search entry test and the scratch registers of the last two lookups still differ; storing the zero inside the block gives retail store but reallocates the frame (170), so the body stands.
-/* marks damage sections destroyed, and splits off the model nodes no
-   longer joined to the object's root as new objects */
 // MiniMax I (11-16): no new form, no lower score (146): the first difference is the schedule of the globals' loads (retail loads
 // them before the pushes and keeps the table, this build reloads them after the pushes) and the section mask
 // test, which this build does against a register copy of the argument.
@@ -5333,7 +5336,6 @@ struct s_damage_object_creation
 // MiniMax A (11-14): the piece loop's bottom test as `!= 0` and the first-node search scanning for the first set bit reach
 // 146, ten points and over the keep bar; the mask's zero and the guard order stay as they were.
 // MiniMax I (11-15): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in a register where this build saves first and routes the index through another, and retail spills the index * 12 at +0x10 where this build keeps the offset in a register.
-
 // MiniMax D (11-14): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in eax, where this build saves first and routes the index through edi.
 // Earlier 146 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
@@ -5583,6 +5585,9 @@ struct s_damage_object_creation
 // 247 (777 B, frame 0x13dc, the mask takes ESI); with the root node named 247; with a piece-loop copy of the mask 232
 // (792 B, object_index loses ESI to the node count); the while search then `if (i < node_count) first_node = i;` 215
 // (810 B). On this body: the section tests written mask first 167 (same code).
+// Word setter for both section stores or each store alone 167 each. Damage record, object tag,
+// connected mask, detach bitmap and metadata pointer names that change sort order 167 each.
+// NOT kept: the bound still takes EDI and the primary mask takes EDX.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
