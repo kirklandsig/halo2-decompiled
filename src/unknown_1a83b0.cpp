@@ -683,6 +683,14 @@ s_1a8a10 g_4453c0[] =
 // perpendicular's j taken from the copy's i 32; the four values as an array initializer after the sums
 // (`{left, 0 - left, forward, 0 - forward}`) 18, with the identifier, index, score initialisation order 16 (a gain of one
 // from an initializer and a declaration order: not kept).
+// M3 lane 13 r122 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH unless noted; control 17): the opening
+// inline-depth pragma dropped 214 (592 bytes: 0x1f57a0, whose only caller this is, is expanded, and 0x1a8c30 goes to 49),
+// with the 0x1f57a0 call wrapped in an inline helper 214, with the score test and the call in one inline helper 214
+// (the call nested in a helper is still expanded, so the pragma stays); the forward sum first in retail's term orders
+// (copy's j for `j * y`, the actor's j for the negation) re-measured 31, and on it 1-7 dead initialised locals at the top
+// and 1-12 inside the block ahead of the array 31 each (flat: x keeps XMM3 and the copy's one-use j still loads at its
+// use, so the xmm ranks there are no symbol-count state); i in a scalar with j read in place in both sums, forward first
+// 36 (left first re-measured 31).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

@@ -843,6 +843,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // 77/121 and 77/121. Pending word/dword mask seeded from the word snapshot
 // and changed by compound OR or assignment 77/133 and 77/133.
 // The word entry works, but the mask still reloads separately at the join.
+// both changes evaluated eagerly with dword mask 120, both equalities evaluated eagerly with dword mask 120,
+// conditional change guard with dword mask 94, unchanged early exit with dword mask 32, both changes evaluated
+// eagerly with word mask 113, both equalities evaluated eagerly with word mask 113, conditional change guard with
+// word mask 90, unchanged early exit with word mask 77. NOT kept: The dword early exit ties at 390 bytes. The
+// word early exit recovers the opening mask spill but leaves the post-loop reload split. Eager comparisons and
+// conditional selection regress.
 // M3 lane 6 r201 (fast; main 32; re-measured: plain present with the dword mask 102 at 378 B, with the word mask 63 at
 // 384 B, the word mask with main's present 77). On the dword mask with a plain present the player loop and every
 // block after the engine test are retail's; left there are the word entry and the compare block. With the word mask
@@ -855,6 +861,15 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // the getter 63, with the mask store as well 63, the saved playing mask read through the getter 63 (same code each).
 // Also on the word mask with a plain present: an early return when nothing changed 63; the present update as
 // `present_teams = present_teams | (1 << team)` 63, the playing update written the same way too 63 (same code each).
+// M3 lane 16 r147 (one-file harness with src/unknown_0b58c0.cpp and src/unknown_1967d0.cpp linked, exact: main 21/21
+// positional/aligned = 32; word mask 71/19 = 77; word mask with a plain present 384 bytes 49/43 = 63): the present update
+// as `present_teams = (1 << team) | present_teams` 21/21 (same code), on the word mask 71/19; the word mask updated in
+// place (`old_team_mask |= present_teams; *team_mask = old_team_mask;`) 71/19 (same code). Diagnostic (one-use local):
+// the word mask with the team bit named before the present update 72/16, where the loop is retail's and only the block
+// after it differs; on it the new mask named before the stores 375 bytes 111/21, the mask stored before the playing
+// teams 375 bytes 111/22, the added teams computed after the stores 72/16, both change tests operand-swapped 73/16. On
+// the word mask with a plain present: the team mask read and written through `globals->team_mask` (no pointer local)
+// 368 bytes 113/39, also with a `*const` globals pointer 113/39; the index24 named for its test and call 375 bytes 102/45.
 // @retail 0x158140
 void function_158140(void)
 {

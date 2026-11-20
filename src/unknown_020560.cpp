@@ -834,7 +834,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 439 (was 439):
+// score 418 (was 439):
 // Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
 // offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
 // Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
@@ -1208,6 +1208,14 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // pass counter at +0x18 and loop latch, but `nearest` lives in memory in both scans and delta.j is spilled); that with
 // length_sq3f(&offset) 635 [296]; that with `if (i == nearest) continue;` 554 (same code). Dead-local scan K = 1..12 on
 // the length_sq3f form: 531 at every K, so its dot order is not a symbol-count tie.
+// The frame remains 0x1c versus 0x2c, with two induction addresses and the offset spill still missing.
+// First sample at the scan exit 439, after the second sample 418 (kept, plain), nearest position
+// reference 439, late first record reference 439, candidate position reference/pointer 439/439,
+// candidate reference with late first sample 460, with nearest position reference 439.
+// Opposite-scan record cursor for projection/distance/both with a count bound
+// 590/591/513, or an end bound 1234/1234/1187. A direct winning pointer with
+// a count-bounded projection or distance cursor 605/605. NOT kept: all regress;
+// the offset spill and independent induction addresses still differ.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -1234,9 +1242,8 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
                 }
             }
             s_light_sample const *samples = source->entries;
-            s_light_sample const *first = &samples[nearest];
             vector3f delta;
-            vector3d_from_points3d(&first->position, position, &delta);
+            vector3d_from_points3d(&samples[nearest].position, position, &delta);
             long opposite = NONE;
             real other_distance = 1048576.0f;
             for (long i = 0; i < count; ++i)
@@ -1257,6 +1264,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
                 }
             }
             s_light_sample const *second = opposite != NONE ? &samples[opposite] : NULL;
+            s_light_sample const *first = &samples[nearest];
             real fraction = 0.0f;
             if (second)
                 fraction = function_022c30(&first->position, position, &second->position);

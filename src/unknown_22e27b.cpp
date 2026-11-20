@@ -526,6 +526,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // field (no flags local) 208; the next index kept in its own `step` local with both boundaries testing it as separate
 // `if`s 160 (659 bytes, same second compare); the switches' common `frame = valuea` written once ahead of the low
 // block's switch 86 (659 bytes), ahead of both switches 219 (650 bytes). Screen: `else if` on the step local keeps the skip.
+// M3 lane 7 r190 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): round 212's thread-breaking join test
+// (`restart != (dispose && type == 0)`) with the flags local as a `word const &` bound to the field 87 (659 bytes: the
+// reference folds and the flags word is still hoisted into BX); the per-pass disposal reset ahead of the frame sum 1; the
+// frame sum direction first 1; the per-pass disposal reset dropped 1 (same code: dispose is already known false at each
+// pass top, so that reset is not what puts the zero in EBX); the low boundary as `frame <= -1` 211 (658 bytes). All restored.
 // M3 lane 12 r151 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
 // the flag-8 store as an `else if` of the restart break 1 (same code); a function-scope `bool top_level = type == 0;` for
 // the three dispose and three restart tests 228 (663 bytes: the compare is hoisted); a `word` flags local declared in each

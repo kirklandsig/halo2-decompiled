@@ -805,11 +805,24 @@ void function_1537f0(s_profile_record *record);
 // (2, 0, 3, 1) 18 (base +0x5e); the pointer and its chain ahead of the record and the 0x7f8b0 call 72 (269 bytes); the
 // entry as `g_4cf98c + index` with main's link pointer 18 (same code). Through the pointer the loop base always lands on
 // a link store (+0x5c or +0x5e), never on the builder's +0x4c.
+// M3 lane 2 r109 (fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): a 600 s permuter run with both
+// callees in its reduced image (77 tries, 28 failed builds) found nothing below 18; the entry bound by reference with every
+// field through it and the links as two chained pairs in retail's store order 49 (NONE in EBP); the four links as one chain
+// through `entry` in retail's store order (`next = next_other = unknown58 = previous_other = NONE`) 49, with `entry` a const
+// pointer 49; main's link pointer declared `short *const` 18 (same code). Without the callees the reduced image scores 84.
 // M3 lane 14 r115 (fast with 0x7f8b0, 0x1537f0 and 0x80490, all matched each time; control 18): the record split into an
 // identity local and a source local of their own types (no grouping record) with main's link pointer 81 (236 bytes: the
 // identity's zeros are forwarded and its home goes, frame 0x90), that with the links as four `entry->` statements in
 // retail's store order 80, with the link pointer's stores in retail's order 81, with the `entry->` links and the heads as
 // one chain 80, with the source declared before the identity 81.
+// M3 lane 10 r130 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the links as four `entry->` statements in
+// retail's store order re-measured 49 (base +0x4c and the link order are retail's; the shared -1 is hoisted into EBP and the
+// record's two zero words merge in EBX); on it the head stores as unsigned dwords 49, the heads through a pointer to the
+// first head 49 (same code), 0-40 dead initialised locals at the top 49 each (no symbol-count state); the links through the
+// array element `g_4cf98c[index]` in retail's order with the view and tail through `entry` 45, with the tail through the
+// element too 46 (both hoisted). Diagnostics (value-wrong): the four heads set to -2 33 (260 bytes: no hoist and base +0x4c,
+// but the link stores and the -1 are scheduled above the builder's byte stores, which retail keeps in source order as stores
+// through a pointer are); two heads -2 and two NONE 65 (still hoisted).
 // @retail 0x7f930
 void function_7f930(void)
 {

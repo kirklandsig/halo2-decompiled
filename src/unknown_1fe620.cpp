@@ -288,6 +288,13 @@ static __forceinline long real_to_long(real value);
 // from that constant too 347 (aligned 131), the written cross with only the output rows through the constant 347
 // (same code as the composite). Left on the composite: the resolver's copy order, a copy of the k*0 product ahead of
 // its two uses in the side vector, and the output rows' register copies. BLOCKED-BY 0x210850 (single-site expansion).
+// M3 lane 6 r202 (fast with 0x1fe410/0x2104b0 unless noted; control 373, register-masked aligned 193). Diagnostics: the
+// random-state global named by a native (non-LTCG) object (a stub-file function reading it; plain check) gives retail's
+// head through +0x50 (frame 0x48, the third input in ESI from the entry) but 472 at 1829 B, and a full check with it loses
+// 83 matched functions, so retail's global is clean and the reload after the resolver is not a poisoned global; 1 to 4
+// and 6 dead initialised longs at the top 373 each (masked 193); the side vector normalised without taking its address
+// 378 (the five seed reloads stay). Forms: the sign step and draws one and three through a named `dword *seed` 423; that
+// with the second draw through function_259d0 on the same pointer too 438 (1856 B, masked 175: closer in shape).
 // M3 lane 9 r144 (fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0, control 373): the head's cause is the
 // random-state pointer. Ours loads it into ESI at the timer draw and carries it across the 0x2104b0 call to the
 // sign draw. Retail reloads it into ECX after the resolver (0x1fe7f6), so retail's link treats that call as
@@ -300,6 +307,30 @@ static __forceinline long real_to_long(real value);
 // the state local declared before the 0x1fe410 test 428; the 0x210850 call with all three draws through
 // function_259d0 on the state local 452. Next lead: what makes retail's 0x2104b0 call clobber the random-state
 // global (its callees 0x210d60 and 0x142570 are matched leaves).
+// M3 lane 6 r204 (fast with 0x2104b0, 0x210850, 0x1fdce0, 0x1fe410, 0x259d0, all MATCH each run; control 373, difflib counts as
+// [exact, stack offsets masked, registers masked] [237, 193, 64]; body unchanged, the best form saved as
+// build/r204/lead-1fe620-composite-body.cpp in worktree m3-lane6). The lead above is answered: retail's 0x2104b0 call does not
+// clobber the random-state global. Retail keeps that pointer in ECX, a scratch register, for the whole body and simply loads
+// it again after each call that uses ECX (0x1fe7f6 after 0x2104b0, 0x1fe818 after 0x1fe410); the path with no output index
+// (0x1feab7) jumps past the reload at 0x1fe7f6 with the first load still in ECX. This build gives the pointer ESI and reads the
+// third input from the stack because the pointer has more reads here: the seed is loaded and stored at every draw, where retail
+// forwards it from the sign step through the three range draws and stores it once, which it can only do with every bound read
+// ahead of the first range draw (a bound read between two seed stores may alias the seed). Diagnostic, reverted: a store
+// through a pointer or a reference variable in 0x2104b0 (still matched) 373, same code here, so the callee's summary is not
+// the lever. Round 63's composite re-measured 266 (1873 B) [147, 113, 23], the first 113 rows retail's; on it the sign test
+// as `(seed & 0x80000000) > 0` 269 [145, 111, 21]; the limits read in retail's order (+0x10, +0x14, +0x18, +0x1c, +0xc) with
+// +0x38 named for its two uses 296 [144, 110, 19]; +0x3c read at each use 342 at retail's 1861 bytes [120, 111, 19]; all
+// three 341 (1861 B) [115, 106, 13]; plus the final sums read through a named pointer to the stored offset vector (retail's
+// `[eax]`, `[eax + 4]`, `[eax + 8]` and its vector-first operand order) 347 (1855 B) [111, 102, 9], the same with a pointer
+// for the target point too. On that: the zero product of k named for its two rows 347 [116, 104, 11]; the side vector
+// declared ahead of the displacement 347 [9]; the displacement written out k, j, i 347 [9]; the side vector through
+// vector3f_assign 347 [9]; the up vector as a local {0, 0, 1} with the full cross written against it 347 [9]; the cross rows
+// k, j, i 339 (1864 B) [19]. Left on the 9: the failed-lookup copy's order (follows the pointer's register: three scratch
+// registers free after the call in retail), one copy of the k zero product, and the side vector's XMM homes (retail keeps its
+// i and j in XMM1 and XMM2 from the cross to the output rows and copies each for the cosine products; this build puts the
+// displacement in XMM1 to XMM3 and the side vector after it). Nothing kept: the composite needs the +0x14/+0x18 locals (one
+// use each) and the resolver's two-arm body, so it is match-only, and each part alone raises the count.
+// MiniMax C (11-19): no gain (373, baseline; body restored). The head differs in the pool load (retail reloads the random-state global after the calls to 0x2104b0 and 0x1fe410, ours keeps the pointer in ESI across them, an LTCG modref decision in another file compilation) and in the transport of the 0x7a argument (ECX against EDX), which the caller in another file decides. Binding the second parameter to one settings local for its five uses measures 415.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

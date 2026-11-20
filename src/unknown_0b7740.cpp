@@ -1150,6 +1150,28 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // propagates every one of these copies back to the parameter, so result and the parameter stay one value in ESI). Re-measured
 // the 0xbfe20 clear 262 (813 B: ours keeps `definition` in EAX across the mask copy, retail stores it and reloads it from
 // the slot it later gives the render-node count). Body unchanged.
+// M3 lane 4 r225 (fast with the file's functions, 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout;
+// control 240, aligned 177). Reading: retail's single exit explains its entry (result copied to EDI and to its home at
+// once, the three early exits returning EDI from tail epilogues, the main exit the home), and retail's second early test
+// is the body of the existing 0xbfc90. Re-measured round 168's lead (single exit, 0xbfe20 clear, bit 29/+0x34b through
+// header->object, final_matrices at the top) 287 (aligned 83); on it the header's index as a named local 287 and
+// final_matrices initialised from `result` 287 (same code each); with final_matrices left late 295 (aligned 91: the
+// parameter held to the late store, in ESI). New: that late form with the awake test as `!function_bfc90(object_index)`
+// 170 (826 B, aligned 100; the +0xb3 byte and the reuse of the first test's object are then retail's; left: object_index
+// in a scratch register where retail gives it ESI and the parameter EDX) - the lead, match-only (bit 29/+0x34b read
+// through header->object beside the `object` local); with those two tests through `object` 292 (828 B, aligned 77, the
+// lowest aligned count), that with the plain `&=` clear 263 (841 B, aligned 132); only the model test nested with the
+// 0xbfc90 awake test 299 through `object`, 290 through header->object. Diagnostic (restored): both early tests through
+// their existing predicates, 0xbf5d0 marked `inline` at its /Ob1 definition, 274 (843 B, aligned 75): each expansion
+// looks the object up again where retail's +0xb3 test reuses the first test's object, and 0xe01d0 goes 537 -> 598.
+// M3 lane 14 r119 (fast with 0xbdb60/0xbfe60, both MATCH each time; control 240, aligned 182 in the reduced image):
+// `result` as a non-const pointer cast from the parameter 240 (same code); the sample arm's three assignments with
+// orientations last and the periodic arm's with orientations first 244; matrices and final_matrices set by one chained
+// assignment in each arm 240 (same code); the model index read from the definition at both uses (no local) 240 (same
+// code); final_matrices declared at the top and `result` initialised from it 240 (aligned 146: both homes are then
+// stored at entry, retail stores the result copy at entry and final_matrices after the definition loads; a declaration
+// move, not kept). Diagnostic: K = 0 to 33 (0, 1 and odd) dead initialised longs at the top 240 at every K (aligned
+// 182 each: the entry roles and the frame are not a symbol-count tie).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

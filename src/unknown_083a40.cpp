@@ -874,6 +874,13 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // (inverse + cursor) + (collection + 4), retail (collection + inverse) + cursor + 4), with the occupied update as above 27;
 // the conflict scan as `j < 16 && !conflict` with no break 310 (1077 bytes). Diagnostic (a comma loop, not keepable): a
 // byte offset stepped beside `i` for the occupied key 283 (1080 bytes: the offset keeps its own induction variable).
+// M3 lane 7 r190 (fast with 0x84e90/0x84c90/0x83c90/0x69260/0x83c20/0x83570, all MATCH each time): `collection` spelled as
+// the watcher plus 0x88 by byte offset 28; `collection` a `* const` local 28; the find-slot outputs declared at the function
+// top 28; the occupied key read through a `const &` bound to `collection` 28 (all the same code); that binding on the swap
+// order (collection, player, update, other) at definition, declaration and call 32 (the swap set-up is retail's, the key
+// sum stays ours). Reading: of the 28, only the swap set-up (6 rows, 2 register swaps) and the occupied key's head differ;
+// ours is 1 byte shorter there (`add` + `lea` against retail's two `lea`s), so every later jump, the two later apply calls
+// and the closing pad shift by one byte and count as well. All restored.
 // M3 lane 12 r151 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; compile-only screen of the key, which
 // reproduces ours as (inverse + cursor) + collection + 4): `collection` taken through a reference bound to
 // `watcher->players` 28 (same code); the occupied key as `(byte *)(i * size) + (long)collection + 4` 28 (same code); on the
