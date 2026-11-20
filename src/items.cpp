@@ -588,6 +588,9 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// MiniMax C (11-19): no new form, no lower score (190): retail keeps the spin scale in the x87 stack across the branch
+// merge where this build gives it a stack home, and the plane distance written as one expression scores 203 against the
+// four accumulating statements; the body stands.
 // MiniMax E (11-05): no new form, no lower score; the four-term plane-distance accumulator written as one
 // expression gives 211, the same sum without the redundant parentheses 205 and the contact point written as
 // three products followed by three adds 207 - all worse. Reverted.
@@ -879,6 +882,15 @@ struct s_item_collision_bsp
 // 248, Separate scaled forward vector before the final sum 194. NOT kept: The forward-vector form reaches 1365
 // bytes at 194. The indexed field accumulator scores 192 at 1366 bytes. The transformed-plane and spin homes
 // still differ.
+// Rotating into a separate normal vector and publishing it after/before the distance gives
+// 311/322 for compound or aggregate rows and 343/353 when copying the input normal first.
+// NOT kept: every form grows the body, and early publication also grows frame 0xa0 to 0xa4.
+// The transformed normal and contact position registers and pending x87 spin scale still differ.
+// Left-axis products as a vector 192, all scalars 195, or row-local scalars 195;
+// output carrying left products into the row sums 196 or all sums before forward 194;
+// separate paired-product vector 193; separate left and up vectors 194; all three basis
+// vectors 246. NOT kept: all regress. The transformed plane's j input still misses its
+// retail XMM home through the three rows.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1168,6 +1180,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Named reciprocal with half-root update 204. Separate axial contribution with and without the
 // magnitude update 267/268. Final shared vector sum with and without it 194/194.
 // NOT kept: frame remains 0xc0 and the scaled axis i still spills in the tied forms.
+// Staged cross / returned cross / output axis with aggregate / in-place fallback / common branch cross
+// workspace / item dot / native rotation / output axis with setter / returned fallback / separate axis
+// with setter / staged output axis with setter: 130/248/207/160/130/130/133/117/281/130/117.
+// NOT kept: the two 117 forms recover the 0xb4 frame but spill the intermediate axis k to the
+// result k home before its final store. Retail keeps that intermediate in a register.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1356,6 +1373,7 @@ struct s_item_flags_view_10b850
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
+// MiniMax I (11-19): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still extracts the two flag bits into a byte in the frame (mov byte ptr [esp+8], al) where this build tests them in place.
 // MiniMax I (11-16): no new form, no lower score (824): retail extracts the two flag bits into a byte in the frame (mov byte ptr
 // [esp+8], al) where this build tests them in place, and this build's frame is forty bytes larger (0x154
 // against 0x12c); a named bool for the bits measures the same 824.
@@ -1883,6 +1901,12 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
 // (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax B (11-19): no new form tried this round, no lower score (140): the frame 0xac agrees and the remaining
+// differences are the return byte's slot (esp+0xe here, esp+0xf in retail) and the release flag's clearing (a load
+// and a store here, one byte read-modify-write in retail, which needs a narrower cast of the field's own address - a
+// form the rules bar). The clear written through the union's own bitfields (flag5 = 0 and flag6 = 0, 257 and 257)
+// gives a word read-modify-write, a byte-unit bitfield member added to the union gives 192, and folding the spinning
+// flag into the result instead of OR-ing it later gives 190, so the byte member stays a byte member.
 // MiniMax E (11-15): no new form, no lower score (140): the return byte still sits at esp+0xe where retail keeps it at esp+0xf, and the release flag is still cleared with a load and a store where retail masks the byte in place.
 // MiniMax B (11-13): no new form, no lower score (140): retail clears the release flag with one byte read-modify-write (a narrower cast of the field's own address, a banned form) and keeps two separate copies of the release impulse, one clearing the flag before it and one after it, where a shared helper gives one copy and the two calls then merge.
 // MiniMax G (11-12): no new form, no lower score (140): nothing new this round; frame 0xac agrees; the return bytes +0xe/+0xf,
@@ -2242,6 +2266,15 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // NOT kept: both captured-bit OR forms tie. Direct success restores +0xf and
 // shortens the body by 18 bytes. The logical join still spills the return byte at +0xe.
 // MiniMax R (11-17): no new form, no lower score (140): the result byte sits at [esp+0xe] where retail has [esp+0xf], the flag clear is a load, an and and a store where retail has a byte read-modify-write, and the impulse helper is shared here where retail has two inlined copies; a permuter run over the body (17 tries, 308 s) found nothing below the 140.
+// MiniMax A (11-19): no new form, no lower score (140): the three differences that are left are all frame or width
+// ones. The returned flag lives one byte lower here (ours [esp+0xe], retail [esp+0xf] in the same 0xac frame), and
+// retail keeps the event buffer at [esp+0x28] with the damage record at [esp+0x38] where this build keeps the buffer
+// at [esp+0xb0] and the record at [esp+0x2c]. The release flag is a byte inside a union with word bitfields, and this
+// compiler writes that union member through memory (a load, an `and` and a store) where retail masks the byte in
+// place (`and byte ptr [ebp+0x12c], 0xdf`); a narrower view of the field's own address would give retail's
+// instruction, but that is a cast of the field's own address. Retail computes the release impulse twice, once in
+// each branch, with the two flag clears around the two copies, where this build shares one copy - BLOCKED-BY the
+// transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

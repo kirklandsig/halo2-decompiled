@@ -765,6 +765,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Word fallback lvalue with shader/pass/material lvalues singly or all 117/117/117/117;
 // all with masked fallback 152. NOT kept: The dword mask hoists the table, and the word
 // forms leave the EAX zero-extension and fused element loads.
+// M3 lane 2 r109 (fast with 0x2243c0 and 0x224d90; control 117): the +0xd8 flags read just before 0x173ba0 on main's body
+// 149 (0x224d90 36: the convention changes); the group dword named once for both compares 165; the stage and pass indices
+// written argument first (`arg_3 + local_7`, `arg_4 + local_8`) 117 (same code); the pass element bound to a named byte pointer
+// before its +4 read 117 (same code); the fallback re-reading the tag word from the object (`*(word const *)(local_2 + 0x1c)`)
+// 117 (same code: the read is forwarded to the local, still `movzx eax, dx`).
 // M3 lane 4 r219 (fast with 0x2243c0 and 0x224d90, both MATCH each time; control 117). On lane 13 r59's score-8 chain
 // rebuilt here (8, the same eight lines): the material definition named through the tag-data accessor 8, the pass
 // definition named 8, the pass record (the +0x20 element) named 8, the material tag named before its lookup 8 (all the
@@ -782,6 +787,16 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the pass and material definitions 23; all four zeros ahead of the pass definition 60; all four between the two
 // definitions 13; the material definition named in a plain local before its +8 read 8 (same code); that definition bound
 // as `void const *const &` from the tag-data accessor 92 (552 B). Body unchanged.
+// M3 lane 14 r121 (fast with 0x2243c0/0x224d90/0x173ba0, all MATCH each time; main 117): lane 1 r59's reference chain
+// rebuilt on this main 8 at +0x9e (the same lines). Reading by the scratch next-fit order (EAX, ECX, EDX): ours takes
+// EDX for the pass definition because the dead pass-element `lea` moved the pointer past EAX, retail takes EAX there,
+// then EDX for the material tag, puts the zero in EAX between that tag's `and` and `shl`, and gives the material
+// definition EDI, the dying table base, so in retail every scratch register is busy at that load. On the chain: the
+// material lookup through an accessor that takes the instance table as a parameter 8, the pass lookup through it 8,
+// both 8, the material lookup as the tag-data accessor of the record-tag accessor 8 (all the same code); the material
+// tag bound as `long const &` just ahead of its lookup 36; the material tag read into a long ahead of the four zeros
+// with the lookup after them 41, masked at that read 41, with that long also passed to 0x1c590 81, the reference form
+// of that 81; the four zeros between the two definitions re-measured 13. Body unchanged.
 // AC597: Tag table refreshed after virtual dispatch, with direct word/mask, named word/mask, masked
 // handle in place, typed word/mask and a shared signed/unsigned slot: 165/152/165/152/152/165/152/155.
 // @retail 0x224db0

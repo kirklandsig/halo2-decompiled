@@ -1258,6 +1258,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // point3f table filled through the existing real_point3d_set 566 (2807 B); the vertex table as `real [8][3]` 290 (same
 // code). Diagnostic: dead initialised locals at the top of the cone arm, k = 1..8: 479/480/480/484/483/483/479/479
 // (2809-2814 B): no phase, every extra local costs ~190. Body unchanged.
+// M3 lane 3 r272 (fast with 0x11f5f0/0x141590/0x163db0/0x30bf0/0xc1a80, all matched; control 290, aligned 273, masked
+// 103): the loop under a redundant `if (0 < *count)` 604 (2815 B); the sphere arm's up vector bound by `vector3f const &`
+// for both crosses 530 (2815 B); the left vector bound by `vector3f &` for the cross, normalize and second cross 632 (2791
+// B); the reference axis as one `vector3f const &` chosen by a conditional 698 (2751 B); the sphere radius as a `real
+// const &` to the shape field 612 (2816 B). Each new frame symbol again shifts the whole body (~15 bytes shorter).
 // M3 lane 16 r139 (fast with 0xc1a80; control 290): a `plane3f *plane = &entry->plane;` for the cone plane's normal copy,
 // dot argument and distance store (retail's `[ecx + 0xc]` store) 543 (2810 B; the sphere arm's constant setup moves too),
 // with 1 to 7 unused locals at the top 544/548/548/547/543/543/543 (diagnostic: not a symbol-count phase); declared at the
@@ -1270,6 +1275,25 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // already sum in retail's order (forward (k, j), i; left (k, j), i; up (k, j), i); only the sphere arm's differ, and the
 // left normalize there is 0x30bf0's code inlined by the linker, which its noinline declaration in src/unknown_030290.cpp
 // (another lane's file this round) prevents: BLOCKED-BY 0x30bf0's noinline. Body unchanged.
+// m3 lane 4 r224 (one-object LTCG screen with the reduced link's objects and the ballast: 0 rows from the full build,
+// 199 aligned rows from retail; rows 140-235 are the left cross, its normalize and the forward cross, 34 of them off):
+// 0x30bf0 called for the left normalize with its noinline declaration removed (a scratch copy of its file) is inlined at
+// link time and gives exactly this body's code, also across dead-local counts K = 1..39 odd (the block stays 33-35 rows
+// off), with the noinline kept it stays a call (424 aligned), `__forceinline` on its definition 316: the noinline is not
+// what blocks the normalize. Dead initialised longs at the top, K = 21..40 and 44..64 step 4: 184-217 aligned, K = 31 330,
+// K = 32 178 (masked 68), the cross block wrong in every state. Left cross/normalize helpers x K = 0/24/26/32 (block rows):
+// normalize_inline 40-43, cross3f 35-38, cross3f + normalize_inline 37-39, direction_normalize_c0840 and the file's
+// cross_product_c1a80 for the left cross the same code as the body; a named unused length 34. The forward cross through
+// cross_product_c1a80(up, left, forward) puts that block right but for 13 rows (retail's left-first loads) and moves the
+// projection rows (164 -> 196 rows off after the block): 433 (2821 B, aligned 210) on the fast check, 258-280 aligned
+// at K = 1..40 in the screen. Body unchanged.
+// M3 lane 11 r125 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned 273, masked 122): in the
+// projection helper the forward row written j, i, k 290; all three rows written i, j, k 290; all three as `vi * row.i +
+// vj * row.j + vk * row.k` 290 (the same code each: without parentheses the sums are reordered by operand, not by source);
+// the forward row as `(j * vj + i * vi) + k * vk` 561 (2815 B: the grouping holds, but in both arms); the four corner
+// projections as a plain loop over the face's corners 528 (2810 B, not unrolled as retail); re-measured the reference as a
+// ternary copy 643. Retail's sphere-arm forward row sums (j, i), k where its cone arm sums (k, j), i, so the two arms do
+// not compile one source order the same way. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
