@@ -436,6 +436,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // once in the kept order 452 (1756 B); the output parameter first in the helper and both calls 219 (same code); the
 // squared and sine vectors as one two-element array (bound by reference) 471 (1740 B); diagnostic, reverted: the rotation
 // switch without its `__assume(0)` default 228 (1836 B, first difference +0x56 at the added bounds test).
+// M3 lane 13 r128 (screened, control 219): ij as `axis->j * (1 - cosine) * axis->i` (retail's first-case operand order)
+// 219; ik/jk as `axis->k * (1 - cosine) * axis->i/j` 219; the sine product i as `axis->i * sine` 219 (all the same code:
+// the operand sides are canonicalised); forward.i moved right after the sine products (retail's first case) 357 (1820 B),
+// with the three operand orders above as well 357. The jump tables' four-byte offset is code length: ours ends at +0x700
+// with no padding, retail at +0x701 with a 3-byte `lea ecx, [ecx]` ahead of the tables (one byte of encoding).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

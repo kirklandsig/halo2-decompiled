@@ -1975,6 +1975,15 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // if/else on the unit and weapon guard 188 (same code); the look pair as two scalars clamped by if/else-if chains 204 (frame
 // 0x28); the weapon-active flag typed byte 387 (2197 B). Slot map (masked listing): retail packs zoom with unit (-0x1c) and the
 // active byte with spring_d (-0x14), ours the other way round; the ESI/EDI saves stay BLOCKED by the build's stand-in caller.
+// M3 lane 13 r127 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188). Slot references counted on both
+// listings: every EBP offset from -1 to -0x2c is used in both builds and ours leaves -0x30 unreferenced; retail's -0x10
+// (spring_c) is never reused, its -0x14 holds spring_d and then the active byte, its -0x1c the unit, the user flags and then
+// the zoom group; ours puts the active byte with the unit and flags (-0x18) and the zoom group with spring_d (-0x14). The
+// homes follow lifetimes, not scopes: `bool active` declared at the unit block's top 188, `real zoom` there 188, both in
+// either order 188 / 188, the weapon object pointer declared there and assigned in the loop 188, `flags` declared ahead of
+// the look pair 188 (same code each). Retail pops EDI and ESI right after the weapon loop, ahead of the two flag tests
+// that close the unit block, and pushes each just ahead of its first use after the unit test; ours saves both ahead of
+// the test and restores them at the end (the round 98 block). Body unchanged.
 // M3 lane 14 r125 (fast; control 188): slot sharing against retail: retail packs unit, the user-flags copy and zoom in
 // -0x1c, mode in -0x18, spring_d and the active byte in -0x14; ours packs unit, flags and active in -0x18, mode in -0x1c,
 // spring_d and zoom in -0x14. Tried: `bool active` declared in the unit block 188, `real zoom` declared in the unit block
