@@ -262,6 +262,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // `if (!model) continue;` then the start and the store 23; the third loop's inner counter declared in its `for` 23; the
 // text result typed as the text helper's return type 23, with the block-24 and block-18 results typed as theirs too 23
 // (all the same code). Diagnostic: 1-8 unused initialised locals after `long i = 0;` 23 each (not a numbering effect).
+// M3 lane 7 r199 (fast with 0x22facd/0x22fa5b, both MATCH): the model's animation type named in its animating block
+// 23 (same code); the model's value0a store ahead of the start, re-measured, 11 at 414 B (the model then stays in EAX
+// and is tested with `test eax, eax`; retail stores after the call); the model array named before its loop (`models =
+// pane->models`) 38 (407 B), the text array so 41 (415 B), both 57 (406 B).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

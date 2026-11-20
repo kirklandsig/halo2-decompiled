@@ -918,6 +918,15 @@ extern "C" void _ReadWriteBarrier(void);
 // body or the no-barrier body): the state as `&slot->type` cast, with/without the barrier; the state declared after the
 // actor ahead of the barrier; `&((s_slot_4c *)slot)[0]` without the barrier; the flags test through a const cast of the
 // slot without the barrier.
+// M3 lane 7 r199 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the state typed as a tail view of the slot's
+// data block (`(tail *)slot->unknownc`, offsets 0xc lower), declared after the actor with the barrier 31 (207 B), before
+// the actor with the barrier 29, with the actor as a typed array element of the pool's data and the barrier 31; that
+// tail view used for the flags test only (the point still through the state) with the barrier 6 (same code); a
+// `byte const *` to the flags byte formed from the data block after the actor, with the barrier 6. Compile-only (exact
+// here): a tail view used once is folded and sunk like the plain cast; a zero offset added through an `long` local, and
+// the data block minus the header size, fold back to the plain cast (44 code without the barrier). Reading: only a
+// pointer variable with two uses and a non-copy definition is anchored where it is defined; the data block anchors the
+// slot load at entry (retail's schedule) but its +0xc temporary holds EDX at allocation, so the data base goes to ESI.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

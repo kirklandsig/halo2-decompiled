@@ -1615,6 +1615,9 @@ PRIVATE inline long score_string_list_1608e0()
 // MiniMax B (11-20): no new form, no lower score (679): the frame stays 0x798 against retail's 0x79c with the viewer
 // still in EDI, and the top edge, the origin and the scroll bounds still have displaced homes; the forms that
 // recover the frame gain four at most and need a moved declaration.
+// M3 lane 7 r199 (fast): the player's local user index named once and used at the four scroll-offset uses 697; the
+// scroll offset through a `real *` formed once 740 (2840 B), through a `real &` 740 (2840 B); the player pointer declared
+// after the scores pointer 713 (2888 B), just before the first scroll-offset use 717 (2888 B).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
