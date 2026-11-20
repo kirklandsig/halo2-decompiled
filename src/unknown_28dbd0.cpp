@@ -73,6 +73,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax R (11-20): no new form, no lower score (173, 1209 bytes, retail 1209): the frame is still 0x11c against
+// retail's 0x118 because the rotation helper gives its whole twelve-byte cross vector a stack home where retail keeps
+// the cross's components in registers, and the cosine is still taken with fcos before the sine where retail takes the
+// sine first and stores it after the dot; two new spellings of the rotation measured 182 and 185, and the permutation
+// search over the helper found nothing lower.
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
