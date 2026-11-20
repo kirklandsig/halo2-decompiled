@@ -2132,7 +2132,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // keep the two apart.
 // Earlier 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier at 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
-// score 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
+// Earlier at 305 (was 462): Frame 0x120 versus 0x128. Playback, range limit and detail request homes differ.
 // Earlier score 305 (was 462): The frame (0x11c; 0x120 with the 0x94 request tail) still differs from retail 0x128, as do the playback and range-loop homes.
 // Earlier: the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
@@ -2570,6 +2570,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // current range handle carried through both admissions 412; full request with both track bindings 305.
 // NOT kept: the range handle reduces the frame to 0x11c and loses the indexed loads. Complete request
 // storage reaches 0x12c while retail reserves 0x128.
+// Exhaustive clamp result 305; lower-initialized clamp 305; pitch-initialized upper/lower tests 291;
+// shared clamp macro 305. With complete request storage 305/305/291/305.
+// NOT kept: the 291 form moves the default pitch copy ahead of the lower test and splits the upper
+// copy. Retail shares the bound result register and copies the pitch after both tests. Frame and
+// playback homes remain. The complete request reserves 0x12c.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

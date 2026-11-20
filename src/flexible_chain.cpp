@@ -883,6 +883,10 @@ void __stdcall function_1160c0(real dt)
 // the loop bound as `i <= definition->segment_count` 286 (1368 B: the guard becomes a compare, the rest unchanged).
 // Diagnostic: the segments base read through a file-local forceinline accessor 144 (same code: the base stays in EDI,
 // so the one-step scratch rotation is not set by a temporary at the base's own load).
+// Squared separation first, reach first, root first and root after reach all 144;
+// with rest-offset components through the vector setter all 273.
+// NOT kept: the ratio stages tie. The setter changes the entry saves while retaining
+// the 0xa4 frame. The segment carrier and ratio/sine home remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

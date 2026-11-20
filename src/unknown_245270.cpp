@@ -931,6 +931,10 @@ void function_245400(s_source_245400 const *source, long index,
 // operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
 // Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
 // (retail loads the second normal first in four products and reuses the first normal's k in two).
+// First complete decode, second complete decode, second index before both addresses, and
+// second address/side paired 210 each. With shifted side bits 234/234/233/233.
+// NOT kept: the sign tests reach retail length but regress. The shifted forms are short
+// and all retain the 0x24 frame with the source and separate side homes displaced.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -1684,6 +1684,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `*out = s_matchmaking_ratings();` 862 (2800 B, but through a 0x364-byte temporary copied with `rep movsd`, frame 0x434,
 // aligned 1020 against 1016: not kept); the player loop bounded by the summary's count 883 (0x73530 8); adding_group
 // declared beside result 881.
+// Shared upper selector 865; split capacity gates 865, individual admission gates 865,
+// named upper result 865. Dword cells 876, with both library clears 903, split capacity
+// gates 876 and type retained across the lower check 876.
+// NOT kept: the selector expands but the opening lookup still expands, and all eight
+// move the session onto the stack and disturb the matched caller. The dword frame is 0xb0.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
