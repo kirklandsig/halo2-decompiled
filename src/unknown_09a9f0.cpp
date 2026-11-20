@@ -983,6 +983,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // from the two separate lookups, not the other way round.
 // Attachment helper after repeated/guarded single publication 42/73; invalid-index guard 69; two guards 73; header rejection first and full index 75.
 // Attachment helper with late success 79; publication in the admission test 77; single accepted-or-rejected publication 75. NOT kept: all raise the score.
+// MiniMax R (11-20): no new form, no lower score (8): the second lookup truncates its index with a word cast where
+// retail masks the full-width index, and the object index is stored again inside the branch where retail stores it
+// once; the shared mask form gives both lookups one index computation (42) and the store-free form moves the value's
+// stack home and adds a frame pointer (77).
 // MiniMax G (11-20): the second lookup's index is only independent of the header lookup with the word cast,
 // and that gives retail's `movzx ecx, ax` where retail has `mov ecx, eax; and ecx, 0xffff`; an unsigned-long
 // index folds to the same value as the header's, so both lookups share one index computation (42). What still

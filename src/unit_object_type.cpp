@@ -5581,6 +5581,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Staged cross with component-by-component subtraction, all positive products first, all subtracted products
 // first, or both product sets first: 169/169/169/169 for the first cross and 169/169/169/169 for both.
 // NOT kept: the delayed up.i read and the 768-byte extent are unchanged.
+// MiniMax R (11-20): re-checked, no new form and no lower score (169): the cross products use other xmm registers (xmm4, xmm5 and xmm7 here against xmm2 and xmm4 there) and multiply the operands in the other order, and the two branches near the entry land at different offsets.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

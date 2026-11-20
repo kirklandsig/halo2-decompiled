@@ -2369,6 +2369,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // frame than retail's, retail still clears the release flag with one byte read-modify-write where this build
 // loads it, masks it and stores it back, and retail still keeps two copies of the release impulse where this
 // build shares one: BLOCKED-BY the transform helper's own file.
+// MiniMax R (11-20): re-checked, no new form and no lower score (140): the three flag arguments to the 0xe2d80 call are written to different stack slots than retail uses, and the flag byte is cleared with a load, an and and a store where retail clears it in place with an and against [ebp + 0x12c].
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

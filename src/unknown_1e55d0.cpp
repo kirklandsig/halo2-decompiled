@@ -402,6 +402,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // 229, masked 113: round 138's form re-measured, the pointer read changes nothing on it); the input's flag word pointer
 // read into a local ahead of the shape block 323 (1180 B); the object index read ahead of the shape block 325 (1180 B);
 // the mode byte read into a named long ahead of the countdown 321. Body unchanged.
+// MiniMax R (11-20): re-checked, no new form and no lower score (319): retail keeps the result pointer in ebx and the input pointer in edi while this build keeps the input pointer in ebx and the result pointer in edi, so every instruction from the prologue on differs, and the spilled address of the velocity field lands in [esp + 0x20] where this build uses [esp + 0x1c]; replacing the reference bound local with a pointer and reordering the aliases change nothing.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
