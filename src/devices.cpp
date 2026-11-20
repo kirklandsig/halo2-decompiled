@@ -1757,6 +1757,7 @@ bool function_108530(long device_index, long name)
 // moved declaration) and with either first form 109 (same code). In the inner block retail gives XMM registers to the
 // distance (XMM5), the final velocity (XMM7) and the 2.0 constant (XMM3) and reloads the ramp-down and the cruise velocity
 // from memory; ours keeps the ramp-down (XMM7) and the cruise velocity (XMM4) and reloads the distance.
+// MiniMax C (11-20): no new form, no lower score (116): the velocity still reaches the clamp on the stack, retail in xmm6.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2742,6 +2743,7 @@ bool function_0b6760(s_index_pair const *pair);
 // position read ahead of the first channel-1 test and passed to the frame call 98; the group target read once into a
 // local for the test and the motion call 388 (1479 B; retail reads the group's value at both uses). Still
 // BLOCKED-BY 0xb6760 at the channel-1 sites.
+// MiniMax C (11-20): no new form, no lower score (61): the channel-1 call loads the device index into eax, retail into ecx.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
