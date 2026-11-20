@@ -1850,19 +1850,21 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // references 193, animation names record 175, names record with a shared turning key 193, component
 // acquired after the state observations 193, rigid body acquired before the position query 683. NOT kept:
 // The unit load and definition, animation flags and point homes remain displaced.
+// score 158 in a full build with stand-in SDK headers (was 175): `state` is declared after `animation_flags` and
+// `speed_scale` after `position` (declaration order only).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
 	s_biped_definition *definition = BIPED_DEFINITION(biped);
 	s_havok_component *component = havok_component_get(biped->havok_component_index);
-	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	word const *animation_flags = (word const *)((byte *)biped + biped->unknown33e);
+	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	bool airborne = *(long *)(state + 0x7c) == 0xe0000c2;
-	real speed_scale = 1.0f;
 	long material = 0;
 	real boost;
 	point3f position;
+	real speed_scale = 1.0f;
 	vector3f velocity;
 	vector3f facing;
 
@@ -7823,6 +7825,11 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
    (NONE for none): the one inside the grab window (function_e63b0), and when
    both are, the one with the smaller yaw when both are close, else the
    nearer; NONE when neither is */
+// score 55 (was 112) in a full build with stand-in SDK headers: the result lives in object_index's argument home
+// and the candidate in a copy (`candidate_index`), with no result local, as retail keeps them. Left: retail keeps
+// the pool pointer in esi and reloads [esi+0x44] for the weapon lookup of the inlined 0x1012c0 where ours caches
+// the data pointer, and retail calls 0xe63b0 on the candidate first.
+// Before:
 // score 112 (was 112): walked against retail block by block, no behaviour difference: the weapon slot byte at
 // +0x212 and the +0x218 table (0xe5be1-0xe5bfd), the flag inlined from function_cbd50 and function_1012c0
 // (definition byte +0x12f, bit 0; 0xe5c04-0xe5c34), previous == NONE at 0xe5c37, both function_e5d50 calls (object
@@ -7841,17 +7848,19 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index)
 {
 	s_biped *unit = BIPED_GET(unit_index);
-	long result = NONE;
+	long candidate_index = object_index;
 	bool flag = function_1012c0(function_cbd50(unit_index, *((char *)unit + 0x212)));
+
+	object_index = NONE;
 
 	if (previous_index == NONE)
 	{
 		vector3f measurement;
 
-		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&measurement);
+		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&measurement);
 		if (function_e63b0(&measurement, flag))
 		{
-			result = object_index;
+			object_index = candidate_index;
 		}
 	}
 	else
@@ -7861,7 +7870,7 @@ long __stdcall function_e5bc0(long unit_index, long object_index, long previous_
 		bool candidate_inside;
 		bool current_inside;
 
-		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&candidate);
+		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&candidate);
 		function_e5d50(unit_index, previous_index, &unit->unknown168, (point3f *)&current);
 		candidate_inside = function_e63b0(&candidate, flag);
 		current_inside = function_e63b0(&current, flag);
@@ -7876,31 +7885,31 @@ long __stdcall function_e5bc0(long unit_index, long object_index, long previous_
 
 					if (candidate_yaw < current_yaw)
 					{
-						result = object_index;
+						object_index = candidate_index;
 					}
 					else
 					{
-						result = previous_index;
+						object_index = previous_index;
 					}
 				}
 				else if (candidate.k < current.k)
 				{
-					result = object_index;
+					object_index = candidate_index;
 				}
 				else
 				{
-					result = previous_index;
+					object_index = previous_index;
 				}
 			}
 			else
 			{
-				result = object_index;
+				object_index = candidate_index;
 			}
 		}
 		else if (current_inside)
 		{
-			result = previous_index;
+			object_index = previous_index;
 		}
 	}
-	return result;
+	return object_index;
 }

@@ -247,6 +247,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon);
 
+PRIVATE __forceinline void decal_project_17dd80(real const *point, short axis, bool side, point2f *out)
+{
+	short const *axes = g_440b94[axis * 2 + side];
+	out->x = point[axes[0]];
+	out->y = point[axes[1]];
+}
+
 PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *mesh, s_decal_mesh_edge const *edge,
 	bool reverse, s_decal_quad_17d9a0 const *quad, real radius, short mode, long *adjacent, short *count)
 {
@@ -274,6 +281,10 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 	}
 }
 
+// score 423 (was 453) in a full build with stand-in SDK headers: retail computes the projection table index (axis *
+// 2 + positive) at each projection, with the side as a by-value bool (0x143-0x161 for the first vertex, 0x180-0x199
+// for the current one); the projection is an inline helper called for both. Left: frame 0x58 against retail's 0x5c,
+// face_index in edi (retail esi), mesh in esi (retail ebx).
 // @retail 0x17dd80
 void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a0 const *quad,
 	s_decal_output_17dd80 *output, long face_index, bool gather, real radius, short mode,
@@ -307,16 +318,13 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 			bool reverse = edge->faces[1] == face_index;
 			point3f const *vertex = &mesh->vertices[edge->vertices[!reverse]].position;
 			polygon_points = g_55ec10[iteration & 1];
-			short const *axes = g_440b94[quad->axis * 2 + quad->positive];
 			if (iteration == 0)
 			{
 				point3f const *first = &mesh->vertices[edge->vertices[reverse]].position;
-				previous.x = ((real const *)first)[axes[0]];
-				previous.y = ((real const *)first)[axes[1]];
+				decal_project_17dd80((real const *)first, quad->axis, quad->positive, &previous);
 			}
 			point2f current;
-			current.x = ((real const *)vertex)[axes[0]];
-			current.y = ((real const *)vertex)[axes[1]];
+			decal_project_17dd80((real const *)vertex, quad->axis, quad->positive, &current);
 			plane2f clip;
 			clip.n.i = previous.y - current.y;
 			clip.n.j = current.x - previous.x;
