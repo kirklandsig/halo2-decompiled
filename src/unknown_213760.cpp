@@ -1984,6 +1984,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // NOT kept: The query-and-write and resize-and-write forms reach 32 at retail length. Both retain the first stack-
 // slot difference and use one-use handle copies, so the one-point gain is excluded. The other six tie or raise the
 // score.
+// Query/write/both mismatch via XOR 164/121/167 or split inequalities 171/118/183.
+// Negated inclusive bounds for query/write 171/118. NOT kept: comparison
+// forms retain the slot difference or add instructions and raise the score.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -839,6 +839,10 @@ struct s_object_damage_view
 // Both with a bounded cursor 511.
 // Indexed single-record join before recovering the ordinal 500.
 // NOT kept: The cursor restores the record base but pointer-valued selection adds code and displaces the native short ordinals.
+// Attribution branches initialize killer/threshold/code 417/379/436.
+// Killer and threshold/killer and code/threshold and code 436/459/446.
+// All three in the selected or absent arm first 469/478. NOT kept: the
+// explicit defaults raise the score and leave the rotated homes unresolved.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

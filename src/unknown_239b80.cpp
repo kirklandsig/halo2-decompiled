@@ -868,6 +868,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // hull count's alone 242 (768 B), the count's alone 178 (807 B, aligned 88), both on the `current`-first body 245. So
 // neither an address-taken nor an escaping count or hull count gives retail's allocation; what ranks the hull count
 // above the count for the fourth callee-saved register is still open.
+// Equality bounds in lowest scan, hull walk and candidate scan, all seven
+// subsets 144. Direct post-test hull walk 267. NOT kept: equality leaves the
+// 0x18 frame, and the post-test walk reaches 0x14 but shortens the body to
+// 759 bytes and moves the caller to 80.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

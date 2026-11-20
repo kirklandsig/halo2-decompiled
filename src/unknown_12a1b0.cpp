@@ -3703,6 +3703,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 597/597/597/598/598/598/598. All three with alternate under the definition guard 613.
 // NOT kept: the guarded form restores the saved-register prefix and then differs at +0x1c,
 // but shortens to 2500 bytes and raises the score. The request and track-state homes still differ.
+// Final request bits tested by direct mask, second/third/both 592/598/617.
+// Clear path first for alternate/second/third/all 600/600/597/603.
+// All clear-first with both mask tests 619. NOT kept: the five-point reduction
+// shortens the body by seven bytes and leaves the early BL load.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
