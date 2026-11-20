@@ -233,6 +233,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // `short size` form with the pointer and the result both initialised from `data + size` 94 (264 bytes: CSE merges
 // the two into one lea, which goes to EAX for both, no copy, no spill), with the result declared first 94 (same
 // code). The 16-bit size loads are never merged, and a merged register initialiser is coalesced like a named copy.
+// M3 lane 7 r192 (fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): the element pointer
+// computed ahead of the count/type test 95; `result = NULL` between the expression update and the index increment 95; the
+// pointer named `parameters` 95 and the result named `values` 95 (names do not decide the merge); the element ahead of the
+// test with `result = NULL` first in the arm 83 (277 B, the null-first shape); the type test nested under the count test
+// with the expression node named 95. Every form still gives the pointer and the result one web in EAX.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

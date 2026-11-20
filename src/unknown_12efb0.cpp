@@ -136,7 +136,8 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
-// score 607 (was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
+// score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
+// Earlier (607, was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
 // loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in
 // EAX, and joins failed palette lookups at one record test. The build uses EAX, BX and ECX and threads past
 // the join.
@@ -823,6 +824,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // declared at function scope and reset per cluster 693, the out value declared ahead of the cluster record 693 (all
 // the same code), the flag declared ahead of the out value and the call 697. Declaration order does not move the
 // result/NONE pair. Body unchanged.
+// Default stores sentinel-kind-weight 606, kind-weight-sentinel 607, weight-sentinel-kind 607,
+// weight-kind-sentinel 606, sentinel-weight-kind 607. Completion default after metadata 607.
+// Explicit admission before defaults with a retained ordinal 607, with slot re-reads 666.
+// NOT kept: the one-point gains leave the palette width, sentinel and provider registers different.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

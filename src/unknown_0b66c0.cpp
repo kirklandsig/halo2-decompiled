@@ -553,6 +553,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // count ESI, walk EDX, counter ECX, `lea edx, [edi + esi]` compare) but the source summed into EAX and the destination loaded
 // late into EDI; LTCG then passes start in the first pass's walk register (EDX). Every `start +=` form moves start into a
 // scratch register in that first pass (walk EDI). Retail's start is modified in its own EDI (`add edi, eax`) and passed in ECX.
+// M3 lane 7 r192 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the volatile-free kept body re-measured
+// 49 (92 bytes) [6] (string EBP, start arriving in EDX, the destination left on the stack); on the kept body the sign tests as
+// `0 <= start && 0 < count` 21 [match]; the scan on `&string[0]` with the source as `&string[start]` 21 [match]; the string
+// parameter advanced in place (`string += start;` where the source is named) 47 (107 bytes) [6]; the source declared (not
+// assigned) after the result 21 [match], before it 21 [match]. The walk ECX / counter EDX split stands.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

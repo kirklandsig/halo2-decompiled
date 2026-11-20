@@ -116,7 +116,8 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
-// score 287 (was 296): Advancing the required index output restores gain-based output addressing.
+// score 287 (was 296): Frame 0x428 agrees. The starting cluster stays in EBX and both BSP table bases are cached across the portal walk.
+// Earlier: Advancing the required index output restores gain-based output addressing.
 // Round 192 (m3 lane 8; one-file harness, see 0x18dc90's note): on the r111 held form 244 positional, 17 aligned at
 // 1364 B, the same cluster/portal-index EBX/EBP swap as the twin plus the padding it shifts; the twin's ten forms
 // applied to both bodies give 244 here each, except a long portal index 323 and the cluster through a reference 244
@@ -231,6 +232,14 @@ __forceinline long portal_path_gain(real distance, real range)
 // Packed entry read at both decodes 287, direct seed and search pointer 368. Computing
 // the ordinal from the table position recovers EBP but grows the body; both table
 // bases still need retail's per-visit loads.
+// M3 lane 14 r124 (fast with 0x18dc90, 0x14b240, 0x249d60, 0x18ae50; main's callee, so both table bases still hoist):
+// `long encoded` with a `short portal_index` and the side bit as `((dword)encoded >> 15) & 1` together 360 (1369 B); the
+// nearest test with the NONE test first 292; the deep block's two range tests as one `!valid || distances >= distance`
+// condition 288; the distance sum written `travel + ...` 287 (same code); the nearest distance stored before the index
+// 287 (same code). BLOCKED-BY 0x14b240's write summary (see above): every form on main's base keeps both table bases.
+// Destination array names 287; distance and bitmap names 287; four ranked table roles 287; destination
+// arrays before order 287, order before the distance array 287; source and destination record names
+// 287; distinct phase ordinals 287, with candidate array and bitmap roles 287.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -331,7 +340,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 
 // score 305 (was 315): Earlier 315 (was 354). Advancing the required index at the row latch brings the entry frame to 0x42c.
 // score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
-// score 305 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// (A second header line, "score 305 (was 354)" with the same text, merged here in m3 lane 14 r124.)
+// Frame 0x42c versus 0x428. The starting cluster is in EBX and both BSP table bases stay live through the walk.
+// Prior score history: 315 before r118, 354 before that.
+// Earlier 305 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
 // Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
 // positional/aligned; on main 304/232): lane 13's r111 held form re-applied (lane 2's rebuilt patch) 15/16 at 1363 B,
 // the twin 244/17. Only the cluster pointer (ours EBX, retail EBP) and the widened portal index (ours EBP, retail
@@ -502,6 +514,15 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Selected sort key 681, cap-first empty arm 311, empty-first cap 310.
 // While with common latch 305, positive bound scope 310. The 0x42c frame and both
 // BSP table lifetimes remain.
+// M3 lane 14 r124 (fast with 0x18d730, 0x14b240, 0x249d60, 0x18ae50; main's callee): `long encoded` with a `short
+// portal_index` and the side bit as `((dword)encoded >> 15) & 1` together 356; the nearest test with the NONE test first
+// 310; the deep block's two range tests as one `!valid || distances >= distance` condition 306; the distance sum written
+// `travel + ...` 305 (same code); the nearest distance stored before the index 305 (same code). BLOCKED-BY 0x14b240's
+// write summary, as for the twin.
+// Candidate table names in distance/portal/order/destination and rank/destination/portal/distance
+// order 305/305; walking record roles alone and with candidate arrays 305/305; distance and order
+// declarations first or last 305/305; distinct traversal/fill/output ordinals 305, with path
+// measurement names 305.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

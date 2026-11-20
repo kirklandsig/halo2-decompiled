@@ -1066,6 +1066,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the bounded value, enum root kind, admitted entity pointer, immutable node pointers, immutable
 // origin and hit, and shared plane validity assigned by each side test: 336/238/238/238/238/238/238/331.
 // NOT kept: The frame and second-node home still differ, as does the classifier data reload sequence.
+// Packed-branch material receiver before data 238; before both snapshots 230;
+// admitted upper result index 238; separate signed key guards 306;
+// named radius contribution 248; immutable origin component view 238;
+// plane-arm signed distances 238; material receiver between snapshots 230;
+// exclusive result-count bound 307. NOT kept: The 230 form restores the frame size but shifts
+// both saved node homes and remains four bytes long.
 // M3 lane 5 r210 (fast with the file's seven other functions; control 238, register-masked 89): the dead second root walk
 // ahead of the property get 341 (1243 B); the key read ahead of the kind-4 test 251; the key adjust as `(data - 1) * 8`
 // 238 (same code); friction and restitution declared at function scope 238 (same code); the material output declared at
@@ -1080,6 +1086,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // `cmp ecx, edx; jg` and the data copied from the first read instead of loaded again; aligned 179 against the control's 181),
 // that spelled `!(limited > value)` / `!(limited < value)` 320 (same code), with the field read at each use 321. The
 // positional count rises only because the block's rows shift; the data field is still loaded once.
+// M3 lane 5 r213 (fast with the file's eight other functions, matched throughout; control 238, aligned 138): the origin
+// copied member-wise z, y, x through a source pointer (retail's float copies, z first) 311 (aligned 127, frame still
+// 0x40); the hit copied member-wise 323 (aligned 166); both 361 (1260 B); the distance sum written radius first 238 (same
+// code); the valid flag and the two indices declared ahead of the fraction test 328 (1243 B, aligned 222); the hit copy
+// after the distance 305 (1245 B, aligned 137).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -1542,6 +1542,12 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // first request's fifth kind (mode's EBP is dead there in both builds; its next read is a reload), with four `cmp reg, ebp`
 // tests and the inheritance counter and offset stores from EBP; ours keeps `test` and two immediate stores and pads a `jmp`
 // into the loop.
+// M3 lane 5 r213 (fast with the twin 0x1dbc80, 0x1dc790, 0x1dc8c0 and 0x1dd9d0; control 828, aligned 314, registers and
+// offsets masked 76): the per-pass candidate renamed (three names sorting before, between and after the outputs and the
+// result), the result renamed, the outputs renamed two ways: 828 each (same code; name order sets no home here); the
+// outputs declared together and set by one chained assignment 828 (same code); the early return as one guarded block
+// (`if (weapon_class != NONE) { ... } return result;`) 1040 at 2857 B (aligned 125, masked 74: most homes after the
+// search then agree with retail's, but the exit code grows; not kept, a rise).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2036,6 +2042,15 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // LTCG then drops the output parameters). Reading: in the second request ours gives EBX/EBP to the shared mode-table temp and
 // `this` (reloaded per kind) and reads the found mode from memory; retail gives them to `this` (once) and the found mode, and
 // leaves the table temp spilled in found_mode's dead home.
+// M3 lane 10 r131 (fast with 0x1db170 (828 throughout), 0x1dc790, 0x1dc8c0, 0x1dd560, 0x1dd9d0, 0x2963f0, 0x1236f0, 0x1ce180,
+// 0x1cb230; control 828, aligned 580, register/offset-masked 74). Masked, the differences are the first request's zero
+// register (retail `xor ebp, ebp` then `cmp reg, ebp` and stores of EBP from the fifth kind on, ours `test` and immediate
+// zeros), the inheritance counters (retail stores both into dead parameter homes, ours one into a frame slot), the
+// post-loop index test (retail `cmp word ptr [result + 2], si`, ours a dword reload and shift) and the epilogues. Forms:
+// the post-loop test and the 0x1dd9d0 argument through `c_type_709360 const &found_id = result` 828 (same code); the
+// test as `!(result == c_type_709360())` 991 (2825 B); the first request keyed by `iterator.mode`, `iterator.weapon_class`
+// and `iterator.weapon_type` 1016 (2839 B); the candidate dropped for `result = named ? named->animation_id :
+// animation_id` 951; the output stores after the requests 1009 (2849 B).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

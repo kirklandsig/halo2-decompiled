@@ -456,6 +456,9 @@ void function_3dd10(long object_index, bool force);
 // Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
 // the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
 // Earlier 77 (was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
+// The zero ordinal store falls after the guard in this build and before it in retail.
+// Earlier (97, was 123): The object and tint entry exchange EDI and ESI.
+// Earlier (77, was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
 // spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
 // The late variant byte restores the output/delta registers and keeps retail length.
 // The blend store, weight-scan exits and fallback unity reload also differ.
@@ -792,6 +795,15 @@ void function_3dd10(long object_index, bool force);
 // by-reference pin helper with early returns (the form a matched neighbour uses) 189 (the running sum becomes a memory
 // add); the scan count bound by `long const &` for the first scan's bound 86, the mask updated through a `dword &`
 // 86, the weight summed through a `real &` 86 (all three the same code: only the found block's hue registers swap).
+// Indexed tint entry after the white store 238; advancing tint entry 307;
+// independent live choice-count and array lookup 180; guarded choice count 97;
+// supplied-color test before the tint entry 106; signed scan with conditional mask accumulation 873;
+// separate selection admission and threshold 219; positive weight predicate first 108.
+// NOT kept: The saved object/tint roles, signed scan and blend publication still differ.
+// Unequal bank bound with and without the guard 77/97. Named stored-color count or byte
+// extent 86/86. Tag lookup after extent or after address 260/87. One supplied/default
+// color assignment by value or by source address 298/298. The choice count and mask
+// homes and the signed weight-scan exits still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
