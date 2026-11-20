@@ -533,12 +533,15 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax D (11-19): 107 (was 116): the velocity copy x first and the speed's squares accumulated make both retail's;
 // MiniMax G (11-19): no new form, no lower score (116): what is left is the velocity copy's colouring (i in ECX where
 // retail holds it in EAX, so both loads and the first store differ) and the entry magnitude's SSE order (the 1.0 in xmm2
 // against retail's xmm3, and the first addss after the fsqrt); the entry magnitude written out flat measures 123, the
 // two-term nested form 123, dot3f of the throttle vector 281 and the velocity copy x first 120, so the body stands.
-// score 116 (was 116): earlier 218 before the reversing test had retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
+// score 107 (was 116): earlier 218 before the reversing test had retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
 // retail's; left: SSE register colouring (the 1.0 constant in xmm2 against retail's xmm3, the normalized
+// forward/heading in other registers) and the atan2 sums' x87 operand orders.
+// (the velocity copy's eax/ecx and the blend rows are now retail's.)
 // forward/heading in other registers), the blend rows' k copy (the one extra instruction) and store order, the
 // velocity copy's eax/ecx and two x87 operand orders in the atan2 sums.
 // MiniMax I (11-17): no new form, no lower score (218): the frame, the length and the layout are retail's and what is
@@ -841,10 +844,12 @@ void function_ef070(long vehicle_index)
 
 	real input_magnitude_squared = length_sq3f((vector3f const *)&vehicle->throttle);
 
-	velocity.y = vehicle->local_velocity.j;
 	velocity.x = vehicle->local_velocity.i;
+	velocity.y = vehicle->local_velocity.j;
 
-	real speed = (real)sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+	real speed_squared = velocity.x * velocity.x;
+	speed_squared += velocity.y * velocity.y;
+	real speed = (real)sqrt(speed_squared);
 
 	if (!(0.0001f > (real)fabs(speed)))
 	{
@@ -853,10 +858,10 @@ void function_ef070(long vehicle_index)
 		velocity.x = inverse * velocity.x;
 		velocity.y = inverse * velocity.y;
 	}
-	forward.x = vehicle->forward.i;
-	forward.y = vehicle->forward.j;
 	input.x = vehicle->throttle * velocity.x - vehicle->steering * velocity.y;
+	forward.x = vehicle->forward.i;
 	input.y = vehicle->steering * velocity.x + vehicle->throttle * velocity.y;
+	forward.y = vehicle->forward.j;
 	vehicle_normalize2d(&forward, g_468778);
 
 	point2f left;
@@ -871,8 +876,8 @@ void function_ef070(long vehicle_index)
 	real k = 1.0f - (heading.y * forward.y + heading.x * forward.x);
 	point2f blend;
 
-	blend.y = forward.y * k + heading.y;
 	blend.x = forward.x * k + heading.x;
+	blend.y = forward.y * k + heading.y;
 
 	vehicle_normalize2d(&blend, &forward);
 
@@ -1526,6 +1531,7 @@ long function_10f5f0(long object_index);
 // between the six-real buffer and the linear velocity where this build keeps them apart, and retail's five dead
 // flag-result byte stores at [esp+0x13] are a byte flag here, which reproduces retail's shift form but measures 577;
 // sharing the slot would need a local moved in scope, so the body stands.
+// MiniMax D (11-19): no new form, no lower score (561): the 12-byte frame difference is retail sharing one stack slot between the six-real buffer and the linear velocity where this build keeps them apart, and retail's five dead flag-result byte stores at [esp+0x13] have no counterpart; the sum loop is still unrolled four times where retail counts down.
 // score 561 (was 561): earlier 562; frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // earlier at 561 (was 562). Frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // stores), sum-loop unrolling, the flags348 write/read forms and scalar/SSE homes remain.
@@ -4446,6 +4452,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // block.
 
 // MiniMax C (11-19): no new form, no lower score (117): the projection's i-product loads the other input, three cross products take the facing side into the register, and the flip block's forward rotation adds the cosine term first and keeps the sine and cosine in the opposite stack homes.
+// MiniMax D (11-19): no new form, no lower score (118): the projection's i-product still loads the other input at +0x99 (the shared dot3f's argument order does not change it), and the in-place projection, which makes that product retail's, loses the forward's j and k preloads and measures 143; after it the three cross products take the facing side into the register and the sine and cosine keep the opposite stack homes.
 // score 118 (was 118): the projection i-product loads the other input at +0x99, followed by cross-product register order and the sine/cosine stack homes.
 // projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
@@ -5659,6 +5666,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // MiniMax G (11-19): no new form, no lower score (749): the first difference is the entry's zero and result SSE
 // allocation (this build zeroes xmm4 and takes the 1.0 into xmm5 before the frame is set up where retail zeroes xmm2 and
 // copies it with movaps), then the push order and the case-dispatch chain; the frame and the length agree, so it stands.
+// MiniMax D (11-19): no new form, no lower score (749): the frame and the length agree, but the entry's zero and result take different SSE registers (this build zeroes xmm4 and takes the 1.0 into xmm5 before the frame is set up where retail zeroes xmm2 and copies it with movaps), the push order and the case-dispatch chain differ, and retail keeps one copy of the definition pointer in a callee-saved register where this build re-derives it at each use.
 // score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).
 // MiniMax S (11-10): no new form, no lower score (749); the definition pointer is re-derived from the tag table at each use while retail keeps one copy in a callee-saved register (used at seven of its sites) and re-derives it at nine others; the zero and the result take different SSE registers and the 1.0 is loaded once per site here.
 // MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.

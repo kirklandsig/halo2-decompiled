@@ -1923,6 +1923,16 @@ static inline bool unit_dual_wielding(long unit_index)
 // (the getter's local order is irrelevant); 0xc9d00 written with UNIT_GET at both uses or a header-array local in place
 // of its pool copy (scratch copies of its file, which is not ours this round) gives the put-away lookup retail's
 // offset-first order but drops retail's `mov eax, ecx` copy (13). The permuter cannot search this form (reduced 48, full 2).
+// M3 lane 11 r129 (fast with 0xc9d00, MATCH each time), on lane 9 r143's 2 form re-measured (2: the animation-test lookup
+// offset-first where retail is data-first, the put-away lookup data-first where retail is offset-first; the two always
+// flip together): the put-away written out at each use 2; the tail through the holder helper's result 2; the holder
+// helper through a header pointer without its NONE test 2, with a named index and headers local 2, through the getter 2;
+// the dual-wield helper with a result flag 2, a headers local 2, a named index 2, a header pointer 2; the animation test
+// through a header pointer 2, through the getter 2; the put-away through the getter 2; the put-away pointer declared at
+// the top (either side of `result`) 2, at the top of the gate block 2; `long i` declared first 2. Retail's 0xc9d00 is
+// data-first standalone and the put-away flip follows its pool-copy form (r143), so the lead stays in its file. Also on
+// the 2 form: the put-away read through a pool copy local 2, through a headers local 2; one pool copy for the animation
+// test and the put-away 219 (593 bytes).
 // M3 lane 3 r271 (fast with 0xc9d00, 0x1058b0 and 0xfff40 in the image, all matched each time; the five weapon lookups'
 // address orders are written O for offset-first and D for data-first: retail O O O D O with the `mov eax, ecx` copy): the
 // 0xc9d00-call form with `result` at the top re-measured 4 (D D D D D), with weapon_get_102e10 at the first lookup 2
@@ -2921,35 +2931,6 @@ bool function_162b10(long object_index);
 real function_162b70(long object_index);
 bool __stdcall function_fdfb0(long weapon_index);
 
-PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *weapon, s_weapon_definition *definition)
-{
-	real result = 0.0f;
-	long i;
-	for (i = 0; i < definition->barrel_count; i++)
-	{
-		real value = *(real *)((byte *)&weapon->barrels[i] + 0x18);
-		result = result > value ? result : value;
-	}
-	for (i = 0; i < definition->trigger_count; i++)
-	{
-		s_weapon_trigger_definition *trigger_entry = &definition->triggers[i];
-		real scale = *(real *)((byte *)trigger_entry + 0x28);
-		if (trigger_entry->value_1c > 0.0f)
-		{
-			real value = function_102070(weapon_index, (short)i) * scale;
-			result = result > value ? result : value;
-		}
-		if (weapon->triggers[i].state == 2)
-		{
-			real value = scale + (1.0f - scale) * *(real *)((byte *)weapon + 0x188);
-			result = result > value ? result : value;
-		}
-	}
-	real value = *(real *)((byte *)weapon + 0x180) * *(real *)((byte *)definition + 0x164);
-	if (!(result > value)) result = value;
-	return result;
-}
-
 // MiniMax B (11-18): no new form, no lower score (389): retail opens with one four-byte slot (`push ecx`) and takes the table entry into ebp, where this build reserves eight bytes and keeps the weapon index in ebp with the weapon in edi, and retail's dispatch is one comparison tree rooted at 0x10000573 that branches `jle` and holds the two activity names as ordinary cases, where this build tests the two names before the switch and branches `jg`; the single switch with both activity names as cases measures 412.
 // MiniMax I (11-17, run 103): no new form, no lower score (389): retail still opens with one four-byte slot and a
 // comparison tree rooted at 0x10000573 that branches jle, while this build reserves eight bytes and tests the two
@@ -3144,28 +3125,61 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // 0x10000573 as retail but `jg`), the two cases last 426 (same code); the two names as separate cases each calling the
 // helper 733 (1904 bytes, two expansions, not cross-jumped), with the helper taking the definition from the weapon 733;
 // the separate cases on main's helper 760, with the definition from the weapon 797.
+/* the weapon's value for a function name, clamped to [0, 1], and whether it is above zero */
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
-	bool found = true;
 	s_weapon *weapon = WEAPON_GET(weapon_index);
 	s_weapon_definition *definition = WEAPON_DEFINITION(weapon);
 	real result = 0.0f;
-	short index;
-	if (name == 0x1d0007ba || name == 0x0c000569)
+	long index;
+	switch (name)
 	{
-		if (name != 0x1d0007ba || !((byte *)g_4de2f4)[0x82])
-			result = weapon_activity_value(weapon_index, weapon, definition);
+	case 0x1d0007ba:
+		/* the 0x0c000569 value unless the list's byte at 0x82 is set: retail loops back to the top with that
+		   name (the path to this case falls through the tree, and the definition is looked up again) */
+		if (((byte *)g_4de2f4)[0x82])
+			result = 0.0f;
+		else
+			return function_ff5f0(weapon_index, 0x0c000569, value, active);
+		break;
+	case 0x0c000569:
+	{
+		long i;
+		for (i = 0; i < definition->barrel_count; i++)
+			result = result > *(real *)((byte *)&weapon->barrels[i] + 0x18) ? result : *(real *)((byte *)&weapon->barrels[i] + 0x18);
+		for (i = 0; i < definition->trigger_count; i++)
+		{
+			s_weapon_trigger_definition *trigger_entry = &definition->triggers[i];
+			if (trigger_entry->value_1c > 0.0f)
+			{
+				real candidate = function_102070(weapon_index, (short)i) * *(real *)((byte *)trigger_entry + 0x28);
+				result = result > candidate ? result : candidate;
+			}
+			if (weapon->triggers[i].state == 2)
+			{
+				real candidate = *(real *)((byte *)trigger_entry + 0x28) +
+					(1.0f - *(real *)((byte *)trigger_entry + 0x28)) * *(real *)((byte *)weapon + 0x188);
+				result = result > candidate ? result : candidate;
+			}
+		}
+		real candidate = *(real *)((byte *)weapon + 0x180) * *(real *)((byte *)definition + 0x164);
+		if (!(result > candidate)) result = candidate;
+		break;
 	}
-	else switch (name)
-	{
 	case 0x03000577: result = weapon->heat; break;
 	case 0x04000567: result = *(real *)((byte *)weapon + 0x180); break;
-	case 0x05000024: result = function_10cf50(weapon_index) ? 1.0f : 0.0f; break;
+	case 0x05000024:
+		if (function_10cf50(weapon_index))
+			result = 1.0f;
+		break;
 	case 0x05000081: result = *(real *)((byte *)weapon + 0x18c); break;
 	case 0x09000568:
 		if (!function_10cf50(weapon_index) || ((bool)(((dword)*(word *)((byte *)weapon + 0x16c) >> 5) & 1)))
-			result = weapon->heat < 1.0f ? 1.0f : 0.0f;
+		{
+			if (weapon->heat < 1.0f)
+				result = 1.0f;
+		}
 		break;
 	case 0x0a000066:
 		if (((bool)(((dword)*(word *)((byte *)weapon + 0x16c) >> 1) & 1)) && *(real *)((byte *)definition + 0x150) != 1.0f)
@@ -3176,28 +3190,41 @@ bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *a
 	case 0x0d0006e7:
 	case 0x0e0006e6:
 	case 0x0f0006e5:
+		result = 0.0f; /* retail zeroes the result again here and in the next case */
 		if (g_4e6948->state == 2 && *(short *)((byte *)weapon + 0x17e) != NONE && function_162b10(weapon_index))
 		{
 			real progress = function_162b70(weapon_index);
-			if (name == 0x0d0006e7)
-				result = progress == 1.0f ? 1.0f : 0.0f;
+			if (name == 0x0f0006e5)
+			{
+				if (progress == 0.0f)
+					result = 1.0f;
+			}
 			else if (name == 0x0e0006e6)
-				result = progress > 0.0f && progress < 1.0f ? 1.0f : 0.0f;
-			else if (name == 0x0f0006e5)
-				result = progress == 0.0f ? 1.0f : 0.0f;
-			else
-				result = progress;
+			{
+				if (progress > 0.0f && progress < 1.0f)
+					result = 1.0f;
+			}
+			else if (name == 0x0d0006e7)
+			{
+				if (progress == 1.0f)
+					result = 1.0f;
+			}
 		}
 		break;
 	case 0x120006e4:
+		result = 0.0f;
 		if (g_4e6948->state == 2 && *(short *)((byte *)weapon + 0x17e) != NONE && function_162b10(weapon_index))
 			result = function_162b70(weapon_index);
 		break;
 	case 0x0e000572:
 	case 0x10000573:
 		index = name == 0x0e000572 ? 0 : 1;
-		if (index < definition->barrel_count && (long)(g_510c54->game_time - *(long *)((byte *)weapon + 0x248)) <= 1)
+		if (index < definition->barrel_count)
+		{
 			result = *(real *)((byte *)&weapon->barrels[index] + 0x10);
+			if ((long)(g_510c54->game_time - *(long *)((byte *)weapon + 0x248)) > 1)
+				result = 0.0f;
+		}
 		break;
 	case 0x0f000574:
 	case 0x11000575:
@@ -3208,8 +3235,12 @@ bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *a
 	case 0x1200056a:
 	case 0x1400056d:
 		index = name == 0x1200056a ? 0 : 1;
-		if (index < definition->magazine_count && definition->magazines[index].rounds_loaded_maximum != 0)
-			result = (real)weapon->magazines[index].rounds_loaded / (real)definition->magazines[index].rounds_loaded_maximum;
+		if (index < definition->magazine_count)
+		{
+			s_weapon_magazine_definition *magazine_definition = &definition->magazines[index];
+			if (magazine_definition->rounds_loaded_maximum != 0)
+				result = (real)weapon->magazines[index].rounds_loaded / (real)magazine_definition->rounds_loaded_maximum;
+		}
 		break;
 	case 0x14000570:
 	case 0x16000571:
@@ -3223,8 +3254,14 @@ bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *a
 		if (index < definition->barrel_count)
 			result = weapon->barrels[index].value14;
 		break;
-	case 0x14000578: result = (weapon->value_16e & 2) ? 1.0f : 0.0f; break;
-	case 0x16000579: result = (weapon->value_16e & 4) ? 1.0f : 0.0f; break;
+	case 0x14000578:
+		if (TEST_FIELD_BIT(((s_weapon_flags_view_1023d0 const *)&weapon->value_16e)->flag1))
+			result = 1.0f;
+		break;
+	case 0x16000579:
+		if (TEST_FIELD_BIT(((s_weapon_flags_view_1023d0 const *)&weapon->value_16e)->flag2))
+			result = 1.0f;
+		break;
 	case 0x1700056b:
 		if (definition->magazine_count > 0)
 			result = (real)(weapon->magazines[0].rounds_loaded % 10) * 0.1f;
@@ -3233,9 +3270,9 @@ bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *a
 		if (definition->magazine_count > 0)
 			result = (real)((weapon->magazines[0].rounds_loaded / 10) % 10) * 0.1f;
 		break;
-	default: found = false; break;
+	default:
+		return false;
 	}
-	if (!found) return false;
 	if (result < 0.0f)
 		result = 0.0f;
 	else if (result > 1.0f)
@@ -4834,6 +4871,49 @@ struct s_weapon_projectile_creation
 // unit phase 1121. NOT kept: The three shared clipping outputs recover the 0x1e98 frame and move the first
 // difference to +0x75, but they shorten the body and regress. Retail passes a separate clipped point. The
 // copy and motion-scope forms tie or regress.
+// M3 lane 8 r200 (fast; raw score / order-insensitive masked difference, control 1121/111). Forms that follow retail's
+// code, each on top of the one before: the marker name and the marker object looked up into locals before the marker
+// call (retail calls 0x101b10, then 0x101ec0, then pushes), markers read by index with no marker pointer (retail keeps
+// index * 0x70), `if (player_index != NONE) player_controlled = true;`, the primary index preset NONE and then set, the
+// trace's ignore index named before the call 1115/96; the rotation helper in place with the three cross terms named
+// (retail computes the i row's cross term at its use and the j and k cross terms before the first store), a short
+// projectile code, the unit flag as bit 18 of the dword at 0x108 1187/72 (frame 0x1e98, first difference at +0x53);
+// projectile index and count as if/else arms that each read +0x6a, the owner filled in if/else arms, the spread
+// fallbacks as `field == 0.0f ? fallback : field`, bit 6 of 0x16e shifted 1176/67; the actor call written in both arms
+// of the bit 8 test (retail pushes the three out pointers in each arm), the target type as a long (retail movzx), the
+// shot counter post-incremented inside its comparison (retail loads the limit before the store), projectile flag bit 1
+// cleared through a pointer to the flags field, the unit flag from the word at 0x10a (retail shifts a byte by 2) 1122/46
+// (5197 bytes; the frame is 0x1e9c from this step on); the parent walk tested through the unit pointer with the index
+// read through a pointer to the parent field advanced each pass 1037/41 at 5212 bytes (retail's `add eax, 0x24c`, reload),
+// against the value walk 1122, a guarded do-while 1122 and a field pointer with a guarded do-while 1091; the spread
+// angle through the existing 0x259d0 range function and the turn as the same function over [0, 2 pi] (retail multiplies
+// by 1/65535 and then by 2 pi), the axis copied before the angles, the dot terms written j, k, i (retail sums i, k, j)
+// 1039/38, the random block then retail's instruction for instruction. The marker select and the actor's aim result as
+// one flag tested after the unit block 1219/90 (the actor block stays in line as in retail, but the flag takes a stack
+// byte and the frame is 0x1e94); as two preset flags 1172/71 (retail's sete/test for the select, the actor block out of
+// line again); nested ifs in place of both continues: the same code.
+// What still differs on the 1037 form (frame 0x1e9c): (1) this build keeps a float zero in xmm7 across the marker loop and
+// direction.j in memory, where retail keeps direction i/k/j in xmm5/xmm3/xmm2 from the inherited-speed dot product to
+// the end of the rotation and has a zero register only inside the projectile loop (set after the 0xb7930 call; the
+// loop-top resets use xmm0); that also decides whether the actor block is laid out in line. Against it: chained reset
+// `a = b = c = 0.0f` 1095; double literals in the loop's four zero comparisons 1115 (the outer zero register goes and
+// the actor block comes back in line, but the loop then has no zero register); integer stores for every zero outside
+// the loop 1132 (a diagnostic); a clobbering call beside 0xb7b40 and beside 0xd6c80, 0xb7b40's real body in place of
+// its stand-in, and the weapons file compiled ahead of 0xb7930's file all change nothing; 0xb7930 declared inline in
+// its own file gives retail's zero placement (1146, ordered masked difference 458 -> 227) but costs 0x293130 and is not
+// retail's form, since retail's 0x293130 keeps a zero in xmm2 across that call. (2) The mark code: retail merges the
+// tag's six bits into an uninitialised byte with xor/and/xor and clears bits 6 and 7 with a 32-bit and before the
+// push; a bit-field aggregate filled in full folds to `and 0x3f` plus a store and reload (as the byte does now), and
+// only the six-bit field written with `& ~0xc0` at the call gives retail's instructions in a compile-only test, which
+// needs 0x15cca0's code parameter typed that way. (3) The clipped point sits above the creation block in retail
+// (0x1c8) and below it here (0x104): the large locals sort by reference count over size; three references (the
+// address and two fields) put it in retail's place, the address alone puts it above the damage block, and the natural
+// four leave it below the creation block, so retail's creation block carries more references than ours. (4) The marker
+// count in ebp (ours ebx), the average loop's pointer anchored at z (ours y), and `average * reciprocal` computed in
+// place (ours copies the reciprocal; the operand order makes no difference).
+// Not kept: the forms that are acceptable without a match taken alone (in-place rotation, existing random functions,
+// if/else arms, field re-reads, the actor call in both arms, markers by index, long target type, short code) measure
+// 1191 (5156 bytes, frame 0x1e9c), a rise, and the rest are match-only forms; the body is main's.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
