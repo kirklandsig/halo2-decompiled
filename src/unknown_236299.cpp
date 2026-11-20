@@ -80,7 +80,7 @@ struct D3DTexture;
 D3DTexture *function_12360(s_bitmap_view *bitmap, real priority);
 long function_11cae0(void);
 struct s_sound_definition;
-short function_219070(long set_index, s_sound_definition const *definition);
+short function_219070(short set_index, s_sound_definition const *definition);
 /* unknown_189010.cpp */
 struct s_sound_label_play;
 long function_189760(s_sound_label_play const *play);
