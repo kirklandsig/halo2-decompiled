@@ -346,6 +346,10 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // 35. Compile-only screen of the copies (build/r228/grid1c.py: each use group of arg_1 and arg_4 read through a copy or
 // not, scored against this body with the x row folded): all 255 centre-copy subsets, all 127 target-copy subsets and 800
 // random joint subsets in both declaration orders: none folds the mode-1 x row with the rest unchanged.
+// M3 lane 13 r126 (fast with 0x1e55d0, 0x1b0400, 0x1b2770, 0x25f7b0; control 20, callers matched): the 0x10000000 bit set
+// ahead of the side vector 36 (the `or` moves up, the row unchanged); the side vector's k set first 28; the normalize
+// test as `!function_30bf0(...)` 20 and `hit` declared at the top of the block 20 (both the same code). Diagnostic in the
+// link-time build: 1 to 7 dead initialised longs at the top 20 each (no phase step folds the row there either).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)
