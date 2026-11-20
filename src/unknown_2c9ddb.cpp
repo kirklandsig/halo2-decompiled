@@ -55,6 +55,7 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// score 61 (was 61): retail has one 0x212bc0 call and one copy in each second-half arm and calls the name copy out of line; this body has one call and a spilled byte; rounds below.
 // MiniMax D (11-19): no new form, no lower score (61): retail still keeps two 0x212bc0 call sites with their own g_54e49c stores and their own copy into g_54e4a0, calls the name copy out of line at 0x13fac0 and passes the controller index in ECX to 0x238c69, while ours keeps one call site with the choice in a byte slot, the copy in place and five stack arguments; the out of line copy lives in a file this lane may not edit.
 // MiniMax G (11-20): no new form, no lower score (61): retail has two 0x212bc0 call sites and calls the name copy out of line at 0x13fac0; ours has one call site and expands the copy in place.
 // MiniMax G (11-19): no new form, no lower score (61): retail's second half still has two 0x212bc0 call sites (the
@@ -63,7 +64,6 @@ extern long g_55c154;
 // default/existing choice in a byte slot and expands the copy in place, because 0x13fac0 lives in
 // src/unicode_strings.cpp, a file this lane may not edit, and the two pushed load-proc addresses cannot match in the
 // reduced image; the body stands.
-// score 61 (was 61): retail has one 0x212bc0 call and one copy in each second-half arm and calls the name copy out of line; this body has one call and a spilled byte; rounds below.
 // M3 lane 4 r230 (fast with 0x13fac0/0x212bc0/0x238c69/0x2ca244, all MATCH; control 61, masked 44). The id and the variant
 // as two separate globals in place of the shared record (diagnostic, header and definition restored): one load 61 (same
 // code), two load arms 174 (the variant's address is still hoisted into EBX, so the record type is not why retail
@@ -427,6 +427,14 @@ extern long g_55c154;
 // half, but `this` still takes EDI, so the constant is not what evicts it: `this` outranks `saved` in every two-arm
 // form, where retail gives `saved` EDI and `this` EBX); a variant local of its own for the second half 174; `saved` as
 // a dword 174; `saved` as a const local 174; `saved` read through a const reference in both arms 174 (all the same code).
+// M3 lane 2 r120 (fast with 0x13fac0/0x212bc0/0x238c69, all MATCH; control 61, aligned/register-masked unmatched lines
+// 25/24): two load arms re-measured 174 (595 B; 68/47); on the one-load body the default arm's destination named once
+// (`word *name = g_54e4a0.name;` for the copy and the request) 88 (562 B; 19/17): 0x13fac0 is then called out of line with
+// retail's exact sequence (`push 0x20; pop esi; lea ecx, <source>; mov edi, <destination>; call; push esi; push edi`), the
+// length falls because the arms stay merged; one name for both arms' requests 88 and the load index ternary passed straight
+// 88 (same code); two arms with the named destination 179 (580 B; 66/41: `this` ESI with a spill, EBX the constant 0, then
+// `saved`, then &g_54e4a0), with the count named too 179, with the name at the second half's top 179 (same code). Body
+// unchanged.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
