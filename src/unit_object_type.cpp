@@ -7078,7 +7078,9 @@ done:
 // as scale * x and the second as y * scale, while the shared helper in include/unknown_11cc90.h multiplies both as
 // component * scale; the helper is used by other files where retail's order is component * scale, so it cannot be
 // changed from here, and writing the normalizer out by hand is a form the review list rejects.
-// MiniMax D (11-20): 33 (was 144): the definition's two flag bits through one inline one-byte helper (retail's two
+// Coordinator review (11-20): kept at 125 (was 187) without the one-byte helper below; a new __forceinline hkBool helper
+// made only for retail's two dead byte stores is a byte-length device (match-only), so the flag tests are main's again.
+// MiniMax D (11-20): 33 with that helper (was 144): the definition's two flag bits through one inline one-byte helper (retail's two
 // dead frame-byte stores), the face switch's `default: __assume(0)` (retail's jump table has no range check and four
 // entries) and the weapon timing's 0x10f690 output in its own `duration` local (the value 0x259d0 scales; retail never
 // stores the first time) and the side bit as one ternary (retail's sete/test/je and its byte update in memory) and the
@@ -7088,7 +7090,7 @@ done:
 // addresses. The side bit cannot have both halves: every form that keeps retail's sete/test/je (a bool local, with
 // either the compound or the assignment form in the branches, or a signed char state pointer) makes the compiler merge
 // the two arms into one load of the byte, one register update and one store.
-// score 33 (was 144): the normalizer's operand order, the definition-flag bytes, the face switch's table, the timing's duration and the side bit are retail's now; the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
+// score 125 (was 187; 33 with the reverted helper): the normalizer's operand order, the definition-flag bytes, the face switch's table, the timing's duration and the side bit are retail's now; the side bit's bool and memory update, the animation flag's address, the switch's registers and the table's addresses still differ.
 // Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
