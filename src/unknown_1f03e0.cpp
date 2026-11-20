@@ -1701,6 +1701,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // f d i m g 230 (the r184 best's code: damping in EDX, first difference +0x31, the first arm's two `up.k` products and
 // its last scale row still load the other side first), f d m i g 262; the first arm's scale reading `&state->input` in
 // place of the pointer 486 (3055 B), that on f d i m g 482. Body unchanged.
+// M3 lane 11 r134 (fast with 0x1f0450, 0x24590, 0x30bf0 and 0xa75d0, all MATCH; control 234, aligned 194): the direct arm's
+// bounded pair renamed `bounded` or `clamped`, or its delta renamed `velocity_change` 234 each (same code: names do not swap
+// the delta/bounded homes, retail +0xc/+0x14, ours +0x14/+0xc); the input as a `vector3f const &` in place of the pointer 234
+// (same code); the general arm without the step flag (gravity cleared in the fallback arm and under `if (flying)` in the
+// bounded arm) 549 (3049 B).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
