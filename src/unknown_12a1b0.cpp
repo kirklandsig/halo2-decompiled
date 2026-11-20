@@ -3694,6 +3694,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // and NONE in ESI, where this build holds the index in ESI, the track definition in EBP and NONE in EBX, so the track's
 // base and the constant 1 land in the other registers; the 519 form needs the creation arm's `result = false; goto done`
 // and the join's `else if (created) result = false`, which the coordinator does not keep.
+// Shared byte flag setter on the three final playback bits, subsets 1 through 7:
+// 597/597/597/598/598/598/598. All three with alternate under the definition guard 613.
+// NOT kept: the guarded form restores the saved-register prefix and then differs at +0x1c,
+// but shortens to 2500 bytes and raises the score. The request and track-state homes still differ.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
