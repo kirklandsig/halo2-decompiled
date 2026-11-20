@@ -744,32 +744,48 @@ bool network_session_interface_can_add_player(void)
 	return result;
 }
 
+/* the membership block at +0x4c of the session (unknown_059670.cpp) */
+struct s_network_session_membership
+{
+	long value4c;
+	long value50;
+	long member_count;
+	s_session_member members[16];
+	long player_count;
+	dword player_mask;
+	s_network_session_player players[16];
+};
+
+s_network_session_membership *function_5a680(c_class_58d20 *session, long *current_member, long *member_index);
+bool function_058d70(c_class_58d20 *s);
+
 // @retail 0x656e0
 bool network_session_get_membership(c_class_58d20 *session, long *value4c, long *host_member_index, long *local_member_index, long *value50, long *member_count, s_session_member **members, long *player_count, dword *player_mask, s_network_session_player **players)
 {
 	bool result = false;
-	if (SESSION_STATE_IS_LIVE(session->state))
+	if (function_058d70(session))
 	{
-		long host = session->current_member;
-		long local = session->member_index;
+		long host;
+		long local;
+		s_network_session_membership *membership = function_5a680(session, &host, &local);
 		if (value4c)
-			*value4c = session->value4c;
+			*value4c = membership->value4c;
 		if (host_member_index)
 			*host_member_index = host;
 		if (local_member_index)
 			*local_member_index = local;
 		if (value50)
-			*value50 = session->value50;
+			*value50 = membership->value50;
 		if (member_count)
-			*member_count = session->member_count;
+			*member_count = membership->member_count;
 		if (members)
-			*members = session->members;
+			*members = membership->members;
 		if (player_count)
-			*player_count = session->player_count;
+			*player_count = membership->player_count;
 		if (player_mask)
-			*player_mask = session->player_mask;
+			*player_mask = membership->player_mask;
 		if (players)
-			*players = session->players;
+			*players = membership->players;
 		result = true;
 	}
 	return result;
@@ -1504,7 +1520,8 @@ long function_193250(s_surface_description *variant);
 
 struct s_66050
 {
-    byte field_0[8];
+    long field_0;
+    long field_4;
     long field_8;
     s_session_member field_c[16];
     long field_10cc;
@@ -1640,379 +1657,4 @@ long __stdcall function_63e90(long index)
    return function_66050(session, index);
  }
  return 1;
-}
-
-
-typedef bool (__stdcall *t_session_summary_compare)(const void *, const void *, const void *);
-void function_13da70(void *elements, unsigned long count, unsigned long element_size,
- t_session_summary_compare compare, const void *context);
-long network_session_get_maximum_players(c_class_58d20 *session);
-long player_index_from_absolute_index(long index);
-long function_1587b0(long player_index);
-long function_1587f0(long team);
-void function_158850(long *type, long *count);
-
-#pragma pack(push, 1)
-struct s_session_browser_summary
-{
- short version;
- short field_02;
- long protocol;
- long build;
- long compatible_build;
- short type;
- short local;
- short mode;
- short field_16;
- wchar_t name[32];
- s_session_id id;
- byte key[16];
- dword identity[9];
- short public_open;
- short private_open;
- short public_used;
- short private_used;
- short variant;
- short state;
- long game_type;
- long map;
- long option;
- long map_variant;
- bool teams;
- byte field_b1[3];
- long score_type;
- long score_limit;
- short player_count;
- byte player_keys[16][12];
- wchar_t player_names[16][32];
- short field_57e;
- long scores[16];
- short player_teams[16];
- byte field_5e0[16][16];
- dword team_mask;
- long team_scores[8];
- byte field_704[16];
-};
-#pragma pack(pop)
-
-struct s_summary_player_sort_entry
-{
- s_sort_key sort;
- dword key[3];
- byte properties[0x90];
-};
-
-// MiniMax S (11-17): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail writes the output's state with a conditional move that needs the SSE architecture flag this file's flags do not set.
-// MiniMax B (11-14): no new form, no lower score (339): retail's conditional move for the state store is still out of
-// reach - it needs the SSE architecture flag this file's flags do not set, and the flags stay as they are - and the
-// frame stays 0xa9c against retail's 0xaa8, so the type, membership and member-index homes keep their different
-// offsets. The body stands.
-// MiniMax H (11-13): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8; retail's
-// conditional move for output->state needs /arch:SSE, which this file's flags do not set, and the inlined 0x5a680
-// twin is not allowed, so the state home and the frame stay as they are.
-// MiniMax H (11-12): no new form, no lower score (339); the frame is still 0xa9c against retail's 0xaa8, and the file's flags still keep retail's inlining of 0x5a680 and its cmovne out of reach.
-// MiniMax S (11-11): no new form, no lower score (339); retail holds the session pointer in ecx and the state
-// word in edx, ours holds the pointer in ebx and the state in ecx, and the frames differ by twelve bytes
-// (0xa9c against 0xaa8), so every local home after the prologue differs.
-// MiniMax A (11-10): no new form, no lower score (339): retail's conditional move for
-// output->state needs the SSE architecture flag that this file's flags do not set, and the frame is
-// 0xa9c against retail's 0xaa8 with the type, membership and member-index homes still different.
-// MiniMax C (11-11): no new form, no lower score (339): retail's cmovne needs /arch:SSE and its three
-// extra frame homes follow from 0x5a680 being inlined into this /Ob1 file; both are outside this lane's
-// files, so the frame (0xa9c against 0xaa8) and the type, membership and member-index homes stay as
-// they are.
-// MiniMax B (11-13): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8 and the
-// saved-register set differs (retail holds the connection in ecx and the state in edx where ours keeps them in ebx
-// and ecx), and retail's conditional move for output->state needs the SSE architecture flag this file's flags do
-// not set.
-// MiniMax E (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8; retail's three extra homes (the member index, the membership block pointer and &session->value18) would each need a named one-use local or a pointer to a field used once, which are on the reverted list, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
-// MiniMax R (11-15): no new form, no lower score (339): retail still holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne needs the /arch:SSE flag this file does not set.
-// MiniMax I (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
-// MiniMax C (11-16): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8 and the session
-// pointer and the state word take ebx and ecx where retail keeps them in ecx and edx; retail's cmovne for the state
-// needs /arch:SSE, which this file's @flags line does not set, and retail inlines 0x5a680 where this build calls it,
-// so the membership pointer and the member index never get the frame homes retail gives them.
-// MiniMax E (11-16): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8 and the
-// type, membership and member-index homes and the saved registers still differ; retail writes the state with a
-// conditional move (cmovne esi, dword ptr [0x527334] at 0x64fac), which needs /arch:SSE, and this file's @flags
-// line does not set it, and retail inlines 0x5a680 where this build calls it, so the membership pointer and the
-// member index never get retail's frame homes.
-// MiniMax C (11-17): no new form, no lower score (339, was 339): the frame is still 0xa9c against retail's 0xaa8, and the type, membership and member-index homes and the saved registers still differ.
-// MiniMax G (11-18): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8, and the type, membership and
-// member-index homes and the saved registers still differ; retail's conditional move for the output state (cmovne at 0x64fac) needs
-// /arch:SSE, which this file's @flags line does not set, and retail inlines 0x5a680 where this build calls it.
-// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
-// M3 lane 2 r107 (fast with 0x5a680, 0x5b0d0, 0x5b180 and 0x64160, all MATCH; fast = plain 339): with registers and
-// numbers masked 294 of 323 lines differ, most of them in the prologue and setup (retail's &value18, +0x4c and member-index
-// homes, push order ebp, edi, ebx, esi against ours ebp, ebx, esi, edi); the team loop's alignment jump follows from the
-// code length before it. `long const *type = &session->value18;` tested and read through for the output type 339 (same
-// code: it folds); a member pointer for the name 339 (same code); the team counter declared before the team-mask clear
-// 339 (same code); the variant through a `summary_variant` local set by an if 375; team_mask as long 339 (same code);
-// the id/key test on the `state` local 356 (1291 B).
-// M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
-// code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a
-// `long used` (retail loads it once before the mode tests) 356 at retail's 1291 bytes; the team mask declared at the
-// player loop 375; the sort entries written through `entries[count]` with no entry pointer 356 (1291 bytes).
-// MiniMax R (11-10): no new form, no lower score (339): retail writes output->state with a conditional move, which needs /arch:SSE that this file's flags do not set, and the frame is 0xa9c against retail's 0xaa8 with the type, membership and member-index homes still different.
-// MiniMax D (11-10): no new form, no lower score (339).
-// Walk vs retail 0x64d70-0x65278 (b3G, 11-06, statement by statement): no behaviour difference found. Checked: state/value18/live
-// range guards; get_values_4d08 outputs (map, map_variant, map_data) and the pre-call name pointer; memset 0x714; header
-// words; type/local/mode; wcsncpy(.., 0x1f) + name[31]; id/key behind `state && flag24` (retail's per-destination null
-// tests are the inlined getter's, equal in effect); identity from member_index; full-session vs open-slot branch and the
-// mode 0/1/2 stores (0x98/0x94, 0x9a/0x96, 0x9a); variant 2/1; state; game_type/map/option/map_variant/teams;
-// statistics gate (+0x1120, state 2, state 3); player loop (mask, stride 0x13c, sort fields, i != NONE && i >= 0 &&
-// i < high_water, +0xc0 team, 0xff); sort; copy-out strides; team scores/mask. No float code.
-// New evidence on the cmovne (b3G, fast): `// @flags /O2 /Ob1 /arch:SSE /Gr` on this file leaves the other 58 functions
-// in it MATCH (fast) and turns `short state = 0; if (g_527330.initialized) state = (short)g_527330.state;` into
-// retail's `xor esi,esi / test al,al / cmovne esi, [0x527334]` (the `?:` form still compiles to neg/sbb/and). 64d70
-// then scores 353 (positional: the prologue and membership homes remain), so it is not kept here; the flag line is
-// outside this function's edit scope, so it is for the coordinator to full-check.
-// MiniMax I (11-05, run 37): no new form, no lower score (339); retail's cmovne needs /arch:SSE, which this file's flags do not set, and retail's inlined 0x5a680 is out of line here.
-// MiniMax R (11-01): no new form; the retail prologue shape (global pointer then field at 0x741c,
-// then the 2/8 range tests) is not reachable from this body without the inlined membership helper.
-// Earlier (round 31, lane D; 339, was 339): unchanged this round; the permuter run was stopped by the background time
-// limit before it produced a result. Still differs in retail's conditional move (cmovne at +0x23c, which
-// needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in the type, membership and
-// member-index homes and the saved registers.
-// Earlier (339, was 339): unchanged. Retail writes output->state with a conditional move (cmovne at +0x23c), which needs
-// /arch:SSE; this file has no such flag and the build flags are out of this lane's reach. The frame is
-// 0xa9c against retail's 0xaa8 and the type, membership and member-index homes and the saved registers differ.
-// Round 31 (lane D): unchanged this round; the permuter run was stopped by
-// the background time limit before it produced a result. Still differs in retail's conditional move
-// (cmovne at +0x23c, which needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in
-// the type, membership and member-index homes and the saved registers.
-// Earlier: unchanged. Retail writes output->state with a conditional move (cmovne at
-// +0x23c), which needs /arch:SSE; this file has no such flag and the build flags are out of this
-// lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
-// member-index homes and the saved registers differ.
-// Round 102 (lane 7, fast): the member index read into a local after the state tests 353, at the block top
-// 352; the type through a pointer to value18 339; both 353; the member index from 0x5a680 with a NULL
-// current-member output 353 (the reduced build inlines it: frame 0xaa0, index stored early). Retail's
-// three extra homes match 0x5a680 inlined with (NULL, &index) and its membership result kept; round 5
-// found the full build calls it from this /Ob1 file and a local inline copy would be a twin, so the function
-// stays BLOCKED-BY 0x5a680 as well as by the cmovne (/arch:SSE) noted below.
-// Earlier: Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers differ.
-// Round 216: complete state-field observations 378; with native membership/player/selected-member
-// references 378/378/377; membership-player/membership-member/player-member 378/377/377;
-// all three 377. Frame remains 0xa9c. Original complete body and external type declarations restored.
-// Round 434: scalar type snapshot 353; with existing variant getter/statistics producer 371/381.
-// Scalar type with member-index capture 393; with existing membership provider 353; provider/index
-// 393; provider/index with statistics/getter 380/369. Frames 0xaa0/0xaa4 still miss 0xaa8; all restored.
-// Round 46: Complete admission predicate returning bool/byte/short/long 505/576/576/576; nested state/type then range-result producers 380/442/442/441. Frames 0xa9c/0xaa0/0xaa4; original body and cursor restored.
-// Round 35: retail sets output->state with a conditional move (cmovne at +0x23c), so this body needs
-// /arch:SSE, which this file lacks (lead only; no flag change). The listing is positional and ours is about
-// six instructions short in the prologue, so retail-shaped local fixes raise the count until the three homes
-// exist: id/key through the file's session_get_id made inline 390 (stays a call), __forceinline 393 (1323
-// bytes; retail's per-destination null tests); full-session arm as `long used` plus a switch on the mode
-// with `case 1: case 2:` 355 (1291 bytes; retail's movsx and single player_count load); both 380; the file's
-// live-state getters for variant/mode/option 390 (1259 bytes).
-// Round 5 (lane 18): the 12-byte frame gap is three stack values ours lacks: &session->value18 (read
-// back for the type), the membership at +0x4c and the member index read before the flags are cleared;
-// name, identity, counts, mask and players all go through the membership pointer, as an inlined
-// membership query would give (retail's other /O2 callers 0x71480 and 0x83220 call 0x5a680). The id/key
-// copy is null-checked per destination, as network_session_get_key's body is (not yet tried).
-// Membership from 0x5a680 with both outputs 353 (called: this /Ob1 file keeps it out of line); with an
-// inline/forceinline declaration here 353/353 (still called); `inline` on 0x5a680's definition 353 (still
-// called here; 0x83220 and the 0x199ebc family lose); member index and the +0x4c pointer written as
-// 0x66050 does 353 (frame 0xaa0: the pointer folds into the session register). All restored.
-// Round 35 (m3 lane 2, fast = plain here): the id/key copy through the existing network_session_get_key
-// (session, &output->id, output->key, NULL, NULL) 393 (1323 bytes; LTCG inlines it in the plain build too and
-// gives retail's per-destination null tests, but the six-instruction prologue gap makes it positional); the
-// manager state as `long state = 0; if (initialized) state = g_527330.state;` 375; the variant through the
-// existing session_get_data_4db0 357 (1291 bytes, retail's length), with the option through
-// session_get_value_5dd0 too 373 (1275 bytes), with the key getter instead 375 (1307 bytes). Diagnostic only
-// (changes behaviour, not a valid form): get_values_4d08's third output initialised to `(byte *)&session->value18`
-// and the type read through it, which forces a &value18 pointer into the frame as retail has one, 373 (frame
-// 0xaa0, EDI pushed early); the membership from 0x5a680 (NULL, &member_index; inlined here, the index stored early
-// at retail's +0x2c) with the key getter 396 (frame 0xaa0), with that diagnostic too 384 (1339 bytes, frame
-// 0xaa0). Retail keeps &session->value18 in its own slot across the get_values call (the outputs go to other
-// slots) and the membership pointer (+0x4c) in another; ours folds both into the session register.
-// Round 111 (lane 7, fast): map_variant declared before map 339 (same code); the maximum, the option and the
-// mode each as one ternary 375/375/375; the state as `short state = 0; if (initialized) state = ...;` 375 (all
-// at 1307 bytes). Still BLOCKED by the cmovne (/arch:SSE) and by retail's inlined 0x5a680 (membership at +0x4c
-// and member index kept in the frame; name, identity and counts read through the membership).
-// Round 284: all three map-query output identities, six lexical priorities 360 each;
-// two complete output declaration scopes 360 each, with the sorted cursor stepping in its body.
-// Original body restored; frame and saved metadata homes remain.
-// Round 77 (m3 lane 16, fast): the variant as an if/else 339 (same code); the four nested state guards as one
-// `&&` test 339 (same code); the variant pointer as one conditional expression 375; `statistics` declared at its
-// test 372; `return true` from the block with `return false` at the end 396 (1320 bytes). Still needs the cmovne.
-// Round 66 (m3 lane 1, fast): name pointer read after get_values_4d08 356 (1291 bytes); memset before
-// get_values_4d08 339 (same code); `statistics` declared at its test 372; team_mask beside the player count 375;
-// get_values, memset, then the name pointer 356 (1291 bytes).
-// Round 55 (m3 lane 2, fast; [n] = register-masked aligned count, 339 is [101]): diagnostics with a file-level view of the fields from
-// +0x4c: type pointer, early member index, view pointer for the name, identity, counts, mask and players 353 [93] (frame 0xa9c: the
-// pointers fold into the session register, the same code at every subset); with the existing key getter 396 [80] (1323 bytes, frame
-// 0xaa0, only the member index gains a home); both pointers from inline getters 396 [80], as const references to their results 396
-// [82], without the key getter 353 [95]. Retail's two pointers survive where every spelling folds; a form must first stop that.
-// Round 107 (m3 lane 9, fast with the file's 59 functions, 339): the copy-out loop indexed (`&entries[j]` in the
-// body, no comma increment) 356 (1312 B); the pointer step moved to the end of the body (`sorted_entry++;`) 360 (1314
-// B), so the comma increment stays. Every other natural form I could name is listed. Levers left and why each is out:
-// the cmovne needs /arch:SSE (a file-flag change); 0x5a680 inlined needs it inlined into this /Ob1 file (`inline` on
-// its definition loses 0x83220 and the 0x199ebc family, a local inline copy would be a twin); retail's three extra
-// frame homes follow from that inlining.
-// MiniMax A (11-12): no new form, no lower score (339): retail holds the session pointer in ecx and the state word in edx
-// where ours holds them in ebx and ecx, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state
-// needs /arch:SSE, which this file's flags do not set.
-// MiniMax S (11-14): no new form, no lower score (339): retail holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state needs /arch:SSE, which this file's flags do not set.
-// MiniMax D (11-15): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail's cmovne for output->state needs /arch:SSE, which this file's flags do not set.
-// MiniMax D (11-16): no new form, no lower score (339).
-// MiniMax S (11-16): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session
-// pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail's conditional
-// move for the output's state needs an architecture flag this file's flags do not set.
-// M3 lane 12 r136 (fast with 0x5a680, 0x5b0d0, 0x5b180 and 0x64160; control 339, aligned 160, register-masked 102): the name copied
-// through a `summary_name` pointer used for the copy and for the terminator (retail stores the terminator through the copy's
-// destination register) 339 (aligned 156); the id/key copy through this file's session_get_id 390 (1259 B: it stays a call),
-// through network_session_get_key 393 (1323 B, aligned 143: retail's per-destination null tests); the full-session arm as
-// `long used` and a switch on the mode 355 (1291 B, aligned 142); the member index from 0x5a680 (NULL, &member_index) with the
-// identity read through it 353; the name pointer, session_get_id, the `used` switch and the member index together 386 (1259 B);
-// those with network_session_get_key instead 374 (1307 B, aligned 123, register-masked 77). One build-flag diagnostic, not a
-// keepable form: the same four with `short state = 0; if (initialized) state = ...;` and this file built without /Ob1 and with
-// /arch:SSE 377 (frame 0xaa0, aligned 106, register-masked 65: retail's cmovne and the early member-index store come, the
-// membership pointer and the type pointer still have no homes); those flags alone on this body 339 (same code). Body unchanged.
-// Player source cursor 359, collected-entry cursor 339, both cursors 374, source-end test with
-// array-derived ordinal 433, indexed player base 375, physical source range with collected-entry
-// cursor 374, map defaults on query failure 357, map stores selected by query success 398.
-// NOT kept: the source cursor adds one frame word and reaches 1292 bytes, but raises the score.
-// Failure-path map defaults reach 1291 bytes and raise the score. The type and membership homes remain.
-// M3 lane 7 r179 (fast with 0x5a680, 0x5b0d0, 0x5b180 and 0x64160, all MATCH each time; control 339, aligned 203). On retail's two
-// pointer homes (the type pointer at +0x18 and the membership at +0x4c stay in the frame there): the type pointer made nullable
-// on the state (`state ? &session->value18 : NULL`, tested and read through) 394 (1323 bytes, frame still 0xa9c); the type
-// pointer as the output of a small getter taking its address 339 (same code: it folds); the membership pointer the same way
-// for the name 339 (same code); the membership and member index from 0x5a680 (NULL, &member_index) for the name and identity
-// 353 (called, as listed); that with the nullable type pointer 392. Neither pointer gains a home in any form. Body unchanged.
-// @retail 0x64d70
-bool __stdcall function_64d70(s_session_browser_summary *output)
-{
- bool result = false;
- if (g_527330.initialized)
- {
-  c_class_58d20 *session = (c_class_58d20 *)g_527330.session_a;
-  long state = session->state;
-  if (state)
-  {
-   if (session->value18)
-   {
-    if (state > 2)
-    {
-     if (state <= 8)
-     {
-   long map = NONE;
-   long map_variant = NONE;
-   byte *map_data;
-   bool statistics = false;
-   dword team_mask = 0;
-   byte *variant = 0;
-   if (SESSION_STATE_IS_LIVE(session->state)) variant = session->data4db0;
-   const wchar_t *name = session->members[session->value50].properties.description;
-   session->get_values_4d08(&map, &map_variant, &map_data);
-   memset(output, 0, sizeof(*output));
-   output->version = 2;
-   output->field_02 = 0;
-   output->protocol = 4;
-   output->build = 0x2651;
-   output->compatible_build = 0x2651;
-   output->type = (short)session->value18;
-   output->local = (short)session->value14;
-   long mode = 0;
-   if (SESSION_STATE_IS_LIVE(session->state)) mode = session->value498c;
-   output->mode = (short)mode;
-   if (*name)
-   {
-    wcsncpy(output->name, name, 31);
-    output->name[31] = 0;
-   }
-   if (session->state && session->flag24)
-   {
-    output->id = *(s_session_id *)&session->unknown1c;
-    memcpy(output->key, session->data25, sizeof(output->key));
-   }
-   memcpy(output->identity, session->members[session->member_index].words, sizeof(output->identity));
-   long maximum = 16;
-   if (SESSION_STATE_IS_LIVE(session->state)) maximum = session->value4990;
-   if (session->member_count >= maximum)
-   {
-    if (output->mode == 0) output->public_used = (short)session->player_count;
-    else if (output->mode > 0 && output->mode <= 2) output->private_used = (short)session->player_count;
-   }
-   else
-   {
-    long used = session->player_count;
-    long available = network_session_get_maximum_players(session) - used;
-    switch (output->mode)
-    {
-    case 0: output->public_used = (short)used; output->public_open = (short)available; break;
-    case 1: output->private_used = (short)used; output->private_open = (short)available; break;
-    case 2: output->private_used = (short)used; break;
-    }
-   }
-   output->variant = network_session_interface_get_value_49a4() == 2 ? 2 : 1;
-   short state = (short)(g_527330.initialized ? g_527330.state : 0);
-   output->state = state;
-   output->game_type = *(long *)(variant + 0x44);
-   output->map = map;
-   short option = NONE;
-   if (SESSION_STATE_IS_LIVE(session->state)) option = session->value5dd0;
-   output->option = option;
-   output->map_variant = map_variant;
-   output->teams = (variant[0x48] & 1) != 0;
-   if (g_4e6948 && g_4e6948->flag1120 && g_4e6948->state == 2 && state == 3)
-   {
-    statistics = true;
-    function_158850(&output->score_type, &output->score_limit);
-   }
-   s_summary_player_sort_entry entries[16];
-   long count = 0;
-   for (long i = 0; i < 16; i++)
-   {
-    if (session->player_mask & (1 << i))
-    {
-     s_summary_player_sort_entry *entry = &entries[count];
-     memcpy(entry->key, &session->players[i], sizeof(entry->key));
-     memcpy(entry->properties, session->players[i].propertiesa8, sizeof(entry->properties));
-     entry->sort.low = i;
-     entry->sort.middle = 0;
-     entry->sort.high = 0;
-     if (statistics && i != NONE && i >= 0 && i < g_4e8c24->high_water_index)
-     {
-      byte *player = (byte *)g_4e8c24->data + i * g_4e8c24->size;
-      if (*(word *)player && player[0xc0] != 0xff)
-      {
-       entry->sort.middle = function_1587b0(player_index_from_absolute_index(i));
-       entry->sort.high = function_1587f0(*(signed char *)(player + 0xc0));
-       team_mask |= 1 << player[0xc0];
-      }
-     }
-     count++;
-    }
-   }
-   function_13da70(entries, count, sizeof(entries[0]), (t_session_summary_compare)sort_key_less_than, 0);
-   output->player_count = (short)count;
-   s_summary_player_sort_entry *sorted_entry = entries;
-   for (long j = 0; j < count; j++, sorted_entry++)
-   {
-    memcpy(output->player_keys[j], sorted_entry->key, sizeof(sorted_entry->key));
-    memcpy(output->player_names[j], sorted_entry->properties, sizeof(output->player_names[j]));
-    output->scores[j] = sorted_entry->sort.middle;
-    output->player_teams[j] = *(signed char *)(sorted_entry->properties + 0x7c);
-    memcpy(output->field_5e0[j], sorted_entry->properties + 0x40, sizeof(output->field_5e0[j]));
-   }
-   if ((variant[0x48] & 1) && statistics)
-   {
-    output->team_mask = 0;
-    for (long team = 0; team < 8; team++)
-    {
-     long score = function_1587f0(team);
-     output->team_scores[team] = score;
-     if (score || (team_mask & (1 << team))) output->team_mask |= 1 << team;
-    }
-   }
-   result = true;
-
-     }
-    }
-   }
-  }
- }
- return result;
 }

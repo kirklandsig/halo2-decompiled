@@ -691,11 +691,22 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // direct, time pointer kept or dropped: 51/65/51/65/51/65 and 27/45/27/45/27/45 (the arm spelling never matters).
 // Diagnostic: 1-6, 8, 10 and 12 dead initialised locals at the top, on the base body 27 each and on the each-use loop
 // with a tail block local 51 each (the register ties do not follow the symbol count).
+// M3 lane 5 r207 (fast with 0x12e210, which stays matched; control 27): the loop's block local typed as the fixup group
+// it is released as, the test casting back 27 (same code); the tail's pointer record cleared by assigning a value-
+// initialised record 75 (252 B); a group local for the tail's pointer with the loop's arm reading the field at each use
+// 27 (same code); the loop's block local kept for the argument with the test reading the field again, plus a tail block
+// local, 51; a tail block local with the loop's arm through a new inline release step taking the cache block 51.
+// Diagnostic: an unused block read after the release call 27, with a tail block local 51 (a read after the call does not
+// move the tie; the r177/r87 reads stood before it).
 // Round 116 (m3 lane 13, fast with 0x12e210, which stays matched; control 27): the physical object and its page shift named
 // in the loop's arm ahead of the block lookup 27 (same code), with a tail block local 51 (EDI/EBP swap); the tail block
 // local with the loop's argument re-read from the field 51; the loop read at each use with the argument through
 // `geometry_cache_block_get(block_index)->block` and the tail block local 115 (293 bytes); the arm's physical block named
 // before the call 27 (same code).
+// M3 lane 10 r130 (fast with 0x12e210, which stays matched; control 27): the task count named, the block local read, then
+// the count stored to the async field 73 (266 bytes: the count takes EDI, the cache block EBP, the 24-byte index EBX); a
+// trivial forceinline identity (diagnostic) around the task count, the block read, the busy call's index, the release
+// address's index or the time compare 27 each (same code: identities fold before allocation, no rotation step).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

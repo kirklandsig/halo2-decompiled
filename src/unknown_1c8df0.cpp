@@ -313,6 +313,11 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // and place (the row follows the parameters' order only, never the count of locals); both quarter points declared once
 // beside `hit` for both modes, the first probe's direction and the side vector as one variable, both spacings named at
 // the block top: the row still loads first.
+// M3 lane 5 r207 (fast with 0x1e55d0; control 20): a pointer to the centre's x field (`real const *centre_x = &arg_1->x;`)
+// at every direct read of it (side vector j, both mode-1 x rows) 20 (same code), at the two x rows only 20 (same code); a
+// pointer to the target's x field at its direct reads (side vector j, three mode-2 x rows) 20 (same code); both field
+// pointers 26 (1175 B: another row's fold moves, the mode-1 x row still loads the centre first); mode one's two probe
+// points as a two-point array 68 (frame slots move).
 // Round 116 (m3 lane 13, fast with 0x1e55d0; control 20): the side vector's j row before its i row 26; its k, j and i rows
 // in that order 28; the mode-1 negative point's rows before the positive point's 225 (1175 bytes); the mode-1 rows
 // interleaved plus/minus per axis on this body 68; the side vector from named dx/dy differences 260 (1183 bytes). Retail's

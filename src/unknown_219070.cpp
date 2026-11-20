@@ -29,7 +29,7 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 /* picks a permutation for a set: the pending one if there is one, else a new one
    from the unused mask, which it then stores back */
 // @retail 0x219070
-short function_219070(long set_index, s_sound_definition const *definition)
+short function_219070(short set_index, s_sound_definition const *definition)
 {
 	s_permutation_set *set = &g_51ebd4->sets[definition->pitch_range_base + (short)set_index];
 	s_animation_ref *ref = (s_animation_ref *)definition;

@@ -963,6 +963,7 @@ void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
 // MiniMax A (11-19): no new form, no lower score (65): the component still arrives on the stack, so the frame is still 0x84 against retail's 0x88 and the copy of the transform is still a block copy against retail's four aligned moves; the argument registers are still chosen by LTCG over the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 cycle, whose bodies are in other files.
+// MiniMax H (11-19): no new form, no lower score (65): the transform copy is still a block copy where retail stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX; the frame stays 0x84 against retail's 0x88.
 // MiniMax B (11-18): no new form, no lower score (65): the transform copy is still a block copy here where retail
 // stores the four members separately, and the component still arrives on the stack where retail hands it over in EBX;
 // the memberwise set form measures 90 (worse), and the component's home is decided across the
@@ -1189,6 +1190,34 @@ void function_1d1540(s_havok_component *component);
 // 0x1d0c20) and the slot-hoist, direct-index and outer-scope inverse forms (85, 88, 90) were all worse and
 // were restored. The component's transport is set by the call cycle 0x1d0cf0 -> 0x1d1260 -> 0x1d1540 ->
 // 0x2da3f0/0x2da5d0, whose bodies are in other files.
+// M3 lane 6 r203: LEAD (see 0x1d5120's note, build/r203/lead-1d0cf0-d8.patch): this body with the copy through
+// hkTransform::set and one body pointer (`hkRigidBody *body = component->rigid_bodies[index].rigid_body;`) matches
+// once 0x1d5120 calls the matrix setter 0x1d0c20 and 0x1d0c20's definition is `inline`: the component then
+// arrives in EBX and the index in ECX. Not kept: matched 0x1d3fc0 then expands 0x1d0c20 and 0x1d5120 rises to 113.
+// M3 lane 12 r150 (fast with 0x1d0c20, 0x1d1b60 and 0x1d5120; control 65, 0x1d0c20 38, 0x1d5120 77): the 88 body (set copy,
+// body pointer, m_fixed first) re-measured 88 at 230 B, 0x1d0c20 40, 0x1d5120 73: line for line retail's except `push ebx;
+// mov ebx, [ebp + 8]` and `ret 4` for retail's EBX argument. On it, every declared order of the three parameters (definition,
+// the declaration in src/unknown_1d5120.cpp and both calls changed together) 88/88/88/88/88 (same code). Diagnostics on it
+// (none a keepable form; each restored): the flag5 test first 27 at 220 B (component arrives in EDI, 0x1d1b60 lost at 59);
+// 0x1d1540 called in place of 0x1d1260 88 (same code, so the callee's identity and its call cycle do not decide it); with
+// either caller's call removed 88 (the callers do not decide it); without the two component calls 95 (EDI argument);
+// without the inverse block 106 (EBX from the stack); no aligned locals at all 161 (EBX from the stack, the transform in
+// EBP); the transform unused 102 (index in EAX, component still EBX from the stack); the index unused 84 (EDI argument);
+// no else arm 138 / no second body lookup 77 at 220 B / no setter call in the fixed arm 92 (EDI argument each time); no
+// flag5 test 140, the inverse block replaced by a call 87, the else arm through a second lookup 88, an extra early
+// component test and call 111 (EBX from the stack each time); two more component calls in the fixed arm 63 (EDI argument,
+// the body pointer in EBX). In nine shapes where the component is the third callee-saved value handed out (EBX) it stays
+// on the stack, in seven where it is the second (EDI) it becomes a register argument; other matched functions do take an
+// EBX argument that is live across calls (0x1d1a20 in this file, 0x860b0 with an aligned frame and a copied second
+// argument), so the register itself is not barred. Left: what makes retail hand the component over in EBX with the body
+// pointer still in EDI. In retail this function is on the object code's call cycle (0x1d1260 -> 0x278f00 -> 0xb8540 ->
+// 0x109400 -> 0xe4c10 -> 0xe18d0 -> 0xb75a0 -> 0xb7430 -> 0x1c4a80 -> 0x1d3fc0 -> 0x1d0c20 -> here; 0x1d1540 reaches it
+// too through 0x1c39c0), and in this build the cycle is open because 0xb8540 and 0xb7430 are disabled bodies behind
+// empty stand-ins. Locate-only probe (plain check, every file restored): both bodies enabled and their stand-ins masked,
+// with the 88 body here: still 88 (same code), 0xb8540 and 0xb7430 match, and matched 0xe18d0, 0xe4c10, 0xb75a0, 0x1d3fc0
+// and 0x278f00 flip (33, 10, 73, 123, 185), as those two files' own notes say: the walk then enters the cycle at another
+// member than retail's. BLOCKED-BY the cycle's entry (0xb8540, 0xb7430 and 0xb7b40 enabled together, as 0xb8540's note
+// asks).
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -1225,6 +1254,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 }
 
 // MiniMax A (11-19): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX; that is 0x1d0cf0's convention and is decided with the bodies of its call cycle, which are in other files. BLOCKED-BY 0x1d0cf0.
+// MiniMax H (11-19): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided across a call cycle whose other bodies are in other files.
 // MiniMax B (11-18): no new form, no lower score (38): the frame is still 0x50 against retail's 0x5c and the
 // component still travels on the stack where retail keeps it in EBX, which is 0x1d0cf0's convention and is decided
 // across a call cycle whose other bodies are in other files: BLOCKED-BY 0x1d0cf0.
@@ -1299,6 +1329,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // order, and every remaining difference is the one 0x1d0cf0 has, because this function only passes the
 // index and the component on to it; the memberwise copy form of the callee (38 -> 40) was worse and was
 // restored. The component's transport is decided with 0x1d0cf0's own call cycle in other files.
+// M3 lane 12 r150: no form of its own lowers it (38); through 0x1d0cf0's 88 body (retail's code there except the stack
+// component) this function is 40 and, like it, retail's line for line except that it pushes the component where retail
+// loads it into EBX: BLOCKED-BY 0x1d0cf0. The forms tried through 0x1d0cf0 this round are in its note.
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {
@@ -1858,6 +1891,11 @@ PRIVATE __forceinline real const &component_time_step()
 // (still `[eax + 4]` twice); the first product read directly or through the accessor with the reference bound after it
 // 17/14 (the head reverts). So the head is a symbol-count tie: a natural +3 names is worth trying once `add eax, 4` has
 // a cause.
+// M3 lane 16 r147 (one-file harness, exact: main 17/14 positional/aligned = 26, stop-first 36/36): the time globals bound
+// as one const reference with `.rate` read at both products 17/14 (same code); the pin bounds named in each arm 462 B,
+// 74/40; the scaled value assigned back into `acceleration`, step-first 17/14 and stop-first 36/36 (same code each);
+// stop-first with the step started as the scale result and multiplied in place 36/36; stop-first with the stop tick
+// count and the per-tick travel named 36/36, plus the final change named 36/36 (same code each).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2873,6 +2911,21 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
 // NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
 // Early velocity j/k loads, speed-product residence and property-zero EDI remain.
+// M3 lane 12 r150 (fast with 0x1d06c0, 0x1d0400 and 0x181db0, all matched each time; control 91): round 189's lead rebuilt
+// is 5 again at 1454 B (vector3f_add sum with `speed_sum = speed_sum + ...`, a named weight, vector3f_scale with the speed
+// expression as its argument, `result` declared after it, havok_from_vector3d, the setter building its word first); left
+// are the last block's five lines: retail emits copy, speed*i, store x, then the j and k products, the zero and the three
+// other stores, ours the j and k products and the zero ahead of speed*i and its store. On that form, the last block
+// written as: the scale straight into the result (cast to a vector3f) with w stored after it 68 (1457 B; the emit order of
+// the last block is still ours, so it does not follow statement order, and only k is then loaded beside the length);
+// a named speed and `set(speed * i, j * speed, k * speed)` with or without the weight 197/197 (first difference +0x2d5,
+// the first contact loop; its last block stores z first, reusing that register for the zero); velocity.i scaled by a
+// statement and passed to `set` with the j and k products 102; the scale in place then `set(velocity.i, .j, .k)` 161
+// (1470 B); havok_from_vector3d given vector3f_scale's return value 16, that value in a named pointer 186; a named speed
+// passed to vector3f_scale 122; `result` declared ahead of the scale 16 (the second contact loop's unrolled copy flips
+// its i product, as round 189 found); a three-component loop storing `speed * velocity.n[axis]` into the result, with
+// or without the weight, 122/122 (all three products in place, i no longer copied); a loop copying the scaled vector
+// into the result 13; a loop scaling the velocity in place then havok_from_vector3d 175.
 // Scale result passed straight to the Havok conversion 8, scalar stores 160, returned-vector
 // scalar stores 8, direct scale into output 76 or with named speed 130, separate scaled vector 8,
 // indexed setter 161, and vector constructor plus zero lane 206.
@@ -3408,7 +3461,7 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
-// score 15 (was 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
+// score 15 (was 15; earlier 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
 // caller, the reduced image gives another convention: 344). 0x1d83e0 MATCHES, so the call registers
 // (component EAX, index EDX, matrix ESI, two stack words) and the frame agree. The node_b word is now
 // read inside the `pair->node_b != NONE` test (the guard compares the short, the sign extension and its
@@ -3489,6 +3542,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // forceinline helper (search, relative frame, conversion) 309 (1228 B); the converter's translation through an inline
 // helper returning the Havok vector by value (an aggregate-return scheduler boundary) 15 (same code); all four parts by
 // value 354 (1456 B, copied through a temp); the three columns by value 354; column 0 only by value 355 (1389 B).
+// M3 lane 16 r147 (one-file harness with src/unknown_1d77d0.cpp, 15 as the check): the first child counter declared in
+// its `for` 15; the equal arm's converter call in braces 15 (same code each); one source pointer for both arms, repointed
+// at the composed matrix, with one converter call after the test 313 (1023 B); the first half's rigid-body entry named
+// once for the count, first node, child search and body store 314 (1165 B); the entry reads through the array's
+// operator[] 15 (same code).
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3627,6 +3685,11 @@ struct s_1cf531
  word field_2 : 4;
 };
 
+// MiniMax G (11-19): no new form, no lower score (2): only the corrected vector's spill slot differs (retail stores it to
+// local_13's slot at 0x30 and folds its reload into the final mulps, this build stores it to 0x40 and reloads it there);
+// the correction in place in local_13 measures 23 (the store goes to 0x30 but the reload after 0x183dc0 is a separate
+// movaps, never folded), the correction as a named hkVector4 and the correction declared earlier both give the same 2,
+// the final product's operands swapped 19, and a plain correction sharing local_13's slot grows the frame to 0x64 (94).
 // score 2 (was 11): The corrected vector spills to 0x40 and reloads from that slot in the final mulps. Retail
 // uses the saved impulse slot at 0x30.
 // Earlier score 2 (was 11): only the corrected vector's spill differs: retail stores it to local_13's slot (0x30) and

@@ -261,6 +261,13 @@ void function_254200(void)
 // arguments 4, with the triple then constant, x, y + size (one alone leaves ours); the cache read back as the argument
 // the same 4. Diagnostic: 6 or 7 float probe stores ahead of the size give retail's triple, 0-5 and 8 ours, and with the
 // embedded stores 1, 2, 3, 5 and 7 all give ours: a hash-like tie that no natural form has reached.
+// M3 lane 4 r223 (single-address fast, control 4): the size as `arg_2 * 2` 4 and as a copy doubled in place
+// (`size *= 2.f`) 4 (same code each); the point copied by an aggregate initialiser from its two fields 88 (1117 B,
+// float loads); the cull mode spelled with its enumerator 4; the size as a copy added to itself 15 (addss).
+// M3 lane 7 r190 (single-address fast, control 4): the shared y + size bound to a `real const &` for vertices 1-2 64
+// (1113 B); the point copied member by member 88 (1117 B); the depth constant through a no-code forceinline accessor at
+// all eight uses 4; every positive sum, x and y, written size first 4; every device call of the body in member form
+// (Begin, 2s, 4f, render state, End) 4. All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -630,6 +637,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // constant is then no longer carried into the third vertex, so the pair disappears). Retail's skip branch lands after
 // both reloads (0x254d0c), so the pair is call-path compensation code; other functions with an adjacent reload swap
 // (0x3a5c0, 0x185be0, 0x217c40, 0x4e260) show retail in both register orders, so it is not a fixed register order.
+// M3 lane 13 r119 (fast with 0x254490 4 and 0x254200 matched; control 2): every depth constant written `(real)0xffffff`
+// 2 (same code); file-local forceinline accessors returning the lower and upper texture coordinates from the scale, in
+// all four texture calls 324 (2275 B), the lower one only 298, the upper one only 338, both in the first two calls only 2,
+// the lower one in the first two calls only 2 (the accessors spend the inline budget once they reach the third call).
+// Diagnostic: 1, 3, 5, 6 or 7 stores of one integer global to a probe array at the success block's top leave the pair
+// in our order (aligned). Restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

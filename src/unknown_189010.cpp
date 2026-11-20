@@ -125,8 +125,7 @@ struct s_sound_class_play_flags
 
 struct s_sound_play_tag
 {
-	byte unknown00;
-	byte flags;
+	word flags;
 	char class_index;
 	byte unknown03[0x10 - 3];
 	long duration;
@@ -151,8 +150,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 }
 
 // score 32 (was 32; earlier 89): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
+// score 32 (was 32): what still differs is the end test only (460 B against 470): retail tests bit 8 of the location
 // flags as a byte (`test byte [esp+0x21], 1`) and bit 11 by a dword load and shift, ours merges both into `test ch, 9`.
 // Every spelling that gives retail's test moves the request from EBX to EBP and onto the stack (45 at 476 B, callers lost).
+// Earlier score 89.
 // MiniMax H (11-18), then at 106 (from 150): the priority is read from the request's audible byte, then the location is
 // copied, then the flag word is built, which is retail's order, and the source size's zero default is stored before the
 // marker's own assignment instead of in an else arm; what still differs: retail keeps the sound pointer in a frame
@@ -501,6 +502,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // audible-first tests 68; separate priority scope 60; reloaded variant pointer for both character stores 63.
 // NOT kept: the shared variant pointer reaches 470 bytes but merges the check and copy loads,
 // keeps EDI live past the retail pop, and tests bit 8 after a dword load. The merged flags test remains.
+// Separate Boolean fields with location memcpy, marker memcpy, both prior timer values,
+// one platform value, nested variant validity or a scoped marker pointer 45 each.
+// Separate Boolean fields with early tag rejection or result by tag arm 151/155.
+// NOT kept: the split tail moves the request onto the stack and breaks matched callers.
 // M3 lane 4 r219 (fast with 0x1895f0 and 0x189650; fast reads main as 41, plain 32). Screen base: the end test as
 // `TEST_FIELD_BIT(flag8) || TEST_FIELD_BIT(flag11) || !audible` 50 fast (476 B), whose last 30 lines are retail's line for
 // line, with only the request/variant chain (EBX in retail) and the object-index/sound chain (EBP in retail) swapped and
@@ -521,6 +526,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // the priority as `1` then `if (audible) 3`, a short priority, the marker by memcpy, the variant through the request at
 // each use, the flag steps as if/else, `long end_time;` assigned apart, and the forms above all keep the request in EBP;
 // the split test only adds two compiler symbols (its labels number two higher) and changes nothing else in the body.
+// starts a sound from a request: builds the play state and starts it, then, when both of the sound's category
+// flags are set, moves the looping-sound globals' end times out to when this sound ends
+// With split tail tests, request location, playback location, both, played location,
+// and request plus played location reference forms all give 50 reduced. State-owned source
+// with direct or shared request location gives 129/129. Request location value copy gives 175.
+// NOT kept: the reference and state-source forms move the request to the stack and
+// change two matched callers. The copy grows the body. The merged flag test remains.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -543,7 +555,7 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 		state.source = source;
 		state.platform_playback = request->platform_playback;
 
-		if (TEST_FIELD_BIT(((s_sound_class_play_flags *)function_221810(sound->class_index))->flag23) && !(sound->flags & 1))
+		if (TEST_FIELD_BIT(((s_sound_class_play_flags *)function_221810(sound->class_index))->flag23) && !(sound->flags & 0x100))
 		{
 			state.location.flags |= 0x800;
 		}
@@ -575,7 +587,7 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 				long end_time = g_510c54->game_time + game_seconds_to_ticks_round((real)sound->duration * 0.001f) + 10;
 
 				g_4ed288->value20 = end_time > g_4ed288->value20 ? end_time : g_4ed288->value20;
-				if ((state.location.flags & 0x900) || !state.location.audible)
+				if (TEST_FIELD_BIT(state.location.flag8) || TEST_FIELD_BIT(state.location.flag11) || !state.location.audible)
 				{
 					g_4ed288->value24 = end_time > g_4ed288->value24 ? end_time : g_4ed288->value24;
 				}
@@ -766,7 +778,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 	if (object_index != NONE)
 	{
 		char audible = 1;
-		if (!(((s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes)->unknown00 & 4))
+		if (!(((s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes)->flags & 4))
 		{
 			function_18d4f0(object_index, &audible, &local_player_index);
 		}

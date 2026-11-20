@@ -447,6 +447,16 @@ static inline s_prop_datum *prop_ref_iterator_next_256810(s_prop_ref_iterator_25
 // left as bool. Tried with short front: index used straight from the iterator, other declaration orders,
 // iterator fields swapped or index copied first, one index variable shared by both loops (166-169); for or
 // while loops over next_index rotate the loop (202, 205).
+// M3 lane 15 r110 (fast with 0x256790 and 0x2566c0, both MATCH; control 107, short front re-measured 166): the loop
+// body with `continue` on the failed tests 107, with short front 166; `distance < best_distance` 107 / 166; the index
+// declared at function scope 107 / 166; the actor looked up with actor_get at each of its three uses 211 (754 B, not
+// merged); the iterator's next() reading the next index into a local first (as the file's 0x25d510 sibling does) 107;
+// the iterator fields in the other order 107, both 107; the best index stored from the iterator's field 107 (each 107
+// the same code); the actor looked up at the function's top, ahead of the active test, 117 (with short front 164: the
+// actor then takes EBX and the next index EBP, the index is still spilled). One-object screen (this file's unit linked
+// alone, 0x256790 and 0x2566c0 kept out of line; it reproduces the 107 loop): all 720 orders of the six block
+// declarations with bool or short front, and 0-12 dead locals, never give retail's EBP index copy; without the actor's
+// loop use the index takes EBX and the next index EBP; one more index use spills the next index instead.
 // @retail 0x256810
 short __stdcall function_256810(long actor_index, s_slot *slot)
 {

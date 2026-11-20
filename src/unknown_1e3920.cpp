@@ -890,6 +890,9 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
+// MiniMax I (11-19): no new form, no lower score (237): the -1 sentinel still sits in edi where retail keeps it in esi, and this
+// build still reads the squad entry index into esi after the first call where retail reloads it into ecx; the query output homes
+// and the loop's entry block still sit at other frame offsets.
 // score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
@@ -1284,6 +1287,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Indexed byte rows with low word/mask/available first/guarded assignment 237/252/353/371.
 // Typed rows with the same four lookup forms 237/252/353/371. NONE is still in EDI;
 // retail reloads the squad index and holds NONE in ESI.
+// NONE still occupies EDI rather than ESI, with different substitution homes.
+// Positive successor block 237, conditional successor block 349, successful
+// continue 844, positive adoption with settings in the increment 494.
+// Nullable squad fallback for the first, second or both palette selectors
+// 341/340/341, both with the positive successor block 341.
+// NOT kept: the first form ties. The other forms grow the body, and the
+// continue and increment also increase the frame to 0x12c.
 // M3 lane 16 r142 (fast with the eight matched callees and the callers 0x1e0fe0/0x203780/0x256bd0, all MATCH; control
 // 237): retail's loop shape `if (substitute && squad) while (squad_index != NONE && next != NONE)` re-measured 411 (1319 B:
 // 0x1e4990 expands in the loop); `if (substitute) while (squad && squad_index != NONE && next != NONE)` 431 (1335 B, expands);
@@ -1302,6 +1312,19 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // in that form 411 (1319 B), with the masked entry index 420, with the parameter reference as well 420 (0x1e4990 expands in
 // the loop each time; with that shape and the mask the head is retail's line for line up to the loop, NONE in ESI and the
 // squad index reloaded into ECX). Re-measured: the mask alone 252, retail's loop shape alone 411.
+// M3 lane 14 r120 (fast; control 237, 364 instructions both sides; cut at the 26 calls and masked, 262 differ, 206 of them
+// the creation arm's place). Retail's order reads as a straightened jump: the swarm arm falls into the actor test, that
+// test's chain runs on through the placement switch's case 2 to its `jmp`, then comes the creation arm, which ends
+// `mov edi, eax; mov [actor], edi; jmp` back to the test, then case 1. Forms: the object made first and the actor after,
+// by kind (`if (bit) swarm = 0x28dab0(...); else { ... unit = 0xb7b40(...); } if (swarm != NONE) actor = 0x1e02f0(...);
+// else if (unit != NONE) { weapons; actor = 0x1e0160(...); }`) 338 (1274 B: threaded back to the same order, creation
+// arm after the swarm arm); the query's probability declared between its two bools 237 (retail's store order there,
+// masked 260, no gain in the count); the squad entry index masked `& 0xffff` in place of the word 252 (retail's
+// `and eax, 0xffff` but four instructions more); both 252; the squad bit started false and set under `if (squad)` on
+// this body 238 (masked 257); the three together 253. Body unchanged.
+// Shared direction at actor/settings/entry scope 237/237/237, aggregate direction 237,
+// component setter and shared setter 237/237, two named facing parts with separate/shared vector 237/237.
+// The EDI sentinel and the squad and query homes still differ.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1625,6 +1648,16 @@ void function_1e3b60(long actor_index);
 // the index in EAX (0x262ba7 `mov ebx, eax`), ours keeps a stack parameter, so nothing in this caller can change it;
 // the other `!!` lines are call targets of the reduced image. No new form tried here; the fix is in 0x262ba0's body
 // (BLOCKED-BY above).
+// M3 lane 14 r120 (fast with 0x262ba0, control 412 there; 25 here in every form): in 0x262ba0 the actor pointer
+// `const` 412 (same code); the entry test through a fresh lookup with the pointer fetched after the two entry calls
+// 423; the list head read through the held pointer 442 (1616 B); the sampled flag declared after the first call
+// 413; the prop loop as `for (long index = head; index != NONE; index = next)` 453 (1600 B, retail's frame 0xa0,
+// first difference +0x6). The actor index stays a stack argument in each. Still BLOCKED-BY 0x262ba0.
+// Round 642 forms: layout-derived clear extent 25, typed reset span and sentinels 25,
+// byte-distance reset extent 25, typed dword sentinel 25, unsigned child test 25,
+// typed prefix with child count > 0 at 26, const typed update view 25, scoped
+// layout-derived reset 25, callee __cdecl declaration and definition 71.
+// NOT kept: the call still pushes the actor index. The __cdecl form also adds caller cleanup.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -1956,7 +1989,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // actor EDI, options ESI; retail: actor ESI, options EBP); the random-state load still rides across the opaque call
 // 0x259a0 in src/unknown_0259a0.cpp, which this lane may not edit.
 // MiniMax A (11-18): no new form, no lower score (251): the permuter's tries leave the baseline at 251, and the actor, the weapon options and the object-pool global still rotate against retail (retail ESI/EBP/EDI, ours EDI/ESI); the residency is decided by the opaque callee 0x1e53e0 in another file.
-// score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
+// The 0x14 frame and actor index in EBX agree. Retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax E (11-16): no new form, no lower score (251): the permuter (1500 s, 131 tries, one job) left the baseline at 251, so the pool global is still re-read after each lookup where retail holds it in EDI across the callees, and the actor, options and pool registers still rotate the way the notes below say.
 // MiniMax R (11-17): no new form, no lower score (251): the permuter's 20 tries over the reduced image (311.7 s) reach
@@ -2295,6 +2328,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // array 251; header array after grenade metadata 301; shared header accessor 251; primary
 // weapon result inside the flag/delay gate 251. The late pool and header forms still give the
 // actor and options different registers.
+// Pool, actor and options registers still differ. Phase-local random receiver sharing:
+// probability and delay 327, grenade and fraction 251, both 327, per weapon 251,
+// probability and per weapon 327, all equipment draws 251, with probability 324,
+// and one receiver through fraction with a fresh round receiver 332.
 // M3 lane 16 r142 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0/0x1e5380/0x2758b0/0x1e3b60, all MATCH; control 251):
 // diagnostic, the tail 0x1e1a00 call dropped 289 (1187 B: the pool global is still reloaded at each lookup, so the
 // unmatched tail callee is not what keeps it out of a register); the random-state pointer read once into a local for
@@ -2310,6 +2347,25 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // re-read after the call, as with the earlier store diagnostics), but 0x1e53e0 itself becomes 82 bytes with the key in DX,
 // and 0x1e5380 2, 0x1e04a0 6 and 0x2758b0 56 lose their code: retail's 0x1e53e0 is a real loop, so recursion is not
 // what makes it look impure to its callers.
+// M3 lane 14 r120 (fast unless said; control 251). Diagnostic, plain check, body replaced by one comparison of each
+// global before and after each callee: only the out-of-line draw 0x259a0 (its file is built without LTCG) and the tail
+// 0x1e1a00 are taken to write the pool or the seed global; 0x1e1f20, 0x1e5280, 0xcbd50, 0x259d0, 0x1469f0, 0xc6f80,
+// 0x1e53e0, 0x101a10 and 0x1018b0 are not. Retail keeps the seed global in EBX across the 0x259a0 call (loaded before
+// it, again on the path round the first block and after 0x101a10 takes EBX for its argument), which ours cannot do
+// while that call is opaque: BLOCKED-BY 0x259a0 (build flags of src/unknown_0259a0.cpp, not this lane's to change).
+// Forms: block 2's two queries as one private two-argument slot query shaped like 0xcbd50 (result first, slot read at
+// the call) 280 (1216 B: retail's `or reg, -1` / test / load per query, but both lookups merge with `unit` across
+// 0x1e53e0); that with a `long` index 333 (1186 B). A local copy of the pool global declared after the options, every
+// lookup of this function written through it and the slot query taking it: 266 (1216 B, frame 0x18: the copy loads
+// into EDI above the `je` as retail and the options lookup reads [edi+0x44], then it is spilled and EDI takes the
+// data pointer; actor EBP, options ESI), with a `long` index 323 (1186 B); the copy declared first 326 (1200 B), with
+// a `long` index 340. Diagnostic (the draw's file without its no-LTCG flag and the draw kept out of line, reverted at
+// once): the body as it stands 306, the four pool-copy forms 269 / 275 (1187 B, aligned 141) / 269 / 275: the copy is
+// then propagated back into a reload of the global at each lookup, so retail's EDI is the global itself kept as a
+// register candidate, which needs its six separate lookups (retail does not merge the unit's with the queries') to
+// outrank the unit and the index. Body unchanged.
+// Lazy primary/secondary weapon result by assignment, by conditional, or from an initial NONE,
+// and separate slot guard 251 each. Each also scores 251 with a separate valid-unit guard.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

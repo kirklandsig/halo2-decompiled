@@ -494,6 +494,13 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 }
 
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// MiniMax E (11-19): score 535 (was 535): no new form, no lower score. Read from the listing again: the entry agrees
+// (the tag index from the stack into EAX, the table global into ECX, the tag's bytes into EBX, the output into EDI), so
+// the remaining offset is in the locals' homes and not in the call: the tag spills at frame+0xa8 against retail's
+// +0x88, the zero counter sits at frame+0x4c against retail's +0x54 and the one at frame+0x18 against retail's +0x20,
+// while the plane base at frame+0x1e8 and the 0x21dc frame agree. The first loop's count pointer therefore sits eight
+// bytes lower than retail's, which moves every later home that is placed next to it. The permuter over the function
+// tried a few forms of its own and kept none (535 unchanged).
 // MiniMax I (11-16): no new form, no lower score (535): the frame 0x21dc and the 3647-byte length agree and the first
 // difference is still the tag spill at +0x41; the later homes of the tag, the count and the plane still sit in other slots
 // than retail's, and the entry register roles are still the other way round (retail takes the object pointer in edx and
@@ -1568,7 +1575,7 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
     point3f const *source, point3f *destination);
 
 // @retail 0x17e670
-void function_17e670(s_effect_source *source, point3f const *point, long tag_index,
+void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
 {
     if (!g_46dd48)

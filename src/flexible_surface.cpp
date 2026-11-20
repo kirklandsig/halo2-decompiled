@@ -366,6 +366,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax A (11-19): no new form, no lower score (130): 889 bytes against retail's 880 and the frame is 0x1c against
+// retail's 0x20 - retail keeps the random fraction in a cell of its own (+0x18) and the sine in another (+0x14) where
+// this build shares one cell (+0x14) for both - and retail loads the random-state pointer into esi before the time
+// product where this build loads it after; retail's rotation is the scalar one, which the shared in-place helper
+// cannot give.
+// MiniMax C (11-19): no new form, no lower score (130): frame 0x1c against retail's 0x20, the seed pointer loaded after the surface lookup instead of in the prologue, and the random sample at [esp+0x14] against retail's [esp+0x18].
 // score 130 (was 130): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
 // M3 lane 2 r107 (fast with 0x118140, which stays MATCH; fast = plain 130): the convention is already retail's (index in EAX,
 // wind in EBX, plain ret). Retail loads the random-state pointer into ESI right after `push esi` and finishes the seed
@@ -904,6 +910,24 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // accumulator weighted after first cross difference 130, Projection accumulator weighted after all cross
 // differences 154. NOT kept: The 880-byte forms keep the 0x1c frame and score 151 or higher. Later weighting
 // changes matched users 0x1ff360 and 0x2551f0. The opening shared helper and wind body are restored.
+// M3 lane 3 r271 (fast with 0x118140, 0x117c80, 0x30bf0, 0x2551f0 and 0x1ff360, all matched each time; control 130,
+// aligned 93, masked 69). What retail's rotation evaluates, read from its listing: the vector's j and k loaded once ahead
+// of the axis copy and its i after the first two dot products; the axis j and k reloaded into registers and its i used
+// from the frame four times; the dot summed (axis.k * k + axis.j * j) + i * axis.i; cross j as `k * axis.i - axis.k * i`
+// and cross k as `axis.j * i` stored, reloaded and then `- j * axis.i`, both spilled (+0x18 and +0x10) while the sine
+// keeps +0x14, which is the frame's extra word; cross i formed inside the i row; rows `i * cosine + projection * axis.i`,
+// `axis.j * projection + j * cosine`, `axis.k * projection + k * cosine`. Written out that way in place of the shared
+// helper (match-only forms, none kept): with the vector's j and k in locals after the cosine 175 (859 B, frame 0x18;
+// cross k in one or two statements, same code), with no locals (the global at each use) 162 (880 B, frame 0x1c), with
+// j, k and i in locals 161 (880 B), with the j and k locals ahead of the axis draw 158 (880 B). The shared helper with
+// the sine and cosine as named locals around the axis draw re-measured 152 (880 B, aligned 101). A compile-only descent
+// over this written-out form (which locals, their place, the dot's order and sides, the projection's sides, named
+// crosses, row orders and sides; about 170 variants scored on the SSE block alone) found nothing nearer than three of
+// the block's 62 instructions: retail's block needs the two cross spills at once, and no spelling tried keeps both.
+// Early random-state binding with the unit-vector sampler for initial direction/axis/both
+// 126/126/154; with sine before axis 154/126/154. Early binding with table indexing,
+// axis between sine and cosine or before both 152/152. NOT kept: the sampler's four-point
+// gain is below the bar, and all forms retain the 0x1c frame and later seed load.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1200,7 +1224,7 @@ void __stdcall function_116b00(long tag_index, long unused, long group, long var
 	void *lighting = lighting_index == NONE ? NULL : g_509434->data + (lighting_index & 0xffff)*0x100 + 0x44;
 	function_1bd50(lighting);
 	function_1cdd0(0, 0);
-	function_4b2d0(tag_index, group, variant, ((byte *)context)[4], pass);
+	function_4b2d0(tag_index, group, ((byte *)context)[4], variant, pass);
 	long material_index = tag_index == NONE ? *(long *)(g_485a80 + 0xd0) : tag_index;
 	byte *reference;
 	dword kind = *(dword *)&g_4e3b44[(short)material_index];

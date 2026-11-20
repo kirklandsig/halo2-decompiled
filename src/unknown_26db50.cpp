@@ -1111,6 +1111,20 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // block with the offset loop 45: the helper's own term order does not count. On M the lift as statements (`+=` or
 // product-first) x, z, y 71, z, y, x 187, x, y, z 179 (1085/1088/1082 B: the head changes, so the lift is a loop).
 // Reading: the rotation's dot takes k ahead of j only when this body names the axis's k before its j in a live tree.
+// M3 lane 14 r119 (fast with 0x1ecf50/0x26d100, both MATCH each time; control 26): the 0.1 offset as a component loop
+// (`point.n[c] = axis.n[c] * 0.1f + collision.point.n[c]`) 45 (the rotation's XMM roles change again: dot k, j, i);
+// a one-use axis pointer local for the rotation call 42, with the collision record, marker and entry pointer ahead of
+// the lift 36; that axis local also read by the three offset statements 165 (1103 B); the direction copied as three
+// component statements 232 (1081 B).
+// M3 lane 16 r148 (fast with 0x1ecf50/0x26d100, both MATCH each time; control 26): the trace endpoint and the 0.5 lift
+// as one statement per axis (`point.x = direction.i * trace_distance + origin->x + g_4687b0->i * 0.5f`) 67 (rotation
+// ours); the same sums as the three arguments of one real_point3d_set 172 (1082 B); the lift through real_point3d_set
+// (`g_4687b0->i * 0.5f + point.x` per argument) 77 (1085 B); the 0.1 offset statements written sum-first
+// (`collision.point.x + g_4687b0->i * 0.1f`) 26 and the endpoint's arguments sum-first 26 (same code each: the sum
+// order is canonicalised). The direction j/k ranks in the rotation's dot did not move in any of them. Reading: matched
+// 0x2551f0 turns its direction about the same axis global with include/axis_rotation.h's spelling of this helper, and
+// retail sums that dot (k + i) + j, as ours does here, while it copies its source i, k, j; so retail's (j + i) + k here is
+// set by this function's context (its i, j, k copy order), not by the helper's spelling.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -1286,6 +1286,9 @@ void function_2118c0(void)
 // pointers fit in registers (eax, ecx, edx, esi, edi with the counter in ebp), so register pressure does not keep
 // retail's knot rows unreduced; a row read from a static table of band rows (diagnostic) leaves the rows unreduced but
 // loads the row.
+// M3 lane 13 r119 (fast with 0x212100 and 0x211fd0, both MATCH): `word k` 10 (same code); `long row = b; row *= 8;` 150;
+// `unsigned long` knot indices `(k + n) & 7` with `long row = b * 8` 185 (751 B); `long row = b * 8` with the knot subscripts
+// `(dword)(row + w)` 150, with `(dword)row + w` 150 (unsigned sums still reduce every row).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
