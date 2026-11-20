@@ -2787,6 +2787,7 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
    target, its speed curve and gravity, its range, then the line it moves
    along and what that line hits (up to 10 times), its orientation, and at
    the end its detonation or deletion */
+// MiniMax B (11-20): no new form, no lower score (947): retail expands the range check's 0xfaa30 body inline at two of its five uses and emits the call once per arm of the average-speed test, so our five calls stay and our frame remains 0x110 against retail's 0x118; marking that helper inline expands it at all five uses and scores 1093.
 // score 946 (was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;

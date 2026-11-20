@@ -2337,6 +2337,13 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // MiniMax H (11-18): no new form, no lower score (542): the frame is 0x90 as in retail and the calls and their
 // arguments are in retail's order, but the status, mesh, colour and sample homes still sit in other stack slots and
 // the selective helper expansion still differs.
+// MiniMax G (11-20): score 542 (was 542): no new form, no lower score; the first arm matches retail instruction for
+// instruction, but our status and mesh homes sit 0xc above retail's (ours 0x30/0x2c, retail 0x24/0x20) because our
+// base u/v pair takes the two lowest slots, and in the second arm the three unpacked sample points land in other homes
+// (ours a 0x8c, b 0x68, c 0x4c against retail's a 0x8c, b 0x34, c 0x68), where retail materialises each short sample
+// pointer and we keep the base and the scaled index apart; the three sample offsets in a, b, c order score 587, the
+// short pointers formed inline from each vertex index 618, and swapping the sample point declarations or the red/blue
+// weight order gives the same 542, so the body stands.
 // score 542 (was 542): frame 0x90 agrees. The status, mesh, color and sample homes and selective helper expansion differ.
 // Earlier score 555.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:

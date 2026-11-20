@@ -4852,6 +4852,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax B (11-20): no new form, no lower score (484): our frame is 0x130 against retail's 0xe8, the fallback reverb is copied into a 48-byte stack block where retail reads the existing table, and 0x16f3a0, 0x1420f0 and 0x11c120 still expand here although retail calls them out of line; their noinline declarations live in other files.
 // score 484 (was 535): one note; the older score lines below now read "Earlier (535)". Still different: the
 // 0x155760 result is spilled (frame 0xec against retail's 0xe8, every slot 4 off) while this build keeps NONE in EBX
 // through the loop head, where retail keeps that result in EBX and compares with immediates; the expanded rotate

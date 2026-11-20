@@ -3728,6 +3728,11 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // definition and EBX the barrel offset in the prologue and the effect loop (retail: EBX the weapon index up to the 0xa7cd0
 // call, EDI the barrel offset, the definition never in a register), and the magazine pointer is not materialized (retail
 // spills it to [esp+0x34]).
+// Round 444: Reused initial loaded short/promoted count 636/639. Initial short with the fallback
+// minimum read once 636. Post-heat short/promoted debit 639/639. Both loads with signed shorts,
+// with promoted debit, or with named fallback minimum 639/639/639. Reduced control 636.
+// NOT kept: ties and regressions. The early magazine tag and post-heat rounds still occupy separate
+// spill homes in the full build, with the 0x1c64 frame and swapped weapon/barrel registers.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4132,6 +4137,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // (0x1027b0 clears all three; retail stores nothing before that call) 1419 (5668 bytes); both 1419; the pointer with
 // blocked started false at entry (retail's `mov byte [esp+0x16], 0`) and set in its test 1433; that with the
 // uninitialized outputs 1440.
+// Round 444. Magazine-only seeded accumulator as bool OR, byte OR, bool with an updater test,
+// and bool logical OR 1415/1415/1414/1409. Independent contribution in the same four forms
+// 1416/1416/1414/1420 (reduced control 1412). NOT kept: the three-point seeded logical gain
+// leaves frame 0x34 and the opening pool, offset and dual-state homes.
 // M3 lane 4 r229 (fast, control 1412 = plain; aligned = difflib count, masked = registers and stack slots masked too;
 // control aligned 910, masked 521). Small forms on this body: the animation state's byte 0x11 read into a long ahead of
 // the 0x14 test (retail's `movzx eax` at 0xfe121) 1429; the ramp sound tag as `increasing ? [+0x248] : [+0x250]` (retail

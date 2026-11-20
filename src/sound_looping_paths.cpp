@@ -766,6 +766,30 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Nest valid index, valid tag, unique choice, or tag and uniqueness 846/846/846/846. Full-width accepted
 // count with these guards 964/964/964/964. NOT kept: the short forms tie. The full-width forms recover the
 // ESI zero but shorten the body and raise the score. The target-count and query-buffer homes still differ.
+// M3 lane 11 r133 (fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846, difflib-aligned 1004, frame-blind 473;
+// body unchanged). On lane 8 r201's composite lead (counted lists, both scans through data_iterator_next_inlined, the pin
+// with `real const &` bounds, the start through looping_sound_new_attached; re-measured 908 at 3290 B, aligned 895, frame-blind
+// 185): the decibel helper as a single-exit result 924 (3265 B, aligned 382, frame-blind 168); that with the exponent written
+// `(bits * 0.05f) * 2.3025851f` (retail's two fmul; without the parentheses the two constants fold into one) 899 (3291 B,
+// frame-blind 157); that with the linear helper in matched 0x2195f0's own shape (a pin taking the long bits and returning a
+// result local, then a named `scaled` product) 879 (3291 B, aligned 305, frame-blind 155): the frame is then retail's 0x4e0
+// with every local on retail's home, because the pinned bits share one slot with the helper's argument. That is the lead
+// saved as build/r133/lead-0x18ae80.patch. On it: a named tag local in the first loop 883, a named flags local 879 (one line
+// worse aligned), both 879; the sound through an inline lookup helper 879 (same code); the duplicate flag set under an
+// `if` 924; the existing list appended with `elements[count++]` (retail's `mov eax, edx; inc edx`) 880 (aligned 304); the
+// allocation back through record_pool_allocate(pool) 909 (3262 B); the datum getter reading the pool global 885. On main's
+// body: the single-exit decibel helper with the unfolded exponent 853 (3327 B), the unfolded exponent alone 856 (3338 B).
+// Diagnostic, restored: the floor global defined in an existing file built without link-time code generation 846 (same code,
+// 5 reads: that does not make stores kill it). Left on the lead (36 bytes short): the first loop gives the callee-saved
+// registers to the query index and the tag where retail gives them to the index and the sound pointer (retail forms the
+// pointer with `lea ebp, [ecx + eax]` and keeps the tag in ECX); retail holds the pool in EDI from the first scan to the end
+// and copies it to EDX for each allocation, so EBP takes the target pointer and EBX a hoisted NONE for the whole target
+// loop (`cmp esi, ebx`, `mov word ptr [ecx + 6], bx`), where ours keeps the pool in EDX across the allocation (retail's
+// other callers of 0x16b840 do read EDX after it, so that is this function's allocation, not the callee's summary), and so
+// has no register for NONE and hoists 0x100 instead; retail hoists 0xfdff into EBP for the first scan's word `and` and loads
+// the type byte and the sign-extended source before testing them; retail reloads the sounds base after each 0x14b240 call
+// (lane 13 r110's reading); retail's used-bit zeros come from one zeroed register with the existing count's zero as an
+// immediate between them.
 // MiniMax B (11-20): no new form, no lower score (846): the entry zero is still EBP where retail uses ESI, the query
 // count is still read as a word where retail reads a dword, and the target count and primary still have other homes;
 // the permuter's best form is 842, under the 8-point bar. The decibel constant g_44a0b4 is a writable global in
