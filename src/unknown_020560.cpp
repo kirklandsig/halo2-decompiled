@@ -834,6 +834,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
 // score 418 (was 439):
 // Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
 // offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
@@ -1235,6 +1236,18 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // The reset cutoff or separate scopes with live table reads in scan two 549/549. One table snapshot
 // across both scans 623. NOT kept: the live table forms reach retail length but retain a short frame
 // and miss the candidate x store. The snapshot shortens the body, and the other forms tie or regress.
+// Nearest or opposite distance scratch at scan scope 418/418, projection scratch at scan scope 418,
+// offset declared before ordinal exclusion 418. Nearest cutoff, zero projection limit, or opposite cutoff
+// on the left of its comparison 418/418/418. Both opposite-scan scratch values at scan scope 418.
+// All tie. The 0x2c retail frame, second induction address and offset.i store remain unresolved.
+// Reused offset norm as square accumulation or grouped sum 646/646. Candidate setter with either
+// norm 649/649. Both setters with either norm 649/649. Anchor setter and accumulated norm 646.
+// Candidate setter with offset-first dot and accumulated norm 649. NOT kept: 2039-byte extent
+// and 0x1c frame, with the candidate-X store still missing.
+// Conditional nearest/opposite state assignments, alone or paired, and named projection
+// alone or with nearest 418 each. Named projection with opposite or both 1236 each.
+// Filtered distance with the current cutoff for a rejected candidate 417. NOT kept:
+// one-point gain, extent grows past retail, and the separate frame homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

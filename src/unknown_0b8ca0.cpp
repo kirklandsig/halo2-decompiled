@@ -1894,6 +1894,8 @@ void function_0bfe20(dword *flags, long bit, bool value);
 // in registers, which is what the shared rotate helper's three copies give when they get no register and are read
 // back from their source; ours spills them to the frame instead. BLOCKED-BY 0x142570 as before (/Ob1, inlined by
 // retail; this file's attachment-point helper writes that body).
+// score 67 (was 192, r924 stand-in image): the body runs inside `if (allowed) { ... }` (one return at the end) instead
+// of `if (!allowed) return;` before it; 1240 bytes (retail 1236). The BLOCKED-BY note above still describes the rest.
 // M3 lane 1 r136 (fast with 0xb8ee0/0xbe760, both MATCH each run; control 192, lead 166): the forward vector through the
 // existing in-place rotate helper (`&inverse.rotation`) 280 (1262 B: its aliasing copy branch stays, frame 0x70); a
 // `data` local for `pool->data` after the walk, for the parent and the header, 332 (the parent load then takes retail's

@@ -839,6 +839,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax C (11-20): no new form, no lower score (35): the only shape that gives retail's message register, flags register and byte OR is the second result variable recorded in the notes above (10 at retail's 225 bytes), left aside because it repeats the same assignment in both arms of the send test; what is still left is the order of the last two exit blocks (ours lays the send-and-empty-window exit ahead of the loop's zero-trip exit, retail after it).
 // score 35 (was 35): The message and saved flags use EAX and CX. Retail uses ECX and AX and updates the low byte
 // in place.
 // Earlier score 35 (was 35): earlier 60. The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
@@ -1260,6 +1261,18 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the resend bit in the message; the in-place update reaches retail's byte OR (or byte ptr [ecx+0xe], 2) but frees the
 // flags word and changes the whole allocation (89), the ternary message pointer with the in-place update is 90, and
 // the ternary alone keeps retail's registers but lays the arms out with the address in the fall-through (45).
+// M3 lane 7 r197 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched each time; control 35). Arrangements of the
+// listed second-result lead (result = 4 first in the found block, the in-place update): the lead itself 10 (225 B), with
+// the send test inverted 10, with the count test inverted (`if (!count) result = type; else` the loop) 10: the shared
+// early exit is still laid out ahead of the loop's zero-trip exit. Both tests inverted 87 (216 B); no inner else 95 (205
+// B); one combined test with the copy at the top of its arm and an else 28 (214 B), the same with a named `sent` 28, the
+// combined test inverted (`send || !count` arm first) 28; `else if (!count)` chain 92 (210 B); `bool sent` and the copy
+// before the test 20 (listed); an early return of the type on a successful send with the copy after it 94 (218 B), with
+// the count test as a second early return 90 (212 B), with both tests in one early return 80 (216 B). The early exit
+// follows the loop's zero-trip exit only when the early paths jump straight to the return (the kept form), and then the
+// result has no register for the found block.
+// MiniMax C (11-20): no new form, no lower score (35): the message pointer is in eax where retail has ecx and the flags in cx against ax;
+// the polarity and else forms give retail registers but fold the window NONE init (43, 45).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

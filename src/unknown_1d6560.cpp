@@ -622,6 +622,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // (still `shr eax, 2`, the entry's EDX/ECX/ESI shift left); on it the kind-7 route single-exit (`result = 1; if (type ==
 // 1) result = 0xc;`) 95; a short type 39 (260 bytes); case 0 through the header array local at the component's index 28
 // (same code); the absolute index as `word` 98 (caller 13). Body unchanged.
+// M3 lane 6 r211 (fast, caller 0x1d5bf0 in brackets; control 96 [0]; round 60's 24 form rebuilt 28 at 256 B [0]): header-first
+// order (header array, object index, rigid body, absolute index, byte type) with case 0 through the header array and the
+// component 25 [13]; the same with case 0 through havok_object_get(component->object_index) 25 [13] (same code); with
+// case 0 through havok_object_get(object_index) 72 [2] (the component arrives in EDX); the first and third with a long
+// type 86 [13] / 92 [160 at 711 B]. Header-first still moves the incoming component/index pair. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

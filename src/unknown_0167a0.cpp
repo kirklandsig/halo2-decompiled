@@ -396,6 +396,14 @@ PRIVATE inline byte const *material_parameters(long tag)
 // reference and read back 5 (+0x19e) (all four their base form's code); the chain lookup in 0x174d0's spelling with the word
 // address kept in a local read through its address (`word *const *chain_reference = &chain;`), on the direct store 177 and
 // on the reference form 179 (974 B, first difference +0x148).
+// M3 lane 2 r119 (fast; control 5 at +0x19e): the restore block's entry computed into the existing `entry` local, stored,
+// and its word read through the local 181 (975 B); the direct entry store with the entry word read inside the chain index
+// (no `packed` assignment) 5 (+0x1a7, the direct form's code); the tables stored and the three bases read through one
+// `byte *&` to the tables field, entry stored directly, 6 (the reload waits for the entry store and `second` loads early,
+// both differences at once); the entry reference typed `word *&` (the store as a word pointer) 5 (+0x19e, main's code);
+// on the direct store the chain base offset by `second` before the packed index 5 (+0x1a7, same code). Reading: the
+// reload of the tables field leaves the entry store's shadow only when that store is written directly (no reference),
+// and `second` then loads as soon as the entry lea frees ESI; retail has the first without the second.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
