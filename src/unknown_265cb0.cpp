@@ -364,6 +364,12 @@ bool function_26d370(point3f const *point, vector3f const *direction, plane3f co
 real function_30bf0(vector3f *vector);
 
 // score 84 (was 84): r216 unchanged (r200 unchanged); retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// MiniMax E (11-20): no new form and no lower score (84): retail's homes run result 0x8, facing maxima 0x14/0x18, the
+// clip amount sharing 0x1c with the squared distance, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and the
+// delta at 0x4c/0x50/0x54, while this build puts the result at 0xc, the clip amount at 0x10, the range at 0x18 and the
+// delta at 0x48/0x4c/0x50, so the whole set of homes sits one cell low. The seat loop's two cross products also load
+// their operands the other way round, and both come from a helper in another file's header, so the forms that would
+// move them are not this lane's to write; the body stands.
 // MiniMax H (11-20): no new form, no lower score (84): six source forms measured this round (the clip amount's scope, the facing pair's declaration order, the distance's scope, the delta as a point3f, and the scale and the facing maxima initialized at the top) leave the homes where they are, except the two top-init forms that rise to 90 and 208/212; retail's homes run result 0x8, facing maxima 0x14/0x18, clip amount 0x1c, scale 0x20, range 0x30, loop count 0x34, seat cursor 0x48 and delta 0x4c/0x50/0x54, and ours run result 0xc, clip amount 0x10, range 0x18, scale 0x1c, facing maxima 0x20/0x30, seat cursor 0x34 and delta 0x48/0x4c/0x50.
 // The 0x350 frame agrees. The initial result is four bytes above retail, and the clip output shares the later seat-count slot.
 // Earlier measurement 84 (was 84): r200 unchanged; retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
