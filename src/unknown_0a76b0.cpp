@@ -4423,6 +4423,10 @@ extern vector3f *g_4687bc;
 // component at the element); the element as data then `+=` without the reference, through a named index copy, as byte
 // arithmetic; `long const` effect tag and index; a const definition; `*rigid_body->nodes`; the model in a `byte *`
 // local; the node index as `short` (one more line, both sites unchanged).
+// M3 lane 13 r128 (screened, control 8): the default material built from `(short)(long)g_54e898` 8; the component index
+// named for the lookup, after the material 8; the impulse declared at the top of the physics-tag block 8; the strength
+// passed as `(long)strength` 8 (all the same code); the node-count and first-node tests joined, the node read again
+// inside 105 (1101 B).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

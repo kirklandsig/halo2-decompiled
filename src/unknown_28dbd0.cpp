@@ -660,6 +660,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // through the coordinate setter 218, named heading aggregate and tilt axis 173.
 // NOT kept: the frame stays 0x11c with the extra cross home. The returned scale pointers shorten the body, and
 // the heading setter raises its score at retail length.
+// M3 lane 13 r128 (screened, control 173): the rotation helper in matched 0xd1850's rotate form (sine, cosine,
+// cross3f(vector, axis), projection with the dot written k, j, i, in-place rows `v * cos + axis * projection - cross *
+// sine`) 231 (1196 B); the vector scale folded into the sums (`v.i * cos + axis.i + cross.i`) 221 (1213 B, frame 0x118
+// but the request at +0x2c for retail's +0x38); the axis scale folded into the sums 230 (1216 B); both folded 229 (1200
+// B); the projection as `(1.0f - cosine) * dot3f(...)` 173 (same code).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

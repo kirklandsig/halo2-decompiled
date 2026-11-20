@@ -928,6 +928,10 @@ real g_55e618;
 // top beside the cache 110; keep computed just ahead of the final rows 138 (1534 B, frame changes); the velocity copy as
 // three scalar reals 102 (same code); the final rows as a plain component loop 102 (unrolled, same code). Ours still
 // spills perp.j (+0x48) and tangent.i (+0x100), retail tangent.i/j (+0x38/+0x3c) and perp.k (+0xac).
+// M3 lane 13 r128 (screened with 0x2ba3e0 and 0x2b8da0, both MATCH; control 102): the dot as `real const` 102; the velocity
+// copy ahead of the normal pointer and keep 102; the perpendicular as a three-term aggregate initialiser 102 (all the
+// same code); the +0x34 scale ahead of the three final rows 103; the tangent through the existing vector3d_from_points3d
+// (perpendicular to velocity) 102.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
