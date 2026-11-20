@@ -657,6 +657,23 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // square-root homes and the yaw share +0xc, its final pitch is stored in the dead scale parameter's home (+0x40) with
 // the first rotation's sine at +0x10, and the rotated result is written into the first copy's home (+0x20); ours gives
 // the yaw +0xc, the roots +0x10, the pitch +0x10, that sine +0x40 and the result the second copy's home (+0x2c).
+// M3 lane 13 r123 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH unless noted; control 176, difflib-aligned 229,
+// masked 114): what puts the three roots in the pitch's slot. Diagnostics (reverted): with the second rotation fed the yaw, or
+// with the final pitch store removed (1706 B, frame 0x28), the roots and the arc-cosine result move to the yaw's +0xc as in
+// retail; so they follow the pitch whenever one value serves both the second rotation's x87 loads and the store after the
+// join. Forms: the final pitch add moved to just before the second rotation 279 (1719 B), to after the first rotation 281
+// (1723 B), to after the vector copy 176 (same code); the rotation helper's angle by const reference 178, copied into a
+// helper local 178, the cosine taken before the sine 178, the angle typed double 171 (1707 B; a type picked by score, five
+// points); block-local yaw and pitch with the function-scope results assigned at the end of the arm 179, pitch only 203
+// (1718 B); the pitch result assigned right after the final add with the rotation reading the block-local 209 (1727 B: roots
+// +0xc as retail, aligned 194, but the pitch is then stored twice), assigned just before the second rotation 214 (1733 B, roots
+// +0xc); the rotation reading the result variable 176 (same code); the two angle stores written in each arm 251 (1743 B); the
+// final pitch formed as the second rotation's argument with the add repeated after it 298 (1742 B, roots +0xc), as a named
+// local after the first rotation 291, before it 203. Diagnostic: the final pitch kept in the scale parameter's variable 173
+// (aligned 202): its home becomes retail's +0x40, the first sine then takes +0x3c and the cosine +0x10 (retail +0x10 and
+// +0x3c) and the roots stay at +0x10; a parameter reused for another value, not kept. Reading: retail gives the pitch its
+// home after the first rotation's sine and cosine have theirs (roots and yaw +0xc, first pitch angle and both sines +0x10,
+// both cosines in the first stack argument's home, the pitch in the scale's home); ours homes the pitch first. Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

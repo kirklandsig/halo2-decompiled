@@ -892,6 +892,21 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // accumulator weighted after first cross difference 130, Projection accumulator weighted after all cross
 // differences 154. NOT kept: The 880-byte forms keep the 0x1c frame and score 151 or higher. Later weighting
 // changes matched users 0x1ff360 and 0x2551f0. The opening shared helper and wind body are restored.
+// M3 lane 13 r123 (fast with 0x118140, 0x117c80, 0x2551f0, 0x1ff360, all MATCH; control 130 at 889 B, difflib-aligned 93,
+// register-masked 69; positional counts mislead here, the aligned ones are given). Read from the head: retail's first block
+// runs the seed-pointer load (ESI, before `push edi`), the definition load, the tick loads in EAX, then the seed read in EAX
+// and its multiply before the integer cell is stored for the time product; ours runs the whole time product first. Forms:
+// the fraction drawn before the time product 197 (886 B, aligned 91, masked 67: ESI then loads before `push edi` as retail,
+// but the seed read takes EAX ahead of the tick loads, which move to ECX); the fraction first of all 208 (aligned 128);
+// the time product first of all 153 (aligned 135), then the fraction, then the definition 152 (aligned 118); sine and
+// cosine named before the axis draw, re-measured, 152 (880 B, aligned 101), with the fraction before the time product 196
+// (880 B, aligned 102), with the fraction first 213; a seed pointer local declared first or after the definition 174/174
+// (880 B, aligned 134, masked 63: forwarded to its first use, ESI still loads after the tick loads), with sine and cosine
+// named 171 (aligned 113); the tick count converted and the rate read into locals ahead of the draw, the product after it
+// 201 (885 B: both conversions go through cvtsi2ss); the draw's integer taken first and converted in the angle product 201
+// (880 B, aligned 118), taken after the time product 202; the fraction written inside the angle product 199 (aligned 100);
+// the oscillation before the fraction 201 (aligned 96). No form puts the seed read between the tick loads and the integer
+// cell's store. The frame stays 0x1c: retail's extra cell is the second cross term the rotation spills. Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
