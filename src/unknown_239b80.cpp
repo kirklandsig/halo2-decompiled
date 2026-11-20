@@ -1039,6 +1039,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax S (11-20): no new form, no lower score (129): retail reads the count argument as a dword home (mov ecx, [ebp+8]; movsx edi, cx) and keeps it in ECX to the loop guard, where this build reads a word home and keeps the previous side in CL instead of a byte home; the count's width comes from the caller's declaration in src/unknown_17d9a0.cpp, and an int copy of the count measures 320.
 // MiniMax G (11-19): no new form, no lower score (129): retail reads the count's home as a dword and narrows it
 // afterwards (`mov ecx, dword [ebp+8]` then `movsx edi, cx`), so retail's count parameter is a four-byte type while this
 // declaration's `short count` is read as a word home and sign-extended at once; that prototype is also declared in

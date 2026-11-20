@@ -8602,6 +8602,10 @@ real function_50650(real cosine);
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
+// MiniMax S (11-20): no new form, no lower score (560 in the reduced image): the frame is still 0x8c against retail's 0x80, retail
+// branches on the frame pointer before it stores the two zeroed speeds, and retail keeps each vector's three components in XMM0-2;
+// named component locals in the to-frame helper (either operand order), the zero stores moved into an else arm and the prediction axis
+// as three scalars all measure worse (592, 608 and 592).
 // MiniMax R (11-16): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, retail still tests its second
 // pointer at the entry and leaves the body when it is null where this build stores two zeroed speeds first and only then branches, and
 // the two 0xc7750 calls still push the position and the velocity on the stack where retail passes them in xmm5 and xmm4.
