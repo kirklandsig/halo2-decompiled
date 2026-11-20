@@ -949,6 +949,11 @@ real function_30bf0(vector3f *vector);
 // no symbol count completes the layout. distance_squared written through a pointer to itself 84 (same code: the
 // pointer folds, the cell does not change class). One, two or three redundant parenthesis pairs around `scale * range`
 // 150/154/148 (1312/1312/1310 B): the pairs do move the float operand sides, but not to retail's.
+// Clip output initialized to zero or unity 263/268. Separate intersection status 84,
+// plane scope ending at the query 84, nested success and lower bound 84, named positive
+// fraction test 153, named motion squared 150, condition-local intersection status 84.
+// NOT kept: the narrowed scopes tie and the initialized output grows the body.
+// The result slot and the clip output’s spill partner still differ.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2859,6 +2864,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Reading of retail's relative arm: direction j and k load ahead of the relative-length branch and i in both arms
 // (the skip arm at 0x266ed0, the join at 0x266ed6), all three then feeding the facing dot from registers, where the
 // first dot (after the velocity normalize) reads them from memory in both builds.
+// Other actor-index field reference or pointer 384/384, contact object handle 168,
+// shared threshold distance 379, nested very-close tests 350, explicit qualified outcomes 168,
+// complete view-state selection 619, named shared-target object handles 168.
+// NOT kept: the field alias inserts an address addition. The explicit outcomes and handles tie.
+// The contact head SIB and player iterator registers still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

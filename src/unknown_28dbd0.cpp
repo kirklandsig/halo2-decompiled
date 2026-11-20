@@ -93,6 +93,8 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // MiniMax C (11-19): no new form, no lower score (173): the frame stays 0x11c against retail's 0x118 (the helper gives its whole 12-byte cross vector a home where retail spills cross j and k as scalars at +0x20 and +0x28 with the sine at +0x24), and the rotation still takes the cosine with fcos before fsin where retail takes the sine first; every form that reaches retail's frame scores above 173.
 // Second header, merged into this note (173, was 173): frame 0x11c versus retail 0x118 (ours spills a rotation cross
 // term to +0x2c where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
+// Earlier score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
+// where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
 // M3 lane 11 r113 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): own `{}` blocks (slot sharing) around
 // the flag-2 arm's axis cross and rotation 173, around the creation tail 173, around the flag-4 arm's transform 173, around
@@ -641,6 +643,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // the helper's dot as `dot3f(arg_2, arg_1)` 173; the projection as `(1.0f - cosine) * dot` 173; the rows as `+=` of the
 // axis and cross terms 173; the rows summed axis, cross, vector 173 (all the same code); the trig through cosf/sinf 185;
 // the three scales vector first re-measured 245 (1231 B).
+// In the rotation helper, a planar heading snapshot for projection/cross/cosine scale,
+// alone, each pair, all three, and all three through the vector setter. All eight score 226 at 1209 bytes.
+// NOT kept: frame stays 0x11c, with the request and transform displaced. Original helper and body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

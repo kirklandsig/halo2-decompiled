@@ -1673,6 +1673,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // (2848 B: 0x193250 shrinks to 72 bytes against retail's 100 and this function then expands it, so not kept); the add
 // loop's minimum as retail's three-way (`type <= 3 ? 1 : type == 4 ? field_5fc : height`, the arms behind retail's `cmp
 // edx, 3` at 0x7eaea and `cmp edx, edx` at 0x7eaef) 872 (2784 B, register-masked aligned 269 against the body's 267).
+// Complete positive admission, nested summary/capacity scopes, summary rejection with positive
+// capacity, positive summary with capacity failure, or missing-summary rejection 871 each.
+// Common admission result 886, positive machine-validation region 894, positive admission with
+// dword histogram 911. NOT kept: five forms tie. The dword form reserves 0xb0 and is shorter.
+// The opening lookup still expands and the upper-capacity selector remains a call.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

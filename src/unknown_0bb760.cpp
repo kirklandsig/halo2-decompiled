@@ -792,6 +792,11 @@ void function_3dd10(long object_index, bool force);
 // by-reference pin helper with early returns (the form a matched neighbour uses) 189 (the running sum becomes a memory
 // add); the scan count bound by `long const &` for the first scan's bound 86, the mask updated through a `dword &`
 // 86, the weight summed through a `real &` 86 (all three the same code: only the found block's hue registers swap).
+// Indexed tint entry after the white store 238; advancing tint entry 307;
+// independent live choice-count and array lookup 180; guarded choice count 97;
+// supplied-color test before the tint entry 106; signed scan with conditional mask accumulation 873;
+// separate selection admission and threshold 219; positive weight predicate first 108.
+// NOT kept: The saved object/tint roles, signed scan and blend publication still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

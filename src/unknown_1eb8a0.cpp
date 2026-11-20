@@ -738,6 +738,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // order 603 (same code); the three step clamps through one forced-inline helper returning the step 688 (2873 B); the first
 // step clamp as one ternary 607; the alignment dot as `dot3f(a, d)` 603. Retail's alignment dot reads d from its stack home
 // into EAX (a in ECX), pos stays in EBP and the time globals in EDI.
+// Select the zero-tick sample before the dot, bracketing the tick conversion. Branched pointer
+// 672/672, conditional pointer 674/674, branched vector copy 622/623, conditional vector copy 667/670.
+// NOT kept: all regress and shorten the body past retail length. The supplied direction still takes
+// EBX at entry. Original sample selection and body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

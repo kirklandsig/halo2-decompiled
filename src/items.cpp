@@ -893,6 +893,10 @@ struct s_item_collision_bsp
 // separate paired-product vector 193; separate left and up vectors 194; all three basis
 // vectors 246. NOT kept: all regress. The transformed plane's j input still misses its
 // retail XMM home through the three rows.
+// Shared left coefficient 190, left and up coefficients 190. Basis field references or pointers 190/190.
+// Left axis value 271, three independent axis values 350, embedded rotation reference or value 190/338.
+// NOT kept: aliases and coefficients tie. Axis copies grow the body. The transformed-plane XMM homes
+// and pending x87 spin scale still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
