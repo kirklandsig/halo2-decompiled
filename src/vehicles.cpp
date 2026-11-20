@@ -3538,6 +3538,14 @@ real g_47ff30 = 2.5f;
 // scale lead: the elevation takes XMM7 (retail XMM3), so 1.0, boost and the maximum speed sit one register low
 // (XMM6/5/3 against XMM7/6/5); the rates pointer goes to EBX and is copied to EDX at each 0x2053c0 call (retail loads
 // it into EDX once); the reciprocal is formed after all three clamps (retail after the first).
+// M3 lane 5 r214 (fast; control 672): dead longs at the function top K = 0..5 672 each (no symbol-count phase); the three
+// mass products reading the field with the final scaling through vector3f_scale on the field 711 (3224 bytes; retail's
+// frame 0xfc and first difference +0x66, but each product re-reads the field where retail loads it once); the elevation
+// passed straight to the approach (no elevation local) 737; the fractions and the speed fraction as divisions by the
+// maximum (no named reciprocal) 737; the fractions as `PIN(...) / maximum_speed` with no bounded locals 704 (3217 bytes:
+// the generated reciprocal lands after the first clamp like retail's but is the first operand of each product, where
+// retail multiplies the bounded value by it, the named-local form); that with the mass-field forms 704. Retail's
+// `mass * fraction^2` copies the mass and multiplies by the dying square (ours multiplies the square in place).
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

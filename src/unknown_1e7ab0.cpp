@@ -562,6 +562,13 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // the seat pointer 456; the definition pointer folded into the seats expression 117 (same code); the seat index typed
 // long 199; the parent re-read from the unit for the iterator call 117 (same code). Case 4's parent stays in ECX
 // because retail's call sets ECX before EDX (0xd0590's declared order), so BLOCKED-BY 0xd0590 stands.
+// M3 lane 5 r214 (fast with 0x1e83c0/0xd0590/0xd05c0/0xdb210/0x1e8d50, all MATCH; control 117): HELD order (0xd0590 as
+// (object_index, iterator) everywhere) re-measured 110; on it the entry through the existing 0x1e8d50 156 (2312 bytes):
+// retail's code through cases 10-14 and 2, then case 4's definition pointer in EDX (retail reuses EAX) and the bit2/bit3
+// temporaries in ECX/EDX (retail EDX/ECX); on that the seat pointer as `seats + seat`, the flag tests nested, the seats
+// read without a definition local 156 each (same code); the flags through `seats[seat]` without the seat pointer 424
+// (2308 bytes, the load folds retail's add). Case 15/18 and later rotations (retail reuses the dying source register
+// for the `lea`) are on main too. Code back to main.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
