@@ -5407,8 +5407,8 @@ public:
 };
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray, long ignore_object_index, long ignore_unit_index);
 byte function_11f470(real lo, real hi, real value);
-long function_189060(long object_index, short value, real scale, point3f const *position,
-	vector3f const *direction, long tag_index);
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction,
+	real scale, long tag_index);
 
 /* the vehicle's suspension: for each of its graph's function animations
    whose marker it has, a ray down from the marker finds how far the ground
@@ -5551,8 +5551,8 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 		}
 		if (*(long *)(definition + 0x288) != NONE && largest_change > 0.3f && update)
 		{
-			function_189060(vehicle_index, NONE, PIN((largest_change - 0.3f) * 1.6666667f, 0.0f, 1.0f), g_468788,
-				g_4687a8, *(long *)(definition + 0x288));
+			function_189060(vehicle_index, NONE, g_468788, g_4687a8,
+				PIN((largest_change - 0.3f) * 1.6666667f, 0.0f, 1.0f), *(long *)(definition + 0x288));
 			sounded = true;
 		}
 		if (changed)
