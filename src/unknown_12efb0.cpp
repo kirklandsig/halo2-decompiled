@@ -814,6 +814,15 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // with the low byte of the -1 it also stores to the record, while this build keeps the slot in a 16-bit register and holds
 // the -1 in ecx; the byte at each use and the char and signed-char slot measure 666 to 700, and the record's three initial
 // stores sit before the palette read here and after it in retail, but moving them into the palette branch measures 725.
+// M3 lane 15 r113 (fast with 0x12e5e0/0x12e960/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH; control 607): reading
+// retail again, its NONE stays in EAX from the `or eax, -1` after the 0x130f60 call through the whole palette arm (the
+// +0xd4 tag test compares `cmp edi, eax` after all the inlined accumulations) and into the fallback store, so that web
+// has seven uses; this body tests the tag against an immediate. Lane 10 r86's lead patch (its build/r86) re-applied on
+// this base 693 (3820 B, aligned 128, register-masked 33; NONE reaches the tag test there, in EDX, and the result keeps
+// EAX). On that lead: the result declared at function scope 693, declared ahead of the out value 693, the out value
+// declared at function scope and reset per cluster 693, the out value declared ahead of the cluster record 693 (all
+// the same code), the flag declared ahead of the out value and the call 697. Declaration order does not move the
+// result/NONE pair. Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

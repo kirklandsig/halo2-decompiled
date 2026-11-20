@@ -2255,6 +2255,14 @@ void function_269250(long clump_index, long actor_index);
 // Created-arm index before creation, after creation or after its success test 87/87/87.
 // Separate indices at transfer/success, arm entry, or transfer/after creation 87/87/87.
 // NOT kept: All capture lifetimes tie and retain the SSE score comparison and pool reloads.
+// M3 lane 15 r113 (fast with 0x268840/0x1e46c0/0x268bb0/0x269040/0x269250/0x2694d0/0x269580, all MATCH; control 87):
+// the in-arm compare re-measured 126 (480 B: retail's x87 score compare and the selection/score/best homes at
+// +0x14/+0x18/+0x1c, but the selection also held in EDI, the pool read from the walk at each use where retail caches it
+// in EBX, and the found-bit block placed after the score code where retail places it ahead of the clump test; matched
+// 0x268840 gets retail's walk layout from the same helper). On the in-arm form, each the same code (126): the found arm
+// storing the selection before the best; the compare written `best < score`; the selection and best declared at
+// function scope and set per actor; the score declared ahead of the team test; the walk step reading the activity flag
+// from the global at each step as 0x268840 does.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
