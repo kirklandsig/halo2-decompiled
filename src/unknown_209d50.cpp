@@ -206,6 +206,59 @@ static inline void *function_xc5914d(long thread_index, short size)
 // stepped by the size the same five; with a size local and no result local (`frame->size = offset + size; return
 // data + offset`) 92/92/83/92/92 (264, 264, 272, 264, 264 bytes); with no frame local (the frame read at each use)
 // 112/112/106/103/112 (248-256 bytes). No form spills the pointer: the allocator's locals do not decide it.
+// M3 lane 5 r207 (fast with 0x2099f0, which stays matched; volatile-free forms; control 12, volatile-free 95 at 266 B):
+// the arm stepping the pointer to the current slot (`arguments += argument_index`) with the result kept separate 95,
+// that with `result = NULL` first in the arm 83 (277 B); the result taken from the frame data ahead of the allocation 115
+// (298 B); the arm as a forced-inline step returning whether it evaluated, `if (step(...)) result = NULL;` 95; `result =
+// NULL` right after the evaluation call 93 (268 B). Re-measured: a done flag with a ternary return 95 (284 B; the
+// convention then takes the parameter count in EDX, `ret 0xc`, and the frame loads through the reference in EBX).
+// Reading: retail's frame takes EAX because the result copy is made only after the second frame load; every volatile-
+// free form gives the pointer and the result one web, so the pointer takes EAX and the frame ESI.
+// Round 116 (m3 lane 13, fast with 0x2099f0; volatile-free forms, control re-measured 95 at 266 bytes): a `long *const *`
+// to the pointer with the element read through it 95; the result filled by `memcpy(&result, &arguments, sizeof(result))`
+// 95; `(void)frame;` ahead of the initialisation test 95; the pointer declared `long *const` 95; the size as
+// `(long)parameter_count * sizeof(long)` 95 (12 with the volatile, the same code). All promoted into one register.
+// M3 lane 10 r130 (fast with 0x2099f0; volatile-free forms): a dead `(void)&arguments;` 95 (266 bytes) and the pointer held
+// in a one-element array 95 (both promoted like a scalar, diagnostics); `register` on the result copy 95; the pointer declared
+// `long *const` 95. The first difference of every volatile-free form is the first allocation's frame load: ours folds it as
+// `mov esi, [eax + ecx + 0x10]` ahead of the reference's lea and gives EAX to the merged pointer/result, where retail loads
+// the frame through the reference into EAX, so its result copy can take EAX only after the frame dies. A permuter run from
+// the volatile-free body (180 tries, 2100 s) found nothing below 70 (full-image baseline 86).
+// M3 lane 15 r114 (fast with 0x2099f0, 0x2084c0, 0x208570; volatile-free forms, testing whether a CSE copy
+// (two locals with one initialiser) keeps the result and the pointer apart): the result taken from a frame-top
+// read (`frame->data + frame->size`) ahead of the allocation 120 (303 bytes: the two size loads are not merged,
+// both pointers spill, `ret 0xc` with the thread index in EAX, and 0x2084c0/0x208570 lose their matches in the
+// reduced image); that read written through the allocator's size pointer 120 (same code); the allocator taking its
+// result from that read 85 (284 bytes, still two size loads); the first allocation written out in 0x207cf0's
+// `short size` form with the pointer and the result both initialised from `data + size` 94 (264 bytes: CSE merges
+// the two into one lea, which goes to EAX for both, no copy, no spill), with the result declared first 94 (same
+// code). The 16-bit size loads are never merged, and a merged register initialiser is coalesced like a named copy.
+// M3 lane 7 r192 (fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): the element pointer
+// computed ahead of the count/type test 95; `result = NULL` between the expression update and the index increment 95; the
+// pointer named `parameters` 95 and the result named `values` 95 (names do not decide the merge); the element ahead of the
+// test with `result = NULL` first in the arm 83 (277 B, the null-first shape); the type test nested under the count test
+// with the expression node named 95. Every form still gives the pointer and the result one web in EAX.
+// M3 lane 4 r231 (fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): `long *result = NULL;`
+// at the top with `result = arguments;` after the first allocation 95; that assignment after the third allocation, just before
+// the initialisation test 95; the frame reference as a `s_hs_macro_frame *&` bound to the thread's field, the initialisation
+// reading through it 95; the result copied through a `long *const &` binding of the pointer 95; the frame reference declared
+// after the result copy 95 (all 266 B: the pointer and the result still share EAX, no spill). All restored.
+// M3 lane 12 r158 (h2m fast with 0x2099f0, which stays matched; volatile-free forms, control 95 at 266 B): the three
+// allocations in an inline helper returning the arguments block and handing back the two index slots through out-pointers
+// 124 (237 B); the parameter count read once into a `long count` for the size and the count test 87 (280 B); `result =
+// NULL` first in the arm with the index increment ahead of the expression update 83 (277 B); `long *result;` assigned
+// from the arguments after the initialisation block, just before the test 95; both pointers initialised NULL at their
+// declarations and assigned afterwards 95. Re-measured: the argument index read into a local for the test and the
+// element 95. In the null-first shape the expression pool is reloaded per block (not held in EBX), so nothing presses the
+// pointer into retail's spill.
+// M3 lane 15 r117 (fast with 0x2099f0, which stays matched; volatile-free forms): the expression pool read once into a
+// local after the allocations for the init block and the type test 95 (266 B); the allocation named `result` and copied
+// into the arm's pointer, which is then cleared before the call, 83 (277 B: the pointer in EAX for the whole function,
+// the NULL in ESI copied at the end); a redundant `result = arguments;` at the top of the init block 108 (305 B), just
+// before the count/type test 95; the result returned through `long *const &kept = result` 95. Diagnostics: the
+// volatile-free body built /O2 /arch:SSE /Gr 95 and /O2 /Ob1 /Gr 95 (the file's flags do not decide the merge). Retail
+// never writes EAX between the early copy and the arm's reload of the home into EAX, so its result and pointer are two
+// variables where every volatile-free form here makes them one.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

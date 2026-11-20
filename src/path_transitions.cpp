@@ -181,6 +181,16 @@ short function_26fe20(long object_index, s_object_marker *markers, short capacit
 }
 
 /* the point at distance t along a vector from a point */
+/* Dot product of two vectors, with the components summed in the order j, k, i
+   (the same helper as src/path.cpp's; 0x26f3f0's projections sum in this order). */
+static inline real dot3f_jki(vector3f const *a, vector3f const *b)
+{
+	real sum = a->j * b->j;
+	sum += a->k * b->k;
+	sum += a->i * b->i;
+	return sum;
+}
+
 static inline void point_along_vector(point3f const *point, vector3f const *vector, real t, point3f *result)
 {
     result->x = vector->i * t + point->x;
@@ -474,8 +484,41 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// The parameters are declared with the stack ones in retail's push order and the register ones (entry in EDI,
+// pathfinding in EAX, surface_index in ECX) in the order retail's caller sets them up, last to first.
+// score 218 (was 218): r123, r125, r209 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// MiniMax I (11-19): no new form, no lower score (218): the entry still leaves the pathfinding root in the register this build
+// picks instead of copying it into EBX, and the actor index is still read in the case that uses it rather than into EAX before the
+// dispatch; case 1's paired-edge block still keeps the edge vector's j and k in the other two xmm registers (retail xmm3 = j,
+// xmm4 = k and the 1.0f in xmm6) and the margin still loads the radius into a fresh register where retail multiplies the inverse
+// in place.
 // score 218 (was 218): r123 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// MiniMax B (11-20): no new form, no lower score (218): retail's prologue saves EBX/EBP/ESI and loads the actor
+// into EAX (the pathfinding data is copied to EBX) where this build keeps the pathfinding data in EAX and
+// pushes only ESI; the case-2 `state->pathfinding` -> `pathfinding` spelling was measured at 265 and 294 in an
+// earlier round, so the entry allocation, case 5's colours and the projection sum's order are unchanged. The
+// frame (0x40) and case 2 still agree. No form found this round.
+// score 218 (was 218): r123, r125 unchanged. Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
+// M3 lane 5 r209 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, aligned 70, register-masked 24). Diagnostics:
+// 8-32 dead initialised locals at the top 218-220 (the entry never moves); lane 11 r113's recipe (actor first in the
+// definition, path.cpp's declaration and call; corners a, b, c, d; case 5's position first) re-measured 283 at 1284 B,
+// aligned 42, register-masked 7: only case 1 differs, as first.j/first.k exchanging XMM3/XMM4, 1.0 and the scratch
+// exchanging XMM6/XMM7, and the margin's fresh radius load; on it 1-32 dead locals repeat with period 8
+// (283/291/279/284 x5, 279 at 1280 B only moves the origin dot's operand order, the margin never goes in place);
+// no-code reads of first.k, first.j, both, either order, or as dead locals 286-292 (masked 18-26). On the recipe:
+// the margin as `radius / first_length` 283, the fraction as a division by the first length 283, `real const
+// inverse` 283 (all the same code). On this body: case 1/6's corners as const references 218 (same code).
+// M3 lane 11 r123 (fast with 0x270d90/0x270400/0x30bf0): actor_index declared first alone 218 (same code); with corners
+// a, b, c, d 281 (1284 B, aligned 70 -> 59, register-masked 23 -> 15: entry exact). The 4 extra bytes are the margin:
+// retail multiplies the reciprocal in place by the radius in memory (`mulss xmm2, [eax]`), ours loads the radius
+// (`movss; mulss`), so everything after case 1 is shifted. Compile-only screens (signature: projection load order, margin
+// side; retail 4,8,0 and in place, ours 8,4,0 and load): 0-15 extra referenced locals, no change; the margin as
+// radius * inverse, staged `margin = inverse; margin *= radius`, reference-bound, radius / first_length, through a radius
+// local (that keeps the radius in a register, not retail's memory operand): never in place; the size test as 2 * radius,
+// swapped, or radius + radius, with either margin order: no change; no-code reads of the radius or the reciprocal: no
+// change. Diagnostic: the margin goes in place only when the reciprocal has no other use (the fraction left unscaled).
 // M3 lane 11 r113 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 76): actor_index declared first (the stack
 // order and register arguments unchanged; definition, declaration in src/path.cpp and the call together) with corners a, b,
 // c, d gives retail's entry byte for byte (pathfinding arrives in EAX and is copied to EBX, the actor loaded into EAX, out
@@ -646,10 +689,6 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // base 274 (aligned 199 -> 158); with case 5's direction declared first 274; case 2's position declared first 280;
 // both 276; both dot3f calls taking `&first` first 274. Left on it: the entry, first.j/first.k and the 1.0/radius*2
 // constants in swapped XMM registers, and the margin formed in the radius register, not in place in the reciprocal's.
-// Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
-// 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
-// of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
-// for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
 // Round 58 (m3 lane 1, fast; aligned = difflib count, base 199): the actor read through its address into a
 // function-scope local, as a volatile read: after the surface 323 (1288 bytes, aligned 135: EBX entry as retail,
 // but pathfinding arrives in ECX and the surface index in EAX), after the result 326, ahead of the surface 358
@@ -795,21 +834,6 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // margin product turned 214, with the test written `radius * 2.f < first_length` 214; second_distance computed first 219.
 // Case 2 and everything after case 5's actor test agree; the entry (actor_index loaded at entry, pathfinding moved to EBX)
 // shifts every line of cases 1/6 and 5.
-// Y603: Complete root-vertex table values/field references at dispatch/case scope,
-// original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
-// original body restored, early root/actor ingress and projection schedule remain.
-// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
-// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
-// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
-// Native early root/actor ownership and paired projection/limit scheduling remain.
-// DH380: Original five-test corner admission partitioned at four boundaries, positive nested then
-// rejecting-prefix returns: 219/219/219/219/219/219/219/219. NOT kept: no native ingress recovery;
-// original complete geometry, tests, result, helpers and body restored.
-// N395: Actual actor/surface/parent index eight-byte homes, signed/unsigned individually
-// 371/371/219/219/370/370; complete signed/unsigned 398/398. NOT kept: native values are narrow,
-// ingress is not recovered, and wider actor/parent homes grow the frame/extent. Original body restored.
-// N397: Current retained-graph corner orders acbd/acdb/adbc/adcb/bcad/bcda/bdac/bdca 357/355/357/353/356/354/356/353.
-// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // T65: On the retained shared-vector/exact-case-2 graph, complete case orders 2/5/16,
 // 5/16/2, 5/2/16, 2/16/5, 61/5/2, 5/61/2, 5/2/61, 2/5/61:
 // 377/329/377/354/219/329/377/377. NOT kept: ties/regressions; original full body restored.
@@ -1082,10 +1106,43 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Early root and actor allocation still differ. Second-edge start/end/both addresses after the
 // first normalization 311/335/229, or inside the positive-length arm 334/336/361.
 // Both addresses with the second vector scoped there 229/361. All forms regress.
+// M3 lane 6 r203 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 60/60): the corners form (actor_index
+// declared first in the definition, the declaration and 0x270d90's call, corners a, b, c, d) re-measured 281 (aligned
+// 46/46), with case 5's position read before its direction 283 (aligned 33/33: only case 1's float block left, the
+// first vector's j/k in xmm4/xmm3 for retail's xmm3/xmm4, the 1.0 in xmm7 for xmm6, and the margin loading the radius).
+// Dead-local scan on that form, K = 0..31 (diagnostic, removed): period 8, K = 2, 10, 18, 26, 27 give 279 at 1280 B
+// (aligned 36: the origin dot reorders, the margin's radius load goes) and the rest 283-291; no K moves the j/k roles
+// or the margin. On that form: no-code reads of first.k then first.j ahead of its fill 292, j then k 289 (diagnostics);
+// the second edge vector computed before the first is normalised 360.
+// Retail retains the root in EBX before the actor load at entry.
+// First, second or both end vertices read at their differences 355/336/339.
+// Direction scaled from the vertex directly or through one vertex base
+// 379/379, and with both end reads 354. Staged projection and origin
+// products 220, and with both end reads 339.
+// NOT kept: all scores rise. The current frame and input handoff remain.
+// M3 lane 10 r125 (fast with 0x270d90 at 286, 0x270400/0x30bf0 MATCH; control 218): lane 11 r113's actor-first recipe rebuilt
+// (actor_index first in the definition, path.cpp's declaration and call; corners a, b, c, d; case 5's position first) 283
+// (1284 B, +0x27, aligned 42). On it: the radius read through a `source` pointer to the state's source record for the test
+// and the margin 283 (same code); one `vertices` base for the four corners 291; the two distances computed second first
+// 283 (aligned 46); both projections in one fraction expression 283 (same code); the upper bound named once as `upper`
+// 283 (aligned 41). Diagnostic: two dead initialised locals 279 (1280 B, but the margin still loads the radius into a fresh
+// XMM6; the length only matches because the origin dot's a.z load moves). Body unchanged.
+// Case-five indices before the vertex table, word position/direction first 358/358,
+// long 262/262. Word index at each address, position/direction first 266/219.
+// Direction vertex reference 265, both vertex references 271.
+// NOT kept: all scores rise and the early root copy and actor load remain unresolved.
+// Parent then combined, paired or individual corner guards 218/218/218. Parent and first-edge
+// guard then second edge 218. Positive parent before corner guard 218. Positive parent and first
+// edge before second-edge guard 218. Parent guard before positive corners 218. Combined parent
+// and corner guard 218. NOT kept: All tie at retail length and leave the entry loads different.
+// The root and actor are still acquired in different registers before the dispatch.
+// Vertex table in the paired case 219, in the actor case 218, separate in both cases 219.
+// Shared vertex table after or before surface lookup 307/230, after result initialization 307.
+// Typed surface table with separate vertex reads 220 or a shared read 306.
+// NOT kept: All variants preserve the length but leave the first difference at the EBX save.
 // @retail 0x26f3f0
-bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
-    s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
-    s_type_c3b527 const *parent_point, long parent_node_index,
+bool function_26f3f0(long actor_index, s_type_c3b527 const *entry, s_type_f17a25 *state,
+    s_pathfinding_data *pathfinding, long surface_index, s_type_c3b527 const *parent_point, long parent_node_index,
     long *parent_node_index_out, s_type_c3b527 *out, long *out_node_index)
 {
     /* The existing caller's declaration uses const, but retail writes this
@@ -1100,8 +1157,8 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         if (parent_point && (long)surface->vertices[0] != NONE && (long)surface->vertices[1] != NONE &&
             (long)surface->vertices[2] != NONE && (long)surface->vertices[3] != NONE)
         {
-            point3f const *b = &pathfinding->vertices[surface->vertices[1]];
             point3f const *a = &pathfinding->vertices[surface->vertices[0]];
+            point3f const *b = &pathfinding->vertices[surface->vertices[1]];
             point3f const *c = &pathfinding->vertices[surface->vertices[2]];
             point3f const *d = &pathfinding->vertices[surface->vertices[3]];
             vector3f first, second;
@@ -1113,8 +1170,8 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
                 real second_length = function_30bf0(&second);
                 if (second_length > 0.f)
                 {
-                    real projected = dot3f((vector3f const *)&parent_point->point, &first);
-                    real origin = dot3f((vector3f const *)a, &first);
+                    real projected = dot3f_jki((vector3f const *)&parent_point->point, &first);
+                    real origin = dot3f_jki((vector3f const *)a, &first);
                     real inverse = 1.f / first_length;
                     real fraction = (projected - origin) * inverse;
                     if (first_length > state->source.radius * 2.f)
@@ -1147,8 +1204,8 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         return result;
     case 5:
         {
-            vector3f direction = *(vector3f const *)&pathfinding->vertices[surface->vertices[3]];
             point3f const *position = &pathfinding->vertices[surface->vertices[2]];
+            vector3f direction = *(vector3f const *)&pathfinding->vertices[surface->vertices[3]];
             vector3f_scale(&direction, -1.f, &direction);
             if (actor_index != NONE && function_270400(actor_index, 0x05000534, 0x05000049,
                 position, &direction, NULL, (long *)start_out, NULL, parent_node_index_out))

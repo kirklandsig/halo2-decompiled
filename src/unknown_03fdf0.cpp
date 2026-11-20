@@ -597,6 +597,47 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // (diagnostic: first takes its own slot shared with material as in retail, but the cursor also leaves mode's home: frame
 // 0x4c, plain `ret`); the parameters as (mode, cache_index) at the definition and the call 2; a leading unused parameter
 // (mode then a front-end stack parameter) 2 (both the same code). So the front-end convention does not decide first's slot.
+// M3 lane 12 r147 (fast with 0x404b0; control 2): the loop index declared and stepped in the `for` beside n 4 (its start
+// moves above the guard, first still in mode's home); diagnostic, the weight read ahead of the entry test 81 (first still
+// in mode's home, so the order of the induction variables' first uses does not decide it); the entry loop in a
+// forceinline helper taking (cache_index, first, selection) 2; the part context declared at the function top 2; the
+// selection in 0x40e90's spelling (`long`, NONE, then the ternary) 2 (all the 2s the same code).
+// M3 lane 7 r191 (fast with 0x404b0/0x3fdf0; control 2): an explicit entry cursor declared before the `for` and stepped in its
+// increment (`++n, ++entry`) 5 (first at +0x14 as retail; the cursor start and its spill sit above the loop guard); the
+// same cursor declared right after first, ahead of the copy, 163 (490 B); a pointer-bounded loop over the entries with the
+// index from `first + (entry - entries)` 165 (528 B); material declared at block scope after the selection and assigned
+// NONE in the loop 2; the entry as `entries + n` 2 (both the same code).
+// M3 lane 11 r127 (fast with 0x404b0, which is 186 in the reduced image either way; control 2): the copy's source named
+// as an entry cursor (after or before first), passed to the copy and stepped at the end of the loop body, 163/163 (490
+// bytes: cache_index then arrives in ECX, and 0x404b0 rises to 206); the block's entry array named as a pointer after or
+// before first, used for the copy and `&entries[n]`, 2/2; first read back from the current counter after the store 2
+// (all three 2s the same code). Retail's first and the loop cursor take different homes though their final code does
+// not overlap, so at allocation time the cursor must start before first's last read (the index start).
+// M3 lane 14 r119 (fast with 0x404b0; control 2): a `long` material index (`movzx`, then a dword compare with 0xff) 76;
+// postfix steps for n and part 2; the selection as `mode == 0 ? ~0UL : (mode == 2 ? 0x10 : 0x20)` 2; `geometry != NULL`
+// 2 (the 2s the same code). Diagnostic, restored at once: first stored to a draw record after the loop (first live
+// across the cursor's range) 36 (517 B): first then leaves mode's home, so its slot follows a range overlap, and
+// retail's preheader order (the cursor's start ahead of first's last read) is what gives that overlap without code.
+// Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 2 at every K (not a symbol-count tie).
+// M3 lane 4 r228 (fast with 0x404b0; control 2): the index start read through a `long const &` bound to first 2; the
+// index declared once ahead of the loop and assigned in the body 2; first declared `long const` 2; the entry pointer
+// declared once ahead of the loop 2; the entry pointer and the index both declared ahead of the loop 2 (all the same
+// code: first keeps the mode parameter's home). Permuter (fast, annealed, 600 s): 55 tries, none below 2.
+// M3 lane 13 r126 (fast with 0x404b0/0x3fdf0; control 2): the counter declared `long n;` ahead of first and set in the
+// `for` 2 (same code); the entries base named at the function top for the copy and `&entries[n]` 28 (cache_index then
+// arrives in EAX, first still in mode's home); the material as one ternary 76; `chosen` as a ternary 52; a `short`
+// counter 152. The permuter was skipped (the round's baseline full check took 17 minutes).
+// M3 lane 3 r279 (fast; control 2): first typed dword 2; the index as `n + first` 2; the selection a long with NONE 2; the mode
+// test as `mode == 0 ?` 2 (the four the same code); material declared with its NONE ahead of the weight read 4.
+// M3 lane 14 r127 (fast with 0x404b0; control 2): `long first = previous; current = first;` 158 (492 bytes); the selection
+// computed at the function top 165 (492 bytes); first declared at function scope and assigned in the block 2 (same code);
+// the loop counting the running index from first (`index - first < count`, entry `&entries[index - first]`) 8 (first still
+// in mode's home, the counter's zero store moves below the guard); material declared without a value ahead of first and
+// assigned NONE in the loop 2 (same code).
+// M3 lane 14 r130 (fast with 0x404b0/0x3fdf0; control 2): `first` renamed to sort first or last 2/2; `material` renamed
+// to sort first or last 2/2; the entry loop as `while (n < count) { ...; ++n; }` 2 (all the same code); as a guarded
+// `do ... while (++n < count)` 159 (492 B). Diagnostic: 0, 1, 2, 3, 4, 6, 8, 10 dead initialised longs at the top 2 each
+// (round 119 measured odd 9..39), so first's slot is no symbol-count tie at any parity.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

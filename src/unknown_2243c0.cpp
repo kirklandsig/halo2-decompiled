@@ -217,6 +217,15 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax C (11-20): no new form, no lower score (117): read the earlier rounds' forms; the only lower one known is the
+// score-8 chain, and it rests on one-use element bindings and moved stores, so it is kept only with an exact match. The
+// stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged.
+// MiniMax B (11-20): no new form, no lower score (117): the fallback tag index is still zero-extended through
+// EAX where retail masks the 32-bit value in place (`and edx, 0xffff`); the in-place mask moves the tag table
+// from EDI into ECX and hoists its load above the frame (152), while the `(word)` cast keeps the table in EDI
+// but gives `movzx eax, dx` (117), and masking the index inside the subscript reproduces retail's `and` only
+// with that same table move. The stage and pass homes (ESI and EBP against ours' EBP and EDX) and the unfused
+// element loads still differ. No form found this round.
 // score 117 (was 117): the fallback masks the tag in place in retail (`and edx, 0xffff`, ours `movzx eax, dx`), the stage
 // and pass element loads are unfused in retail, and the definitions take other scratch registers; +0xd8 is read late.
 // MiniMax C (11-15): no new form kept, no lower score (117, was 117): the fallback path still masks the tag index with
@@ -765,6 +774,62 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Word fallback lvalue with shader/pass/material lvalues singly or all 117/117/117/117;
 // all with masked fallback 152. NOT kept: The dword mask hoists the table, and the word
 // forms leave the EAX zero-extension and fused element loads.
+// M3 lane 2 r109 (fast with 0x2243c0 and 0x224d90; control 117): the +0xd8 flags read just before 0x173ba0 on main's body
+// 149 (0x224d90 36: the convention changes); the group dword named once for both compares 165; the stage and pass indices
+// written argument first (`arg_3 + local_7`, `arg_4 + local_8`) 117 (same code); the pass element bound to a named byte pointer
+// before its +4 read 117 (same code); the fallback re-reading the tag word from the object (`*(word const *)(local_2 + 0x1c)`)
+// 117 (same code: the read is forwarded to the local, still `movzx eax, dx`).
+// M3 lane 4 r219 (fast with 0x2243c0 and 0x224d90, both MATCH each time; control 117). On lane 13 r59's score-8 chain
+// rebuilt here (8, the same eight lines): the material definition named through the tag-data accessor 8, the pass
+// definition named 8, the pass record (the +0x20 element) named 8, the material tag named before its lookup 8 (all the
+// same code: the named pointers fold and no scratch register moves). Main's body with the head of matched 0x173cb0
+// (`dword group = TAG_GROUP(tag)` and the fallback `tag & 0xffff`) 135: the fallback is then retail's in-place
+// `and edx, 0xffff` with the table still in EDI, but the group read fuses (`mov eax, [eax+edi]` where retail forms the
+// address, `add eax, edi; mov eax, [eax]`) and `shl` moves after `push edi`; the instance pointer with a group dword and
+// `& 0xffff` 135; TAG_GROUP at each compare with `& 0xffff` 135; main's instance pointer read twice with `& 0xffff` 152
+// (re-measure). Reading: the unfused group read needs the instance pointer read twice, the table stays in EDI only when
+// the group is read once; no form gives both.
+// M3 lane 12 r148 (fast with 0x2243c0/0x224d90/0x173ba0, all MATCH each time; main 117): lane 1 r59's reference chain
+// rebuilt on this main (the type-14 search through vertex_input_index) 8 at +0x9e, the same eight lines (pass definition
+// EDX where retail reuses EAX, material tag ECX for EDX, material definition EDX for EDI, the zero's `xor` after the
+// definition's +8 read where retail has it between the tag's `and` and `shl`). On the chain: the first cache zero between
+// the pass and material definitions 23; all four zeros ahead of the pass definition 60; all four between the two
+// definitions 13; the material definition named in a plain local before its +8 read 8 (same code); that definition bound
+// as `void const *const &` from the tag-data accessor 92 (552 B). Body unchanged.
+// M3 lane 14 r121 (fast with 0x2243c0/0x224d90/0x173ba0, all MATCH each time; main 117): lane 1 r59's reference chain
+// rebuilt on this main 8 at +0x9e (the same lines). Reading by the scratch next-fit order (EAX, ECX, EDX): ours takes
+// EDX for the pass definition because the dead pass-element `lea` moved the pointer past EAX, retail takes EAX there,
+// then EDX for the material tag, puts the zero in EAX between that tag's `and` and `shl`, and gives the material
+// definition EDI, the dying table base, so in retail every scratch register is busy at that load. On the chain: the
+// material lookup through an accessor that takes the instance table as a parameter 8, the pass lookup through it 8,
+// both 8, the material lookup as the tag-data accessor of the record-tag accessor 8 (all the same code); the material
+// tag bound as `long const &` just ahead of its lookup 36; the material tag read into a long ahead of the four zeros
+// with the lookup after them 41, masked at that read 41, with that long also passed to 0x1c590 81, the reference form
+// of that 81; the four zeros between the two definitions re-measured 13. Body unchanged.
+// AC597: Tag table refreshed after virtual dispatch, with direct word/mask, named word/mask, masked
+// handle in place, typed word/mask and a shared signed/unsigned slot: 165/152/165/152/152/165/152/155.
+// M3 lane 16 r152 (fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH unless noted; main's body unchanged at 117;
+// match-only screens on lane 1 r59's reference chain, rebuilt on this main 8 at +0x9e with the same lines). On the chain:
+// one pointer local walked from the pass element through its tag data and the +0x20 block (`cursor = element; cursor =
+// tag data; cursor = *(cursor + 0x20)`) 8 (same code: the reassigned local splits); the pass definition named and then
+// read through a `byte const *const &` alias of that local 36 (the definition then loads into EAX as retail, but the
+// +0x20 read takes EDX where retail stays in EAX, and arg_3 moves to EBP); the material definition named and read
+// through such an alias 92 (552 B: it takes EDI as retail, the index stays ECX and the zero's `xor` late); the pass tag
+// read through a `long const &` alias of its local 59; both definition aliases 86 (545 B, 0x224d90 36). A named local
+// aliased by a const reference gives the same code as binding the reference to the accessor's temporary, so the
+// listed 36/92/86/59 forms have no second spelling. Diagnostic (a scratch global, reverted at once): the pass tag's
+// table offset stored after the material lookup 143 (553 B: the pass element's load unfuses instead of ECX staying
+// busy). Reading by next-fit over EAX, ECX, EDX: retail's choices at the last two lookups (pass definition EAX twice,
+// material tag EDX, zero EAX, material definition EDI) are what next-fit gives if ECX stays busy from the pass tag's
+// load to the material definition's and EDX until the +0x20 read; nothing in this body uses either that late.
+// M3 lane 12 r156 (fast with 0x2243c0 and 0x224d90, both MATCH; control 117): the tag local not const 117 (same
+// code); the group tests reading the instance at each use with no instance local 165; the group test negated with the
+// fallback arm first 117 (same code); the material tag named once for 0x1c590 and its lookup 146 (524 B); the stage and
+// pass indices named where they are summed 117 (same code).
+// Unshifted pass-record base 164; shared material tag field address 152; native pass array header 117.
+// With grouped cache defaults those three give 161/153/120. Native pass array with unshifted
+// base or material field address 164/152. NOT kept: ties or regressions. The fallback still
+// zero-extends into EAX instead of masking EDX and the stage/pass loads still fuse.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

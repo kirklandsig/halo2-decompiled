@@ -310,6 +310,12 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // costs 0x1e4290 its own match (44: the flag then arrives in CL, where retail keeps it on the stack and stores back to it).
 // Retail's slot counts (stack-tracked) agree with ours everywhere else below +0x90; the actor offset's home has three
 // references in retail (one store, a reload at each tail setter) and two in ours (one reload into EBX).
+// M3 lane 6 r202 (fast with 0x29c860/0x29cb10, both stay matched; control 378 [aligned 107]): retail 0x299460 hands the
+// left vector only to 0x210770 as its read-only input (vector in EBX, out in EDI, as ours), so no retail write explains the
+// reload. Diagnostic, reverted at once: the 0x299460 call through a volatile function pointer 473 [124] (2837 B: the call's
+// convention changes). On the `{-local_8.j, local_8.i, 0.0f}` form (393 [53] re-measured, 2815 B): the side test through
+// dot_product2d 393 (same code); left_i declared after the left vector 393 (same code); with local_25 computed ahead of
+// the angle call 402 [102] (2825 B). Body unchanged at 378.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

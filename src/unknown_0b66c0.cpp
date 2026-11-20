@@ -523,6 +523,58 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // sum named where it is computed (`long end = start + count;`) 28 [6]; the clamped size in a `size` local with the early
 // source 28 [39]; the sign tests as nested ifs 21 [match] (same code); the source named before the length 37 [84]; the
 // scan on a `text` copy of the string with the source at the call 28 [6].
+// M3 lane 2 r109 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched unless noted): the shared length helper as a
+// do-while ending `while (++length < 0x1ff)` 21 [match] (same code); the scanned character named in a char local 32 [match]
+// (0xb61d0 15: the byte takes DL and the counter EDI); the compare as `length >= start + count` 21 [match] (same code);
+// no early source, the string advanced by start after the clamp (`string += start`), plain string 41 (104 bytes) [35],
+// with the volatile string 43 (108 bytes) [6]. A /Gd compile-only first pass (all parameters on the stack) of the natural
+// body with a plain string holds the string in EBP for the whole function (so LTCG passes it in a register) with retail's
+// scan registers (counter ECX, walk EDX) and retail's `lea edx, [edi + esi]` compare; nothing else wants EBP there, since
+// the destination is first loaded after the scan. A plain form needs the string reloaded in that first pass.
+// M3 lane 14 r115 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the function as a member of the
+// 512-byte text type with the destination as the object (volatile string parameter kept, natural body) 28 [9] (start EDX
+// for life, walk EDI, as the natural body), without the volatile 48 (93 bytes) [88]; the same with the count tested first
+// 40 [37]; a const member with the string as the object, count first, source at the copy 45 (103 bytes) [81]; the natural
+// body reading start once through its own address at the copy's sum 35 [25].
+// M3 lane 10 r130 (fast with 0xb5f10/0xb61d0; [0xb5f10]): a plain string with `start += (long)string` after the clamp
+// re-measured 41 [35] (the string arrives in ECX and lives in EBX, the result is rematerialised at two exits, `ret 4`; retail
+// keeps the false result in AL across the scan and re-reads the string from its slot); a plain string with the result
+// assigned from the length test itself (`result = start + count <= length; if (result)`) 49 (92 bytes, `setle`) [34]; a
+// plain string read once through its own address at the scan with `start += (long)string` after the clamp 40 (104 bytes)
+// [6], the same with the count tested first 39 (103 bytes) [35], the address read at the add instead 40 (104 bytes) [6];
+// 0-40 dead initialised locals at the top of the first of these 40 each (no symbol-count state).
+// M3 lane 15 r114 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): a plain string parameter read once
+// through its own address with a volatile read at the late source (natural body) 28 [6] (the string stays a stack argument,
+// one exit with the result in AL as retail, but start arrives in EDX and stays, walk EDI); that read at `start +=` after the
+// clamp 40 [match] (start ECX for life, walk EDI, counter EDX, the read folded into the add); with the volatile parameter: the
+// source written `start + string` at the call 28 [6]; `start += (long)string` right after the compare 36 [6]; a length helper
+// copy taking the parameter by reference and walking a cursor declared after the counter, natural body 28 [6], with `start +=`
+// after the clamp 40 [match]. A /Gd compile-only first pass shows the volatile natural body with retail's scan (start EDI,
+// count ESI, walk EDX, counter ECX, `lea edx, [edi + esi]` compare) but the source summed into EAX and the destination loaded
+// late into EDI; LTCG then passes start in the first pass's walk register (EDX). Every `start +=` form moves start into a
+// scratch register in that first pass (walk EDI). Retail's start is modified in its own EDI (`add edi, eax`) and passed in ECX.
+// M3 lane 7 r192 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the volatile-free kept body re-measured
+// 49 (92 bytes) [6] (string EBP, start arriving in EDX, the destination left on the stack); on the kept body the sign tests as
+// `0 <= start && 0 < count` 21 [match]; the scan on `&string[0]` with the source as `&string[start]` 21 [match]; the string
+// parameter advanced in place (`string += start;` where the source is named) 47 (107 bytes) [6]; the source declared (not
+// assigned) after the result 21 [match], before it 21 [match]. The walk ECX / counter EDX split stands.
+// M3 lane 4 r231 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): with a plain string the
+// string renamed `buffer` (sorting before the destination) 49 (92 bytes) [6], the destination renamed `substring` (sorting
+// after the string) 49 [6], the string `char const *const` 49 [6] (names and const do not move the string/destination
+// contest for EBP); on main's body the clamp as `count = count + 1 > 0x200 ? 0x200 : count + 1;` 35 [104]; the length
+// declared at the top and assigned after the sign tests 21 [match] (same code). All restored.
+// M3 lane 12 r158 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the function as a const member
+// of the 512-byte text type (string = the object, destination as a text pointer, natural body, start tested first, the
+// source as `bytes + start` at the copy, both caller lines through the casts) 48 (93 bytes) [82] (the object arrives in
+// EBX, start in EDX, three register arguments; the destination is loaded at entry into EBP as retail); a plain string read
+// once through its own address (`char const *const *reference = &string;`): at the scan with the source at the copy 40 (104
+// bytes) [6], at the source with the scan plain 40 [6], at the scan with main's early source 49 (92 bytes) [6], in main's
+// early source with the scan plain 49 [6].
+// M3 lane 15 r117 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the compare as
+// `length - start >= count` 35 [35]; `count <= length - start` with `0x200 < count` 35 [35]; the length test assigned
+// to the result (`result = start + count <= length; if (result)`) with the volatile string 40 (104 bytes) [6]; the sign
+// and clamp tests as `count >= 1` and `count >= 0x201` 23 [match] (compares with immediates; the walk ECX / counter EDX
+// split unchanged); a plain string with one volatile read of its own address at the scan, the early source plain, 39 [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

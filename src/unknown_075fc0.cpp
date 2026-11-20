@@ -69,6 +69,8 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     }
     return local_0;
 }
+// score 356 (was 356): frame 0x38 against retail's 0x34; `this`, NONE, zero and index registers differ (retail EDI, ESI,
+// EBX, EBP), and 0x75910's result is tested as a long (BLOCKED-BY 0x75910); earlier notes below.
 
 // MiniMax I (11-17): no new form, no lower score (356): re-measured the baseline; the first difference is still at
 // +0x2, retail's prologue reserves 0x34 with the connection in EDI, the NONE state in ESI and the channel index in
@@ -99,11 +101,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // locals still take, and dropping a home means writing that local's expression out at each of its uses, which
 // this lane's rules forbid; the goto/label shape that carries the result is kept, and the body stands.
 // MiniMax R (11-15): no new form, no lower score (356): the frame is still 0x34 against retail's 0x38 (local_18 still has a stack home where retail keeps it in EBP), and the observer, channel and result homes differ.
-// MiniMax S (11-16): score 356 (was 356): no new form; retail's prologue reserves 0x34 with four register saves
+// MiniMax S (11-16): earlier 356 (was 356): no new form; retail's prologue reserves 0x34 with four register saves
 // and keeps the connection in EDI, the NONE state in ESI and the channel index in EBP, where this build reserves
 // 0x38, keeps the observer in EBP and the argument in ECX, so the two disagree from the first instruction on;
 // the timed-out callee's byte result is the other open item and lives in another file.
-// score 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
+// Earlier 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
 // and counter homes remain.
 // MiniMax R (11-10): no new form, no lower score (356); the frame is still 0x38 here against retail's 0x34, this
 // still takes a frame pointer where retail keeps the connection in EDI, the packet-availability result still lands
@@ -319,6 +321,62 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // flag is then reloaded where retail keeps it in BL), with the pacing form 438 (aligned 223). The has-host arm as
 // `arg_3 = arg_4 = true` 355 (one point, re-measured). The window flags read into a byte local first 356 (same code);
 // the window size as `(flags & 8) ? 128 : 0` 397 (1369 bytes, re-measured).
+// M3 lane 1 r127 (fast with 0x765c0/0x75910/0x76520, all MATCH; control 356): local_6 declared ahead of local_26 356
+// (other code: the two NONE stores swap); local_7 declared ahead of the two NONE locals 356 (same code); local_10
+// declared and then assigned from 0x76520 356 (same code); `this` used directly in place of the arg_0 copy 356 (same
+// code); local_2 declared ahead of the channel search 399 (1372 B). Body unchanged.
+// M3 lane 14 r116 (fast with 0x75910, 0x76520, 0x765c0, 0x77940 and 0x89030, all MATCH; control 356): the elapsed count
+// taken from the 64-bit snapshot 426 (1385 B); `local_7 = false` declared ahead of the search (a constant start) 409
+// (1373 B); the send test with the has-host term first 419 (1356 B); diagnostic, the has-host flag started false and set
+// in the call's arm (match-only) 402 (1376 B); the reliable window passed straight into the ratio 356 (same code).
+// 0x75910's byte result stays BLOCKED-BY 0x75910 (its file was another lane's this round).
+// M3 lane 5 r208 (fast with 0x75910, 0x76520, 0x765c0, 0x77940, all MATCH each run; control 356, difflib-aligned 195).
+// Nothing kept. The channel's first flag read at each of its five uses, no local copy, 429 (1388 B: retail's two
+// separate tests for the two budget picks, but each reloads the flag where retail tests BL); the forced-send store
+// written between the two budget picks 442 (1392 B), ahead of both 356 (same code); the secondary output flag as a
+// copy of the forcing flag at its one set 416 (1356 B; frame 0x34 as retail, registers as before); 0x75910 returning
+// `bool` (`return owner && owner->active;`, its declaration here to match: its file was free this round and 0x75910
+// still matches) 355, retail's `test al, al`, one point, not kept, so the BLOCKED-BY 0x75910 item is now only that one
+// point. Reading of retail's exits: the `rate == 0` test sits out of line just ahead of the shared exit and falls
+// into it; the first threshold is `setge; test; je` with no result store and the second a plain `jl`; the
+// reliable-bytes failure stores `false` in two separate arms; the `budget < 0` exit is a literal `xor al, al` return
+// of its own. The reliable-bytes failure as two nested tests with `local_2 = false` in each failing arm (retail's two
+// stores) 402 at 1369 B, retail's length, aligned 195 as the control (a higher count, not kept); the same with the
+// failing arms first 413 (1380 B). The byte homes differ only in the last pair (retail: the secondary output flag +0x16, the packet flag
+// +0x17, which it also keeps in BL; ours the reverse).
+// M3 lane 13 r122 (fast with 0x75910/0x76520/0x765c0/0x77940/0x89030, all MATCH each time; control 356, aligned 194):
+// `bool local_16 = false;` declared beside `local_7` ahead of the has-host call (a constant initialiser moved up; retail
+// stores two false bytes from a zero register there) 353 (1370 bytes: `xor ebx, ebx`, `cmp [eax], ebx` in the search and
+// the two `bl` stores appear as retail's, the index in EBP); with 0x75910 returning bool (round 136's held form) and the
+// has-host arm as `arg_3 = arg_4 = true` 352; 0x75910 bool alone re-measured 355, with the chained arm 354; the two NONE
+// locals ahead of the found test on the bool callee 406 (1371 bytes); on the 352 form every channel field read as
+// `((s_75fc0 *)&arg_0->channels[local_0])->` with no pointer local 436 (1389 bytes), the pacing test as `!(local_17 > 0
+// && 1 / local_22 > local_17)` 352 (aligned 189), the same on the 353 form 353 (aligned 190). Left on 352: NONE in ESI and
+// `this` in EDI at entry, the channel base `this + index * 0x528` (0xa8 folded into every field), the 0x76520 result in
+// BL, the window size in EDI, the counter snapshot as two plain loads, and the has-host flag set in its arm (match-only).
+// M3 lane 1 r132 (fast with 0x75910/0x76520/0x765c0/0x77940, all MATCH; control 356): retail's snapshot is two plain
+// loads of the counter and its reset stores the low word it already loaded for the elapsed count and then the high word
+// (no composition). Through the 64-bit view `*(__int64 *)&g_4e6398` (src/unknown_075870.cpp's spelling): snapshot and
+// reset 429 (1330 B, frame 0x30), the snapshot only 431 (1341 B), the reset only 419 (1356 B): with retail's plain copies
+// the body is 39 bytes short, so the composition is hiding missing code elsewhere. Re-measured round 122's
+// `bool local_16 = false;` beside local_7 353 (1370 B, a declaration move, three points); with the 64-bit reset 384.
+// M3 lane 5 r215 (fast with 0x75910, 0x76520, 0x765c0, 0x77940, all MATCH each time; control 356, aligned 245): the payload
+// floor nested under one sign test (`if (local_6 >= 0) { local_33 = local_6 - local_30; if (local_33 <= 48) local_33 = 48; }
+// else local_33 = 0x600;`, retail's single `test edi, edi; jl` with the 0x600 arm last) 402 at 1369 bytes, retail's
+// length (aligned 240, 411 lines: the tail is then retail's, but every later offset moves against the head's 0x38 frame);
+// the same with 0x600 as the initialiser and no else 402 (1369 B, aligned 245); with the floor as a ternary 402 (same code
+// as the first); with the failing branch first 402 (aligned 245); in place on a copy of local_6 402 (same code as the
+// first). Diagnostics, reverted at once (an unreachable call given a local's address keeps it memory-homed; not a keepable
+// form): the connection so 401 at 1369 bytes; the channel pointer so 480 (1419 B); the channel index so 352 (1373 B); the
+// index and the connection 410 (1359 B). None gives retail's entry (NONE in ESI, `this` in EDI, the index in EBP), so the
+// entry's register split is not a memory-homed local.
+// M3 lane 6 r212 (fast with 0x75910 MATCH in every form; control 356). Reading: retail's two zero-register byte stores
+// ahead of the has-host call are local_7 and local_8 (local_16's false comes later with the -1.0 default), so the
+// has-host flag starts false and is set in the call's arm (match-only); the counter snapshot is a plain 8-byte copy that
+// the later low/high reads do not reuse, where ours composes it into EBX:EBP up to the reset. 0x75910 returning bool with
+// local_16 declared beside local_7 and the chained has-host arm 352 (four points, not kept); with the flag form 403; the
+// flag form alone on the bool callee 403; the snapshot and reset through `*(__int64 *)&g_4e6398` 429 (1330 B), with the
+// flag form 419; the flag form with the connection read through link_connection_get at each use 397.
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,

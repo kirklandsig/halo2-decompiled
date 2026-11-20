@@ -448,9 +448,31 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 97 (was 97): the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
+// score 77 (was 97): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
+// Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
+// MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
+// score 77 (was 77): the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
+// blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
+// Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
+// The choice count, mask and blend use other homes. The first scan exits on inequality.
+// Earlier observation: The late variant byte restores the output/delta registers and keeps retail length.
+// the object takes ESI and the bank/entry web EDI (retail EDI and ESI); in the first scan the count is
+// the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
+// the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
+// and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), the scan leaves on `!=`, the
+// blend's fstp precedes the variant byte compare and the not-found exit joins the clamp entry's 1.0 load.
+// Earlier 97 (was 123): The object and tint entry exchange EDI and ESI.
+// Earlier 77 (was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
+// The zero ordinal store falls after the guard in this build and before it in retail.
+// Earlier (97, was 123): The object and tint entry exchange EDI and ESI.
+// Earlier (77, was 97): the object takes EDI and the bank/entry web ESI as retail; in the first scan the count is
 // spilled and the eligible mask holds EBP (retail: count EBP, mask and weight in stack slots), and the scan leaves on `!=`.
 // The late variant byte restores the output/delta registers and keeps retail length.
+// The blend store, weight-scan exits and fallback unity reload also differ.
+// MiniMax S (11-19): the outer tint loop is now a redundant `if (0 < count)` guard around the for (the guide's form, as
+// at 0x2e5590); it emits no extra code but moves the object into EDI and the tint web into ESI as retail has them, and
+// the index's zero store now sinks after the guard's jle where retail stores it before.
 // The object and tint-table saves still trade ESI and EDI. The blend store, weight-scan exits and fallback unity reload also differ.
 // MiniMax I (11-17): the variant byte read before the blend value 123 (was 132): the byte is then held in BL across the fmod and the blend's store follows the call, so the compare moves behind it, but the colours pointer now takes EBX where retail uses EBP; the not-found exit still joins the clamp entry's 1.0 load and the first scan still leaves on inequality.
 // MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
@@ -734,6 +756,10 @@ void function_3dd10(long object_index, bool force);
 // unsigned late variant byte 97.
 // Kept the late unsigned byte with signed decoding at the index calculation. The byte compare gates the
 // lookup and the index sign-extends at use as in retail. The 0x54 frame and 1034-byte length agree.
+// Last ordinal, eligibility mask or weight initialized at scan entry 199/191/286;
+// mask and weight 275; all three 312; all three with signed bound 562.
+// Last ordinal gates selection 232; one choice-name read 106.
+// NOT kept: regressions in the scan and saved-register layout.
 // M3 lane 13 r113 (fast with 0x1318d0, 0x131a00, 0x3dd10, control 97): the first scan as a do-while like the second 230
 // (995 bytes); a redundant `if (0 < count)` around the outer loop 77 (not kept, steering: the object then takes EDI and
 // the bank/entry web ESI as retail, but the index's zero store sinks after the guard's jle, where retail stores it
@@ -743,11 +769,22 @@ void function_3dd10(long object_index, bool force);
 // The 0x54 frame and 1034-byte extent agree. The object and tint entry exchange EDI and ESI.
 // Lexical ranks for the object and tint entry before definition or after output score 97 each,
 // alone and in all four pairs. Neither saved register moved. The blend spill and signed scan still differ.
+// choice count named for the number of available choices 97; choice count named for the number of
+// tint permutations 97; eligible flags named for the choice mask 97; count after the mask in lexical
+// order 97; shared read-only choice array at the positive-count entry 262; shared read-only choice
+// array at the first scan 117; shared array with an advancing weight-scan cursor and indexed
+// selection 196; shared array with indexed weights and an advancing selection cursor 116.
 // shared object datum lookup 97; shared object header lookup 97; shared slot object lookup 97; shared object
 // datum with native tag index 106; native tint block size and displacement 97; native tint block and position
 // fields 97; native tint block, position and variant fields 97; complete native tint object with shared datum
 // lookup 97. All eight previews retain 1034 bytes and the same initial register mismatch. The native tag-
 // index form adds spill differences. Opening executable source restored.
+// M3 lane 8 r191 (fast with 0x1318d0/0x131a00/0x3dd10, control 97; the guard diagnostic 77 re-measured): the first scan
+// bounded by `entry->count` read in its condition 647 (1316 B, unrolled), with the guard 645; `inline` on both HSV
+// converter definitions 224 (they inline and three matched callers are lost), on the rgb-to-hsv one 237, on the
+// hsv-to-rgb one 143. Compile-only (object in EDI as retail there, not exact): the signed scan still unrolls with the
+// weight as an aggregate member, through an inline scan helper writing weight, mask and last through pointers or
+// returning the weight, as a while, with a dword index, with `continue`, or with the choice pointer stepped. Body unchanged.
 // M3 lane 9 r144 (fast with 0x1318d0/0x131a00/0x3dd10, control 97): a one-object screen (this file with the two
 // callee files, frame 0x54 as retail) unrolls the signed first scan by four with or without /GL, so the unroll is
 // not an LTCG effect; it stays rolled only with a volatile weight, last, eligible or variant (each of the four is
@@ -756,6 +793,44 @@ void function_3dd10(long object_index, bool force);
 // added first, `weight = weight + w` and a weight test all still unroll. Real trials: the scan locals declared
 // ahead of the count test 315 (999 bytes); the first scan as a `for` with `!=` 97 (same code); a signed eligible
 // mask 97 (same code); weight/eligible/last/variant declaration order 97; target before the running sum 100.
+// Round 127 (m3 lane 10, fast with 0x131c20's file listed): the found block as a call to the existing 0x131c20
+// (result, lower, upper, 1, blend) stays a call, 398 (838 bytes); with `inline` on 0x131c20's definition still a call
+// 404 (0xd1a30 149, 0x131d60 52, 0xc0c80 319 lost); with a forceinline declaration of it in this file still a call 398;
+// the choices read through an inline element accessor with a signed `<` first scan 638 (unrolled, 1309 bytes); the
+// three clamps through a by-reference pin helper 197.
+// indexed current bank 311, second-bank cursor 98, cursor with bank-end bound 191, ordered cursor bound 191,
+// indexed bank-end bound 271, ordinal from cursor 278, unsigned bank ordinal 282, inclusive last choice 667.
+// NOT kept: The second-bank cursor keeps 1034 bytes at 98. Other bank forms raise the score or move the frame.
+// The inclusive last-choice bound unrolls the signed weight scan.
+// M3 lane 15 r113 (fast with 0x3dd10/0x1318d0/0x131a00/0x14bfc0/0x2c0b70, all MATCH; control 77): the choice count read
+// from the entry field at its test and both scan bounds 77 (same code); the three channel clamps through a forceinline
+// by-reference pin helper with early returns (the form a matched neighbour uses) 189 (the running sum becomes a memory
+// add); the scan count bound by `long const &` for the first scan's bound 86, the mask updated through a `dword &`
+// 86, the weight summed through a `real &` 86 (all three the same code: only the found block's hue registers swap).
+// Indexed tint entry after the white store 238; advancing tint entry 307;
+// independent live choice-count and array lookup 180; guarded choice count 97;
+// supplied-color test before the tint entry 106; signed scan with conditional mask accumulation 873;
+// separate selection admission and threshold 219; positive weight predicate first 108.
+// NOT kept: The saved object/tint roles, signed scan and blend publication still differ.
+// Unequal bank bound with and without the guard 77/97. Named stored-color count or byte
+// extent 86/86. Tag lookup after extent or after address 260/87. One supplied/default
+// color assignment by value or by source address 298/298. The choice count and mask
+// homes and the signed weight-scan exits still differ.
+// One choice-name read with nonmatching skip, nested mismatch, selected-name first or
+// complementary admission 86/86/189/86 at the unequal bound. All four signed forms 645.
+// NOT kept: the signed bound unrolls the scan, and the other forms regress at retail length.
+// The ordinal zero, choice count and mask homes still differ.
+// Pre-guard bank ordinal with signed/unequal do-while latch 97/97, guarded ordinal with signed
+// do-while 77. Advance in latch 97, inclusive last bank ordinal 253, pretested unequal bank 97,
+// ordinal-based guard 97, nonzero bank guard 97. NOT kept: the pre-guard forms lose the native
+// object/tint register roles, and the inclusive bound shortens the body.
+// Weight, selection or both read-only choice references 77/77/77. Shared choice array and both
+// references, at scan entry or positive-count admission 89/272. Immutable scan-entry array 89.
+// Signed weight bound with reference or shared array 636/582. NOT kept: the signed forms unroll.
+// The reference and array forms leave the ordinal, weight and mask homes unresolved.
+// Conditional last-ordinal, total-weight and mask updates on the rolled unequal scan,
+// alone or grouped, and all three in the indexed loop 189 each. NOT kept: the
+// pre-guard zero store and the count/mask homes stay different at retail length.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
@@ -764,87 +839,91 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
     s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
     color3f *output = (color3f *)(object + *(short *)(object + 0x126));
     long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
-    for (long i = 0; i < count; ++i)
+    if (0 < count)
     {
-        s_colour_choices_ab const *entry = &((s_colour_choices_ab const *)definition->tint_sets.address)[i];
-        if (color_mask & (1 << i))
-            output[i] = colors[i];
-        else
+        for (long i = 0; i < count; ++i)
         {
-            output[i] = *(color3f *)g_468710;
-            long choice_count = entry->count;
-            if (choice_count > 0)
+            s_colour_choices_ab const *entry = &((s_colour_choices_ab const *)definition->tint_sets.address)[i];
+            if (color_mask & (1 << i))
+                output[i] = colors[i];
+            else
             {
-                long last = NONE;
-                dword eligible = 0;
-                long variant = 0;
-                real weight = 0.0f;
-                real index = (real)i;
-                real seed = (real)fabs((*(real *)(object + 0x6c) * 744.1241455078125f + *(real *)(object + 0x64) * 315.89312744140625f + index * 431.1289367675781f) + *(real *)(object + 0x68) * 587.1294555664062f);
-                real selection = (real)fmod((double)seed, 1.0);
-                seed = (real)fabs(index * 0.7121099829673767f + *(real *)(object + 0x68));
-                real blend = (real)fmod((double)seed, 1.0);
-                byte variant_index = *(byte *)(object + 0xb1);
-
-                if (variant_index != 0xff && definition->model_tag_index != NONE)
+                output[i] = *(color3f *)g_468710;
+                long choice_count = entry->count;
+                if (choice_count > 0)
                 {
-                    byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
-                    variant = *(long *)(*(byte **)(model + 0x54) + (signed char)variant_index * 0x38);
-                }
+                    long last = NONE;
+                    dword eligible = 0;
+                    long variant = 0;
+                    real weight = 0.0f;
+                    real index = (real)i;
+                    real seed = (real)fabs((*(real *)(object + 0x6c) * 744.1241455078125f + *(real *)(object + 0x64) * 315.89312744140625f + index * 431.1289367675781f) + *(real *)(object + 0x68) * 587.1294555664062f);
+                    real selection = (real)fmod((double)seed, 1.0);
+                    seed = (real)fabs(index * 0.7121099829673767f + *(real *)(object + 0x68));
+                    real blend = (real)fmod((double)seed, 1.0);
+                    byte variant_index = *(byte *)(object + 0xb1);
 
-                long j = 0;
-                while (j != choice_count)
-                {
-                    s_colour_choice_ab *choice = &entry->choices[j];
-                    if (!choice->field_1c_4 || choice->field_1c_4 == variant)
+                    if (variant_index != 0xff && definition->model_tag_index != NONE)
                     {
-                        last = j;
-                        weight += choice->weight;
-                        eligible |= 1 << j;
+                        byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
+                        variant = *(long *)(*(byte **)(model + 0x54) + (signed char)variant_index * 0x38);
                     }
 
-                    ++j;
-                }
-                if (eligible && weight > 0.0f)
-                {
-                    real cumulative = 0.0f;
-                    real target = selection * weight;
                     long j = 0;
-                    do
+                    while (j != choice_count)
                     {
                         s_colour_choice_ab *choice = &entry->choices[j];
-                        if (eligible & (1 << j))
+                        if (!choice->field_1c_4 || choice->field_1c_4 == variant)
                         {
-                            cumulative += choice->weight;
-                            if (j == last || cumulative >= target)
-                            {
-                                hsv3f a, b, mixed;
-                                real inverse = 1.0f - blend;
-                                function_1318d0(&choice->lower, &a);
-                                function_1318d0(&choice->upper, &b);
-                                if (fabs(a.hue - b.hue) > 0.5f)
-                                {
-                                    if (b.hue > a.hue) a.hue += 1.0f;
-                                    else b.hue += 1.0f;
-                                }
-                                mixed.hue = a.hue * inverse + b.hue * blend;
-                                if (mixed.hue > 1.0f) mixed.hue -= 1.0f;
-                                mixed.saturation = a.saturation * inverse + b.saturation * blend;
-                                mixed.value = a.value * inverse + b.value * blend;
-                                function_131a00(&mixed, &output[i]);
-                                break;
-                            }
+                            last = j;
+                            weight += choice->weight;
+                            eligible |= 1 << j;
                         }
+
                         ++j;
-                    } while (j < choice_count);
+                    }
+                    if (eligible && weight > 0.0f)
+                    {
+                        real cumulative = 0.0f;
+                        real target = selection * weight;
+                        long j = 0;
+                        do
+                        {
+                            s_colour_choice_ab *choice = &entry->choices[j];
+                            if (eligible & (1 << j))
+                            {
+                                cumulative += choice->weight;
+                                if (j == last || cumulative >= target)
+                                {
+                                    hsv3f a, b, mixed;
+                                    real inverse = 1.0f - blend;
+                                    function_1318d0(&choice->lower, &a);
+                                    function_1318d0(&choice->upper, &b);
+                                    if (fabs(a.hue - b.hue) > 0.5f)
+                                    {
+                                        if (b.hue > a.hue) a.hue += 1.0f;
+                                        else b.hue += 1.0f;
+                                    }
+                                    mixed.hue = a.hue * inverse + b.hue * blend;
+                                    if (mixed.hue > 1.0f) mixed.hue -= 1.0f;
+                                    mixed.saturation = a.saturation * inverse + b.saturation * blend;
+                                    mixed.value = a.value * inverse + b.value * blend;
+                                    function_131a00(&mixed, &output[i]);
+                                    break;
+                                }
+                            }
+                            ++j;
+                        } while (j < choice_count);
+                    }
                 }
             }
+            output[i].red = output[i].red < 0.0f ? 0.0f : output[i].red > 1.0f ? 1.0f : output[i].red;
+            output[i].green = output[i].green < 0.0f ? 0.0f : output[i].green > 1.0f ? 1.0f : output[i].green;
+            output[i].blue = output[i].blue < 0.0f ? 0.0f : output[i].blue > 1.0f ? 1.0f : output[i].blue;
+            output[i + count] = output[i];
         }
-        output[i].red = output[i].red < 0.0f ? 0.0f : output[i].red > 1.0f ? 1.0f : output[i].red;
-        output[i].green = output[i].green < 0.0f ? 0.0f : output[i].green > 1.0f ? 1.0f : output[i].green;
-        output[i].blue = output[i].blue < 0.0f ? 0.0f : output[i].blue > 1.0f ? 1.0f : output[i].blue;
-        output[i + count] = output[i];
     }
+
     function_3dd10(object_index, true);
 }
 
@@ -885,218 +964,6 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 
-// score 171 (was 91): the flag mask and success share BL, and the input spills early.
-// The earlier allocation was different.
-// retail keeps the destination pointer in EBX and the source pointer only in its stack
-// retail saves EBX after the flag test and spills the input after the count test.
-// Earlier at 89: retail keeps the destination pointer in EBX and the source pointer only in its stack
-// slot; ours keeps the destination in EDI (the 0x131c20 result register). Round 147's plain-loop forms are
-// at the end of this note.
-// Round 31 (lane D): unchanged; retail keeps the destination pointer in EBX and
-// retail keeps the destination pointer in EBX and the source pointer only in its stack
-// a plain for over i with the destination `base + count` named in each pass and the source
-// stepped at the end of the body (round 42; the comma countdown loop is gone): the false result in CL, both
-// false exits and the epilogue are retail's. Left: the destination takes EDI (the 0x131c20 result register)
-// where retail gives it EBX, so the source walk sits in EBX at the loop top (retail: stack slot only) and the
-// blend/scale cursors take EBX (retail EDI); the source and entry-offset slots are swapped.
-// Round 31 (lane D), earlier 91: unchanged; retail keeps the destination pointer in EBX and
-// retail keeps the destination pointer in EBX and
-// the source pointer in its stack slot, while ours keeps the source in EBX and the destination in
-// EDI (which also feeds the 0x131c20 result register), and retail counts the colours with a signed
-// 32-bit division by 24 (magic 0xAAAAAAAB) where our (long) cast gives the cheaper 16-bit-range
-// sequence. Round 31 (lane D): the multiply block written green, red, blue with the value first
-// 90 (one point better, not kept), the same block with green and blue exchanged 105 each, the
-// block with the value written after the component 91 each, the destination formed after the count
-// test 99, the source in a separate variable 179, a byte-pointer destination 179, a temporary copy
-// of the colour 91, the destination pointer advanced at the end of the body 93, an indexed
-// destination 148 and a constant source 91; every one restored.
-// Earlier: retail keeps the destination pointer in EBX and the source pointer
-// Earlier (91, was 91): Retail keeps the destination pointer in EBX and the source pointer
-// Earlier (91): unchanged. Retail keeps the destination pointer in EBX and the source pointer
-// only in its stack slot, while ours keeps the source pointer in EBX and the destination in EDI;
-// retail also counts the colours with a signed 32-bit division by 24 (magic 0xAAAAAAAB), while our
-// (long) cast lets MSVC use the cheaper 16-bit-range sequence, so the value agrees but the
-// instruction sequence does not.
-// Earlier: retail tests the count against zero before it computes
-// Earlier (91, was 91): retail tests the count against zero before it computes
-// Earlier (91): retail tests the count against zero before it computes
-// the output pointer, ours computes the pointer first, and retail keeps the
-// running offset in another register, so the test, the two leas and the
-// loop's bookkeeping differ.
-// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure; positional/aligned, base 84/55 = full 91):
-// plain `for (i = 0; i < count; i++)` with `current = &base[count + i]` and `result = true` at the body's
-// top/end/after the copy 129/55 each (563 bytes: source kept in its stack slot as retail, but the false
-// result takes BL, EBX is pushed at entry, the two false exits merge and the destination takes EDI);
-// on it `&base[i + count]`, `base + count + i`, a source pointer, current declared first, the copy first,
-// `colors` name, count declared before the array, a flags local 129/129/129/129/143/129/113/129; early
-// `return false` 170; result declared in the block 95; `result = count > 0` after the loop 168; result set
-// before the loop 91 (aligned 75); pointer increments in a plain for 97, inside the count test 108.
-// Direct size/24 count 161; const base, entry and function views 91;
-// unsigned count 171; component clamp loop 91; scale loop and both loops 90
-// (one-count gain rejected).
-// current takes edi (the 0x131c20 result register) where retail gives the
-// blend function pointer edi and current ebx, base on the stack. Current declared first 91;
-// count before base 174; current from base each pass 98; copy before the entry 133; memcpy copy 91.
-// Shared count/inner-array/both snapshots 177/164/194; outer-array snapshot 206; outer plus
-// count/inner/both 213/210/228; shared inner index with count and array 188.
-// Round 212: complemented bool/byte/short/long return on plain pointer-body traversal 159/159/131/132;
-// with admitted current lifetime 158/158/129/130 (fast control 91). Original return, pointer lifetimes
-// and traversal restored; saved receiver roles remain.
-// Complete native bounded-color publication 172; with actual output reference 164;
-// with overlap-safe input transfer 214, with both 211. Complete scalar bound results 109;
-// with output reference 116; overlap-safe input 155, with both 152. Original color
-// operations, observations and pointer traversal restored; current/base register roles remain.
-// Complete scalar bounds with overlap-safe input/output reference reach first +0x66
-// at 152/580, but introduce an out-of-line transfer and worsen the total; rejected.
-// Round 212: complemented bool/byte/short/long return on plain pointer-body traversal 159/159/131/132;
-// with admitted current lifetime 158/158/129/130 (fast control 91). Original return, pointer lifetimes
-// and traversal restored; saved receiver roles remain.
-// Latest round: retail keeps the destination pointer in ebx and the source pointer only in the
-// stack slot at E+0x0c, and gives the blend loop's scratch pointer and the second loop's byte
-// offset to edi; ours keeps the source pointer in ebx and the destination in edi, and uses ebx
-// for that scratch pointer and offset. The copy, the blend call and the scale and clamp
-// accesses therefore name different registers.
-// Retail also forms the destination after the count test, and scales red as value*red, green
-// as green*value and blue as blue*value, while ours scales red as red*value, green as
-// value*green and blue as value*blue.
-// Destination formed after the count test 100; the same with the destination built from the
-// object expression 119; the source declared after the destination and not used before the
-// loop 172; the destination passed as a plain pointer 91; the scale multiplies written out 91;
-// the destination taken as &base[count] 91; the two pointer increments swapped 91.
-// Source pointer derived from the destination inside the loop, so that the source induction
-// variable is never used in the preheader 186.
-// Lane 14 r20: a plain `for (i = 0; i < count; i++)` with `&base[count + i]` and `result = true`
-// in the body 149 (563 bytes: VC hoists the result store into the preheader and keeps the source
-// pointer only in its stack slot, as retail, but the false result takes BL with EBX pushed at
-// entry, so the two false exits merge, and the destination still takes EDI); the same inside the
-// count guard 148; with `result = true` before that loop 107; a destination array `base + count`
-// indexed by i 164; the destination pointer stepped at the end of the body 161; red scaled by `*=`
-// and green and blue as `value *` 91 (identical code: VC picks the mulss operand order itself); the
-// destination formed after the count test 99 (again).
-// Round 86: scalar component copy 139; blend-only count 169; scale-only count 170;
-// blend-only function array 173; scale-only function array 139; shared inner counter 105;
-// shared function pointer 91; advancing outer entry pointer 203. Original body restored.
-// Round 52: both value reads through the existing 0xbe8b0 91 (identical code, kept: it replaces that
-// helper's body written out twice); color scale and clamp as inline helpers 91 (identical); the
-// destination assigned first from the object 172 (575 bytes); one colour-array local split into
-// destination and source 182 (586 bytes); a plain `for (i = 0; i < count; i++)` with a per-iteration
-// destination pointer 186 (556 bytes). Screened: the destination declared before the source but
-// assigned after it identical; the source derived from the destination 164; indexed `current[i]`
-// accesses 135. The destination keeps EDI (the 0x131c20 result register) in every form.
-// Round 38 (m3 lane 14, fast): the destination formed inside the count test, before/after `result = true`,
-// 100/99 (576 bytes: retail's test-first order, but the source is stored before the branch and the
-// destination keeps EDI); the blend output passed as `&base[count]` 209 (609 bytes); the source read as
-// `base[i]` with no source increment 161; a plain `for (i = 0; i < count; i++)` with an indexed source and
-// destination 107; that loop stepping only the destination 161.
-// Round 147 (m3 lane 4, fast): a plain `for (i = 0; i < count; i++)` with `current = &base[count + i]`,
-// `*current = base[i]` and `result = true` after the copy 149 (563 bytes; its loop head equals retail's,
-// source and entry offset in retail's slots, but base takes ECX, so the false result takes BL with EBX pushed
-// at entry, and the destination EDI); the same inside `if (count > 0) { result = true; ... }` 107 (572 bytes);
-// a plain for with a walking source (`current = base + count` each pass, `base++` at the body's end) 89 (581
-// bytes: entry, size-first read and division agree, false result back in CL, but base keeps EBX in the loop,
-// the destination EDI, and base/entry-offset slots swap; 2 points, not kept); on it the copy before the entry
-// lookup 141, the source step right after the copy 180, `result = true` before the copy 89 (same), count
-// declared before base 178, the blend call through a forceinline wrapper (diagnostic) 89 (same); an indexed
-// source with a walking destination 161 (575 bytes).
-// Round 42 (m3 lane 13, fast; on the comma loop): destination formed after the count test 100. Plain for with
-// `&base[count + i]`/`base[i]` and the result set in the body 149 (563 bytes: the loop end, slots and scale
-// multiplies are retail's, but the false result takes BL, the source is computed into ECX and the destination
-// into EDI); the same in a count guard with the result set first 107; result at the end of the body 149; an
-// early `return false` for the flag test 178; count declared before base 133; result declared first 149; result
-// scoped to the flag block 157; the blend loop through `entry->functions[j]` 185; the destination stepped and the
-// source indexed 161. On the kept form (89): base renamed source/values/original 89 each; `red *= value` 89;
-// `*current = *base++` 180 (frame 0x28); `base++` right after the copy 180; result set after the copy 89; the
-// copy before the entry lookup 141; the blend result passed as `&current->red` 89.
-// Round 38 (m3 lane 14, fast): the destination formed inside the count test, before/after `result = true`,
-// 100/99 (576 bytes: retail's test-first order, but the source is stored before the branch and the
-// destination keeps EDI); the blend output passed as `&base[count]` 209 (609 bytes); the source read as
-// `base[i]` with no source increment 161; a plain `for (i = 0; i < count; i++)` with an indexed source and
-// destination 107; that loop stepping only the destination 161.
-// MiniMax C (11-14): no new form, no lower score (89): retail keeps the destination pointer in ebx and the
-// source pointer in its stack slot, ours keeps the destination in edi and the source in ebx, which the inner
-// loop then reuses for its function cursor, so the source is written to the stack and reloaded at every loop
-// end. The permuter's best (83) only moves constants into locals and moves the source step ahead of the
-// result store, so it was not kept.
-// b10A (11-17) walk against retail, fast build on r841: offsets (+0x1c flag, +0xb0 entries stride 0x10, function
-// stride 0x28 with blend_name +0x24 and scale_name +0x20, flags +4, lower +8, upper +0x14), count (0xaaaaaaab unsigned
-// /12 then signed /2), the count <= 0 and flag-clear exits (result in CL), the inlined 0xbe8b0 (value 0 on a false
-// 0xbab40; value in xmm5, flags in EAX, lower/upper in ECX/ESI, result in EDI at 0xbe9d1-0xbe9df), the three-component
-// scale, the clamp and the hoisted `result = true` ([esp+0x13], 0xbe959) all agree; no behaviour difference, so only
-// register roles remain: retail's destination lives in EBX and is copied to EDI before the call (0xbe9dd `mov edi,
-// ebx`), its source only in [esp+0x1c] and the entry offset in [esp+0x18] (0xbe954/0xbe95e), while ours puts the
-// destination in EDI and the source in EBX. New: the blend output passed as the expression `base + count` instead of
-// `current` 89 and a separate `out` alias for the clamp 89 (both identical code). Measured 89 on r841 (fast), 581
-// bytes vs retail's 580: retail pads one loop head (`lea ebx, [ebx]`, 0xbea0a), ours two (`lea esp, [esp]`).
-// P595: The destination still takes EDI and the source spills only across the inner loops.
-// typed object tag flag/tint fields 89 (kept, plain). Input end (< or !=) 111/111, output end 169/169,
-// output end with indexed input 174, independent remaining count and ordinal 83,
-// with a separate walking output 106. NOT kept: the 83 form reaches retail length
-// and first +0x6a, but the six-point reduction is below the keep bar.
-// P598: post-increment at blend/scale/both entry lookups 182/166/183. Continue past unnamed
-// blend/scale/both entries 89/89/89. Exact ordinal termination and outer while 89/89.
-// The input cursor still spills across the inner loops and the output stays in EDI.
-// Round 601: copy the input cursor from the output cursor and rebase the output once before traversal 149; put
-// the input copy and output rebase inside the positive-count block 156; advance the input as its colour is
-// copied and advance the rebased output at the latch 165; advance the input after the colour copy and advance
-// the rebased output in a pointer-step for loop 165; walk the two rebased cursors with an independent
-// descending colour count 149; carry the beginning of the output range as the end of the input walk 112;
-// initialize the input cursor before the size read and then rebase the output cursor 106; rebase the output and
-// walk both cursors with the ordinal advanced at the entry lookup 156. NOT kept: rebasing the output at setup
-// reshuffles both cursor homes and raises every score. The input spill and the destination register at the
-// blend call still differ.
-// Round 575: the late input spill and advancing destination in EBX remain unresolved. NOT kept:
-// explicit blend stride 85, scale stride 165, both strides 164, tint-entry stride 93;
-// byte-cursor countdown with returned receiver 187, library copy 83 (retail length, gain below bar),
-// read-only input reference 89, entry post-increment 169.
-// P603. Blend name bound at the guard 89, scale name bound at the guard 111, both names bound 111,
-// indexed blend guard before the record pointer 137, indexed blend name with admitted record 135,
-// both indexed names with admitted blend record 152, all indexed blend metadata 152, both names with
-// the blend sample before the call arguments 111. NOT kept: the blend record still takes the source
-// register, and the forms that get to the retail guard increase the total differences.
-// Round 416: Walking input byte cursor with derived/separate output 89/106; byte
-// offset with derived/separate output 150/164. Independent remaining count on those
-// forms 83/103/151/162. NOT kept: the 83 form reaches 580 bytes and first +0x6a
-// but gains only six. Retail still spills the input after admission and keeps the
-// destination in EBX across the blend call.
-// Clamp with a result assigned on each edge 89/89; one sampled value per
-// channel 117/117; out-of-range stores only, low then high 116/116 or high then
-// low 116/116. Each pair uses an ordinary or fixed current pointer. The input
-// spill and the current pointer's register through the blend call still differ.
-// Retail still spills the input after admitting the count and keeps the output in EBX.
-// Paired stored values ascending/descending 185/155, byte extent ascending/descending 173/173.
-// With a native tint record byte offset 192/128/173/173. The descending pair forms reach retail length.
-// The source spill and destination register across the blend call still differ. The direct scale-name reads restore the guard span and length but raise the total.
-// Tried explicit blend latch 89, explicit scale latch 89, both explicit latches 89, unsigned ordinal 89,
-// read-only input and indexed output 100, blend value before colour operands 89, direct indexed scale name 110, admission result and remaining count 176.
-// The destination now stays in EBX. Retail tests the flag with an immediate and spills the
-// input after positive-count admission. Signed extent result with a guard 173, with late
-// input 183; eligibility refined by extent 176, with an explicit guard and late input 177.
-// Signed/nonzero extent as the final result 138/138. NOT kept: both move success to the
-// return and put the destination in EBP. Separate false exits 191; empty-bank shared exit
-// or positive-count-owned result 150/150; shared exit with late input 196. NOT kept: the
-// 150 forms recover the immediate test but still spill the input early and shrink to 576 bytes.
-// Both now carry the destination in EBX through the blend call. Retail delays saving EBX, tests the flag
-// with an immediate, and keeps the input only in a stack slot. Returned blend destination 211,
-// result from input cursor inequality/advance 166/166, result from final ordinal inequality/positivity 163/163,
-// indexed blend/all phase fields 153/152, indexed blend with returned destination 174.
-// NOT kept: the 163 forms shorten past retail length, and the retail-length forms shrink the frame to 0x20.
-// Numeric result after each colour or from the nonempty count: byte 177/140,
-// signed byte 177/140, word 142/172, dword 143/171. NOT kept: the 140 forms shorten
-// to 562 bytes and use a memory flag test and SETNE. The 142/143 forms shorten
-// past retail and still save EBX early. The late input spill remains unresolved.
-// Input latch with body ordinal or lookup ordinal 89/168, early input advance before metadata 165,
-// destination-only walk with relative source 184, explicit byte bank distance 156, indexed from the
-// object block offset 242, guarded block with output latch 191, named pair count and early copy 141.
-// NOT kept: the input spill and EBX output still differ.
-// Typed object bank size and displacement 171, definition reference 171, tint block reference 167,
-// empty-bank return 179, named flag admission 171, unsigned paired-colour quotient 130,
-// input cursor in the loop initializer 173, object header reference 171. NOT kept: the block
-// reference reaches retail length but gains four. The unsigned quotient omits retail’s signed
-// halving step. The EBX save and input spill still occur early.
-// The byte-mask test still saves EBX early, and the input spills before count admission.
-// Size first through short or long 171/171, signed displacement local 171, both native words 171,
-// stored-colour count before halving 171, named flags with mask equality 171, unsigned size read
-// first 171, base address between the two divisions 171. All reproduce the opening allocation.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
@@ -1111,8 +978,8 @@ bool __stdcall function_be8e0(long object_index)
         for (long i = 0; i < count; i++)
         {
             s_colour_choices_ab *entry = &((s_colour_choices_ab *)definition->tint_sets.address)[i];
-            color3f *current = base + count;
-            *current = *base;
+            color3f *current = &base[count + i];
+            *current = base[i];
             for (long j = 0; j < entry->function_count; ++j)
             {
                 s_colour_function_ab *function = &entry->functions[j];
@@ -1127,7 +994,7 @@ bool __stdcall function_be8e0(long object_index)
                 if (function->scale_name)
                 {
                     real value = function_be8b0(object_index, function->scale_name);
-                    current->red = value * current->red;
+                    current->red *= value;
                     current->green *= value;
                     current->blue *= value;
                 }
@@ -1136,7 +1003,6 @@ bool __stdcall function_be8e0(long object_index)
             current->green = current->green < 0.0f ? 0.0f : current->green > 1.0f ? 1.0f : current->green;
             current->blue = current->blue < 0.0f ? 0.0f : current->blue > 1.0f ? 1.0f : current->blue;
             result = true;
-            base++;
         }
     }
     return result;

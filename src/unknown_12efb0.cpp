@@ -136,7 +136,15 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
-// score 607 (was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
+// MiniMax G (11-20): score 607 (was 607): no new form, no lower score; the palette slot's declared type is the
+// only lever left at the loop head and none of the three spellings pays: a char local gives retail's byte load
+// (mov bl/cl, no sign extension at the load) but NONE then lands in ECX with the result still in EAX and the
+// whole tail after the loop breaks, 700; a byte local zero-extends into EBX, 653; the plain short keeps the
+// sign-extended word, 607. Retail still keeps the 0x130f60 result in EDX, the slot byte in CL, NONE in EAX, the
+// zero in XMM7 and the palette record in EBX; ours keeps the result in EAX, the slot in BX, NONE in ECX, the zero
+// in XMM5 and the record in ESI, so the sign-extended slot is materialised into the record register itself.
+// score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
+// Earlier (607, was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
 // loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in
 // EAX, and joins failed palette lookups at one record test. The build uses EAX, BX and ECX and threads past
 // the join.
@@ -732,6 +740,18 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // common default and shared uncovered weight 609. NOT kept: the two shared uncovered-weight forms gain three
 // points at 3828 bytes and retain the provider, palette and record assignment gap. The common default block
 // forms regress. The opening executable source is restored.
+// M3 lane 7 r184 (fast with 0x130f60, 0x131030, 0x1317a0, 0x12e5e0, all MATCH; control 607, aligned 355, masked 122):
+// 1..8 dead locals (diagnostic) 606-608 (the integer ties do not move); the record lookup as two inline getters (previous
+// index, else the palette entry by slot: NULL result, global, bounds, entry) taking the slot byte read at each use (test,
+// argument, source-index store) 683 at retail's 3817 bytes, aligned 424, masked 118: the lookup block is then retail's
+// (byte compare, one widening, record in EBX) but for the NONE/result registers; with function_12eb00's count passed to
+// the outer getter 683 (masked 115); that with the three-scalar helper accumulating colour, intensity, distance, height,
+// then weight and remaining 693 (3823 B, masked 105); that getter form with each clear followed by its unit default 683
+// (same code). Left on the getter form: NONE in EDX with the 0x130f60 result kept in EAX (retail moves the result to
+// EDX and keeps NONE in EAX down to the 0xd4 tag test), zero in XMM5 (retail XMM7) and the accumulator schedules.
+// Select table and ordinal, table and byte offset, conditional scenario table and ordinal,
+// or nested scenario table with late byte offset: short 719/720/724/724; signed byte
+// 619/696/619/619. The best measured forms disturb the matching clear prefix.
 // M3 lane 2 r102 (fast; control 607). Reading: retail's NONE stays in EAX from the loop head through the palette arm to
 // the +0xd4 tag test (`cmp edi, eax`), so it outranks the 0x130f60 result, which moves to EDX; ours stops using the NONE
 // register before the tag test (`cmp edi, -1`, the field_f0 store's scratch registers take ECX/EDX), so the result keeps
@@ -763,6 +783,83 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the -1 in ecx; the record's three initial stores sit before the palette read here and after it in retail, and moving
 // them into the palette branch measures 725, the palette byte read before the stores 607, and a signed palette byte read
 // before the stores 700.
+// M3 lane 12 r149 (fast with 0x130f60/0x131030/0x1317a0/0x12e5e0, all MATCH; control 607): the two range clamps
+// through one shared inline taking the range by value 679 (3837 B), by pointer (read at each use in both arms)
+// 609 (3834 B), that with the char slot 702; the four source publications through one shared inline setter 607
+// (same code); the tag result and its out value declared outside the loop 607 (same code).
+// M3 lane 15 r106 (fast with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607, aligned 487, register-
+// and stack-masked 220): the cluster entry indexed at each use instead of the entry pointer 609; the palette index out value
+// declared once at function scope and reset per cluster 607 (same code); the weight clamp as two independent ifs 607 (same
+// code); the three per-cluster source resets ahead of the 0x130f60 call 713 (3836 B); the scenario lookup with the global
+// tested in its own `if` around the bounds test 607 (same code). All restored.
+// M3 lane 15 r111 (fast with 0x130f60/0x131030/0x1317a0/0x12e5e0/0x12eb00, all MATCH; control 607): the 0x130f60 call made
+// through a file-local inline forwarder 607 (same code); the out value left without its NONE initialiser (diagnostic) 698,
+// registers unchanged. On lane 7 r184's two-getter form rebuilt (683 at retail's 3817 B; the loop head equals retail down
+// to the call, then result EAX / NONE EDX where retail has EDX / EAX): the outer getter's parameters index-first or
+// index-second 683/683 (the previous index moves to EBX, the pair stays); the tag arm's 0x131030 argument, or its
+// definition lookup, taken from the out value instead of the result (diagnostics, one result use fewer) 699/701 with the
+// pair unchanged, so the result's use count is not what keeps it in EAX; one variable for the result and the previous
+// index 683 (same code); the three source stores through an inline setter at all four places 684 (3818 B), the pair
+// and the XMM5 zero unchanged. Ours never uses XMM7 in any form here; retail holds the zero there for 43 rows.
+// Body unchanged.
+// Y643: provider slot long at return 684; dword at return 684; word at return 696; long in tag arm 607; dword in tag
+// arm 607; word in tag arm 696; word at return with signed palette byte 668; word in tag arm with signed palette byte
+// 668.
+// NOT kept: Late long and dword slots tie 607. The early decodes and the low-word forms increase the score. The
+// signed-byte low-word forms narrow the length gap without recovering the provider and sentinel registers.
+// Compound tag admission before the shared palette/default arm with a guarded lookup, conditional
+// record or explicit missing slot scores 714 with a word and 703 with a signed byte.
+// Testing provider validity first scores 832 with a word or 729 with a signed byte.
+// Select record base and ordinal before forming the pointer. Short slot with default
+// base, guarded/conditional 705/716; explicit base 709/617. Signed byte slot with
+// default base 721/720; explicit base 677/698. NOT kept: the provider and palette
+// registers remain different, including the 3818-byte guarded form. Original body restored.
+// Palette upper before lower 607, signed byte 700. Positive table extent 755,
+// signed byte 724. Inclusive last entry 725, positive extent with inclusive last
+// entry 674. Lower bound before the scenario table 607, missing table as an
+// empty extent with signed byte 689. Provider, sentinel and palette homes still differ.
+// MiniMax B (11-19): no new form, no lower score (607): retail reads the palette byte into a byte register and compares it
+// with the low byte of the -1 it also stores to the record, while this build keeps the slot in a 16-bit register and holds
+// the -1 in ecx; the byte at each use and the char and signed-char slot measure 666 to 700, and the record's three initial
+// stores sit before the palette read here and after it in retail, but moving them into the palette branch measures 725.
+// Three-way source selection as conditional, explicit branches, missing-record default, or provider default
+// with palette precedence scores 734/618/618/737 for the short slot and 730/704/708/724 for the byte.
+// NOT kept: all raise the score, with the provider and palette register assignments still different.
+// M3 lane 15 r113 (fast with 0x12e5e0/0x12e960/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH; control 607): reading
+// retail again, its NONE stays in EAX from the `or eax, -1` after the 0x130f60 call through the whole palette arm (the
+// +0xd4 tag test compares `cmp edi, eax` after all the inlined accumulations) and into the fallback store, so that web
+// has seven uses; this body tests the tag against an immediate. Lane 10 r86's lead patch (its build/r86) re-applied on
+// this base 693 (3820 B, aligned 128, register-masked 33; NONE reaches the tag test there, in EDX, and the result keeps
+// EAX). On that lead: the result declared at function scope 693, declared ahead of the out value 693, the out value
+// declared at function scope and reset per cluster 693, the out value declared ahead of the cluster record 693 (all
+// the same code), the flag declared ahead of the out value and the call 697. Declaration order does not move the
+// result/NONE pair. Body unchanged.
+// Default stores sentinel-kind-weight 606, kind-weight-sentinel 607, weight-sentinel-kind 607,
+// weight-kind-sentinel 606, sentinel-weight-kind 607. Completion default after metadata 607.
+// Explicit admission before defaults with a retained ordinal 607, with slot re-reads 666.
+// NOT kept: the one-point gains leave the palette width, sentinel and provider registers different.
+// M3 lane 16 r153 (fast, file alone; control 607, aligned 487). Reading: retail reads the palette byte again at the
+// source-index store (`movsx edx, byte [esi+0x6f]`), so the cluster pointer stays in ESI through the palette arm and the
+// record takes EBX. New: the slot as `long` 706; the record pointer declared at the loop top 607 (same code); the
+// source-index store reading the byte again with the short slot kept for the tests 703 (3831 B, aligned 464: record in
+// EBX and cluster in ESI as retail; the slot is still a word and NONE is in EDX), the same with a char slot 666 (3827 B:
+// retail's `mov cl` and byte compare, NONE in EDX against retail's EAX with the call result moved to EDX); the slot read
+// ahead of the three source resets 607 (same code).
+// M3 lane 8 r204 (fast with 0x130f60, 0x131030, 0x1317a0, all MATCH; control 607): a `char` slot compared with `(char)NONE`
+// 700 (3828 B); the 0x130f60 result typed `dword` 607 (same code); the tag flag declared ahead of the out value 609; the out
+// value declared at the loop body's top 607 (same code); the three source resets ahead of the out value and the call 713.
+// Current-cluster predicate after palette lookup, at its first publication, or before lookup 739/735/726.
+// Predicate shared across both sources after defaults, after the provider, or before the provider 733/733/750.
+// Shared cluster index for lookup and predicate 741; complementary predicate across both sources 733.
+// NOT kept: All grow and regress, with a first difference before the original loop span.
+// The provider result, palette width and selected record homes still differ.
+// Weighted palette/tag/either arm continues and common completion continue, short slot 634/706/774/607;
+// signed byte slot 631/691/771/700. NOT kept: the common short-slot continue ties and the other forms regress.
+// countdown for with advancing cluster cursor 607; countdown while with pointer then count 1442;
+// countdown while with count then pointer 1442; cluster pointer for with body countdown 607;
+// separate remaining count and cluster cursor 607; cluster cursor compared with end 831;
+// cluster cursor stopped at end 806; cluster cursor while with end 1508.
+// NOT kept: The for countdowns tie. The other walks increase the length and leave the provider, sentinel and palette allocation unresolved.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

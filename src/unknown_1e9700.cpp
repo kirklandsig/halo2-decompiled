@@ -75,12 +75,25 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax I (11-20): no new form, no lower score (76): reading the enable byte at each use point instead of through the bool local gives 103 (the reload then lands where retail has it), the old maximum as a nested ternary 108, and the increment before the row pointer 107 with the direct enable read and 85 alone (it swaps the EBP and EDI roles); what still differs is the old maximum's home (ECX there, EAX here), the 15-bit value read (a zeroed 16-bit move there, movzx here) and the row pointer's register order.
+// score 76 (was 76): Retail reloads enable after the player statistics write and carries the maximum in ECX.
+// The existing getter and setter live in a separate /Ob1 translation unit. The global layout affects alias analysis.
+// MiniMax B (11-20): no new form, no lower score (76): the enable byte's raw reload needs one address-taken object that src/unknown_1967d0.cpp holds (BLOCKED-BY 0x196960/0x1968b0); what still differs is that reload, the old maximum's home (EAX here, ECX in retail), the 15-bit value read (movzx against retail's xor/mov) and the row pointer's register order.
+// Earlier score 76 (was 76): BLOCKED-BY 0x196960/0x1968b0 (retail inlines both here; their file is /Ob1 and was on
+// this round's avoid list) and the enable reload's aggregate; earlier notes below.
+// MiniMax B (11-19): no new form, no lower score (76): reading the enable byte at both use points instead of through
+// the bool local gives 103 (the same form MiniMax G measured on 11-18) and a byte local gives 103, so the body is
+// back as it was. What still differs is retail's reload of the enable byte after the counter store (the reload needs
+// the enable byte and the counters to be reachable from one address: BLOCKED-BY include/globals.h and
+// src/unknown_1967d0.cpp), retail's old maximum in ECX against this build's EAX, retail's `xor eax, eax; mov ax,
+// [mem]` read of the fifteen-bit counter against this build's zero-extending word read, and retail's increment of
+// `word ptr [eax + edx + 0x16]` before it forms the row pointer.
 // MiniMax B (11-18): no new form, no lower score (76): this build still holds the enable byte in a bool local across the counter store where retail reloads it into CL, keeps the old maximum in EAX where retail keeps it in ECX, zero-extends the fifteen-bit counter where retail reads it with `xor eax, eax; mov ax, [mem]`, and forms the row pointer before the increment where retail increments `word ptr [eax + edx + 0x16]` first (85 when the increment comes first, where the prologue's kind and player homes swap); this round's forms: the comparison's operands swapped (76, the same code), the old maximum as a short (76, the read becomes sign-extending), the old maximum read as a nested if (101) and the permuter (started, stopped before it printed a result); the enable reload needs one object for the enable byte and the counters (include/globals.h and src/unknown_1967d0.cpp) and the clamp's store through the counter's address is a one-use pointer kept only with a match: BLOCKED-BY both.
 // MiniMax G (11-18, second pass): no new form, no lower score (76): reading the enable byte at both use points gives
 // 103 and at the later one only 103, a short old maximum gives 76 and the comparison's operands swapped gives 76, so
 // this build still keeps the old maximum in EAX where retail keeps it in ECX and the counter in CX where retail keeps
 // it in AX.
-// MiniMax G (11-18): score 76 (was 106): the enable byte is read once into a bool local before the counter store (the
+// MiniMax G (11-18): earlier 76 (was 106): the enable byte is read once into a bool local before the counter store (the
 // maximum's test and the clamp's test then share one value) and the clamp's limits are taken as the table's own
 // `word` type; what still differs is that retail reloads the enable byte after the counter store (into CL, and again
 // into DL in the team block) where this build holds the local's value across that store (the reload needs the enable
@@ -114,13 +127,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // where this build holds it in dl across that store; the reload needs one object for the enable byte and the counters
 // (include/globals.h and src/unknown_1967d0.cpp) and the maxima's homes follow the held helpers 0x196960 and 0x1968b0
 // in src/unknown_1967d0.cpp: BLOCKED.
-// MiniMax H (11-18): score 106 (was 106): no new form, no lower score; retail keeps the old maximum in ECX with
+// MiniMax H (11-18): earlier 106 (was 106): no new form, no lower score; retail keeps the old maximum in ECX with
 // the enable byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load),
 // this build keeps the maximum in EAX and the enable byte in DL; the enable reload needs the enable byte and
 // the input counters in one object: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp. The permuter's best
 // (80 against its 99) swaps the arguments of 0x196e60 and 0x1968b0 and adds a volatile pointer and constant-only
 // locals, so it changes what the calls do and is dropped.
-// score 106 (was 106): no frame; enable observations and maximum/register homes differ.
+// Earlier 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
 // clamp's store through `s_input_counter *counter = &g_511bf4.groups[index][12];` formed before the clamp (the setter
@@ -269,6 +282,44 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // block 111, and the row addressed through a typed player pointer with the counter reached by its address 110 (the
 // prologue's register allocation shifts and EDI and EBP swap). The flat all[] indexing that gives retail's read
 // form stays a match-only form the coordinator rejected.
+// M3 lane 1 r127 (fast with 0x1968b0/0x196960/0x196e60/0x196ef0/0x1e9ce0, all MATCH; control 76): the maxima and the
+// player clamp as calls to the existing 0x196960/0x1968b0 with a `__forceinline` redeclaration of 0x196960 in this file
+// 215 (350 B: LTCG keeps both as calls, so a redeclaration cannot inline a function of an /Ob1 file); the counter
+// incremented and then read in a separate statement 76 (same code); the old maximum as `index == NONE ? NONE : ...` 79;
+// `old_maximum` declared ahead of `enabled` 76 (other code); the clamp limits read ahead of a nested `index != NONE`
+// test (0x1968b0's own shape) 76 (other code: the index jump moves below the two limit loads, as retail). Body unchanged.
+// M3 lane 4 r225 (fast with the file's functions, src/unknown_1967d0.cpp's and the helpers' other callers; control 76,
+// aligned 70). HELD lead (needs the owner's OK: one word in src/unknown_1967d0.cpp, another lane's file this round; full
+// diff in build/r225/held-0x1ea5b0.patch): `inline` on 0x196960's own definition makes the link expand the real getter
+// here, so no copy of it is needed, and every other function of both files and the callers keeps its state (0x1969a0
+// still calls it). With it: this body with only the two maximum reads as `if (g_510ca0) x = function_196960(...)` 101
+// (428 B, aligned 66); those reads with the increment written through the statistics address first, no `consecutive`
+// or `team` local and the setter's own body (its `g_510ca0 && !g_510ca1` test, long limits, a counter pointer and the
+// nested conditional clamp) 86 (426 B, plain 86; aligned 33, first difference +0xa1: retail's code to the reload of the
+// enable byte, the one thing left, which needs the enable byte and the counters in one address-taken object); that with
+// the setter as a plain call 158 (371 B: it stays out of line). `inline` on 0x1968b0's definition as well 111 (414 B)
+// and costs matched 0x1ea770 (26), 0x1e9ce0 (179), 0x1e9df0 (129) and 0x15ca10 (46), which call it in retail: the
+// setter must stay as it is. Diagnostic: a file-scope pointer to g_510ca0, set by an initialiser or by a store in an
+// uncalled function, gives no reload in this build (86 both).
+// Round 438: Enable reload and maximum transport remain separate from the statistics row shape. Test the existing short-row layout.
+// Use the existing short row layout for both counters and the timestamp 86.
+// Bind the actual fourteen-short player row as an array reference 86.
+// Index the existing statistics table at every row use 85.
+// Use the native row and bind the time field for the threshold test and store 86.
+// Use the native row and bind the recent count through its update branches 86.
+// Bind both updated fields of the native row in the final streak update 86.
+// Compute the new recent count from the threshold and store it once 102.
+// Index the statistics table directly and bind the time field locally only for its two uses 85.
+// NOT kept: Direct table indexing reaches the retail extent at 85. All eight forms raise the score and move the first mismatch into the prologue. The original enable and maximum lifetimes remain.
+// Exhaustive maximum branches in long/short/word 95/95/98,
+// those branches with direct enable uses 100, exhaustive player and team
+// maxima 99, nested enabled maximum 99, early clamp input promotion 99,
+// and limits before the index check 95. The 434-byte forms still carry
+// enable across the increment and leave the maximum in EAX.
+// Separate clamp output in long/word form: exhaustive 86/108, lower
+// default 85/113, upper default 95/121, lower-bound admission with nested
+// upper comparison 86/109. NOT kept: all regress. The 434-byte long forms
+// still keep enable across the statistics write and the old maximum in EAX.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -336,6 +387,13 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax E (11-20): no new form, no lower score (353): the three small homes stay rotated (retail keeps victim_team at
+// +0x18, killer_team at +0x14 and the damage code byte at +0x1c, ours at +0x14, +0x1c and +0x18) and the pool record's base
+// is built as a +0x2f0 offset against retail's +0xc, so the body stays four bytes longer than retail. Measured and dropped:
+// the team test as a disjunction (`reported_player == NONE || !function_1df560(...)`) compiles to the same code (353), and
+// the three homes are not reachable from the expression's spelling.
+// MiniMax C (11-19): no new form, no lower score (353): the three small homes stay rotated (ours victim_team/damage_code/killer_team against retail's killer_team/victim_team/damage_code) and the history cursor stays biased +4 (retail anchors it at the record base, ours at the amount field), so the function stays four bytes longer than retail.
+// MiniMax I (11-20): no new form, no lower score (353): the permuter ran over the function for 690 s and kept its baseline (350 differing instructions on the reduced image); the three small homes stay rotated (killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c there, victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c here) and the history cursor stays biased +4.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // M3 lane 14 r114 (fast; control 353, aligned 176): retail keeps the killer in its home (reloaded into EDX at the join
 // after the selected block), ours in EBP through the killer block, which is what turns the three homes round. Both
@@ -733,6 +791,66 @@ struct s_object_damage_view
 // through the primary award 353.
 // NOT kept: the 324 form splits one credited-player value into two locals. It recovers the
 // damage-code slot but still exchanges the credited-player and victim-team slots.
+// M3 lane 3 r267 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880 and 0xd9640; base 353, aligned 179, 60 with registers and
+// stack offsets masked): the consideration flag as `reported_player == NONE || !function_1df560(...)` 353, the assist
+// admission as `!(player_index == reported_player || amount > assist_threshold)` 353, the selection loop's `else if
+// (!consider_team) continue; else {...}` 353 (same code each); `if (killer != NONE) { if (killer == reported_player)
+// damage_code = code; } else if (reported valid) {...}` (retail's arm order) 363 (1532 B); the team byte read again for
+// the 0x1df560 argument, killer_team kept for the end 358 (1552 B).
+// M3 lane 4 r225 (fast with the file's functions, src/unknown_1967d0.cpp's and 0xd9640; control 353, aligned 179).
+// Reading: in the selected block retail keeps the record pointer in EAX and the record's player in EDX and gives the
+// callee-saved registers to the validation's masked index (EBP), data pointer (EBX) and salt copy (EDI), where ours
+// gives EBP to the player and EBX to the record. Tried: the selected block's validation written with function-scope
+// index and datum locals 403 (1596 B), all three validations written that way 403 (same code as the first: the two
+// locals alone move the frame); the selection loop's index as a long with the slots cast 355; `best` declared ahead
+// of `selected` 353 (same code); the object lookup ahead of the two tick windows 424.
+// M3 lane 14 r119 (fast with 0x1e9ce0/0x1ea770/0x1ea880, all MATCH each time; control 353): the assist stores reading
+// the record's player index again (retail's `mov edx, [ebx]` at each store) 392 (1564 B, the frame moves: first
+// difference +0x8); with the related player re-read for its store 392; retail's arm order (`if (killer != NONE) {...}
+// else if (reported valid)`, re-measured 363, 1532 B) with the assist re-reads 377 (1548 B); retail's arm order with the
+// team byte passed to 0x1df560 at the call 354 (1548 B); all four together 393 (1564 B). Note for later rounds: the
+// related-unit block loads the object table's data pointer before the 0xbaf80 call into ESI, where retail loads it
+// after the call into EDX (0xbaf80 only reads memory; matched callers 0xbba20/0x1c35f0 keep the pointer across it,
+// 0x138ab0 reloads it after).
+// Round 438: Victim-team, credited-player and damage-code homes remain rotated. Test the existing record layouts.
+// Read the victim team through the existing player record type 353.
+// Read the candidate team through the checked player record type 353.
+// Use the player record type for the credited team and unit in both credit branches 353.
+// Read the validated assisters through the player record type 353.
+// Use the real player record for the related-unit award team lookup 353.
+// Use the existing object header fields for all three object-header observations 353.
+// Test the table validity through the existing statistics record 353.
+// Use the existing player, object and statistics record layouts together 353.
+// NOT kept: The existing record types preserve the frame and all measured call-site controls. They leave the three rotated scalar homes and the amount-biased history cursor.
+// Timestamp at record entry/after player read/for a present player/after team admission
+// 417/417/459/353. Eligibility in those positions 463/463/459/353. NOT kept: earlier
+// reads or decisions grow the frame to 0x54 or 0x58. The late forms tie with the
+// amount-biased history cursor and rotated credited-player, victim-team and code homes.
+// M3 lane 15 r112 (fast = full 353, with the file's functions and 0xd9640): the consideration flag as `reported_player ==
+// NONE || !same_team(...)` 353; the assist loop's counter as a short 353 (same code each); the victim team as a ternary
+// initialiser 422; killer declared before killer_team 354; the fallback as a nested valid test followed by `if (killer !=
+// NONE && killer == reported_player)` 355. Probe only (it resets the damage code when the killer and the reported player
+// are both NONE, which retail does not): `if (killer == NONE && valid) killer = reported;` then `if (killer ==
+// reported_player)` 332.
+// Record reference advanced inside the selection scan, assist scan, or both 479/375/469. Both scans from
+// one base as references or pointers 469/469. Pointer-end selection, assist, or both scans 499/379/526.
+// NOT kept: Every cursor form changes the 0x50 frame. The assist-only reference stays at 1548 bytes with
+// frame 0x4c.
+// Winner/fallback/both as record addresses in the indexed scan 445/483/476.
+// Winner/fallback/both with an end-sentinel cursor 539/491/511.
+// Both with a bounded cursor 511.
+// Indexed single-record join before recovering the ordinal 500.
+// NOT kept: The cursor restores the record base but pointer-valued selection adds code and displaces the native short ordinals.
+// Primary-award snapshots of code, credited handle, defeated handle, code/credited, code/defeated,
+// credited/defeated, and all three 353 each. All three with long award code 354. NOT kept: the
+// scoped snapshots tie or regress, and the credited-player home and repeated code load persist.
+// Attribution branches initialize killer/threshold/code 417/379/436.
+// Killer and threshold/killer and code/threshold and code 436/459/446.
+// All three in the selected or absent arm first 469/478. NOT kept: the
+// explicit defaults raise the score and leave the rotated homes unresolved.
+// Keep separate slots at the maximum test, update shared slot in the reported arm, conditional update,.
+// and validate other players first. Initial-maximum and no-greater-maximum tests: 380/412/412/412/378/394/394/394.
+// NOT kept: The maximum tests all raise the score. The separate-slot forms and the initial-maximum shared forms add 16 bytes. The victim-team/credit/code homes and amount-biased history cursor differ.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

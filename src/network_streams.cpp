@@ -839,7 +839,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
-// score 35 (was 35): earlier 60. The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
+// MiniMax C (11-20): no new form, no lower score (35): the only shape that gives retail's message register, flags register and byte OR is the second result variable recorded in the notes above (10 at retail's 225 bytes), left aside because it repeats the same assignment in both arms of the send test; what is still left is the order of the last two exit blocks (ours lays the send-and-empty-window exit ahead of the loop's zero-trip exit, retail after it).
+// score 35 (was 35): The message and saved flags use EAX and CX. Retail uses ECX and AX and updates the low byte
+// in place.
+// Earlier score 35 (was 35): earlier 60. The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
 // The message pointer and flag word still use EAX/CX, and the found path writes the saved word.
 // Earlier: retail keeps the message in ECX and the flags in AX (ours EAX / CX) and ends the found path with
 // `or byte ptr [ecx + 0xe], 2` (ours `or ecx, 2` and a word store); m3 lane 3 r257's entry is the last one above the marker.
@@ -1183,6 +1186,93 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Setter with separate unsent/pending rejection 89/89 or paired mask comparison 106.
 // Setter on saved word and assignment 35. NOT kept: the byte OR changes the entry and loop
 // allocation, and the saved word ties with the same full-word store.
+// Early message initialization with flag-word lvalue / direct flag reads / paired flag mask
+// 59/59/73. Separate flag rejection / scan-scoped cursor / selected record lvalue 59/59/59.
+// Scan-scope conditional 90; nested send and count guards 59. NOT kept: the byte OR and
+// message registers come with a displaced initialization and output setup.
+// Round 436. Pending-bit field assignment with saved word tests (word/byte/bool)
+// 89/86/86, both fields tested directly 89/84/84, word/byte bit-view copy 89/84.
+// NOT kept: setting the actual bit changes the entry and loop registers, even at
+// 225 bytes. The selection still differs from retail. Original body restored.
+// M3 lane 4 r220 (fast with 0x96510/0x94df0; control 35): the saved-word update ahead of the three output stores 39 (the
+// word store stays: VC does not fuse a register value back into a memory OR even with no store in between); the in-place
+// update ahead of the stores 90, with the tests on the member as well 90; the in-place update with `type = 4;` first in the
+// found path 104 (209 bytes); the test inverted with `continue` and the found code after it 35 (same code), with the
+// in-place update 89. Diagnostics, reverted: on the in-place form with the message zeroed at its declaration (59), a probe
+// store of the flags word after the update keeps it live in AX and the found path then takes retail's EDX/ESI temporaries
+// exactly (46, the probe's store aside): retail's flags word is live through its found path while the update is the memory
+// OR. The source that keeps it live without code is still unknown.
+// Word pending bit with saved word tests 89, Word pending bit with two native bit tests 88, Word pending bit with
+// selected low bit pair 106, Word pending bit with separate sent and pending admissions 89, Byte pending bit with
+// saved word tests 86, Byte pending bit with two native bit tests 84, Byte pending bit with selected low bit pair
+// 88, Byte pending bit with separate sent and pending admissions 86. NOT kept: The bitfield update emits the byte
+// OR, including at 225 bytes, but changes the opening register allocation and raises the score. The original
+// message layout and body are restored.
+// Read-only or mutable message record references across the local slot lookup or the shared message
+// lookup: saved word 35 in all four forms, in-place bit update 89 in all four. NOT kept: The in-place
+// forms emit the byte OR but lose retail query and scan allocation.
+// M3 lane 3 r271 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched or unchanged each time; control 35). The live
+// flags word is confirmed as the one cause: with the in-place update and any read of `flags` after it, the scan, the
+// message in ECX, the flags in AX, the found path's EDX/ESI temporaries, the pointer-first `*time` store and the byte OR
+// are all retail's, and only the read's own instructions are left. Diagnostics, reverted at once: `type = (flags & 2) ?
+// 2 : 4;` after the in-place update 28 (232 B: the five-instruction select in place of `mov eax, 4`; a test that is
+// always false there), `type = (flags & 1) ? 4 : 0;` 36 (230 B), `type = (flags & 2) ? 0 : 4;` 90 (226 B: folded from
+// the enclosing test before allocation, so the in-place form's allocation), `if (flags & 8) type = 4; else type = 4;`
+// 91 (the equal arms fold early as well). Other forms: the in-place update with the message zeroed at its declaration
+// re-measured 59, that with the flags read again into the local before the update (`flags = message->flags;
+// message->flags = flags | 2;`) 59 (same code: fused into the memory OR before allocation); the kept structure with that
+// re-read 89, with `flags = message->flags | 2; message->flags = flags;` 89; the in-place update under a second
+// `if (!(flags & 2))` 87 (226 B); `type = 4;` between the three stores and the in-place update 103 (209 B); the update
+// as `m_messages[index].flags |= 2;` 100 (240 B); the found block without `break` and `if (type) break;` after it 70
+// (231 B). Left: a read of `flags` after the update that leaves no instruction; a value that the enclosing test already
+// decides is folded before allocation, so it is not a repeated test.
+// In-place resend update, two scan-local naming orders, each with original or renamed output
+// parameters: clear after lookup 89 in each form; initialize before lookup 59 in each form.
+// NOT kept: early initialization restores the ECX message and AX flags but places the
+// zeroing and output loads differently. The other initialization changes the entry frame.
+// MiniMax C (11-19): no gain (35, baseline; body restored). Two differences are left: the message pointer register (EAX here, ECX in retail, and with it the flags word in CX against AX) and the found path update (a full-word store here, the byte OR of the resend bit in retail). Every form that makes the update a byte OR (message->flags |= 2, or message->flags = message->flags | 2) frees the saved flags word after the tests, and the whole allocation then changes (the prologue type pointer moves from EAX to ECX, next takes ECX and the flags take DX): 89. The ternary (index != NONE ? &m_messages[index] : 0) gives retail message register ECX, flags register AX and found path exactly, but the ternary arms are laid out with the address in the fall-through and a jump over the zero, and the helper NONE initialisation is folded away: 45; with the test inverted, 43. Zeroing the message at its declaration, ahead of the lookup, gives the message in ECX and the flags in AX with the byte OR, but the zero is hoisted to the loop head (retail zeroes ECX after the divide) and the helper temporary takes EDX: 59. Zeroing it after the lookup is the kept body, and the message takes EAX.
+// M3 lane 5 r213 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched throughout; control 35): a reference to the
+// flags member (`word &flags = message->flags;`, tests and update through it, `|=` or `= flags | 2`) 89, the same with a
+// const reference and the member `|=` 89, with the message zeroed at its declaration 59 (the member update's codes);
+// the flags local declared at function scope with the in-place update 89, with the saved-word update 35 (same code); the
+// found test through an inline predicate on the flags with either update 89/35, on the message with the in-place update
+// 89; the in-place update between the first and second output stores 90.
+// M3 lane 15 r115 (a one-file LTCG harness that reproduces this function, about 290 forms at 2 s each; the leads
+// confirmed fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched each time; control 35). New cause: the flags word
+// need not stay live. A second, plain result variable assigned 4 as the first statement of the found block (with
+// the member update `message->flags |= 2;`) gives retail's loop, the message in ECX, the flags in AX, the found
+// path and the byte OR: the result holds EAX through the found block, so the message cannot take it. Forms:
+// `result = type` in both arms of `sent || !count` with one return 28 (214 B: the type is loaded once ahead of
+// the loop, where retail loads it at each exit); `bool sent = get_next_send(...); long result = type;` ahead of
+// the test 20 (224 B: the copy is held in ECX for the two early exits); LEAD: `result = type` after the failed
+// send, the loop under the count test, `else result = type;` on the count test and on the send test, one return:
+// 10 at retail's 225 bytes, the only difference the order of the last two exit blocks (ours lays the early exit
+// ahead of the loop's zero-trip exit, retail after it). Not kept: the inner else repeats an assignment (a
+// match-only form); saved as build/r115/lead-965e0-10.patch. On that lead (harness, same code or worse): the two
+// tests as `||` or `&&` with the copy in a comma expression (same code), early returns of the type 218/207/216,
+// the loop arm with its own return 218/212, the copy inside the count arm 214, a found flag guarding the copy
+// after the loop 214 (the loop is no longer entered through a zero-trip test), a loop with its own exit test 214.
+// Without the second variable (harness): the found block returning 4 itself 187 (no shrink-wrapped entry);
+// a found flag or a zero result selected at the return 187/192; declaration orders of message, flags and next
+// (7 forms) the member update's code; a grid of 195 spellings (five lookups, five flag tests, three updates,
+// three statement orders) none at 225 bytes, nearest the ternary lookup with the saved-word update.
+// MiniMax E (11-19): no gain (35, baseline; body restored): the message pointer is still in EAX where retail keeps it
+// in ECX (and the flags word in CX against retail's AX), and the update is still a full-word store where retail ORs
+// the resend bit in the message; the in-place update reaches retail's byte OR (or byte ptr [ecx+0xe], 2) but frees the
+// flags word and changes the whole allocation (89), the ternary message pointer with the in-place update is 90, and
+// the ternary alone keeps retail's registers but lays the arms out with the address in the fall-through (45).
+// M3 lane 7 r197 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00, matched each time; control 35). Arrangements of the
+// listed second-result lead (result = 4 first in the found block, the in-place update): the lead itself 10 (225 B), with
+// the send test inverted 10, with the count test inverted (`if (!count) result = type; else` the loop) 10: the shared
+// early exit is still laid out ahead of the loop's zero-trip exit. Both tests inverted 87 (216 B); no inner else 95 (205
+// B); one combined test with the copy at the top of its arm and an else 28 (214 B), the same with a named `sent` 28, the
+// combined test inverted (`send || !count` arm first) 28; `else if (!count)` chain 92 (210 B); `bool sent` and the copy
+// before the test 20 (listed); an early return of the type on a successful send with the copy after it 94 (218 B), with
+// the count test as a second early return 90 (212 B), with both tests in one early return 80 (216 B). The early exit
+// follows the loop's zero-trip exit only when the early paths jump straight to the return (the kept form), and then the
+// result has no register for the found block.
+// MiniMax C (11-20): no new form, no lower score (35): the message pointer is in eax where retail has ecx and the flags in cx against ax;
+// the polarity and else forms give retail registers but fold the window NONE init (43, 45).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

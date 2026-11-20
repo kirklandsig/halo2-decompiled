@@ -169,7 +169,8 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 	}
 }
 
-// score 67 (was 67): Retail spills the entry-array base and recomputes the indexed
+// score 67 (was 67): Retail keeps the entry base in the 0x28 frame and retains the unscaled ordinal through the appends.
+// Earlier (67, was 67): Retail spills the entry-array base and recomputes the indexed
 // terminator after the string calls.
 // independent read cursor and indexed terminator 84; cursor search condition with
 // indexed result after loop 59 (NOT kept: extra count test and no retail base spill);
@@ -259,6 +260,14 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // indexed/cached terminator 79/92. With the indexed clear, form the destination before conversion 67
 // or publish the result before the clear 80. NOT kept: the closest 208-byte forms still use frame 0x24
 // and keep the list base in a register instead of reloading it after concatenation.
+// M3 lane 16 r141 (fast with 0x24a09b): a loop-top entry pointer used for the search test only, the found uses and the
+// terminator indexed 84 (197 B: the found address and the terminator share EBX); that with the plain arm through the
+// pointer 90 (184 B); the pointer for the field_4c uses only 75 (196 B); for every append-arm use with the test indexed
+// 75; for the test and the append arm 75 (196 B: frame, base spill, index in EBX, terminator and plain arm as retail;
+// the pointer stays the induction register in ESI where retail runs a scratch cursor and re-forms the entry from the
+// index), with the plain arm through it 83; the search loop then the found block under `if (i < count)` 69 (201 B: the
+// cursor is a scratch ECX as retail but copied to ESI each pass, and the count test is extra); a test-in-condition
+// search loop 87 (187 B).
 // M3 lane 13 r114 (fast; aligned/masked [28/11] on this body). Lane 10 r119's two-member aggregate re-measured 39
 // [17/3]; on it a plain `if (append && entries[i].field_4c[0]) { entry ... } else ...; break;` 39 (same code), every
 // access indexed 64, the terminator through `buffer` 65 or `entry` 54, the ascii argument indexed 52, no `buffer`
@@ -279,6 +288,102 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Entry base named early/late, ordinal early/late, display result early, formatted
 // destination late, and adjacent base/count ranked early/late all score 67.
 // NOT kept: lexical order leaves the frame at 0x24 and the derived buffer live.
+// Bound destination array with direct/indexed clear 67/84. Bound name array 88. Bound
+// suffix array and derived conversion limit 84. Destination extent for indexed clear 84.
+// Scan entry for suffix test 77, also for both input strings 67. Separate scan cursor 84.
+// NOT kept: the 205-byte form recovers frame 0x28 and ties but spills the moving cursor
+// at EBP-8, leaving the base in a register.
+// Round 436. Indexed returned array after/before cached clear 67/68; indexed
+// return and clear 84; destination array then indexed return 67; scan cursor
+// with indexed return 67 and cursor inputs with indexed clear/return 79.
+// Plain result as copy input 66; selected input reference with indexed
+// clear/return 90. NOT kept: 66 gains one and spills the result; the other
+// 0x28 frame form spills the cursor. Original body restored.
+// M3 lane 4 r219 (fast with 0x24a7bf; control 67). Reading: everything but the found entry's lifetime is retail's in
+// some form; retail forms the entry from i into ESI before the ascii call, keeps it across that call, drops it when ESI
+// takes the 0x31 count for the copy, and forms it again from i and the spilled base for the terminator, so the entry is
+// never shared with the terminator. Indexed terminator with the buffer local 84; the entries base passed by reference or
+// by pointer to a forceinline getter 84/84, `(*&entries)[i]` for the terminator 84, a `s_entry_24a64d *&` alias for the
+// base 84 (all fold: the base is promoted again); the found entry as byte arithmetic in the condition, in the arm, or
+// nested 84/83/84; a loop-top entry used only in the found block 75 (the loop cursor becomes the entry in ESI);
+// loop-top entry for the test with indexed found reads 84; loop-top entry for the test and the found reads 75;
+// the base and count as a two-member local (re-measure of the grouping form) 64; the search loop then `if (i < count)`
+// with the indexed terminator 59 (positional: the extra count test lines the found block up, the entry still stays in
+// EBX; NOT kept: a mix of the buffer local and the indexed field), with every buffer use indexed 59, with the buffer
+// terminator 80, `i != count` 59; the found block after a writable name local assigned to the result first 80;
+// `result = entries[i].field_0c;` before the append test 66; the loop-top entry used only for the terminator 84, and
+// for the terminator and the plain arm 96.
+// M3 lane 12 r148 (fast with 0x24a64d/0x24a763/0x24a52b, all matched; main 67), on lane 10 r119's 39 form (re-measured 39:
+// it differs from retail only in that the found index's product i*0x248 is shared by the entry pointer and the terminator,
+// so EBX holds the product and i lives in ECX, where retail keeps i in EBX and multiplies again after the library calls):
+// a `use_suffix` flag set under the append test and tested after it 68 (211 B: threaded on the append path, product still
+// shared); the terminator's offset written size-first as a byte offset 39 (same code: the product is canonicalised); the
+// terminator indexed through `long const &found = i;` 39 (same code); the buffer named before the suffix conversion with the
+// suffix declared in the arm 44. Diagnostic (behaviour change, reverted): the append arm continuing the loop 59 (211 B).
+// Body unchanged.
+// M3 lane 4 r226 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf; control 67). Reading: with the terminator indexed
+// (re-measured 84) ours keeps the whole entry address in EBX across the five calls, so neither i nor the base is needed
+// after them; retail keeps i in EBX, spills the base and forms the address again, sharing neither the address nor the
+// product. The base written by a forceinline getter through an out-pointer, indexed terminator 84 (resolved, no spill);
+// that with the arm's entry pointer for the buffer and source 84; the suffix declared at the found block's top and
+// cleared by memset 94 (187 B); the found body as a forceinline (entries, i, append) name helper 84; a found flag set
+// before the break with the body after the loop (threaded) 84. Body unchanged.
+// M3 lane 1 r129 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all matched throughout; main 67; body
+// unchanged). Reading: retail's found entry in ESI serves the name test and the two copy arguments, dies when ESI takes
+// the copy's count, and the terminator and the plain arm each multiply i again (three `imul`), with i in EBX from the
+// loop's start; here any found-block entry spelled from i is shared with the terminator (address or product), so i
+// never has to outlive the calls. Indexed terminator with the entry pointer in the arm (re-measure) 84; a found flag
+// second in the loop condition (`i < count && !found`, flag set at the found block's top, no break) 72 (216 B: the
+// loop keeps its latch around the found block); the flag first in the condition and set last 79 (200 B, frame 0x28);
+// a NULL result in the loop condition with the empty name assigned after the loop 71 (207 B, frame 0x28, i in memory);
+// returns straight from both arms and the empty name returned after the loop 83 (193 B); a `built` flag set at the
+// arm's end with the plain name under `if (!built)` 84 (same code as the if/else: threaded before sharing), on the
+// two-member lead 39 (same code). Diagnostic (behaviour change, reverted): the two-member lead's append arm continuing
+// the loop 59 (211 B, re-measure: the calls then sit inside the loop and i goes to memory). Lane 10 r119's two-member
+// lead re-measured 39 (204 B, aligned 16/17: everything but the shared product).
+// Opening append returns result/destination with cached or indexed clear
+// 77/66, 72/75. Suffix append returns result/destination with cached or indexed
+// clear 83/73, 67/80. NOT kept: 66 regains the 0x28 frame and reaches 206 bytes
+// but spills the result and gains one point. The base and ordinal remain missing.
+// Search selects the display form before formatting. The conditional, branched, plain default and combined plain
+// guard forms each reach 84 for the indexed scan and 77 for a separate cursor. NOT kept: the cursor keeps the
+// ordinal in EBX during the scan but scales it before the calls. The 0x24 frame still lacks the base spill.
+// M3 lane 15 r113 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b and the two string callees, all MATCH; main
+// 67): lane 10 r119's two-member lead rebuilt 39 (204 B); on it the result taken as the indexed buffer after the
+// terminator 51 (218 B: the product still shared, now holding the result too), the plain arm written as an else of both
+// tests 78 (201 B). Round 101's loop-top entry form rebuilt 75 (196 B, aligned 9, register-masked 5); on it a second
+// pointer to the found entry for the append arm 90 (184 B: folded back onto the loop pointer), the append test nested
+// with the name test inside 75 (same code), the result taken as the indexed buffer after the terminator 71 (206 B).
+// Single exit at a match, mismatch continue, formatted exit, early plain exit or plain break
+// 67/67/67/67/67. Early plain exit with indexed clear 84, with advancing comparison cursor 67.
+// Entry range with indexed clear and shared exit 64. NOT kept: the range groups base and
+// count and gains three points at 207 bytes.
+// On the per-iteration entry and indexed clear form, a copied bound 75,
+// scoped out-count 75, native wide suffix 75, array extent for all limits 75,
+// end-pointer bound 73, shared plain/copy name 93, count and suffix names 75,
+// and result before indexed clear 75. The end bound restores the 0x28 frame
+// and base spill at 213 bytes but holds the search pointer in ESI across the loop.
+// M3 lane 16 r153 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; main 67, aligned 26). Reading:
+// with the terminator through `buffer`, i is dead before the calls, so it stays in ECX and EBX becomes a zero register
+// (`cmp byte [ebp+0xc], bl`, `mov word [edi+0x62], bx`); any indexed terminator shares `entries + i*0x248` (or the
+// product) with the found entry across the calls, where retail keeps i in EBX and forms the address again. New: `result`
+// assigned before an indexed terminator 84 (197 B, the entry address in EBX); i declared at function scope ahead of
+// count 67 (same code); `result` used as the copy and append destination with an indexed terminator, no buffer local
+// 84; the copy ahead of the suffix conversion 75 (201 B); the suffix typed as a wide-character array 67 (same code).
+// M3 lane 11 r134 (fast with 0x24a64d, 0x24a763, 0x24a52b, 0x24a7bf and 0x24a09b, all MATCH; control 67): the suffix
+// declared at function scope 66 (195 B); `long count = 0;` 83 (192 B); the loop index as `short` 46 (202 B, aligned 20:
+// i then stays in EBX and the found entry and plain arm are formed again from it as retail, but every use of i gains a
+// `movsx`, which retail never has, so retail's index is 32-bit; diagnostic only); the entries pointer `const` 67 (same
+// code); `buffer` named ahead of the suffix conversion 76 (196 B).
+// Immutable suffix text with cached/indexed clear 95/90, named display choice 95/90, and plain-name
+// break 95/90. Selecting an empty suffix when append is off gives 59/63; append-scoped suffix 67/84.
+// NOT kept: the 59 form adds an empty-string selection absent in retail, keeps the 0x24 frame
+// and omits the entry-base spill and the final ordinal multiply.
+// Round 452: Scan produces the successful ordinal or NONE, tested for equality
+// or signed validity 72/73, or the count, tested for equality or the bound 72/72.
+// The same four forms with a separate comparison cursor also give 72/73/72/72.
+// The terminator uses a direct zero and the body reaches 205–206 bytes, but the
+// 0x24 frame still lacks the base spill and EBX carries the scaled entry address.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

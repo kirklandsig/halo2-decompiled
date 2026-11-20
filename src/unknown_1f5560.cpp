@@ -16,6 +16,8 @@
 #include <math.h>
 #include <float.h>
 #include "unknown_26c380.h"
+#include "vector2f_products.h"
+#include "vector2f_normalize.h"
 
 struct s_slot_entry_list;
 struct s_collision_bsp_test_vector_result
@@ -708,6 +710,20 @@ struct s_1f9762
 // Writing the test the other way round (`index + 1 >= count`, `count <= index + 1`, the same test negated and
 // the same test with both sides widened) all measure 4: the increment moves to EDX with the index and the count
 // takes EAX, so the compare and the load order change as well. The body stands.
+// MiniMax A (11-19): score 1 (unchanged): the entry test reads the count through a function-scope path pointer at
+// actor+0x50c (`actor->unknown53a + 1 >= path->field_2d`) and then reproduces retail's `inc eax`/`cmp eax, edx`/
+// `setge al` byte for byte, leaving only the second dot product's i term taking the direction as multiplicand
+// where retail takes the point (score 2). That multiply's operand order does not move under the helper's
+// argument order, a subtract-assignment form, a named local for the input pointer, the current point read
+// through the path or through the actor's own field, or the first dot's argument order; reading the index
+// through the path instead rotates the whole float block (score 10). The committed body (score 1) stands.
+// MiniMax D (11-19): no new form, no lower score (1): retail's `inc eax` needs the index in EAX and the count
+// in EDX, and every spelling that increments the index puts it in EDX instead (`index + 1 >= count` 4, the same
+// test as `count <= index + 1` 4 with `setle al`, the count and the index each through a one-use local 6 and 6,
+// and the count through a one-use local minus one 3 which also rotates the two dot products), while every
+// spelling that keeps the index in EAX decrements the count instead; the committed body (score 1) stands.
+// MiniMax B (11-20): no new form, no lower score (1): the entry test is still the only difference (`dec edx` where retail has `inc eax`); this round's spellings of it - `index + 1 >= count` 4, `count <= index + 1` 4, `index + 1 > count - 1` 131, the same with one side widened 4, the count or the index through a one-use local 6 each and the same with a long local 6 - all leave the increment in EDX, and the permuter (34 tries) found nothing below the baseline.
+// MiniMax I (11-20): no new form, no lower score (1): the entry test is still the only difference - this build decrements the count where retail increments the index; the path-pointer spelling that matches retail's entry test flips the second dot product's i term (score 2).
 // score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
 // The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
@@ -1182,197 +1198,37 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
-// score 120 (was 120; 137 before): Frame 0x1c agrees. Retail scales the actor index before the pool load and
-// holds the actor in EDI and the object in ESI. This build exchanges those homes.
-// M3 lane 14 r112 (fast; control 120): the closing term as `dot_product2d((vector2f const *)&object->velocity,
-// path_direction) - dot_product2d(path_direction, (vector2f const *)&other->velocity)` 114 (that block then has retail's
-// loads and operand sides exactly, only the ESI/EDI names differ; six points, under the bar, not kept); on it the velocity
-// dot and the facing dot through dot_product2d 114/114 (same code); the actor through the existing actor_datum_get 120
-// (same code); one to seven dead initialised locals (diagnostic) 120 each with identical listings (no symbol-count effect
-// here); the normalize written with `i = inv * i; j = j * inv` 122, in the normalize3d shape (`if (!(fabs(m) < eps))`
-// scale helper, else m = 0) 114; a named velocity j or i after the normalize 115/115; the turn clamp spelled `1.0 <
-// cosine` or as an if/else on a named double 115/115 (the `fld 1.0; fld st(1)` stays where retail has `fld st(0); fld
-// 1.0; fxch`). Diagnostic: with nearly every actor read removed (approach blocks and the following test) the actor still
-// takes ESI, so the exchange is not a use-count tie: the actor's web takes the scaled index's register (`add esi, edi`)
-// where retail forms it with `lea edi, [edx + esi]` from a scratch index.
-// M3 lane 14 r114 (fast; control 120, aligned 47 raw / 38 register-masked): the in/out planar scale helper pair
-// (as src/unknown_1ff010.cpp has it) for the velocity normalize, with the closing term through dot_product2d, the
-// velocity copied as `*(vector2f const *)&object->velocity` and its dot as `dot_product2d(desired, &velocity)` 263 at
-// retail's 1324 B (masked aligned 22-25: the normalize block is then retail's exactly; left are the actor/object
-// exchange, the two 1.0 entry stores, the velocity dot loading desired's j first, the clamp's `fld st(1)` and the
-// final product's slot); the same without the velocity dot helper 114 (masked 26), without the copy 306 (1324 B); the
-// closing term alone 114, with the copy 114. Diagnostics (one-object link screen, restored): the actor offset stays
-// coalesced with the actor (`add esi, edi`) with any one of the four blocks deleted, with two extra object reads, an
-// extra actor read, one fewer actor read, the actor read through actor_get at every use, and with one or two extra
-// long-lived integer values; retail's lea form is in 26 matched functions (0x1c1d50 the closest: offset in EDX, pool
-// in ESI, `lea ebx, [edx + esi]`), with no source difference found in their actor lookups.
-// MiniMax R run 92 (11-17): no new form, no lower score (120): retail still holds the actor in edi and the object in
-// esi and scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the
-// pool first and keeps the actor in esi; the two 1.0f entry stores still come out in the opposite order and the
-// callee's declaration order (object index first) is fixed by four other files.
-// MiniMax D (11-16): no new form, no lower score (120): this round read the retail diff against ours again and the
-// remaining delta is the prologue and the two pointers: retail masks and scales the actor index into EDX before it
-// pushes and forms the actor with `lea edi, [edx + esi]` (actor in EDI, object in ESI) where this build loads the pool
-// first, keeps the scaled index in ESI and forms the actor with `add esi, edi` (actor in ESI, object in EDI); the two
-// 1.0 entry stores are still the other way round (ours +0x10 then +0x1c, retail +0x1c then +0x10) and the length is
-// 1326 against retail's 1324; retail's own call site takes the object index first and the same function is declared
-// in four other files: BLOCKED-BY those declarations.
-// MiniMax R (11-17): no new form, no lower score (120): retail holds the actor in edi and the object in esi and
-// scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the pool first
-// and keeps the actor in esi and the object in edi; the two 1.0f entry stores still come out in the opposite order, the
-// velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, and the callee declaration
-// order (object index first) is fixed by four other files.
-// Earlier score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
-// named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
-// callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before
-// the frame pushes and keeps the actor pointer in EDI with the object pointer in ESI, where this build loads
-// the actor pool before the pushes and keeps the actor in ESI; a named offset local, the object lookup
-// first and the existing actor getter all measure 137 or worse.
-// MiniMax A (11-13): no new form, no lower score (137; the fast check reads 117): the actor address as the
-// folded sum of the pool pointer and the masked index compiles to the same bytes; the actor and object
-// pointers still take the other way round (ours actor in ESI and object in EDI, retail actor in EDI and
-// object in ESI), and retail still scales the actor index into EDX before it loads the pool where ours
-// loads the pool first and scales the index into ESI.
-// MiniMax G (11-12): no new form, no lower score (137; the fast check reads 117): the actor offset as a named local compiles to the same bytes as the folded expression.
-// MiniMax D (11-10): no new form, no lower score (137); retail scales the actor index into EDX before the
-// register saves and keeps the actor pointer in EDI with the object in ESI, ours hoists the global loads and
-// keeps the actor in ESI with the object in EDI; retail's function_1e5450 also takes its definition index
-// from the stack where our call leaves it in EDX.
-// MiniMax D (11-10): no new form, no lower score (137); retail computes the masked actor offset into EDX
-// before the prologue and adds the pool data with an address LEA (`lea edi, [edx + esi]`), ours loads the
-// pool global first, keeps the offset in ESI and adds it with `add esi, edi`; the two pointers keep the
-// other way round (ours actor ESI / object EDI, retail actor EDI / object ESI), which is what decides
-// the LEA against the ADD, and the two entry stores of the 1.0 factors come out in the opposite order
-// (ours `[esp + 0x10]` then `[esp + 0x1c]`, retail `[esp + 0x1c]` then `[esp + 0x10]`); the actor and
-// object pointers as const pointers change nothing (137).
-// MiniMax C (11-14): no new form, no lower score (137): retail masks the actor index and multiplies it
-// before it loads the pool, then forms the actor with lea edi,[edx+esi] (actor EDI, object ESI); ours
-// loads the pool first and leaves the actor in ESI, so the prologue is two bytes longer and the rows pair
-// wrongly; the offset-first expression and the scaled-offset local both give the same code. The normalize
-// block still differs in the pre-load of the velocity's j before fsqrt and in the product order (that
-// helper is shared in include/unknown_11cc90.h), and the two 1.0f scale stores are swapped against retail.
-// MiniMax S (11-10): no new form, no lower score (137): the actor and object pointers still take the other way round (ours actor in esi / object in edi, retail actor in edi / object in esi), so the prologue is one byte shorter and every later row pairs with the wrong row.
-// MiniMax C (11-09): no new form, no lower score (137); the body differs only by the actor/object pointer pair (ours actor ESI / object EDI, retail actor EDI / object ESI), so the prologue is one byte shorter and every later row pairs with the wrong row.
-// Round 16: retail passes the object index in EAX and the actor index in ECX, ours passes the
-// actor index in ECX and keeps the object index elsewhere; retail computes the masked actor
-// offset before the pool load and holds the actor in EDI.
-// MiniMax C (11-09): no new form, no lower score (137); the actor address as a subscript, the object lookup
-// before it and the index-first expression all leave the code unchanged, so the actor/object register pair
-// (ours actor ESI / object EDI, retail actor EDI / object ESI) still differs.
-// MiniMax D (11-14): no new form, no lower score (137; the fast check reads 117): retail's own call site
-// puts the object index in EAX and the actor index in ECX, so retail's declaration takes the object index
-// first; the same function is declared in four other files, so the order is reported and left alone, and the
-// permuter's six tries over the reduced image (with --allow-mismatch, since the reduced score 335 differs
-// from the full 135) found nothing below the baseline.
-// Earlier at 137: frame 0x1c agrees; actor/object homes, velocity preload and final minimum remain (caller-inclusive fast 137).
-// Earlier: frame 0x1c agrees; two excess bytes, actor/object roles (EDI/ESI), the hoisted velocity j load,
-// the first clamp's x87 order and the epilogue pops' place in the final minimum remain.
-// Independent facing/velocity scopes 331; late turning minimum 350; branch-defined following
-// factor 335; frame pointer 399; inline depth one 308 (fast). Scalar velocity 309;
-// approach/following squared sums 308/308; combined radius 308; nested minimum 314 (fast). object
-// receiver first 309; approach component scopes 308; following component scope 308; shared minimum
-// scalar 308; library velocity copy 309 (fast control 308). conditional-body factor names 308;
-// velocity field pointer 308; goal field pointer 308; speed field pointer 308; radius field
-// pointer 308 (fast control 308). entry velocity workspace 307; native actor fields 307; external
-// object reference 307; branch-assigned approach 352; native actor plus entry velocity 307
-// (plain). Shared approach geometry 377; conditional-body entry result 308; direct turning
-// fraction 321; turning workspace scope 308; conditional-body ordered minimum branches 308 (fast
-// control 308).
-// Round 124: Existing shared magnitude/normalizer 308/308; parallel double turning products 308;
-// paired complete speed projections 308; both scalar boundaries 308 (fast control 308, full baseline 307).
-// Original body and every math operation restored.
-// Round 54: all four factors 1.0 at entry 333; outer/inner MIN macro 327, inner MIN with a named
-// scale 206 (kept); float pow arguments 203; clamped arccosine call 269; float approach offsets 137;
-// float gap with `!(gap > 0)` 128; shared normalize 117 fast, 137 plain (kept); ternary first clamp
-// 304; inverse-first products 312; velocity copy j first 123; facing factor declared first 115;
-// actor offset first 117 (fast; plain base 137).
-// Round 245 (fast control 117): Native indexed actor fields 117; actor/current-object/both accessors
-// at every use 383/383/444; radius at every use 319; all observations 425; native actor plus
-// shared inner minimum 335; all observations plus shared inner minimum 381. Original receivers restored.
-// Round 342 (fast control 117): Shared X/Y/XY offsets 117/129/117; shared separation 135;
-// X/Y/XY plus separation 135/147/135; all with native velocity initializer 135. Original full-score 137 body restored.
-// Round 59 (fast control 117): offset-first actor expression 117; actor through the actor getter 117;
-// object before actor 118; speed factor declared last 117; ternary first clamp 117 (same code). The
-// velocity j preload matches the shape the in-place 3-D normalize gives in matched 0x179fb0 (every
-// component but the first preloaded before fsqrt); a hand-written 2-D copy of that shape 128.
-// Direct speed-factor default 302; all minimum spans 117; speed/spans 302; paired closing
-// projections 117; speed/projections 302; spans/projections 117; all 302; all with facing default
-// first 300 (caller-inclusive fast 137). All restored; actor/object homes, velocity preload
-// and the final minimum/epilogue placement remain.
-// Round 403: native settings 117; readonly settings 117; native settings actor 117; readonly native
-// actor 117; readonly object 117; readonly settings actor 117; readonly native receivers 117; native
-// settings getter 117. Opening body restored.
-// Round 39: shared planar normalizer common/separate result, either arm first 117;
-// complete native input with those result forms 382 (fast control 117). Shared helper restored.
-// Round 22 (one-file harness with the 0x1e5450 and arccosine files, 119 at 1326 bytes; it differs
-// from the full build only in the epilogue pops): actor getter 119; object first 120; settings
-// from an inline object lookup 119; tag index local 119; scaled-offset local 119; 2-D normalize
-// shapes (else-zero, `s * v->c`, sum j first, `v->c * s`, early return, i or j local) identical
-// code 119; velocity dot operand orders 119, `2.0f + (...)` 122, `a + (b + 2.0f)` 120.
-// Ordered turn/approach, facing and following results, seven subsets
-// 334/137/334/137/334/137/334; all with the staged final velocity product 334.
-// All restored; the caller-inclusive unchanged preview is 137.
-// Lane 15 round 18 (caller-inclusive fast, each compared with the baseline code): the actor address as one
-// expression without the two one-use pool locals, identical code (kept); upper clamp `1.0 < dot`, the
-// clamp through a PIN macro, a named return value, and the velocity through the file's own planar
-// normalizer: identical code each (137). Retail preloads the velocity's j before fsqrt and scales i from
-// memory into a reciprocal copy; the epilogue pops sit before the final minimum's branches.
-// Round 29 (lane 11, fast; control 137): the whole minimum as one return expression 283 (1422 bytes: the
-// macro repeats the nested minimum); a two-pointer 2-D dot helper (as in 0x1b0cd0) for the velocity dot 137,
-// for the facing and velocity dots 137 (same code); facing_scale declared before turning_scale 135 (retail's
-// entry store order: facing, turning, velocity, following); the velocity copy as `= { i, j }` 137. Compile-only
-// listing: the 2-D normalize written out (plain or `*=` products) gives normalize2d_fast's code; retail keeps
-// velocity.j loaded across the length test (`mulss j, inv`, i through a copy of inv), ours folds both; the
-// non-LTCG listing places the four pops after the last merge's comiss as retail does, our LTCG build does not.
-// MiniMax R (11-10): no new form, no lower score (137): ours is 1326 bytes against retail's 1324 and the
-// first difference is at +0x4; what stands between the two is that retail keeps the velocity's j in a
-// register across the length test and scales i through a copy of the reciprocal where we fold both
-// products, and that retail's four pops sit after the last merge's comiss where our LTCG build puts
-// them before; the earlier rounds' forms (the clamp shapes, the two-pointer dot helper, the velocity
-// copy, the staged final product) all measure 137 or worse.
-// MiniMax D (11-15): no new form, no lower score (137; the fast check reads 117): the five scale locals hold retail's
-// values and the closing product multiplies the velocity scale before the speed scale as retail does, but retail stores
-// the facing scale's 1.0f before the turning scale's while this build stores the turning scale first (the declaration
-// order that fixes it measures 135), and the actor and the object still take retail's registers the other way round
-// (retail holds the actor in EDI and the object in ESI), so the prologue is one byte shorter and every later row pairs
-// with the wrong row; the actor written as the scaled offset first and the offset held in its own local both compile to
-// the same code.
-// MiniMax D (11-16): no new form, no lower score (120 in the fast check; ours is 1326 bytes against retail's 1324):
-// retail masks the actor index and multiplies it into edx before it loads the pool, then forms the actor with
-// lea edi,[edx+esi] and keeps the object in esi, while this build loads the pool first, holds the actor in esi and the
-// object in edi, so the prologue is two bytes longer and every later row pairs with the wrong row; the offset-first
-// expression, the scaled offset in a local of its own and the actor getter all compile to the same code, and the
-// velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, which this lane may not edit.
-// Round 605. The 0x1c frame agrees. The early actor pool load and reversed actor/object registers remain.
-// Shared following-point difference 128. Object-header getter 120. Named turn span 122. Following radius read
-// once 266. Angle clamped before complement 120. Distinct scale minimum names 120. Positive-gap ternary 120.
-// Checked following-object index 120.
-// actor pool read after settings 333; actor getter after settings 333; early actor offset deferred
-// pool read 333; early actor slot deferred indexed pool read 333; object receiver loaded after
-// settings 120; object receiver in each use phase 117; early offset with receivers after settings 333;
-// actor pool and entry data separate 333. NOT kept because phase-specific object lookups gain only
-// three points and leave the two-byte excess and first difference in place. The other forms tie or
-// regress.
-// The index-scale lead and actor/object register exchange still differ.
-// point difference in both approach paths 133; point difference and magnitude in both approach paths 117;
-// shared point difference with separate minimum selection 297; shared point difference and magnitude 297;
-// typed actor and point differences in each branch 133; typed actor and shared point difference 297;
-// one override-speed read 122; typed actor and point difference with magnitude in each branch 117.
-// NOT kept: separate approach paths with the shared magnitude gain only three points and leave the receiver split.
+/* a . b summed one component at a time. Retail adds the i product of 0x1f9e70's velocity dot first
+   (0x1f9f9f), where the one-expression dot_product2d adds the j product first, as that function's
+   other dots do. */
+static inline real dot_product2d_stepwise(vector2f const *a, vector2f const *b)
+{
+	real dot = a->i * b->i;
+
+	dot += a->j * b->j;
+	return dot;
+}
+
+/* how far an actor may push its speed along its path: the smallest of the facing, turning, approach and
+   following scales, times the velocity and speed scales. Retail looks the actor up twice (its scaled index
+   is formed in a scratch register before the pool is read, 0x1f9e73, and the two are joined with a lea),
+   so each field is read through the view that declares it; the turn cosine is a float widened for the
+   double clamp (fld st(0) / fld 1.0 / fxch at 0x1fa036). */
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
     vector2f const *next_direction, real distance, bool ignore_facing)
 {
-    byte *actor = g_4f55f0->data + (actor_index & 0xffff) * sizeof(s_actor_view);
+    s_actor_view *actor = actor_get(actor_index);
+    s_actor_moving *moving = actor_moving_get(actor_index);
     s_slot_object_view *object = object_get(object_index);
     byte *settings = (byte *)function_1e5450(actor_index, object->tag_index);
     real speed_scale;
-    real turning_scale = 1.0f;
     real facing_scale = 1.0f;
+    real turning_scale = 1.0f;
     real velocity_scale = 1.0f;
     real following_scale = 1.0f;
-    speed_scale = *(real *)(actor + 0x4b4) != 0.0f ? *(real *)(actor + 0x4b4) : 1.0f;
+    speed_scale = actor->unknown4b4 != 0.0f ? actor->unknown4b4 : 1.0f;
     if (!ignore_facing)
     {
         real minimum = *(real *)(settings + 0x5c);
@@ -1380,27 +1236,25 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
         if (dot < 0.0f)
             dot = 0.0f;
         facing_scale = (1.0f - minimum) * dot + minimum;
-        vector2f velocity;
-        velocity.i = object->velocity.i;
-        velocity.j = object->velocity.j;
-        normalize2d_fast(&velocity);
-        velocity_scale = (desired->i * velocity.i + desired->j * velocity.j + 2.0f) * 0.3333333432674408f;
+        vector2f velocity = *(vector2f const *)&object->velocity;
+        planar_normalize(&velocity);
+        velocity_scale = (dot_product2d_stepwise(desired, &velocity) + 2.0f) * 0.3333333432674408f;
     }
     real radius = *(real *)(settings + 0x1c);
     if (next_direction && radius * 2.0f > distance)
     {
         real minimum = *(real *)(settings + 0x58);
-        real angle = function_50650((real)PIN_126660((double)desired->j * next_direction->j +
-            (double)desired->i * next_direction->i, -1.0, 1.0)) * 0.31830987334251404f;
+        real angle = function_50650((real)PIN_126660(desired->j * next_direction->j +
+            desired->i * next_direction->i, -1.0, 1.0)) * 0.31830987334251404f;
         real fraction = 1.0f - (angle > 1.0f ? 1.0f : angle);
         real scale = (1.0f - minimum) * fraction * fraction + minimum;
         turning_scale = (1.0f - scale) * distance / (radius * 2.0f) + scale;
     }
     real approach_scale = 1.0f;
-    if (!actor[0x4ae])
+    if (!moving->unknown4ae)
     {
-        real x = *(real *)(actor + 0x510) - position->x;
-        real y = *(real *)(actor + 0x514) - position->y;
+        real x = actor->unknown510.point.x - position->x;
+        real y = actor->unknown510.point.y - position->y;
         real remaining = (real)sqrt(y * y + x * x);
         if (radius > remaining)
         {
@@ -1408,21 +1262,21 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
             approach_scale = (1.0f - minimum) / radius * remaining + minimum;
         }
     }
-    else if (*(real *)(actor + 0x4b0) != 0.0f)
+    else if (actor->unknown4b0 != 0.0f)
     {
-        real x = *(real *)(actor + 0x510) - position->x;
-        real y = *(real *)(actor + 0x514) - position->y;
+        real x = actor->unknown510.point.x - position->x;
+        real y = actor->unknown510.point.y - position->y;
         real remaining = (real)sqrt(y * y + x * x);
         if (radius > remaining)
         {
-            real minimum = *(real *)(actor + 0x4b0) / speed_scale;
+            real minimum = actor->unknown4b0 / speed_scale;
             approach_scale = (1.0f - minimum) / radius * remaining + minimum;
         }
     }
-    if (actor[0x50c] && *(short *)(actor + 0x504) == 1 && *(short *)(actor + 0x5b0) == 7 &&
-        *(long *)(actor + 0x5ac) != NONE)
+    if (moving->unknown50c && moving->unknown504 == 1 && actor->unknown5b0 == 7 &&
+        actor->unknown5ac != NONE)
     {
-        s_slot_object_view *other = object_get(*(long *)(actor + 0x5ac));
+        s_slot_object_view *other = object_get(actor->unknown5ac);
         real x = object->unknown030.x - other->unknown030.x;
         real y = object->unknown030.y - other->unknown030.y;
         real z = object->unknown030.z - other->unknown030.z;
@@ -1431,8 +1285,8 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
             gap = 0.0f;
         if (*(real *)(settings + 0x1c) > gap)
         {
-            real closing = object->velocity.j * path_direction->j + path_direction->i * object->velocity.i -
-                (path_direction->i * other->velocity.i + other->velocity.j * path_direction->j);
+            real closing = dot_product2d((vector2f const *)&object->velocity, path_direction) -
+                dot_product2d(path_direction, (vector2f const *)&other->velocity);
             if (closing > 0.0f)
             {
                 real fraction = (*(real *)(settings + 0x1c) - gap) / *(real *)(settings + 0x1c);
@@ -1448,7 +1302,8 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
         }
     }
     real scale = MIN(facing_scale, MIN(turning_scale, approach_scale));
-    return MIN(scale, following_scale) * velocity_scale * speed_scale;
+    scale = MIN(scale, following_scale) * velocity_scale;
+    return scale * speed_scale;
 }
 
 
@@ -1616,12 +1471,23 @@ PRIVATE inline real movement_normalize2d(point2f *v)
         real inverse = 1.0f / length;
         v->x *= inverse;
         v->y *= inverse;
-        return length;
     }
-    return 0.0f;
+    else
+        length = 0.0f;
+    return length;
 }
 
-// score 239 (was 239): The zero and radius have different XMM homes, and unsupported types use a separate return path.
+// MiniMax S (11-19): no new form, no lower score (239): the body is retail's statement for statement and the whole
+// delta is the colouring of the vector block - retail holds the result in XMM0 as a copy of the zero constant
+// (`movaps xmm0, xmm1`, the zero in XMM1) where this build folds the constant into the store, retail normalizes the
+// direction's x before its y and this build the y before the x, and retail's left test multiplies the facing's y by
+// the direction's x with both in registers where this build copies the direction's x and takes the facing's y from
+// memory; the side vector's y replaced by the direction's x gives 256, the facing's x and y read into named locals
+// before the test 270, and the helper's multiply order and temporaries 239.
+// score 226 (was 239): since m3 lane 2 r115 the entry (zero XMM1, result copied to XMM0), the three exits and the
+// 0x3c frame are retail's at 1176 bytes against 1173; left are the XMM numbers (radius XMM4 for XMM5, the direction
+// XMM6/XMM2 for XMM2/XMM3), the type-zero arms' shared tail, the lateral spill and the trace call's radius temporary.
+// Before r115: the zero and radius had different XMM homes, and unsupported types used a separate return path.
 // The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
 // M3 lane 14 r112 (fast; control 239, aligned 198, register-masked 85): retail keeps the result in XMM0 from its zero
 // (`movaps xmm0, xmm1`, then the spill to +0x10) up to the type exit, which jumps past the final reload with XMM0 still
@@ -1869,11 +1735,117 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // assigning y first 261 (aligned 158, shape 50); the forwarding function alone on the kept body 252 (1190 B), with
 // one return 243, with the goto and one return 263. Open: what gives the radius XMM5 and the direction XMM2/XMM3 once
 // the result holds XMM0, and why retail does not thread the left type-zero arm.
+// M3 lane 2 r108 (fast; control 239): the direction normalized by the shared header's 2-D normalizer (through a
+// vector2f cast, as unit_object_type.cpp does) 239 (same code), the desired point too 240; ten locals renamed to sort
+// first (result, radius, direction, side, left, center, perpendicular, difference, side_radius, lateral) 239 each;
+// const radius/side/flag/perpendicular 239; the side offset as if/else arms with a named negative radius plus the
+// shared normalizer 287 (1193 B). Reading: retail's left type-zero arm shares the type-one arm's last instruction
+// (`addss xmm0, [ebx + 4]`, center.y in XMM0 in both), so the tail merge happens before threading; ours gives the two
+// arms' center.y different registers, so nothing merges and the arm is threaded: one register-allocation cause.
+// M3 lane 8 r191 (fast with 0x29a190/0x29cbb0, control 239): the convention already matches retail (target in EDX, the type
+// as the first stack argument), so no parameter reorder is needed. The type exit by `goto done` 260 (1173 B: the zero
+// takes XMM1 as retail, but the result is stored from it with no XMM0 copy); with the sign applied to the result and one
+// return 255 (1187 B); `real result = 0.0f;` as the first statement 262; result declared after the radius 239 (same code);
+// the sign applied to the result with the type exit's own return kept 244 (1178 B). Body unchanged.
+// M3 lane 7 r188 (fast with 0x29a190/0x29cbb0; control 239, aligned 198): the pathfinding pointer through the existing
+// 0x1fa7f0 in place of its body written out 239 (same code, kept). Not kept: the first normalize through the shared planar
+// pair of include/vector2f_normalize.h 239 (same code); the radius read after the direction is normalized 292 (1192 B);
+// the result declared at the side test 281 (1167 B), with the type exit by `goto done` 289 (1154 B). Diagnostics: the
+// result's address taken without escaping (`(void)&result`, or the arc cosine stored through a pointer to it) 239 with
+// identical code, so only a real escape would keep it out of constant folding. Reading: the three early exits after calls
+// already return the stored result unfolded (they join the final return); only the type exit's own `return result` folds
+// to the zero register. Retail reaches the same final return from the type exit but past its reload, i.e. it still holds
+// the result in XMM0 from `movaps xmm0, xmm1` at its definition; the `goto done` form (260, retail's 1173 bytes) lacks
+// exactly that copy and reloads.
+// M3 lane 2 r115 (fast with 0x29a190/0x29cbb0, plain-confirmed 239; "aligned" = aligned differing instructions with the
+// XMM numbers masked, 98 on the old body). Kept at the same count, without the `volatile`: the origin read once through
+// its address (a plain read; reading `origin` directly moves it to EDX and loses matched 0x29a190, so its stack home is
+// retail's convention), one return with the sign applied to the result, the side offset as if/else arms (retail has
+// the products in each arm) and the private normalizer with one result variable (`else length = 0.0f; return length;`,
+// which removes the length's reload and store-back). Together 239 at 1176 B, aligned 57: the entry is retail's
+// `xorps xmm1; movaps xmm0, xmm1; store from XMM0`, the type exit jumps past the final reload and the left exit has its
+// own epilogue. Each alone raises the count: plain read 273, normalizer 263, both 281, those with one return 273,
+// normalizer and arms 270, plain read with arms and one return 256; with the volatile read the three together 238.
+// Leads (not kept, each a match-only form): the type-zero LEFT arm assigning center.y before center.x 194 at 1168 B
+// (195 with the volatile read): both type-zero arms are then retail's, the left one sharing the type-one arm's
+// `addss xmm0, [ebx + 4]` and re-testing the flag; a named float local for the trace call's radius argument gives
+// retail's argument block (the value stored to the dead facing home and reloaded) 253 at 1183 B, aligned 42, with the
+// plain read 254, aligned 39 (the side test then loads both facing components as retail); on that, the forward sum
+// accumulated term by term (diagnostic) 265, aligned 32 (lateral spilled to the type home as retail), with the left
+// arm y first 228, aligned 24. Left on that 24: retail loads the type-one difference into registers and multiplies by
+// the negated radius where ours copies the negated radius and multiplies by memory, and the XMM numbers (retail
+// direction XMM2/XMM3, radius XMM5, side XMM6; ours XMM6/XMM2, XMM4, XMM7 in every form below).
+// Same code as their base: the side vector's y written as the direction's x; the existing dot_product2d at the side
+// test, the lateral, the forward or the cosine, each or all; forward's terms in the other order; direction or center
+// declared earlier; side as two statements; perpendicular initialised y first or as statements; product-first centre
+// expressions in any arm. Other forms on the named-local base (253): a scalar side x 271; radius declared before the
+// result 254; radius read after the normalize 295; side.y assigned before side.x 260; the result declared after the
+// normalize 305; `(void)&origin` with direct reads 270; the volatile read after the lookup or after the radius 275;
+// forward's origin dot through the file's stepwise dot 291; side-offset arms y first 253; type-zero not-left arm y
+// first 249; type-one arm y first 248; 31 combinations of the last four and the accumulated forward 196..265 (best
+// positional: left and side arms y first 196). On the kept body: the not-left centre as `target - perpendicular *
+// radius` 200 at 1173 B (another computation, aligned 96); the type-zero arms swapped with `!left` 242; perpendicular
+// at function scope 290.
+// M3 lane 7 r191 (fast with 0x29a190/0x29cbb0; control 239): on the `goto done` type exit (260 re-measured, 1173 B) the
+// normalize block takes XMM0, which retail keeps for the result copy made at its definition (`movaps xmm0, xmm1`); retail's
+// type exit is the only exit that skips the final reload. Forms: that exit as `{ result = 0.0f; goto done; }` 265 (1178 B);
+// with a `real const &` bound to the result and returned at done 260 (same code); the reference alone on the return form 239
+// (same code); the 0x26ccb0 hit as `return result;` with no done label 271 (1191 B); the type exit as `return 0.0f;` 239 (same
+// code). Re-measured round 188's listed forms: the result assigned zero right before the type chain 281, with `goto done` 289.
+// Separate float cosine limit branch 264, double clipped cosine 239, direct clipped expression at the
+// arc helper 239, unsigned angle before result publication 262. Positive or negative initial side
+// radius 243/279, planar side vector 239, shared outgoing cosine dot 239. The zero and radius
+// registers remain different. The radius branches move the extent past retail to 1160 and 1157 bytes.
+// XMM2 still holds zero and XMM7 the radius. The compared lower bound is already
+// reused in XMM6. Named lower bound 239, fraction default one 271, explicit
+// fraction arms 239, named span 239, named excess 239, both 239, named upper
+// bound 239, early lower-range return 283. Default one reaches 1173 bytes at 271.
+// M3 lane 2 r117 (fast with 0x29a190/0x29cbb0; control 239; al = aligned differing instructions exact/XMM numbers
+// masked, 213/57 on this body). Cause of the XMM numbers: retail assumes that a call between the desired vector and
+// the cosine may write the address-taken locals (direction and desired, whose addresses go to the inlined normalizer),
+// so its cosine reads all four components from memory into XMM0/XMM1 and their register lifetimes end before the
+// calls; our link knows that 0x210770, 0x210690 and 0x26ccb0 write only through their own pointer arguments and keeps
+// the four values register candidates across the calls, which reorders the whole vector block. Diagnostics (reverted
+// at once): the cosine without its direction.x term gives the radius XMM5, the side XMM6, the centre XMM4/XMM1 and the
+// lateral spill; `&direction` passed as 0x210690's output 241 (cosine operands from memory); a call to an unresolved
+// function after the transforms 163 at 1168 B (al 108/23); a call there to the out-of-line `inline` normalizer 0x2b400
+// 233 at 1173 B: with either the cosine is retail's instruction for instruction. HELD (needs the coordinator's OK,
+// patch build/r117/held-0x210d10.patch): `inline` on 0x210d10's definition in src/unknown_20fe20.cpp (the axis helper
+// under both transforms) makes 0x210770 and 0x210690 such calls; 0x210d10, 0x210770, 0x210690 and 0x29a190 still match
+// and a full check loses nothing, this function's first difference moves from +0x4f to +0x97 (240 at 1163 B, al
+// 135/48) and 0x299460's entry becomes retail's (its float parameter is no longer preloaded into XMM5; first
+// difference +0x14 -> +0xd0), but both positional counts rise (239 -> 240 here, 0x299460 569 -> 726 at 3349 B of
+// 3372), so it is not kept. Not the cause: `inline` on 0x142700/0x1427f0 (diagnostic, full check) loses 0x210690,
+// 0x210770, 0x14a8e0, 0x168d60 and 0x23d030; the two normalizations through a normalizer defined in another source
+// file and inlined at link time (plain, inline or forced) and pointer-returning inline helpers for the direction give
+// this body's code; the 3-D set-up, both transforms and the trace in one inline function taking the planar points by
+// pointer 194 on the left-arm lead (same code as the lead), with the radius by value 265 (1186 B). Redundant
+// parentheses (new lever here): the number of redundant pairs mod 4 is one global phase of the allocation wherever the
+// pairs stand (one pair = none 239; two 276 at 1187 B; three 268 at 1187 B; four, five, eight = none; three on the
+// lateral sum's first three products 256 at 1184 B with the lateral spilled), and a new used local shifts the phase by
+// one; a 210-sample search over the arm orders x pairs on 25 products x phase on this body found 101 distinct codes,
+// none below r115's left-arm lead (194) and no match. On the HELD base (match-only forms, none matched): the named
+// trace radius 233 at 1173 B (al 119/32); with the left arm y first 239 (al 107/22), its phase 2 138 at 1173 B (al
+// 104/26); the type-one centre as both products and then both sums 237 at 1181 B (al 63/22: the radius XMM5, the
+// inverse length XMM3, the direction XMM2 and the lateral spill are then retail's; left are the side in XMM7 for XMM6,
+// the type-one arm, where retail loads the difference into registers and multiplies by the negated radius held in the
+// zero register, and the left arm's shared tail), a named scale for it 224 (1176 B), through a by-value scale helper
+// 224 (same code), the difference copied into the centre first 230..295; 370 more samples over those spellings, the
+// arm orders, the normalizer's product order and pairs: best 123 (1167 B), best aligned 60, none with the type-one
+// arm's register loads, no match.
+// First difference is the radius in XMM4 versus retail XMM5. Side displacement in a point,
+// twin scalars, planar scaler, or scaled center initializer 226 each. Type-zero/type-one
+// radial scaling 256/252, both radial arms 257, all displacements 248.
+// The shared planar displacement moves both center additions to their common continuation.
+// Native direction vector with fast normalization 248, aggregate direction 248, planar scaling normalizer 248;
+// native desired vector with fast or planar normalization 237 each; both native vectors 257, with shared cosine
+// dot 257, and both with planar normalization and cosine dot 257. NOT kept: the first radius-register difference
+// stays at +0x4f, and the direction/desired cosine still does not recover retail's register allocation.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
 {
-    point2f const *volatile *local_0 = &origin;
+    point2f const *const *local_0 = &origin;
     point2f const *local_1 = *local_0;
     s_actor_view *actor = actor_get(actor_index);
     byte *entry = (byte *)function_1e5450(actor_index, object_get(object_index)->tag_index);
@@ -1882,8 +1854,8 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
     point2f direction;
     vector2d_from_points2d(local_1, target, &direction);
     movement_normalize2d(&direction);
-    point2f side = { 0.0f - direction.y, direction.x };
-    bool left = facing->y * side.y + facing->x * side.x > 0.0f;
+    vector2f side = { 0.0f - direction.y, direction.x };
+    bool left = facing->y * side.j + facing->x * side.i > 0.0f;
     point2f center;
     if (type == 0)
     {
@@ -1906,17 +1878,21 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
         center.x = target->x + difference.x * (0.0f - radius);
         center.y = target->y + difference.y * (0.0f - radius);
     }
-    else return result;
-    real side_radius = left ? 0.0f - radius : radius;
-    center.x += side.x * side_radius;
-    center.y += side.y * side_radius;
-    real lateral = center.y * side.y + center.x * side.x - (local_1->y * side.y + local_1->x * side.x);
+    else goto done;
+    vector2f adjustment;
+    if (left)
+        planar_scale(&side, 0.0f - radius, &adjustment);
+    else
+        planar_scale(&side, radius, &adjustment);
+    center.x += adjustment.i;
+    center.y += adjustment.j;
+    real lateral = center.y * side.j + center.x * side.i - (local_1->y * side.j + local_1->x * side.i);
     real forward = center.y * direction.y + center.x * direction.x - (local_1->x * direction.x + local_1->y * direction.y);
     if (forward > radius * 0.11f)
     {
         real fraction = forward > radius * 1.3f ? 1.0f : (forward - radius * 0.11f) / (radius * 1.189999938f);
         real offset = (fraction * 1.5f - 1.0f) * lateral;
-        point2f desired = { center.x + offset * side.x - local_1->x, center.y + offset * side.y - local_1->y };
+        point2f desired = { center.x + offset * side.i - local_1->x, center.y + offset * side.j - local_1->y };
         real distance = movement_normalize2d(&desired);
         vector3f local_direction = { desired.x, desired.y, 0.0f };
         point3f local_origin = { local_1->x, local_1->y, actor->position.z };
@@ -1925,10 +1901,7 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
         long sector = *(long *)((byte *)actor + 0x28c);
         if (sector != NONE)
         {
-            byte *structure = (byte *)g_4e0348;
-            s_pathfinding_data *pathfinding = NULL;
-            if (*(long *)(structure + 0xc4) > 0)
-                pathfinding = *(s_pathfinding_data **)(structure + 0xc8);
+            s_pathfinding_data *pathfinding = (s_pathfinding_data *)function_1fa7f0();
             s_avoidance_trace trace;
             if (function_26ccb0(pathfinding, obstacles, NONE, (point2f *)&local_origin, sector, NONE,
                 (point2f *)&local_direction, *(real *)(entry + 0x14), distance, false, false, false, 0, &trace))
@@ -1937,7 +1910,7 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
         real cosine = desired.x * direction.x + desired.y * direction.y;
         cosine = (real)(cosine > 1.0f ? 1.0 : cosine);
         result = function_50650(cosine);
-        if (left) return 0.0f - result;
+        if (left) result = 0.0f - result;
     }
 done:
     return result;

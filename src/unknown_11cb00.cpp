@@ -314,9 +314,12 @@ real function_11e000(
 
 PRIVATE inline real function_11e5e1(vector3f const *arg_0, vector3f const *arg_1)
 {
-	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_0->i * arg_1->i;
+	return arg_0->i * arg_1->i + arg_0->j * arg_1->j + arg_0->k * arg_1->k;
 }
 
+// Matched in a full build with stand-in SDK headers (was 10): the delta is computed in i, j, k order and the
+// file-local dot helper adds its terms in i, j, k order.
+// Before:
 // score 10 (was 28): the delta components are computed i, k, j and the
 // commutative 0x11e5e1 dot product is called as (&delta, &d); both change the
 // SSE register schedule. The residual is the y/z XMM pair (xmm4/xmm5) and the
@@ -332,8 +335,8 @@ bool function_11e5e0(
 	real c;
 
 	delta.i = segment_start->x - arg_28f920->x;
-	delta.k = segment_start->z - arg_28f920->z;
 	delta.j = segment_start->y - arg_28f920->y;
+	delta.k = segment_start->z - arg_28f920->z;
 	c = function_11e5e1(&delta, &delta) - radius * radius;
 
 	if (c < 0.f)
@@ -392,12 +395,32 @@ PRIVATE __forceinline point3f point_11ea30(point3f const *origin, vector3f const
 	return result;
 }
 
+PRIVATE __forceinline void cross_out_11ea30(vector3f const *a, vector3f const *b, vector3f *out)
+{
+	out->i = a->j * b->k - b->j * a->k;
+	out->j = a->k * b->i - a->i * b->k;
+	out->k = b->j * a->i - a->j * b->i;
+}
+
+PRIVATE __forceinline void point_out_11ea30(point3f const *origin, vector3f const *direction, real parameter, point3f *out)
+{
+	out->x = direction->i * parameter + origin->x;
+	out->y = direction->j * parameter + origin->y;
+	out->z = direction->k * parameter + origin->z;
+}
+
+// score 23 (was 652) in a full build with stand-in SDK headers: the cross and the point helpers write through
+// out-pointers instead of returning vectors by value (the by-value forms were built as 21 dword copy pairs, frame
+// 0x28 against retail's 0x1c), cross and dot are interleaved as in 0x11e130, the delta is computed before the
+// normal, and the final difference has its own local. Left: the sum order of dot(u, delta) in the parallel arm and
+// `radius * radius`, which retail computes last.
 // @retail 0x11ea30
 long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vector3f const *v, real radius)
 {
-	vector3f normal = cross_11ea30(u, v);
 	vector3f delta;
 	vector3d_from_points3d(a, b, &delta);
+	vector3f normal;
+	cross_out_11ea30(u, v, &normal);
 	real normal_squared = dot_11ea30(&normal, &normal);
 	real ta, tb;
 	if (!(fabs(normal_squared) < 0.0001f))
@@ -406,9 +429,11 @@ long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vect
 		normal.i *= inverse;
 		normal.j *= inverse;
 		normal.k *= inverse;
-		vector3f cross_a = cross_11ea30(&delta, v);
-		vector3f cross_b = cross_11ea30(&delta, u);
+		vector3f cross_a;
+		cross_out_11ea30(&delta, v, &cross_a);
 		ta = dot_11ea30(&cross_a, &normal);
+		vector3f cross_b;
+		cross_out_11ea30(&delta, u, &cross_b);
 		tb = dot_11ea30(&cross_b, &normal);
 		bool outside_a = ta < 0.0f || ta > 1.0f;
 		bool outside_b = tb < 0.0f || tb > 1.0f;
@@ -416,9 +441,9 @@ long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vect
 		{
 			point3f endpoint_a, endpoint_b;
 			if (outside_a)
-				endpoint_a = point_11ea30(a, u, ta < 0.0f ? 0.0f : 1.0f);
+				point_out_11ea30(a, u, ta < 0.0f ? 0.0f : 1.0f, &endpoint_a);
 			if (outside_b)
-				endpoint_b = point_11ea30(b, v, tb < 0.0f ? 0.0f : 1.0f);
+				point_out_11ea30(b, v, tb < 0.0f ? 0.0f : 1.0f, &endpoint_b);
 			if ((outside_a && function_11e5e0(b, v, &endpoint_a, radius)) ||
 				(outside_b && function_11e5e0(a, u, &endpoint_b, radius)))
 				return 1;
@@ -449,10 +474,13 @@ long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vect
 		else
 			tb = 0.0f;
 	}
-	point3f point_a = point_11ea30(a, u, ta);
-	point3f point_b = point_11ea30(b, v, tb);
-	vector3d_from_points3d(&point_a, &point_b, &delta);
-	if (radius * radius >= dot_11ea30(&delta, &delta))
+	point3f point_a;
+	point_out_11ea30(a, u, ta, &point_a);
+	point3f point_b;
+	point_out_11ea30(b, v, tb, &point_b);
+	vector3f difference;
+	vector3d_from_points3d(&point_a, &point_b, &difference);
+	if (radius * radius >= dot_11ea30(&difference, &difference))
 		return 1;
 	return 0;
 }
@@ -592,9 +620,9 @@ long function_11f9a0(
 
 PRIVATE __forceinline void cross_11e130(vector3f const *a, vector3f const *b, vector3f *out)
 {
-	out->i = b->k * a->j - a->k * b->j;
-	out->j = b->i * a->k - b->k * a->i;
-	out->k = a->i * b->j - b->i * a->j;
+	out->i = a->j * b->k - b->j * a->k;
+	out->j = a->k * b->i - a->i * b->k;
+	out->k = b->j * a->i - a->j * b->i;
 }
 
 PRIVATE __forceinline void point_11e130(point3f const *origin, vector3f const *direction, real parameter, point3f *out)
@@ -604,13 +632,17 @@ PRIVATE __forceinline void point_11e130(point3f const *origin, vector3f const *d
 	out->z = direction->k * parameter + origin->z;
 }
 
+// score 24 (was 243) in a full build with stand-in SDK headers: the delta between the points is computed before the
+// normal's cross product, which shifts every product's operand order to retail's, and the final difference has its
+// own local instead of reusing delta. Left: cross_a's j row (retail copies delta.k and folds [v.i]) and the sum
+// order of dot(u, delta) in the parallel arm.
 // @retail 0x11e130
 real function_11e130(point3f const *a, vector3f const *u, point3f const *b, vector3f const *v)
 {
-	vector3f normal;
-	cross_11e130(u, v, &normal);
 	vector3f delta;
 	vector3d_from_points3d(a, b, &delta);
+	vector3f normal;
+	cross_11e130(u, v, &normal);
 	real normal_squared = dot_11ea30(&normal, &normal);
 	real ta, tb;
 	if (!(fabs(normal_squared) < 0.0001f))
@@ -674,6 +706,7 @@ real function_11e130(point3f const *a, vector3f const *u, point3f const *b, vect
 	point_11e130(a, u, ta, &point_a);
 	point3f point_b;
 	point_11e130(b, v, tb, &point_b);
-	vector3d_from_points3d(&point_a, &point_b, &delta);
-	return dot_11ea30(&delta, &delta);
+	vector3f difference;
+	vector3d_from_points3d(&point_a, &point_b, &difference);
+	return dot_11ea30(&difference, &difference);
 }

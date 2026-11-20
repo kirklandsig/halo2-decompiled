@@ -342,6 +342,68 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the reference form 5 (same code); both bases from the `tables` local, direct store 210 (974 bytes), reference form 279.
 // Diagnostic, not keepable (an invented layout aggregate): the tables and entry fields through a two-field view of the
 // state 176 (first +0x148; `second` still loads right after the entry lea).
+// M3 lane 8 r193 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e): the
+// direct entry store with the word read back from the field re-measured 5 (+0x1a7: only `second` loads into ESI right after
+// the entry lea, before the entry store, where retail loads it after the chain and pass bases; `third` is loaded before the
+// lea in both, so only `second`'s load is held behind the store in retail). On the direct store: the pass base named after
+// the store and ahead of the chain lookup 5, the chain and pass bases both named there 5, both index sums written with the
+// parameter first 5 (all three the direct form's code); on the reference form the chain and pass bases named after the entry
+// store 5 (+0x19e, main's code).
+// M3 lane 10 r124 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the entry reference bound as `((byte **)(state + 0x10))[1]` 5, as `((byte **)state)[5]` 5 (both +0x19e, same code); the
+// tables published through a `byte *&` with the entry reference bound as the next slot of it 290 (978 bytes); round 137's
+// form (tables published through a reference, entries from the `tables` local, a `bases` local re-read from the field before
+// the reference entry store) re-measured 29 at +0x148, its only difference the forwarded `mov ecx, eax` for retail's
+// `mov ecx, [ebp + 0x10]` (the rest is the byte shift): with the re-read through a dword view 29, through the entry
+// reference's previous slot (`(&restored_entry)[-1]`) 29 with either publication (both still forwarded); the tables
+// published directly with the dword re-read 279, published through a dword view 279; on the direct entry store (re-measured
+// 5 at +0x1a7) `(void)&second` 5, `(void)&third` 5, the restore block's `second` read once through its address 5, and on
+// the reference form `(void)&second` 5 (all the same code: the address folds and `second` still loads early on the
+// direct form). On round 137's form the `bases` local initialised from a chained publication (`= (field = tables)`),
+// direct or through the reference, 279/279; `bases` as a `byte *const &` bound to the published field 5 (+0x19e, main's code).
+// M3 lane 13 r122 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the chain and pass bases read from the definition's table pointer (`*(byte **)(definition + 0x5c)`) on the reference
+// form 5 (+0x19e: the re-read becomes `mov ecx, [ecx + 0x5c]` after the entry store, `second` still late as retail), on
+// the direct entry store 6 (both the definition re-read and the early `second`); all three bases from the definition on
+// the reference form 189 (976 bytes); the entry base from the `tables` local 178 (listed form, re-measured). Diagnostic:
+// 1-12 dead initialised locals at the top on the direct store 5 each (flat, only the `second` load placement differs).
+// M3 lane 16 r147 (fast, control 5 at +0x19e), on the direct entry store (5 at +0x1a7, `second` loading into ESI right
+// after the entry lea), testing whether retail holds that load behind the store because the parameter's address is
+// exposed: `long const *const second_address = &second;` read in the restore block 5, in both blocks 5; the chain
+// lookup as a forceinline helper taking its offset by `long const &` in both blocks 5, with the pass lookup the same way
+// 5 (all +0x1a7, same code); the restore block publishing the entry (from the `tables` local) before the tables field
+// 287 (976 bytes). Body unchanged.
+// M3 lane 12 r154 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e): the
+// restore block's entry/chain/pass/range lookup as a forced-inline helper taking the state and the four indices and returning
+// the range 177; the same with a direct entry store and the word read back from the field 176; the helper void, the range
+// reference bound after its call, 5 (same code); one forced-inline pass lookup shared by the first lookup and the restore
+// block (the tables and the entry output by pointer) 294 (981 B), with the entry output bound by reference inside it 295
+// (982 B). Re-measured (diagnostic): the direct entry store 5 at +0x1a7, its only difference `second` loading into ESI
+// right after the entry lea, ahead of the entry store, where retail loads it after the chain and pass bases.
+// M3 lane 3 r276 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH each time; control 5 at +0x19e):
+// the direct entry store re-measured 5 (+0x1a7; its listing: the tables reload already in retail's place, only `second`
+// loads into ESI between the lea and the entry store); on it the restore block's packed and next as fresh `long` locals 5
+// (+0x1a7), the pass stored straight to its field and read back for the range 5 (+0x1a7); on main's body the top block's
+// entry word read without the `entry` local 5 (+0x19e) (all the same code as their bases). Diagnostic (not kept): on the
+// direct form `&second` passed to an out-of-line call at the end of the function 46 (992 B), and `second` still loads
+// ahead of the entry store, so retail's late load is not the store aliasing an exposed parameter. A /GL- compile-only
+// build does not reproduce this block (word loads through `xor edx, edx; mov dx`, other registers).
+// M3 lane 1 r135 (fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, control 5 at +0x19e): the direct entry
+// store re-measured 5 (+0x1a7: `third` loads into EBX and `fourth` into EDX as soon as each register frees, in both builds,
+// but retail holds `second` behind the entry store and both base loads where ours loads it as soon as the lea frees ESI);
+// on it the three restore bases through a file-scope typed tables header 5 (+0x1a7), the chain and pass bases named after
+// the packed read 5 (+0x1a7); on the reference form the typed header 5 (+0x19e) and the pass published through a
+// reference and read back 5 (+0x19e) (all four their base form's code); the chain lookup in 0x174d0's spelling with the word
+// address kept in a local read through its address (`word *const *chain_reference = &chain;`), on the direct store 177 and
+// on the reference form 179 (974 B, first difference +0x148).
+// M3 lane 2 r119 (fast; control 5 at +0x19e): the restore block's entry computed into the existing `entry` local, stored,
+// and its word read through the local 181 (975 B); the direct entry store with the entry word read inside the chain index
+// (no `packed` assignment) 5 (+0x1a7, the direct form's code); the tables stored and the three bases read through one
+// `byte *&` to the tables field, entry stored directly, 6 (the reload waits for the entry store and `second` loads early,
+// both differences at once); the entry reference typed `word *&` (the store as a word pointer) 5 (+0x19e, main's code);
+// on the direct store the chain base offset by `second` before the packed index 5 (+0x1a7, same code). Reading: the
+// reload of the tables field leaves the entry store's shadow only when that store is written directly (no reference),
+// and `second` then loads as soon as the entry lea frees ESI; retail has the first without the second.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

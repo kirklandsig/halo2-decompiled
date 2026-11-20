@@ -660,6 +660,64 @@ s_1a8a10 g_4453c0[] =
 // four facing reads in place 91. Re-measured: the copy's j after the left sum with retail's term orders and the identifier,
 // index, score order 15 (the j reload appears, but the copy's j load then waits for the left sum and the left product
 // multiplies a copy of i: retail multiplies i in place and copies it for the forward product).
+// M3 lane 8 r193 (compile-only screen of the float block, which reproduces this body's block exactly; then fast with
+// 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH): 0-40 initialised dead locals ahead of the block leave it unchanged (no
+// symbol-count tie); both sums in retail's term orders re-measured (same code). The forward sum first with both sums read
+// from the copy (negated copy j) 89; the forward sum first with the copy as a const 2D vector with a brace initializer 31
+// (screen: the forward j still loads at its use and its result moves out of XMM0); the left sum's i read from the actor
+// with the forward first (screen: i loaded twice). On round 115's frame-transform lead (copy plus perpendicular, sums
+// `copy.i * y + perpendicular.i * x` and `copy.j * y + perpendicular.j * x`, stores [2], [3], [0], [1], identifier/index/score
+// order; screen: every instruction retail's but the xmm numbering): all 24 orders of the four component assignments give
+// the zero XMM3 (or XMM2) and x/y XMM5/XMM6 (retail zero XMM1, x XMM4, y XMM5, copy XMM6); 0-16 dead locals inside the
+// block or 0-14 ahead of it only permute i/j/copy among XMM1/XMM2/XMM4.
+// M3 lane 10 r124 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH each time; control 17): the four products
+// named where they are computed (both sums from them) in the orders forward-x, forward-y, left-x, left-y / left-x, left-y,
+// forward-x, forward-y / forward-x, forward-y, left-y, left-x / forward-y, forward-x, left-x, left-y 17 each (same code: the
+// IL order is not the source's); the facing copied whole as a 3D vector 142 (564 bytes), that with the forward sum's terms
+// swapped 142. Diagnostic (an invented layout, not keepable): the rotated point as the first two reals of a six-real value
+// array (so its stores go to an address-taken local) 99 (frame 0x28; j is still loaded once, so the y store's aliasing is
+// not what reloads j in retail).
+// M3 lane 12 r151 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH; control 17): the forward sum's `i * x` named
+// ahead of the left sum with the copy's j assigned after the left sum 36 (the j re-read appears, the zero takes XMM2 even
+// in the switch arms), with the copy's j before it 38; round 115's frame-transform lead re-measured 31, with the
+// perpendicular's j taken from the copy's i 32; the four values as an array initializer after the sums
+// (`{left, 0 - left, forward, 0 - forward}`) 18, with the identifier, index, score initialisation order 16 (a gain of one
+// from an initializer and a declaration order: not kept).
+// M3 lane 13 r122 (fast with 0x1f5390/0x1f57a0/0x1f57f0/0x1a8c30, all MATCH unless noted; control 17): the opening
+// inline-depth pragma dropped 214 (592 bytes: 0x1f57a0, whose only caller this is, is expanded, and 0x1a8c30 goes to 49),
+// with the 0x1f57a0 call wrapped in an inline helper 214, with the score test and the call in one inline helper 214
+// (the call nested in a helper is still expanded, so the pragma stays); the forward sum first in retail's term orders
+// (copy's j for `j * y`, the actor's j for the negation) re-measured 31, and on it 1-7 dead initialised locals at the top
+// and 1-12 inside the block ahead of the array 31 each (flat: x keeps XMM3 and the copy's one-use j still loads at its
+// use, so the xmm ranks there are no symbol-count state); i in a scalar with j read in place in both sums, forward first
+// 36 (left first re-measured 31).
+// M3 lane 6 r208 (fast with 0x1a8c30/0x1f5390/0x1f57a0/0x1f57f0, all MATCH; control 17): both sums written point-first 17
+// (same code); retail's term orders (`i * y + (0 - actor j) * x`, `j * y + i * x`) with [3], [1], [2], [0] stores 21, with
+// index-order stores 18 (ours then adds into the (0 - j) * x product where retail adds into i * y, so retail's negated j is a
+// value computed ahead, as in round 115's perpendicular); round 115's frame-transform lead rebuilt 31 (every instruction
+// retail's; xmm numbering i 1, j 2, zero 3, copy 4, x 5, y 6 against retail's zero 1, i 2, j 3, x 4, y 5, copy 6; main's body
+// has retail's numbering), without the initialisation reorder 33.
+// M3 lane 16 r151 (fast with 0x1a8c30, MATCH): the left sum as `(0 - copy.j) * x + actor.i * y` with the forward sum
+// from the copy 38; that with the forward sum's j read from the actor 47; the left sum entirely from the copy with the
+// forward sum's i from the actor 30; the first form with the left terms written i * y first 38; the table pointer (a
+// constant initialiser) declared at the function's top 17 (same code).
+// M3 lane 12 r157 (fast with 0x1a8c30, MATCH; control 17): both sums read through `real const &` bindings for their four
+// stores 17; the sums assigned through references bound to the array elements [0] and [2] 17; the two sums as the fields
+// of one 2D vector local 17; both negations named and the stores written [3], [1], [2], [0] 21; the sums reading the
+// rotated point through a `point2f const &` 17. Re-measured: the identifier, index, score initialisation order 15.
+// M3 lane 1 r137 (H2M_FAST; control 17): a grid of both sums' term orders x which sum comes first x the negated j from
+// the actor or the copy: the term orders never change the code; left first 17 (actor j) / 31 (copy j); forward first 31
+// (actor j, +0x75: the j reload appears but x takes XMM3 and the forward is scheduled first) / 89 (copy j). A second
+// aggregate copy of the facing for the forward sum 146 (564 bytes: the copy goes through the stack), with the negation
+// from the first copy 147; the left sum's i through a `vector2f const &` to the copy, through a `real const &` to its i,
+// and the negated j through a second const actor pointer 17 each (same code).
+// M3 lane 6 r211 (fast with 0x1a8c30, MATCH; control 17; a compile-only screen of the float block reproduces it exactly,
+// 12 differing xmm lines against retail): the value array zero-initialised at its declaration 110 (548 bytes); the facing
+// copy as a 3D vector with only i and j assigned 17 (same code); the final switch's cases in all 24 orders and each case's
+// two stores swapped (30 forms, screen) at best the same float block (cases 2, 0, 1, 3: 17), so later mentions of the
+// point do not set the sums' operand sides here; the second sum first with the copy assigned i, j or j, i and the four
+// stores in all 24 orders (48 forms, screen) 26-29 xmm lines against 12 (stores [2], [0], [1], [3]: 31); re-measured: the
+// copy's j assigned between the sums 17 (round 119), retail's term orders 17 (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

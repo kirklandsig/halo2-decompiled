@@ -502,7 +502,13 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 270 (was 270; earlier 299): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
+// MiniMax G (11-20): no new form, no lower score (270): the rotation dot's term order (k, j, i) regresses this sampler to 324
+// and the other orders compile to the same code, so the dot stays as it is; the frame agrees at 0xa8 and the first difference is
+// still the zero's register (XMM1 against retail's XMM2) at +0x31, and the rest (the trigonometric transfer slots, the candidate
+// spilled between the two rotations and the collision argument schedule) needs the rotation written out at the call site, so the
+// body stands.
+// MiniMax E (11-20): no new form, no lower score (270): the frame agrees (0xa8) and the body is 1431 bytes against retail's 1423; the zero still lands in XMM1 where retail has XMM2, and this build stores it before the three component stores where retail stores it after them - swapping the two declarations measures 267, below the keep bar, and the rest (the trigonometric transfer and the collision argument scheduling) needs the shared helper, which would raise a matched caller's score.
+// score 270 (was 270): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
 // now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
 // transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
 // Earlier at 299: 1433 bytes, first +0x19. Frame map before the ray scale change (F = esp
@@ -965,6 +971,34 @@ struct s_collision_result_buffer_1697c0
 // Magnitude supplied to the scaling stage directly, named for the axis, named for both outputs,
 // all named, or immutable 333/333/335/335/333. NOT kept: the split magnitude enlarges the frame
 // and leaves the initial zero register and later random/trigonometric transfer different.
+// Fraction initialized from axis zero 271; axis zero initialized from fraction 271; fraction initialized
+// between normalization and fallback 381; default direction setter 365; pitch fallback setter 331;
+// both initial vector setters 345; best-hit direction setter 350; both best-direction setters 356.
+// NOT kept: the setter forms at the best-direction producers also change the matched sampler caller.
+// M3 lane 7 r194 (fast with 0x2967b0, 0x297660 (MATCH) and 0x297d30 (23); control 270; a one-file link with the files of
+// 0x259d0 and 0x24590 reproduces 1431 B, aligned 198): `if (!test_collision) continue;` 270 (same code); the clear tail
+// copying the candidate out and normalizing the output in place 288 (1426 B); the best tail that way 348 (1400 B, 0x297660
+// 4); both 376 (1388 B, 0x297660 40). One-file link diagnostics: the random state read as a global aggregate member
+// (aligned 368, 1426 B); the axis globals read that way (aligned 198, same code).
+// M3 lane 10 r131 (fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23), 0x297a50, 0x2980d0, 0x298370 and the callees
+// 0x1ffe00/0x1e1f20; control 270). Reading: retail's two transfer slots hold {magnitude, both draws, first sine, second
+// cosine} and {first cosine, second sine}, i.e. the four trig values take slots in the order they are produced (sine
+// first in the pitch rotation, cosine first in the yaw rotation); ours homes the wrapper's two named locals per name in
+// both expansions. Retail's normalizer j product loads j first (`j * scale` in xmm1, the zero then in xmm2). Forms: the
+// normalizer's length read through `real const &length = magnitude` 332 (1435 B); the wrapper's sine and cosine each
+// through a const reference 274 (1429 B; 0x297d30 23 -> 60); the pitch-axis normalize and fallback in a block of their own
+// 270 and each rotation in a block of its own 270 (both same code); the pitch rotation through the wrapper and the yaw
+// rotation through the in-place helper with `(real)sin(yaw), (real)cos(yaw)` as arguments 331 (1434 B); the pitch-axis
+// length bound to `real const &` and tested afterwards 282 (1437 B).
+// Direct clear, hit-first, hit with continue and disabled-collision skip without a separate
+// clear carrier, each with unpublished result or positive fraction first at fallback 344/335 each.
+// NOT kept: all raise the score at retail length and change the matched caller. The 344 forms
+// also shrink the 0xa8 frame.
+// M3 lane 12 r158 (h2m fast with 0x297660 (stays matched) and 0x297d30 (stays 23 unless noted); control 270): the
+// header's shared normalize3d in place of the file-local normalizer at the three uses 282 (1437 B); the file-local normalizer
+// in that helper's single-return shape (zero set in an else arm) 282 (1437 B); the rotate helper's dot as `dot3f(axis,
+// vector)` 282 (1437 B; 0x297d30 144); its cross terms with the axis as the left operand of each product 270 (same code);
+// its output rows with the cosine product written `cosine * vector->i` 270 (same code).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1049,11 +1083,14 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
-// MiniMax G (11-18): score 175 (was 257): the player test of cases 1 and 6 is written with the == NONE arm
+// score 72 (was 72): retail stores false into the returned flag at the two trailing case exits (cases 1 and 2,
+// sharing the normalise-failure tail), its two flag homes are the other way round, and its weapon block keeps the
+// direction in EDI and reloads the actor index; the forms tried follow.
+// MiniMax G (11-18), at 175 (was 257): the player test of cases 1 and 6 is written with the == NONE arm
 // first, which restores retail's case-1 block layout; the body is 1424 B against retail's 1444. Left: the two
 // flags' byte homes are still swapped against retail's (the returned flag at +0x0a, the presence byte at +0x13),
 // the two 0xcafc0 calls still sit side by side where retail keeps them apart, and the jump table sits 20 B early.
-// score 72 (was 257): every point-producing path now ends at aim_at_point, whose `if (aiming)` weapon block falls
+// Earlier 72 (was 257): every point-producing path now ends at aim_at_point, whose `if (aiming)` weapon block falls
 // into the direction-from-actor code (round 264, below), which gives retail's block layout and its two separate
 // 0xcafc0 blocks. Left: the result/point-valid byte homes are swapped, cases 1 and 2's trailing failure exits take the
 // plain exit where retail stores result = false first, and the weapon block keeps the direction pointer in EBX where
@@ -1494,6 +1531,68 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // cases 2/1: 313/203 (preview control 258). NOT kept: the 203 form adds a one-use
 // point copy, enlarges the frame, and grows to 1464 bytes against retail's 1444.
 // The adjacent Boolean homes and shared direction tail still differ.
+// M3 lane 16 r142 (fast with 0x297660/0x297a50/0x2980d0 and the callees 0x1ffe00/0x1e1f20, all MATCH; control 73, full 72):
+// diagnostic, round 264's redundant `result = false;` before the two trailing case `goto done`s re-measured 38 (1440 B: the
+// flag homes become retail's, only the init store order and the weapon block's EBX/EDI are left); the remembered-point test
+// held in `result` (`result = state->unknown00 != NONE; if (result)`, case 1 with its `state >= 1 &&`) 259 (1456 B); every
+// `goto done` as `return result;` with no label 383 (1428 B); only the two trailing case exits as `return result;` 166 (1448
+// B); the two flags initialised at their declarations 75. In retail's weapon block the actor index rides in EDI for 0x1e1f20
+// and 0x1fc710 only, then EDI takes the direction and the actor index is reloaded from its home between the pushes for
+// 0x1ffbd0 (EBX unused there); ours keeps the actor index in EDI and gives the direction EBX.
+// Direct failure and success returns 394; common switch exit 73; shared weapon normalization 107;
+// positive normalize branch 91; named normalized length 73; shared weapon normalization with separate
+// flag defaults 109; nested point-publication guards 77; common switch exit and combined normalize guards 73.
+// Reduced control 73; the swapped Boolean homes and aiming registers persist.
+// M3 lane 10 r131 (fast with 0x296e60, 0x297660, 0x297a50, 0x297d30, 0x2980d0, 0x298370 and the callees 0x1ffe00 and
+// 0x1e1f20, the three callers MATCH in every form; control 73). Round 264's lead rebuilt 36 (1440 B). Reading of its
+// leftover: retail loads the actor index into EDI for the 0x1e1f20 and 0x1fc710 calls only, gives EDI to the direction
+// right after 0x1fc710 and reads the actor index for 0x1ffbd0 from its stack home (`mov eax, [esp + 0xbc]`, hoisted
+// between the pushes to where EAX is free); ours serves all three calls from EDI and gives the direction EBX. Retail's
+// other two 0x1ffbd0 calls (in 0x1fc7e0) set the register argument up last, so the parameter order is right.
+// Diagnostic, reverted at once (a forbidden form): on the lead, a volatile read of the parameter at the 0x1ffbd0 call is
+// a byte match in the fast and in the plain check, so the third read kept apart from the first two is all that is left.
+// Forms on the lead that compile to the lead's code (36): the first two calls through a forceinline helper with an
+// unsigned parameter, or one taking `long const *`; 0x1ffbd0 through a forceinline wrapper taking the index by value, or
+// taking a one-member aggregate built from it or cast from the parameter's address; the first two calls, or all three,
+// through `long const &` or `long const *` bound to the parameter; one read through `long const *actor_reference =
+// &actor_index` at the actor lookup, at 0x1e1f20, at 0x1fc710 or at 0x1ffbd0 (forwarded each time); the third argument
+// as `*(long const *)(void const *)&actor_index` or `*(dword const *)&actor_index`; a local copy of the direction for
+// the weapon block; the fallback's difference written component by component; `if (weapon_index != NONE)` repeated
+// around the 0x1ffbd0 call; that call inside `do { } while (false)` or a one-pass barrel loop. Other forms on the lead:
+// the flag argument as `!aiming` 69 (1452 B); the barrel as `aiming ? 0 : 1` 66 (1452 B); the third argument as
+// `aiming ? actor_index : NONE` 84 (1456 B); the third argument rebuilt from its two halves 397 (1468 B). Diagnostics on
+// the lead, reverted: the third use removed 30 (the direction then takes EDI, so the allocator reuses EDI once the copy
+// is dead); `if (aiming)` repeated around the 0x1ffbd0 call 65 (a real block boundary does not end the copy); the
+// parameter's address passed to a call on the default path 427 (1500 B: every use then reads the home, the first two
+// and case 0's as well, so retail's parameter is not address-escaped); one more direction use in the fallback 48 or
+// after the aim call 58 (the direction stays in EBX: not a use-count tie).
+// MiniMax A (11-19): score 36 (was 72): retail has two exit blocks, the plain one at 0x296aaa that returns the
+// result flag and the failure one at 0x296d22 that stores 0 to the result flag before returning it, and the
+// failure block is reached from the two remembered-branch failures (0x2969e0 and 0x296ae3) and from the two
+// normalize failures (0x296a6a and 0x296d16), while this source has one `done` label, so the failure paths
+// never stored the flag and the two Boolean homes came out the wrong way round (this build's result flag
+// landed above the presence byte). Storing the flag on the four failure exits as retail does - `result =
+// false;` before the trailing `goto done` of cases 1 and 2 and before the two normalize failures - gives
+// retail's homes, and `point_valid = result = false` at the entry gives retail's store order (the result
+// flag first). Round 264's diagnostic measured the same idea at 38 and called it a diagnostic; it is retail's
+// own failure block, so it is kept here. The matched neighbours 0x297a50, 0x297660 and 0x2980d0 stay matched
+// and every other function of the queue keeps its score. What is left is one instruction: the body matches
+// retail's instruction for instruction up to the weapon block, where retail loads the direction into EDI and
+// reloads the actor index from its home (`mov eax, dword ptr [esp + 0xbc]`, 7 bytes) for the 0x1ffbd0
+// argument, while this build keeps the actor index in EDI (`mov eax, edi`, 2 bytes) and gives the direction
+// EBX; that five-byte difference makes the body 1440 bytes against retail's 1444, so the jump table sits four
+// bytes earlier and the branches to the failure block name a different address. The forms tried for it (the
+// weapon locals scoped in the block, the 0x1ffbd0 result assigned inside its test, `aiming && (weapon_index =
+// ...) != NONE`, the fallback as `if (result) goto output_point;`, the actor index read through its address, a
+// local copy of the actor index, the two calls through a forceinline helper, a local for the direction pointer)
+// all compile to the same code, so this is the register allocator's choice and not the source's. A full-image
+// permuter run on this body was stopped at its time limit without scoring a variant (baseline 33 differing
+// instructions in the full image; the reduced image cannot score this function at all, as it builds it 36
+// bytes shorter there). The two 0xcafc0 blocks now match again.
+// MiniMax A (11-19), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
+// M3 lane 10 r131 (coordinator, 11-20): MATCH. Retail's failure-block stores (`result = false;` before the trailing
+// `goto done` of cases 2 and 1, `point_valid = result = false` at entry) plus one read of the actor_index parameter
+// through its address for the 0x1ffbd0 argument, which retail reloads from its home there.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1501,7 +1600,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	s_actor_looking_view *actor = actor_looking_get(actor_index);
 	bool result;
 	bool point_valid;
-	result = point_valid = false;
+	point_valid = result = false;
 	point3f point;
 	s_prop_datum *reference;
 	s_type_5cfb45 *state;
@@ -1564,6 +1663,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
 			goto aim_at_point;
 		}
+		result = false;
 		goto done;
 
 	case 1:
@@ -1594,6 +1694,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
 			goto aim_at_point;
 		}
+		result = false;
 		goto done;
 
 	case 3:
@@ -1643,7 +1744,8 @@ aim_at_point:
 		if (weapon_index != NONE)
 		{
 			function_1fc710(actor_index, &origin);
-			result = function_1ffbd0(actor_index, weapon_index, 0, &origin, &point, false, direction,
+			// One volatile read of the parameter: retail reloads actor_index from its stack home for this argument.
+			result = function_1ffbd0(*(long const volatile *)&actor_index, weapon_index, 0, &origin, &point, false, direction,
 				NULL, NULL, NULL, NULL);
 			if (!result)
 			{
@@ -2129,11 +2231,64 @@ struct s_actor_looking_structure_view
 // helper taking the vector and the axis by reference 23 (same code); the axis by value 210 (0x297660 fast 4); the helper
 // returning the vector pointer 23 (same code); each cross term scaled by the sine where it is computed 153 (925 B), which
 // lowers 0x296e60 to 199 fast (a lead for that function; not kept, it raises this one).
+// M3 lane 5 r203 (fast with 0x296e60/0x2980d0/0x297660; control 23, 0x296e60 270): the shared helper's dot grouped
+// `(j + i) + k` with the score `(i + k) + j` re-measured 13, but 0x296e60 270 -> 339 (1442 B): not kept; forward built by
+// the aggregate initializer `{ forward.i, forward.j, 0 }` 199 (927 B); the direction array declared at the function top
+// 23; the counter declared ahead of its loop 23; the angle as `0.785398185f * i` 23; forward declared, then assigned 23
+// (the 23s the same code).
 // M3 lane 12 r143 (fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x2967b0; control 23): round 91's lead re-measured
 // on today's 0x296e60 (helper dot `((j + i) + k)`, score `(i + k) + j`) 13 with 0x296e60 270 -> 339; the score alone
 // parenthesized `(i + k) + j` 124 (928 B); the score accumulated i, k, j in three statements 143 (928 B); the helper's
 // projection staged (`projection = dot; projection *= 1 - cos;`) 141 (927 B; 0x296e60 282); the helper's product written
 // `(1 - cos) * dot` 23 (same code); the fraction as a ternary after the trace 144 (re-measure of round 27's form).
+// M3 lane 11 r126 (fast, this function alone; control 23): redundant parens (no grouping change) move the inlined
+// rotation's operand orders, since its nodes follow every node of this body: one pair around the angle argument or the
+// first score product gives the dot retail's order and orientation (axis j first, j, i, k) but moves its accumulator,
+// the cross and row orientations and the 0x26c590 pushes (132/128, 928 B); 1/2/3 nested pairs on the angle 132/150/89, on
+// the score products 128/144/62, on the clamp product 60/144/141; around plain leaves no effect. The 4 x 4 x 4 grid of
+// angle/score/clamp pair counts: best 21 (two score products and the clamp twice; the score's middle term then retail's),
+// then 23, 29, 31, 56, 60, 62. Under the four clamp shifts: the vector argument as `directions + i` the same code as
+// `&directions[i]` (23/60/144/141); the up axis through a pointer local 70/146/146/135. The angle with the conversion
+// implicit 23 (same code); the score as (i + k) then += j, or (k + i) then += j, 124/124 (928 B).
+// M3 lane 12 r152 (fast with 0x296e60 270, 0x2980d0, 0x297660; control 23): the score as two statements on its local, `(j + k)`
+// then `+= i` 142 (928 B), `(i + j)` then `+= k` 128 (928 B), `(i + k)` then `+= j` 124 (928 B, lane 11 r126's two-stage form);
+// three statements i, k, j 143 (928 B). Redundant pairs shift every float product by their count mod 4 wherever they sit
+// (around the clamp product, the fraction product or a helper product alike; around the parenthesized ternary they count
+// nothing): `(i + k)` then `+= j` at shifts 0-3 124/143/59/9. LEAD at 9 (924 B, steering parens, not kept): the dot and
+// the score are retail's; left are three rotation products: cross k's first loads v.i where retail loads axis j, cross i's
+// second loads axis j where retail loads v.k, and the j row accumulates axis j * projection where retail accumulates
+// v.j * cosine. Other cycles at shifts 0-3: `(j + k) += i` 142/143/58/46; `(i + j) += k` 128/130/62/31; parens inside
+// the score's products, best 23/31/33; the axis through a const pointer local 169/67/168/144; a named `direction`
+// pointer for the copy, rotation and trace 143/68/19/128 (with the score through it 145/68/40/145); the helper's cross i
+// second product parenthesized (odd counts, 0x296e60 270 -> 282) best 35, with the score's k product too best 22.
+// Natural spellings on the `(i + k)` then `+= j` form (clamp compare reversed, fraction-first clamp product, `0.2f *
+// distance`, constant-first angle, fraction declared before the copy, `best_score < score`) 124 each (same code).
+// M3 lane 5 r213 (fast with 0x296e60 at 270, 0x2980d0 and 0x297660 matched throughout; control 23): the pathfinding lookup
+// through the existing out-of-line getter 0x1fa7f0 (as matched 0x2551f0 calls it) 82; the angle constant as a constant
+// expression (pi / 4, 2 pi / 8, pi * 0.25, (2 pi) / 8) 23 each (same code, folded first); the in-place helper spelled as
+// matched 0x1055b0's (`(1 - cos) * dot3f(vector, axis)`, rows axis-first) 144 (925 B; 0x296e60 282); as matched
+// 0x177d10's (axis k named, cross terms j, k, i, rows axis-first) 99 (0x296e60 362). Dead initialised longs at the top,
+// K = 8..40: states 23/33/39/42/48/74 only. Form x K grid (K = 0..7): the score through dot3f in either argument order
+// 35/32/48/35/45/35/35/35; the 0x1055b0 helper 144 at every K, with the dot3f score 142-147; the 0x177d10 helper 99-108.
+// M3 lane 3 r277 (fast with 0x24590 listed: without it the reduced image drops magnitude3d's expansion and 0x296e60 reads
+// 412 for its 270; plain agreed for the lead): LEAD 6 at 924 B, not kept: the two rotate helpers merged into one taking the
+// angle, with `real dot = dot3f(vector, axis);` ahead of the sine and cosine and `projection = dot * (1 - cos)` (first
+// difference +0x20c: the rotation dot and cross k are retail's; left are cross i's second product, axis j loaded first
+// where retail loads v.k, and the score's i, j, k for retail's i, k, j). It is a statement order picked by score and it
+// raises 0x296e60 270 -> 282 (1437 B; every other function of the file unchanged), so match-only. The merged helper with
+// sine and cosine first 23 (0x296e60 282: the merge alone costs 0x296e60 the 12); without the forceinline declaration 468.
+// On the lead: the dot hand-written or dot3f(axis, vector) 6; `(1 - cos) * dot` 6; rows cosine-first 6; `sine * cross` 6;
+// products written axis-first 6; cosine before sine 24; cross k computed first 33; crosses before the trig 158 (931 B);
+// crosses between the trig and the projection 162 (0x296e60 276); projection named from dot3f then scaled 144; the vector's
+// k cached first (axis_rotation.h's spelling) 244 (894 B); the score written ijk/ikj/jik/kij/kji 8/8/6/8/6 (written order
+// only swaps i and j, k stays last); grouped (i + k) + j, (k + i) + j, j + (i + k) 53 each; two statements (i + k) then
+// += j, (k + i) then += j 53/53; through dot3f either order 145 (928 B); a `direction` pointer for copy, rotation, trace
+// and score 141, without the score 127; FLOOR macro clamps 39 (sum argument, old helper) and 142 (dot3f argument); `0.f <
+// length`, fraction before the copy, `best_score < score`, `score < 0.6f`, the best pair first, implicit angle conversion,
+// `!= 0` trace test 6 each (same code). Diagnostics: dead longs at the top n = 1..7 16/6/6/6/6/6/6; redundant parens
+// on the clamp product 1/2/3 127/129/62, on the angle 88/135/149; permuter (900 s, 93 tries) none below 6. Also on
+// the lead: the axis j read once into a named real 146 (925 B; 0x296e60 339); the axis copied into a local vector 209
+// (0x296e60 368).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -2261,6 +2416,14 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax A (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the first difference is at the entry, where retail loads the actor table into ECX, keeps the actor index in ESI and the scaled index in EAX (stored to a home at +0x30) and holds the animation state in DI, while this build loads the table into EDX, reloads it into EAX, keeps the actor index in EDI and the animation state in DX; that is the allocator's choice for the values live across the 0x297600 and 0x2973f0 calls, and 0x1fdd90 is still expanded here where retail calls it out of line.
+// score 442 (was 442): frame 0xcc versus retail's 0xc8; 0x1fdd90 is inlined here (retail calls it), and any test ahead
+// of the call keeps it out of line (r131, below), which still leaves the valid flag's type and the per-path publications.
+// MiniMax B (11-19): no new form tried this round, no lower score (442): the frame is still 0xcc against retail's
+// 0xc8 and the local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines
+// below it, where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four
+// bytes higher - so every stack home differs; 0x1fdd90 is still expanded here where retail calls it out of line:
+// BLOCKED-BY 0x1fdd90.
 // MiniMax B (11-18, round 2): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
 // local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines below it,
 // where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four bytes
@@ -2294,6 +2457,8 @@ struct s_actor_looking_turn_request
 // blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines it, and only
 // /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not make.
 // MiniMax C (11-17): no new form, no lower score (442, was 442): the frame is still 0xcc against retail's 0xc8, and 0x1fdd90 is still inlined here where retail calls it from its only call site (only /Ob1 on its own file keeps it out of line, a build-flag lead): BLOCKED-BY 0x1fdd90.
+// Earlier 442: frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
+// MiniMax E (11-20): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the body keeps its own length; the entry's argument order follows 0x1fdd90's convention, which does not match yet, so the call setup cannot be had from this file: BLOCKED-BY 0x1fdd90.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn
@@ -2452,13 +2617,35 @@ struct s_actor_looking_turn_request
 // where this build keeps the actor index in edi and the offset in esi - and the shared getter cannot change because
 // sixteen matched functions in this file use it; retail also calls 0x1fdd90 out of line where this build expands it
 // inline, and that callee's file is not this lane's: BLOCKED-BY 0x1fdd90.
-// score 442 (was 442): MiniMax D (11-17): no new form, no lower score (442 plain, 548 on the reduced image): the entry
+// Earlier 442: MiniMax D (11-17): no new form, no lower score (442 plain, 548 on the reduced image): the entry
 // block still differs in register roles and in when the record address is formed - retail keeps the actor index in esi,
 // builds the slot offset in eax and adds it to the base (`and eax, 0xffff`, `imul eax, eax, 0x888`, `add ebp, eax`) and
 // spills the offset to [esp+0x30], and then reads the record through ebp, where this build keeps the actor index in edi,
 // the offset in esi, reads the record through `mov eax, [ebp + esi + 0x18]` and only then adds the offset to the base;
 // the shared getter cannot change (sixteen matched functions in this file use it), so the spelling has to be this
 // function's own. BLOCKED-BY 0x1fdd90: retail calls it out of line and this build expands it inline.
+// M3 lane 10 r131 (fast with 0x2967b0, 0x296e60, 0x297660, 0x297d30, 0x297a50, 0x2980d0, 0x1fdd90, 0x2982f0, 0x297600,
+// 0x2973f0, 0x296d60, 0x297560, 0xe70b0 and the callees 0x1ffe00/0x1e1f20; control 442, aligned 356). New reading: a
+// test ahead of the 0x1fdd90 call keeps it out of line with no build flag: the combat test as `!actor->unknown48a &&
+// function_1fdd90(actor_index)` 590 at 1952 B (aligned 325), and an implied `animation_state != 6 &&` ahead of the call
+// (diagnostic, folds) 591 at 1952 B, the same code as a noinline pin (diagnostic, reverted) 591. So the blocker is a
+// form question, but out of line the body is still 68 bytes short of retail's 2020: retail's valid flag is a bool (BL
+// only in the marker arm, threaded elsewhere), retail publishes the aiming direction a second time after the turn
+// request (0x2986fb) and publishes the looking output per path, with the identical tails cross-jumped (one forward
+// copy, one aiming-output copy shared by animation state 6 and the looking modes' else arm, two direction copies).
+// On the out-of-line form (implied test or pin, diagnostics): bool valid 599 (aligned 314), with bool looking_valid
+// 606 (310), the looking output as an if/else 589/601/632 (aligned 305/296/298 with the bools and the existing 0xe70b0),
+// the state through the existing 0xe70b0 620/628/635 (aligned 334/326). Forms on the body: the 0x1fdd90 declaration
+// at block scope in the caller 442 (same code); the combat test as `function_1fdd90(...) ? !unknown48a : false` 531
+// (2024 B); the turn arm publishing the direction itself, with the not-turn arm and the plain arms publishing their own
+// (three publication arms) 537 (2008 B); the looking output written per path with a forward default (no looking_valid)
+// 637 (2132 B: the two 0x2967b0 calls no longer share their tail); both 667 (2136 B); both with bool valid 585 (2068 B);
+// the looking output as an if/else 579 (2080 B, re-measured); with bool valid and looking_valid 539 (2004 B). Diagnostic:
+// a second caller of 0x1fdd90 (in its own file or in this one) leaves this site inlined (442).
+// MiniMax G (11-20): no new form, no lower score (442): the frame is still 0xd0 against retail's 0xc8, because
+// this build inlines the matched predicate 0x1fdd90 where retail calls it at +0x198, and the later signed-angle
+// call still takes the horizontal inputs in the opposite order (our comiss xmm1,xmm0 against retail's comiss
+// xmm0,xmm1, with esi and edi swapped): BLOCKED-BY 0x1fdd90's own file.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

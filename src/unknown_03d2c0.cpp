@@ -453,6 +453,23 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // merge test `!initialize || result != NONE` too 82 (520 B). Lead: in the single-return form the tail keeps the result in
 // ESI across 0x3dd10 because the walk's NONE edge brings it there; retail reloads it from the frame after the call.
 // MiniMax A (11-18): no new form, no lower score (77); the merge test moved out of the walk block (79), into the flag block (78), the merge test alone (152) and the record pointer in the flag block (176) all score worse, so the body stands; what still differs is that our compiler folds the redundant compare retail kept and the join copies the index in a register where retail reloads it from its stack slot.
+// MiniMax G (11-19): no gain (77), body unchanged. Retail's join is one block `cmp esi,-1 / mov cl,1 / je` reached by the
+// allocation arm and the exhausted walk only; the hit arm jumps straight to the record block (0x3def9). Our compiler instead
+// lets the hit arm enter the shared test and copies the joined index back from its slot there. Forms measured: the join test
+// moved into the miss arm as `if (result != NONE) { initialize = true; }` with the record block after the arms 86 (the test is
+// redundant there and folds away, so the join becomes `mov cl,1`); the same with an unsigned result 102 (510 B, frame 16: the
+// record pointer then needs its own slot); the record pointer computed in both arms 176 (488 B); the join test on its own 152.
+// `unsigned long result` is the one form that reproduces retail's hit-arm bypass: the compiler threads the hit arm past the
+// merge test straight to the record block, but the score stays 77 (510 B) because the join still materializes the index with a
+// reload (`mov eax,[esp+0x10]`) where retail keeps it in ESI, and our exhausted-walk exit falls through inline (`or eax,esi`)
+// while retail ends with a separate trailing epilogue (`mov eax,esi`) placed after the main one.
+// MiniMax G (11-19, second pass): no gain (77), body unchanged. Retail's tail mapped exactly: the walk exit at 0x3dedd
+// reloads the result into ESI and tests it (`cmp esi,-1 / je 0x3dfca`), the allocation arm jumps to 0x3deee where the same
+// test is repeated (`cmp esi,-1 / mov cl,1 / je 0x3dfbc`), and the record block at 0x3def9 reloads the result from its slot
+// and computes the record pointer before the `test cl,cl`; the hit arm jumps straight to that block. The `-1` epilogue is a
+// separate block after the main one and returns the register (`mov eax,esi`), not the folded constant we emit (`or eax,esi`),
+// so retail did not know the value there. Ours merges the two tests into one and keeps the index in EAX. A 300 s permuter
+// run (43 tries, full and reduced image) left the baseline at 71, so the body stands.
 // Eviction scan with separate first/absolute/next slots and all pairings 77 each;
 // all three together, also with a named next-search start, 77 each. Cache-hit and return edges remain.
 // One pool pointer 77; one data base 150; both 150. Exhaustion tested against the terminal cursor 79,
@@ -483,6 +500,15 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // true;` 110 (522 B), with `if (result != NONE) initialize = true;` 115 (506 B), with `initialize = true;` 102 (493 B); the
 // walk iterating in cache_index itself 77 (same code), that with `if (result != NONE) initialize = true;` closing the
 // else arm 85 (504 B, round 99's code). Body unchanged.
+// M3 lane 6 r199 (fast with 0x3db00 and 0x3dd10, both MATCH each time; control 77): on lane 11 r104's 83 form (merge test
+// `!initialize || result != NONE`, re-measured 83 at 508 B: only the walk's NONE exit differs, inline with `or eax, esi`
+// where retail jumps to a trailing `mov eax, esi` epilogue) the walk exit returning cache_index 83 (same code); the walk's
+// pick in its own `oldest_index` local copied into result after the loop 169 (524 B); `initialize = true;` ahead of the
+// walk's exit test, outside the walk block, on main 145 and on the 83 form 145 (508 B); the else arm closed by `if (result ==
+// NONE) return result; initialize = true;` with the record block unconditional (no outer test): without the walk's own
+// return 86 (506 B: VC drops the merge test because both paths into it know the result, so the found path enters the
+// record lookup as retail but retail's redundant `cmp esi, -1; mov cl, 1; je` is gone), with it 86 (same code), with
+// `initialize = true;` ahead of that test 145.
 // M3 lane 7 r183 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77): lane 11 r104's merge (`!initialize || result
 // != NONE`) re-measured 83 (508 B): from the found test to the end only the walk's NONE return differs, and it differs
 // because ours folds the returned value to the known -1 (`or eax, esi` with ESI as the -1 source) where retail returns
@@ -490,6 +516,63 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // cache_index) return result;`) 77 (same code), on the 83 merge 83 (same code: still folded); the exit returning
 // cache_index on that merge 83 (same code); diagnostic, reverted: the walk as a forced-inline function returning its pick,
 // on the merge, 169 (524 B); the merge as `initialize ? result != NONE : true` 81 (522 B). Body unchanged.
+// The cache hit still enters the shared NONE test, and the exhausted scan folds its return.
+// Typed optional owner record via a conditional value 158/157 or an assignment guard 150/151.
+// Missing-handle arm with a hit decision 145/146 or a miss decision 145/146
+// (original merge / hit bypass). The opening body is restored.
+// M3 lane 2 r108 (fast with 0x3db00/0x3dd10, both MATCH): the listed 9 form re-measured 9 (519 B, 6 aligned lines: the
+// found path enters the reload ahead of the merge test where retail's merge block is `cmp esi, -1; mov cl, 1; je` with
+// the found path landing on the record block's own reload, and the walk's NONE return folds to `or eax, -1` after the
+// pops for retail's `mov eax, esi` before them). On that form: the walk's exit returning cache_index 9 (same code);
+// `oldest` declared at the top 9 (same code); the walk's exit as a `goto` to a label on the only return 85 (504 B: the
+// return then reads ESI as retail's trailing one does, but the result also stays in ESI across 0x3dd10, so the two
+// epilogues merge and the record path keeps no reload). Diagnostic: allocation and walk as one inline function
+// returning the pick, `result = ...; if (result == NONE) return result; initialize = true;` 340 (330 B, stays a call),
+// forced inline 110 (522 B). Reading: retail's merge block holds both the flag store and the test, so the found path
+// cannot enter it; VC keeps that test only while some incoming path does not know the result.
+// Also r108: main with `if (result == NONE) return result;` closing the else arm and the record block unconditional 138
+// (518 B, re-measured); the 9 form with that test closing the else arm and the record block unconditional 87 (504 B, 5
+// aligned lines: the found path then lands on the record block's reload as retail, but the closing test is dropped as
+// known and the walk's return still folds, the same two facts from the other side). The walk's pick tested against
+// cache_index (NONE on that path) instead of the literal: main 77, 9 form 9, closing-test form 87 (same code each: VC
+// folds cache_index to -1 first); the result as the one field of a local aggregate (diagnostic) 77/9/87 (same code:
+// the field is tracked like a scalar).
+// M3 lane 7 r185 (fast with 0x3d2c0, 0x3db00 and 0x3dd10, all MATCH; control 77): the found arm re-reading the cache
+// field (`result = *(long *)(object + 0xcc);`) on main 77, on lane 8's `!initialize || result != NONE` merge 83 (508 B), on
+// the 9 form 9 (519 B; all three the code of their base: the re-read is merged with the tested load and the found edge is
+// still not threaded); that merge with the walk's exit as `goto done` to the only return 85 (504 B: the walk exit becomes
+// retail's `je`, but both epilogues merge on ESI and the merge block reloads the result into EAX); that merge with the
+// walk's return moved to close the else arm 86 (506 B). On the 9 form only two points differ: ours reloads the result
+// before the merge test because the found edge enters it, and the walk's NONE return folds to `or eax, -1`.
+// M3 lane 3 r270: HELD (needs the owner's OK): byte MATCH in the fast and the plain check (518 B, every caller and callee
+// unchanged: 0x3d430, 0x4c640, 0x3dc90, 0x335e0, 0x3db00, 0x15e360, 0x17b5d0 matched as before, 0x4b5d0 93, 0x1794e0 63 and
+// 0x116b00 322 as in the baseline), not applied: the form changes this function's return type, so each caller's
+// call line needs `.index`, and one of them sits inside contributor function 0x1794e0 (src/unknown_175bd0.cpp); two
+// more callers are in files other lanes hold this round (src/unknown_03f2b0.cpp, src/unknown_157450.cpp). The full
+// diff is build/r270/held-0x3ddd0.patch (seven files). The form: the function returns a one-field aggregate holding the
+// index (returned in EAX as before); `result.index = NONE;`, the found test only setting it from the cached index,
+// then `if (result.index == NONE) { cache_index = record_pool_allocate(...); result.index = cache_index; if (cache_index
+// == NONE) { the walk storing its pick in result.index; cache_index = result.index; } if (cache_index != NONE)
+// initialize = true; else return result; }` and main's `if (result.index != NONE)` block. Why it matches: an aggregate
+// copy is not folded to the tested constant, so the walk's failed exit returns the register (`mov eax, esi`) as
+// retail's does, where every scalar spelling returns `or eax, esi` / `or eax, -1`; the else-arm return is laid out
+// after the main epilogue; and the found path is threaded past the second NONE test by the `result.index == NONE`
+// guard while the test stays for the two miss paths. Measured on the way (fast, 0x3db00/0x3dd10/0x3d2c0 MATCH each
+// time, all with the aggregate return; exact-aligned lines in brackets): main's skeleton with the early walk return 77
+// [20]; the guard skeleton with it 83 at 508 B [16: only the return block inline where retail's trails]; that
+// return as an else arm after an empty then, as a jump to a second return, inside a `for (;;)` walk, as `cache_index
+// != NONE || result.index != NONE` with an else return, 83 each (same code); a goto to the only return 85; the flag
+// set in both arms of the allocation test on main's skeleton 5 at 518 B [4: the found path enters the reload ahead
+// of the second test], on the guard skeleton 86 (506 B, the second test dropped); `if (result.index != NONE)
+// initialize = true; else return result;` after the walk block on main's skeleton 70 [7], on the guard skeleton 144;
+// those two with the merge as `!initialize || result.index != NONE` 88 at 503 B [3: only the second test missing];
+// that with `cache_index = result.index;` closing the walk and the exit tested on cache_index MATCH, with the merge
+// tested on cache_index 77 [5]; the matching form with the plain merge on the guard skeleton MATCH (the held form),
+// with the exit as an early return 83, with the walk keeping its pick in cache_index 153, with the exit tested on
+// result.index 144; the held body as a forceinline helper returning the aggregate behind this function's unchanged
+// `long` signature 85 (504 B: the helper's exit becomes a jump to the one return and the epilogues merge on ESI), as a
+// plain inline it stays a call. Diagnostic (removed): the result's address stored in a scratch global with a scalar
+// return still folds the exit.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

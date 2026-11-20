@@ -74,11 +74,46 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+/* fills one row of the online friends or players list: the name, the status text and the
+   invitation, session and voice icons */
+// MiniMax S (11-19): no new form, no lower score (316): retail sends every text arm straight to one function_253b1a call with no NONE test and takes the message set_text inside the message block, so ours keeps the cmp eax,-1 test at the join, the !online arm inline where retail parks it at 0x2b3674 and the >> 10 arm next to the join where retail outlines it at 0x2b3088; the buffer homes stay a rotation off retail, so the body stands.
 // MiniMax H (11-18): no new form, no lower score (316): the frame 0xfd4 still agrees and the first difference is
 // still the null-datum test's jump target (retail's `je` goes to the shared epilogue at the function's end, ours to
 // a near block); wrapping the whole body in `if (datum)` compiles to the same code, so the null test stays as it is,
 // and the five string buffers' homes and the child and layout homes still differ.
-// score 316 (was 316): Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// MiniMax G (11-19): no new form, no lower score (316): retail's status block sends every text arm straight to one
+// shared function_253b1a call with no NONE test and takes the message's set_text inside the message block, so the
+// arms' `mov eax, id` and the join match ours; what stays is our join's `cmp eax,-1` test, the `xor ebx, ebx` before
+// it, the >> 10 arm that retail parks out of line at 0x2b3088, and the five string buffers' homes (ours title
+// -0x8cc, display_name -0x6cc, suffix -0x4cc, layout -0x2cc against retail's display_name -0x8cc, title -0x6cc,
+// layout -0x4cc, suffix -0x458); writing the text arms as direct calls measures 425, moving the set_text into the
+// message block 502 and calling function_253b1a in each arm 540, so the one-call body with the text variable stands.
+// A permuter run against the full image over 700 s (twelve tries) reached no lower score than its own baseline.
+// score 316 (was 316): r209 unchanged (lead below: the buffer homes follow reference counts). Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// m3 lane 8 r195 (fast = plain here): 43 at retail's 2345 bytes (plain check, 0x2b37fd and 0x2b3fca still match) with four
+// changes together: the received text as `if (in this title) text = 0x15000269; else text = 0x1a000268;`, each can_join
+// arm of both switch defaults written as its own load, append and terminator, the online block first with
+// `else text = 0x700024e;` as the chain's last arm, and the title and suffix clears as two statements, title first. Not
+// kept: the online-first order is an arm swap, so it stays only with a byte match. Without it 665; it alone 720; with the
+// received if/else only 396. Why: the five buffer homes follow reference density after dead-store removal and before
+// cross-jumping (one layout reference fewer, `|= 3` or no value4 store, or two suffix references more give retail's homes
+// exactly; extra dead suffix clears change nothing), and retail's three extra bytes are the two defaults not if-converted.
+// Steps: the full-sequence defaults alone 550/551 (one) and 598 (both, 2252 bytes: `known` leaves BL, tails over-merge),
+// a terminator once after each switch 549-605; with the received if/else 665 (2354 bytes: the invite pointer takes ESI);
+// that with the dispatch tested `text == NONE` first 396 (registers right, the call block laid out early); the clears
+// alone 316. Left at 43: the item loop's `>> 10` arm stays inline where retail parks it after the session player's jmp
+// (matched 0x18f62b and 0x24c461 park such a block when a repeated test is jump-threaded). On the 43 form, all 43 or worse:
+// `!friends ? >> 10 : >> 12` 44, nested ifs 43, the xuid test as an early `continue` 43, `== 0` and no-cast tests 43/43,
+// the original `!can_join` order 43, a file-local forced-inline test 43, `>> (friends ? 12 : 10)` 137, bool casts per arm
+// 609, the flag10/flag12 bitfields 610, the arms as nested ifs 55, a named bit set by an if/else 609/610, the word shifted
+// by 10 then overridden 612, `((friends ? flags >> 2 : flags) >> 10) & 1` 609. The permuter cannot search it (its reduced
+// image scores 109). Earlier this round on the 316 body: the clears split 316, the flag sets through bitfields 316/316.
+// Round 127 (m3 lane 10, fast): `inline` on 0x230134's definition (to change what callers assume it keeps) expands it
+// into its callers: 1211 here (2789 bytes) and nine matched callers lost, restored at once; the invitation count declared
+// after the bools 316 and the request at function scope 316 (same code each); display_name declared ahead of the child
+// lookups 341; the buffer loader taking the string id first, at all 32 loads, 316 (same code). Retail sets the buffer
+// (`lea esi`) before the id in each arm after the screen lookup, so the lea is not tail-merged there; ours merges it.
 // Round 199 (m3 lane 5, fast; aligned 49): the string-buffer record given a constructor clearing its first word in place of
 // the explicit display_name/message/suffix clears 316 (same code); with the title as the same record 316 (same code); without
 // the layout's explicit flags clear 316 (same code); the final player/layout/values in their own block 316 (same code);
@@ -112,15 +147,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
 // the block order follows retail's apart from a few blocks, but stack offsets
-// Stack homes, suffix address rederivation and block placement remain.
-// Stack homes, suffix address rederivation and block placement remain.
-// Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // Earlier: the block order follows retail's apart from a few blocks, but stack offsets
-// frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
-// merging the two XONLINE_FRIEND copies into one local in the status block
-// the block order follows retail's apart from a few blocks, but stack offsets
-// the block order follows retail's apart from a few blocks, but stack offsets
-// Stack homes, suffix address rederivation and block placement remain.
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's
 // friends == false shift out of line (still within the loop), clears ebx inside the received-invite
@@ -214,15 +241,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Coherent flags alone: 2327 bytes, count 330; original body and stores restored.
 // Round 292: native six-state suffix cases reversed, five rotations, odd/even and
 // middle-out orders 330 each; original complete cases restored; homes and re-derivations remain.
-// Round 279: Existing status producer writes the real final payload directly, before/after
-// the disjoint range helper, crossed with constructor-owned zero and native flag bits:
-// 400 each, 2324/2345 bytes. Original local output, library copy, flags and full body restored.
 // Round 332: Terminator stores through the append result with shared flags and native identity/status, subsets
 // 0-7: 327/338/327/338/327/338/327/338.
 // Three-point gain rejected; original executable source restored.
-// Round 284: shared actual invitation/session/voice icon-result publication, subsets
-// 1-7: 490/389/487/374/487/390/669; all with native short session/voice results 673.
-// Original complete body restored; child/text/layout homes and suffix address rederivation remain.
 // Round 301: complete available/disabled/muted query-result arms, subsets 1-7,
 // 633/617/625/554/639/633/637; all with reused valid-player predicate 642. Original body restored.
 // Round 207 (lane 3, fast): the >= 10 invitation icon as one call with `received ? 28 : 17` 358 (2328 bytes);
@@ -326,6 +347,28 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // EAX and jumps to one `push eax` call, so retail keeps a text variable whose message paths bypass that call with no
 // NONE test. Diagnostic (reverted): the message arms calling set_text and jumping past an unconditional 0x253b1a
 // call 393 (2320 bytes).
+// M3 lane 14 r122 (fast with 0x230134/0x2b0a14, MATCH; control 316): the session widget's three state calls as one
+// call with a nested ternary argument 332 (2337 B); the voice pointer renamed to sort before the session pointer 316,
+// declared before it and assigned after it 316; the message buffer at function scope 316; the final layout record
+// declared before the player record 316 (same code each: the (8,5)/(8,4) widget slots stay swapped).
+// M3 lane 5 r209 (fast with 0x230134, 0x22eeee, 0x2b0a14, 0x253b1a; control 316, aligned 49 = register-masked 49). LEAD: the
+// five buffer homes and the two child-pointer homes follow a reference ranking. Diagnostics (not keepable): two extra
+// code-emitting suffix uses (`suffix.text[1] = 0;` twice) put every buffer and both child pointers in retail's homes
+// (display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix -0x458, message -0x258), aligned 22 at 2356 B (one use: 50;
+// four: 24; six: 57); dropping the layout's value4 store does the same (aligned 23); one extra title use fixes only the
+// display_name/title pair (aligned 40); the layout clear dropped or three extra layout clears, and `(void)` reads or
+// `(void)&suffix`, change nothing (no-code uses do not count). Retail's extra suffix uses are its per-arm `lea esi,
+// [suffix]` in the value04/value08 switch arms: retail sets ESI before ECX at every suffix load, so cross-jumping keeps
+// the lea in each arm, where this build sets ECX first at suffix loads (ESI first at message loads) and merges it. Neither
+// the suffix's declaration place (after/before message, before title: 316, same code) nor the load member's parameter
+// order (`load(handle, screen)` at all 32 sites, 316, same code) changes that order. Trials: the online arm ahead of the
+// `!online` text (retail lays the 0x700024e block out just before the dispatch) 720 (2391 B: the zero register moves to
+// ESI from the entry); the closing layout locals in their own block 316 (same code); declared at the top 604; the
+// redundant layout flags clear dropped (the constructor clears it) 316 (same code); re-measured by mistake: both default
+// arms as one load with a `can_join ?` id 675 (2193 B, as round 138). Diagnostic: in the value04 == 0 arm, the suffix
+// load written before the message load gets retail's ESI-first order (and the message load keeps it), 484 (2354 B): a
+// suffix load right after a message load is the one that sets ECX first. The suffix loads as direct 0x230134 calls
+// re-measured 330 (2334 B, as round 242; the order is unchanged).
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
@@ -391,11 +434,15 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                 s_entry *entry = &items[i];
                 XUID const *other = NULL;
                 if (entry) other = (XUID const *)entry;
-                if (xuid_equal(xuid, other, false) &&
-                    !(bool)((friends ? entry->flags >> 12 : entry->flags >> 10) & 1))
+                if (xuid_equal(xuid, other, false))
                 {
-                    flags |= 0x200;
-                    ++invitations;
+                    dword entry_flags = entry->flags;
+                    if ((friends && !(bool)((entry_flags >> 12) & 1)) ||
+                        (!friends && !(bool)((entry_flags >> 10) & 1)))
+                    {
+                        flags |= 0x200;
+                        ++invitations;
+                    }
                 }
             }
         }
@@ -432,16 +479,17 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
         {
             XONLINE_FRIEND friend_;
             friend_get_online_friend(datum, &friend_);
-            text = online_friend_is_in_this_title(&friend_) ? 0x15000269 : 0x1a000268;
+            if (online_friend_is_in_this_title(&friend_)) text = 0x15000269;
+            else text = 0x1a000268;
         }
         else if (player_outgoing && !friends) text = 0x100002e9;
         else if (outgoing && friends) text = 0x12000267;
-        else if (!online) text = 0x700024e;
-        else
+        else if (online)
         {
             word title[256];
             s_string_buffer suffix;
-            title[0] = suffix.text[0] = 0;
+            title[0] = 0;
+            suffix.text[0] = 0;
             XONLINE_FRIEND friend_;
             friend_get_online_friend(datum, &friend_);
             online_friend_get_title_name(&friend_, (wchar_t *)title, 256);
@@ -473,10 +521,18 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                             message.text[255] = 0;
                             break;
                         default:
-                            if (!can_join) suffix.load((c_widget *)list->get_screen(), 0x13000257);
-                            else suffix.load((c_widget *)list->get_screen(), 0xf000256);
-                            unicode_string_append(message.text, suffix.text, 256);
-                            message.text[255] = 0;
+                            if (!can_join)
+                            {
+                                suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                                unicode_string_append(message.text, suffix.text, 256);
+                                message.text[255] = 0;
+                            }
+                            else
+                            {
+                                suffix.load((c_widget *)list->get_screen(), 0xf000256);
+                                unicode_string_append(message.text, suffix.text, 256);
+                                message.text[255] = 0;
+                            }
                             break;
                         }
                     }
@@ -511,10 +567,18 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                         message.text[255] = 0;
                         break;
                     default:
-                        if (can_join) suffix.load((c_widget *)list->get_screen(), 0xf000256);
-                        else suffix.load((c_widget *)list->get_screen(), 0x13000257);
-                        unicode_string_append(message.text, suffix.text, 256);
-                        message.text[255] = 0;
+                        if (can_join)
+                        {
+                            suffix.load((c_widget *)list->get_screen(), 0xf000256);
+                            unicode_string_append(message.text, suffix.text, 256);
+                            message.text[255] = 0;
+                        }
+                        else
+                        {
+                            suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                            unicode_string_append(message.text, suffix.text, 256);
+                            message.text[255] = 0;
+                        }
                         break;
                     }
                 }
@@ -575,6 +639,7 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
             }
             else text = 0xe00024f;
         }
+        else text = 0x700024e;
         if (text != NONE) status->function_253b1a(text);
         else status->function_22f52e()->set_text(message.text);
     }

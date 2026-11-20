@@ -280,7 +280,10 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// MiniMax B (11-20): no new form, no lower score (164): our frame is 0x24 against retail's 0x2c, retail homes the two decoded material codes as dwords and the first index as a dword where this build keeps two shorts, and retail materialises each side bit as its own stack byte where ours merges the two tests; retail also receives the source in ECX and copies it to ESI, which the declaration in the caller's file decides.
+// score 164 (was 164): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
+// and independently decoded side homes differ.
+// Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail's 0x2c; the source now arrives in ECX as in retail (earlier note: 206, was 206).
 // Earlier 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix;
 // m3 lane 16 r130 and r132 at the end.
@@ -843,6 +846,117 @@ void function_245400(s_source_245400 const *source, long index,
 // XMM4-6 against XMM3-5); that with the edge as three member differences 211 at 783 B [97/53]; the side bits through
 // a forceinline helper taking the long code by const reference 232 (752 B, folds as the shifted sides); select,
 // member differences and `(local_2 >> 15) & 1` sides together 237 (746 B). Body unchanged.
+// Secondary index before material table 163; secondary record retained for extension 211;
+// both codes reread by index 210; table after widened codes 204, with bound vertex records 204;
+// late table with shifted orientation bits 199; per-plane decoding 200, with equal-code guard 200.
+// NOT kept: the one-point gain leaves frame 0x24 and the side homes displaced. The late
+// table with signed sides changes the caller. Retail still keeps the source in ESI.
+// M3 lane 1 r126 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH each time; control 164, aligned 134): on the single
+// condition, sides as `(code & 0x8000) != 0` 232 (752 B) and as `((dword)code >> 15) & 1` 232 (752 B: the two tests merge
+// into one jump). The edge rotation through an inline vector form of this file's point transform (copy the components,
+// `x = matrix->scale * x` under the scale test, rows `up * z + left * y + forward * x`, the edge passed in and out) 163 at
+// 783 B [124]: retail's select shape (`movaps` copies, `jnp`, the scaled copies) but the rows' sums reorder; its rows as
+// forward, left, up 163 [124]; i/k forward-first with j as up, forward, left 163 [124]; j as two statements 164 (785 B).
+// Diagnostic, restored: on that helper form, the second vertex pointer stored to a scratch global inside the plane test
+// 207 (786 B, [114]): the first vertex pointer is then formed before its loads and the edge lands at retail's offsets.
+// Not kept: a new one-caller helper for one point.
+// Round 433. The frame, independent decoded material homes and late matrix load still differ.
+// decoded plane indices word 224; second material comparison first 164; geometry scoped plane receivers 206;
+// geometry scoped plane table and receivers 200; ordered thresholds before sides 201; paired rejected orientations
+// 214; cross dot running sum 227; cross dot named products 213.
+// NOT kept: reversing the material comparison ties. The scoped plane forms regress and disturb the caller in the
+// reduced image. The alternatives keep the frame short of 0x2c.
+// Round 436. Plane side by raw-code/ordinal inequality, lower bound, equality and bias
+// 207/207/207/212; late table with inequality or lower bound 209/209; with native short
+// inputs 207, and late-table complementary order 209. NOT kept: these leave the frame
+// at 0x24 or 0x28; the late table also disturbs 0x245aa0. Original body restored.
+// Separate scaled rotation input with an explicit unscaled arm 247, Separate rotation input with the unit-scale
+// arm first 251, Conditional rotation input from the scale helper result 240, Rotation input changes only on the
+// scaled branch 239, Explicit scaled input with one matrix scale observation 247, Conditional helper result with
+// one matrix scale observation 240, Branch-selected rotation input with one matrix scale observation 239,
+// Rotation reads a copied edge scaled in place 231. NOT kept: The pointer-selected rotation inputs recover frame
+// 0x2c but grow the body to 820 or 822 bytes and raise the matched caller 0x245aa0 to 6 in the reduced image. All
+// other forms keep frame 0x24 and lengthen the body. The original caller and transform shape are restored.
+// Material word references 211, primary index field reference 163, resolved plane address comparison 222,
+// with late plane table 215 or late edge 210, endpoint member references 212, with late position pointer
+// 164 or codes extended ahead of the endpoints 205. NOT kept: The primary field reference gains one point.
+// None recovers the native frame and side homes.
+// M3 lane 3 r271 (fast with 0x245aa0, 0x245400, 0x244de0 and 0x245270, all matched unless noted; control 164, aligned 193,
+// masked 88). LEAD, not kept (statement order and a written-out helper body are match-only): retail's frame 0x2c, the
+// `push ebx; push esi; mov esi, ecx` prologue, the local EBP save, both long codes in stack homes, the first side in a
+// stack byte and `cmp byte ptr [esp + 0xf], bl` all come from one statement order: both vertex pointers first, then each
+// long code with its index, the plane table, the two plane pointers, the two sides, and only then the edge vector (the
+// second vertex pointer stays live across the plane code; its loads are still scheduled early). Steps, each on the one
+// before: (1) main's body with the plane table read after the codes, the edge after the sides and the dot written
+// edge-first 198 (787 B, aligned 112: retail's frame and homes); (2) lane 1 r119's head on it (`s_material_245400 const
+// *second = &materials[local_0->field_0a];` ahead of `local_1`, the compare and both long codes read through
+// `materials[local_1]` and `second`) 116 (790 B, aligned 98: the first 17 instructions are retail's); (3) the sides as
+// shifted bits or mask tests on that 206 (764 B: one code back in a register, frame 0x28), but with named indices
+// (`long first_index = local_2 & 0x7fff; long second_index = local_3 & 0x7fff;` for the plane pointers and the index
+// test) and `bool local_10 = ((dword)local_2 >> 15) & 1;` 138 at 783 B, and with each index declared right after its
+// code 136 (783 B: everything through the `pop ebp; je` is retail's but the jump targets); (4) the dot through the
+// existing dot3f(&local_12, &local_6) 128; (5) the edge scale as a select (edge_i/j/k copied, `edge_i = arg_2->scale *
+// edge_i;` in the arm, vector3f_scale written out), edge_k/j/i declared in that order, rows i `forward, left, up`, j `up,
+// forward, left` in one statement, k `forward, left` then `+= up` 53 (789 B, aligned 51, masked 25; found by a compile-only
+// descent over the rows, the scale form, the copies' order, the dot, the cross helper and the edge spelling, which scores
+// this file as the LTCG build does but for three call lines). Left at 53: the plane cross (retail loads the first
+// plane's k once and has the second plane's member as the loaded operand of the other four products; cross3f and
+// cross3f_staged give the same code, and 384 written-out spellings of it are worse), the dot's last add ahead of its
+// last product, the select's three copies in i, j, k order, the i and j rows, and the point transform's rows (they move
+// with the vector rows' spelling: field ranks). Also measured on the way: step 1 without the head 198, with the plane
+// table late but the edge early 212 (0x245aa0 3); sides as `(short)local_2 < 0` on step 2 182 (`cmp word ptr [home], 0;
+// setl`), read again from the material records 205; a 15/1-bit overlay of the code on step 2 206 (promoted, same as the
+// shifts); the flag form of the sides on step 2 with step 5's select 207 (0x245aa0 3); one row pattern for all three rows, any term
+// order or operand side, same code (aligned 62 compile-only: single-expression sums are rank-ordered); extra locals move
+// two or three lines with period 8 and nothing else; steps 2 to 5 in main's statement order 236 (751 B). Diagnostics,
+// reverted: the function returning the second vertex pointer at the facing failure 214 (the pointer then takes ESI, the
+// homes appear); the dot written edge-first on main's body 207 at 783 B (aligned 157: retail's in-place products).
+// The 0x24 frame still lacks the separate code and side homes. The matrix already loads at its test.
+// Edge/cross names in both orders 164/164; edge/point names in both orders 164/164;
+// endpoint and plane receiver names in both orders 164/164; all geometry names 164;
+// all geometry names with the plane table after the edge 166. NOT kept: the late
+// table still reserves 0x24 and raises caller 0x245aa0 to 3.
+// MiniMax C (11-19): no gain (164, baseline; body restored). Retail reads the second surface index (field_0a) before the first (field_08) and homes the two decoded material codes as dwords at +0x14 and +0x18 with the first index at +0x1c, which is the 0x2c frame; ours has two homes and the 0x24 frame. Reading the two material codes in retail order measures 163, a gain of one and under the bar.
+// End vertex record 164; retained start vertex 164; both vertex bindings 164; both bindings with late
+// plane table 205; retained primary material 164; both material bindings 164; primary material with
+// late output point selection 164; bound vertices with shifted side bits 232.
+// NOT kept: the late plane-table form lengthens the body and raises caller 0x245aa0 to 3. The shifted
+// side bits shorten it to 752 bytes. The record bindings leave the frame at 0x24.
+// M3 lane 5 r213 (one-object LTCG screen of this file linked with the caller's object, exact against the fast build;
+// counts are aligned rows, lane 3 r271's lead = 51 on it, 53 positional). On that lead: the edge copies declared in each
+// order x each edge row as one statement or split `(a + b)` then `+= c` three ways x the dot by hand (two orders) or
+// through dot3f (1536 forms) best 41 (copies i, k, j; rows i and j `(forward + up)` then `+= left`, k one statement); on
+// it the plane table read at each plane pointer 40 (fast 50 at 789 B), the plane pointers declared second-first 44,
+// cross3f_staged and plane pointers typed as pointers to the normals the same code. The plane cross block never moves:
+// written out in place, any of its 64 written operand orders 84 each; a file-local inline copy with any of the 64
+// operand orders or any of its 6 parameter orders 40 each; no plane pointer locals 132-148 (frame 0x24 or 0x20).
+// Dead initialised longs K = 0..31: period 8 ahead of the cross (38-51), flat after it, the cross never retail's
+// (retail loads the second normal first in four products and reuses the first normal's k in two).
+// M3 lane 5 r217 (the same one-file link-time screen, exact against the full build for this body; aligned rows on lane
+// 3 r271's lead, 40): the cross does move with the order its rows are stored in. Written out in place with rows in
+// each of six orders 84 to 96, in a file-local helper 40 (i, j, k), 44, 43, 47, 54 (k, i, j), 56 (k, j, i): with the k
+// row stored first all six products take retail's operand sides (second normal's k, i and j loaded against the first
+// normal's i and j, first normal's k loaded against the second's j and i), but the products then run k row first
+// where retail runs i, j, k. A staged cross (three scalars, then three stores) over every compute and store order:
+// 37 with i computed ahead of j and stores i, j, k (four of six products retail's), 40 with j ahead of i, 54 / 56
+// with k stored first. One normal component read into a local first (each of six) 41 to 59; four written operand
+// spellings of each form the same code. The facing value as one triple-product expression, four spellings, 80 each.
+// One to three parenthesis pairs on the dot's first product 45 / 67 / 80. Ten cross forms x 0 to 7 dead locals ahead
+// of the points: 35 with the staged i, j, k cross at 7 (only the two products of the first normal's k still face the
+// other way: retail loads that k once and multiplies it by the second normal's j and i from memory). A coordinate
+// descent from seven starts over the cross form, both dead-local counts, six dot spellings, the edge copies' order,
+// the scale arm's order and twelve spellings per rotation row: best 35, no match. Body unchanged.
+// First complete decode, second complete decode, second index before both addresses, and
+// second address/side paired 210 each. With shifted side bits 234/234/233/233.
+// NOT kept: the sign tests reach retail length but regress. The shifted forms are short
+// and all retain the 0x24 frame with the source and separate side homes displaced.
+// Scaled axis contributions in six orders 223/222/222/223/222/222; vector setter for their sum 223; aggregate
+// rotated direction 250. NOT kept: all grow past 783 bytes. The frame stays at 0x24 or grows past 0x2c to
+// 0x30 or 0x3c.
+// Equal-code guard with combined facing predicate 164, sides before word comparison 215,
+// side comparison scoped to facing 197, signed-word plane ordinals 224, rotated and staged
+// edge setters 164 each, one edge scale read 164, signed ordinals with scoped facing 215.
+// The frame and code and side homes remain unresolved. NOT kept: ties and regressions.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

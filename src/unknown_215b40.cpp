@@ -247,8 +247,6 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 
 // score 114 (was 114): BLOCKED-BY the `/GL-` flag of src/unknown_215880.cpp (see round 141 below);
 // check with 0x2157e0 in the image (it defines g_51ea14;
-// check with 0x2157e0 in the image (it defines g_51ea14;
-// check with 0x2157e0 in the image (it defines g_51ea14;
 // without it the fast check builds differently). The iterator struct gives
 // retail's frame: table at [esp+0x24], the index's slot [esp+0x28] unused, and
 // index << 6 recomputed for each copy (a plain table pointer and index
@@ -327,6 +325,10 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // bare and zeroed in the cache block and in an else 140; the unit count by if/else 114 (same code); the cached
 // generation through saved_game_storage_get_cache() 138; the entry test through that getter 114 (same code). Our
 // build still loads g_51ea14 into EAX at entry with EBP as the zero register, retail into EDX with EBX.
+// Disk handle named parts or accumulator 171/114; the same with the iterator
+// advanced at the latch 170/170. Built-in handle named parts or accumulator 114/114;
+// both scans with named parts or accumulators and delayed device advance 170/170.
+// The cache load and pass-latch refresh still differ.
 // Shared packed handle type bits 210; named completed disk handle 114, built-in handle 114, both 114;
 // copied location declared outside the inner loop 114; built-in record cursor 117;
 // no-controller cases outside the switch 157, with a shared controller-selected predicate 186.
@@ -338,12 +340,59 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // output destination across both scans 231. NOT kept: using the built-in entry kind for filtering and packing
 // scores 108 at 568 bytes, six below baseline. The entry cache and zero registers still differ. The per-
 // device cache receiver and all output cursors grow the body. Opening executable source restored.
+// M3 lane 5 r204 (fast with 0x2157e0, 0x215880, 0x2163d0 and 0x1249f0, all MATCH; control 114): kept, the unit scan
+// through the header's location iterator and its inline getter in place of the hand-written table copy 114 (same code).
+// On it: the scan as 0x2157e0's `while` over the getter with the capacity test after a match 114; the cached scan's
+// index declared ahead of the cached count 114; the location declared beside the iterator 114 (all same code); an
+// early `return` with `*capacity = 0` when the cache is missing 212 (600 B). Still BLOCKED-BY the build flag above.
+// M3 lane 4 r225 (fast with this file, src/unknown_2157e0.cpp, src/unknown_215880.cpp, src/unknown_020670.cpp,
+// src/saved_game_storage.cpp, 0x1249f0 and 0x13de30; control 114): why 0x215880 needs its flag, measured with the flag
+// lines changed for the measurement only (flags are not a lane's to change; full diff build/r225/held-0x215900.patch).
+// Built as a link-time object 0x215880 is 28 and differs in two things: retail calls the compiler's array-constructor
+// helper 0x20670 (pushing the record constructor 0x215b40) where our link expands the helper's loop in line, and retail
+// reads g_55c15c again after the store through the new storage where ours keeps the first read. (1) With g_55c15c's
+// address passed to a called function (a stand-in for retail's one address-taken block 0x55c030..0x55c284, the single
+// clear at 0x2156a9, see 0x215690's note) the second read appears (37, the helper loop alone left). (2) With the
+// helper's file built without link-time code generation as well (the helper is the compiler's own, never expanded in
+// retail) 0x215880 MATCHES as a link-time object, 0x20670 stays matched and this function MATCHES with round 141's
+// body; that trial costs 0x20e50 (2) and 0x2e1e0 (30), which share the helper's file and need link-time code
+// generation, and leaves 0x215b40 at 5. (3) The table as a real `c_location_record entries[0x1000]` member (the
+// compiler's own helper call) 39: the link expands that loop too, with 0x215b40 matched. So the flag stands in for the
+// native helper and the one-object block; with both in place 0x215880 needs no flag and this function is free.
+// Re-measured: round 141's body under the present flags 52 (aligned 35; not kept, as round 141 says).
+// M3 lane 5 r207 (fast with 0x2157e0, 0x215880, 0x2163d0 and 0x1249f0, all MATCH; control 114): both scans storing the
+// handle and stepping the count as two statements 114; the unit step's no-controller cases as the switch's default (no
+// assumed default) 175 (580 B); the drive letter declared at the function top 114; `long const` unit count with the
+// cached scan's type test written type first 114; the unit scan's type test written type first 114 (all 114s the same
+// code). Masked, the rest is the entry cache/zero registers, the pass-latch cache reload and the packing chain.
+// Round 438: Cache/zero registers and the disk iterator index still differ. Test the controller traversal with the original scans.
+// Put the two single-device cases first in the switch: 114.
+// List the numbered controller cases in descending order: 172.
+// Use NONE as the shared single-device selector for the limit and switch: 185.
+// Use 0xff as the shared single-device selector for the limit and switch: 209.
+// Choose the first controller card by switch and derive the current unit from its ordinal: 229.
+// Choose the first controller card by switch and advance through its paired slots: 229.
+// Select the current controller card by switch only on the two non-disk passes: 259.
+// Compute the current unit directly from the controller port and card ordinal: 276.
+// NOT kept: The sentinel-first switch ties at retail length. Changing the controller cursor or hoisting selector normalization raises the score and changes the extent. The cache still reloads after the built-in guard.
+// Common next-unit store 135, adjacent-unit default 177, pass advanced before selection 172,
+// separate next pass 183, pre-incremented output count for disk/built-in 213/164,
+// three-pass and one-pass defaults followed by adjustments 114/114. Cache and zero registers still differ.
+// Matches now that src/unknown_215880.cpp builds as a link-time object (M3 coordinator, 11-19): no native object
+// names g_51ea14 any more, so the compiler carries it in EDX from the entry test to the cached block and reloads it
+// only at the pass latch, as retail does (with a native object naming it, it was reloaded at each use: 114).
+// The forms the match needs, each checked alone on the matching body: the count declared bare and zeroed first
+// thing in the cache block and in the else (the block's first zeroed long takes the zero register, retail's EBX;
+// `long count = 0;` 170); `current` read before the increment, with the generation read through the getter inside
+// the handle's or-chain (a `generation` local 138); the cached index declared ahead of the cached count (declared
+// in the for 4).
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {
-	long count = 0;
+	long count;
 	if (g_51ea14)
 	{
+		count = 0;
 		long units = controller == NONE || controller == 0xff ? 1 : 3;
 		long unit = 0;
 		for (long pass = 0; pass < units && count < *capacity; pass++)
@@ -352,24 +401,18 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 			if (function_1249f0(unit, &drive_letter))
 			{
 				/* walks the memory unit's list of files */
-				struct
-				{
-					s_saved_game_location_table *table;
-					long index;
-				} iterator;
+				s_saved_game_location_iterator iterator;
 				iterator.table = &saved_game_storage_get_cache()->locations + unit;
 				iterator.index = 0;
 				do
 				{
-					if (iterator.index >= iterator.table->count)
+					s_saved_game_file_location location;
+					if (!saved_game_location_iterator_get(&iterator, &location))
 						break;
-					s_saved_game_file_location location = iterator.table->entries[iterator.index];
-					iterator.index++;
+					long current = iterator.index++;
 					if (location.type == type)
 					{
-						long generation = saved_game_storage_get_cache()->generation;
-						indices[count++] = (type & 0xf) | ((unit & 0xf) << 4) |
-							(((iterator.index - 1) & 0x1fff) << 8) | ((generation & 0x1ff) << 22);
+						indices[count++] = (((((saved_game_storage_get_cache()->generation & 0x1ff) << 14) | (current & 0x1fff)) << 4 | (unit & 0xf)) << 4) | (type & 0xf);
 					}
 				} while (count < *capacity);
 			}
@@ -387,8 +430,9 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 		if (include_cached)
 		{
 			s_cached_location_table *files = (s_cached_location_table *)g_51ea14;
+			long index = 0;
 			long cached_count = files->count;
-			for (long index = 0; count < *capacity && index < cached_count; index++)
+			for (; count < *capacity && index < cached_count; index++)
 			{
 				if (files->entries[index].type == type)
 				{
@@ -399,6 +443,10 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 			}
 			sort_4byte(&cached_count, indices, count, function_2163d0, NULL);
 		}
+	}
+	else
+	{
+		count = 0;
 	}
 	*capacity = (word)count;
 }

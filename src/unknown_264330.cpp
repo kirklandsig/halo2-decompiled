@@ -431,6 +431,16 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax B (11-19): no new form, no lower score (412): the maximum as a long instead of a word gives 416 and the prior
+// state as a short instead of a word gives 413, so both were reverted and the body stands. What still differs is the
+// frame, 0xa4 against retail's 0xa0, and the actor index, which retail takes in EAX because it inlines 0x2641c0 at its
+// caller, so this body's own signature cannot change: BLOCKED-BY 0x2641c0 (its noinline declaration is in
+// src/unknown_265cb0.cpp, another lane's file).
+// MiniMax A (11-19): no new form, no lower score (412): retail still takes the actor index in EAX (and keeps it in EBX)
+// and gives the frame 0xa0, while ours takes it from the stack and gives the frame 0xa4; the slot offset and the actor
+// pointer that retail saves at [esp+0x28] and [esp+0x20] are the values its inlined 0x2641c0 reuses, and ours saves the
+// pointer at [esp+0x18] instead. The inline of 0x2641c0 and the calling convention are outside this file (its noinline
+// declaration lives in another lane's file), so the difference cannot be closed here; the body is unchanged.
 // MiniMax H (11-18): no new form, no lower score (412): the frame stays 0xa4 against retail's 0xa0 and the early
 // homes keep their order (ours the actor base at 0x18, the flag byte at 0x17 and the constant 1 at 0x1c, where retail
 // has the index at 0x28, the actor base at 0x20, the constant 1 at 0x1c and the flag byte at 0x13, since retail saves
@@ -455,7 +465,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // the stack, the frame stays 0xa4 against retail's 0xa0 and the body 1620 bytes against retail's 1616; the two callees
 // that held this one back now match, so what is left is the actor index's home and the frame.
 // MiniMax E (11-16): no new form, no lower score (412): the frame is still 0xa4 against retail's 0xa0 and retail still takes the actor index in EAX where ours loads the argument from the stack, so the body stays four bytes longer than retail's.
-// score 412 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
+// score 404 (was 404; 412 before lane 14 r124): the frame is 0xa4 against retail's 0xa0; retail takes the actor
+// MiniMax H (11-20): no new form, no lower score (404): retail takes the actor index in EAX (mov ebx, eax right after the first push) while ours reads it from its stack home at esp+0xac; that difference follows from the inlined 0x2641c0, whose noinline declaration sits in another lane file, so the forms of this body cannot move it; the frame stays 0xa4 against retail 0xa0 and the body 1624 bytes against retail 1616.
+// Earlier at 404 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
 // Frame 0xa4 versus 0xa0; stacked actor and node/workspace homes still differ.
@@ -762,6 +774,101 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // `(double)range` is a cast in a test), so it is not the stack-parity effect that pads 0x1197b0, and the walk model
 // (m3-lane5 build/r195 search.py, run on this build's image) gives 0x262ba0 the custom convention, so it is not the walk
 // either. What keeps the argument on the stack is still open; BLOCKED-BY 0x2641c0's inline stands.
+// M3 lane 13 r117 (fast with 0x1e34e0, 0x263210, 0x265680, 0x264330, 0x264b50, 0x2641c0, 0x264210; control 412): the whole
+// body as a new forceinline inner function behind the entry point 412 (same code: the inner parameter is merged with
+// the argument, which stays on the stack); the actor pointer fetched at each use instead of the `actor` local 460
+// (1644 bytes, frame 0xa0, argument still on the stack); the final view test through `node` instead of a second
+// prop fetch 434 at 1616 bytes (retail's length, not kept: the count rises); re-measured: the for loop over the index
+// 453 (1600 bytes), 0x2641c0's
+// noinline declaration dropped (diagnostic, restored) 497 at 1688 bytes with 0x264210 lost, and that with the inner
+// function 497 (same code). Reading: in every form ours keeps the argument in its stack home and reloads it (twelve
+// reloads in the 412 body) because the prop index holds EBX; retail holds the actor index in EBX for the whole body
+// (the three callees that take it in EBX get it without a load) and the prop index in EDI with a stack home. The
+// argument register follows from that allocation, not from an inner function. Body unchanged.
+// M3 lane 3 r273: retail's listing calls 0x28fa60 itself (34 calls against our 35), so 0x2641c0 is expanded here; its noinline
+// declaration sits in a file another lane held this round, so no trial. A one-object link-time screen of this file with a direct
+// caller does not reproduce the full build (frame 0xa8, the index kept in EDI), so it is no screen for this function.
+// M3 lane 6 r204 (fast with 0x1e34e0, 0x263210, 0x264330, 0x264210, 0x2641c0, 0x26be00, 0x26be30, 0x265680, 0x264b50; control
+// 412, aligned [218, 198, 149] as exact / stack offsets masked / registers masked; body unchanged). Where the stack argument
+// comes from, by cutting the body (diagnostics, each restored): with no loop, with only the walk and the 0x263670 call, or
+// with the loop's first block alone (up to the maximum test, where the actor index is not read) the function takes the
+// index in EAX (`mov ebx, eax` or `mov edi, eax` at the entry) and the caller 0x1e34e0 MATCHES, so that caller's 25 is this
+// convention and nothing else; adding any one later block that reads the actor index inside the loop (the sampling block,
+// the state-change view update, the 0x264330 call or the 0x25ac00 call, each alone) puts it back on the stack, and so do
+// the loop without the switch and the loop without the sampling block. In this body the index then takes EDI and the
+// `update` byte BL; removing 0x263670's call from the first-block cut homes the argument in EBP and keeps it on the stack.
+// Flag forms, none moves it: sample and update as long 428 (1624 B), update alone as long 417, all three flags long 428,
+// the update flag dropped (diagnostic) 478 with the prop index in EBX; a short prior state re-measured 413. The walk
+// through the existing 0x26be00/0x26be30 re-measured 442 at retail's 1616 bytes, fast and plain, aligned [198, 182, 141]
+// (the two prototypes have to stand ahead of this function: declared inside the body the second one stays a call, 460 at
+// 1592 B); with the iterator's index read at each use 442 (same code). On the walk form the whole difference at the loop
+// head is one pair: this build keeps the prop index in EBX for the loop and loads the actor index into EDI from the
+// stack, where retail keeps the actor index in EBX (the register 0x2683f0, 0x1e2150 and 0x25ac00 take it in) and reloads
+// the prop index from the iterator's slot at every use (its EDI is free for the view pointer of cases 2 and 3).
+// Diagnostic on the walk form, reverted: the iterator's address stored in a volatile pointer 434 (1624 B), the index
+// still held in EBX across the calls, so it is not the iterator's storage that decides the pair. Not kept: the walk
+// raises the count (412 -> 442) although it removes the hand-written step; the next round should start from the walk
+// and look for what ranks the actor index above the prop index (retail's inlined 0x2641c0 is one read of it fewer).
+// MiniMax C (11-19): no gain (412, baseline; body restored). Retail holds the actor index in EBX for the whole body and gives the prop index EDI with a stack home; ours keeps the argument in its stack home and reloads it, and the prop index takes EBX, which also leaves the frame at 0xa4 against retail 0xa0. The inlined 0x2641c0 inline decision belongs to another lane file.
+// M3 lane 2 r115 (fast with 0x1e34e0; control 412; body unchanged). Why the actor index stays a stack argument: the
+// argument goes in EAX exactly when no instruction of this body reads its stack home again (main's body reads it 12
+// times, the walk form 12, see below), and three things in our build each force such reads. (1) Our link expands
+// 0x25c820 inline at the release site (`mov word [prop + 0x24], 0` and a direct 0x25c780 call are in our listing; retail
+// has neither, it calls 0x25c820 once, case 1 jumping to that call): the expanded body's 0x25c780 call takes the prop
+// index in EBX, so EBX cannot hold the actor index across it. (2) The `update` byte takes BL. (3) The prop index is
+// promoted to a register. Retail keeps the prop index and the next index in the iterator's cells (+0x14 / +0x18,
+// reloaded at each use) and all three flags in stack bytes.
+// Diagnostics, each reverted at once (D = an unreachable call taking a local's address, which keeps that local in
+// memory; P = an inline_depth(0) pragma around the release site's 0x25c820 call): the walk through the existing
+// 0x26be00 / 0x26be30 with the iterator's index read at each use re-measured 442 at 1616 B (12 home reads); + D on the
+// iterator 453 (1644 B); + D on the iterator and the update flag 431 at 1616 B with retail's frame 0xa0 and 5 home
+// reads left, all beside the expanded 0x25c820; that with the 0x25c820 calls cut out: no home read, entry `push ebx;
+// mov ebx, eax` and 0x1e34e0 MATCHES; + D on both and P: 0x1e34e0 MATCHES (this function 545 at 1496 B, first
+// difference +0x2b); P with D on the iterator only or on the flag only 498 / 497 (still stacked); P alone on the walk
+// 497 (1552 B), on main's body 462 (1568 B). Other cuts on the D-both form (0x1e34e0 25 each): without the 0x2641c0
+// call 549, without 0x1e5240 455, without the three callees that take the actor in EBX 504, without the two entry
+// calls 458.
+// Forms: case 1's 0x25c820 call and the release one as a single call (a `release_only` label) on main's body 457
+// (1592 B), on the walk 465 (1592 B), on the walk with D on both 430 (1616 B, first difference +0x6; the single site
+// is still expanded inline); the release calls written out in each arm with no goto 445 (1644 B; one of the four
+// sites is expanded, the first in source order), on the walk 481 (1656 B). 0x2641c0's body expanded here through a
+// forced-inline copy (diagnostic) 497 at 1688 B on main's body, the same bytes as dropping its noinline declaration
+// (round 143), 492 (1672 B) on the walk, 668 (1812 B) without the three inline_depth pragmas: 0x25c820 is still
+// expanded in each, so retail's call there does not follow from 0x2641c0's expansion using up an inline budget.
+// BLOCKED-BY our link expanding 0x25c820 (and, without its pragmas, 0x25d700) inline where retail calls them; what
+// keeps retail's iterator and flags in memory is open.
+// M3 lane 14 r124 (fast with 0x1e34e0 and 0x25d740, plain-confirmed with the file's functions, which all still match;
+// control 412): kept, 412 -> 404: the current-prop block after the loop as two tests of the field, each with its own
+// view lookup, as retail compares the index with NONE twice (cmp esi, -1 at 0x26314f and 0x26316c); alone 404
+// (1624 B). Kept with it: case 2's view through the existing 0x25d740 instead of its body written out (retail
+// expands the getter there, with its null test of the element); on main's body alone 409 at retail's 1616 B, on the
+// kept form 404 (same count). Not kept: the getter at the state-change site too 413 (on the kept form 427); the old
+// state `short` 413 (on the kept form 404, no gain); a `long volatile` maximum read as `(short)` on the kept form 406,
+// a plain `long` maximum 432; the maximum store written in both arms of the 0x350 test 421 (1644 B: retail's three
+// epilogues, and maximum's slot below the actor's as retail, but the count rises); the final block as two ternary
+// lookups on a `current` local 409 (the second test folds away); lane 6's walk through 0x26be00/0x26be30 on the case-2
+// form 443 at 1616 B (aligned 310 against 319). Still BLOCKED-BY 0x2641c0's inline (retail expands it here; its
+// noinline declaration is in another lane's file this round): the actor index arrives on the stack, not in EAX.
+// M3 lane 16 r153 (fast with 0x1e34e0, 0x264330, 0x265680; control 404). Retail expands 0x2641c0 here (its actor
+// lookup reuses the actor's scaled offset saved at entry, [esp+0x28]) and calls it everywhere else. New: the existing
+// noinline declaration of 0x2641c0 dropped 509 (1696 B; 0x264210 then expands it too, 68 -> 139 B, lost; the other five
+// callers stay matched; restored); `sample = update = true` as two statements 404 (same code); the final block on one
+// `current` local tested twice 409 (1616 B, the second test folds away, as lane 14's ternary form); `sampled_one` declared
+// ahead of `maximum` 404 (same code); `update` declared ahead of `sample` 402 (1620 B; a declaration order, not kept).
+// M3 lane 1 r136 (fast with 0x1e34e0 25 throughout; control 404): retail's loop is top-tested (the NONE test of the next
+// index at the loop head, every tail branch jumping back to it), ours is rotated; lane 6's walk gives that shape. Trials: 0x25c820
+// reading the prop through prop_ref_get at each use (so our link would stop expanding it at the release site) 423 and 0x25c820
+// itself 25 (restored); 0x2641c0's noinline declaration dropped with its perception index in a named local 511 (0x2641c0 2,
+// 0x264210 still expands it, 116; restored); the motion and context records at function scope 404, at the loop-body top 404
+// (same code each); the prop's fields through the typed s_prop_datum members (all but the short at +0xc) 404 (same code). Body
+// unchanged.
+// M3 lane 12 r159 (fast with 0x1e34e0 (25 throughout); control 404 at 1624 B): the release block's two calls under a
+// redundant `if (index != NONE)` (the loop already guarantees it; a frequency diagnostic) 439 (1620 B, retail's frame
+// 0xa0, but 0x25c820 still expands at the release site and the actor index stays stacked); only the release's 0x25c820
+// call under that test 449 (1640 B); the last block's view lookup through `node` instead of a second prop lookup 430
+// (retail's 1616 B); `motion` and `context` declared at function scope 404 (same code); the first `next` read from the
+// `actor` local instead of a second actor lookup 442 (1616 B). Blockers unchanged: the release site's 0x25c820
+// expansion and 0x2641c0's noinline declaration (dropping it expands 0x264210's call too).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -815,7 +922,7 @@ void function_262ba0(long actor_index)
 			else if ((char)p[0x27] > 0) function_25c230(actor_index, index, NONE);
 			else
 			{
-				view = *(long *)(p + 0x14) == NONE ? NULL : (byte *)&tracking_get(*(long *)(p + 0x14))->view;
+				view = (byte *)function_25d740((s_prop_node *)node);
 				point3f position;
 				function_b9dd0(*(long *)(p + 0x20), &position);
 				if (view && *(short *)(view + 0xa0))
@@ -906,15 +1013,17 @@ tracking_complete:
 		if (((byte *)function_25d690(prop_ref_get(index)))[0x68] && *(short *)(p + 0x24) >= 1)
 			function_25ac00(index, actor_index);
 	}
-	long current = *(long *)(actor + 0x338);
-	if (current != NONE)
+	if (*(long *)(actor + 0x338) != NONE)
 	{
 #pragma inline_depth(0)
-		byte *view = (byte *)function_25d700(current);
+		byte *view = (byte *)function_25d700(*(long *)(actor + 0x338));
 #pragma inline_depth()
 		if (view && *(short *)view >= 5) actor[0x34c] = true;
+	}
+	if (*(long *)(actor + 0x338) != NONE)
+	{
 #pragma inline_depth(0)
-		view = (byte *)function_25d700(current);
+		byte *view = (byte *)function_25d700(*(long *)(actor + 0x338));
 #pragma inline_depth()
 		if (view && *(short *)view >= 6) { *(long *)(actor + 0x350) = 0; *(short *)(actor + 0x50) = maximum; return; }
 	}
@@ -1050,8 +1159,8 @@ void __stdcall function_263210(long actor_index)
 }
 
 long function_baf40(long object_index);
-short __stdcall function_1c8df0(short source_cell, short target_cell, point3f const *target,
-	long object_index, point3f const *source, long mode, bool narrow, bool attached, bool alternate,
+short __stdcall function_1c8df0(short source_cell, point3f const *source, point3f const *target,
+	short target_cell, long object_index, long mode, bool narrow, bool attached, bool alternate,
 	long *hit_object);
 short function_25c9d0(long actor_index, long prop_ref_index, bool player, short sight,
 	void *point, byte *sample, long reported);
@@ -1152,8 +1261,8 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 			root = function_baf40(*(long *)(unit + 0x14));
 		else
 			root = function_baf40(reference->object_index);
-		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), *(short *)((byte *)motion + 0x28),
-			&motion->field_0, root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
+		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), (point3f const *)sample,
+			&motion->field_0, *(short *)((byte *)motion + 0x28), root, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 			current ? (long *)(actor + 0x348) : NULL);
 		if (*(long *)(actor + 0x7c) != NONE && prop->unknown25 && 25.0f > reference->unknown28 &&
 			(sight == 0 || sight == 1))
@@ -1171,8 +1280,8 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 				if (!view->unknown88)
 				{
 					short other_sight = function_1c8df0(*(short *)((byte *)sample + 0x28),
-						*(short *)((byte *)state + 0x2c), (point3f const *)((byte *)state + 0x30),
-						root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
+						(point3f const *)sample, (point3f const *)((byte *)state + 0x30),
+						*(short *)((byte *)state + 0x2c), root, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 						current ? (long *)(actor + 0x348) : NULL);
 					view->unknown8c = (short)other_sight;
 					view->unknown8a = function_263810((point3f const *)sample, actor_index, (point3f const *)((byte *)state + 0x30), NULL, 2, (short)other_sight, true, NULL);

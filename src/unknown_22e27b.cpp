@@ -513,6 +513,63 @@ static inline real interpolate_linear(real a, real b, real t)
 // the same way 228 (670 bytes); a redundant `if (time >= next_time)` guard around the loop 1 (same code); the join test
 // through a `bool const &` bound to restart 1 (same code); the flags local as a `word const &` bound to the field 1 (same
 // code). Screen: all five keep the skip, as do the frame declared after the per-pass reset and the guard as `next_time <= time`.
+// M3 lane 8 r193 (compile-only screen of the file for the skip, then fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH):
+// `while (time >= next_time && !restart)` with the tail under `if (!restart)` re-measured 220 (666 bytes); a guarded
+// `do ... while (!restart && time >= next_time)` with that tail 1 (screen: same code); the flag-8 store guarded by `!restart &&`
+// with the break after it 1 (same code); the restart break inside each boundary block instead of at the join 1 (same code: the
+// two tests merge and the in-range path still skips them); the two loop restarts through a file-local `static inline`
+// predicate in the result style (`bool result = false; if (...) result = true; return result;`, inlined) 101 (659 bytes:
+// the result is materialised through DL and the in-range path still skips the test).
+// M3 lane 10 r124 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
+// the high boundary as a separate `if` (not `else if`) 66 (658 bytes: the in-range miss then lands on the restart test, but
+// the low block falls into a second frame-count compare where retail jumps to the join); that with the flags read from the
+// field (no flags local) 208; the next index kept in its own `step` local with both boundaries testing it as separate
+// `if`s 160 (659 bytes, same second compare); the switches' common `frame = valuea` written once ahead of the low
+// block's switch 86 (659 bytes), ahead of both switches 219 (650 bytes). Screen: `else if` on the step local keeps the skip.
+// M3 lane 7 r190 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): round 212's thread-breaking join test
+// (`restart != (dispose && type == 0)`) with the flags local as a `word const &` bound to the field 87 (659 bytes: the
+// reference folds and the flags word is still hoisted into BX); the per-pass disposal reset ahead of the frame sum 1; the
+// frame sum direction first 1; the per-pass disposal reset dropped 1 (same code: dispose is already known false at each
+// pass top, so that reset is not what puts the zero in EBX); the low boundary as `frame <= -1` 211 (658 bytes). All restored.
+// M3 lane 12 r151 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file for the skip):
+// the flag-8 store as an `else if` of the restart break 1 (same code); a function-scope `bool top_level = type == 0;` for
+// the three dispose and three restart tests 228 (663 bytes: the compare is hoisted); a `word` flags local declared in each
+// boundary block with the flag-8 test on the field 207 (frame and loop registers move); the join test through a result-style
+// `static inline` predicate on restart 1 (same code); an explicit `(short)` on the frame sum 1. Screen only, skip kept: the
+// flag-8 store guarded by `!restart` ahead of the break, the boundary pair nested under `frame < 0 || frame == count`, an
+// unused `wrapped` range flag, the break inside each boundary block with none at the join, an in-range result-style helper
+// as an empty first arm.
+// M3 lane 10 r132 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; compile-only screen of the file, which
+// reproduces the skip): dispose also false at its declaration 1 (same code); restart typed char 1 (same code; signed
+// char, byte and unsigned char screen the same); the whole advance loop in a forceinline helper taking next time, elapsed,
+// dispose and restart by reference 1 (the references fold); the if/else arms swapped with the active test negated 1 (same
+// code); the active test in a named bool 1 (same code). Screen only, skip kept: the loop as a guarded do, restart in the
+// loop condition with a guarded update, restart cleared again at each pass top, three more copies of the next-frame
+// switch after the loop (so no size limit). Diagnostics (screen, not keepable): the miss reaches the restart test only
+// when restart's value is unknown at the loop head: an opaque call taking &restart before the loop, or inside the loop
+// after the test, or a non-constant start value; the same call after the loop, an escape followed by `restart = false`,
+// or an opaque call without restart's address keep the skip. So retail's compiler saw no constant restart on one of
+// the loop head's two edges. All restored.
+// M3 lane 11 r132 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; a compile-only thread screen and a new one-object
+// LTCG screen of the file entered through v3, both reproducing the skip): dispose and restart as the two members of one local
+// result aggregate 10 (restart's home moves to [ebp-3], the skip stays); restart with the three timing values in one local
+// aggregate 10; restart and next time in one aggregate 21; the flags word assigned just ahead of the loop 200 (656 B); the high
+// boundary as a separate `if` with the flag-8 test on the field 66 (658 B). LTCG screen only: 60 random combinations of round 212's
+// join test, `== true` (keeps the skip) or the separate high `if` with five natural toggles (flags on the field in the loop, no
+// per-pass dispose reset, the flag-8 test on the field, long next time, a late flags local): once the thread breaks the flags word
+// is hoisted into BX and the zero leaves EBX in every one (27+ aligned lines). All restored.
+// M3 lane 3 r279 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): dispose set only where it breaks (`if ((flags & 2)
+// && type == 0) { dispose = true; break; }`, no per-pass reset) 1; the restarts without the inner parentheses 1; both boundary
+// restarts as `if (...) restart = true; else restart = false;` 1; the frame store under `if (!restart) ... else break;` 1 (the
+// four the same code); the loop's identical switch arms merged (`case 0: case 2:` low, `case 2: default:` high) 199 (676 B).
+// M3 lane 14 r127 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): the loop as `for (; time >= next_time; next_time
+// += frame_time)` with the other two updates in the body 1 (same code); restart typed `long` 230 (661 B); an in-range arm
+// `else { restart = false; }` after the high boundary 153 (663 B); restart cleared again at each pass top, beside dispose, 206
+// (661 B); the low boundary as `0 > frame` 1 (same code). All restored.
+// M3 lane 14 r130 (fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH): the loop test as `next_time <= time` 5;
+// dispose declared ahead of restart 1; the loop test as `!(time < next_time)` 1; no per-pass disposal reset, an
+// `else { dispose = false; }` after the high boundary instead 1 (same code each); both loop restart expressions with
+// the flag tests ahead of the type test 216 (654 B).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

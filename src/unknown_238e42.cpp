@@ -888,6 +888,21 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax A (11-19): no new form, no lower score (90): the frame (0xf00) and every stack home agree, but after the
+// membership query the selected identity is reloaded into ecx where retail reloads it into eax and the requested rank
+// takes eax where retail's takes ecx, so the copy into eax before the removal call is still needed and its two bytes
+// are what move every later jump; the forms the earlier rounds list (the identity in a local of its own, the rank
+// copied into a local, the identity test spelled five ways, the identity held in an integer) all compile to the same
+// bytes, and the removal callee's argument order cannot change.
+// score 90 (was 90): the identity pointer takes ECX and the requested rank EAX (retail EAX/ECX), so a `mov eax, ecx`
+// before the removal call adds the two bytes that move every later jump. M3 lane 3 r268 (fast with 0xac050, 0xac360,
+// 0x2399da, 0x23955e, 0x2b278e, all MATCH): the over-rank and rank-3 refusals as guard returns inside `rank != NONE`
+// with one `rank == NONE ? remove : set_rank` call after them 95 (437 bytes); both ranks read through a file-local
+// inline rank getter 90; a named team-identity pointer in the removal arm 90; have_member and may_change declared
+// together at their first assignments 90; `rank != NONE` tested first with the removal in the else arm and the
+// over-rank refusal as the nested else 92. Identity ECX/rank EAX remain in all five.
+// the identity pointer and the requested rank take EAX/ECX the other way round, so one extra copy into
+// EAX before the removal call shifts every later jump by two bytes; the forms below were measured.
 // MiniMax B (11-18): no new form, no lower score (90, was 90): the identity pointer and the requested rank
 // still take the two registers the other way round, so this build copies the identity into EAX before the
 // removal call into the matched callee 0xac050 and that copy is the one extra instruction whose two bytes
@@ -933,7 +948,8 @@ bool __stdcall function_2399da(long controller_index)
 // jump; the frame, the call arguments and every other instruction still agree with retail row for row. A
 // permutation search over this body (300 s, annealed, one job, with the callees in the reduced image) tried 34
 // variants and none scored below the baseline.
-// score 90 (was 90): the difference is purely the register colouring of the two values the
+// Earlier 90 (was 90): the difference is purely the register colouring of the two values the
+// Earlier at 90 (was 90): the difference is purely the register colouring of the two values the
 // matched callee 0xac050 takes: retail reloads the selected identity pointer into eax and the
 // requested rank into ecx, so the callee needs no copy, ours keeps the pointer in ecx and the
 // rank in eax and copies the pointer into eax before the call, two bytes that shift every later
@@ -1273,7 +1289,7 @@ bool __stdcall function_2399da(long controller_index)
 // may-change flag spelled as a mask test, the identity and the rank declared at other positions, the identity test
 // spelled five ways, the identity held in an integer) all compile to the same bytes. The identity test spelled
 // `xuid != NULL && xuid->qwUserID != 0` also compiles to the same bytes (90).
-// score 90 (was 90): MiniMax D (11-17): no new form, no lower score (90): the identity pointer and the requested rank still
+// MiniMax D (11-17): no new form, no lower score (90): the identity pointer and the requested rank still
 // take the two registers the other way round, so this build copies the identity into eax before the removal call and that
 // copy costs the two bytes that move every later jump; the forms the earlier rounds list (the requested rank copied into a
 // local at entry, the may-change flag as `(flags & 0x800) != 0`, the rank read once through its own address or at each of
@@ -1285,6 +1301,70 @@ bool __stdcall function_2399da(long controller_index)
 // so either order hands the callee the team there: the gain is the shorter call, the identity stays in ECX and the rank in
 // EAX, and the present order is retail's. Restored. Same code (90 each): the identity pointer declared non-const; the
 // task index declared with the function's other locals; the rank parameter typed int.
+// M3 lane 4 r222 (fast with 0x239a3d, 0xac050, 0xac360 and 0x2399da; control 90, aligned 14): the dispatch as a flat chain
+// (`== NONE` remove, `> own_rank` deny, `== 3` choice, else set) 90 (same code); `rank != NONE` tested first with the removal
+// in the else arm 95 (437 B); the selection getter with a return per case 156 (436 B) and with a `default: result = NULL`
+// arm 156, both losing 0x239a3d (41); the identity test through an inline helper testing the pointer and its id for zero (the
+// form another file has) 90 (same code). A one-object LTCG screen (diagnostics, reverted): removing the member's rank store, or
+// storing into a block that is dead afterwards, puts the identity in EAX; storing own rank or `rank + 1` there instead, or into
+// another member field, keeps it in ECX with the stored value in EAX: any register value stored into the member takes EAX
+// ahead of the identity. NULL team or a zero controller in the removal call, no rank-3 arm, no over-rank dialog: ECX. 1 to 6
+// dead locals at the top: ECX (not a symbol-count state).
+// M3 lane 13 r115 (fast, all 90 at 434 B; restored): the own-rank read moved right after the membership call, ahead of
+// the identity test, as a declaration 90 and as an assignment to a function-scope local 90; the redundant block
+// around the membership call and its tests removed 90; the own rank declared const 90; the over-rank refusal tested
+// before the set-rank arm (`rank > own_rank` first) 90.
+// M3 lane 5 r212 (fast with 0xac050/0xac360/0x2399da, all MATCH): rotation probes, a one-step global copy (diagnostic,
+// reverted) after may_change 133, after the member name copy 119, before the membership query 115, right before the identity
+// test 111 (444 B each): the identity stays in ECX at every position, so no scratch-rotation step is missing and the rank owns
+// EAX. Forms: `long const rank` 90 (same code); the over-rank refusal as an `else if (own_rank < rank)` arm ahead of the
+// rank-3/set arm 90; `3 == rank` 90; the member's privileges bound to `long const &member_rank` for the permission test 90;
+// the last three together 90. Identity ECX/rank EAX remain.
+// M3 lane 7 r189 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e, 0x239a3d and the three callers 0x2c69b3,
+// 0x2b5f9b, 0x2b5d3b, all MATCH in every trial; control 90, nothing kept): the rank parameter's address discarded at the
+// top (the idiom that keeps 0x2078f0's parameters in memory) 90 (same code); the rank read at the NONE test through a
+// null-checked pointer in an inline helper (the form that stops 0x206090's counter being an induction variable) 90 (same
+// code: the rank is still loaded into EAX); the explicit stack convention dropped from the definition and both declarations
+// 90 (same code, callers still MATCH: the link keeps both parameters on the stack by itself; not kept, no gain); the rank
+// parameter as an unsigned dword with the NONE and own-rank compares cast 90 (same code). Diagnostic: the permission test
+// moved ahead of the identity test, so the identity's reload sits right before the rank's load, 99 (426 bytes): the identity
+// still takes ECX and the rank EAX, so the length of the identity's range is not what loses it EAX. Reading: three
+// cross-block values pick the lowest free of EAX, ECX, EDX in the order rank, identity, own rank here and identity, rank,
+// own rank in retail; the expression temporaries (the 64-bit test, the team address) then take the lowest free one.
+// M3 lane 2 r114 (fast with 0xac050/0xac360/0x2399da/0x23955e; control 90): one pointer to the team identity named
+// ahead of the dispatch and passed to both the removal and the rank calls 90 (same code: the lea is rematerialised in
+// each arm). Re-measured listed forms, all as listed: the task index at function scope 90, the validity test inverted
+// with the 0x5c dialog first 90, the permission denial first 90, `own_rank >= rank` 90, own rank read at each use 90,
+// the dispatch as `switch (rank)` 95 (437 B). New: the 0x1487c3 follow-up written in both the removal and the rank arms
+// 90 (same code: the two calls are cross-jumped back into one block); the identity bound by a const reference for the
+// removal call 90; the rank read through a const reference in the whole dispatch 90; the removal under an implied
+// `if (xuid)` with the task index preset to NONE 90 (all the same code).
+// M3 lane 14 r126 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e and 0x239a3d, all MATCH; control 90, aligned 13
+// lines, 3 with registers masked; body unchanged). Diagnostics first (reverted at once), because they say what kind of
+// value the identity is in retail: with the identity as a third parameter, declared after or before the rank, it takes
+// EAX and the rank ECX (retail's roles; 164 at 423 B from the changed frame); a fresh local read from a member of the
+// membership block after the 0x18ffc3 call, or from the member block before it, used for the test and the removal, the
+// same (160 at 426 B / 163 at 423 B); so the rank outranks the identity only while the identity is the reload of a
+// scalar local that was spilled across the calls, and loses to any value loaded from real memory at that point. The
+// identity local declared volatile (diagnostic only, reverted at once) 71 at 432 B: each read then loads again where
+// retail loads once, so retail's local is not simply kept in memory. Forms, all 90 with the same code: the dispatch
+// from the 0x18ffc3 call on as a forced-inline helper with the parameters (controller, identity, team, member,
+// membership, may_change, rank), (controller, rank, identity, ...) and (identity, rank, controller, ...); the selection
+// getter writing through an out pointer, as `static inline` and as a plain static function; the getter as a plain
+// static function returning the pointer; the identity read through a const reference to the pointer bound at the test (for the
+// test and the removal, the test only, the removal only) or right after the getter; the identity held in a one-member
+// record local with every use through it (the compiler treats it as the scalar). The dispatch as a plain static
+// function (not inline) with either parameter order 294 (276 B: it stays out of line). Left: a source form in which
+// the identity at the dispatch is loaded from memory the compiler does not own as a spilled scalar.
+// M3 lane 2 r118 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e and 0x239a3d, all MATCH; control 90): the
+// identity test inverted with the 0x5c dialog first 90; that test as an early return with the dispatch un-nested 90;
+// a second name for the identity at the dispatch, used for the test and the removal 90 (all the same code); the
+// member's rank store moved ahead of the rank-3 test 89 (the store only moves: identity ECX, rank EAX as before); the
+// store as the else arm of the rank-3 test 90; the getter re-called for the removal's identity 147 (465 B); the
+// may-change copy through memcpy 90 (same code). Kept: `have_member` assigned from the id test directly in place of the
+// preset-true, cleared-in-a-test form 90 (the same code, retail's two byte stores). Reading: the identity and the
+// 64-bit test temporary / rank pair are a two-colour choice for EAX and ECX; any register value stored into the member
+// wins EAX ahead of the identity here.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
@@ -1309,11 +1389,7 @@ void __stdcall function_2393ae(long controller_index, long rank)
 		xuid = online_selection_get_xuid(&selection);
 		name = function_148956((s_window_manager_text *)&selection);
 		function_14896e(&selected_team, (s_window_manager_df6 *)&member);
-		have_member = true;
-		if (!member.xuidTeamMember.qwUserID)
-		{
-			have_member = false;
-		}
+		have_member = member.xuidTeamMember.qwUserID != 0;
 		friends_lists_get_user(xuid, &arg_a721be, &is_player, &flags, &title_id, &in_session, NULL);
 		may_change = (bool)((flags >> 11) & 1);
 		if (have_member)

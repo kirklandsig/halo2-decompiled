@@ -837,6 +837,27 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
 // MiniMax A (11-11): matches; the six selector outputs follow retail's order (effect 0, effect 1, effect 2,
 // sound 0, sound 1, sound 2) in the parameters and in the NONE stores, and both call sites pass them in that
 // order; retail reads them in eax, ecx, edx, esi, edi and ebp and null-tests them in that order.
+PRIVATE inline void projectile_effect_parameters_reset_fd0e0(s_effect_parameters *parameters)
+{
+	memset(parameters, 0, sizeof(*parameters));
+	parameters->tag_index = NONE;
+	parameters->unknown18 = NONE;
+	parameters->object_index = NONE;
+	parameters->unknown34 = 0;
+	parameters->unknown38 = 0;
+	parameters->unknown3c = 0;
+	parameters->owner.unknown4 = NONE;
+	parameters->owner.unknown0 = NONE;
+	parameters->owner.unknown8 = NONE;
+	parameters->scale_a = 1.0f;
+	parameters->scale_b = 1.0f;
+	parameters->unknown30 = 0;
+	parameters->color_a = 0xff808080;
+	parameters->color_b = 0xff808080;
+	parameters->source = 0;
+	parameters->flags = 0;
+}
+
 /* the effects and sounds of an effects block's effect (+0x58), three of
    each, NONE without one:
    0x1883e0 gives sounds as its "first" values and effects as its "second"
@@ -880,10 +901,14 @@ void function_fd740(point3f const *point, byte const *effects, long index, short
 // this function to 66, but the caller's setup then grows (0xfaa60 1234), so the form is reverted. What is left here is the
 // register choice for the four register arguments (ours takes the projectile index in ecx and effect0 in eax where retail takes
 // them in eax and ecx) and the projectile lookup, which this build sinks below the game-state test where retail keeps it above.
+// Matched in a full build with stand-in SDK headers (was 69): the parameters are declared in retail's order (the three
+// effect out-pointers first, then the stack arguments) and the NONE block is grouped as retail has it, the element index
+// is a c_type_47f957 passed on as it is (the caller 0xfaa60 builds it from the material index; a class object lives in
+// memory, so the call's block has one register candidate less and effect2 gets edi), and the projectile is read through
+// a reference-bound local in the game-state test. The caller 0xfaa60 goes 1196 -> 1160.
 // @retail 0xfd7d0
-void function_fd7d0(long object_index, point3f const *point, byte const *effects,
-	long index, long element_index, long *sound0, long *sound1, long *sound2, long *effect0,
-	long *effect1, long *effect2)
+void function_fd7d0(long object_index, long *effect0, long *effect1, long *effect2, point3f const *point,
+	byte const *effects, long index, c_type_47f957 element_index, long *sound0, long *sound1, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
@@ -894,26 +919,27 @@ void function_fd7d0(long object_index, point3f const *point, byte const *effects
 		if (object_index != NONE)
 		{
 			s_projectile *object = PROJECTILE_GET(object_index);
+			s_projectile *const &kept = object;
 
-			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)object + 0xd4) != NONE)
+			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)kept + 0xd4) != NONE)
 				ignore_distance = true;
 		}
-		function_1883e0(effect_index, ignore_distance, point, c_type_47f957(g_47d8e0), c_type_47f957((short)element_index), index, 0, sound0, effect0,
+		function_1883e0(effect_index, ignore_distance, point, c_type_47f957(g_47d8e0), element_index, index, 0, sound0, effect0,
 			sound1, effect1, sound2, effect2);
 		return;
 	}
-	if (sound0)
-		*sound0 = NONE;
 	if (effect0)
 		*effect0 = NONE;
-	if (sound1)
-		*sound1 = NONE;
 	if (effect1)
 		*effect1 = NONE;
-	if (sound2)
-		*sound2 = NONE;
 	if (effect2)
 		*effect2 = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (sound1)
+		*sound1 = NONE;
+	if (sound2)
+		*sound2 = NONE;
 }
 
 /* sticks a projectile to what it hit; location is the hit's s_location, which the
@@ -990,6 +1016,13 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax B (11-19): no new form tried this round, no lower score (232): our frame is 0x28 against retail's 0x30 and
+// the SSE registers differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7); the
+// forced-speed and time-scale parameters are still read through pointers to themselves, which the rules only allow
+// with a match. A permuter run with annealing over the body (60 tries in 906 s) reached 183 in the reduced and in the
+// full image, but its winning source is made of barred forms - a volatile real, a hand-inlined vector3f_scale, the PIN
+// arguments swapped, the function_fa580 arguments swapped, one-use temporaries and reference-bound locals - so it
+// cannot be applied and the body was restored.
 // MiniMax R (11-16): no new form, no lower score (232): our frame is 0x28 against retail's 0x30 and the SSE registers differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7); the forced-speed and time-scale parameters are still read through pointers to themselves, which the rules only allow with a match.
 // MiniMax A (11-14): no new form, no lower score (232): the frame is 0x28 against retail's 0x30, and the three
 // components are subtracted into xmm1, xmm0 and xmm4 where retail takes them in xmm7 and xmm3.
@@ -1167,6 +1200,11 @@ real function_30bf0(vector3f *v);
 // still differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7); retail spills the discriminant
 // base and two_a where this build keeps them in registers, and the forced-speed and time-scale parameters are still read
 // through a pointer to themselves, a form the rules only allow with a match.
+// MiniMax G (11-20): no new form, no lower score (232): the frame is still 0x28 against retail's 0x30, the SSE
+// registers still differ from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7), retail
+// still has one stack operand more (ret 0x2c against this build's ret 0x28) and spends EDX at entry on the gravity
+// value's address where this build keeps the time-scale pointer, so the parameter order is retail's to declare;
+// what is left of the body is retail's two x87 divisions by two_a and its rounding of the horizontal length.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1350,6 +1388,11 @@ extern vector3f *g_4687ac;
 // MiniMax A (11-12): no new form, no lower score (163): our frame is still 0x48 against retail 0x34, and the last argument of the 0x1697c0 call rides in ebp here and in edx in retail, so the pushed arguments and the returned point slot differ; that callee lives in src/bipeds.cpp, which this lane may not edit, so its register convention cannot be moved from here. BLOCKED-BY 0x1697c0.
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax B (11-19): no new form kept, no lower score (163): our frame is still 0x48 against retail's 0x34 and the three ray
+// queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040. The permuter ran 112 tries in
+// 1233 s (--fast --anneal --jobs 1) and its best was 159 in both the reduced and the full image, but that variant swaps the
+// ignore-object and ignore-unit arguments of the first function_1697c0 query and reads the radius through a word pointer,
+// so it changes behaviour; it is dropped and the body stands.
 // MiniMax R (11-16): no new form, no lower score (163): our frame is 0x48 against retail's 0x34; retail keeps the definition in EBP and builds the query arguments in the outgoing area, while this build spills the definition to the frame and holds both endpoint pairs; using one endpoint pair for the opposite query gives 286, a named negative radius gives 184, and moving the opposite pair after the first call with one shared pair gives 220.
 // MiniMax A (11-14): no new form, no lower score (163): the frame is 0x48 against retail's 0x34, so the local homes do
 // not fit retail's shape, and the model entry and the collision point are taken in the other order afterwards.
@@ -1479,6 +1522,10 @@ extern vector3f *g_4687ac;
 // start) and its opposite end lands in the side's slots, so this build's 0x48 frame, with the end and the opposite end
 // materialised, cannot be 13 dwords; dropping the end point and computing the offset inline measures 182 to 191 with a 0x3c
 // frame, and the opposite end does not take the side's slots here.
+// MiniMax G (11-20): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, because this
+// build keeps the end point and the opposite end as locals of their own where retail computes the end in registers
+// only and lands the opposite end in the side's slots; the three ray queries still inline 0x16a040, whose defining
+// file is not this lane's: BLOCKED-BY 0x16a040.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1713,12 +1760,14 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // (point in EDI, zero in EBX), so it stays BLOCKED-BY 0xfd740, which this lane does not touch. No new form tried.
 // Permuter (25 min on #1061, about 340 variants): 111 only with the flag set through an int temporary and the
 // sound index declared apart; the plain forms in it (tag before flag, unsigned index, declaration order) stay 115.
+// Matched in a full build with stand-in SDK headers (was 11): the definition pointer is read after the six NONE
+// stores, the effect parameters are reset by a file-local copy of the initialiser whose stores are in retail's
+// order, and the three loops are bounded by NUMBEROF of their arrays.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,
 	long node_index, bool alternate)
 {
-	byte *definition = g_4e3b44[definition_index & 0xffff].bytes;
 	long sounds[3];
 	long effect_indices[3];
 	s_location location;
@@ -1730,13 +1779,14 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 	sounds[0] = NONE;
 	sounds[1] = NONE;
 	sounds[2] = NONE;
+	byte *definition = g_4e3b44[definition_index & 0xffff].bytes;
 	function_11bed0(&location, point);
 	{
 		s_effect_marker markers[6];
 		s_effect_parameters parameters;
 
 		function_1763a0(point, direction, markers, normal);
-		projectile_effect_parameters_initialize(&parameters);
+		projectile_effect_parameters_reset_fd0e0(&parameters);
 		if (attached)
 		{
 			parameters.flags = 1;
@@ -1756,7 +1806,7 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 			effect_new_from_parameters(&parameters);
 			return;
 		}
-		for (i = 0; i < 3; i++)
+		for (i = 0; i < NUMBEROF(effect_indices); i++)
 		{
 			if (effect_indices[i] != NONE)
 			{
@@ -1771,7 +1821,7 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 			effect_new_from_parameters(&parameters);
 		}
 	}
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < NUMBEROF(sounds); i++)
 	{
 		long sound_index = sounds[i];
 
@@ -1829,6 +1879,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
+// MiniMax I (11-19): no new form, no lower score (296): retail still expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call (this body is 66 bytes short of retail's 1261) and holds index * 12 in ebp where this build keeps it in eax, so the pool, tag and seat-bit homes behind that expansion differ.
 // MiniMax R (11-16): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, so this body is 66 bytes short of retail's 1261 and the pool, tag and seat-bit homes behind that expansion differ.
 // MiniMax A (11-14): no new form, no lower score (296): retail expands 0xfbfd0 into this body while this build calls
 // it, so the body is 66 bytes short of retail's 1261 (BLOCKED-BY 0xfbfd0), and retail takes the model table's entry
@@ -1855,6 +1906,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 // writing that body out here would copy another function's code: BLOCKED-BY 0xfbfd0.
 // MiniMax I (11-15): no new form, no lower score (296): retail expands 0xfbfd0 inline after the 0xfbd40 call while this build calls it, so the body is 66 bytes short and everything after the call is shifted; writing that body out here would copy another function's code.
 // MiniMax S (11-15): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand: BLOCKED-BY 0xfbfd0.
+// MiniMax E (11-20): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after
+// the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand: BLOCKED-BY 0xfbfd0.
 // score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
 // higher, so measure this with a big caller such as 0xfaa60 in the check).
 // Round 2 of #1061: statement-by-statement walk against retail: no behaviour difference (every
@@ -1958,6 +2011,11 @@ PRIVATE inline long projectile_object_root(long object_index)
 // MiniMax E (11-17): no new form, no lower score (296): re-measured this round; retail still expands the matched speed setter
 // 0xfbfd0 inline after the 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not write out by hand, so the 66
 // missing bytes and the pool, tag and seat-bit homes behind them stand: BLOCKED-BY 0xfbfd0.
+// MiniMax E (11-19): no new form, no lower score (296; a reduced image built for this function alone measures 359, its
+// layout differing): retail still expands
+// the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not
+// write out by hand, so the missing bytes stand; the first difference is in the prologue, where this build keeps the
+// global pointer in ebp and retail keeps it in edx: BLOCKED-BY 0xfbfd0.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2084,6 +2142,7 @@ real function_17c900(short function_type, real input);
 // MiniMax A (11-12): no new form, no lower score (348): the frame of 0x30 agrees but retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile in esi where we keep the index in esi and the projectile in ebx on the stack, so the aim point stack home sits four bytes higher; the declaration and the call contract may not change, so the body stands.
 /* where a guided projectile aims: its target's point, led by the target's
    velocity, then wobbled around the line to it or wandering */
+// MiniMax I (11-19): no new form, no lower score (348): the body is still four bytes longer than retail's and the salt local stays where retail re-reads the index; the entry allocation still differs (retail takes the index off the stack and forms the entry address itself), and the aim point's stores and the drift and wander arms' outputs still differ.
 // MiniMax R (11-16): no new form, no lower score (348): the body is still four bytes longer than retail's and the salt local stays where retail re-reads the index; the aim point's stores and the drift and wander arms' outputs still differ, and dropping the salt for the re-reads only reaches 328 while the caller 0xf8eb0 rises from 947 to 982.
 // MiniMax A (11-14): no new form, no lower score (348): the frame agrees (0x30) but the entry register allocation
 // differs - retail takes the projectile index off the stack and forms the entry address itself, keeping the projectile
@@ -2113,6 +2172,9 @@ real function_17c900(short function_type, real input);
 // normalizer's own callers constrain that helper, so it cannot be spelled differently here.
 // MiniMax I (11-15): no new form, no lower score (348): the frame is retail's 0x30 but the index stays in a register where retail keeps it on the stack, the aim point's stack home is [esp+0x28] here against [esp+0x24] in retail, and the normalization and the rotation are scheduled in another order.
 // MiniMax S (11-15): no new form, no lower score (348): the frame is retail's 0x30 and the body is four bytes long, with the index in EAX where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the shared normalizer's own callers constrain that helper, so it cannot be spelled differently here.
+// MiniMax E (11-20): no new form, no lower score (348): the frame is retail's 0x30 and the body four bytes long, with
+// the index in a register where retail keeps it on the stack and the normalization and the rotation scheduled in
+// another order.
 // score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
 // Earlier 382 (was 382): Frame 0x2c versus 0x30 and index EAX versus stacked index remain.
 // Consistent parameter reorder 382; common exit 382; lead field at every use 376 (six-point gain dropped);
@@ -2270,6 +2332,9 @@ real function_17c900(short function_type, real input);
 // the index in eax where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the
 // only form below 348 writes the salt expression out at both its uses, which the rules forbid, so the shared normalizer's
 // callers pin that helper.
+// MiniMax E (11-19): no new form, no lower score (348, baseline): the prologue still loads the two globals in the
+// opposite order (this build takes the unit table through ecx and edx, retail takes one through eax and the other
+// through ecx), and the shared normalizer still pins the rest of the body.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2736,6 +2801,8 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
    target, its speed curve and gravity, its range, then the line it moves
    along and what that line hits (up to 10 times), its orientation, and at
    the end its detonation or deletion */
+// MiniMax B (11-20): no new form, no lower score (947): retail expands the range check's 0xfaa30 body inline at two of its five uses and emits the call once per arm of the average-speed test, so our five calls stay and our frame remains 0x110 against retail's 0x118; marking that helper inline expands it at all five uses and scores 1093.
+// MiniMax D (11-20): score 1030 (was 1030; the brief's 947 predates main's merge of `inline` on magnitude3d (0x24590), which makes the compiler expand the helper at this function's second use where retail calls 0x24590 out of line): calling that helper through its own address keeps it out of line and scores 972 (4683 bytes against retail's 4682), but the helper's exported copy is then emitted with its pointer in ECX instead of EAX, so 0x24590 (score 3) and 0xe3380 (score 1) lose their matches; not kept.
 // score 946 (was 1131): frame 0x110 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;
@@ -3153,6 +3220,10 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
+// MiniMax B (11-19): no new form tried this round, no lower score (1196): our frame is 0x220 against retail's 0x218,
+// so every later offset is shifted, and the velocity and request homes and the material lookup's convention still
+// differ behind that frame; this round's classification of the differing pairs shows they are structural (globals and
+// register homes) and not stack displacements alone.
 // MiniMax R (11-16): no new form, no lower score (1196): our frame is 0x220 against retail's 0x218, so every later offset is shifted, and the velocity and request homes and the material lookup's convention still differ behind that frame.
 // MiniMax A (11-14): no new form, no lower score (1196): the frame is 0x220 against retail's 0x218, this build pushes
 // ebp where retail keeps the state in esi, and the tag's home is at esp+0x228 where retail has it at esp+0x220, so
@@ -3447,8 +3518,8 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 	default:
 		goto no_effects;
 	}
-	function_fd7d0(projectile_index, &collision->point, (byte const *)definition, effect_type, material_index,
-		&sounds[0], &sounds[1], &sounds[2], &effects[0], &effects[1], &effects[2]);
+	function_fd7d0(projectile_index, &effects[0], &effects[1], &effects[2], &collision->point, (byte const *)definition,
+		effect_type, c_type_47f957((short)material_index), &sounds[0], &sounds[1], &sounds[2]);
 no_effects:
 
 	if (g_4e6948->mode != 4 && (collision->type == 1 || collision->type == 3) && (collision->unknown58 & 8))

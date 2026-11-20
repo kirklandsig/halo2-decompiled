@@ -23,6 +23,12 @@ struct s_sector_edge
 	word sectors[2];
 };
 
+struct plane2f
+{
+	vector2f n;
+	real d;
+};
+
 static inline real dot_product2d(point3f const *point, vector2f const *vector)
 {
 	return point->x * vector->i + point->y * vector->j;
@@ -696,6 +702,14 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 386/386/386. Separate accepted edge with while or for 389/389. Separate scan
 // and prior-crossing edges with while, for, or early rejection 382/382/382.
 // NOT kept: the return and first-edge homes remain exchanged, and the bodies shrink.
+// Nested node or marker gate 244/244; marker first 310; predecessor before node 315;
+// predecessor veto after node admission 297, early predecessor eligibility 392;
+// first-edge or first-edge/hit initialization after the target test 265/265.
+// The two byte homes stay exchanged. Nested transition guards reproduce the opening code.
+// Return default after sector clear, both index clears, requested distance,
+// transition distance, all output defaults or both distance defaults:
+// 386/387/388/388/389/390. False result before/after unobstructed finalization
+// 385/386. NOT kept: the two byte homes and shared cutoff tail remain different.
 // M3 lane 5 r200 (fast with 0x26c380 and 0x270600, both MATCH; control 244): `success = false;` before each cutoff's
 // `next_sector_index = NONE; break;` 229 at retail's 1605 B (not kept: success is already false there, a redundant store; but
 // retail stores it too: `mov byte ptr [esp + 0xe], 0` at 0x26cb08 is reached only from the two cutoffs, so retail's cutoff
@@ -706,11 +720,22 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // either order 305/305. Trace success and crossing or either order 305/305. All three with
 // success or first edge first 363/363. NOT kept: the paired records move the result byte outside
 // its retail slot. Grouping all three shrinks the frame. The opening body is restored.
+// Inverted clear-path result 412; result initialized after trace fields 389; paired obstruction
+// publication 419; hit-conditioned scan 451; first flag after target check 265; combined crossing
+// result 413; per-edge vertex base 608; nested pathfinding guard 244. The nested guard preserves
+// the opening code. The two byte homes and shared cutoff exit still differ.
 // M3 lane 9 r143 (a reduced-link LTCG screen of this file, faithful to the fast build: 1 row; aligned rows against retail,
 // this body 109, the held goto form 43 = positional 34): on the goto form, the up cross written out member by member
 // (diagnostic only: a helper body by hand) 41, the cross's row j and the magnitude's sum order then retail's but row i's
 // subtracted product loads the direction first; the same with row j's products written operand-swapped either way 41
 // (identical: the text order of the products is ignored). Body unchanged.
+// Combined first/ordinary/crossed scan state, separate/joined acceptance: enum 364/364,
+// byte 369/369, word 350/350, long 364/364. NOT kept: the byte form leaves success
+// at +0xf, and the wider forms send it to +0x74. The shared cutoff tail remains unresolved.
+// Matched in a full build with stand-in SDK headers (was 244): see the pull request for the table of retail address
+// against source change. In short: the two count exits leave by `goto finish` with success false, the first-edge
+// distance is one dot product after the forward arms, the line is a plane2f struct, the magnitude test is written
+// out, and two reference-bound locals on &iterator and two one-use locals set the operand order of the products.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
@@ -734,10 +759,12 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 		vector3f normal;
 
 		cross3f(g_4687b0, direction, &normal);
-		if (magnitude3d(&normal) > 1e-5)
+		if ((real)sqrt(normal.i * normal.i + normal.j * normal.j + normal.k * normal.k) > 1e-5)
 		{
-			vector2f line_normal = *(vector2f const *)&normal;
-			real line_distance = dot_product2d(origin, &line_normal);
+			plane2f line;
+
+			line.n = *(vector2f const *)&normal;
+			line.d = dot_product2d(origin, &line.n);
 			long next_sector_index = sector_index;
 
 			while (NONE != next_sector_index)
@@ -751,7 +778,9 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 
 				current_sector_index = next_sector_index;
 				next_sector_index = NONE;
-				if (!(pathfinding->nodes[current_sector_index].flags & 0x10) && !result->unknown1c &&
+				s_pathfinding_node const *current_sector = &pathfinding->nodes[current_sector_index];
+
+				if (!(current_sector->flags & 0x10) && !result->unknown1c &&
 					(edge == 0 || (((s_sector_edge const *)edge)->flags & 0x200)))
 				{
 					result->unknown1c = true;
@@ -762,17 +791,20 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 					break;
 				}
 				edge_iterator_new(&iterator, pathfinding, current_sector_index, true);
-				edge = function_1fa720(&iterator);
+				s_edge_iterator *first_iterator = &iterator;
+				s_edge_iterator *const &kept_first = first_iterator;
+				edge = function_1fa720(kept_first);
 				while (edge)
 				{
 					bool forward = iterator.forward;
 					point3f const *point0;
 					real distance0;
 
-					if (iterator.previous_surface_index != NONE)
+					long previous_surface_index = iterator.previous_surface_index;
+
+					if (previous_surface_index != NONE)
 					{
-						long tmp3 = iterator.vertex;
-						point1 = &pathfinding->vertices[tmp3];
+						point1 = &pathfinding->vertices[iterator.vertex];
 						{
 							long entry_vertex;
 
@@ -782,8 +814,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								entry_vertex = edge->vertices[0];
 							point0 = &pathfinding->vertices[entry_vertex];
 						}
-						distance0 = dot_product2d(point0, &line_normal) - line_distance;
-						distance1 = dot_product2d(point1, &line_normal) - line_distance;
+						distance0 = dot_product2d(point0, &line.n) - line.d;
+						distance1 = dot_product2d(point1, &line.n) - line.d;
 					}
 					else
 					{
@@ -792,14 +824,12 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							if (forward)
 							{
 								point0 = &pathfinding->vertices[edge->vertices[1]];
-								distance0 = dot_product2d(point0, &line_normal);
 							}
 							else
 							{
 								point0 = &pathfinding->vertices[edge->vertices[0]];
-								distance0 = dot_product2d(point0, &line_normal);
 							}
-							distance0 -= line_distance;
+							distance0 = dot_product2d(point0, &line.n) - line.d;
 							first = false;
 						}
 						else
@@ -808,7 +838,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							point0 = point1;
 						}
 						point1 = &pathfinding->vertices[iterator.vertex];
-						distance1 = dot_product2d(point1, &line_normal) - line_distance;
+						distance1 = dot_product2d(point1, &line.n) - line.d;
 					}
 					hit = function_26c380(pathfinding, origin, forward, current_sector_index, iterator.edge_index,
 						direction, &next_sector_index, distance0, distance1, point0, point1, result);
@@ -818,8 +848,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 						{
 							if (result->distance - last_distance < -0.1 && count > 0)
 							{
-								next_sector_index = NONE;
-								break;
+								success = false;
+								goto finish;
 							}
 							last_distance = result->distance;
 							if (result->distance - distance > 0.0001)
@@ -828,8 +858,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								{
 									if (next_sector_index == target_sector_index && result->distance - distance < 0.01)
 									{
-										result->sector_index = next_sector_index;
 										result->blocked = false;
+										result->sector_index = next_sector_index;
 										result->edge_index = (word)NONE;
 										result->distance = distance;
 										function_x697631(origin, direction, distance, &result->point);
@@ -849,8 +879,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								else
 								{
 									result->blocked = false;
-									result->distance = distance;
 									result->edge_index = (word)NONE;
+									result->distance = distance;
 									function_x697631(origin, direction, distance, &result->point);
 									success = false;
 									goto done;
@@ -869,15 +899,17 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							}
 							if (count > 200)
 							{
-								next_sector_index = NONE;
-								break;
+								success = false;
+								goto finish;
 							}
 							++count;
 							break;
 						}
 						hit = false;
 					}
-					edge = function_1fa720(&iterator);
+					s_edge_iterator *iterator_pointer = &iterator;
+					s_edge_iterator *const &kept_iterator = iterator_pointer;
+					edge = function_1fa720(kept_iterator);
 				}
 				if (!hit)
 				{
@@ -892,6 +924,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 			}
 		}
 	}
+finish:
 	result->blocked = false;
 	result->edge_index = (word)NONE;
 	result->sector_index = current_sector_index;

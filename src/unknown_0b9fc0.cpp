@@ -724,10 +724,12 @@ s_machine_type_definition g_468310 =
 #include "effects.h"
 struct s_object;
 s_object *function_badc0(long object_index, dword mask);
-long function_189060(long object_index, short node, real scale, point3f const *position,
-    vector3f const *direction, long tag_index);
+long function_189060(long object_index, short node, point3f const *position, vector3f const *direction,
+    real scale, long tag_index);
 void __stdcall function_e5040(long object_index, s_animation_frame_event const *event);
 
+// Matched in a full build with stand-in SDK headers (was 50): the player default is set at its declaration and
+// again after the 0xbadc0 call (retail has `or edx, -1` at both places), instead of in two else arms.
 // @retail 0xbf600
 void __stdcall function_bf600(long user, real frame, s_animation_frame_event const *event)
 {
@@ -736,14 +738,13 @@ void __stdcall function_bf600(long user, real frame, s_animation_frame_event con
         byte *header = g_4e0300->data + (user & 0xffff) * 12;
         byte *object = *(byte **)(header + 8);
         dword type_mask = 1u << object[0xaa];
-        long player;
+        long player = NONE;
         if (type_mask & 3)
         {
             byte *unit = (byte *)function_badc0(user, 3);
+            player = NONE;
             if (unit) player = *(long *)(unit + 0x13c);
-            else player = NONE;
         }
-        else player = NONE;
         if ((event->flags & 1) || player == NONE)
         {
             s_object_marker marker;
@@ -754,8 +755,8 @@ void __stdcall function_bf600(long user, real frame, s_animation_frame_event con
                 marker.node_matrix.position = *g_468788;
                 marker.node_matrix.forward = *g_4687a8;
             }
-            function_189060(user, marker.node_index, 1.0f, &marker.node_matrix.position,
-                &marker.node_matrix.forward, event->tag_index);
+            function_189060(user, marker.node_index, &marker.node_matrix.position, &marker.node_matrix.forward,
+                1.0f, event->tag_index);
         }
     }
     else if (event->category == 2 && event->tag_index != NONE)

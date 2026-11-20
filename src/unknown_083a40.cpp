@@ -861,6 +861,68 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // the slot search on main's order 33 (the key is then (offset + cursor) + (collection + 4)); diagnostic, not keepable (a
 // comma loop): the second loop's player as a pointer stepped with `i` 299 (1095 bytes; the key is then a sum of two
 // spilled values, so the shared `i * size` is what keeps our (offset + cursor) whole).
+// M3 lane 8 r193 (compile-only screen of the occupied key's grouping, which reproduces ours: the inverse start and the cursor
+// are summed first and `collection`, a compiler temporary there, is added last; then fast with 0x84e90/0x84c90/0x83c90/0x69260,
+// all MATCH): 0-40 initialised dead locals at the function top (K = 0, 1, 2, 4, 8, 12, 13, 14, 16, 20 ... 40) leave the
+// grouping as ours, so it is no symbol-count tie; `collection` declared in the else arm before the slot search with the
+// first arm's apply given `&watcher->players`, no loop-top player pointer, the swap order (collection, player, update,
+// other), and those three together keep the grouping (screen); the three together in the real build 36.
+// M3 lane 10 r124 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): the occupied record's update as
+// `++*count; update = &updates[*count - 1];` 28 (same code); that on the swap order (collection, player, update, other) at
+// definition, declaration and call 32; `collection` defined above the session-mask `continue` 28 (same code); on the swap
+// order a `players` array pointer declared ahead of the slot search, re-measured 27 (the occupied block's head: ours
+// (inverse + cursor) + (collection + 4), retail (collection + inverse) + cursor + 4), with the occupied update as above 27;
+// the conflict scan as `j < 16 && !conflict` with no break 310 (1077 bytes). Diagnostic (a comma loop, not keepable): a
+// byte offset stepped beside `i` for the occupied key 283 (1080 bytes: the offset keeps its own induction variable).
+// M3 lane 7 r190 (fast with 0x84e90/0x84c90/0x83c90/0x69260/0x83c20/0x83570, all MATCH each time): `collection` spelled as
+// the watcher plus 0x88 by byte offset 28; `collection` a `* const` local 28; the find-slot outputs declared at the function
+// top 28; the occupied key read through a `const &` bound to `collection` 28 (all the same code); that binding on the swap
+// order (collection, player, update, other) at definition, declaration and call 32 (the swap set-up is retail's, the key
+// sum stays ours). Reading: of the 28, only the swap set-up (6 rows, 2 register swaps) and the occupied key's head differ;
+// ours is 1 byte shorter there (`add` + `lea` against retail's two `lea`s), so every later jump, the two later apply calls
+// and the closing pad shift by one byte and count as well. All restored.
+// M3 lane 12 r151 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time; compile-only screen of the key, which
+// reproduces ours as (inverse + cursor) + collection + 4): `collection` taken through a reference bound to
+// `watcher->players` 28 (same code); the occupied key as `(byte *)(i * size) + (long)collection + 4` 28 (same code); on the
+// swap order (collection, player, update, other) at definition, declaration and call: that key 32, a players-array pointer
+// named between the swap and the occupied test 321 (1090 bytes), the key through an element pointer cast from `(byte
+// *)collection + 4` 32. Screen only (same grouping): `collection` declared in the else arm, `(collection->players + i)`,
+// a `players` array pointer before the slot search, a `(dword)i` index; `collection` before the second loop or at the top
+// gives the key its own induction variable. Reading: a user pointer local as the base (`players`) is also added last, so
+// the grouping is not a temporary-numbering tie; retail's (collection + inverse) is the shape of a whole-address reduction
+// with `collection` treated as invariant, which every in-loop definition here loses.
+// M3 lane 10 r132 (compile-only key screen, which reproduces ours, then fast with 0x84e90/0x84c90/0x83c90/0x69260/0x83c20/
+// 0x83570, all MATCH): the find-slot/swap/remove/add tail as a forceinline helper given `&watcher->players` (no collection
+// local in the else arm) 28; that with the first arm's apply also given `&watcher->players` and no collection local at
+// all 28; the conflict scan as a forceinline bool helper 28; both helpers 28; the two arms swapped (the else arm first,
+// the test negated) 28 (all the same code). Screen only: the watcher taken as `void *` and cast to a local (0x83370's
+// form) keeps the grouping; `collection` before the second loop, or at the top and used by the first loop's apply too,
+// gives the key its own induction variable (a fourth one: retail has i, the cursor and the session player only). In
+// every in-loop form the screen names the base a compiler temporary (watcher + 0x88) and adds it last. All restored.
+// M3 lane 11 r132 (fast with 0x84e90/0x84c90/0x83c90/0x69260/0x83c20/0x83570, all MATCH; a one-object LTCG screen of the file with
+// 0x84e90's file, checking the swap set-up and the key grouping): the occupied remove step as a forceinline helper given (collection,
+// i, update) 28 (same code); `collection` at function scope set before both loops 228 (1088 B, the key gets its own induction
+// variable); `collection` at function scope set at the second loop's top and in the first loop's update block 28; the key from
+// `(byte *)collection + 4 + i * sizeof(player)` 28, through `((s_simulation_owner_player *)((byte *)collection + 4))[i]` 28 (same
+// code). Re-measured the swap order (collection, player, update, other) 32: the swap set-up and the occupied block's load order are
+// then retail's, left the key sum and the final block's two source loads (ECX/EDX swapped). Screen only, same code:
+// `&collection->players[i].key[0]`, a `(dword)i` subscript, the byte sum with the offset last. All restored.
+// M3 lane 6 r210 (fast): the second loop's `player` and `source` declared ahead of `collection` 28 (same code); `player`
+// as `&collection->players[i]` 267 (1064 B); the swap's update named first (`update = &updates[++*count - 1];` then the
+// call) 28 (same code); the occupied key copied from `&collection->players[i]` 28 (same code); the occupied key copied
+// through the loop's `player` pointer (the same element) 291.
+// M3 lane 7 r199 (fast with 0x84e90/0x84c90/0x83c90, all MATCH): the occupied key read through
+// `watcher->players.players[i]` with `collection` kept for the calls 294 (1064 B); the swap's count step as its own
+// `++*count;` with `&updates[*count - 1]` 28 (same code); the swap's update as `&updates[(*count)++]` 40 (1056 B); the
+// occupied key through a named `occupant` element pointer 41; the swap's update as `updates + ++*count - 1` 28 (same
+// code).
+// M3 lane 16 r156 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH each time): the occupied key copied element by
+// element from `collection->players[i].key[0..2]` 280 (1066 B; diagnostic, a copy written out); a const occupant pointer
+// (`collection->players + i`) named after the type and index stores 41; the swap's update named from `&updates[*count]`
+// before a separate `++*count;` 40 (1056 B); the occupied key from `&collection->players[i].key[0]` with
+// `sizeof(t_player_key)` 28 (same code); the swap's update as `updates + ++*count - 1` 28 (same code). Reading (from the
+// preheader): the two stack cursors are watcher + 0xb0 stepped by 0xb4 and its negation -(watcher + 0xb0), so the key's
+// `i * 0xb4` is their sum; retail adds `collection` to the negated start first, ours adds the two cursors first.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

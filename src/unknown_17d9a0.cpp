@@ -247,6 +247,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon);
 
+PRIVATE __forceinline void decal_project_17dd80(real const *point, short axis, bool side, point2f *out)
+{
+	short const *axes = g_440b94[axis * 2 + side];
+	out->x = point[axes[0]];
+	out->y = point[axes[1]];
+}
+
 PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *mesh, s_decal_mesh_edge const *edge,
 	bool reverse, s_decal_quad_17d9a0 const *quad, real radius, short mode, long *adjacent, short *count)
 {
@@ -274,6 +281,10 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 	}
 }
 
+// score 423 (was 453) in a full build with stand-in SDK headers: retail computes the projection table index (axis *
+// 2 + positive) at each projection, with the side as a by-value bool (0x143-0x161 for the first vertex, 0x180-0x199
+// for the current one); the projection is an inline helper called for both. Left: frame 0x58 against retail's 0x5c,
+// face_index in edi (retail esi), mesh in esi (retail ebx).
 // @retail 0x17dd80
 void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a0 const *quad,
 	s_decal_output_17dd80 *output, long face_index, bool gather, real radius, short mode,
@@ -307,16 +318,13 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 			bool reverse = edge->faces[1] == face_index;
 			point3f const *vertex = &mesh->vertices[edge->vertices[!reverse]].position;
 			polygon_points = g_55ec10[iteration & 1];
-			short const *axes = g_440b94[quad->axis * 2 + quad->positive];
 			if (iteration == 0)
 			{
 				point3f const *first = &mesh->vertices[edge->vertices[reverse]].position;
-				previous.x = ((real const *)first)[axes[0]];
-				previous.y = ((real const *)first)[axes[1]];
+				decal_project_17dd80((real const *)first, quad->axis, quad->positive, &previous);
 			}
 			point2f current;
-			current.x = ((real const *)vertex)[axes[0]];
-			current.y = ((real const *)vertex)[axes[1]];
+			decal_project_17dd80((real const *)vertex, quad->axis, quad->positive, &current);
 			plane2f clip;
 			clip.n.i = previous.y - current.y;
 			clip.n.j = current.x - previous.x;
@@ -493,7 +501,25 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax C (11-20): no new form, no lower score (535): the tag still spills at frame+0xb4 where retail has +0x94, the zero
+// counter and the constant one still sit eight bytes below retail's, and the entry still takes the object pointer in EDX and
+// the table global in ECX the other way round, so every later home is one slot off.
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// M3 lane 4 r230 (plain each; base 535, aligned 672, register/offset-masked 355). Retail keeps 1.0f (XMM0), 0.0f and the
+// three scaled axis components (XMM5-7) live from the normalize through the sign and the angle clamp: its equal-normals
+// path jumps past the reloads that follow the arccosine call, so the sign's cross product has only XMM1/XMM3/XMM4 and
+// reloads the selected normal per product. Forms aimed at that block's pressure: the quad normal named once as a
+// pointer for the cross and the angle 561 (3631 B, masked 345); the quad plane named once as a pointer for the two edge
+// distances, the cross and the angle 623 (frame 0x21d4, 3599 B, aligned 555, masked 354; the secondary count then takes
+// retail's +0x54); that pointer for the two edge distances only 566 (3631 B, aligned 680, masked 344); the selected
+// normal named as a pointer for the cross and the angle 535 (same code); both normals named 559 (3631 B). Body unchanged.
+// MiniMax E (11-19): score 535 (was 535): no new form, no lower score. Read from the listing again: the entry agrees
+// (the tag index from the stack into EAX, the table global into ECX, the tag's bytes into EBX, the output into EDI), so
+// the remaining offset is in the locals' homes and not in the call: the tag spills at frame+0xa8 against retail's
+// +0x88, the zero counter sits at frame+0x4c against retail's +0x54 and the one at frame+0x18 against retail's +0x20,
+// while the plane base at frame+0x1e8 and the 0x21dc frame agree. The first loop's count pointer therefore sits eight
+// bytes lower than retail's, which moves every later home that is placed next to it. The permuter over the function
+// tried a few forms of its own and kept none (535 unchanged).
 // MiniMax I (11-16): no new form, no lower score (535): the frame 0x21dc and the 3647-byte length agree and the first
 // difference is still the tag spill at +0x41; the later homes of the tag, the count and the plane still sit in other slots
 // than retail's, and the entry register roles are still the other way round (retail takes the object pointer in edx and
@@ -931,6 +957,17 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // pending 535 (same code); the two counts in one declaration, face count first 535 (same code); `first_face` renamed
 // `seed_face`, and `group_count` renamed `grouped_count` (the name-order lever for same-size cells) 535 each (homes
 // unchanged); the first loop as a `while` over a function-scope `next` index 535 (same code). Body unchanged.
+// M3 lane 1 r124 (plain each, with the file's nine functions; control 535, difflib-aligned 672, register/offset-masked
+// 496): the three cross terms grouped as retail multiplies them, `(one_minus_cosine * axis.j) * axis.i`, `(... * axis.k)
+// * axis.i`, `(... * axis.k) * axis.j` 536 (3663 B; aligned 574, masked 419); the nine rotation stores in retail's
+// pairwise order (forward.i; forward.j, left.i; left.j; forward.k, up.i; up.k; left.k, up.j) 545 alone (aligned 684);
+// both together 491 at 3647 B (aligned 667, masked 388; LEAD, kept only with a match: the order is picked against
+// retail; patch build/r124/lead-0x17fd20-491.patch); the grouping with the sine products named in row order 673. On 491:
+// the squares declared k, i, j 496 (masked 386);
+// `one_minus_cosine` declared after the squares 491 (same code); the sine products named once each and used twice,
+// declared before the stores 664, right after sine/cosine (k, j, i) 590 (both move the frame: first difference +0x7).
+// Left in the block: retail forms axis.k * sine and axis.j * sine straight after the sine, keeps 1.0f in XMM0 for
+// all four `1 - x` terms and, with all eight XMM registers then live, forms axis.i * sine on x87.
 // M3 lane 3 r263 (plain each; base 535, masked 498 of 787): retail forms axis.i * sine on x87 (`fld [axis.i]; fmul [sine]`) and
 // spills k*k and j*sine, a register-pressure shape. `real sine_i = axis.i * sine;` for its two uses 535 (same code); a pointer
 // to the limits entry for the flags test and the angle limit 718; the limits index read once into a `short` for its four uses
@@ -943,6 +980,57 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // 532; three `/= length` statements 560 (3631 B); three `*= inverse` statements 559 (3631 B, the 1.0 still divided in place);
 // the limits index named once as a short local 741. Diagnostic, reverted: 1..7 unused initialised locals
 // 535/570/568/699/702/533/533, so no symbol count fits and the frame order is not a symbol-count state here.
+// M3 lane 11 r124 (plain each, with the file's nine functions, the others unchanged; base 535, aligned 672, masked 355). The frame
+// order follows from the normalize and sign block, not the other way round: the aggregates sit by reference density (face count,
+// axis, then retail's selected plane +0x34 ahead of the first plane +0x44, ours first plane +0x30 and selected plane +0x60), and
+// retail references the selected plane's normal three more times (18 against 15) because its sign cross product reloads it for
+// every product (0x180406-0x18043a; cross j spilled at +0x150). It has to: retail loads 1.0f into XMM0 ahead of the reciprocal and
+// keeps it for the sign, loads axis j and k into XMM6/XMM7 before the divide and scales them there (`mulss xmm6, xmm1`), scales i
+// from a copy of the reciprocal (`movaps xmm5, xmm1; mulss xmm5, [esp+0x24]`), and keeps all three scaled components in XMM5-7 for
+// the sign's dot, so only XMM1/XMM3/XMM4 are free for the cross. Ours divides 1.0f in place, scales every component from a copy of
+// the reciprocal, keeps the selected normal in three registers and loads the quad's normal instead. Forms: the axis normalised
+// through the existing normalize_inline (the helper this block writes out) 650 (frame 0x21e4, tag +0x94 as retail, face count
+// +0x1c, masked 357; the cross then loads the selected normal first and multiplies from the quad, as retail, but the reciprocal
+// still destroys 1.0f); the scaling as three member statements 559 (3631 B, tag +0x90, masked 339; same cross order); cross3f_staged
+// for the sign 535 (same score, tag +0x90, aligned 669, masked 351; a tie, not kept); the two endpoint copies member by member 604
+// (3663 B, tag +0xac, face count +0x1c, secondary count +0x60). Diagnostic, reverted at once: an inline asm no-op in the body 804
+// (frame 0x21e4, other entry convention), so retail's layout is not the inline-asm frame order.
+// M3 lane 15 r106 (plain each with 0x17d9a0/0x17ef10; base 535, aligned 672, stack-masked 497, stack- and register-masked
+// 355): the rotation in matched 0x1544e0's order (sine products in a `sine_axis` vector after the squares, forward.i, then
+// one_minus_cosine, cosine_j_i, left.i, forward.j, left.j, `cosine_k = one_minus_cosine * axis.k` named for cosine_k_i and
+// cosine_k_j, up.i, forward.k, up.k, up.j, left.k) 648 (frame 0x21e4, masked 340); with `sine_axis` filled k, j, i 629 (frame
+// 0x21e4; masked 251, the face and secondary counts take retail's +0x20/+0x54; LEAD); that with three scalar sine products
+// k, j, i 673 (3615 B, frame 0x21dc, masked 295); without the sine products named 528 (frame 0x21e4, masked 322; -7 from a
+// statement reorder, not kept); `sine_axis` and `cosine_k` with the rows in this body's order 567 (3663 B, frame 0x21ec,
+// masked 324). Retail loads 1.0 four times (ours eight): it keeps 1.0 in XMM0 from the reciprocal to the sign and across
+// the four `1 - x` terms. A compile-only dead-local scan over the rotation block moves it with period 8 (best 241 of 225
+// lines at K = 6, 7), so the block's schedule is not a symbol-count state. All restored.
+// Shared i-k-j angle/sign/axis-norm dots 715/568/691.
+// angle+sign/angle+norm/sign+norm 566/684/583.
+// all three, with ordinary or staged sign cross 601/593.
+// Written-differs at 535. NOT kept: All shared-dot forms raise the score. The angle and sign dots
+// together score 566 with the first difference still at +0x41. The sign and norm pair reaches 3647 bytes
+// at 583 but changes the frame. Both explicit providers stay exact. The opening helper and body are
+// restored.
+// M3 lane 2 r113 (plain each, with the file's eight other functions, all at their baseline counts; base 535, aligned/masked
+// 442/186): the tag pointer dropped and the limits index read through the tag table at each of its four uses 720 (3649 B;
+// the lookup is redone at every use, where retail spills one pointer and reloads it); that with face_count declared first
+// 720; the edge walk ending on `edge_index != mesh->faces[face].first_edge` (no first_edge local) 533 (2 points, not kept);
+// the selection test with the candidate's distances on the left 535, the sign test as `0.0f > dot` 535, the length test as
+// `0.0001f > fabs(length)` 535 (the last three the same code). The spill homes of the tag, edge base and outer index
+// (stored once, reloaded once or twice each) still come out in the opposite order to retail's.
+// Shared pending-face count with secondary count declared first or second,
+// using the secondary guard 533/533, flag then while 532/532, flag early exit 532/532,
+// or transfer before phase admission 537/537.
+// NOT kept: score gains are at most three and the definition spill stays at +0xb4.
+// The tag still spills at +0xb4 against retail's +0x94. Signed mode field through a typed
+// tag pointer or reference 535/535, with mode locals at the face calls, the limit tests,
+// or both 570/620/631 for either type.
+// Seed an empty primary worklist by append or indexed store and increment.
+// Existing collection loop 563/563; for-loop step after submission 576/576;
+// mandatory first pass with the step after submission 546/546 or with the
+// face read 533/533. NOT kept: 533 gains two at retail length and leaves
+// the definition and count homes displaced.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
@@ -1532,7 +1620,7 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
     point3f const *source, point3f *destination);
 
 // @retail 0x17e670
-void function_17e670(s_effect_source *source, point3f const *point, long tag_index,
+void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
 {
     if (!g_46dd48)

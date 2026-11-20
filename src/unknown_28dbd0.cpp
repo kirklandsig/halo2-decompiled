@@ -73,6 +73,21 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax D (11-20): no new form, no lower score (173): the frame is still 0x11c against retail's 0x118; retail's
+// homes are 0xc (the random int), 0x10 (the rotation's cosine), 0x14/0x18/0x1c (the angle vector), 0x20 (the second
+// draw's int), 0x24 (the rotation's sine) and 0x28/0x2c (the rotation's temps) with a hole at 0x30, ours are 0xc,
+// 0x10/0x14/0x18 (the angle vector), 0x1c/0x20 (the sine and the cosine), 0x24, 0x2c and 0x30 with a hole at 0x28;
+// retail takes the sine first, then the dot, then the cosine, its second cross is cross(axis, cross) and its row is
+// (cross.x*proj + axis.x*cos) - cross2.x*sin, with the sine term last.
+// MiniMax R (11-20): no new form, no lower score (173, 1209 bytes, retail 1209): the frame is still 0x11c against
+// retail's 0x118 because the rotation helper gives its whole twelve-byte cross vector a stack home where retail keeps
+// the cross's components in registers, and the cosine is still taken with fcos before the sine where retail takes the
+// sine first and stores it after the dot; two new spellings of the rotation measured 182 and 185, and the permutation
+// search over the helper found nothing lower.
+// score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
+// where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
+// first, stored after the dot) and colours the cross terms differently.
+// MiniMax A (11-19): no new form, no lower score (173): retail's rotation is axis = heading x up (C.i = up.k*v.j - up.j*0, C.j = up.i*0 - up.k*v.i, C.k = up.j*v.i - up.i*v.j), the dot accumulated as (C.j*v.j + C.i*v.i) + C.k*0, the projection = dot * (1 - cos), and the rows = projection*C + v*cos - (C x v)*sin with the products' operands in retail's order; the heading's trig is fcos into +0x14 then fsin into +0x18, the heading's zero into +0x1c, the a2 sine into +0x24 and the a2 cosine into +0x10 (a home reused from earlier in the block), and retail's frame is 0x118 with eight homes (+0xc random, +0x10, +0x14, +0x18, +0x1c, +0x20 the third draw, +0x24, +0x28); writing the rotation out in the caller with the heading as scalars, so its k is the constant 0.0f, gives retail's frame and 1212 bytes but 205, because the homes land a slot off (our cos a1 at +0x10, retail's at +0x14) and the cross terms take other registers, the same rotation with retail's dot and row operand orders and with the cross terms as separate locals still gives 205, the heading as three separate scalars gives 261 in a 0x114 frame, and the permuter's five tries in eleven minutes found nothing lower.
 // MiniMax B (11-12): no new form, no lower score (173); retail's rotation takes the second cross with the
 // rotated vector on the left (its .x is the up vector's .k times the sine) and subtracts that from the sum,
 // so the helper's cross the other way round and subtracted is the same value: 187. Retail keeps one of the
@@ -87,7 +102,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // register colouring and the stack layout differ: 205 (1212 bytes, frame 0x118, the first difference at the
 // zero register and then at the heading's homes). NOT kept: the score rises from 173; the original helper
 // and body restored.
-// score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
+// MiniMax C (11-19): no new form, no lower score (173): the frame stays 0x11c against retail's 0x118 (the helper gives its whole 12-byte cross vector a home where retail spills cross j and k as scalars at +0x20 and +0x28 with the sine at +0x24), and the rotation still takes the cosine with fcos before fsin where retail takes the sine first; every form that reaches retail's frame scores above 173.
+// Second header, merged into this note (173, was 173): frame 0x11c versus retail 0x118 (ours spills a rotation cross
+// term to +0x2c where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
+// Earlier score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
 // M3 lane 11 r113 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): own `{}` blocks (slot sharing) around
@@ -598,6 +616,66 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // stages 221/233/233. Shared scaled add at the axis/cross stages 242/233. Axis scaled
 // add plus cross add 204, axis add plus cross scaled add 233, both scaled adds 254.
 // NOT kept: all regress and move away from retail length. The 204 form keeps frame 0x11c.
+// The creation request sits four bytes late. The third rotation cross component still has a stack home. cross in
+// axis with direct sums 241, axis with two shared sums 234, axis with scalar finish 231, axis with scaled add
+// 231, cross in heading with direct sums 209, heading with two shared sums 215, heading with scalar finish 211,
+// heading with scaled adds 164, heading cross with sine first 226, sine/dot/cosine 226, dot/sine/cosine 226. NOT
+// kept: The heading cross with two scaled adds restores the frame, request and transform homes at 164 and 1209
+// bytes, first +0xa9. Its gain depends on three scaled-heading stores where retail has two cross spills with the
+// sine between them. Sine-first and dot-first follow-ups restore the extra frame word and regress to 226.
+// M3 lane 10 r125 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): the rotation helper's angle as `real
+// const &` 173 (same code); the projection as a reference-bound two-step (`real &projection = local_2; projection *= 1.0f -
+// local_1;`) 230; the heading declared at function scope above the creation data 173 (same code); the outer cross moved
+// into the helper (helper takes the up vector, axis a helper local) 226; the helper `static inline` instead of forceinline
+// 173 (same code). Body unchanged.
+// Planar vector/point/scalar capture with late direction promotion 306/306/307,
+// or the shared vector setter 306. Promote through the forward record 246, with
+// the outer cross reading that record 279. Early vector/scalar promotion 311/313.
+// NOT kept: all enlarge and regress. The opening frame and cross homes remain.
+// World-up pointer/reference at the cross 173/173, pointer before forward
+// publication 180. Position reference at the offsets, before forward
+// publication or with saved up pointer 173/173/173. Complete forward/up
+// displacement before publication 227/239. NOT kept: the 0x11c frame
+// persists for the pointer forms and both displacement forms regress.
+// M3 lane 2 r111 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173, aligned 130, register/offset-masked 40): the
+// helper taking (vector, axis, sine, cosine) with the dot written out, `(1 - cosine) * dot` and rows `cosine * v +
+// projection * axis - sine * cross` (cross j/k named, cross i in row i): both trig values as arguments 236 (1190 B,
+// frame 0x114), both named first with the sine first 241 (1193 B), with dot3f(axis, vector) or dot3f(vector, axis) 240/240,
+// the sine named and the cosine as the argument 229 (1192 B, masked 35: the zero k is then re-read as a literal twice, but
+// the heading moves to +0x10), the vector's k captured in a local 240; the angle-taking helper in retail's order
+// re-measured 228 (1194 B, 0x114), with the cosine first in one statement or the rows' vector term first 228 (same code).
+// A 44-form grid of {this helper, the retail-order helper, the three four-argument call forms} x {0.1 updates as `+=`,
+// through vector3f_add_scaled, that plus the velocity through vector3f_scale} x {jitter as two `+=`, a zero-k offset vector
+// through vector3f_add, through vector3f_add_scaled with scale 1}: lowest 180 (this helper with both 0.1 updates through
+// vector3f_add_scaled, 1209 B, masked 44), every other form 220-239, lowest masked 27 (retail-order or four-argument helper
+// with the add-scaled updates and the offset vector, 1217-1230 B), frame 0x114 in all of those. Retail keeps the heading's i
+// and j in XMM6/XMM4 from the caller's cross to their last uses and drops the zero k (a literal at 0x28ddf4, zeroed again
+// in XMM7 at 0x28de1e); every form here evicts the heading's j and keeps the zero, so one cross term fewer is spilled.
+// M3 lane 4 r229 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173, aligned 131, register/offset-masked 41):
+// function_28dbd2 taking both vectors by reference 173 (same code); the axis by value (a copy the helper scales) 293 (1262
+// B); the two row sums through the existing vector3f_add, in place 233 (1200 B, masked 41); sine and cosine as const
+// locals taken first, sine first 182 (masked 41); the heading's zero k assigned ahead of its cosine and sine 173 (same
+// code). Retail's rotation, read from the listing again: the tilt's sine is taken first and stored after the dot's
+// products; when `1 - cosine` is formed all eight XMM registers are busy (the first product of cross j, `axis.k * v.i`,
+// is already in XMM7), so the 1.0f takes the zero's XMM3 and the three later uses of the heading's zero k become a
+// literal and a fresh `xorps xmm7`; here XMM7 is still free at that point, so the zero survives. Body unchanged.
+// M3 lane 15 r112 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173, of which 42 are the frame offset alone):
+// the helper's dot as `dot3f(arg_2, arg_1)` 173; the projection as `(1.0f - cosine) * dot` 173; the rows as `+=` of the
+// axis and cross terms 173; the rows summed axis, cross, vector 173 (all the same code); the trig through cosf/sinf 185;
+// the three scales vector first re-measured 245 (1231 B).
+// In the rotation helper, a planar heading snapshot for projection/cross/cosine scale,
+// alone, each pair, all three, and all three through the vector setter. All eight score 226 at 1209 bytes.
+// NOT kept: frame stays 0x11c, with the request and transform displaced. Original helper and body restored.
+// Heading draw and vector names 173, tilt draw and axis names 173, both draw families 173, named request and
+// transform 173, those workspaces with named heading 173, returned scale pointers 227, named trig outputs
+// through the coordinate setter 218, named heading aggregate and tilt axis 173.
+// NOT kept: the frame stays 0x11c with the extra cross home. The returned scale pointers shorten the body, and
+// the heading setter raises its score at retail length.
+// M3 lane 13 r128 (screened, control 173): the rotation helper in matched 0xd1850's rotate form (sine, cosine,
+// cross3f(vector, axis), projection with the dot written k, j, i, in-place rows `v * cos + axis * projection - cross *
+// sine`) 231 (1196 B); the vector scale folded into the sums (`v.i * cos + axis.i + cross.i`) 221 (1213 B, frame 0x118
+// but the request at +0x2c for retail's +0x38); the axis scale folded into the sums 230 (1216 B); both folded 229 (1200
+// B); the projection as `(1.0f - cosine) * dot3f(...)` 173 (same code).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -52,6 +52,8 @@ struct c_aggregate : c_child
 };
 
 
+/* asks each child for its blocks (up to 256 in all), lets each child handle its own range unless the
+   request is of type 4, then hands every block item back to the allocator */
 // score 31 (was 31): The 0x8024 frame is a word larger than retail and the callback count retains a separate home.
 // MiniMax B (11-18): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 and the escaped count's slot and the children's cursor still come out in the other order; a /GL- build of this file's own flags line matches the body exactly but costs 0x97f60, 0x97fe0 and 0x980d0 their matches, so the flags line stays as it is.
 // Earlier 31 (was 31): frame 0x8024 versus 0x8020 and different homes for the escaped callback count and loop cursors.
@@ -92,10 +94,6 @@ struct c_aggregate : c_child
 // two temporary slots are swapped). This body built without /GL is byte-exact (BLOCKED by the build flag). Compiled without /GL (screen only) the body
 // gets retail's 0x8020 frame and every slot, 20 left (EBX/EBP and the boundary loads); every /GL form
 // screened keeps 0x8024.
-// MiniMax A (11-12): no new form, no lower score (31); the frame is still 0x8024 against retail's 0x8020 and
-// the two low loop homes are still swapped, because the produced count's address reaches the child's v5 and
-// so keeps a slot of its own under /GL; the body is byte-exact only in a /GL- build of this file, which would
-// cost 0x97f60, 0x97fe0 and 0x980d0 their matches.
 // MiniMax G (11-11): no new form, no lower score (31); under /GL the address-taken produced count keeps a slot
 // of its own, so the frame stays 0x8024 against retail's 0x8020 and every slot below it shifts by four.
 // MiniMax B (11-11): no new form, no lower score (31); the produced count moved out of the collection loop to the
@@ -118,13 +116,6 @@ struct c_aggregate : c_child
 // MiniMax G (11-06): no new form, no lower score: the frame is still 0x8024 against retail's 0x8020, with
 // the two low loop homes exchanged and the produced count keeping a slot of its own; the body is byte-exact
 // only in a /GL- build of this file, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56).
-// reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
-// loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
-// for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
-// 0x8020 (`produced` keeps its own slot where retail packs the loop-2 cursor and loop-3 count into it, and the
-// two temporary slots are swapped). This body built without /GL is byte-exact (BLOCKED by the build flag). Compiled without /GL (screen only) the body
-// gets retail's 0x8020 frame and every slot, 20 left (EBX/EBP and the boundary loads); every /GL form
-// screened keeps 0x8024.
 // Earlier (74): the dispatch loop walks the child cursor and the starts[] boundaries as retail does
 // (index in ebp, child cursor and inner count spilled), so the two children are visited in retail order.
 // Tried: ordinal/child-cursor dispatch 115; explicit inner length on ordinal/range forms 102/99;
@@ -281,10 +272,6 @@ struct c_aggregate : c_child
 // before the child read 31 (all same code but the list). Diagnostics, reverted: one output local for both
 // calls 31 (frame 0x8020, but the children base/inner count/block slot still sits at 0x10 below the dispatch
 // cursor/cleanup count slot, the reverse of retail); the cleanup loop disabled 268.
-// Round 38 (m3 lane 14, fast): the dispatch and cleanup loops each in a block of their own 31; produced
-// declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
-// the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
-// 0x8024 in all).
 // Round 448: Query-only information-output scope with iteration completion,
 // common child/object and common fixed ordinal subsets 31/42/31/42/31/42/31/42.
 // Frame stays 0x8024; original output scopes, carriers and full body restored.
@@ -301,9 +288,6 @@ struct c_aggregate : c_child
 // Round 282: Native collection array-end traversals (child end with indexed/advancing boundaries,
 // boundary end with indexed/advancing child), independent outputs 169/149/148/145;
 // shared query output 168/149/147/130. Original frame and body restored.
-// Round 296: Independent outputs with collection/dispatch/both short, collection/dispatch/both word,
-// then collection/dispatch byte ordinals. Scores 145/145/161/145/145/161/145/145. Original complete body
-// restored.
 // M287: Cleanup driven by the actual item-array cursor and signed array distance,
 // shared query output/block cursor/boundary-dispatch subsets 0-7:
 // 85/89/85/89/151/150/151/150. Output/loop homes still differ; original signed traversals restored.
@@ -461,7 +445,6 @@ struct c_aggregate : c_child
 // with the bound read each pass 121 (388 B, the listed bound form); the error test ahead of the child test 37 (listed).
 // Still BLOCKED by the build flag.
 // M3 lane 12 r113: no unlisted form; still only the frame (0x8024 against 0x8020, `produced` unpacked under /GL).
-// Still BLOCKED by the build flag.
 // M3 lane 16 r106 (fast with the six file-mates, all still matched; base 31): the cleanup's item count in the inner loop's
 // for-init (`j = 0, count = block->count`) 74; the source read as `source[0]` 31 (same code); `produced` at function scope,
 // zeroed after its add (`total += produced; produced = 0;`) 147 (389 B); v5's request parameter typed `s_request *` 31 (same
@@ -492,7 +475,6 @@ struct c_aggregate : c_child
 // loop-body scope ahead of the child test 141 (fast, 389 bytes); the base v5 defined out of line (a known body) 31 (fast,
 // same code); the gate as `error == 0 && child != 0` 37; the count named block_count 31 (same code); the cleanup walking
 // the blocks with a block pointer 82 (391 bytes). A pure virtual v5 does not compile (the aggregate is instantiated).
-// Still BLOCKED by the build flag.
 // P465: Complete four-cell boundary-table producer, long/dword/short/word/byte/signed-char
 // for ordinals then long/dword while ordinals: 129/129/147/147/147/147/129/129. NOT kept:
 // escaped output and low loop homes remain; original full body and six exact siblings restored.
@@ -549,7 +531,6 @@ struct c_aggregate : c_child
 // Round 94 (m3 lane 2, fast with the six file-mates, all still matched): the two address-taken counts renamed so
 // their names sort the other way (the cleanup query output as `information` or `status`, the produced count as
 // `written` or `amount`, both renamed) 31 each (frame 0x8024 in each; name order does not pack the escaped slot).
-// Still BLOCKED by the build flag.
 // M3 lane 9 r133 (fast with the six file-mates, all still matched): a redundant `if (0 < total)` guard around the cleanup
 // 31 (same code); the dispatch child bound by reference to its array element 121 (357 B: the child is re-read at each
 // call); the collection child bound by reference 42; the cleanup item's object field bound by reference (tested, released
@@ -559,7 +540,6 @@ struct c_aggregate : c_child
 // declared zeroed at the collection loop body's top with `total += produced` after the gated call 60; the count as `int`
 // passed through a `long *` cast 31 (same code); the count and its call in a bare block inside the gate 31 (same code);
 // the count in the loop's for-init, zeroed in the gate (repeat of r108) 42; the total re-formed as `starts[i] + produced`
-// 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
 // Callback count reused as dispatch bound 138.
 // Callback count reused as dispatch progress 115.
 // Callback count reused as cleanup block progress 157.
@@ -605,6 +585,56 @@ struct c_aggregate : c_child
 // slots and puts the callback output in the terminal cell instead of ESP+0x10.
 // Convert typed child elements at collection/dispatch/both 31/31/31; named typed slot table 146/100/126;
 // advancing typed slot cursor 64/108. None recovers the shared output and cursor home.
+// M3 lane 7 r185 (fast with the six file-mates, all still matched; control 31): both child loops bounded by the
+// children array's element count 31; the release query's output as a dword 31; the cleanup's item count named in the
+// for-init 74; the cleanup item read from the block at each use (no object local) 67 (376 B); the room as the blocks
+// array's element count minus the total with `blocks + total` 31 (same code). Frame 0x8024 in each; still BLOCKED by the
+// build flag (round 59's harness: a virtual callee never lets the escaped count share a slot under LTCG).
+// M3 lane 14 r117 (fast with 0x97f60, 0x97fe0, 0x980d0, matched throughout; control 31): the produced count declared in
+// the collection loop's for-init and zeroed in the test arm 42; declared and zeroed at the loop body's top with the add
+// after the test arm 144 (389 B); the collection step (zero, call, add) as a forceinline helper taking the total by
+// pointer 146 (389 B); the capacity named where it is computed 31 (same code). Diagnostic (not natural, reverted): the
+// count written into the next boundary cell `starts[i + 1]` gives retail's 0x8020 frame but 139 at 389 B, so the frame
+// cell is the separate count slot alone. Body unchanged.
+// Explicit cleanup count reload in for/while 31/31, with the shared call-output carrier 31/31, with
+// the collection count reused as the cleanup bound 70/70. Count declared at cleanup scope 31/31. NOT
+// kept: shared call output reaches 0x8020 with the low homes exchanged, while reusing it for the bound
+// grows to 381 bytes. The callback output still needs the retail spill home.
+// M3 lane 4 r225. The flag lead measured to its end: this body, 0x97f00 and 0x97f30 in a file of their own built
+// without link-time code generation (a measurement, restored; build/r225/held-0x97d80.patch) matches all three and
+// keeps the four other functions of this file (fast), but the full check then loses matched 0x90880, 0x94bf0,
+// 0x95410, 0x96ed0, 0x976f0 and 0x992d0 (they read g_4d87f8, which a native object naming it exposes): retail's body
+// is not in a native object, and the flag is no way out. Round 80's rule is not general either: in a one-file link
+// of a small copy (three child calls, a count whose address goes to a virtual callee, two spilled loops, a query
+// with an escaped output) the count is packed with the later spills in every variant (callee only declared, inline,
+// overridden, an override that keeps the pointer). One-file link of this file (control exact: frame 0x8024, count at
+// +0x1c, query output at +0x20), the cleanup varied: no call in it, or its query or release made through a child's
+// virtual in place of g_4d87f8, packs the count at +0x10 with the dispatch cursor and the cleanup count as retail
+// does (frames 0x801c/0x8020; with both the child query and the real release 0x8024, the children base then live to
+// the end); the query alone, the release alone or the query with a null output, each through g_4d87f8, leave the
+// count alone at +0x1c. So the count's slot is kept by the cleanup's calls through the allocator global, not by the
+// v5 call. Same frame as the control: the query in a file-local inline info getter, the query and release in one
+// inline helper, the whole item release as an inline helper taking the item. Fast: the count as a by-value parameter
+// of an inline collection helper (its own address passed on) 146 (389 B, frame 0x8024).
+// M3 lane 13 r119 (fast with the six file-mates, all still matched; control 31): v5's count parameter as `long &` 31; v5
+// declared without its empty body 31; its count parameter as `void *` 31; the count declared `register` 31 (all the same
+// code); the collection step as a forceinline helper owning the count and returning it, the error through a pointer or a
+// reference 146/146 (389 B; the count keeps its own slot at +0x1c inside the inlined scope too). v5 pure virtual does not
+// compile (the aggregate is instantiated). Still BLOCKED by the build flag.
+// Available capacity as collection state 151; output pointer plus end-derived capacity 165;
+// output pointer plus carried capacity 166; total plus carried capacity 143; capacity state
+// with published child boundary or terminal table bound 150/150; output pointer through
+// cleanup 186 or through dispatch and cleanup 190. NOT kept: the isolated callback count
+// home still differs, and these forms enlarge the 373-byte body.
+// Per-child dispatch range with first/count 161/124, first/end 163/141,
+// end/count 163/148, and first/saved count 161/139, with independent/field output.
+// NOT kept: the range table leaves the frame oversized and increases the score.
+// M3 lane 15 r112 (one-file harness, exact 31): the allocator globals read once per item into a local for both calls
+// 65 (366 B); the cleanup object local as `void *` 31; the query test as `== false` 31; its result held in a bool 31;
+// the cleanup block bound as a reference 31 (same code each). Diagnostic: the count stays apart (+0x1c) whenever a
+// cleanup call takes its object through the pointer global's allocator field (either call alone is enough); both calls
+// on an object read from the block memory, or on a file-local global aggregate's allocator field, pack it at +0x10 as
+// retail does (frame 0x801c); a file-local static pointer global does not.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -616,12 +616,24 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 115 (was 115; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// MiniMax G (11-19): no new form, no lower score (115), body unchanged. Naming the three edge coefficients in locals read
+// before the normal's copy scores 276 (1867 B): the compiler keeps them in registers and the copy's stores move behind the
+// products. Swapping the i term's operands (`planes[0].normal.i * view->vector_e4.i`) compiles to exactly the same code
+// (115 at 1851 B), so the product's operand order is not what decides the register roles. The residual difference is
+// unchanged: retail loads the i coefficient into xmm4 before the copy and reads the copied i back from the stack, so the
+// negation's zero sits in xmm4, while we keep the copied i in xmm4 and read the coefficient into xmm3 late; every XMM role
+// after that point is swapped with it.
+// Earlier m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115.
+// Earlier at 115 (was 115; merged from a second score line; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// Earlier status line, merged in r127 (115, was 115; m3 lane 16 r130 at the end, m3 lane 6 r195 just above the marker; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// MiniMax E (11-20): no new form, no lower score (115): retail copies t for the intersection's x and scales y and z in place, and that form (`t * delta.i + p0->x`, `delta.j * t + p0->y`, `delta.k * t + p0->z`) matches the intersection block exactly here but scores 119, because the first plane's dot then keeps the copied normal's i in xmm4 and reads view->vector_e4.i late where retail loads the coefficient into xmm4 before the copy; a permuter run (34 tries) found nothing below 115.
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
 // Earlier: coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// Earlier again at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
-// score 115 (was 115): Frame 0x1ec agrees. The near-plane x coefficient loads late and exchanges the coefficient and zero registers.
+// Earlier at 115 (was 115; a second stacked first line, merged in r108): Frame 0x1ec agrees. The near-plane x coefficient loads late and exchanges the coefficient and zero registers.
 // MiniMax S (11-17): no new form, no lower score (115): the first plane's dot still loads view->vector_e4.i after the
 // forward copy where retail loads it before; naming the three coefficients ahead of the copy gives 294 (1867 bytes),
 // naming only the i term 141, the i term's two operands swapped 115 and the terms in j, k, i order 133 leave the
@@ -1076,6 +1088,16 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // offsets 152. Offset before normal copy 444, with shared dot 446,
 // separate classification stores 747. NOT kept: copied-normal-first
 // retains the extent but exchanges the first coefficient registers.
+// M3 lane 5 r203 (fast with 0x1648d0 and 0x320b0, matched throughout; control 115): lane 12 r123's match-only 18 form
+// (build/r123/1652e0-r123-18.patch in worktree m3-lane12) rebuilt on current main 18. Diagnostic on it, 0-8 unused
+// initialised locals after `culled`: 18/34/41/14/18/162/154/14/18, so the rest follows the symbol count; at 3 (or 7)
+// only 14 are left: the clip deltas are computed y, z, x (retail x, z, y, with the same register for each component)
+// and `total` takes ECX (retail EAX). On the 3-local form: the four projection-block statements (culled, out, total,
+// cursor) in nine orders 14-15 (`cursor += 2` ahead of `total += 2` gives `total` EAX, the stores then out of order);
+// the denominator in retail's x, z, y order with no, one, two or three named deltas over 0-7 locals: best 27 (y
+// named), 28 (x named), none named 240-270 (first +0x60), two named 62-273, three named 239-261; each product's
+// operands either way round (24 forms) no change; the denominator as one expression in all six orders 27 (one canonical
+// order). Nothing kept (the 18 form is match-only and the 14 needs unused locals).
 // Round 264 (m3 lane 3, fast with 0x1648d0 and 0x320b0, both matched each time; control 115, aligned 73, masked 30): plane
 // 0's d accumulated in the plane (`d = j term; d += k term; d += i term`) 287 (1867 bytes), the same with each term
 // normal-first 287, accumulated k, j, i 287; accumulated j, k, i in a local `distance` then stored 251 (1867 bytes, aligned
@@ -1090,6 +1112,90 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Normal first at near/far/intersection 265/252/224; near and intersection 221; far and
 // intersection 222; all three 286. Point first for classification 263. NOT kept: all regress.
 // Near-plane x load and XMM coefficient/zero roles remain.
+// M3 lane 2 r108 (fast with 0x1648d0/0x320b0, both MATCH; control 115, 73 aligned lines): the view's +0x54 field typed
+// as a vector3f (no cast at the forward pointer) 115 (same code); the first plane's normal copied by memcpy 115 (same
+// code); the camera vector through a const pointer for plane 0's d 251 (1867 B); plane 0's d grouped `i + (k + j)` 145,
+// `i + (j + k)` 176 (first +0xaf): VC keeps source grouping, so only the flat sum gives retail's (j + k) + i adds.
+// M3 lane 12 r147 (fast with 0x1648d0/0x320b0, both MATCH each time; control 115), existing exported helpers not tried
+// before: the far plane's negated vector through vector3f_negate (src/unknown_0b7740.cpp) 257 (1830 B); both planes'
+// normals negated in place through it 129; the intersection through point_along_vector_221e30 (src/unknown_221da0.cpp)
+// with the delta left unscaled 119 (first +0xb6); that with plane3f planes and `total` declared first 121; both planes
+// built through the plane-through-point helper of src/unknown_17d9a0.cpp 310 (and 0x17d9a0 itself stops matching in
+// the fast image, 256). The point memcpy after the segment clear re-measured 193 (a listed form).
+// M3 lane 3 r270 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115, exact-aligned 73; lane 12 r123's 18
+// form rebuilt 18, exact-aligned 22). On this body: one to seven unused initialised locals after `culled` 119, 135, 130,
+// 242 (1830 B), 246 (1830 B), 135, 127 (first difference +0xbb at every count: the head is not a numbering tie, as lane 11
+// r81 found at two other sites); the intersection through the existing vector3f_add_scaled (the point as the base, the
+// unscaled delta and the ratio) 119 (first +0xb6); `delta` declared at function scope 115, the intersection point and
+// the ratio declared at function scope 115 (same code each); the bounds copy and the segment clear moved below the near
+// clamp 191 (first +0x41); plane 0's near add moved below plane 1's set-up 176 (first +0x60). Reading of the head: both
+// builds sum the first plane's d as j, k, then i; retail evaluates the i term coefficient first (a fresh XMM4, its load
+// then hoisted above the copy) and the copied normal's i second (the k coefficient's freed XMM3), ours the copied
+// normal's i first; the k term is evaluated normal first and the j term coefficient first in both builds. In the clip
+// rows retail multiplies the y and z deltas by the ratio in place and copies the ratio only for x; ours copies it for
+// x and y, the scale helper's operand order.
+// m3 lane 8 r198 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115, difflib-aligned 73). Lane 12 r123's
+// match-only 18 form rebuilt 18 (aligned 22) and, with three unused locals after `culled` (diagnostic), 14 (aligned 18),
+// as lane 5 r203 found. Reading of the 14 that are left: retail computes the clip deltas x, z, y into XMM5, XMM3, XMM2,
+// multiplies the x and z deltas as a copy of the delta times the normal in memory and the y delta as the normal loaded
+// times the delta, and carries `total` through EAX with its store after the source pointer's move; the 14 form computes
+// y, z, x into the same three registers, with the x product normal-first and the y product delta-first, and carries
+// `total` through ECX. In this build a named delta always comes out normal-first, takes XMM5 and has its scaled row
+// built on a copy of t; an unnamed delta comes out delta-first with its row scaled in place: retail's x has the
+// register and row of a named delta and the product of an unnamed one, its y the reverse. New on the 14 form (three
+// unused locals kept for the comparison): the denominator x, z, y with only the x delta named 28; with all three named
+// in x, z, y order 253 (1830 B); with none named 240 (1835 B); with only the y delta named 27 (the product forms are
+// then retail's but y takes XMM5 and x XMM3), also 27 with that delta declared at its term, and 29/45/39 with zero, one
+// or two unused locals; the x delta named for its row with the denominator's x term written from the points 50 (54
+// without the unused locals), the same with the y delta named for the denominator only 50, declared at its term 50; the
+// x delta declared after the denominator 92. The named delta renamed (three names for x, three for y) 14/27, the same
+// code each: local names do not move the order. Nothing kept; body unchanged.
+// Separate source and oriented planes: near/far/both aggregate stores 491/361/508,
+// orient in place then copy 530, near/far/both field stores 394/135/395,
+// immutable source and oriented aggregates 571. NOT kept: the far field stores keep
+// the late coefficient load, and the other forms move the frame away from retail.
+// M3 lane 8 r201 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115, difflib-aligned 73). Lane 12 r123's
+// match-only 18 form rebuilt 18 (aligned 25): three sites are left and each is the same shape with one choice swapped.
+// The classification remainder loop sums (z*n.k + x*n.i) + n.j*y where retail has (x*n.i + z*n.k) + n.j*y. The clip
+// deltas: both builds compute the first two denominator terms as a copy of the delta times the normal in memory and the
+// third as the normal loaded times the delta, give the x delta XMM5 and build its row on a copy of the ratio, so the
+// product form follows the term's position and not whether the delta is named; retail's terms run x, z, y, the 18 form's
+// y, z, x. The projection set-up loads `total` into ECX where retail uses EAX, which moves its store ahead of the
+// `culled` clear. On the 18 form: the denominator terms x, z, y (x still the named delta) 32 (the named delta's
+// product then loads the normal first, and the z delta and the denominator swap XMM1/XMM3); the five set-up statements
+// (culled, source pointer, out, total, cursor) in the orders c-s-o-t-u 18, s-c-o-t-u 18 (same code as the 18 form),
+// c-s-t-o-u 19, s-o-c-u-t 18 (aligned 28), s-c-t-o-u 19: `total` stays in ECX in each. Nothing kept; body unchanged.
+// Near camera component array 115, near normal component array 115, both near component arrays 115, both far
+// component arrays 115, all near and far component arrays 115, indexed near dot 173, indexed far dot 171, both
+// indexed dots 326. NOT kept: The five component-array forms tie. Indexed accumulation raises the score and moves
+// the first difference earlier, and indexing both dots adds sixteen bytes.
+// M3 lane 13 r127 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115). Lane 12 r123's 18 patch rebuilt 18,
+// with three unused locals (diagnostic) 14. A fast grid over main's body, 96 forms: {clip block as main, as `delta.i * t +
+// p0->x` rows, as the lead's delta_i/staged-j,k,i/named rows} x {main's projection tail, the lead's walking `out` with a
+// `source` element pointer and `total` declared first} x {plane 1's j and k negations through a normal pointer or not} x
+// 0-7 unused locals. Keepable corners: the walking `out` with the source pointer alone 113 (two lower, under the bar), with
+// the far plane's j/k through the pointer 111 (a mixed pointer/array spelling: match-only); the scaled rows alone 119;
+// with the lead's clip block 25, 20 (tail), 23 (pointer), 18 (both), 14 at three or seven unused locals. Unused locals on
+// main's body 119/135/130/242/246/135/127 (no phase helps). On plane3f planes with the walking tail (113): plane d through
+// dot3f 153, the classification through plane_distance_to_point 265, the denominator through dot3f 224, the numerator
+// through plane_distance_to_point 115, and every combination of the four 155-309, with 0-15 unused locals none below 113.
+// Compile-only screen of the clip block on the lead (XMM stream from the denominator on; the lead scores 16, 12 at three
+// unused locals): 2048 forms (named deltas in all eight subsets x the eight t-first/delta-first row sides x named or
+// unnamed scaled rows x 0-15 unused locals) best 16, none below the lead. The projection entry (retail carries `total` in
+// EAX and stores it after `mov ecx, ebx`, ours ECX before it): all 60 orders of the five statements there (culled, out,
+// total, cursor, source) and 396 spellings (three declaration orders, the cursor declared inside or outside the guard,
+// `!flag` / `== 0` / named flag, `total = total + 2`) at 0 and 3 unused locals compile to one of four shapes, none
+// retail's. Body unchanged.
+// MiniMax B (11-20): no new form, no lower score (115): retail keeps the clip deltas in the order x, z, y and ours
+// keeps them x, y, z, so the three product rows and the plane normal loads still differ; the form that reorders them
+// needs the delta helper written out by hand, which is only allowed on an exact match.
+// M3 lane 11 r136 (fast with 0x1648d0 and 0x320b0, both MATCH each time; control 115; the two stacked score lines merged
+// into the first line above): one `segment_count` for the clip and projection loops 468 (1855 B, first +0x6); `total` typed
+// short 115 (same code); the far plane's normal set through vector3f_assign from the negated forward components (no
+// `negated` local) 504 (1766 B); the `negated` vector in a block of its own 115 (same code); the outside flags typed char
+// 115 (same code); re-measured: the clip store through `*(outside0 ? p1 : p0)` 368 (1867 B). Diagnostic: lane 12 r123's
+// match-only 18 form rebuilt 18; one to seven unused uninitialised locals on it 18 each (only initialised ones shift it,
+// as lane 5 r203 found). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

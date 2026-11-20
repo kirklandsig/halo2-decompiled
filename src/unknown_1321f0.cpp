@@ -673,6 +673,48 @@ struct s_visibility_object_header
 // (forwarded); the outer test's arms in the other order 203 (601 B, homes still ours); a reference-bound copy of
 // in_front made after the plane call and passed to the packer, assigned through the reference or initialised then
 // bound, 4/4 (forwarded, homes ours).
+// M3 lane 12 r147 (fast with 0x132fd0/0x132b10, both MATCH each time; control 4): `__assume(in_front || behind)` after the
+// plane call 4 (same code; diagnostic, not keepable); 0x132b10's definition moved below this function (declared above)
+// 4 (same code); the centre and radius chosen by two ternaries 36; the object pointer declared ahead of the three flags
+// 8 (only the init stores move); the plane call and the packer in a forceinline helper owning the two outputs 291 (671
+// bytes). Retail's frame from the top: object +0x10, first +0xc, radius +8, second +4, behind +3, contained +2.
+// M3 lane 7 r191 (fast with 0x132fd0/0x132b10/0x132e60/0x133390, all MATCH each time; control 4): `inline` on 0x132b10's
+// definition 4; `inline` on 0x132fd0's definition 4 (both stay out of line, same code); behind read for the packer through
+// a `bool const &` bound before the plane call 4; the pair in one declarator `bool in_front, behind;` 4; `dword flags;`
+// declared ahead of the pair and assigned from the packer 4 (all the same code, homes still ours).
+// M3 lane 11 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): `in_front = in_front;` or
+// `behind = behind;` right after the plane call 4/4 (same code: the self-copy is dropped before the homes are picked);
+// the pair in one declaration, in_front first or behind first, 4/4; the packer's result declared ahead of the pair and
+// assigned at the call 4 (all the same code).
+// M3 lane 14 r119 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): the visible test as an early
+// `return` with the block un-nested 4; `long flags` 4; in_front's address passed to the plane call through a pointer
+// local 4 (all three the same code); the entry as one ternary 124; an inline helper owning in_front and returning it
+// (behind still an out-parameter) 168 (582 B, the helper stays out of line), forced inline 291 (671 B, the listed
+// helper's code). Diagnostic: K = 9 to 39 (odd) dead initialised longs at the function top 4 at every K (not a
+// symbol-count tie; rounds before covered 1 to 8).
+// M3 lane 4 r228 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): the plane call through a
+// forceinline wrapper taking (data, center, in_front, behind, radius) 291 (671 B: 0x132fd0 is then expanded); behind's
+// address through a pointer local set before the plane call 4; in_front alone in an inner block with the plane call and
+// the packer (behind outside) 4; behind alone in that inner block 4; one loop index for the three else-arm loops 4; one
+// index for the flag_a/flag_b loops only 4 (all the 4s the same code).
+// M3 lane 13 r126 (fast with 0x132fd0/0x132b10/0x132e60/0x132220; control 4): `word flags` from the packer 4 (same code);
+// the filter as one ternary 186; the visibility fallback as a second statement 161 (repeats the listed fallback form).
+// Diagnostics, restored at once, homes read from the plane call's two lea operands: without the mode update of `second`
+// 205, with false for flag_b at the visibility call 202 (both outputs then in the frame, flag_b stays live), without the
+// entry lookup 233 (behind then takes the object index's freed slot, in_front still the frame byte), without the else
+// arm's two flag loops 279 (both in the frame): behind wins every freed parameter slot, so no other part of the body
+// changes the pair's precedence.
+// M3 lane 11 r135 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): both outputs declared
+// `register` 4, in_front alone so 4; the packer's result kept as a `short` used by the add 4; the centre and radius
+// declared ahead of the filter 4 (all four the same code); the outer test with the global stamp on the left 200.
+// Permuter (600 s, 48 tries, annealing): best 2 only by passing behind first and in_front last to the packer (the two
+// bits exchanged: wrong values, not kept), which again shows the slot going to whichever output is read first.
+// M3 lane 14 r127 (fast with 0x132fd0/0x132b10/0x132e60, all MATCH each time; control 4): 0x132fd0's two outputs as `bool &`
+// parameters (definition and all three calls) 4; in_front read for the packer through a `bool const &` bound ahead of the
+// plane call 4; `register` on in_front 4; both outputs declared in the outer block ahead of the three flags 4, after them
+// 4 (all the same code). This function's register parameter `data` declared second, third, fourth or last (definition and
+// the four calls) 4 each; 0x132fd0's stack radius declared first, second, third or fourth (definition and its three calls) 4
+// each, 0x132fd0 MATCH (all the same code here).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {

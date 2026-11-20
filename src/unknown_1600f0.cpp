@@ -1210,7 +1210,17 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
-// score 679 (was 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// score 679 (was 679; 678 in the r718 fast check): Frame 0x798 versus retail 0x79c. Viewer and coordinate homes and the scroll-limit conversion still differ.
+// P622: a one-use caption-phase local at the division gives 671 (match-only, reverted); frame 0x798 versus 0x79c, viewer and origin homes, and the initial divisor spill still differ.
+// M3 lane 4 r226 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679): x as long 684; y as short 681; the width folded into x's
+// expression (no width local) 679 (same code: left is still read once); `panel->time` as one `flag1128 || score_to_win != 1`
+// 701 (2888 bytes); the row total written into the fade count's initialiser (no total local) 710 (2888 bytes). Body unchanged.
+// Earlier status line, merged in r127 (679, was 679): Frame 0x798 versus retail 0x79c. Viewer and origin slots,
+// scroll-limit conversion and initial divisor spill still differ. Earlier fast check 678.
+// One-use caption phase at the division 671 (requires a match, reverted).
+// Frame 0x798 versus retail 0x79c. Viewer and coordinate homes,
+// the scroll-limit conversion and the initial divisor spill still differ. Earlier reduced check 678.
+// One-use caption-phase local at the division 671 (match-only, restored).
 // MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
 //   the same bytes as the expression, so the register roles are not reachable from the source here. What still
 //   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
@@ -1227,6 +1237,7 @@ PRIVATE inline long score_string_list_1608e0()
 // the body is off.
 // MiniMax E (11-01): no new form, no lower score; left: the entry register roles (retail loads the
 // player index first), the colour/bounds local homes and the missing bytes.
+// Earlier at 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // Earlier 679 (was 678 in the r718 fast check): frame 0x798 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // limit conversion in retail) and coordinate/color homes remain.
 // Earlier (score 689, was 689): baseline frame 0x78c versus retail 0x79c; early player/panel roles and coordinate/color homes remain.
@@ -1508,6 +1519,14 @@ PRIVATE inline long score_string_list_1608e0()
 // Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
 // reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
 // independent score visibility for name/caption 687, with explicit caption-width branches 687.
+// Round 431: staged horizontal/vertical coordinates, title far edge from row cursor (bottom/right),
+// common caption vertical extent/horizontal origin and separate title/caption fade locals all 679.
+// The separate origin and viewer homes still differ. Original body restored.
+// first division uses the converted count that initializes the retained divisor 687; first division
+// uses the immutable converted count that initializes the retained divisor 687; title division uses
+// the row total at its expression 687; separate title phase at the division 686; separate caption
+// phase at the division 671; separate title and caption phases at both divisions 679; separate title
+// delay at its scaled division 686; separate title and caption delays at both scaled divisions 686.
 // M3 lane 12 r143 (fast with 0x1600f0, 0x1603f0, 0x161420; control 679), aimed at the scroll clamp (retail reads the user
 // index in each arm, EDX then EAX, and converts the limit once after `0 > scroll`; ours hoists one index load above the
 // branch and converts the limit twice): a `short user` read in each arm 694 (2888 B: the hoist is gone, two conversions
@@ -1532,12 +1551,83 @@ PRIVATE inline long score_string_list_1608e0()
 // pointer's home is +0x50 here against retail's +0x34. Retail also keeps the computed x and y in their own word slots at
 // +0x10 and +0x12 and copies the pair into +0x18 with one dword move; giving this build the same origin pair and a four
 // byte copy into the row position measures 681 at 2888 bytes.
+// Round 116 (m3 lane 13, fast with 0x161420, 0x1600f0 and 0x1603f0, plain-confirmed 679): the three `(void)&parameter;`
+// statements removed (the same code, the caller still matches; kept as a clean-up); the scroll value as a `real &` bound
+// to the global's element for the clamp, the store and y 740 (2840 bytes); x as `left + width / 2 - g_4b9dd2 - 0x86` 679,
+// as `left + width / 2 - (g_4b9dd2 + 0x86)` 679, the width as `long` 679 (all the same code: retail reads the window's
+// left edge twice, ours once into CX). Re-measured: height not volatile 723, fade count not volatile 707, both 755.
+// Round 118 (m3 lane 13, fast with 0x161420 and 0x1600f0, both MATCH): retail reloads its x/y point (+0x10/+0x12) after
+// the title-text call for the title's far edges and the row advance (the point's slot is later the header rectangle,
+// passed by address), where ours keeps x and y in registers. Title far edges read from row_position 679, the advance as
+// `row_position[1] += 0x18` 679, both 679, all four title edges from row_position 679 (all the same code); row_position
+// initialised `{ x, (short)y }` 679, with far edges / far edges and += / all edges / += only 679 each; initialised with
+// all four title edges from row_position and += 698 (2888 B: the player index then loads into EBX first as retail and
+// row_position[1] is reloaded after the call, but the panel takes EBX and the frame stays 0x798).
+// M3 lane 14 r120 (fast; control 679, 714 instructions against retail's 718; cut at the 20 calls and masked, 521
+// differ with registers kept and 223 without). Between the title's two calls retail has 71 instructions to our 63: it
+// keeps 1.0 in XMM2 for the fade division and both clamps (ours loads it three times), stores the row number 2 before
+// the widths, computes the score width before the time width (ours the time width first) and advances the row's top in
+// its register (`add edi, 0x18`, later `add edi, 0x19` for the left edge). Forms: `long row_number = 2;` ahead of the
+// title's text call 685; right after the fade count 685; the row's top advanced in place (`y += 0x18; row_position[1]
+// = y;`) 679 (same code); the time width declared before the score width 692 (2888 B, 711 instructions); the title's
+// four edges from the row position 679 (same code); that with the in-place advance 679 (same code). Body unchanged.
+// Saved horizontal origin through first/remaining/all captions with advance from
+// origin or cursor 678/678, 700/700, 694/694. Copy origin after title, before caption
+// fade or at caption geometry 680/681. NOT kept: the one-point gain adds nine bytes
+// and leaves frame 0x798. Viewer and separate origin homes still differ.
+// Named score-buffer member and typed receiver 679/679, typed conditional 719, native team offset 681,
+// player score record 691, native team/player records 693, early player record 687, named player fields 691.
+// The 0x798 frame and viewer in EDI remain in the retail-length forms.
+// M3 lane 2 r115 (fast with 0x161420 and 0x1600f0, both MATCH each time; control 679, aligned 593 / 224 as exact /
+// registers and slots masked; body unchanged). Lane 4 r213's lead re-measured on this tree 610 (aligned 531 / 111).
+// New on the lead: retail keeps the panel origin twice, as scalars (x EDI, y BX, used for the title's near edges after
+// the title-text call) and as an x/y point in memory at +0x10 that is copied whole to the row position before the fade
+// (`mov eax, [esp + 0x10]; mov [esp + 0x18], eax`) and read back after that call for the far edges and the row advance.
+// Scalars x/y, the point's members set from them, `row_position = origin`, title bounds `{ y, x, origin.y + 0x14,
+// origin.x + 0x10c }` and `row_position.y = origin.y + 0x18`: 636 at 2879 bytes with retail's frame 0x79c and the first
+// difference at +0x45 (aligned 423 / 116): the head is retail's up to the height and point homes (+0x2c / +0x30 for
+// +0x28 / +0x10), but ours forwards the stored x/y to the far edges across the call (`lea ecx, [ebx + 0x14]`, `add edi,
+// 0x10c`) where retail reloads the point from memory, so ours reuses the point's cell for the fade count. On that 636
+// form, all the same code: y as short; `(void)&origin`; the copy through memcpy, through a pointer local or through a
+// long cast; the far edges and the advance read from the row position. The point copied whole without the scalars 693.
+// Both points as the two elements of one array 642. Diagnostics (reverted at once): the point's address stored to a
+// global 654 at 2900 bytes (the far edges are then reloaded after the title-text call as retail's, but again after the
+// title's own call, which retail does not do); the point overlaid on the header rectangle's first two members 640
+// (no reload). So retail treats the title-text call, and only it, as writing the point; no source form found for it.
+// The 636 form with main's statement order (alpha ahead of the team / player fetch, the increments and the header
+// advance where main has them), one score-width test, the short inner counter, long show_icon and the display count
+// test 716 (2856 bytes); only the one width test 720 (2849); only the loops in main's order 678 (2863); only the header
+// advance late 690; only the three types 640; one width test, late advance and types 731; loops, late advance and
+// types 700. Not kept: the 636 form rests on the lead's match-only pieces (the score-width test written twice and
+// statements placed in retail's block order).
+// Two-word origin at coordinate producers 693, from completed coordinates 693, row copy after title
+// 690, original origin through caption bounds 693. Score-source selection first 713, fade phases on
+// the row counter 679, published team-count test 681, one displayed-player count for traversal and
+// publication 675.
+// NOT kept: the displayed-player count recovers frame 0x79c at 2879 bytes and gains four, with viewer
+// still in EDI and the independent origin missing.
+// The top edge stays live across the scroll bounds, with the viewer and origin homes
+// still displaced. Retained short top 679, long top 691, short top and height 693,
+// retained left 692, retained top and left 692, vertical origin advance 691,
+// early horizontal cursor with retained top 677, named scroll pixels 679.
+// NOT kept: the early horizontal cursor gains two at retail length and leaves
+// the 0x798 frame. The widened viewport forms grow nine bytes.
+// M3 lane 13 r127 (fast with 0x161420, 0x1600f0, 0x1603f0; control 679; 0x1603f0 reads 253 in the reduced image with a
+// callee caveat, control included, and matches in the full build). Reading: retail computes the width with a 16-bit
+// `sub ax, [left]` and adds the left edge again from memory for x, with the screen height's dword loads between the two;
+// ours keeps the left edge in CX for both. Forms: the score flags as `panel->score = count != 0; panel->alternate_score =
+// panel->score && !...` 690; the first fade as `2.0f * (alpha - ...)` 679 (same code); the row count named once for the
+// total and the height, player count first 679 (same code), team count first 678 (one lower, under the bar; the sum's
+// registers turn retail's but nothing else moves); the background as `= { 0 }` 681. Body unchanged.
+// MiniMax B (11-20): no new form, no lower score (679): the frame stays 0x798 against retail's 0x79c with the viewer
+// still in EDI, and the top edge, the origin and the scroll bounds still have displaced homes; the forms that
+// recover the frame gain four at most and need a moved declaration.
+// M3 lane 7 r199 (fast): the player's local user index named once and used at the four scroll-offset uses 697; the
+// scroll offset through a `real *` formed once 740 (2840 B), through a `real &` 740 (2840 B); the player pointer declared
+// after the scores pointer 713 (2888 B), just before the first scroll-offset use 717 (2888 B).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
-	(void)&player_index;
-	(void)&panel;
-	(void)&alpha;
 	s_game_engine_player *local_player =
 		&((s_game_engine_player *)g_4e8c24->data)[player_index & 0xffff];
 	byte *scores = NULL;

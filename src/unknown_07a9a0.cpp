@@ -1043,9 +1043,17 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 871 (was 871): earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
-// score 871 (was 871; 964 before): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// selector remains a call. Earlier score 964.
+// Frame 0xd0 versus 0xb4. The opening lookup expands and the upper-capacity selector remains a call.
+// Earlier score 871 (was 871; earlier 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// The 0xd0 frame exceeds retail by 0x1c, and the opening variant lookup expands.
+// Previously noted: Earlier 964. The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// selector remains a call (two stacked first lines merged in r108).
+// Earlier score 871 (was 871): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // The frame remains 0xd0 versus 0xb4, the opening variant lookup expands and the capacity selector stays a call.
+// the frame is 0xd0 versus 0xb4, the opening variant lookup expands,
+// and the upper-capacity selector stays a call. An earlier body scored 964.
 // Earlier score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
 // selector remains a call.
 // M3 lane 14 r114 (fast with 0x73530, which matches throughout; control 871): the convention already agrees (session in
@@ -1607,6 +1615,101 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // group statistics or before histogram 914/914. Split store with dword histogram 933.
 // NOT kept: the four-point leads shorten the body to 2748 bytes, and the other forms regress.
 // The opening variant lookup still expands and the frame still differs.
+// Typed shared machine-ID and histogram storage (long/word cells): one shared histogram 936/892,
+// separate overlapping histograms 936/892, first histogram overlapping 931/894, and second
+// histogram overlapping 911/871. NOT kept: the full overlap reserves 0xb0 instead of 0xb4,
+// the first variant lookup still expands, and no form matches.
+// M3 lane 2 r108 (fast with 0x73530; control 871): `long histogram[16];` plus a memset at its declaration (retail's
+// dword cells: 16-dword rep stosd at 0x7e66c/0x7e6a5, 4-byte increments) 936 (2716 B, frame 0xb0); `long histogram[16]
+// = {0};` 911 (2748 B); the machine-ID copy loop in its own block 871 (same code); that block with the memset dword
+// histogram 936; the top variant lookup moved after the summary and capacity 870 (2784 B; 0x73530 MATCH -> 1, not kept).
+// Reading: retail calls the top 0x192e60 at frequency one (unconditional) and expands the colder 0x193300 and the loop's
+// lookup, so the difference is the inliner's site choice, not a statement form here.
+// M3 lane 7 r185 (fast with 0x73530, 0x71730, the team-balance callees and 0x192e60's/0x193300's file-mates; control 871,
+// aligned 1016; both builds return with `ret 4`): re-measured on today's body, the loop's written-out lookup as a call
+// to 0x192e60 1007 (2620 B, aligned 986), with a `__forceinline` declaration of 0x193300 here 1007 (the same code: the
+// declaration does not expand it); the type-5 block's `if (!result) return result;` moved after the block 871 (same
+// code); `inline` on 0x193300's definition 872 (2796 B, aligned 921: the capacity switch is then expanded here as in
+// retail, but 0x705f0 and 0x72330 expand it too and lose their matches, 3 and 49), with the loop lookup through
+// 0x192e60 997 (2636 B, aligned 941). Retail expands 0x193300 only at this frequency-1 site and calls it under the
+// deeper tests of 0x705f0/0x72330, so the split is the link's inline threshold, not a source form.
+// Inner lookup candidate held for validation, selected from validation, or cleared on failure
+// 876/885/885. With the shared availability test 875/905/903, direct pointer publication with the
+// shared test 885, complete nullable expression 871. NOT kept: the expression ties, and the other
+// forms regress. The opening lookup still expands and no trial reaches the retail frame.
+// Pointer/reference from the output clear 926/926, after machine admission 871/871.
+// With dword buckets, clear-result forms 938/938 and admitted receivers 911/911.
+// NOT kept: the clear-result dword forms recover frame 0xb4 but shorten the body
+// and lose the caller in preview. The opening lookup still expands.
+// M3 lane 12 r152 (fast with 0x73530, MATCH each time; control 871, both builds `ret 4`): the admission test as two `if`s
+// (summary, count and variant, then the two capacity calls) 871; `bool result = true;` declared first 871; the variant
+// declared, then assigned 871; 0x193300's result named for the second test 871 (all the same code); diagnostic, the output
+// memset after the admission test 934 (2716 B).
+// common countdown 871; common group size cursor 871; common countdown and cursor 871; dword cells with common
+// countdown 911; dword cells with common cursor 911; dword cells with common countdown and cursor 911; dword
+// cells with common traversal and two memset clears 936; scoped dword cells with common traversal and two
+// memset clears 987.
+// NOT kept: The shared word-cell traversal ties. Dword cells reserve 0xb0 and shorten the body. The scoped
+// dword form reaches 0xb4, but changes the session ingress to the stack and shortens to 2652 bytes. All nine
+// checked peers retain their opening measurements.
+// Variant/summary names, index/capacity names and two complete entry name orders,
+// each with word buckets 871/871/871/871 and dword buckets 911/911/911/911.
+// NOT kept: word forms tie. Dword forms reserve 0xb0, shorten to 2748 bytes and
+// raise the score. The opening lookup still expands.
+// First population count before clear 871, population count shared across scans 871, indexed scans with shared
+// count 885, dword cells with shared count 911, dword memset clears with shared count 936, machine IDs scoped
+// before dword cells 911, separate dword histogram scopes with shared count 917, shared group-size base with
+// dword cells 911. NOT kept: Changes to count lifetime tie or shorten the body. Dword cells bring the frame to
+// 0xb0 and the scores to 911 or higher. The opening lookup still expands.
+// M3 lane 16 r152 (fast with this file's functions, 0x193300's file, 0x73530, 0x71730, 0x6fa60, 0x63220, 0x631f0,
+// 0x72330, 0x705f0 and 0x73360; control 871 with 63 others matched; plain confirmed). Kept: the clamp's call passing the
+// group's highest rating, `function_1931a0(highest, rating_variant)`, 871 at 2780 bytes (one `mov ecx, eax` more, the
+// same count): retail's call at 0x7e4a9 has that rating in ECX and the matched 0x63220, whose body this loop is, passes
+// it too, so the earlier `lower` argument was a behaviour difference (lane 7 r172's reading), not a form. Tried: the
+// balance result as `if (!balance_teams_by_count(...)) result = false;` 905 (2752 B); grouped case labels in 0x193300's
+// own selector 925 (2896 B: the selector then expands here as retail's table, but 0x193300 itself shrinks to 26 bytes
+// against retail's 52 and 0x72330, 0x73530, 0x1931d0 and 0x193250 change with it, so retail's selector has its five
+// separate cases); 0x193250 with the upper-place selector written in both of its cases instead of the shared exit 868
+// (2848 B: 0x193250 shrinks to 72 bytes against retail's 100 and this function then expands it, so not kept); the add
+// loop's minimum as retail's three-way (`type <= 3 ? 1 : type == 4 ? field_5fc : height`, the arms behind retail's `cmp
+// edx, 3` at 0x7eaea and `cmp edx, edx` at 0x7eaef) 872 (2784 B, register-masked aligned 269 against the body's 267).
+// Complete positive admission, nested summary/capacity scopes, summary rejection with positive
+// capacity, positive summary with capacity failure, or missing-summary rejection 871 each.
+// Common admission result 886, positive machine-validation region 894, positive admission with
+// dword histogram 911. NOT kept: five forms tie. The dword form reserves 0xb0 and is shorter.
+// The opening lookup still expands and the upper-capacity selector remains a call.
+// M3 lane 13 r126 (fast with 0x73530, 0x63220, 0x192e60, 0x193300, 0x1932c0, 0x631f0; control 871 at 2780 B, session in EAX
+// and `ret 4` as retail, frame 0xd0 for 0xb4, 0x73530 MATCH): the player loop's value through the matched 0x63220 1012
+// (2608 B, still called); the opening test as four separate early returns 871 (same code); the output cleared as
+// `*out = s_matchmaking_ratings();` 862 (2800 B, but through a 0x364-byte temporary copied with `rep movsd`, frame 0x434,
+// aligned 1020 against 1016: not kept); the player loop bounded by the summary's count 883 (0x73530 8); adding_group
+// declared beside result 881.
+// M3 lane 12 r159 (fast with 0x73530; control 871 at 2780 B, 0x73530 MATCH): the player value through the matched 0x63220
+// re-measured 1012 (2608 B, 0x63220 stays a call); the single exit (opening test sets `result = false`, the type-5 scan and
+// the rest under `if (result)`) with the player value through 0x63220 and `long histogram[16]` 844 (2852 B, frame 0xb4;
+// 0x63220 inlines with its nested lookup, 0x631f0 and first 0x1931a0, but the top 0x192e60 inlines too and 0x73530 drops to
+// 8); that with the top lookup after the summary and capacity reads 851 at retail's 2828 B (0x73530 1: the session then
+// arrives in ECX, since no call sits at the entry); that with the capacity bounds in an `else if` 851 (same code); the
+// original body with the loop's variant through 0x192e60 at the loop body's top level 949 (2700 B: the loop call stays out
+// of line, the top inlines, the reverse of lane 2 r76's result on the older body). Diagnostics (restored at once): this
+// file without /arch:SSE plus the 0x63220 call 1013 (no change in the inline set); the disabled 0x6d4c0 draft linked in
+// place of its stub (with 0x6e910 listed so its file is in the image) 871 (no change). Retail's EAX session follows from
+// the top call staying out of line (EAX carries its argument); every form above that expands it moves the session.
+// Shared upper selector 865; split capacity gates 865, individual admission gates 865,
+// named upper result 865. Dword cells 876, with both library clears 903, split capacity
+// gates 876 and type retained across the lower check 876.
+// NOT kept: the selector expands but the opening lookup still expands, and all eight
+// move the session onto the stack and disturb the matched caller. The dword frame is 0xb0.
+// Player-loop lookup nested at the range, population or enablement checks, at each pair, at all three, or at
+// separate signed range bounds 871 each. The frame and both lookup boundaries remain unchanged.
+// Early signed dword histogram declaration 936; adjacent ID and signed/unsigned histogram scopes
+// 987/987; adjacent signed scopes with range fill for the first, second, or both clears 966/994/971,
+// and counted fills 993; two independently cleared dword histogram scopes 936. NOT kept: adjacent
+// scopes recover 0xb4 with the session still in EAX and shorten the body to 2652–2668 bytes. The
+// opening lookup still expands.
+// Dword bucket updates by explicit first/second/both assignments 911/911/911. Named first/second/both
+// bucket indices 928/911/928. First or both bucket addresses 911/911. NOT kept: all shorten the
+// body and increase the score. The frame reaches 0xb0 and the first variant lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1655,7 +1758,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 				{
 					long lower = highest;
 					while (lower > 0 && rating_variant->field_51c[lower - 1] >= highest) lower--;
-					if (adjusted <= lower) adjusted = function_1931a0(lower, rating_variant);
+					if (adjusted <= lower) adjusted = function_1931a0(highest, rating_variant);
 				}
 			}
 		}

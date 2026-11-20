@@ -213,11 +213,9 @@ long function_199ebc(void)
 	long result = 0;
 	c_class_58d20 *session = NULL;
 
-	if (function_59670(&session) && function_058d70(session))
+	if (function_59670(&session))
 	{
-		long current_member;
-		long member_index;
-		result = function_5a680(session, &current_member, &member_index)->player_count;
+		network_session_get_membership(session, NULL, NULL, NULL, NULL, NULL, NULL, &result, NULL, NULL);
 	}
 	return result;
 }
@@ -228,11 +226,9 @@ long function_199ef8(void)
 	long result = 0;
 	c_class_58d20 *session = NULL;
 
-	if (function_596a0(&session) && function_058d70(session))
+	if (function_596a0(&session))
 	{
-		long current_member;
-		long member_index;
-		result = function_5a680(session, &current_member, &member_index)->player_count;
+		network_session_get_membership(session, NULL, NULL, NULL, NULL, NULL, NULL, &result, NULL, NULL);
 	}
 	return result;
 }
@@ -243,11 +239,9 @@ long function_199f34(void)
 	long result = 0;
 	c_class_58d20 *session = NULL;
 
-	if (function_59670(&session) && function_058d70(session))
+	if (function_59670(&session))
 	{
-		long current_member;
-		long member_index;
-		result = function_5a680(session, &current_member, &member_index)->member_count;
+		network_session_get_membership(session, NULL, NULL, NULL, NULL, &result, NULL, NULL, NULL, NULL);
 	}
 	return result;
 }
@@ -258,11 +252,9 @@ long function_199fd6(void)
 	long count = 0;
 	c_class_58d20 *session = NULL;
 
-	if (function_59670(&session) && function_058d70(session))
+	if (function_59670(&session))
 	{
-		long current_member;
-		long member_index;
-		count = function_5a680(session, &current_member, &member_index)->player_count;
+		network_session_get_membership(session, NULL, NULL, NULL, NULL, NULL, NULL, &count, NULL, NULL);
 	}
 	return 16 - count;
 }
@@ -558,12 +550,10 @@ bool function_19a951(long player_index)
 		c_class_58d20 *session = NULL;
 		long index = player_index & 0xffff;
 
-		if (function_59670(&session) && function_058d70(session))
-		{
-			long current_member;
-			long member_index;
-			dword player_mask = function_5a680(session, &current_member, &member_index)->player_mask;
+		dword player_mask;
 
+		if (function_59670(&session) && network_session_get_membership(session, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &player_mask, NULL))
+		{
 			if (index >= 0 && index < 16 && (player_mask & (1 << index)))
 			{
 				result = true;
@@ -587,12 +577,10 @@ bool function_19a9b4(long player_index)
 		c_class_58d20 *session = NULL;
 		long index = player_index & 0xffff;
 
-		if (function_596a0(&session) && function_058d70(session))
-		{
-			long current_member;
-			long member_index;
-			dword player_mask = function_5a680(session, &current_member, &member_index)->player_mask;
+		dword player_mask;
 
+		if (function_596a0(&session) && network_session_get_membership(session, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &player_mask, NULL))
+		{
 			if (index >= 0 && index < 16 && (player_mask & (1 << index)))
 			{
 				result = true;

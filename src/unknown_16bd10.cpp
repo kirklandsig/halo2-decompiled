@@ -727,7 +727,30 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// score 126 (was 126): Frame 0x48 and extent agree. The projection preloads k in this build and j in retail (round 196's forms at the end of this note).
+// The switch span, direction-k preload and exchanged length and zero XMM homes remain.
+// 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and
+// length/zero homes differ.
+// Frame 0x48 and extent agree. The projection preloads k in this build and j in retail.
+// Earlier (126, was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// MiniMax E (11-20): score 126 (was 126): no new form, no lower score. The case-2 squared length still hoists the
+// camera point's left.k into XMM1 where retail hoists left.j, so the sum's accumulator stays in XMM0 against retail's
+// XMM1 and every later float block runs with the registers shifted by one; the distance dot itself is instruction for
+// instruction the same in both. Measured this round and dropped: the squared length with the camera point's left on
+// both sides 392, the length written out as left.j, left.k and left.i squares 487, the squared length's dot arguments
+// swapped 394, the distance dot's arguments swapped 171 and the two dot statements in the other order 399. The hoisted
+// component is not reachable from the dot's spelling, so the body stands.
+// MiniMax E (11-19): score 126 (was 126): no new form, no lower score. Read from the listing again: the case-2 plane
+// length still preloads the camera point's left.k into XMM1 where retail preloads left.j, so the length's accumulator
+// stays in XMM0 against retail's XMM1 and the zero that follows stays in XMM1 against retail's XMM0; the plane distance
+// dot itself matches instruction for instruction, so the difference is in the hoisted load alone. The length dot written
+// out with the six term orders (394-397), the swapped dot arguments (394) and the swapped distance dot's arguments (126,
+// identical code) were measured and dropped. This round measured five more spellings of the same dot: the two dots in
+// the other order 399, the squared length of the camera point 478, the squared length of the plane 399, the swapped dot
+// arguments 394 and the dot against itself 177, all worse than 126, so the hoisted component is not reachable from the
+// dot's spelling. The distance dot's products still load the position's component first
+// where retail loads the forward's, the yaw block still keeps its zero in XMM1 and the pan arm's two lea still come
+// out the other way round.
 // M3 lane 15 r104 (fast with 0x142d10, which stays MATCH; control 126, all restored): 0x142d10's parameters in the order
 // retail's call setup implies (ECX up, EDX forward, EAX out set up in that order: `out, forward, up`; definition,
 // declaration and the one call) 124 (fixes the pan arm's two `lea`s; a gain under 4, so not kept: the lead for a
@@ -1274,6 +1297,89 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `s_camera_point_state const &` for the case-2 block 395 (1700 bytes); the field-of-view's `active = false` before
 // the default field-of-view read 126 (same code); the matrix position through a `vector3f *` local for plane.d and
 // the scaled add 395 [106]. Body unchanged.
+// M3 lane 7 r187 (fast with 0x142d10, 0x16c2b0, 0x16c6f0, 0x16be50, 0x23d090, all MATCH; plain control 126 = fast). Tried:
+// 0x142d10's parameters as (out, forward, up) at its definition, declaration and call (retail sets up ECX up, EDX forward,
+// EAX out in that order) 124 (re-measured, the pan arm's two `lea`s); that with `0.0f != length_squared` 123, and with the
+// timer as `0.0f != time_scale ?` too 123 (gains under 4, not kept); a pointer local to camera->point.left used for the
+// plane copy, the length dot and the add-scaled call 393 (1700 B: the length then preloads left.j into XMM1 as retail,
+// but the first dot's products and the copy's registers turn round); the pointer at the length dot and add-scaled only 393,
+// at the copy and add-scaled only 395, at the length dot only 394. Diagnostic (not kept): one more `unknowna4 = 0.0f`
+// store at entry 459 (the zero is then held in XMM1 through the function).
+// M3 lane 10 r126 (fast with every callee, which reproduces the full image's 126; the reduced image without them scores 275,
+// so the permuter declines this body): the pan quaternion declared before `t` 126 (same code); the pan rotation into a
+// matrix3x3 local in place of the transform 394 (1700 B); the basis matrix at case scope without its block 219 (1708 B);
+// the pan fraction after the camera reload 126 (same code); `command->distance` stored before offset.i 127; offset.k
+// computed and stored before offset.j 125 (one point, not kept).
+// Direct squared-length condition, field-of-view fallback arm, mutable target through blend,
+// ordered fraction clamp, staged angle accumulation, named angular delta, branch-local command
+// field stores, and a role-named projection scale: 126/141/390/126/126/395/154/126.
+// NOT kept: The direction-k preload and length/zero register split remain.
+// Normal fields in ikj/jik/jki/kij/kji order 435/435/436/435/436, direct indexed
+// coordinates 435, ascending/descending copies 441/441. NOT kept: the field forms
+// remove the native dword normal copy, and all shorten to 1668 bytes. The length
+// and persistent zero registers remain reversed.
+// M3 lane 12 r152 (fast with 0x16c6f0/0x13cb40/0x142d10, all MATCH; control 126): redundant parentheses (no grouping
+// change) around the field-of-view lerp product 1-3 pairs 126/126/126, around the case-2 division 126/126/147, around the
+// timer division 126/126/147; the plane length written out j, k, i without dot3f 397 (1700 B: left.j hoisted as retail, but
+// the normal's i/k registers swap and left.k is read off the camera pointer), with 1-3 pairs around its first product
+// 398/398/392 or its leading pair 397/397/391; written out i, j, k 397, with the same pairs 398/398/392 and 397/397/393.
+// direct vertical output 394, planar point inputs 394, planar scalar inputs 394, products after distance 392,
+// products around distance 392, products before distance 392, sine terms before cosine 395, planar point result
+// 394.
+// NOT kept: All forms add four bytes. The direction preload and length and zero registers still differ.
+// M3 lane 15 r113 (fast with all eleven callees and 0x23d090; control 126): the yaw distance dot with its operands
+// swapped 126 (every product then loads the forward first; retail loads the position first for i only); the animation
+// arm's two zero stores chained 126; the field-of-view test as `target != 0.0f` 149 (1700 B: the target is loaded for
+// the test as retail, but the reached arm reloads it where retail copies the register). Leads, not kept (gains under 8):
+// the inlined quaternion normalise sums w, k, j, i in the shared helper's source order in retail, where this build sums
+// j, k, w, i; the helper's terms in natural i, j, k, w order (or j, k, w, i) give retail's order 124, and the shared
+// header in natural order keeps 0xa9b40 matched (fast); 0x142d10's parameters as (out, forward, up), its only caller,
+// the order retail's ECX up / EDX forward / EAX out setup implies, 124 (0x142d10 still matched), both together 122.
+// The field-of-view tail takes retail's exact shape (target loaded once for the test and copied in the reached arm, the
+// interpolation re-reading the field after the clamp, the start read after the clamp) only with a target local at the
+// test and reached arm and the field read in the interpolation (a mix) 395 (1700 B), with the local at all three uses
+// 396 (no re-read); with the two leads 396, and every xmm0/xmm1 role in the function then swapped against retail
+// (zero XMM1 for retail XMM0). Diagnostic phase scan of 1 to 8 dead locals on that combination: 396/395/395/400/400/145/
+// 145/396 (145 at 6 and 7: aligned 94 against the control's 103, the zero still XMM1 everywhere).
+// Plane aggregate from the vector, components or complete offset 126/435/172.
+// Plane distance from zero-offset vector aggregate, component aggregate or separate
+// stores 126/435/126. Vector aggregate with scoped length or initial factor 126/126.
+// The direction preload and the squared-length and zero registers still differ.
+// M3 lane 7 r196 (fast with all eleven callees, 0x13cb40 and 0x23d090; control 126, aligned 88, register-masked 23; body
+// unchanged). Read from retail: its yaw block computes `0 - distance` into XMM2 and loads forward i/j/k into XMM3/4/5
+// together, multiplies all three by the distance and only then negates them (ours interleaves rows and keeps the
+// distance in XMM2); its animation arm stores the shared zero directly where ours copies it to XMM0 first. Tried: one
+// variable for the plane length and the scale, with the zero else arm 126 (same registers), without it 378; the
+// yaw offset through the existing vector3f_scale and three negations, distance store after or before it 129/129 (the
+// helper reads forward through its pointer, [eax+4]/[eax+8], where retail reads the fields directly); three scale rows,
+// the distance store, three negations 129 (forward in XMM2/3/4, the distance sum now in XMM0 with temporaries in
+// XMM2: retail's yaw block with XMM0/XMM1 exchanged); the distance store first, then the rows and negations 126
+// (aligned 86, masked 18; a statement order, same score, not kept); the distance store first with the three direct rows
+// 127; a named negated distance ahead of the rows 395 (1700 B, forwarded to its store). Re-measured: a direction
+// pointer for the copy, the length dot and the scaled add 393 (1700 B: left.j preloads, but the length then sums
+// (i + j) + k). Diagnostics (removed at once): the pan arm's three zeros replaced by another constant 159 (the point
+// arm's zero stays XMM1, so the pan arm's XMM0 return value does not pin it); the animation arm's zero stores dropped
+// 163, the timer's zero arm dropped 345, the last zero store changed 146, the field-of-view block dropped 296 (zero
+// XMM1 in the plane block each time); only the yaw block without its zeros moves it (469: the plane block's zero
+// becomes a local XMM6 and the timer's XMM0), so the zero is one register from the plane arm through the yaw block.
+// Left-only or up-and-left basis stores after the normal copy 171/203, after the plane constant 177/208,
+// after the squared length 177/208, or just before the projected position 189/220. NOT kept: All eight
+// raise the score at the retail extent. Direction preload and length/zero register allocation remain.
+// Source-direction displacement with direct/in-place/separate/origin-copy addition 409/443/433/474.
+// Same four forms using the copied plane normal 461/492/493/539.
+// NOT kept: The staged displacement grows the body, and reading the copied normal for the final projection moves the first difference into the prologue.
+// M3 lane 1 r137 (H2M_FAST with 0x142d10 and 0xa9b40, both MATCH; control 126): re-measured 0x142d10 as (out, forward,
+// up) 124 and that with the shared quaternion normalise summing i, j, k, w 122 (round 113's leads, a gain of 4, under the
+// bar). On that 122: case 2's test as `0.0f != length_squared` 121 (only the ucomiss operand text lines up; the registers
+// stay swapped), the timer as `0.0f != time_scale` 122, both 121, the yaw clamp as `0.0f < distance` 122, the animation
+// arm's two zero stores chained 122.
+// M3 lane 6 r211 (fast with 0x16c6f0/0x13cb40/0x142d10, all MATCH; control 126; a compile-only screen of the plane block
+// reproduces its left.k preload and XMM0 length, 22 differing xmm lines): the plane length through a local dot written in
+// all six term orders, either grouping (12 forms) 22 each (the sum is canonicalised: same code); the same with the two
+// arguments the other way round (12 forms) 33-37, (j, k, i) left-first confirmed 405 (1700 B); the distance numerator as
+// `dot3f(&plane.n, offset) - plane.d` 126 (same code), as `dot3f(offset, &plane.n) - plane.d` 394 (1700 B), against the
+// direction instead of the normal 37/37 (screen); the plane constant as `dot3f(&plane.n, position)` 22 (same code), against
+// the direction either way round 36/36 (screen). No spelling preloads left.j.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

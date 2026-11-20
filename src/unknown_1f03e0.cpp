@@ -214,7 +214,7 @@ struct s_shape_carrier_contact
 	byte flag_a8;
 	byte unknowna9[0xe8 - 0xa9];
 	point3f point;
-	byte unknownf4[0x100 - 0xf4];
+	vector3f forward;
 	vector3f up;
 	byte unknown10c[0x118 - 0x10c];
 	vector3f basis;
@@ -227,6 +227,7 @@ struct s_shape_carrier_contact
 };
 typedef char assert_shape_carrier_contact_normal[(offsetof(s_shape_carrier_contact, normal) == 0x8c) ? 1 : -1];
 typedef char assert_shape_carrier_contact_point[(offsetof(s_shape_carrier_contact, point) == 0xe8) ? 1 : -1];
+typedef char assert_shape_carrier_contact_up[(offsetof(s_shape_carrier_contact, up) == 0x100) ? 1 : -1];
 typedef char assert_shape_carrier_contact_input[(offsetof(s_shape_carrier_contact, input) == 0x138) ? 1 : -1];
 typedef char assert_shape_carrier_contact_direct_acceleration[(offsetof(s_shape_carrier_contact, direct_acceleration) == 0x148) ? 1 : -1];
 
@@ -673,6 +674,17 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // not kept (the local is only for the score). On it 384 one-use-local combinations (case 2 index locals, entries base,
 // selected-index local in either case, case 1 element forms, function-level up): floor 9, bands 9/13/28/201+, nothing
 // lower; velocity declared first 9 (same code).
+// M3 lane 16 r144 (fast; sites on the 9 lead: S1/S2 the first cross's j-row products, S3 its k-row a.i*b.j, S4 average.i,
+// S5 dot_a's i term, S6 the tail's j product): unused initialised locals at the top of the lead (diagnostic only) 1-8:
+// 13/13/13/26 (975 B)/9/7/39 (974 B)/9; at 6 only S5 and S6 are left. The same unused locals declared after case 2's first
+// cross (in case 3 or before the tail call) move nothing; in the loop or before the switch they count like top ones. The
+// count is reachable with names: in the loop the call's parts named (base point, flags, stepping bit, settings, height)
+// with a `contacts` list pointer for `entry`, six names: on the lead 7 (S5, S6 left), on this body 29 (two points, a
+// symbol-count steer, not kept); two names (stepping, height) 13 on the lead, 35 here; three (base too) 13/35. S6 never
+// flips by symbol count; case 3's scale through a no-op `(real)(x * 1.f)` chain of depth 1-3 on the lead 197/193/178
+// (case 2's arms unmerge), with 1-7 top locals as well 156-202 (none keeps the arms merged). On the six-name lead
+// (7), case 3 written with a named scale 7, written out per row 7, `0.0f - normal->k` 7, a named selected index 7,
+// the normal through a selected contact pointer 7: S5 and S6 unmoved. Body unchanged.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -971,13 +983,24 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // written per component (axis named before limited) 307 (1270 B); `limited` declared, then assigned 235; the rotation's
 // cross declared at the top of its block 235; the outer cross declared ahead of the old-forward pointer 235 (all three the
 // same code); the rotation dot through the file's `shape_dot(limited, axis)` (forward-declared) 239 (1243 B).
+// M3 lane 16 r144 (fast, 0x1e5af0 matched in each): `state` typed as the file's carrier-contact record (0x1e67a0's
+// caller hands the same record to 0x1f0450 under that type and reads +0xf4/+0x100 there; the +0xf4 vector named
+// `forward`) 235 (same code; kept). Unused initialised locals at the top (diagnostic only) 1-7: 236/285 (1229 B: the
+// rotation dot's fold goes, the first cross recolours)/232 (1240 B)/235/235/235/235. The settings alias dropped 235;
+// the old-forward alias dropped 235; both 235; the rotation and acceptance dots unparenthesized i, j, k 248 (1243 B).
+// M3 lane 16 r146 (fast, 0x1e5af0 and 0x30bf0 matched in each): `limited` declared ahead of `axis` and assigned in the
+// rotation block 235; `limited` copied from `state->up` 235; `axis` declared ahead of `up` 235; one cross vector for the
+// rotation block and the outer crosses 235; `limited` ahead of `axis` with the shared cross 235 (all the same code).
+// Diagnostic, unused initialised locals at the top, K = 0-3 and 8-16: 235/236/285 (1229 B)/232 (1240 B), then
+// 235/236/285/232/235/235/235/235/235: the pattern repeats every eight, so no symbol count reaches below 232.
 // @retail 0x1f1460
-void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
+void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
+    s_shape_carrier_contact const *state)
 {
-    byte *settings = *(byte **)(state + 8);
+    byte *settings = state->settings;
     if (function_1f1462(*(dword *)settings))
     {
-        vector3f const *old_up = (vector3f const *)(state + 0x100);
+        vector3f const *old_up = &state->up;
         vector3f up = ground->normal;
         vector3f axis;
         contact_cross(old_up, &up, &axis);
@@ -1011,7 +1034,7 @@ void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f 
             if ((cross.k * axis.k + cross.j * axis.j) + cross.i * axis.i > 0.0f)
                 up = limited;
         }
-        vector3f const *old_forward = (vector3f const *)(state + 0xf4);
+        vector3f const *old_forward = &state->forward;
         vector3f cross;
         contact_cross(old_forward, &up, &cross);
         vector3f forward;
@@ -1031,7 +1054,7 @@ void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f 
     }
     else
     {
-        *forward_result = *(vector3f const *)(state + 0xf4);
+        *forward_result = state->forward;
         *up_result = *g_4687b0;
         forward_result->k = 0.0f;
         if (function_30bf0(forward_result) == 0.0f)
@@ -1066,12 +1089,21 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax B (11-19): no new form, no lower score (234): the permuter over this body tried three rewrites in 363 s and left
+// the baseline at 234. The shared out.k store does reproduce retail's tail - with the disabled arm's last row left in a
+// register and the three arms ending in one shared store of out.k, the disabled arm jumps to retail's store and the
+// direct arm keeps its own copy - but the direct and general arms' rows then take the other operand side and other
+// register homes (the direct arm's speed product, the general arm's current add), so the body loses 24 bytes and the
+// score rises to 596, and to 590 with the two arms left as they are and their k read back. Left: the damping bit's first
+// extraction in ECX, the two cross products that keep up.k on the other side, and the general arm's k row ending in XMM2
+// where retail's ends in XMM0.
+// MiniMax B (11-20): no new form, no lower score (234): the first cross multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the same code for all sixty-four operand spellings and is used by nine matched functions here, so that difference needs this one cross written out in place; the damping bit's first extraction also still uses ECX where retail uses EDX.
+// score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
 // (all sixty-four operand spellings of it compile to the same code), and the general arm's k row still ends in XMM2
 // where retail's ends in XMM0, so the first arm's out.k store is not shared with it and the tail shift remains.
 // MiniMax I (11-17): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where retail uses EDX, and the two cross-product terms that involve up.k keep the other side in the register where retail keeps up.k (commuting the shared cross helper's six products leaves the code, and the file's nine matched functions, unchanged), and the general arm's k row still ends in XMM2 where retail's ends in XMM0, so the first arm's out.k store is not shared with it; the body is unchanged.
-// score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
 // m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // frame 0x30 agrees. Damping allocation, delta homes and vertical store sharing differ.
 // Earlier m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
@@ -1093,8 +1125,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // shuffles differently (ours fmulp/faddp/fxch/fstp against retail's fmul/faddp/fstp), the direct arm's four
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
-
-// score 234 (was 347): Damping extraction still uses ECX in place of EDX. The gravity store, input address and later vector homes also differ.
+// Earlier 234 (was 347): Damping extraction still uses ECX in place of EDX. The gravity store, input address and later vector homes also differ.
 // Earlier 347 (was 347; before r723 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // Earlier 347 (was 347): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
 // bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
@@ -1589,6 +1620,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // with disabled/direct first 614/650; three-way motion selection 628; general before direct 612;
 // enabled-input dispatch 635; gravity retained from bounded-step admission 453. NOT kept: all
 // scores rise and the original damping extraction and vector-home differences remain.
+// M3 lane 7 r184 (fast with 0x1f0450 and 0x24590, both MATCH; control 234, aligned 158): 1..12 dead locals (diagnostic)
+// 358-561, never below 234 (this body already sits in the best symbol state); the four flag declarations in all 24
+// orders, with the input pointer before or after them (47 forms): best flying, direct, damping, gravity 230 (the damping
+// bit then takes EDX as retail; first difference +0x31, the gravity spill store after the input lea), flying, direct,
+// gravity, damping 233, the rest 235-265; that best order with the input pointer after the flags 246 (the entry block
+// exact to +0x3d, but the cross and scale product sides flip); 1..10 dead locals on either of those two 352-562.
+// Not kept: a declaration order picked by score, four under the bar.
 // M3 lane 11 r120 (fast; base 234, difflib-aligned 192): K initialised dead locals at the top (diagnostic, reverted),
 // K=score: 1=484 (3053 B), 2=481, 3=364, 4=366, 5=358, 6=362, 7=560 (3040 B), 8=561, 9=477, 10=481, 11=364, 12=366, 13=358,
 // 14=362, 15=560, 16=565, 18=481, 20=500, 22=497, 23=429, 24=555, 26=501, 28=500, 30=497, 31=429: no count comes near, so the
@@ -1617,11 +1655,70 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // renamed 347, scoped around the two products 569, with the 2-D helper 445, products written rotated-first 347; with the
 // one-use `maximum` passed straight 442 (347 on the plain both-statements form). Also: step before delta 560, limited
 // declared before delta 347, the rotation's second row written the other way 347.
+// M3 lane 13 r118 (fast with 0x1f0450 and 0x24590, both MATCH; control 234): retail's direct arm loads speed once and
+// scales through a copy (`movaps xmm2, xmm3; mulss xmm2, xmm0`, then `mulss xmm3, xmm1`), the shape of a scale passed as
+// an expression to an inline scale helper. On the direct arm's output as three row statements (re-measured 543), a new
+// file-local 2-D scale helper (result = s * v per row, no speed local): into a `scaled` point with delta as two rows 442
+// (3035 B); scaling `rotated` in place, delta from it, 423 (3051 B: that arm is then retail's instruction for instruction,
+// but for its delta/limited homes, +0x14/+0xc against retail's +0xc/+0x14, and the rate pointer in EAX for EDX); into
+// `scaled` with delta through vector2d_from_points2d 427 (3051 B); the helper with the arm's vector3f_assign kept 469 (3051
+// B). On the in-place form, the flags declared flying, direct, damping, gravity with the input pointer after them 422 (3050
+// B, entry block exact, first difference +0x3d), with gravity cleared first in the first arm too 422 (same code).
+// Diagnostic dead initialised locals (reverted), 1-8 on the in-place form 425/425/570/437/495/493/383/369, 1-15 on the 422
+// form 422/419/557/435/484/486/378/372/375/368/557/435/483/378/486. Left on the 422 form: the first and flying crosses'
+// operand sides, the input length's x87 loads (retail k, j, i), the general arm's limited registers (XMM1/2/0, retail
+// XMM0/1/2) and homes, the history add's side. LEAD: a 2-D counterpart of vector3f_scale for the direct arm (new, so match-only).
+// M3 lane 15 r106 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; base 234, aligned 194, stack- and register-masked
+// 119): the four flag bools as `(bool)((x >> n) & 1)` 232 (3050 B; two points, not kept); the contact flags read once into a
+// `dword flags` local 614; both lengths through magnitude3d (`&state->input`, `&change`) re-measured 485 (3047 B, masked 186);
+// only the history maximum 509 (3057 B, masked 125); only the input length, through `input`, 297 (3036 B, masked 144).
+// Diagnostic: 1-16 initialised dead locals on the both-magnitude3d form 594-617 (2994-3013 B), none near. All restored.
+// M3 lane 13 r123 (fast with 0x1f0450 and 0x24590, both MATCH; control 234, difflib-aligned 194, register-masked 109): what
+// places the two delta/limited pairs. The general arm's fallback copy written member by member (`limited.i = delta.i` ...) 461
+// (3026 B): the three fallback reads then come straight from delta and the homes become retail's (delta +0x2c, limited +0x20),
+// but retail's fallback is the aggregate copy with a reload, so that is not its source; the initial copy member by member 460
+// (3038 B, homes unchanged); either fallback copy removed (diagnostic) 295/593, homes unchanged. One function-scope vector for
+// the general delta and the history change 488 (3053 B: it takes +0x20, the bounded copy stays +0x2c); delta declared at
+// function scope 234 (same code). The general delta scaled into place and then reduced by the current velocity 501, written
+// from desired with no scaled vector 499, desired scaled in place 501, desired serving as the delta too 523 (each 3057 B, the
+// bounded copy still +0x2c). The small helpers retail expands here, together: a file-local tick-length getter for the four
+// rate reads 568 (3030 B, aligned 199, masked 91); the getter with the input length through magnitude3d 557 (aligned 185),
+// through the input pointer 560, with the history length 568, with both 566/560 (aligned 227/246); both lengths without the
+// getter, re-measured, 485 (aligned 280). Body unchanged.
+// M3 lane 15 r109 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; control 234): retail's low-normal arm loads the
+// basis side first in four of the cross's six products (state->basis.k read as [esi + 0x120], the rest through the lea),
+// ours the up side; the input length is magnitude3d's inlined block. The low arm's cross through the shared cross3f 234
+// (same code: helper text order does not reach the products); the low arm's cross on the `forward` copy 380 (3053 B); the
+// basis copied after the cross 348 (3070 B); the input pointer declared after the four flags 250; no input pointer, every
+// read through state->input, 543. Body unchanged.
+// Velocity binding throughout/in history 589/495; carrier contribution binding 474; returned scale
+// destination 587; gravity clear before both additions 233; velocity binding with clear before
+// vertical add 590; staged disabled velocity 635; returned scaled input 617.
+// NOT kept: the one-point gain is below the keep threshold. The staged disabled result changes caller
+// 0x1f0450, and the bindings and returned pointers leave the damping register and shared vertical
+// store unresolved.
+// M3 lane 7 r193 (fast with 0x1f0450 and 0x24590, both MATCH; control 234): the input pointer between the flag
+// declarations (untried middle positions; f = flying, d = direct, m = damping, g = gravity, i = input): f i d m g 244,
+// f d i m g 230 (the r184 best's code: damping in EDX, first difference +0x31, the first arm's two `up.k` products and
+// its last scale row still load the other side first), f d m i g 262; the first arm's scale reading `&state->input` in
+// place of the pointer 486 (3055 B), that on f d i m g 482. Body unchanged.
+// M3 lane 11 r134 (fast with 0x1f0450, 0x24590, 0x30bf0 and 0xa75d0, all MATCH; control 234, aligned 194): the direct arm's
+// bounded pair renamed `bounded` or `clamped`, or its delta renamed `velocity_change` 234 each (same code: names do not swap
+// the delta/bounded homes, retail +0xc/+0x14, ours +0x14/+0xc); the input as a `vector3f const &` in place of the pointer 234
+// (same code); the general arm without the step flag (gravity cleared in the fallback arm and under `if (flying)` in the
+// bounded arm) 549 (3049 B).
+// M3 lane 12 r159 (fast, control 234 at 3047 B): the flags read through a `dword const &` bound to the field 484 (3053 B);
+// the damping bit named and read through a `bool const &` 484 (3053 B); a redundant `gravity = false;` at the top of the
+// first arm as well as at its end 234 (same code: the store is dropped); kept: the flying bit through the existing
+// forceinline 0x1f1462 mode-bit helper (re-measured on this body; 590 on round 48's) 234, same code, in place of its body
+// written out; that without the `!= 0` 234 (same code). Left as before: the damping bit's first extraction in ECX (retail
+// EDX), the crosses' operand sides, the expanded input length, and the general arm's k row in XMM2.
+// MiniMax A (11-20): no new form, no lower score (234); the first arm's cross still differs in one product's operand order (retail reads facing.j * up.k where ours reads up.k * facing.j), and writing the six products out gives 529.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
     vector3f const *input = &state->input;
-    bool flying = ((*(dword *)state->settings >> 3) & 1) != 0;
+    bool flying = function_1f1462(*(dword *)state->settings) != 0;
     bool damping = ((state->flags >> 4) & 1) != 0;
     bool direct = ((state->flags >> 2) & 1) != 0;
     bool gravity = ((state->flags >> 3) & 1) != 0;
@@ -2072,6 +2169,11 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // `dec eax; je; dec eax; jne`) 439 [133]; switch + both bit tests 433 (2105 B) [119]; switch + the first bit test 448 [118].
 // Retail's 0x109fd0 uses no XMM register and 0x1f2e60 only XMM0-5 (neither makes calls), so retail's entry zero survives
 // both in XMM6 up to the normalize test and is materialised again after the 0x1f2a80 call for the final loop.
+// M3 lane 16 r144 (fast, 0x1f19c0 matched in each): unused initialised locals at the top (diagnostic only) 1-7
+// 413/413/413/412/412/412/413, so the homes are not a symbol-count phase. `count` and `indices` declared ahead of
+// `component` 412; the four output stores ahead of `component` and `relative` 473 (2073 B); both negations through
+// vector3f_scale(normal, -1.0f, &desired) 412 (425 on the 418 body); the preferred surface index named for the guard
+// and the loop compare 419; the normalize result named and tested 413 (same code).
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

@@ -16,11 +16,18 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// and late x87 factor lifetimes remain, at retail length 2622.
 // MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
 // retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
 // after the product, which no plain spelling of the wave expression reproduces.
+// MiniMax G (11-19): no new form, no lower score (536), body unchanged. A 300 s permuter run (22 tries) reached 535 only
+// by naming the 0.5 factor in a local that holds nothing else (`real tmp0 = 0.5f;` used by the wave product, the k factor,
+// the default arm and the PIN calls), which is a form the coordinator rejects, so it is not kept; the frame stays 0x54 against
+// retail's 0x60 and the wave's three dead x87 factors stay behind retail's product.
+// MiniMax S (11-20): no new form, no lower score (536): the frame is 0x54 against retail's 0x60 and the rounded-wave and cross homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes while the copy in this file is a front-end inline.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
-// and late x87 factor lifetimes remain, at retail length 2622.
+// MiniMax E (11-20): no new form, no lower score (536): retail keeps the first cross's three products and two of its components in stack cells across the two sines and gives the cross result and w the same home, so retail's homes run v1, v2, w, v3, v4 against v1, v2, w, v4, v3 here and its frame is 0x60 against 0x54; spelling both crosses with matching product operands (650), the products as a local vector (650), the staged cross helper with the adds written out (663) and the adds written out alone (663) all leave the products in registers and shorten the body.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // MiniMax H (11-13): no new form, no lower score (536).
@@ -503,6 +510,10 @@
 // helper taking the camera point with a real phase and three named double factors 535 (aligned 594); the two wave values
 // as a `real wave[2]` 634 (2670 B, frame 0x60, as the point pair of round 202); the two scaled amounts named before the
 // adds 650 (2594 B). None keeps sin x, cos 7.8y and cos 7.75y on the x87 stack past the mixed wave as retail does.
+// Running double wave 577; named modulation factors 576; named phase 577;
+// both phases with staged wave 578; short wave before the cross with named modulation 576;
+// separate rounded scales 636; opposite cross between adds 600; first displacement scaled separately 718.
+// NOT kept: scores rise and the wave values still lack retail's two homes.
 // M3 lane 16 r138 (fast with 0x4a1e0; control 536, aligned 420): the cross, both wave values and both scaled adds in a
 // forceinline helper writing the position through a `point3f *` (the camera point read inside) 537 (same frame: the
 // inlined pointer is still known to be the local); the mixed wave's phase and three factors as named real locals 535
@@ -519,6 +530,78 @@
 // both arms 699/708/709, named origin coordinates 745, setter on both outputs 707,
 // selected-coordinate and output setters 690. NOT kept: all regress. The last reaches
 // frame 0x5c at 2587 bytes. The regular-arm setter raises the reduced caller to 344.
+// M3 lane 1 r126 (fast; control 536 at 2622 B, aligned 425; both builds end `ret 0x20` here): the staged cross helper
+// for the special path's first cross 536 and for its second 536 (same code: the shared products are CSE'd either way);
+// the first cross's result declared at function scope 536; s1 and s0 declared ahead of the first cross 536; s0 computed
+// ahead of s1 536 (all the same code). Retail keeps three of the shared products, s1 and c.j/c.k in stack cells (frame
+// 0x60), ours only three cells (0x54); the vector homes are ordered v1, v2, w, v3, v4 there against v1, v2, w, v4, v3 here.
+// Retail stores the first cross's i component in w's i cell; one vector for both special crosses 533 (frame still 0x54),
+// with the staged helper for the first 533 (not kept: three points, and the vector would hold two different values).
+// M3 lane 11 r122 (fast with the file and 0x4a1e0; control 536, `ret 0x20` as retail): the scale constants first in
+// both add-scaled products 536 (same code); the two wave values as the members of one point2f 634 (2672 B, retail's
+// 0x60 frame, stored and reloaded into XMM as retail but the body grows); the mixed wave halved as `/ 2` 536; the two
+// wave values declared at function scope 536; the plain sine's sum written `x * 5.6f + (double)y` 536 (all same code).
+// M3 lane 3 r270 (fast with 0x4a1e0; control 536 = baseline, aligned 593, masked 201; both builds end `ret 0x20`): both
+// wave values passed as real arguments to a forceinline helper doing the two scaled adds 535 (the arguments are
+// substituted back: the same code but for one line); the two values returned as a two-real aggregate from a forceinline
+// helper 734 (2714 B, frame 0x68: s1 first and both stored as floats as retail, but the returned copy gets cells of its
+// own); the two values written through a `vector2f *` by a forceinline helper taking the camera point 615 (2622 B,
+// retail's frame 0x60 and retail's offsets for the first three vectors, aligned 551, masked 187: s1 is evaluated first
+// and both are stored as floats and scaled in SSE as retail; left: the pair is overlaid on w's cells at +0x28 where
+// retail has two 4-byte cells at +0x18/+0x1c, the fourth basis vector at +0x4c for retail's +0x64, the first cross's i
+// in a cell of its own for retail's w cell, and the x87 factor order), that with the first cross through
+// cross3f_staged 615 (same code), with the first cross written into w 637 (2607 B, frame 0x5c). Compile-only: the helper
+// with two `real *` or two `real &` outputs, or one helper per value, compiles as this body does (folded); the two
+// `real *` helper reading the local copy keeps only s1 stored. Reading: retail's cells are s0 +0x18, s1 +0x1c, the first
+// cross's j and k +0x20/+0x24 and its three shared products +0x28..+0x30, with the first cross's i overlaid on w; the
+// wave values are not substituted into the scaled adds, which this build does only across a block boundary or for
+// memory-resident values (round 249), and the three factors popped late need a use that is removed late (rounds 170
+// and 257), so no plain spelling is left here.
+// m3 lane 8 r198 (fast with 0x4a1e0; control 536 at 2622 B, both builds end `ret 0x20`; difflib-aligned 593): the two
+// shape pointers declared ahead of the inverse 536 (same code: retail stores the NULL shape before the inverse, ours
+// after it either way); the inverse declared after the shape selection 549; declared just ahead of its switch 676 (2626
+// B, frame 0x50); v4 declared ahead of v3 (retail's homes run v1, v2, w, v3, v4) 554; w declared ahead of v3 and v4 536
+// (same code); w first and v4 ahead of v3 554. The frame stays 0x54 against 0x60 in all of them.
+// Secondary shape selected before projection, after projection, after the side basis or after the special path:
+// short discriminator 703/707/703/690; primary shape test 700/698/688/607.
+// NOT kept: the earlier placements reach frame 0x58 and the late placements keep 0x54.
+// The primary shape slot, rounded wave storage and x87 factor lifetimes still differ.
+// M3 lane 2 r114 (fast with 0x4a1e0; control 536): the four trig arguments of s0 cast to double 665 (2576 B); s0's sum
+// rounded to real before the halving 536 (same code); s0 and s1 each read through a const reference at its scaled add 645
+// (2666 B: both get retail's own cells, s0 at +0x18 and s1 at +0x1c, stored early as retail, but each scaled amount is
+// written back into its wave's cell and reloaded, and the three factors are still saved with `fst`); both bound by
+// non-const references to separate locals 645 (same code); s1 alone through the reference 629 (2656 B); s0 alone 614
+// (2627 B). The frame stays 0x58 in all of them.
+// The primary shape, separate rounded-wave homes and first cross spills still differ.
+// scoped origin updates 536, short wave outside cross scope 536, mixed wave scoped to first update 536,
+// ordinary cross receiver setter 601, compound cosine addition 578, compound third-factor product 577,
+// compound half amplitude 576, compound modulation and cosine 577.
+// NOT kept: All forms tie or raise the score. The frame remains 0x54.
+// Perspective direction after the waves, after the reciprocal, or in the perspective arm mutable/const
+// 633/659/633/633. Special direction from the selected up vector at entry or in the perspective arm
+// 541/635. Vertical axis before the origin or before the up vector 658/555. NOT kept: The early vertical
+// copy reaches frame 0x58 and lengthens the body. All eight raise the score.
+// Split vector declarations in retail order (shape/reciprocal initialization together or split) 536/536.
+// Split cross workspace and late axes (shape/reciprocal initialization together or split) 536/536.
+// Split late axes and cross workspace (shape/reciprocal initialization together or split) 536/536.
+// Split all vector declarations in capture order (shape/reciprocal initialization together or split) 536/536.
+// NOT kept: The assignments still give the opening frame and stack slots.
+// M3 lane 2 r119 (fast; control 536 at 2622 B, both builds `ret 0x20`; aligned = rows outside a minimal diff against retail,
+// addresses, stack offsets and registers masked, control 183): the two scaled adds through an intermediate point (the first
+// writes it, the second reads it into v1) re-measured 522 (2627 B, frame 0x60 as retail, aligned 179; a one-use aggregate, so
+// not kept: the form T103 above); s1 and s0 as `real const` 536 (same code); inv declared without an initialiser with case 1
+// assigning -1.0f in an else arm 692 (2636 B, frame 0x50); the special test negated with the arms swapped 544; w initialised
+// from source->v1c at its declaration (no else arm) 678 (frame 0x60, aligned 220).
+// Entry shape predicate reused for the axis, default denominator, case-one test or all three
+// 705/659/658/717. With primary/secondary/both guarded shapes read through the source 666/706/628.
+// Both shape pointers initialized conditionally with the shared predicate 709.
+// NOT kept: The forms reach frame 0x58 or 0x5c, grow past retail length and all regress.
+// compound depth reciprocals 536; compound paired perspective reciprocals 536;
+// compound depth and perspective reciprocals 536; independent compound perspective reciprocals 536;
+// compound depth reciprocals with named extent 537; compound depth reciprocals with named span 537;
+// compound depth reciprocals with named denominators 535;
+// compound perspective reciprocals initialized before crosses 536.
+// NOT kept: The one-point gain is below the retention threshold. The 0x54 frame and retail inverse allocation remain unresolved.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -841,7 +924,27 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // the eight-byte homes at the top of the frame, and the first-edge Y, the half-width, the cursor and the colour
 // homes differ with them. The helper this body calls at 0x131e50 has its declaration fixed in another file, which
 // this lane may not change: BLOCKED-BY 0x131e50.
-// score 351 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax D (11-19): no new form, no lower score (351): the colour packer retail uses here is the link-time inlined
+// 0x131e50 and its own asm homes come with it (the alpha at +0x84, the red at +0x94, the green at +0x9c, the blue at
+// +0xa0, the scale at +0x98 and the colour pointer at +0x88, stored and reloaded), which this file's front-end inlined
+// ribbon_pixel copy does not reproduce, so the frame stays four bytes short at 0xa8 against retail's 0xac.
+// MiniMax H (11-19, round 95): no new form, no lower score (351): the residual is still the link-time inlined colour
+// packer 0x131e50, whose own asm homes (the colour pointer at +0x88, the alpha at +0x84, the red at +0x94, the scale at
+// +0x98, the green at +0x9c and the blue at +0xa0) this file's front-end inlined copy does not reproduce, so the frame
+// stays four bytes short at 0xa8 against retail's 0xac; that helper's declaration is fixed in another file, which this
+// lane may not change: BLOCKED-BY 0x131e50.
+// MiniMax S (11-20): no new form, no lower score (351): the frame is 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes differ, because retail's link-time inlined colour packer carries the original's own assembly homes and 0x131e50 is declared noinline in its own file.
+// score 351 (was 351): earlier 233 and 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// Round 127 (m3 lane 10; fast, the lead confirmed plain; 0x42c50, 0x42b20, 0x43740, 0x131e50 matched): case 4's neighbour
+// declared at the top of its else block (before the view, as cases 0 and 1/2 already do) 240 (2592 bytes, aligned 45 -> 36:
+// retail's case-4 head, with the position pointer formed inside each arm); with the colour stored `outer->color =
+// vertex[0].color = ...` as well 238 (plain 238, aligned 34). Not kept: a declaration move, match-only. Left on it: frame
+// 0xa8/0xac (retail's u step and V sum sit in 8-byte spill slots), the half width XMM3 (retail XMM4) with the first point
+// XMM5/6/4 (retail XMM6/5/3), case 1/2's second x load (4 bytes), case 4's edge point colouring and the tail's definition
+// reload. Also on 351: case 4's direction through vector3d_from_points3d 487 (2580 bytes); the view through it 351
+// (aligned 55); the u step and V sum as one vector2f local 355 (frame stays 0xa8); the colour order alone 352 (aligned 43);
+// on 238 the V sum formed at the outer store 240 (frame stays 0xa8); dead initialised locals at the top of 238's body
+// (diagnostic) K = 1, 2 238; K = 3..10 437-481 (2580-2588 bytes); K = 12..30 (even) 238 each: the XMM ranks never reach retail's.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes
 // at +0xa4 and +0xac, so the body stays four bytes short after case 4; a permuter run over this function (300 s,
@@ -1344,6 +1447,26 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // not kept: build/r115/lead-42cf0.patch in the m3-lane11 worktree); the pixel in a named local stored to the first
 // vertex and then the outer one (retail's store order) 352 [132/108/29]; both 238 (2592 bytes) [121/97/22]; case 4's
 // no-previous arm written first 358 [150/166/46]. Body unchanged.
+// M3 lane 4 r218 (fast with 0x42c50/0x42b20/0x43740, all matched; control 351, aligned 132, masked 30): lane 8 r144's
+// two-member texture-scale lead on this base 475 (2580 B, frame 0xac, first difference +0x9e: the colour blend reschedules),
+// with the outer pixel store last 475; the outer pixel store last alone 352; the pixel named, stored to vertex[0] then
+// outer 352; case 4's z row with the first edge written before the second 341 (aligned 114, masked 29; a statement order
+// picked by score, not kept: lead only); case 4's first.z written product first 351 (same code); case 4's three rows
+// first edge first 423 (frame 0xa0), its x and y rows only 424; case 1/2's y row first-first with case 4's z row 341.
+// Body unchanged.
+// M3 lane 1 r132 (fast with 0x42c50/0x42b20/0x43740, all matched; control 351): retail's top of frame is the V end at
+// +0xac, a dead slot at +0xa8 and the u step at +0xa4, then the packer's blue/green/scale/red homes, the V at +0x90 and the
+// colour pointer and alpha at +0x88/+0x84; ours has blue/green/V/red/V end/alpha/u step/scale/colour pointer from the top.
+// The u step as one negated ternary 608; the V end as one ternary plus V 599; the V end in its own local (`v_end`, the
+// width left as v_width) 351; the negated step in its own local 351 (same code each). Diagnostics on ribbon_pixel's locals
+// (no change to slots or code, 351 each): renamed blue/green/red/alpha, renamed out of alphabetical order, the four
+// channel longs declared after scale and pixel. The slot order follows neither names nor declaration order here.
+// The frame stays 0xa8 against 0xac. Packer input reference 351; result pointer/reference
+// 351/351, or both with a color reference 351/351. First color as the output then copied
+// to the outer vertex 301; both vertex fields as outputs 352; returned result address 351.
+// First field as output with the pixel returned by value, pointer/reference 352/352;
+// field readback on the original packer 352. NOT kept: the 301 form saves the color
+// pointer but adds a register copy between stores where retail uses the same packed register.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

@@ -1611,27 +1611,35 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // shared validity at both widget tests 78, title tested first 94; shared or block-local output cursor 69 each.
 // NOT kept: title buffer clear before list admission 6, before the title test 4, before the list
 // load 8; retail clears it only after both guards. All three keep the native extent.
+// Matched in a full build with stand-in SDK headers (was 15): the setting index is read into a local before the
+// lookup, and the string list index is read once into a local that the NONE test and the title call share (the
+// definition test and the list test are two nested ifs).
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
 	word buffer[0x100];
 	c_class_1a2c81 *title = find_child(6, 0, false);
 	c_class_1a2c81 *description = find_child(6, 2, false);
-	s_variant_setting_definition *definition = (s_variant_setting_definition *)game_variant_settings_find_setting(list.setting_index);
+	long setting_index = list.setting_index;
+	s_variant_setting_definition *definition = (s_variant_setting_definition *)game_variant_settings_find_setting(setting_index);
 
-	if (definition && definition->string_list_index != NONE)
+	if (definition)
 	{
-		if (title)
+		long string_list = definition->string_list_index;
+		if (string_list != NONE)
 		{
-			buffer[0] = 0;
-			function_1a0180(definition->string_list_index, definition->title_string_id, buffer);
-			title->function_22f52e()->set_text(buffer);
-		}
-		if (description)
-		{
-			buffer[0] = 0;
-			function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
-			description->function_22f52e()->set_text(buffer);
+			if (title)
+			{
+				buffer[0] = 0;
+				function_1a0180(string_list, definition->title_string_id, buffer);
+				title->function_22f52e()->set_text(buffer);
+			}
+			if (description)
+			{
+				buffer[0] = 0;
+				function_1a0180(definition->string_list_index, definition->description_string_id, buffer);
+				description->function_22f52e()->set_text(buffer);
+			}
 		}
 	}
 	list.select_current_value();
@@ -3155,9 +3163,7 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // @retail 0x2bb3a2 destructor c_custom_game_maps_list
 
 /* selects the map chosen last (v1 reaches it by a tail jump) */
-// score 30 (was 30):
-// ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
-// The 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
+// score 30 (was 30): the 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
 // Ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
 // loads the global into eax (0x2c9a7d), tests it (cmp eax, -1 at 0x2c9a82) and only then copies it to ebx (mov ebx,
 // eax at 0x2c9a85); ours loads the global straight into ebx and moves `this` into edi after the test. The loop body,
@@ -3228,6 +3234,61 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // direct EBX load; retail has no out-of-line reader of the field to call); the guard written `NONE != map_id` 30; the
 // iterator at function scope with the selection after the loop on `iterator.datum` 28 (84 B); `return` in place of
 // `break` after the selection 30; `if (map_id == NONE) return;` with the walk unnested and the hit returning 30.
+// M3 lane 3 r266 (fast with 0x2c9a58, matched in each): re-measured the if/else two-definition id 36 (87 B: `this` to
+// EDI, the field into EAX and copied to EBX as retail, but NONE held in ECX and the NONE arm's outer test kept) and the
+// NONE-default conditional id 13 (80 B: folded to one definition, NONE in EAX); arms swapped (`== NONE` first) 13; the
+// two-definition id with the walk after `if (map_id == NONE) return;` 36; the two-definition id with the outer test on
+// the field again 30 (the repeated test threads early and the NONE arm dies); a dead `= NONE` initialiser ahead of the
+// read 30; the id set to NONE after the selection 30 (dead, removed); the test as a switch with a NONE case 30; the
+// iterator by aggregate initialiser re-measured 15 (84 B). Reading: retail's EAX load and EBX copy is what an id with
+// two definitions still live at copy propagation gives; its NONE arm must then thread without NONE held in a register.
+// M3 lane 4 r221 (fast with 0x2c9a58, matched in each): the iterator's two NONE stores chained (`iterator.index =
+// iterator.datum_index = NONE;`) 29 (one store order swapped, the EBX load unchanged); on the id started NONE and set
+// when the field is valid (13): with the chained stores 13, with `if (map_id == NONE) return;` and the walk unnested
+// 13, with the field compared against the id (`!= map_id`, one NONE literal fewer) 13 (NONE still kept in EAX for the
+// compare and both iterator stores, the id loaded straight into EBX); the if/else two-definition id with the chained
+// stores 36 (87 B). Plain: an out-pointer getter beside the preferences file's other out-pointer getters (0x1210a0,
+// 0x121100), called with the id's address from here, 30 (inlined at link time to the same direct EBX
+// load; the file's 14 functions still matched). A retail byte scan finds a memory load into a scratch register,
+// compared with a constant and then copied to a callee-saved register, in no other function. Compile-only under /O2
+// (diagnostic): no frame and a rotated loop, so retail's body is an /O1 one. All restored.
+// M3 lane 2 r112 (fast with 0x2c9a58, matched in each): a redundant `if (map_id == NONE) map_id = NONE;` after the read 30
+// (folded); the id assigned in both arms of a test on the field, the `== NONE` arm first, 13 (the NONE-default code);
+// `if (map_id == NONE) return; else` the walk 30; the walk in a file-local `static inline` helper taking (list, id) or
+// (id, list) 100/100 (14 B: the helper stays a call), as `__forceinline` 30 (the inlined parameter loads straight into
+// EBX). Re-measured the if/else two-definition id 36: NONE has five uses there (two tests, the else store and the two
+// iterator stores), so it is kept in ECX.
+// M3 lane 8 r197 (fast with 0x2c9a58, matched in each): `long map_id;` then the test on the field with the id assigned
+// inside the block 30; `if (field != NONE) map_id = field; else return;` with the walk unconditional 30 (both give
+// retail's EAX load, compare and later copy in a compile-only build, where `this` arrives in ECX, but under LTCG,
+// with `this` in EAX at entry, the load goes straight to EBX again); the id as a for variable reset to NONE at its
+// step (diagnostic, loop-carried second definition) 30; the loop compare written id first 30; the id typed dword 30.
+// Compile-only only (same direct load): the read assigned in the condition, a by-value inline validity predicate, an
+// inline getter with a result local. All restored.
+// M3 lane 3 r274 (fast with 0x2c9a58, matched in each): the iterator's pool stored before the id read with the NONE
+// stores after the test re-measured 27 (the id still straight into EBX); `long const` id 30; the id read into a first
+// local and copied into the id 30 (propagated); the NONE-default id with `else return;` and the outer test kept 13 (NONE in
+// EAX for the compare and both iterator stores; match-only); the iterator declared at function scope ahead of the id 30;
+// the NONE default with `else return;` and the walk unconditional 30 (the dead default is dropped before NONE is counted:
+// NONE takes a register only with four uses).
+// M3 lane 11 r132 (fast with 0x2c9a58, matched in each): the field through a file-local inline getter taking the list 30; the
+// iterator's NONE stores chained datum_index first 30; the if/else two-definition id with the walk guarded by the field itself 33
+// (85 B: the head is retail's, `mov edi, eax; mov eax, [field]; cmp; mov ebx, eax`, and the guard threads, but the dead NONE arm
+// stays as `mov ebx, ecx; jmp` with NONE cached in ECX); the same with the arms swapped 30; the id read and reset to NONE under
+// `if (field == NONE)`, walk guarded by the field, 30; a NONE default with the copy made inside the field test 30. A one-object
+// LTCG screen is not faithful here (`this` arrives in EBX). All restored.
+// M3 lane 6 r210 (fast with 0x2c9a58, matched in each): the id assigned in the guard's condition 30; the id read through
+// a `long const &` bound to the named local at the guard and the loop compare 30; the hit clearing the id with the loop
+// as `while (map_id != NONE && next(&iterator))` 35 (88 B; 0x2c9a58 then 8); the id started NONE and set from the field
+// inside a guard on the field 30; the loop compare on the field with the guard on the local 30. Diagnostic, not
+// keepable: a compiler barrier intrinsic after the read 30 (all 30s the same direct EBX load).
+// M3 lane 16 r156 (fast with 0x2c9a58, matched in each): the preferences' saved-map field typed `dword` in its header
+// (0x19a6f2 and 0x19a864 still matched) 30; a `list` copy of the receiver declared first and used for the pool and the
+// selection 30; the id read through a const reference to the preferences' current block 30; `register` on the id 30
+// (all four the same direct EBX load); the iterator set up ahead of the test and the id tested in the loop condition
+// (`map_id != NONE && next(&iterator)`, no early test) 33 (76 B). Re-measured the NONE-default id 13 (NONE cached in
+// EAX, the id loaded straight into EBX). A byte scan of retail finds only three references to the field: the store in
+// 0x19a6f2, the read in 0x19a864 (loaded straight into ESI there) and this function's EAX load.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

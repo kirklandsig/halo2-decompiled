@@ -235,7 +235,8 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// score 144 (was 171): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
+// MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
+// score 144 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
 // earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
 // Earlier score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
@@ -824,6 +825,85 @@ void __stdcall function_1160c0(real dt)
 // Separate physics point with fields, point setter or shared point difference 314/361/311.
 // Updating the physics point before publication, same forms 391/391/406. Early tag index
 // with separate or updated point 314/391. NOT kept: every split widens the frame and leaves the segment spill different.
+// M3 lane 4 r221 (fast with the file's ten matched functions): the axis renamed to sort after the segment and scale
+// (`turn_axis`) 144; the scale renamed `ratio` 144, `along` 144; the segment renamed `used_segment` 144; the axis declared
+// ahead of the vertical 144 (all five the same code: the segment/scale/sine cell stays at +0x20 above the axis, so the
+// cell's place follows neither names nor declaration order). A compile-only build lays this frame out differently from
+// the link-time build, so it cannot screen the homes.
+// M3 lane 10 r126 (fast with the file's ten other functions, all MATCH; control 144, aligned 159): round 115's lead
+// re-measured on this base, the rest offset rotated by a file-local forceinline helper taking the angle (sine and cosine
+// inside; projection, cross_k, cross_j, cross_i written in row i) 113 (1369 B, aligned 138; a one-caller helper, match
+// only). On that lead: the 0x211060 call through a file-local wrapper doing the tag lookup inside, or taking the looked-up
+// settings, 113 each (same code); the segment selected before the node pointer 286 (aligned 126: the segment and its base
+// then take retail's EDX and the first node's copies ECX, but i and the count swap EAX/ECX and the loop top reorders);
+// `i < count ? i : count - 1` 114; ticks before the stiffness 117; inverse_dt above the loop 123; ticks before the segment
+// 293; the index as a local set by an if 113; `!i` 113; a segments-base local 114; a ternary of two addresses 303; node
+// before inverse_dt 113; `nodes + i` 113; `i != count ? i : count - 1` 113. Retail's 0x17c540 (another owner, 34) shows
+// the same late tag lookup and early EAX set-up at its 0x211060 call. Also on the lead: the rest offset copied before
+// the vertical 162; after the angle call 204 (1373 B); `!normalize3d(&axis)` 113; the arms of `i == 0` swapped 217
+// (1371 B). The delta through the existing vector3d_from_points3d 259 on main's body and on the lead (1368 B).
+// Round 639 forms: traversal node array base or fixed extent 301/301, shared node velocity 241,
+// double constraint distance 260, spring segment or reach ratio name 144/144,
+// explicit sine or cosine 144/172, completed constrained point 336.
+// NOT kept: the node array forms reach retail length with a 0xa8 frame. The best forms tie
+// and leave the selected segment in EDI/ECX and at +0x20.
+// Reserve segment, node and stiffness in solver scope, seven subsets and a reordered
+// full declaration, 144 each. NOT kept: the segment stays in EDI/ECX and spills at
+// +0x20, while retail uses EDX and +0x14.
+// M3 lane 5 r210 (fast with 0x116750, 0x116010, 0x1160c0, 0x73360, 0x54590; control 144, register-masked 54): the
+// rest offset rotated by a trial copy of 0x146320's file-private rotation taking the axis as three reals (projection
+// k, j, i first, cross_j and cross_k named, cross_i in row i) 221 (1368 B); with sine and cosine named before the call
+// 167 (1368 B, masked 50: the segment cell moves to +0x10, the base still EDI); that plus the node pointer ahead of
+// `inverse_dt` 167; on the body the node pointer ahead of `inverse_dt` 144 and the first-node test as `!i` 144 (both
+// the same code). Retail's scratch choice is one step off ours at both ends of the loop (segments base and segment EDX
+// for our EDI/ECX at the top, the definition reload EDX for our ECX at the bottom).
+// Round 642 forms: branch-owned segment offsets 289, typed rest-vector copy 273, physics
+// index before the node snapshot 145, tag entry reference 144, named constraint length 144,
+// widened offset scope 144, loop-owned axis 144, terminal selection by node count 181.
+// NOT kept: the near-length rest copy changes the saves and the ties retain the EDI/ECX carrier.
+// Vector storage for prior, prior/target, prior/predicted, predicted, target/predicted, and
+// all three 332/332/332/144/144/332. All three with aggregate prior copy 144 and
+// prediction setter 332. NOT kept: the vector forms tie or move the frame and extent
+// farther from retail, with the segment spill still different.
+// M3 lane 16 r152 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged): the
+// segment through a file-local inline accessor taking the definition and the index (`(byte *)segments + index * size`)
+// 144; that accessor doing the last-segment clamp on its own index parameter 144; `segment` declared ahead of the node
+// pointer and assigned after it 144; the non-initial position read as `record->nodes[i].position` 144 (all four the
+// same code); the tick increment as `++record->nodes[i].ticks` 275 (1372 B) and the physics call's velocity as
+// `&record->nodes[i].velocity` 276 (1372 B): both keep `record + i * 32` in EDX and the segments base then takes EBP;
+// the last-segment index named ahead of the node pointer 280 (the base still takes EDI although EDX is unused in that
+// block). In every form here the base goes to a free callee-saved register (EDI, else EBP) ahead of ECX and EDX, so
+// its register is not a scratch-rotation step and does not come from EDX being busy.
+// Shared rotation first cross at its store 144, with the later crosses staged k then j 113.
+// Complete vector, axis or both inputs 216/144/216. Staged projection 143, complete output
+// before stores 213, three cross products staged j/k/i 144.
+// NOT kept: the 113 form gets within one byte of retail, but raises three shared users’ scores
+// and loses two matches. The selected segment and length-ratio spill still differ.
+// M3 lane 13 r126 (fast with 0x116750, 0x116010, 0x1160c0 and 0x115ff0, matched throughout; control 144): the dt test
+// as `0.f < dt` 144 and `node->ticks++` 144 (both the same code); the first node's copies with the direction first 152;
+// the loop bound as `i <= definition->segment_count` 286 (1368 B: the guard becomes a compare, the rest unchanged).
+// Diagnostic: the segments base read through a file-local forceinline accessor 144 (same code: the base stays in EDI,
+// so the one-step scratch rotation is not set by a temporary at the base's own load).
+// M3 lane 12 r159 (fast, control 144 at 1371 B), re-measured on the 144 body: the redundant `if (0 < count + 1)` loop
+// guard 153; `segment = definition->segments; segment += index` 272 (1369 B: the segment then takes EDX and every later
+// scratch register and the i == 0 / node-copy registers are retail's, but the base load sits ahead of the branch and the
+// add folds into the stiffness load); the index computed into a local first, then base, then `+=` 144 (same code: the
+// base copy is propagated); the ternary of two element addresses 304 (1387 B). New: the selected pointer read through a
+// `s_chain_segment *const &` binding 144 (same code). Reading: retail's segment variable takes EDX with ECX free; ours
+// takes ECX unless the variable is already live where ECX holds the count.
+// Squared separation first, reach first, root first and root after reach all 144;
+// with rest-offset components through the vector setter all 273.
+// NOT kept: the ratio stages tie. The setter changes the entry saves while retaining
+// the 0xa4 frame. The segment carrier and ratio/sine home remain.
+// Chain stiffness before the node, after the node, or before the split ordinal 277 each; stiffness after the split
+// ordinal 144; both inputs after the addresses 144, before segment selection 277, between selected ordinal and
+// address 144, or before the node 277. NOT kept: the early read forms grow to 1375 bytes and the other forms tie.
+// Node position reference and both references 144 each, short selected segment ordinal 252,
+// rest-vector reference with late copy 246, fixed-record exit and separate exits 144 each,
+// node base plus advance 144, final node point setter 335, signed tick assignment 144.
+// NOT kept: the short ordinal reaches retail length but changes the saves and regresses.
+// The frame agrees and the selected segment still needs EDX and its +0x14 spill.
+// MiniMax A (11-20): no new form, no lower score (144); the first difference is the loop head's alignment padding (the three-byte lea esp, [esp]), so the body is 1371 bytes against retail's 1368 and every later jump target is off by three; retail keeps the selected segment in EDX and spills it at +0x14 where ours holds the segments base in EDI and the segment in ECX and spills at +0x20, and the 113 lead needs a file-local one-caller helper, which is match-only and raises three shared users.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

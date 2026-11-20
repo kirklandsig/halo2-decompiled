@@ -79,6 +79,15 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax C (11-20): no new form, no lower score (125): the side point declared at function scope instead of inside the
+// corner block compiles to the same code, so the frame's homes are not set by the declaration order; the result, kind
+// and bitmap homes are still eight bytes above retail's; a permuter run with annealing (18 tries, 301 s, 1 confirming
+// build) reached 124, one point, and was not kept.
+// MiniMax B (11-20): no new form, no lower score (125): the result, kind and bitmap homes are still eight bytes
+// above retail's and the early across-axis product still has no retail spill at [ebp-8]; this build sinks the two
+// across products into the side computation, so they never get a stack home and the frame slots stay high. The
+// corner sums written with the other operand first give the same code, and `back + (up + origin)` grows the body
+// to 749 bytes (137). No form found this round.
 // score 125 (was 125): The result home remains eight bytes high, and the early across-axis product still lacks its retail spill.
 // Positive corners before negative corners, all upper vertices first, origins first, or separate components by side:
 // in-place negation 149/149/149/154. Separately initialized negative displacement 149/146/148/148.
@@ -584,6 +593,10 @@ struct s_24e9c7_points
 // half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
 // 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
 // with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
+// M3 lane 4 r218 (fast with 0x24e59f/0x22a664, both matched each time; control 125): by-value inline helpers (new):
+// the across pair returned by value with side from it 181 (770 B, frame 0x50), side initialised from it and scaled in
+// place 181, side from a by-value scale helper 213 (796 B, frame 0x58), up returned by value 169 (762 B); the in-place
+// side filled inside a block scoping size 144 (746 B). Return copies grow the frame. Body unchanged.
 // M3 lane 2 r102 (fast; control 125). Reading: retail's -0xc/-8 pair is the side point (x kept in XMM6, y spilled: first
 // the across-j product, then the scaled side.y in the same slot), so the side is filled with the across products and
 // scaled in place; the plain form of that (no other move) 144 (746 B: across products early as retail, result still at
@@ -605,6 +618,51 @@ struct s_24e9c7_points
 // Quad aggregate from one shared origin before size, after across, after height or after half width:
 // 131/131/129/128. Paired chained origin assignments at the same boundaries: 131/131/129/128.
 // NOT kept: The across-y spill and the returned-height home remain different at retail length.
+// M3 lane 2 r109 (fast, 0x22a664 matched; control 125): forward_i and forward_j read once into named locals for the across
+// products and up 161 (767 B); the same with `0.0f - forward_j` 140 (746 B: still `0 - forward_j` after the height chain,
+// not before it); the across products written forward first (`-forward_j * size`) 125 (same code); the bounds height and
+// width named before the height 125 (same code); the width named before halving 125 (same code). The scheduler still
+// computes the across products after the height and width conversions, so across j is never spilled to retail's -8.
+// M3 lane 1 r126 (fast with 0x24e59f/0x22a664, both MATCH; control 125, aligned 87): the size read ahead of the bitmap
+// pointer 125; the scale read there too, ahead of the size 125; the side point declared ahead of up 125; back, side, up
+// declared in that order ahead of the up products 125; the corner record declared ahead of up 125 (all the same code).
+// M3 lane 11 r122 (fast with 0x22a664; control 125, register-masked aligned 94; a compile-only /O1 screen reproduces
+// this body): re-measured lane 7 r183's side point set to the across products and scaled later 144 (746 B), with `size *
+// (0.0f - forward_j)` 139 (742 B, masked 105), with compound scaling 139; new: the back point written as the negated
+// half-width products of the across locals (a second use of each) 154 (753 B, masked 109), with `size * (0.0f -
+// forward_j)` 137 (749 B, masked 119). Compile-only, forward i and j read into locals for the across and up products
+// leaves the products late (same order as main). Each early-product form leaves the result home at [ebp-8].
+// M3 lane 14 r121 (control 125; forms screened in a compile-only build with a true-LCS count, registers masked /
+// stack slots masked of 197 lines, main 53 / 95, then five measured with `--fast`, 0x24e59f and 0x22a664 MATCH each
+// time). Reading: retail loads forward_i once (XMM4) for both the across j product and `result * forward_i`, so the
+// across j product has no register and goes to the side point's y home at once, while the across i product stays in
+// XMM6; both products copy the size and multiply by the other operand. forward_i read into a local for the across j
+// and up x products on main's form 124 (L 50 / 95; one point, not kept); forward_i and forward_j locals with the side
+// point set to the across products and scaled in place 126 (51 / 97), only forward_i there 142 (739 B), only
+// forward_j 54 / 98; the size written `placement->size + 1.0f` in each across product with across locals 143 (739 B,
+// 53 / 95), with the in-place side point 150 (735 B, 54 / 96), with unary minus 56 / 93; the in-place side point
+// with `0.0f - forward_j` re-screened 54 / 99, with compound `*=` 54 / 99, with the across operands written the other
+// way round 54 / 99 (same code); both forward locals on main's form 57 / 100. Body unchanged.
+// AC597: Both lateral components start from size in scalar, per-component scalar, aggregate point or
+// field-written point forms, with dimension scale before or after: 125/125/125/125/144/144/143/143.
+// M3 lane 16 r152 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). All on the side point
+// set to the across products early (`size * (0.0f - forward_j)`, `size * forward_i`) and scaled in place by the half width:
+// with the half width ahead of the result conversion 146 (742 B: the width chain then runs first, its `cdq` ahead of the
+// height's load, and the bitmap pointer moves to ESI, where retail keeps the truncated height in ESI across the `cdq`
+// and the bitmap pointer in EAX); the width truncated into its own long ahead of `width / 2` 146 (same code); the first
+// corner's base copy between the half width and the result 146 (same code); both 146 (same code); that copy there with
+// `(real)height` written in both up products and the result assigned after them 144 (738 B). Reading of retail
+// (0x24eab8 on): the first corner's base copy loads x into EDX straight after `sub eax, edx` and y into EDX after it,
+// and the three later copies take y from EDX (`mov eax, edx`) while reading x again from the placement; ours copies
+// through EAX, so nothing is left in a register to reuse. forward_i stays in XMM4 from the across j product to
+// `result * forward_i`, which is why the conversions take XMM1 and across j goes to [ebp-8] at once.
+// M3 lane 12 r156 (fast; control 125): across j read through a const reference bound to it 125 (same code); that with
+// across i as `size * (0.0f - forward_j)` 138 (739 B); both across values through const references with `0.0f -` 139
+// (742 B); the size through a const reference 125 (same code); the forward pair copied into a point local first and
+// read from it for the across and upper products 147 (752 B, 0x24e59f still MATCH).
+// Shared external origin pointer or lvalue 125/125; with the first, both upper or all four
+// base copies before half-width conversion 123/124/129 for either form. NOT kept: two-point best
+// gain. The first copy uses EDX earlier, but the across-Y spill and return home still differ.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

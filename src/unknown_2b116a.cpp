@@ -4476,7 +4476,9 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56): retail keeps the controller reference and reloads its index after the membership call.
+/* runs the chosen item: 0 the name entry, 1 and 2 a message to the listed members, 3 a
+   message box or a choice dialog, by the player's identity type and function_1a334a's query */
+// score 54 (was 56): Retail keeps the controller slot and reloads both pointer levels before the two dialog masks.
 // Earlier: only case 3 differs. Retail keeps controller in esi, spills controller_index
 // only case 3 differs. Retail keeps controller in esi, spills controller_index
 // to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
@@ -4546,10 +4548,36 @@ bool __stdcall function_2b278e(long controller_index)
 // 211/199; message selection last/first 219/248; separate leave with Boolean membership
 // 196; group lower actions before leave 217. The original double pointer and index spill
 // still differ. Isolating leave grows the frame.
+// Library copies at the two dialog reads: slot 181/205, index 54/199,
+// both levels 181/205, or both levels at initial and dialog reads 181/205
+// with the opening and Boolean membership locals, respectively. The slot copy
+// keeps the controller object in ESI, and the index copy still folds the reload.
 // Copy the dialog controller pointer, index or both 181/54/181; with Boolean membership 205/199/205.
 // Copy the initial index as well as both dialog levels 181, or 205 with Boolean membership.
 // NOT kept: the 655-byte forms retain the controller object instead of the incoming slot,
 // and the index-only copy folds into the original read.
+// Round 642 native membership forms: dword dialog masks 199, identity ID field 199,
+// warning exit 199, confirmation exit 199, identity rejection with ID field 199,
+// send fallback as an else 199, recipient payload lvalue 199, combined iterator conditions 199.
+// NOT kept: the initial index stays in ESI, both dialog reloads are absent and the body shortens.
+// Guarded membership using a conjunction or an if 212/199; separate warning
+// and confirmation 242; three-way dialog result from the identity branch,
+// conditional admission, qualified membership or scoped identity 199/212/54/199;
+// explicit dialog-present guard 199. NOT kept: the qualified form ties and
+// still reuses the initial controller index. The other forms regress.
+// Shared message parameters, iterator or both 54/54/54; source-scoped iterator
+// and distinct message workspace names 54/54; descending, ascending and
+// message-first if chains 206/207/196. NOT kept: the dialog index still folds
+// into the initial read, and the conditional dispatch regresses.
+// The initial index still takes ESI and the dialog masks still reuse it. Dispatch-wide const slot or
+// slot reference 54/54, with Boolean membership 199/199; recipient counts initialized at case entry
+// 76; fresh index at membership 54; unsigned mask bits throughout 54; signed short membership in the
+// existing qualified local 55. NOT kept: slot forms preserve numeric-index reuse, and the Boolean
+// width shortens case 3 without restoring the reloads.
+// Object copy in only one dialog arm 53, or 191 with Boolean membership, for
+// either arm. One-arm short mask 195, or 197 with Boolean membership. NOT kept:
+// the 53 forms spill the index but retain the controller object instead of its
+// slot, grow to 658 bytes and gain one.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -4676,9 +4704,7 @@ void c_clan_options_list::handle_item(s_controller_reference **controller, long 
 
 			if (player_slot_get_identity(controller_index, &identity))
 			{
-				/* volatile: stored to the stack slot where retail spills
-				   controller_index, which keeps the function within a byte of retail's length (see the score note) */
-				long volatile member = function_1a334a(controller_index, (_XUID const *)&identity);
+				bool member = function_1a334a(controller_index, (_XUID const *)&identity);
 
 				if (identity.type != 1 && member)
 				{
@@ -5556,20 +5582,23 @@ void function_1486b8(long error, bool keep);
 // its copy still takes EBX); the completion store ahead of the declaration 55; the task declared at the
 // top 56; `if (result && !*completion) return result;` before the call 56; the probe branch calling the
 // cleanup itself and returning 55; `else result = false;` on the no-task path only 52 (156 bytes).
+// Matched in a full build with stand-in SDK headers (was 10): result is false at its declaration instead of in the
+// else arm, and qos_is_complete's value is tested through a reference-bound local.
 // @retail 0x2bb04e
 bool function_2bb04e(long task_index, bool *completion)
 {
-    bool result;
+    bool result = false;
     *completion = false;
     if (g_475338 != NONE)
     {
         result = true;
-        if (qos_is_complete(g_475338))
+        bool found = qos_is_complete(g_475338);
+        bool const &kept = found;
+        if (kept)
             *completion = true;
     }
     else
     {
-        result = false;
         if (task_index != NONE)
         {
             s_type_9df9da *task = function_6b910(task_index);
@@ -5791,7 +5820,9 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
-// score 89 (was 97): The friend-query output and later action predicates still use different byte slots.
+// score 89 (was 97): The 0x844 frame agrees. The title-state address and later eligibility byte reuse still differ.
+// Earlier observation: The retail frame agrees, but the friend-query outputs and later
+// The friend-query output and later action predicates still use different byte slots.
 // Earlier score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
 // boolean predicates use different byte slots.
 // origin predicate scoped through join eligibility 97; request result scoped through
@@ -5843,10 +5874,38 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // output-to-scalar transfers 89/89/89; roster transfers at first predicate 89; regular contact
 // before pending queries 384; regular-friend test at invitation 400. NOT kept: the first six
 // forms retain the displaced title-state byte and the invitation forms change the branch layout.
+// Boolean value pairs for join title, join exclusions, invitation, listed friend,
+// regular player, member admission, mute and unmute: 422/421/371/388/379/313/284/289.
+// NOT kept: each regresses; title-state byte and its later reuse still differ.
 // The query byte homes still differ in the 0x844 frame. Mode read once for all actions, roster,
 // membership, feedback/offer, cancellation/removal, and the final membership phase
 // 372/427/157/372/427/364. Shared mode tests for friend removal and membership 462/242.
 // NOT kept: these forms shorten the body and move the first difference before the friend query.
+// Session availability complement 134; origin complement 90; title-join restriction 118;
+// unavailable member/friend complements 211/90; origin after identity check 96;
+// separate membership request availability 89; known-contact exclusion 119.
+// NOT kept: the separate availability form ties and the other forms regress.
+// The query output stays displaced in the retail-length forms.
+// Session-presence name, player/change names, selection/request names, host/pending names,
+// addressed byte declarations after the dwords, pending false default, invalid-selection
+// guard with common completion, and immutable mute decisions: 89/89/89/89/89/353/89/89.
+// NOT kept: The session output and later membership results still use different byte slots.
+// Round 640: friend-request mask 394; incoming, outgoing, or both request bits
+// 313/314/450; membership mask or separate bits 391/409; both masks 410;
+// both pairs of request bits 462. All grow and shift the first difference ahead
+// of the friend query. Original predicates and byte homes restored.
+// promotion decision at emission 307; add-friend decision at emission 427; player-removal decision at
+// emission 345; other-title join decision at emission 406; unmute decision at emission 328; both mute
+// decisions at their emissions 321; join, removal and promotion decisions at emission 420; all six
+// captured-input decisions at emission 454.
+// Online bit at the join test 443, origin calculated at admission 450, staged invitation 112,
+// removal permission reused for kick 275, shared roster/rank or complete management result
+// 374/361, shared mute eligibility 283, regular-friend result reused for removal 323.
+// All regress. The friend-query and later action byte homes still differ.
+// Matched in a full build with stand-in SDK headers (was 89): cancel_friend is one && chain (no `? : false`),
+// pending_member and change_member are two initialised bools (no if/else assigning both), and the joined-title test
+// is its own bool instead of a reassignment of can_join_title. The code was already retail's; these fix which bools
+// share a byte home and the order of the homes.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
@@ -5887,30 +5946,19 @@ PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
         bool allow_join = function_19a250();
         bool pending = list->value3a0 == 1 && !online_messages_find_flagged_from(xuid, controller) && (flags & 0x10);
         bool invite = (regular_friend || regular_player) && !self;
-        can_join_title = can_join_title && !self && allow_join;
-        bool join_other = !can_join_title && can_join && !self && allow_join;
+        bool join_title = can_join_title && !self && allow_join;
+        bool join_other = !join_title && can_join && !self && allow_join;
         bool remove_player = allow_remove && has_player && !protected_player;
         bool feedback = !self && (list->value3a0 == 3 || list->value3a0 == 4);
         bool offer = !has_player && !self && ((list->value3a0 == 4 && in_session) || (list->value3a0 != 3 && invite));
         bool promote = host && !self && (flags & 0x100);
         bool add_friend = !listed_friend && !self;
-        bool cancel_friend = listed_friend && (flags & 0x20) ?
-            (list->value3a0 == 1 || list->value3a0 == 3) : false;
+        bool cancel_friend = listed_friend && (flags & 0x20) && (list->value3a0 == 1 || list->value3a0 == 3);
         bool remove_friend = listed_friend && !(flags & 0x30) && list->value3a0 == 1;
         long rank = *(long *)(local_status.data + 0x1c);
         bool add_member = request_valid && !is_player && !self && rank >= 1 && list->value3a0 != 4 && list->value3a0 != 2;
-        bool pending_member;
-        bool change_member;
-        if (!add_member && is_player && !self && (flags & 0x800) && list->value3a0 == 2)
-        {
-            pending_member = true;
-            change_member = false;
-        }
-        else
-        {
-            pending_member = false;
-            change_member = regular_player && rank >= 2 && !self && list->value3a0 == 2;
-        }
+        bool pending_member = !add_member && is_player && !self && (flags & 0x800) && list->value3a0 == 2;
+        bool change_member = !pending_member && regular_player && rank >= 2 && !self && list->value3a0 == 2;
         bool remove_member = regular_player && rank >= 2 && !self && list->value3a0 == 2;
         bool mute = !muted && !self;
         bool unmute = !mute && muted && !self;
@@ -5918,7 +5966,7 @@ PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
         if (message) list_item_add(list, 0);
         if (pending) { list_item_add(list, 1); list_item_add(list, 2); }
         if (invite) list_item_add(list, 3);
-        if (can_join_title) list_item_add(list, 4);
+        if (join_title) list_item_add(list, 4);
         if (join_other) list_item_add(list, 5);
         if (remove_player) list_item_add(list, 6);
         if (offer) list_item_add(list, 8);

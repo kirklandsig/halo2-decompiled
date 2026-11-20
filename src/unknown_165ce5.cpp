@@ -311,7 +311,7 @@ long function_baf80(long object_index);
 long function_cbd50(long unit_index, short weapon_index);
 bool function_cd660(long unit_index);
 long function_1469f0(real seconds);
-long function_189060(long object_index, short value, real scale, point3f const *position, vector3f const *direction, long tag_index);
+long function_189060(long object_index, short value, point3f const *position, vector3f const *direction, real scale, long tag_index);
 void function_1d9240(s_1d9240 *p, char flag, real x);
 long function_16658d(long group_index, long key);
 real function_1d9430(s_1d9240 const *p);
@@ -608,7 +608,7 @@ void first_person_weapon_sound_event(long user_index, long field_x11c898, s_firs
 		{
 			s_first_person_weapon *weapon = &user->weapons[field_x11c898];
 
-			weapon->sound_index = function_189060(weapon->weapon_index, NONE, 1.0f, g_468788, g_4687a8, sound_tag_index);
+			weapon->sound_index = function_189060(weapon->weapon_index, NONE, g_468788, g_4687a8, 1.0f, sound_tag_index);
 			weapon->sound_animation = (short)weapon->animation.animation_name;
 		}
 	}
@@ -1923,6 +1923,81 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // used is the same; ours has one unreferenced dword below the look pair (frame 0x30), and packs the weapon-active byte
 // with the unit/flags home (-0x18) and the zoom, indices pointer and idle globals with the spring_d home (-0x14), where
 // retail packs the active byte with spring_d (-0x14) and the zoom group with unit/flags (-0x1c), mode at -0x18.
+// M3 lane 14 r116 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the saved 40-point set (preset
+// active flag, `== 0 ? right : left` callback, channel byte in a long tested bit by bit, positive zoomed/scoped, per-arm
+// overlay play under `else if (zoomed)`) re-measured 40 at 2199 B on current main, still match-only and BLOCKED by the
+// stand-in (round 98). Its keepable part alone (positive zoomed/scoped with `scoped = zoomed && ...`, rate arms in the
+// positive order, the clear test without the implied zoom term, the overlay set read once, one shared overlay call) 386
+// (2189 B); positive zoomed/scoped alone 205 (2203 B); the set without the four match-only forms (per-arm play under a
+// plain `else`) 379 (2187 B); only the clear test's implied zoom term dropped 368 (2186 B).
+// M3 lane 15 r105 (fast, plain where marked; aligned/masked = difflib counts with addresses / also registers masked, 60/57
+// at 188): retail's zoom logic as positive bools (zoomed = speed > 0.1f, scoped = zoomed && the 0xc8a10 query, both cleared
+// on the 0xd03b0 query, scoped cleared when the overlay lookup fails; rate `if (zoomed) { scoped ? 1 : pin } else if
+// (scoped) 1`; clear test `!zoomed && !scoped || scoped && set != 0x60000d8 || !scoped && set == 0x60000d8`) with the play
+// as a shared flags/set if/else 375 (2182 B, aligned 43); the play written per arm under `if (scoped) ... else if (zoomed)`
+// 365 (2186 B, aligned 31); with `scoped = zoomed && function_c8a10(...)` 371 (2197 B, aligned 26); with the callback as
+// `field_x11c898 == 0 ? right : left`, the channel byte in a `long` local tested `& 0xa`, the overlay set read once into a
+// local and the active preset (`active = false; if (...) active = true;`) 368 (2193 B, aligned 24); that with a plain
+// `else` for the play 371; the active flag as `active = false; if (unit && weapon) active = !0x155760 && 0xb6780;` (retail's
+// preset store and branch shape) 338 (2197 B, aligned 12, masked 9: every frame slot is then retail's); the channel byte
+// tested as `(flags & 2) || (flags & 8)` 40, plain 40 (2199 B, retail's length, aligned 10, masked 7; lead, saved as
+// build/r105/lead-0x166d75-40.diff in the m3-lane15 worktree); on it the clear test as a ternary 278. Not kept: the lead
+// needs the implied `else if (zoomed)`, the swapped callback ternary, the one-use channel-byte local and the active preset,
+// all match-only, and the function stays BLOCKED by the stand-in (ESI/EDI saved at entry). Left on the lead: those saves,
+// frame 0x30 against 0x2c, the weapon reload into EDI one statement late, the overlay set loaded ahead of the scoped test
+// and the +0xb8 channel pointer in ECX (retail ESI).
+// M3 lane 15 r107 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188), declarations joined to their first
+// assignment: the +0xb8 channel pointer initialised where declared 188, `real zoom = magnitude3d(...)` 188, `point2f *look
+// = ...` 188, the weapon index declared in the for header 188, `bool active = ...` 188 (same code each). The lead's steps
+// stay match-only and the stand-in block stands.
+// m3 lane 8 r198 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188). Frame arithmetic: retail has 11
+// dword slots (0x2c), the yaw alone at -0x2c and the pitch at -0x28 shared with the duration temporary; ours has the same
+// 11 slots and the same sharing, plus 4 bytes of padding: with the look pair as a three-element array (diagnostic) the
+// frame is 0x38 (13 slots rounded up to 8, the array kept whole at -0x34 and the duration temporary in a slot of its own),
+// so a local aggregate of 8 bytes or more rounds the frame to a multiple of 8, and retail's 0x2c says its two look values
+// are no such aggregate. Tried: the look values as two one-element arrays 196 (frame 0x28: scalarised, they take the
+// spring slots again); as two scalars in an inner block written through pointer locals 477 (2186 B, frame 0x28; the
+// pointers fold away); the reference to the game-time globals as a const pointer local 188 (same code); the function
+// with internal linkage 188 and without its explicit convention 188 (same code each: the argument stays on the stack and
+// ESI/EDI are still saved ahead of the unit test). Re-measured: every rate read through g_510c54 219. Other matched
+// functions of this file save a register after an early exit with the build's extra caller present (0x168896), so the
+// extra caller does not forbid a late save in general; what makes this function's unit test wait for both saves is open.
+// M3 lane 15 r108 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): every 0xb000067-arm use of the
+// +0xb8 channel through the channel pointer (the overlay call, the frame position, the duration and the set) 202 (2189 B);
+// the look pointer typed `point2f const *` 188 (same code). On round 105's 40-point lead (re-measured 40 at 2199 B on
+// current main; still match-only and BLOCKED by the stand-in): the channel pointer at every channel use 81 (2192 B); the
+// callback selected ahead of the orientation pointer 45; the weapon object looked up after the orientation pointer and
+// the callback 97 (2200 B). Left on the lead: frame 0x30/0x2c, the ESI/EDI saves, the weapon reloaded into EDI ahead
+// of the object lookup (ours after the callback select), the overlay set load order and the channel pointer register.
+// M3 lane 14 r123 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): kept, the look pointer typed as the
+// existing view-angles record (`&entries[user_index].angles`, yaw/pitch fields) in place of the point2f cast, and the look pair
+// as one such record in place of a two-element array, 188 (same code each, plain). Tried: the weapon-active value as an
+// if/else on the unit and weapon guard 188 (same code); the look pair as two scalars clamped by if/else-if chains 204 (frame
+// 0x28); the weapon-active flag typed byte 387 (2197 B). Slot map (masked listing): retail packs zoom with unit (-0x1c) and the
+// active byte with spring_d (-0x14), ours the other way round; the ESI/EDI saves stay BLOCKED by the build's stand-in caller.
+// M3 lane 13 r127 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188). Slot references counted on both
+// listings: every EBP offset from -1 to -0x2c is used in both builds and ours leaves -0x30 unreferenced; retail's -0x10
+// (spring_c) is never reused, its -0x14 holds spring_d and then the active byte, its -0x1c the unit, the user flags and then
+// the zoom group; ours puts the active byte with the unit and flags (-0x18) and the zoom group with spring_d (-0x14). The
+// homes follow lifetimes, not scopes: `bool active` declared at the unit block's top 188, `real zoom` there 188, both in
+// either order 188 / 188, the weapon object pointer declared there and assigned in the loop 188, `flags` declared ahead of
+// the look pair 188 (same code each). Retail pops EDI and ESI right after the weapon loop, ahead of the two flag tests
+// that close the unit block, and pushes each just ahead of its first use after the unit test; ours saves both ahead of
+// the test and restores them at the end (the round 98 block). Body unchanged.
+// M3 lane 14 r125 (fast; control 188): slot sharing against retail: retail packs unit, the user-flags copy and zoom in
+// -0x1c, mode in -0x18, spring_d and the active byte in -0x14; ours packs unit, flags and active in -0x18, mode in -0x1c,
+// spring_d and zoom in -0x14. Tried: `bool active` declared in the unit block 188, `real zoom` declared in the unit block
+// 188, the look record declared at function scope 188, `flags` declared after the weapon index 188 (same code each).
+// Diagnostic (reverted at once): the look pair as two scalars plus one probe local 537 (2203 B, frame 0x28, ten cells),
+// so the frame's odd cell count cannot tell whether the record alone rounds the frame. Retail's epilogue confirms the
+// shrink-wrap: ESI/EDI are popped right after the weapon loop, before the flag tail; still BLOCKED by the stand-in.
+// MiniMax B (11-20): no new form, no lower score (188): the channel pointer still differs at every channel use and
+// the look pair still needs an aggregate slot of its own, so the frame stays 0x30 against retail's 0x2c.
+// M3 lane 11 r136 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188): the look pair as two scalars
+// declared at the function's top 196, declared at their clamps 196 (frame 0x28 both: they share the spring slots); the
+// end-of-loop flag test reading the first weapon through `first_weapon` 188; the weapon counter declared at the function's
+// top 188; `unit` declared bare at the function's top and assigned in place 188 (same code each). Still BLOCKED by the
+// stand-in (round 98) for the ESI/EDI saves.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -1937,8 +2012,8 @@ void __stdcall function_166d75(long user_index)
 		real spring_c = 27.0f;
 		real spring_d = 6.0f;
 		s_first_person_weapon *first_weapon = &user->weapons[0];
-		real look_angles[2];
-		point2f *look;
+		s_view_angles look_angles;
+		s_view_angles const *look;
 		dword flags;
 		long field_x11c898;
 
@@ -1966,25 +2041,25 @@ void __stdcall function_166d75(long user_index)
 		}
 		function_11eed0((real *)&user->unknown2030[0x0], (real *)&user->unknown2030[0x8], unit->aiming_velocity.i, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
 		function_11eed0((real *)&user->unknown2030[0x4], (real *)&user->unknown2030[0xc], unit->aiming_velocity.j, g_510c54->rate, spring_b, spring_a, false, -1.0f, 1.0f);
-		look_angles[0] = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
+		look_angles.yaw = PIN(*(real *)&user->unknown2030[0x28] / g_510c54->rate, -1.0f, 1.0f);
 		s_game_time_globals &frame_settings = *g_510c54;
-		look_angles[1] = PIN(*(real *)&user->unknown2030[0x2c] * (-1.0f / frame_settings.rate), -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_angles[0], frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
-		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_angles[1], frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		look_angles.pitch = PIN(*(real *)&user->unknown2030[0x2c] * (-1.0f / frame_settings.rate), -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x10], (real *)&user->unknown2030[0x18], look_angles.yaw, frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
+		function_11eed0((real *)&user->unknown2030[0x14], (real *)&user->unknown2030[0x1c], look_angles.pitch, frame_settings.rate, spring_d, spring_c, false, -1.0f, 1.0f);
 
-		look = (point2f *)&g_4ed284->entries[user_index].yaw;
+		look = &g_4ed284->entries[user_index].angles;
 		flags = user->flags;
 		if (TEST_FLAG(flags, _first_person_user_active_bit))
 		{
-			*(real *)&user->unknown2030[0x28] = function_0bff60(look->x, *(real *)&user->unknown2030[0x20]);
-			*(real *)&user->unknown2030[0x2c] = function_0bff60(look->y, *(real *)&user->unknown2030[0x24]);
+			*(real *)&user->unknown2030[0x28] = function_0bff60(look->yaw, *(real *)&user->unknown2030[0x20]);
+			*(real *)&user->unknown2030[0x2c] = function_0bff60(look->pitch, *(real *)&user->unknown2030[0x24]);
 		}
 		else
 		{
 			*(point2f *)&user->unknown2030[0x28] = *g_4687c4;
 		}
-		*(real *)&user->unknown2030[0x20] = look->x;
-		*(real *)&user->unknown2030[0x24] = look->y;
+		*(real *)&user->unknown2030[0x20] = look->yaw;
+		*(real *)&user->unknown2030[0x24] = look->pitch;
 		user->flags = flags | FLAG(_first_person_user_active_bit);
 
 		for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
@@ -2584,6 +2659,9 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // reuses al. Tried before: the flag as a separate bool global with bool active = false (23); the
 // reused local as char/byte, with `: 0`, with a (long) cast (all 236); `!= 0` of a long ternary
 // (249); a nodes local in the second loop (20).
+// Matched in a full build with stand-in SDK headers (was 9): the test is two nested ifs with the globals pointer
+// declared between them (retail loads it before the jl), and the node map argument is formed from the nodes pointer
+// (`nodes - (offset of nodes - offset of weapon_node_map)`), which gives retail's lea from the first lea's register.
 // @retail 0x165f16
 long __stdcall first_person_weapons_get_models(long user_index, long unit_index, long maximum_count,
 	s_first_person_model *models)
@@ -2604,92 +2682,97 @@ long __stdcall first_person_weapons_get_models(long user_index, long unit_index,
 			active |= TEST_FLAG(weapon->flags, _first_person_weapon_active_bit);
 			armed |= weapon->weapon_index != NONE;
 		}
-		if (active && armed && user->unit_index == unit_index && user->unit_index != NONE && user->character_index >= 0 &&
-			user->character_index < ((s_first_person_globals_view *)g_4e034c)->representation_count)
+		if (active && armed && user->unit_index == unit_index && user->unit_index != NONE)
 		{
-			s_player_representation *representation =
-				&((s_first_person_globals_view *)g_4e034c)->representations[user->character_index];
-			long arms_render_model_index = representation->arms_render_model_index;
-			long body_render_model_index = representation->arms_animation_graph_index;
-			long unit_node_count = 0;
-			transform4x3f *unit_nodes = NULL;
-			long unit_render_model_index = NONE;
-			transform4x3f base;
-			transform4x3f adjustment;
-			s_first_person_model *model;
+			s_first_person_globals_view *globals = (s_first_person_globals_view *)g_4e034c;
 
-			if (unit_index != NONE)
+			if (user->character_index >= 0 && user->character_index < globals->representation_count)
 			{
-				long model_index = *(long *)((byte *)first_person_object_definition_get(first_person_object_get(unit_index)) + 0x38);
+				s_player_representation *representation = &globals->representations[user->character_index];
+				long arms_render_model_index = representation->arms_render_model_index;
+				long body_render_model_index = representation->arms_animation_graph_index;
+				long unit_node_count = 0;
+				transform4x3f *unit_nodes = NULL;
+				long unit_render_model_index = NONE;
+				transform4x3f base;
+				transform4x3f adjustment;
+				s_first_person_model *model;
 
-				if (model_index != NONE)
+				if (unit_index != NONE)
 				{
-					long render_model_index = *(long *)(g_4e3b44[model_index & 0xffff].bytes + 4);
+					long model_index = *(long *)((byte *)first_person_object_definition_get(first_person_object_get(unit_index)) + 0x38);
 
-					if (render_model_index != NONE)
+					if (model_index != NONE)
 					{
-						unit_render_model_index = render_model_index;
-						unit_nodes = function_b8c00(unit_index, &unit_node_count);
+						long render_model_index = *(long *)(g_4e3b44[model_index & 0xffff].bytes + 4);
+
+						if (render_model_index != NONE)
+						{
+							unit_render_model_index = render_model_index;
+							unit_nodes = function_b8c00(unit_index, &unit_node_count);
+						}
 					}
 				}
-			}
-			function_1420f0(&base, &g_4b9da0, &g_4b9dac, &g_4b9db8);
-			if (TEST_FLAG(user->flags, _first_person_user_adjusted_bit))
-			{
-				function_141590(&user->adjustment, &adjustment);
-				function_142a60(&base, &adjustment, &base);
-			}
-			user->matrix = base;
-			count = 1;
-			for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
-			{
-				s_first_person_weapon *weapon = &user->weapons[field_x11c898];
-
-				if (TEST_FLAG(weapon->flags, _first_person_weapon_active_bit) && weapon->weapon_index != NONE &&
-					maximum_count > 1 && TEST_FLAG(weapon->flags, _first_person_weapon_arms_animated_bit) &&
-					arms_render_model_index != NONE)
+				function_1420f0(&base, &g_4b9da0, &g_4b9dac, &g_4b9db8);
+				if (TEST_FLAG(user->flags, _first_person_user_adjusted_bit))
 				{
-					first_person_model_build(arms_render_model_index, weapon->node_count, weapon->nodes, unit_index, 1, &base,
-						weapon->arms_node_map, models);
+					function_141590(&user->adjustment, &adjustment);
+					function_142a60(&base, &adjustment, &base);
 				}
-			}
-			model = &models[1];
-			for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
-			{
-				s_first_person_weapon *weapon = &user->weapons[field_x11c898];
-
-				if (TEST_FLAG(weapon->flags, _first_person_weapon_active_bit) && weapon->weapon_index != NONE)
+				user->matrix = base;
+				count = 1;
+				for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
 				{
-					long interface_index = first_person_character_to_interface(user->character_index);
-					long render_model_index = first_person_object_definition_get(first_person_object_get(weapon->weapon_index))->
-						interfaces[interface_index].render_model_index;
+					s_first_person_weapon *weapon = &user->weapons[field_x11c898];
 
-					if (count < maximum_count && TEST_FLAG(weapon->flags, _first_person_weapon_animated_bit) &&
-						render_model_index != NONE)
+					if (TEST_FLAG(weapon->flags, _first_person_weapon_active_bit) && weapon->weapon_index != NONE &&
+						maximum_count > 1 && TEST_FLAG(weapon->flags, _first_person_weapon_arms_animated_bit) &&
+						arms_render_model_index != NONE)
 					{
-						first_person_model_build(render_model_index, NONE, weapon->nodes, weapon->weapon_index, 1, &base,
-							weapon->weapon_node_map, model);
+						first_person_model_build(arms_render_model_index, weapon->node_count, weapon->nodes, unit_index, 1, &base,
+							weapon->arms_node_map, models);
+					}
+				}
+				model = &models[1];
+				for (field_x11c898 = 0; field_x11c898 < MAXIMUM_FIRST_PERSON_WEAPONS; field_x11c898++)
+				{
+					s_first_person_weapon *weapon = &user->weapons[field_x11c898];
+
+					if (TEST_FLAG(weapon->flags, _first_person_weapon_active_bit) && weapon->weapon_index != NONE)
+					{
+						long interface_index = first_person_character_to_interface(user->character_index);
+						long render_model_index = first_person_object_definition_get(first_person_object_get(weapon->weapon_index))->
+							interfaces[interface_index].render_model_index;
+
+						if (count < maximum_count && TEST_FLAG(weapon->flags, _first_person_weapon_animated_bit) &&
+							render_model_index != NONE)
+						{
+							transform4x3f *nodes = weapon->nodes;
+
+							first_person_model_build(render_model_index, NONE, nodes, weapon->weapon_index, 1, &base,
+								(long *)((byte *)nodes - ((byte *)weapon->nodes - (byte *)weapon->weapon_node_map)), model);
+							count++;
+							model++;
+						}
+					}
+				}
+				if (count < maximum_count && body_render_model_index != NONE && unit_render_model_index != NONE && unit_nodes)
+				{
+					s_first_person_render_model *unit_model =
+						(s_first_person_render_model *)g_4e3b44[unit_render_model_index & 0xffff].bytes;
+					s_first_person_render_model *body = (s_first_person_render_model *)g_4e3b44[body_render_model_index & 0xffff].bytes;
+
+					if (body->node_count == unit_model->node_count &&
+						*(long *)((byte *)body + 0x44) == *(long *)((byte *)unit_model + 0x44) &&
+						(*(real *)((byte *)body + 0x70) == 0.0f || *(real *)((byte *)body + 0x70) > g_4b9db4))
+					{
+						first_person_model_build(body_render_model_index, unit_node_count, unit_nodes, unit_index, 0, NULL, NULL,
+							&models[count]);
 						count++;
-						model++;
 					}
 				}
+				function_168644(user_index, models, &models[1]);
 			}
-			if (count < maximum_count && body_render_model_index != NONE && unit_render_model_index != NONE && unit_nodes)
-			{
-				s_first_person_render_model *unit_model =
-					(s_first_person_render_model *)g_4e3b44[unit_render_model_index & 0xffff].bytes;
-				s_first_person_render_model *body = (s_first_person_render_model *)g_4e3b44[body_render_model_index & 0xffff].bytes;
-
-				if (body->node_count == unit_model->node_count &&
-					*(long *)((byte *)body + 0x44) == *(long *)((byte *)unit_model + 0x44) &&
-					(*(real *)((byte *)body + 0x70) == 0.0f || *(real *)((byte *)body + 0x70) > g_4b9db4))
-				{
-					first_person_model_build(body_render_model_index, unit_node_count, unit_nodes, unit_index, 0, NULL, NULL,
-						&models[count]);
-					count++;
-				}
-			}
-			function_168644(user_index, models, &models[1]);
 		}
 	}
 	return count;

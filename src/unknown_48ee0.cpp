@@ -18,6 +18,24 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax G (11-19): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail uses
+// EAX, and the homes are still permuted (ours keeps the mode in the lowest slot at 0x8 and the offset at 0x14 where
+// retail keeps the mode at 0xc and the offset at 0x10). This round the declaration order was tried with the mode
+// declared at the top (174), with the mode declared before the offset (174), with the extent before the offset (333)
+// and with the whole mode block moved to the top (333): the homes do not follow the declaration order, and the size
+// still stays in a register across the two rounding calls where retail reloads it, which is BLOCKED-BY 0x48e70's
+// link-time register summary in another lane's file. Retail's own slots were read off its listing to aim the rest: it
+// keeps the size in the lowest slot, the mode above it, the maximum and the extent above those and the aspect next,
+// while ours keeps the mode lowest and the size in the extent's old place, so the size's declaration was hoisted to the
+// top of the function (174), with the maximum hoisted with it (174) and with the extent hoisted too (174): the homes do
+// not move at all, and the mode's test was also written without its casts (174), with the cast dropped from the test
+// (174) and through a dword local (174). Body unchanged.
+// MiniMax G (11-19): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail uses
+// EAX, the mode's home still sits one slot lower than retail's (retail keeps the clamped size in the lowest slot and
+// the mode above it, ours keeps the mode in the lowest slot and reuses the distance's slot for the size), and
+// retail's clamps write the clamped value back through the size's slot in both arms where ours assigns it in one
+// arm; the nested-ternary clamp, the limit as a long and the mode's placements all score the same or worse.
+// Body unchanged.
 // MiniMax E (11-15): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail
 // keeps them in EAX, so that load stays a byte longer and every later address field drifts, and the size still
 // stays in a register across the two rounding calls where retail reloads it from the lowest slot, which sets the
@@ -42,7 +60,7 @@ extern real g_4c9798[36];
 // MiniMax A (11-18): no new form, no lower score (174): the five source variants tried this round score 250, 280, 264, 258
 // and 258; the frame's homes still run mode, maximum, extent, size, distance, aspect, border where retail's start with
 // the size, and the mode bit still loads the flags into EDX where retail uses EAX.
-// score 174 (was 174): the far plane's near distance goes into a named local so the three
+// score 174 (was 174): r275 unchanged. The far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // The earlier score was 178.
@@ -368,12 +386,67 @@ extern real g_4c9798[36];
 // first bit with dword height limit 243; reused pixel cap before height alignment 323, with dword height 351;
 // pixel cap between rounding calls 323; cap with separate width alignment 323.
 // NOT kept: every form regressed. Mode flag register, mode and size homes, and rounding reloads still differ.
+// M3 lane 4 r218 (fast with 0x48e70/0x1cf50, both matched; control 174, aligned 70, masked 36): the border expression is
+// reassociated here (divide, then 0.75) where retail multiplies first: `0.75f * (real)width / maximum`, `0.75f / maximum *
+// (real)width` and `(real)width / maximum * 0.75f` 174 each (same code); `(real)width * (0.75f / maximum)` 232 (1495 B);
+// the product and the divide as two statements 180 (1491 B, retail's mul-then-div, aligned 63, masked 31), with the
+// width converted first 180. On base / on that form, the second plane set from the direction with the dot through the
+// plane, the direction, or the read-back normal: 343/339/343 and 337/329/337 (state leaves ECX). Body unchanged.
 // m3 lane 9 r145 (fast with 0x48e70 and 0x1cf50, both matched; control 174, 105 rows with addresses masked): retail reads the size and
 // the aspect back from their homes after each 0x48e70 call (our build keeps both in XMM registers across it: the link-time code
 // generator knows 0x48e70 leaves them alone), and its clamp stores the size to its home in both arms. On this body: the height
 // limit as a long (retail's dword load at the product) 250 (217 masked: the limit slots move); the clamp as one nested ternary 174
 // (same code); both 250; the clamp through a reference-bound `real &` to the size 180 (1491 bytes); the mode as one ternary chain
 // 174 (same code). BLOCKED-BY 0x48e70's link-time register summary (held `inline` on its definition, machine 1's file).
+// M3 lane 1 r129 (fast with 0x48e70, 0x1cf50 and 0x1ddd0, all matched, and 0x184440 965 throughout; control 174, aligned
+// 70/68 = unmatched instructions ours/retail, masked 36/34; body unchanged). Retail's second plane copies the direction
+// straight into the plane, reads the three normal components back from it for the dot and keeps them in XMM3/XMM4/XMM6
+// for the scale products, with the point's three direction components loaded into registers first (y, z, then x).
+// Re-measured in this tree: the direction straight into the plane with the dot through the plane 343 (1458 B, frame
+// and entry change at +0x2), the same keeping the normal local 343 (same code), the dot through the direction 339
+// (1459 B); new: the first plane's dot through the local normal instead of the plane 213 (retail's 1479 B, aligned
+// 123/122); the second point's rows in retail's y, z, x order 178 (1489 B, aligned 66/63); the normal copied first and
+// the point's rows read from it 337 (1469 B, entry changes at +0x2); the rows written origin first 174 (same code).
+// Still BLOCKED-BY 0x48e70's link-time register summary (machine 1's file): with our build keeping the size
+// and the aspect in XMM registers across its two calls, the true second-plane form moves the parameters' registers.
+// M3 lane 3 r275 (fast with 0x48e70/0x1ddd0/0x1cf50 MATCH; control 174): the border written `w / maximum * 0.75f` and
+// `0.75f * w / maximum` 174/174 (same code: the compiler divides first either way); `(real)((real)w * 0.75f) / maximum`
+// 180 (1491 B): retail's multiply-then-divide, and the second point's direction rows then load into xmm2/xmm3/xmm4
+// as retail's do, but the second plane's tail grows; that with the second plane's dot through the plane 337 (1463 B,
+// entry changes at +0x2); the near distance named ahead of the depth scale and used in it 189 (1484 B).
+// M3 lane 1 r132 (fast with 0x48e70 MATCH; control 174): retail's clamp compares the upper bound on both paths (the
+// lower arm jumps to the comiss) and stores the size back in both of its arms, so it is two separate bounds on a size
+// held in memory; written as two ifs (no else) 258 (1484 B: the size still stays in XMM0, BLOCKED-BY 0x48e70); with the
+// border product in parentheses as well 265; the border product in parentheses alone 180 (1491 B: the multiply then
+// comes first, as retail); that with the height limit as a long (retail's dword) 243 (1481 B); the mode as one nested
+// ternary 174 (same code).
+// M3 lane 11 r133 (fast; control 174, aligned 89, register-masked 77; body unchanged). The fixed-size test named once as a
+// bool for both limits and the later branch 333 (1489 B, the entry changes at +0x2); that with the height limit as a long
+// 295 (1461 B); both limits set in one if/else 346 (1458 B); the two rounded sizes as a call statement and a rounding
+// statement each 174, with both calls ahead of both roundings 174 (same code each); the border test as `mode != 0` 175.
+// Frame reading (two pushes down): retail has the size at +8, the mode at +0xc, the converted width limit at +0x10 and the
+// extent, later the width limit, at +0x14; ours has the mode, the converted limit and the extent one cell lower each and the
+// size at +0x14, because retail's size lives in memory across the two 0x48e70 calls and ours in XMM0. Still BLOCKED-BY
+// 0x48e70 (machine 1's file).
+// M3 lane 14 r128 (fast with 0x48e70 and 0x1ddd0, both MATCH): the border as `0.75f * (real)width / maximum` 174,
+// `(real)width / maximum * 0.75f` 174, `0.75f * width / maximum` 174 (all the same divide-then-multiply code); the border
+// scaled in one statement and divided in the next 227 (1489 B); the mode defaulted to 0 at its declaration with the two
+// set arms 180. Still BLOCKED-BY 0x48e70 (its file is machine 1's again this round).
+// M3 lane 16 r157 (fast with 0x48e70, 0x1cf50 and 0x1ddd0, all MATCH; control 174, aligned 70, masked 33; body unchanged).
+// Screened without touching 0x48e70's file: as a diagnostic the two rounding calls went to an undefined stand-in declared
+// in this file (the reduced link leaves it unresolved, so this caller treats it as opaque; restored after every trial).
+// Stand-in alone 181 (1501 B, aligned 50). With lane 7 r178's held forms (long height limit, the raw size and one nested
+// ternary clamp, the border product in parentheses) and the near distance read at each use with the second plane's normal
+// copied straight in and its dot taken on the plane 128 (1479 B, aligned 17, masked 7: that round's 130). With the near
+// distance kept in its named local instead (those forms, the second plane straight in, the dot on the plane) 100 at
+// 1481 B, aligned 9, masked 0: only the flags in EDX for retail's EAX (4 instructions) and the distance and extent homes
+// exchanged (5), the state lane 7 reached with an `__assume`; with the real callee defined inline that round measured the
+// same forms at 148, so the near products' operand order moves with the symbol count. On the 100 form: the products
+// written near distance first 100 (same code); the inverse read from the state field instead of the distance local at
+// both uses, at the quotient only, at the test only 335/328/335 (the entry reloads the field); 1/2/3 redundant paren
+// pairs in the first block 100/146/100 (two pairs: 1479 B, but the later planes' registers move and the flags and homes
+// stay). Slot reading on that form: retail shares the extent's home with the width limit and the distance's with the
+// height limit, ours the other way round. Still BLOCKED-BY 0x48e70 (machine 1's file; lane 7 r178's held patch).
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

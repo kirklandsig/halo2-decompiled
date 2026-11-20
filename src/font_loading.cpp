@@ -270,6 +270,16 @@ static inline void font_copy_wait(bool volatile *done)
 			SwitchToThread();
 }
 
+static __forceinline long font_table_language_121b00(void)
+{
+	if (g_4687f8 == NONE)
+	{
+		char name[256];
+		font_table_get_name(name, sizeof(name));
+	}
+	return g_4687f8;
+}
+
 // score 4 (was 4): the three font file arrays sit in the frame in another
 // order: retail puts the old directory's files first, then the source's,
 // ours puts the source's first and the old ones in the middle.
@@ -285,6 +295,8 @@ static inline void font_copy_wait(bool volatile *done)
 // 252; copy result formed after the two guarded opens 178. The indexed byte forms tie at four and leave the
 // same slot exchange. The advancing displacement gains no slot and adds two differences. The extent bounds
 // and joined copy result regress. Opening executable source restored.
+// Matched in a full build with stand-in SDK headers (was 4): the language read with its lazy name load is one
+// file-local helper used at both sites, and the name buffer of the path lives in its own block.
 // @retail 0x121b00
 bool function_121b00(void)
 {
@@ -294,7 +306,6 @@ bool function_121b00(void)
 	s_type_acf665 output;
 	s_type_acf665 source_files[11];
 	s_type_acf665 destination_files[11];
-	char name[256];
 	char path[256];
 	char table_name[256];
 	char text[0x800];
@@ -318,8 +329,7 @@ bool function_121b00(void)
 			memcpy(&saved_time, global_preferences_globals.current.unknown24, sizeof(saved_time));
 			if (CompareFileTime(&saved_time, &time) == 0)
 			{
-				if (g_4687f8 == NONE) font_table_get_name(name, sizeof(name));
-				if (language == g_4687f8) return result;
+				if (language == font_table_language_121b00()) return result;
 			}
 		}
 		if (global_preferences_globals.current.unknown1c != NONE)
@@ -342,9 +352,12 @@ bool function_121b00(void)
 			}
 			else function_1367d0(&destination);
 			path[0] = 0;
-			font_table_get_name(name, sizeof(name));
-			csstrncpy(path, g_4687f0, sizeof(path));
-			function_122810(path, name);
+			{
+				char name[256];
+				font_table_get_name(name, sizeof(name));
+				csstrncpy(path, g_4687f0, sizeof(path));
+				function_122810(path, name);
+			}
 			function_x454397(&output);
 			function_x73bce5(&output, path);
 			async_create_file_blocking((file_reference_data *)&output, 2, 2, 4, 7, &input);
@@ -373,8 +386,7 @@ bool function_121b00(void)
 				function_1a1550(target, 7, 6, &done);
 				font_copy_wait(&done);
 			}
-			if (g_4687f8 == NONE) font_table_get_name(name, sizeof(name));
-			global_preferences_globals.current.unknown1c = g_4687f8;
+			global_preferences_globals.current.unknown1c = font_table_language_121b00();
 			memcpy(global_preferences_globals.current.unknown24, &time, sizeof(time));
 			global_preferences_globals.dirty = true;
 			return result;
@@ -519,7 +531,10 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
-// score 59 (was 85): the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
+// MiniMax G (11-20): no new form, no lower score (59): the alpha parity is still masked in sixteen bits where retail masks it in a thirty-two bit register; the colour literal is still built with a shift and an add where retail keeps its two bytes apart; the run of two is still folded into the count as an immediate where retail adds the register.
+// score 59 (was 85): The 0xc frame agrees. Dword opacity parity, literal two-byte assembly and the packed run
+// register still differ.
+// Earlier score 59 (was 85): the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
 // retail zeroes a thirty-two bit register first (xor ecx, ecx; mov cl, al; and ecx, 1), the literal word
 // is still built from two byte loads and a multiply (movzx eax, byte [edi+1]; movzx edx, byte [edi+2];
 // shl eax, 8; add eax, edx) where retail loads the low byte into ax and the high byte into ch, the type 3
@@ -596,7 +611,7 @@ static inline long font_character_pixel(long alpha, long color)
 // cast gives 204.
 // MiniMax H (11-12): no new form, no lower score (85): a 600 s permuter run (79 differing instructions at its baseline) found nothing lower, and the first branch still leaves for a different place than retail's, which jumps into the shared exit further down.
 // MiniMax E (11-17): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the three decode sites where retail widens it to thirty-two, and the type 0 value's two bytes still merge into one register (xor eax, eax; mov ah, byte [edi+1]; mov al, byte [edi+2]) where retail merges them across two (movzx ax, byte [edi+2]; xor ecx, ecx; mov ch, byte [edi+1]; or eax, ecx). New this round: widening the cast instead of dropping it ((((long)(byte)alpha) << 1) | ((long)(byte)alpha & 1)) gives retail's parity at the sites but collapses the body (192), widening only the parity ((long)(byte)alpha & 1) narrows back to sixteen bits (59), a byte or unsigned char alpha parameter without the inner cast keeps the run out of ebx (205), the colour spelled with a sixteen bit low half ((dword)(word)source[2] | ((dword)source[1] << 8), or with the low byte in a word local) still merges the two bytes into one register (103, retail's length of 504), and the case 1 order (run = 4 before the pixel) swaps the case 1 and case 2 blocks (61). A permuter run over this body (26 tries, 307 s) found nothing below the baseline.
-// score 59 (was 85): The 0xc frame agrees. Alpha parity widening, literal word assembly and the EBX packed-run update still differ.
+// Earlier score 59 (was 85): The 0xc frame agrees. Alpha parity widening, literal word assembly and the EBX packed-run update still differ.
 // the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
 // retail zeroes a thirty-two bit register first (xor ecx, ecx; mov cl, al; and ecx, 1), the literal word
 // is still built from two byte loads and a multiply (movzx eax, byte [edi+1]; movzx edx, byte [edi+2];
@@ -910,9 +925,75 @@ static inline long font_character_pixel(long alpha, long color)
 // commands, before dispatch, or after the nonzero lower command 173/180/182. Shared consumed
 // length from the raw header before dispatch or in the lower class 212/204.
 // NOT kept: the 504-byte form changes the cursor allocation and all eight scores rise.
+// Literal color constructed from twelve bits, high/low-first, pixel from both octets or from
+// color plus opacity: 201/190/201/190. With full-width pixel parity: 212/232/212/232.
+// The packed run and parity layout still differ.
 // Joined packed count with advancing/indexed pair stores and byte/full parity: pair-first 207/203/211/213,
 // single-first 205/212/209/213. NOT kept: the joined count shortens the body below retail and leaves
 // the run register and literal assembly different.
+// Align the upper opacity bits and parity separately 203, Align upper opacity and byte parity separately 59,
+// Obtain parity by masking the aligned opacity 203, Obtain parity from the aligned unsigned opacity 203, Align a
+// Boolean low opacity bit 203, Join prealigned opacity and color before parity 203, Join masked aligned parity
+// and color before upper opacity 203, Compose upper opacity and parity as a word 222. NOT kept: The byte parity
+// split ties. The full-width variants shorten the decoder to 444 bytes and move the run out of EBX. The word
+// opacity variant scores 222 at 456 bytes. The original helper and body are restored.
+// Share the case 2/3 opacity, case 5/7 color, both, or both with case 1 setting
+// the run between color and opacity. Byte parity 183/183/183/184; dword parity
+// 240 each. Typed helper parity, expanded alpha, both, or typed parity with
+// shared cases 265/265/265/276. NOT kept: dword parity and typed alpha shorten
+// the body, and the shared cases change the opening register allocation.
+// Conditional opacity increment, byte parity set, or selected parity 224/216/240.
+// Unsigned or signed parity remainder 240/187. Descending packed bit offset
+// with byte parity 163, wide parity 181, or short offset and wide parity 226.
+// Parity still narrows in the opening packed stores, and the two-byte
+// literal assembly and EBX run are unresolved.
+// Packed input class 59/203, packed upper and lower opacity fields with the fresh header observation
+// retained 157/201, both views 157/201, both views and the ordinary six-bit count 157/201, using the
+// existing byte parity and then dword parity. NOT kept: the parity width still differs on the tied form,
+// and dword parity moves the run out of EBX and shortens the two fills.
+// Share the opaque pixel 172, carry selected opacity 229, zero-default opacity 185,
+// and an opaque predicate 222. With dword parity 224/244/215/236. NOT kept: the
+// shared opaque pixel reaches 504 bytes but changes cursor allocation. The dword
+// parity forms shorten both fill paths and leave the packed run and literal gaps.
+// common long command count 165, common word command count 151, shared run count 172, shared run count and
+// default span 135, long command count with full parity 170, word command count with full parity 162, shared run
+// count with full parity 174, shared run count and default span with full parity 152. NOT kept: A separate word
+// count reaches 504 bytes at 151. The other forms change the extent, and all eight raise the score.
+// MiniMax H (11-19): no new form, no lower score (59): retail masks the alpha's parity in thirty-two bits at all
+// three decode sites (xor ecx, ecx; mov cl, al; and ecx, 1) where this build masks it in sixteen (and cl, 1; movzx cx,
+// cl), so the shared pixel helper was changed in place (it has no other caller) to drop the byte cast on the low alpha
+// bit: the parity then matches retail exactly, but the allocator moves the type 3 run from EBX to EBP and the body
+// shortens to 444 bytes (203); the same change with the count update shared after the branch, with the length
+// hoisted above it (152 at retail's 504 bytes but a frame of 0x10 against retail's 0xc) and with the length defaulted
+// at the loop head (203) were all measured, and the two arm's twin of the helper (45) is not kept because a twin of a
+// shared helper is not kept. The colour literal was built as a word, as two word halves, as a shifted byte, as a byte
+// cast shift or, low byte first and as two statements (103 in each, the body then has retail's 504 bytes but the
+// literal is one byte shorter than retail's four instructions, so the rest of the body pairs against the wrong
+// instruction). The colour literal is still built with a shift and an add where retail keeps its two bytes in
+// separate registers, and the run of two is still folded into the count as an immediate where retail adds the
+// register; the original helper and body stand.
+// Compare with packed run 59, run to pair end 163, pair class arity 193, shared packed prefix arity 171.
+// With full-width parity 203/213/191/219. NOT kept: the run comparison ties, and the other forms raise the
+// score. Packed parity width, run register reuse and literal byte assembly still differ.
+// full parity with counted down packed fill 236; full parity with counted down ordinary fill 236;
+// full parity with both fills counted down 240; full parity with packed fill consumes output to end 187;
+// full parity with ordinary fill consumes output to end 207;
+// full parity with both fills consume output to end 231;
+// full parity with both fills publish end after stores 226;
+// full parity with packed countdown and ordinary end fill 209.
+// NOT kept: Full-width parity with these fill traversals shortens the decoder and changes the packed-run allocation. The literal-byte assembly still differs.
+// Forward fill countdown at packed/ordinary/both 175/175/167, with dword parity 236/236/240. Dword parity with
+// packed countdown and ordinary end pointer 209; packed end pointer and ordinary countdown 187.
+// NOT kept: the countdowns change the opening register assignment. Dword parity gives the packed bit
+// operations but shortens the body and displaces the packed run. Literal assembly still differs.
+// The parity mask width, literal byte assembly and packed run reuse still differ.
+// Two-field pair loop/output-end pair loop and ordinary endpoint selection/set opaque bits
+// 163/183/237/237; with dword parity 181/178/256/256.
+// NOT kept: reaching retail length with the pair loops increases the score; endpoint forms shorten away from retail.
+// Ordinary alpha in both assignment arms, transparent default, opaque default or opaque predicate:
+// 59/171/172/59 with byte parity; 203/240/240/203 with dword parity.
+// NOT kept: The defaults reach 504 bytes with byte parity but move the cursor registers. Dword parity
+// shortens the fills and changes run allocation. The original helper and body were restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

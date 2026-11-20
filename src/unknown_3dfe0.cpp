@@ -168,12 +168,56 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // join and copies to EDI for 0xd1850; no force-arm reload), on it one game-time read shared by both elapsed values 216, the
 // three late object-index uses through one named copy 216 (same code each). Eight dead locals at the top (diagnostic) 21:
 // removed before allocation.
+// M3 lane 16 r141 (fast with 0x3d2c0 and 0xd1850, control 21): force as `!initialized` then `if (!valid) force = true;` 76
+// (834 B); force as `!(initialized & valid)` 239; the force arm as `update = force` 52; `update |= force;` then
+// `if (!force && hidden) return;` 231; the update-time NONE test as a signed long 21 (same code).
 // M3 lane 13 r113 (fast with 0xd1850, control 21; update-first re-measured 218: object EBX load, homes and slots as retail,
 // left the timestamps in EDI/ESI, the false store after the home store and no force-arm reload): force and update in one
 // declaration 21 (same code); the hidden return as `if (!force && flag) return;` with update as one predicate
 // `force || update-time NONE || update elapsed > 1` declared at its test 220 (829 bytes); sample started from the
 // sample-time NONE test with the thresholds under `if (!sample)` on the kept order 222 (831 bytes); the cache bound as a
 // reference 21 (same code); update started from force with the hidden test on update 228.
+// M3 lane 4 r220 (fast with 0x3d2c0 and 0xd1850, control 21): the object bound by reference to its lookup copy 21; the
+// hidden-object test through a forced-inline accessor 21; the cache pointer const 21; the hidden test on a fresh lookup
+// of the object 21 (same code each: folds into the first lookup); the sample decision moved right after the elapsed
+// clamp, ahead of the force arm, 217; update-first re-measured 218 (retail's object EBX load and homes; the timestamps in
+// EDI/ESI, the false store after the object's home store, no force-arm reload).
+// M3 lane 4 r223 (fast with 0x3d2c0 and 0xd1850, control 21): a const position pointer (object + 0x30) for the
+// stationary test and the position store in the sample block 195 (831 bytes); the special/type tail in its own block
+// 21; the parent index read into a local before its lookup 21; the position store as memcpy 21; the blend clamp as one
+// nested ternary 21 (same code each). Re-measured lane 14 r97's combined hidden return with update started from
+// force 246 (804 bytes).
+// M3 lane 15 r110 (fast with 0x3d2c0, 0xd1850 and 0x3db00, all MATCH; control 21): `(void)&cache_index;` at the top (its
+// stack slot is where update lives) 21; `(void)&update;` after its declaration 21; `(void)&priority;` 21 (same code each:
+// none takes update out of the allocator); the hidden bit read into a named bool ahead of force 237 (833 B); the object
+// read through a const reference to its header entry 21 (same code).
+// M3 lane 14 r125 (fast with 0x3d2c0 and 0xd1850, both MATCH; control 21; `bool update = false;` right after the zero-elapsed
+// return re-measured 216, aligned 26: entry block as retail, the sample/update timestamps in EDI/ESI, the late object index
+// in EDI, no force-arm reload): a redundant `update = false;` at the top of the not-force arm 222 (aligned 7), the same on
+// the update-first form 222; on update-first, the hidden test through a fresh lookup expression (no second named pointer)
+// 216 (same code), the force arm inverted as `if (!force) { hidden return } else update = true;` 216 (aligned 31), the
+// sample decision as `if (sample time == NONE) sample = true; else { thresholds }` 166 (aligned 26: positional only).
+// M3 lane 6 r206 (fast with 0x3d2c0 and 0xd1850, both matched; control 21, update right after the zero return re-measured
+// 216): the kept order with a redundant `update = false;` added at the top of the not-force arm 222 (object straight into
+// EBX, retail's homes and ESI/EDI timestamps, but the initialiser is then dead: the false store moves into that arm and the
+// force arm has no reload); that with update after the zero return as well 222; the arms inverted (`if (!force) { update =
+// false; if (hidden) return; } else update = true;`) 223; `bool update;` declared bare ahead of update elapsed and set in
+// both arms 222; declared bare right before the force test, set in both arms 222.
+// M3 lane 3 r277 (fast with 0x3d2c0, 0xd1850, 0xd4080, 0x3e4e0 and 0x3db00; control 21): the object typed through the
+// existing object header and object views (include/unknown_0bad50.h, the hidden test on the word flags' 0x100 bit) 21
+// (same code); the update-time test only while update is still false 201 (836 bytes); the not-force arm first with the
+// hidden return in its own braces 25; the force arm as `update = force` 52; the zero return and the negative clamp
+// nested under one `elapsed <= 0` test 46.
+// M3 lane 13 r128 (screened, control 21): force as `long` 111 (839 B); the hidden test as `(bool)(object[0xc1] & 1)` 21
+// (same code); the clamp ahead of `bool update = false;` with the not-force arm first (hidden return in braces, `else update
+// = true;`) 28; `bool update = false, force = ...;` 218 (the update-first code); update as `byte` 21 (same code); re-measured
+// update between update elapsed and the object 216.
+// M3 lane 15 r116 (fast with 0xd1850 and 0x3db00, both MATCH; control 21, aligned 16): diagnostic, 0 to 7 dead initialised
+// longs on `bool update = false;` right after the zero-elapsed return 216 each (the timestamps' ESI/EDI swap is not a
+// symbol-count tie); the tail's update test through a `bool const &` binding 21, on update-first 216; force through a
+// `bool const &` for its test 21 and for the 0xd1850 argument 21; the hidden test's object through a `byte *const &` 21, on
+// update-first 216 (same code each); update assigned in both arms re-measured 222 (aligned: only the false store's place in
+// the not-force arm and the missing force-arm reload differ); that with the object looked up again in the force arm 226 (813 B).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

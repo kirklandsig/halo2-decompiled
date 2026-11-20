@@ -180,6 +180,12 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // each time). Tried: `__assume(arg_2 != NULL)` at the top 19, `__assume(arg_3 != NULL)` 19 (same code each); the node
 // count initialised to 0 113 (453 B); the address local declared only in the else arm, the node arm reading the parameter
 // directly, 19 (same code); the else arm copying the forward before the position 68.
+// M3 lane 5 r203 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, matched throughout; control 19): the bounds test as
+// two separate `return false` tests after the lookup 83 (462 B); the helper's scale read once into a named local 58 (retail
+// reads [esi] at each product); the node pointer named as `&nodes[arg_1]` after the test 19; field2e typed `word` 19; the
+// scale test as `!(scale == 1.0f)` 19 (the 19s the same code). Diagnostics (reverted): 1-7 unused initialised locals at
+// the top 113 (k = 1, 453 B) then 19; on the body without the address local (33) one extra read of the transform in the
+// else arm, the node arm or at the top 127/77/137, the transform still arriving in ECX and kept in EBX each time.
 // M3 lane 12 r143 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): 1-12 unused initialised locals
 // at the top 19 except K = 1 and K = 9 (113, 453 B: the convention changes; the EBX/EBP pair never moves); the bounds
 // test split into `arg_1 < 0` and `arg_1 >= node_count` after the lookup 83 (462 B); the rotate helper scaling in place
@@ -187,6 +193,52 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // the else arm through a const reference to the transform 19, the position stored field by field 141 (485 B). Diagnostic,
 // removed: the rotate call ahead of the point call 96 (471 B). Reading: the callee-saved registers go ESI, EDI, EBP, EBX
 // by priority, so ours ranks the point's y above the transform (EBP/EBX) and retail the transform above the y.
+// M3 lane 4 r220 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): `(void)&arg_2;` with the
+// parameter read directly in place of the address local 33 (464 bytes: folds, the transform arrives in ECX); forced-inline
+// accessors returning the transform's forward or position address, used in both arms, 19 / 19, both 19 (same code: the
+// accessor's copy does not take a use from the transform); the address local and the branch in their own block ending
+// before the record fill 19 (same code). Both builds give the transform and the point's y the same uses, so the pair is
+// a tie-break the source has not reached.
+// M3 lane 11 r129 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the whole function as a
+// member of the record (`this` the record, the tail through `this`) 19 (same code); that member without the address
+// local 33 (464 bytes, the transform arrives in ECX and goes to EBX as on the plain no-local body). Diagnostic on the
+// no-local body: 1-12 unused initialised locals at the top 33 each except K = 2 and K = 10 (124, 447 bytes); the
+// transform never stays a stack argument, so no symbol count puts it in EBP in the first pass. Also: the rotate helper
+// `static __forceinline` 19; every parameter declared `const` (the address local unchanged) 19; the transform parameter
+// non-const 19 (all the same code).
+// M3 lane 4 r223 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the node arm rotating
+// into a fresh vector then copied to the forward local 110 (494 bytes); the point call writing a fresh point then
+// copied 131 (470 bytes: the initial copy of the global point is then dead and dropped); the angle pair computed into
+// a local pair then stored 71 (486 bytes); the constructor called through a record pointer local 19; the point copied
+// into a const local ahead of the constructor and stored from it 19 (same code each).
+// M3 lane 15 r110 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the transform parameter
+// non-const 19 (same code); the origin copy moved into the node arm (the else arm overwrites it) 33 (the copy follows the
+// branch; the EBX/EBP pair stays); the whole function as a member of the record (`this` for arg_3) 113 (453 B, the
+// convention changes); two stages, the node matrix chosen first (NULL when there is no object, false return on a bad
+// node) and then `if (node)` transform else copy 134 (478 B), the same with `if (arg_0 != NONE)` as the second test 19
+// (same code). In both builds the point's x outranks y and z (x ESI, z spilled), so the transform sits between x and
+// y in ours and below y in retail.
+// M3 lane 7 r194 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the forward copied into the
+// vector local at its declaration with the else arm copying only the position 139 (451 B); the record filled through a
+// pointer local 19 (same code); no address local, the position and forward pointers named once ahead of the branch for
+// both arms 147 (451 B); the node bound to a const reference `local_3[arg_1]` for both calls 19 (same code); the node
+// index widened into a named long for the test and the index 36.
+// M3 lane 6 r209 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the node arm's forward address
+// named in a pointer local after the point call 19, ahead of it 19, the node arm's position address named 19 (the three the
+// same code); the else arm's forward copied through a pointer local 67, with the node arm's pointer as well 67.
+// M3 lane 3 r279 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the record fill and `return true`
+// written in the node arm as well, the else arm falling into the shared tail, 189 (509 B); the vector declared ahead of the
+// point 19; the rotate helper's parameters as (out, transform, in) 19; the helper taking the transform by const reference 19;
+// the address local itself `const` 19 (the 19s the same code).
+// M3 lane 6 r213 (fast; control 19): the position address named once ahead of the branch for both arms (address local
+// kept) 138 (452 B); the forward copied into the vector local at its declaration with the node arm rotating it in place
+// 136 (454 B); `1.0f != arg_0->scale` in the rotate helper 103 (474 B: the scale load moves, the pair stays); `NONE !=
+// arg_0` 19 (same code). Diagnostics (reverted at once): one extra store of the point's y into the record 52 (481 B, the
+// transform still in EBX); the else arm's forward from a global, so the transform has fewer uses, 111 (still EBX).
+// M3 lane 16 r155 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, all MATCH; control 19): the loaded transform
+// bound once as `transform4x3f const *const &` for both arms 113 (453 B); the rotate helper's scale bound by const
+// reference 19; the address local itself const 19; the node arm's forward from the parameter directly 19; the else
+// arm's forward from the parameter directly 19 (the 19s the same code).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

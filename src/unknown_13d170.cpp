@@ -800,6 +800,23 @@ struct s_physical_block_iterator
 // M421: Sufficient-pages take/refinement 262; exhaustive take/retention 253/262; nested eligibility 253;
 // first-candidate take with direct/shared eligibility 261/300; refined take with earlier-or-tied/equality result 270/270.
 // NOT kept: the complete admission results shift the prefix and do not recover the retail policy join.
+// M3 lane 1 r124 (fast with the file's six functions and 0x13d320, all MATCH each run). Lane 9 r109's 93 lead rebuilt (93,
+// 1213 B, aligned 43). LEAD 40 (1213 B, first difference +0x356, aligned 18, masked 13; the permuter's full-image baseline
+// also 40; patch build/r124/lead-0x13d370-40.patch; kept only with a match): on the 93 lead, the two insertion stages
+// tested through one `bool at_head = best.previous == NONE;` used by both. The deletion walk's scan then takes retail's
+// count EDI / bit EBX, and the insertion takes retail's result EDI / NONE EBX with the allocation test on an immediate
+// (a direct second `best.previous == NONE` test adds a NONE use that pulls the NONE register ahead of that test; the
+// single-stage insertion lets the head arm reuse ESI as the NONE value, 101). Left on 40: the walk's found path (retail
+// keeps best.offset in EDI for both overlap compares with a `mov edx, edi` copy and builds the datum in ECX, copied to
+// EBX at the call; ours re-reads best.offset and builds the datum in EBX) and a `sete dl; test dl, dl` from the bool where
+// retail branches on `cmp esi, ebx`. On 93 (each 93, the same code): the walk's block offset named, `best.offset + pages`
+// named, the allocation in its own local; one `entry->previous = NONE` ahead of the first test 102. On 40: the overlap
+// test best-first 108; `pages + best.offset` 40; `best.offset < end` second 40; through a by-value four-value helper 40,
+// a (block, start, end) helper 40; the datum index in a local 40; `long start = best.offset` 40; the block end named 40
+// (each the same code); the bool declared ahead of `blocks` 46, ahead of the allocation 39 (first difference +0xcc,
+// aligned 23); the bool used only by the second stage (first stage a direct test) 96 (1220 B), only by the first 93; a
+// flag cleared and set in the first stage's head arm 93 (the lead's code); the single-stage insertion with the
+// per-arm NONE stores 96; the permuter (30 tries) none below 40. On main: only the two-stage bool tail 212.
 // M3 lane 4 r217 (fast with the file and 0x13d320, all MATCH; control 201, aligned 87, masked 56). On main: both ages
 // `MAX(x, 0)` 209 (1228 B; retail clamps both on the unsigned clock, main's `MAX(0, x)` folds away), with case 0 as
 // `if (...) better = true;` 209 and as an if / else-if pair setting it 209 (same code: only a helper boundary gives retail's
@@ -823,6 +840,81 @@ struct s_physical_block_iterator
 // where retail loads it into EAX); on it the clock read once into a `dword now` used by both ages 209, the comparison
 // written `candidate->pages * best_age < best.pages * age` 209, the products as `age * best.pages > best_age *
 // candidate->pages` 209; both ages as unclamped `dword` locals with MAX() inside the products 373 (first difference +0x11).
+// M3 lane 12 r149 (fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): the deletion walk's iterator
+// declared with the scan's locals 201 (same code); `oldest_time` initialised to 0 362 (1230 B); `best` declared ahead of the
+// ring 201 (same code). Lane 9 r109's lead rebuilt on this body 93 (1213 B; walk count/bit and the overlap sum's register
+// still swapped: retail sums into the pages register and keeps best.offset for the second test through a copy); on it
+// the iterator declared with the scan's locals 93 (same code), `oldest_time` initialised 357 (1223 B).
+// M3 lane 3 r267 (fast with 0x13d320, MATCH throughout; base 201, aligned 118): case 0's flag written false and set by an
+// `if` 201 (same code, still jump-threaded); `bool better = !have_best;` with `if (better)` 222 (1228 B); the arms in the
+// order default, 1, 0 204, in the order 1, 0, default 201; case 0 as `better = candidate->time < best.time; if (equal
+// times) better = candidate->pages < best.pages;` 235 (1178 B) but aligned 93: case 0 is then not threaded and the three
+// arms sit in retail's place, so the layout follows from case 0's threading. Match-only chain (a one-caller helper, not
+// kept): case 0 through a file-local inline helper in 0x13d320's result style 237 (1178 B, aligned 90; case 0's `xor al,
+// al ... mov al, 1` and the arm layout are retail's), as one `return` expression 204, forceinline 204; plus the second
+// age as `MAX(physical->time - best.time, 0)` 115 (the default arm then byte for byte); plus the ring successor written
+// at both uses 113; plus the insertion with the successor in a local and the before block re-read through the pool 101
+// (1213 B); with the earlier 93 recipe's two-stage insertion 93. On the 115 form: the overlap sum as `pages +
+// best.offset` 115, the second overlap test reversed 115 (same code each). On 93: an inline overlap helper (block and
+// range, or four values) 93/93, the walk through plain locals 107, through the
+// file's 0x13d8b1 iterator 93 / 107 with plain locals, `dword result` 93, `best` declared first in the function or before
+// `candidates` 93, 1-8 dead locals 93; permuter on the 93 form (900 s, 94 tries) best 93. Left on 93: one EBX/EDI swap
+// over the whole tail (the walk's high-water mark and bit, the overlap test's data and sum registers, and the
+// insertion's result EDI / NONE EBX in retail, here the other way round with NONE also taking the `result != NONE` test).
+// M3 lane 8 r199 (fast with 0x13d320, the file's six other functions and 0x16b840, all MATCH each run; control 201): lane 1
+// r124's 40 lead rebuilt 40 (1213 B, first difference +0x356, aligned 18). On it: the insertion tested through a plain `long
+// previous = best.previous;` copy in place of the bool, used by both stage tests and both block indexes 93 (the `sete` goes, but
+// NONE then takes a register ahead of the allocation test and the walk scan and the tail swap EBX/EDI), the copy for the two tests
+// only 93, the copy taken ahead of the allocation 93; the bool as a flag set by a branch (`at_head = false; if (...) at_head =
+// true;`, either arm form, or declared ahead of the allocation) 93 each (threaded, as the copy); `long const &` bindings of
+// best.offset and of pages for the overlap test, before or inside the walk, or a named start read through one, 40 each (same
+// code); a single-stage insertion with `entry->next = first; first = result` in each head sub-arm or once after them 96/96; one
+// `entry->previous = NONE;` ahead of the first-block test on the copy form, the two single-stage forms and the lead 102/100/101/92.
+// Permuter on the 40 lead (600 s, seed 199, 59 tries): none below 40. Body unchanged.
+// M3 lane 15 r110 (fast with 0x13d320 and the file's six other functions, all MATCH each run; control 201): lane 1
+// r124's 40 lead rebuilt on today's base, 40 at 1213 B (first difference +0x356). On it: both insertion stages tested
+// directly on best.previous 93 (the threading is then retail's `cmp esi, ebx; jne`, but the NONE constant takes a
+// register from the allocation test on, `or edi, -1; cmp eax, edi`, and the result moves to EBX); the first stage
+// direct and the second through the bool 96 (1220 B); the first through the bool and the second direct 93. In the
+// deletion walk: best.offset read into two locals with one initialiser, one per overlap test, 40; the same with
+// `pages + start` 40; best.offset in a local read through a `long const &` for both tests 40 (each 40 the same code:
+// best.offset is still re-read for the second test, where retail keeps it in EDI and compares a `mov edx, edi` copy).
+// AC597: Independent head retirement and policy result with admission/rejection flags, unequal-first and
+// equal-first tie breaks in both forms, and later/earlier timestamp gates:
+// 223/228/228/210/228/210/244/223.
+// Best-present set at eligible join 201; carry acceptance into best-present 281;
+// replacement pointer selected in the cases 182, assigned in explicit arms 253 or created
+// at the copy 201; replacement ring index 256; loop increment from saved successor 201;
+// insufficient candidate continues to that increment 201. NOT kept: the 182 form brings the
+// cases inside the loop, but uses pointer masks instead of retail's shared AL test,
+// moves the first difference earlier and shortens to 1193 bytes.
+// Paired unsigned elapsed values with conditional ages, assigned ages, named products or compound products
+// with the original and split case-zero tie tests 373/299/373/373 and 373/299/373/373.
+// Written-differs at 201. NOT kept: Six forms reach 1213 bytes at 373 with the first difference moved
+// into the prologue. The assignment forms score 299, change the frame and no longer reproduce the policy
+// layout. All four controls stay exact. The opening body is restored.
+// Eager older-or-tied, eager rejection complement, eager non-later gate and
+// short-circuit age with eager tie 231/232/227/233; with both age masks
+// 222/217/223/244. The rejection complement with both masks reaches 1213 bytes,
+// but changes the earlier stack layout and still misses the common AL join.
+// M3 lane 6 r209 (fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): lane 1 r124's 40 lead rebuilt on
+// today's file 40 (1213 B, first difference +0x356). On it: the head flag as a `long` 93 (1214 B), as `bool const` 40 (same
+// code), the second stage on `!at_head` with its arms swapped 93, the flag declared between the pool and entry pointers 46
+// and ahead of both 46 (first difference +0xcc each).
+// M3 lane 1 r135 (fast with the file's six functions and 0x13d320, all MATCH; round 124's 40 lead re-applied, 40 at +0x356):
+// on it, 1 to 7 dead longs at the top 40 each (no phase effect on this integer code); the walk test through `long const
+// start`/`end` named in the loop, through a block pointer local, as two nested ifs, with the block's end named, 40 each
+// (same code: the second compare still re-reads best.offset where retail keeps it in EDI with a `mov edx, edi` copy); one
+// test of best.previous with the head arm's next/first stores in both of its sub-arms and the predecessor re-read through
+// a fresh pool base 100, with those stores once after the sub-arms 96 (first difference back to +0x338: the walk's scan
+// registers flip), both with a named `long previous` 100/96 (same code). Main's body unchanged.
+// M3 lane 15 r116 (fast with 0x13d320 and 0x13d830, both MATCH; control 201): lane 1 r124's 40 lead re-applied on today's file,
+// 40 (1213 B, aligned 22: the overlap walk, where retail loads best.offset into EDI, sums `pages + offset` into EBX and
+// compares a `mov edx, edi` copy, with the handle built in ECX and moved to EBX for the delete call; and the head flag's
+// `sete; test` ahead of retail's direct `jne`). On the lead: the walk test as `pages + best.offset`, with `best.offset <` on
+// the left of the second test, with both tests start-first, with the block's size first in the end sum, and pages-first with
+// size-first 40 each (same code); the head flag as `bool const`, `NONE == best.previous`, `!(best.previous != NONE)` and
+// through a named `long previous` 40 each (same code). Main's body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

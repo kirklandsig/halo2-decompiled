@@ -84,12 +84,12 @@ struct s_206091
 
 PRIVATE __forceinline void function_206092(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2)
 {
-    real second_i = arg_1->i;
-    real second_j = arg_1->j;
-    real second_k = arg_1->k;
-    arg_2->k = arg_0->i * second_j - arg_0->j * second_i;
-    arg_2->j = arg_0->k * second_i - arg_0->i * second_k;
-    arg_2->i = arg_0->j * second_k - arg_0->k * second_j;
+    real first_i = arg_0->i;
+    real first_j = arg_0->j;
+    real first_k = arg_0->k;
+    arg_2->k = first_i * arg_1->j - first_j * arg_1->i;
+    arg_2->j = first_k * arg_1->i - first_i * arg_1->k;
+    arg_2->i = first_j * arg_1->k - first_k * arg_1->j;
 }
 
 PRIVATE __forceinline real function_206093(vector3f const *arg_0)
@@ -139,7 +139,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1375 (was 1375): Frame 0x5d0 versus retail 0x58c, component and velocity homes, and contact indexing still differ.
+// Earlier header (merged into the note above the function in m3 lane 7 r187): 1375 (was 1375): Frame 0x5d0 versus retail 0x58c,
+// component and velocity homes, and contact indexing still differ.
 // Earlier: earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
@@ -536,7 +537,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // cross product use and reloads field_40.k right after storing it.
 // P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
+
+// score 1346 (was 1346): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// header line, 1375 (was 1375), sits further up this file).
 // (Second note, merged:) Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
+// Earlier header, merged into this note (1375): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ.
 // P452: Independent magnitude/velocity-publication/query-origin/tangent/direction/velocity/friction-input/impact-normal memmove boundaries:
 // 1436/1376/1409/1397/1440/1407/1425/1376. NOT kept: 1376 leads retain nonnative record-transfer boundaries and excess frame; no byte equality. Original captures, all helpers, call tuples and full body restored; matched caller survives.
 // P454: Existing magnitude snapshot as aggregate/shared setter, five remaining native component-store
@@ -716,6 +721,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Descriptive workspace names 1375. Query and ray scopes 1374.
 // Velocity scope with typed query 1394, with workspace names 1394.
 // NOT kept: ray scope gains one point and all forms retain the larger frame.
+// Live point or contact count field references 1394/1394; live point or contact
+// definition-table field references 1375/1375; count and table references together
+// in either phase 1394/1394; shared motion-origin field reference 1449, with all
+// count and table references 1449. The frame and original contact induction remain.
+// Shared in-place scale in the mixed-precision normalizer, named reciprocal/argument: 1449/1375.
+// Float-sum normalizer, named reciprocal alone/with named/with direct mixed reciprocal: 1424/1421/1424.
+// Direct float-sum reciprocal alone/with named/with direct mixed reciprocal: 1436/1390/1436.
+// The 0x5d0 frame and displaced velocity and component homes remain.
 // Lane 13 r112 (plain checks: a `--fast` run of this function alone or with its eleven callees, 0x24590 and 0x30bf0 builds
 // it differently, 1392 at 6211 B with frame 0x5cc, so fast counts for it need a wider list). Retail's first loop and
 // contact loop keep their counters in one home (0x1c, read with `fild` in the first loop and passed to 0x2079f0 in the
@@ -731,11 +744,98 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // One magnitude workspace at contact phase or entry, assignment/memcpy, 1515 each. Separate root and
 // normalization workspaces at the same scopes, assignment/memcpy, 1457 each. NOT kept: the frames shrink
 // to 0x5a0/0x5a8 but the body loses 120/88 bytes and retail's component homes still differ.
+// M3 lane 7 r187 (plain each, 0x2056e0 MATCH each time; control 1375, difflib-aligned 1402). Kept: function_206092 holds
+// its first operand in locals and reads the second through its pointer at each use (it held the second): 1346 at 6243 B
+// (aligned 1399); the same with other local names 1346. Retail evidence: the contact loop's cross loads local_5's three
+// components once (`movss xmm4/xmm3/xmm2, [esp+0xc0/0xc4/0xc8]`) and reads field_40's at each use (two loads each).
+// Tried: the first loop's cross through cross3f_staged (before the kept change) 1422 (6243 B); on the kept change the
+// contact cross written straight into field_4c with local_4 added there (no contact_velocity copy; retail's `lea ebx,
+// [edi+0x4c]` shape) 1419 (6185 B, frame 0x5c8); the first loop's cross through function_206092 1405 (6238 B: k, j, i
+// stores as retail, but the products interleave where retail computes all six first); cross3f_staged at the three
+// function_206092 sites 1357 (6243 B: the second contact cross then reads both operands at each use and stores after all
+// products, as retail, with some products' operand loads the other way round); the first loop's cross through
+// cross3f_staged on the kept change 1421 (6238 B); the kept helper computing k, j, i into locals before its three stores
+// 1386 (6243 B, aligned 1388).
 // M3 lane 9 r143 (a reduced-link LTCG screen of this file, faithful to the fast build; aligned difflib rows against retail,
 // control 1382, frame 0x5d0): the magnitude helper's snapshot bound by const reference 1433 (frame 0x590, 23 rows short);
 // the add helper as a three-pass component loop 1399; the cross helper staging its second vector as one vector3f copy 1439
 // (0x5e8); the add helper plain `inline` 1382 (same code); the scale loop's counter as short 1460; the cross's staged
 // reals declared k, j, i 1383. Not kept.
+// M3 lane 10 r126 (plain with 0x207ab0, 0x2078f0, 0x2079f0; fast builds this body at 6211 B, so plain only; control 1375):
+// the magnitude helper taking the vector by value 1375 (same code; a compile-only screen keeps five 12-byte copies, the
+// by-value temporaries do not share a slot either); the steering sign as `if (...) local_11 = -local_11;` 1378; the result
+// returned as one expression 1376 (6243 B); the impact loop's count test in the `for` condition 1397 (6264 B); the two
+// query arrays declared at the top 1375 (same code). This note and the one above it were one stacked pair; merged here.
+// M3 lane 7 r189 (plain each, 0x2056e0 MATCH each time; control 1346; aligned = rows outside a minimal diff against retail,
+// exact / stack offsets masked / registers and stack offsets masked, control 937 / 768 / 519). Nothing kept. LEAD for the
+// contact loop's three per-pass `imul`s (compile-only screen, then plain): retail needs BOTH a contact pointer formed at the top
+// of the pass AND a counter the optimiser does not treat as an induction variable. Forms that stop the reduction without
+// emitting code: the counter read once through a null-checked pointer in an inline helper (`p ? *p : NONE` on its address), or
+// the counter held in a one-long aggregate that is passed whole, by value, to the real call 0x2079f0 (0x207ab0 taking the
+// plain long); both give retail's exact loads of the counter (top of the pass, the impact data's index store, the 0x2079f0
+// argument, the latch) and put the counter in the first loop's counter slot right below the definition pointer's home, as
+// retail's 0x1c / 0x20. Forms that still reduce: a counter that is a member of a local aggregate read only by member; a
+// two-member overlay of the counter; a discarded address-of; the aggregate passed by value into an inline helper; the increment
+// through a pointer helper; the counter read after the loop; an inline-assembly block in the pass. One function-scope counter
+// for the first loop and the contact loop keeps the first loop's stepped pointers and still gives the contact loop's three
+// multiplies, so retail's shared slot can be one variable. Without the contact pointer the exposed counter gives 23
+// multiplies (4 with the by-value aggregate), with it exactly 3.
+// Plain trials (all use the null-checked read, a diagnostic only): contact pointer + exposed counter 1512 (6320 B, aligned
+// 955 / 815 / 511); that with the magnitude read in place (no input copy) 1565 (6083 B, frame 0x588, 930 / 798 / 491); that
+// with the contact cross written straight into field_4c and local_4 added there 1558 (6073 B, 859 / 737 / 479); that with the
+// direct `return a && b && c && d;` 1543 (6089 B, 854 / 727 / 477); that with the impact data filled by the existing
+// impact_data_set (shape NULL) 1522 (6095 B, frame 0x580, 848 / 718 / 476, build/r189/lead-206090-t5.diff): the loop head is
+// then retail's but for registers (ours counter EAX and state EBX, retail EDX and EBP), and retail still has 24 more
+// disp32 stack rows (133 against 109) and 12 more frame bytes, so one 12-byte copy that retail makes is still missing.
+// On main's body alone: impact_data_set in place of the fourteen stores 1370 (6243 B, 934 / 769 / 520); with the impact data
+// declared at the top of the admitted contact's block 1363 (6259 B, 929 / 772 / 523). Retail's duplicate search leaves
+// straight past the append when it finds the impact (`je` out of the scan), the shape of a return inside an inlined
+// add-if-absent helper; ours re-tests the scan index.
+// Same round, evidence trial for the aggregate reading (plain; restored): 0x2079f0's index parameter as a one-long aggregate
+// by value (definition, its three declarations, 0x2078f0's call passing the impact data's field through a cast, this
+// function's two calls passing a temporary initialised from the counter) with the callee's discarded address-of of that
+// parameter removed: 0x2078f0 still MATCH; 0x2079f0 20 at 190 bytes (the parameter stays on the stack by itself with
+// `ret 8`, but it is loaded after the component lookup and EBX/EDI swap); this function 1658 at 6496 bytes (the contact
+// counter is no longer an induction variable although only a copy of it is passed, so every indexed use re-multiplies:
+// the contact pointer form above is what turns that into retail's three).
+// Captured slip with branch/conditional/direction selection 1348/1345/1374. Published slip with
+// these forms 1393/1393/1375. Selected speed before/after coefficient reads 1371/1663.
+// NOT kept: captured conditional gains one at retail length with frame 0x5d0. Late speed
+// reaches frame 0x5c8 at 6502 bytes. The component and velocity homes remain displaced.
+// M3 lane 15 r112 (fast = full 1346, 0x2056e0 matched; difflib aligned 1399): the contact loop's counter as a short
+// 1687 (6528 B); the contact count named once for the query test and the loop bound 1355 (6238 B, aligned 1395); the
+// wheel count named once for the bound and the wave term 1432 (6238 B); the velocity pair declared local_5, local_4 or
+// in two statements 1346 (same code: the homes do not move).
+// M3 lane 16 r154 (fast = full here, 0x2056e0 MATCH each run; control 1346, difflib-aligned 1399): a named contact pointer
+// (`&local_0->field_b10[local_38]`) for the whole contact pass, every contact access through it, 1445 (6179 B, aligned
+// 1374: still stepped, no `imul`); with the contact velocity's cross written into field_4c and local_4 added there 1426
+// (6182 B, aligned 1465); with the query row pointer formed beside the definition row 1445 (same code); with the result
+// returned as one expression 1427 (6195 B, aligned 1373); that plus the wave term as a float tree 1396 (6211 B, aligned
+// 1379); the float wave term alone on this body 1360 (6243 B, aligned 1404). Retail's first loop is strength-reduced
+// (stepped record pointer, row offset in a slot) and only its contact loop is not, with the counter in the +0x1c home
+// the first loop also uses for its `fild`; the cause is still open.
+// degenerate spring result 1346, falling spring result 1346, rising spring result 1346, explicit spring
+// results 1346, spring coefficient default 1359, steering sign result 1391, steering deadband arms 1346,
+// compression default and adjustment 1406, direct wide magnitude products 1566.
+// The 0x58c frame and native velocity homes remain unresolved. Direct wide magnitude products reduce the
+// frame to 0x590 and shorten the body to 6022 bytes.
+// M3 lane 2 r119 (fast = plain here, 0x2056e0 MATCH each run; control 1346 at 6243 B; aligned = rows outside a minimal diff
+// against retail with addresses, stack offsets and registers masked, control 932). A chain, each step on the one before:
+// (1) the magnitude helper reading its input directly (no snapshot) 1624 (5990 B, frame 0x590, aligned 939); (2) in the
+// friction arm the root `sqrt(local_62 * 0.9f)` computed before the normalised copy (retail evaluates and stores it first,
+// then does the scale product in SSE from the normalised components held in xmm) 1603 (6018 B, aligned 912); (3) the
+// contact cross written straight into field_4c and local_4 added there (retail's `lea ebx, [edi + 0x4c]` shape) 1618
+// (5977 B, frame 0x588, aligned 827); (4) the friction ternaries in retail's order (local_62, local_64, local_63) 1618
+// (5977 B, aligned 817); on (3), a named bool for `field_82 || field_83` ahead of the ternaries with that order 1602 (5993 B,
+// aligned 889; retail recomputes the `||` at both impact calls). Not kept: the positional count rises because the body is
+// 261 bytes short; retail's contact loop still multiplies the counter (three `imul`) and its homes need disp32 offsets.
+// Patch: build/r119/lead-206090.patch in the m3-lane2 worktree.
+// M3 lane 5 r216 (plain, 0x2056e0 MATCH each time; control 1346): a compile-only listing of this file names the frame's
+// locals: the five inlined copies of the magnitude helper's input (12 bytes each) are 60 of the 68 extra frame bytes, and
+// retail computes every magnitude in x87 straight from the vector's own slots; the helper reading its input directly
+// re-measured 1624 (5990 B, frame 0x590), so retail's extra length is elsewhere. The helpers' bodies as the existing
+// shared ones: the cross product as cross3f_staged 1357; the in-place add as vector3f_add(a, b, a) 1346 (same code); the
+// scale as vector3f_scale 1412 (6238 B, retail's length); the normalize as normalize3d 1470 (6131 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

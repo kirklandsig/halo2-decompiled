@@ -318,6 +318,10 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax A (11-19): no new form, no lower score (122): the frame is still 0xc against retail's 0x14 and the pool is
+// still forwarded into EDI for both the scan and the element; the only form measured this round that reaches retail's
+// frame and its two stack homes for the pool writes the iterator's step out by hand and keeps the pool in a local of
+// its own, and the rules bar both, so the shared iterator's own declaration stands.
 // MiniMax B (11-18): no new form, no lower score (122, was 122): the frame is still 0xc against retail's 0x14
 // and the pool is still forwarded into EDI for both the scan and the element; retail reads the high-water mark
 // once per search into ESI and keeps the pool in two stack homes, while the shared scan reads the count
@@ -643,6 +647,64 @@ extern "C" void _ReadWriteBarrier(void);
 // 463: four-field iterator with shared current-datum setter and either index scan. A local or
 // field index with the iterator pool scores 152, and with an entry pool scores 149. NOT kept:
 // the entry pool gives frame 0x14 at retail length, but one pool store and the register split differ.
+// M3 lane 13 r115 (fast, plain agrees on the 20; 0x1fb360, 0x1fb4c0, 0x1fb6f0, 0x1fb760 MATCH throughout; restored):
+// lane 11 r115's 20 form rebuilt (20 plain too); on it: the element pointer declared in the loop 20; the finished flag
+// at function scope 20; the lookup result at function scope 20; the pool local declared first and feeding the
+// iterator's data 159 (464 B); the arms swapped (`!unit || (flags & 1)` first, tick arm in the else) 20; the file's
+// unit getter with a named datum-index local for the release 20; the permuter on the 20 (600 s, 21 tries on a
+// 500-source image) nothing better. The 20 form's step with main's single `if (unit)` and `continue` 120 (477 B).
+// The rotation reads as a weight tie: retail ranks the datum index above the lookup's header (EDI, then EBP shared
+// by the pool data and the header), this build the header above the datum index.
+// M3 lane 15 r107 (fast with 0x1fb6f0, 0x1fb760 and 0x1fb4c0, all MATCH; control 122, lane 11 r115's 20 form re-measured
+// at 20, plain 20). On the 20 form: `unit` declared at the top 20, the animation pointer declared at its assignment 20, the
+// iterator, animation and index declarations reordered 20, `iterator.datum_index = NONE;` (and `iterator.datum = 0;`)
+// before the loop 20/20 (all the same code); the pool local feeding the iterator too 159 (464 B); the animation read
+// through iterator.datum at each use 28; the release through `pool` 25 (the same rotation plus retail's global read).
+// The permuter (anneal, 600 s, 21 tries) found nothing below 20. Diagnostics: two or six release calls (more datum-index
+// references) and the b8540 stub given a call leave the datum index in EBP and the header in EDI, so the rotation is
+// not a reference-count tie; 0-7 unused locals 20 each. Without the repeated `if (unit)` (the main body's arms, no
+// barrier, the 20 form's step): the release through `pool` 118 (475 B), with the file's getter 118, through the global
+// 120; the old step with a pool local for the step and the release 140; the 118 form mixes the global and the pool
+// local (match-only), so it is not kept either.
+// M3 lane 1 r131 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, all MATCH; lane 11 r115's 20 form rebuilt at 20, and it is
+// register-masked identical to retail: 156 of 156 rows, so only the EDI/EBP/EBX permutation is left). On the 20 form:
+// `bool finished` declared at its assignment 20 (same code); the lookup result kept as `bool has_unit = ... != 0` 107
+// (the datum index moves to EBX and the pool to EBP, the header stays in EDI); the flags-8 block as one `&&` test with
+// the object index read before it 168 (491 B); the scan from `pool` and the element from `iterator.data` (roles
+// swapped) 22 (the two home reads swap, rotation unchanged); `pool` assigned before the iterator's two stores 23 (the
+// prologue stores reorder, rotation unchanged). Re-measured: data_datum_iterator_next_inlined with a `pool` local for
+// the iterator and the release and main's arms, no barrier, 150 (register-masked 16/15: one pool value serves the scan
+// and the element, where retail reads two homes); with the 20 form's arms 153.
+// M3 lane 6 r204 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, 0x1fb360 and 0x7b430, all MATCH each run; control 122; lane 11
+// r115's 20 form re-applied, 20 at 473 bytes, register-masked aligned 0: saved whole as build/r204/lead-1fb510-20.full.cpp in
+// worktree m3-lane6; body here unchanged). What sets the 20 form's rotation, by diagnostics on it (each reverted): without
+// the first restore call, `recorded_animation_object_set_flag(object_index, 0, (flags & 4) != 0)`, the datum index takes
+// EDI and the header and the pool's data temporary EBP exactly as retail (the listing agrees from the entry down to the
+// restore arm, 78 leading rows); without the second flag call, the `flags & 8` block, the 0xcbf60 call or the tick arm's
+// body the datum index stays in EBP. So the one value that outranks the datum index here is that first call's object-pool
+// data temporary: with the object index, the flags byte and the pool pointer held in EAX, CL and EDX across it, it needs a
+// saved register, takes EDI ahead of the datum index, and pushes the datum index to EBP (retail gives it EBX, after the
+// datum index has EDI). In that diagnostic the second flag call's value takes EBP where retail's takes EBX, so retail also
+// has something alive in EBP through the restore arm. Forms tried on the 20 form to move that order, all 20 unless noted:
+// the step's three stores in the order datum, datum index, index, through a local datum pointer, or index first
+// (file-local copies of the step); the three stores written out in the body on the iterator's fields, in two orders, and
+// with the element pointer assigned first; the datum index stored again after the step; the iterator declared after the
+// other locals; the helper as an if/else (`*flags |= ` / `*flags &= ~`) or as a static forceinline; the helper on a named
+// object pointer 61; the helper with the object's flags written out at each use 188 (510 bytes); the old value named ahead
+// of the conditional 172 (495 bytes); the first call's flag as `(bool)((flags >> 2) & 1)` or held in a named bool; the
+// unit's index named once for both flag calls 65; the restore arm as three separately guarded parts (`if (unit)`, `if
+// (unit && (flags & 8))`, `if (unit && (flags & 0x10))`), with only the last part guarded apart, or as two `if (unit)`
+// blocks; diagnostics: the two flag calls swapped 172, the first one moved after the 0xcbf60 call 100 (the datum index
+// still EBP), a constant flag 152, the second flag call as a direct `&= ~FLAG(22)` 52. Next: a spelling of that first call
+// (or of the unit lookup before it) that leaves a scratch register for its pool data, or that ranks the datum index above
+// it; reference counts of the datum index do not (lane 15 r107).
+// M3 lane 13 r124 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, 0x1fb360 and 0x7b430, all MATCH; control 122): lane 11 r115's
+// 20 form rebuilt (0x7b430's step: `pool` local feeding data_datum_iterator_set_current, lookup through
+// function_badc0(object_index, 3), `if (unit && !(flags & 1)) { tick; continue; } if (unit) { restore }`, no barrier)
+// 20 at 473 B, register-masked aligned 2. On it: the lookup written at each of its two tests 282 (582 B, two lookups);
+// the header read through `s_recorded_animation_object *const &` 20; the release's datum index through a `long const &`
+// bound after the step 20; the `continue` as an if/else with the restore and release in the else arm 20 (same code
+// each). Not kept: the 20 form needs the one-use `pool` copy beside direct reads of the global.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
