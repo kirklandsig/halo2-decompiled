@@ -2017,6 +2017,16 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Word reduction using indexed for/while, entry cursor or captured count 170/170/170/172.
 // Dword reduction using those four walks 159/159/159/155.
 // NOT kept: The local reduction shrinks the native frame and changes the matched caller.
+// M3 lane 2 r121 (fast with 0x56380/0x564c0/0x53b00/0x56000; control 60, aligned/masked 41/20; the caller 0x56380's
+// score in brackets, [0] = matched; reference forms rebuilt: capacity, size, written, kept with `include_mask ? 13 : 11`
+// 134 [0] (aligned 19/18), kept, written, capacity, size with it 137 [13]). New control shapes: the two failures as plain
+// assignments with the later stages under `if (result == 0)` guards instead of else nesting, on the capacity-first ternary
+// form 134 [0] and on the kept-first ternary form 137 [13]; the guards written `result != NONE` on the kept-first form
+// 137 [13] (each the nested form's code: the guards are threaded away); a `valid` flag set by the membership test and then
+// by the clamp, with one `else result = NONE;`, on the kept-first form 180 [13] (482 B) and on the capacity-first form
+// 84 [2] (471 B). Reading of the kept-first ternary listing: the bit takes EBX first and the kept mask EBP, so the size's
+// setne has only DL left, which moves the cursor to EDI (arriving in EAX) and the player to the stack (`ret 0x10`); in
+// retail the bit is in EBP, EBX serves as the kept scratch and then holds the size, and the result's zero stays in EAX.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

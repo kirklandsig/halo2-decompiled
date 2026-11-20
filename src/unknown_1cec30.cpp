@@ -1858,6 +1858,30 @@ PRIVATE __forceinline real const &component_time_step()
 // unchanged), step-first 29, stop-first 46; the target-below-zero and square-root arms as one ternary, step-first 26
 // (same code), stop-first 43. The stop-first listing: the whole head and branch layout retail's except the scale in
 // XMM1, the zero in XMM2 and the stop temp in XMM3 (retail XMM3/XMM2), and the step loaded from `[eax + 4]` both times.
+// M3 lane 2 r121 (fast, control 26; a/m = aligned / register-masked aligned unmatched lines, control 14/11). LEAD, not
+// kept (the positional score rises): the body from the step product on as one forceinline helper called in the `return`,
+// with the scale helper's result as an argument expression, the time step as a `real const &` parameter bound to the
+// globals' rate, the target as a `real &` parameter and the stop distance tested first: 106 at 465 B, a 30/3. The whole
+// head is then retail's with no dead locals (scale in XMM0, `divss xmm0, xmm1`, `mulss xmm0, [eax + 4]`) and the adjusted
+// target is stored to its own home; left are `add eax, 4` with the second product from `[eax]`, and the zero and the stop
+// temp in XMM2/XMM3 for retail's XMM3/XMM2. On that helper: the step tested first 105 (a 5/5, the registers retail's);
+// the target by value 105 / 106 (a 7/7, 32/5: the adjusted target lands in the exponent's home); a pointer parameter for
+// the time step 105 and the reference accessor as its argument 105 (same code each); the time step by value 99 / 103
+// (461 B: the value stays in XMM1 and the target moves to XMM3), unchanged by 1..7 dead locals; the magnitude from the
+// product written again 38 (468 B); the stop distance dividing by the product written again 106; a by-value inline getter
+// called at each use in place of the parameter 26 step-first and 43 stop-first (main's code and the old stop-first code:
+// the head reverts), with a third getter call in the stop distance 111 (479 B) or in the magnitude 118 (473 B); the
+// scale in a named local with `target -= position` in the body ahead of the helper 119 (473 B); 1..7 dead locals in the
+// outer body 43 each (any outer local loses the head); the stop distance written inside the test, through a nested
+// forceinline helper taking the time step by reference, or with the stop ticks and the per-tick travel named 106 each
+// (the lead's code). On main's body: the magnitude from the product written again 118
+// (473 B); the stop distance dividing by the product written again 45. Diagnostic: `*ratio = 0.0f;` between the two reads
+// on the helper 126 (471 B, still `[eax + 4]` twice). Compile-only synthetic screens: a reference or pointer bound to the
+// field gives `[eax + 4]`, `add eax, 4`, `[eax]` exactly when something between the two reads may change the globals
+// pointer itself (a store through any pointer when the pointer is an extern, an opaque call when it is a file static);
+// a store that can only change the pointed-to value, direct reads at both uses (they reload the pointer), a math call
+// ahead of both reads and a by-value copy (kept in a register, or spilled to the stack under pressure, never re-read
+// through its address) do not. In the link-time build no pointer store counts and retail has no call between the reads.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2963,6 +2987,17 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // setter's word copied first re-measured 5 (match-only); on it: `vector3f_scale` as a statement with
 // `set(velocity.i, velocity.j, velocity.k)` 276; `havok_from_vector3d(result, scaled)` 5; the scale's return value
 // passed to `havok_from_vector3d` 249 (1402 B); `speed_sum = speed_sum + ...` 5; a named flag weight 5.
+// M3 lane 2 r121 (fast with 0x1d06c0, 0x1d0400, 0x181db0 and 0x1cf3b0, all MATCH each time; control 8). A compile-only
+// screen of the four-store block after an in-place scale (six shapes): only a two-pass loop for the j and k lanes puts the
+// x store ahead of the j and k products; an inlined constant-flag `if` around the last three stores, a null-checked
+// pointer parameter, a constant-index switch accessor and a three-pass loop all compile to the plain four-store code, so
+// none of them is retail's boundary. Forms: `result->set(...)` moved to the head of both arms of the other-contacts test
+// 187 (the four stores are hoisted back above the branch in reverse order, the zero from another register); x stored
+// ahead of the test with the y, z and w stores at the head of both arms (diagnostic) 52 (hoisted back the same way, the
+// products as copy, i, j, k); `set` after the state byte in both arms 208 (1473 B); the private property setter taking a
+// `long` passed through its address, as the matched out-of-line setter does, 16 (the second contact loop's unrolled
+// product flips, the zero stays in EBX); that setter converting the `long` at the put 30 (the zero moves to EAX after
+// the search).
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

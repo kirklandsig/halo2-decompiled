@@ -877,6 +877,13 @@ static inline bool teams_enabled_19e1c0()
 // (diagnostic: it adds a test retail lacks) on the plain result 473 (1392 B: `remaining` in EBP and the token re-read from
 // its slot for every compare as in retail, token_length EBX and event EDI spilled where retail has EDI/EBX), on the
 // volatile result 428 (1436 B).
+// M3 lane 2 r122 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B). Reading:
+// both builds hand out ESI, EDI, EBX, EBP in rank order; ours ranks result, token, token length, event, retail result, token
+// length, event, `remaining`: the same order with the token left out. Every callee's convention agrees (0x1587f0 takes its team
+// in EDI in both). On the plain result: the token read through its own address (`word const *const *reference = &token;`) at
+// the virtual call, at the fallback copy, at both, or at the first compare 691 each (same code: the reference folds away, so it
+// does not take the token out of the ranking); the four name copies through a file-local inline bounded copy 691 (same code);
+// the "%s" formats through a file-local inline bounded format 594 (1269 B, token still EDI); both helpers 594.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

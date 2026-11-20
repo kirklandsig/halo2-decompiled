@@ -1129,9 +1129,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
-// score 5 (was 17): the lookup reads the unit index again through the player getter, which gives every register of
+// score 5 (was 5): the lookup reads the unit index again through the player getter, which gives every register of
 // retail's; left is the first player address, `mov edx, [edx + 0x44] ... add edx, eax` where retail has
-// `add eax, [edx + 0x44]; mov edx, eax` (the getter's sum is a shared temp). Earlier first line: 17 (was 17).
+// `add eax, [edx + 0x44]; mov edx, eax` (the getter's sum is a shared temp). Earlier first lines: 5 (was 17); 17 (was 17).
 // MiniMax C (11-06): no new form, no lower score; the unit index still lands in ESI where retail keeps it in EDI and the object table pointer lands in EDI where retail keeps ESI.
 // MiniMax D (11-06): no new form, no lower score (17): the unit index still lands in esi where retail keeps it in
 // edi and the object table pointer lands in edi where retail keeps esi; this round a read-only player, a read-only
@@ -1276,6 +1276,14 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // result local 44 (140 B); `NONE != player->unit_index` 5; `NONE != slot && NONE != unit->weapons[slot]` 5 (same code).
 // Matched 0x151c10 and 0x151940 open the same way and fold the data load into the add; here the getter reload gives the
 // data two uses at code generation, so it is loaded into EDX first.
+// M3 lane 2 r123 (fast; control 5): the player bound as `s_tail_player *const &` to the getter's result 17 (plain reads)
+// and 5 (with the getter reload, same code); the player as an `s_tail_player &` 17, with the getter reload 5 (same code);
+// the first player address in the byte-offset spelling with the typed getter reload 5, the reverse 5, the reload as a
+// byte-offset `long` read of +0x2c 5 (all the same code). Diagnostics, reverted at once: a compiler barrier intrinsic
+// between the test and the lookup on the plain-read form 44 (139 B: retail's `add eax, [edx + 0x44]; mov edx, eax`
+// opening returns, so retail keeps the player live for a second read, but here the two reads are never merged and the
+// unit index takes ESI); a call of the existing empty 0x175f40 at the same place 17 (expanded to nothing before the
+// early merge, same code as the plain read).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

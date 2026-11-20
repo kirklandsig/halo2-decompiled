@@ -673,6 +673,13 @@ struct s_24e9c7_points
 // Shared external origin pointer or lvalue 125/125; with the first, both upper or all four
 // base copies before half-width conversion 123/124/129 for either form. NOT kept: two-point best
 // gain. The first copy uses EDX earlier, but the across-Y spill and return home still differ.
+// M3 lane 2 r122 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125; body unchanged). Reading of retail's frame:
+// two 4-byte float cells sit between the first-bitmap cell and the result ([ebp-8] holds across j and later the side's y, read
+// from memory at every use; [ebp-0xc] is never touched), where ours has the result at [ebp-8] and an 8-byte aggregate at the
+// bottom ([ebp-0x18]). Tried: the side as two reals set to the across products and scaled in place with `=` or `*=` 133 / 133
+// (first difference +0x5); every offset as reals (no aggregates) 133; the across pair as a two-float aggregate 144 (746 B);
+// `back` from the across products 154 (753 B); the forward pair read once into locals 142 (740 B); every negation as
+// `0.0f -` 147 (735 B).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
