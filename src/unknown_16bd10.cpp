@@ -1380,6 +1380,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `dot3f(&plane.n, offset) - plane.d` 126 (same code), as `dot3f(offset, &plane.n) - plane.d` 394 (1700 B), against the
 // direction instead of the normal 37/37 (screen); the plane constant as `dot3f(&plane.n, position)` 22 (same code), against
 // the direction either way round 36/36 (screen). No spelling preloads left.j.
+// M3 lane 8 r208 (h2m fast with 0x16c6f0, 0x13cb40, 0x142d10 and 0xa9b40, all MATCH; control 126): case 2's squared length
+// as the copied normal's own dot (`dot3f(&plane.n, &plane.n)`, no left loads) 177; `t` started at zero at its declaration
+// with no else arm 454; the length test as `== 0.0f` with the zero arm first 136; t as one ternary 126 (same code); the
+// squared length between the normal copy and the plane constant 399 (1700 B).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -575,6 +575,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // to the result (`result = start + count <= length; if (result)`) with the volatile string 40 (104 bytes) [6]; the sign
 // and clamp tests as `count >= 1` and `count >= 0x201` 23 [match] (compares with immediates; the walk ECX / counter EDX
 // split unchanged); a plain string with one volatile read of its own address at the scan, the early source plain, 39 [6].
+// M3 lane 8 r208 (h2m fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): the length bound by a
+// const reference for the compare 21 [match]; a redundant `result = false;` at the top of the guarded arm 21 [match]; the
+// early source bound by a const reference for the copy 21 [match] (same code each); the natural body (source at the copy)
+// with the length bound by a const reference 28 [6]; that with start bound by a const reference for every use 35 [25]; the
+// natural body with a plain string 41 (104 bytes) [35]; the natural body in all 24 parameter orders (definition and both
+// calls together) 28 each [5..39]: the order never moves this function's convention, start arrives in EDX and stays
+// there for the whole body (walk EDI, counter ECX) whatever its position in the list.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

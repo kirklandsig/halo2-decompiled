@@ -224,6 +224,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // between the object lookup and force 218 (the update-first code: entry homes and EBX as retail, but ESI/EDI swapped for
 // the two timestamps and the late object index, no force-arm reload); the hidden test through its own lookup with the
 // object local declared after the force block 250 (838 B: the lookup is not merged).
+// M3 lane 8 r208 (h2m fast with 0x3d2c0, 0x3db00, 0xd1850 and 0x3e4e0, all MATCH; control 21; `bool update = false;` just
+// above force re-measured 218: entry, object EBX load and homes as retail, then the two timestamps in EDI/ESI, the false
+// store after the object's home store and no force-arm reload): on that update-first form, the sample time read through a
+// const reference to its field 218, the update time so 218, both 218, the sample time copied and bound by a const
+// reference 218, force bound by a const reference for its test and the 0xd1850 argument 218 (same code each: none moves
+// the timestamps' ESI/EDI tie).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

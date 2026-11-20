@@ -303,6 +303,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // plain-read form (no reference): the started test `NONE != object_index` 116, the request test `NONE == object_index`
 // 116, the marker test `NONE != object_index` 116, all three 116 (531 B, the plain-reads code); on the kept form the
 // request and marker tests constant-first 11 (same code). The operand side does not move the object/tag contest for EBP.
+// M3 lane 8 r208 (fast with the eight callees listed, which reproduces the plain 11 and the plain-reads 116; every form
+// without the reference, object reads plain, control 116): the lookup in 0x18c250's form (tag view `.data`, a class-index
+// local, a classes local, the existing spatialization helper) 154 (541 bytes); a second tag lookup for the spatialization flags test
+// in the same block (CSE'd away; diagnostic for a pre-CSE tag use) 118 (530 bytes, tag still EDI); an early object copy
+// bound by a const reference for the early tests and marker calls 116; the late uses (call, started test, dispatch) through
+// a const reference bound to the parameter 116; positioned read through the spatialization bit-field 116 (same code each).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
