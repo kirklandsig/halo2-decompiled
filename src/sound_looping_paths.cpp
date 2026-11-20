@@ -794,6 +794,17 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // count is still read as a word where retail reads a dword, and the target count and primary still have other homes;
 // the permuter's best form is 842, under the 8-point bar. The decibel constant g_44a0b4 is a writable global in
 // src/unknown_2197f0.cpp, so its 14 loads carry a different address than retail's .rdata constant.
+// M3 lane 2 r122 (fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 846; body unchanged). Lane 11 r133's lead
+// (build/r133/lead-0x18ae80.patch in the m3-lane11 worktree) still applies: 879 at 3291 B, difflib-aligned 305 against the
+// body's 1004, register- and frame-masked 157 against 476. On it, for the first loop's roles (retail forms the sound with `lea
+// ebp, [ecx + eax]` and reads the tag through it into ECX; the lead loads the tag into EDI with the indexed address and leaves
+// the sound in EAX): a named tag 883; the tag declared ahead of the sound 883; a named flags word read ahead of the count's
+// increment 879 (masked 160); the duplicate scan through a walking element pointer 883; through a file-local inline search
+// taking the list and the tag 879 (same code); the tag test ahead of the sound pointer 938; the choice's tag stored last 878;
+// the duplicate scan re-deriving the element from the index 888 (3306 B, aligned 293: the tag then takes EBP); the sound
+// declared at the loop top 879 (same code); the sound read through a const reference to a named element 885; the sounds base
+// in a named local 879 (same code). Diagnostic (a behaviour change, reverted): one read of the sound after the 0x14b240 call
+// 816 (3280 B) with the tag still in EDI, so a longer life alone does not give the sound EBP. None moves the tag out of EDI.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

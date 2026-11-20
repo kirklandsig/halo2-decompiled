@@ -904,6 +904,26 @@ void __stdcall function_1160c0(real dt)
 // NOT kept: the short ordinal reaches retail length but changes the saves and regresses.
 // The frame agrees and the selected segment still needs EDX and its +0x14 spill.
 // MiniMax A (11-20): no new form, no lower score (144); the first difference is the loop head's alignment padding (the three-byte lea esp, [esp]), so the body is 1371 bytes against retail's 1368 and every later jump target is off by three; retail keeps the selected segment in EDX and spills it at +0x14 where ours holds the segments base in EDI and the segment in ECX and spills at +0x20, and the 113 lead needs a file-local one-caller helper, which is match-only and raises three shared users.
+// M3 lane 2 r122 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 144; body unchanged). Lead for the
+// EDX base: retail's base, segment and loop-end definition reload all take EDX because ECX is still held when the segment is
+// formed. Diagnostics (a count local captured ahead of the tick and stored to the record later; each reverted): used in the
+// first-node arm 264, in the other arm 249, or after the tick 265, the segments base and the segment both take EDX (`mov edx,
+// [ebx+0x9c]; add eax, edx; mov edx, eax`), the first-node copies and the node-position copy use ECX and the loop end reloads
+// the definition into EDX, all as retail (the spill cell stays at +0x20 and the 0x211060 set-up keeps the index in EAX);
+// stored ahead of the tick 291 (base EBP) and after the if/else 321 (count callee-saved). So one value living in ECX across
+// the segment's definition is the whole ECX/EDX difference; retail shows no instruction for it. Natural spellings that do
+// not hold ECX (144, same code, unless a count is given): the tick as `node->ticks = node->ticks + 1`, `(short)(node->ticks
+// + 1)`, `+= 1`; `!i`; `i <= 0` 145; `i < 1` 291 (1373 B); `bool first = i == 0` ahead of the tick; ahead of the segment 290
+// (1376 B: the flag takes a register, segment EDX, base EBP); `bool last = i == count` for the selection; a count local for
+// the selection; a named long index; the tick written in both arms 291 (1373 B); a long copy of `i` for the node, the
+// selection and the first-node test 283 (retail's 1368 B: `i` then stays in ECX to a `test ecx, ecx`, the count in EAX,
+// segment EDX, base EBP); the physics index in a local read ahead of the first-node test 160, ahead of the tick 162, ahead of
+// the segment 270 (1370 B), at the top of its arm 145 (base EBP in the first three, segment still ECX: the physics index is
+// not what holds ECX). The segment through accessors taking (count, base, index) by value in three parameter orders, the
+// definition and index, or clamping inside 144/144/144/144/145; the count and base as a by-value two-field block local 282
+// (1375 B), passed by value 309 (1384 B), by const reference 144; `segment = base; segment += index` re-measured 272 (1369
+// B). Diagnostics on the 0x211060 site: no call 418 (1261 B), the call without its test 295, a constant tag 262 (base EDI,
+// segment ECX in each).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

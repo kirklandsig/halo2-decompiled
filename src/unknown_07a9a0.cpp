@@ -1710,6 +1710,17 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Dword bucket updates by explicit first/second/both assignments 911/911/911. Named first/second/both
 // bucket indices 928/911/928. First or both bucket addresses 911/911. NOT kept: all shorten the
 // body and increase the score. The frame reaches 0xb0 and the first variant lookup still expands.
+// M3 lane 2 r122 (fast with 0x73530, 0x192e60, 0x192db0, 0x63220, 0x66050 and 0x1934f0; control 871; body unchanged). The top
+// 0x192e60 call is not this body's choice: (a) cut down to three lines (the index accessor, the call, a store and a return) this
+// file still expands the lookup at the top, as do cuts after the type-5 scan (274 B), the player loop, the group loop and the
+// party block; (b) the matched 0x73530 keeps the same depth-0 call out of line only inside its `#pragma inline_depth(0)` region:
+// the same three-line body placed in that file outside the region expands it too; (c) seven spellings of 0x192e60 itself (calling
+// 0x192db0, the tests written out, nested ifs, a named element pointer, early returns, a named bool, the current one) all leave
+// the top expanded, three of them losing 0x192e60's own match; (d) one caller of this function removed (0x6fa60's dropped call)
+// changes nothing; (e) flag diagnostic (reverted): the callee's file built without its SSE flag changes nothing here, in
+// 0x73530, 0x63220 or 0x66050. So this link expands 0x192e60 at every depth-0 call site, where retail keeps it out of line at
+// depth 0 in three functions (here, 0x73530, 0x66050) and expands it only inside this function's player loop: a link-wide
+// inline choice, not a source form of this body or of the callee.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
