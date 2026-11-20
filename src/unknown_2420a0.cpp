@@ -2614,11 +2614,11 @@ bool function_241900(long player_index)
 // defaulted type with if, ternary reassignment or +=7 33 each; Boolean/arithmetic type 54 each.
 // The defaulted type reaches retail's early ECX data load but keeps its type branch and late stores.
 // Original body restored.
+// Matched in a full build with stand-in SDK headers (was 13): the event is declared in a bare block around the event code
+// after the first test, with the statement order of 0x19ebe0 (cause player, cause team through event_player_get, effect team).
 // @retail 0x242e00
 void function_242e00(long player_index, long team)
 {
-	s_event event;
-
 	if (function_15b7c0(1, player_index))
 	{
 		long local_0 = ctf_options()->engine_type == 9 ? 0x12 : 0xe;
@@ -2627,12 +2627,15 @@ void function_242e00(long player_index, long team)
 		function_1967d0(local_1, local_2, local_0, 1);
 	}
 
-	game_engine_event_initialize_inline(&event, ctf_options()->engine_type == 9 ? 10 : 3, 5);
-	event.cause_player_index = player_index;
-	long cause_team = ctf_player_get(player_index)->team;
-	event.effect_team = team;
-	event.cause_team = cause_team;
-	game_engine_event_send_inline(&event);
+	{
+		s_event event;
+
+		game_engine_event_initialize_inline(&event, ctf_options()->engine_type == 9 ? 10 : 3, 5);
+		event.cause_player_index = player_index;
+		event.cause_team = event_player_get(player_index)->team;
+		event.effect_team = team;
+		game_engine_event_send_inline(&event);
+	}
 }
 #pragma inline_depth(255)
 
