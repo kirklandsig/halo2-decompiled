@@ -733,6 +733,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // length/zero homes differ.
 // Frame 0x48 and extent agree. The projection preloads k in this build and j in retail.
 // Earlier (126, was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// MiniMax E (11-20): score 126 (was 126): no new form, no lower score. The case-2 squared length still hoists the
+// camera point's left.k into XMM1 where retail hoists left.j, so the sum's accumulator stays in XMM0 against retail's
+// XMM1 and every later float block runs with the registers shifted by one; the distance dot itself is instruction for
+// instruction the same in both. Measured this round and dropped: the squared length with the camera point's left on
+// both sides 392, the length written out as left.j, left.k and left.i squares 487, the squared length's dot arguments
+// swapped 394, the distance dot's arguments swapped 171 and the two dot statements in the other order 399. The hoisted
+// component is not reachable from the dot's spelling, so the body stands.
 // MiniMax E (11-19): score 126 (was 126): no new form, no lower score. Read from the listing again: the case-2 plane
 // length still preloads the camera point's left.k into XMM1 where retail preloads left.j, so the length's accumulator
 // stays in XMM0 against retail's XMM1 and the zero that follows stays in XMM1 against retail's XMM0; the plane distance

@@ -223,6 +223,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // M3 lane 12 r154 (`--fast 0x1af160 0x1e1f20`, control 12; `const &` bindings, each match-only): the 0x262b40 result read
 // through one for its two +0x14 tests and the 0x210ac0 argument 12; the prop node, the actor, both, and the 0x25d690 result
 // each bound straight to its lookup's result (a hidden temporary) 12/12/12/12 (all the same code). 0x260670 is still 440.
+// M3 lane 12 r157 (fast with 0x1e1f20, control 12; 0x260670's file was another lane's this round): the actor through a
+// `const &` at its two late uses 12; a second actor pointer local for the three flag tests 12; the saved +0x418
+// reference copy read ahead of the node lookup 27; the bool output declared at the top with its address named there 12;
+// the result flag stored true again at the top of the non-equal arm 124 (978 bytes).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

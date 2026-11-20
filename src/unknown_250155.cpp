@@ -2808,6 +2808,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
    players' chosen teams; hides the slots past the count */
 // score 87 (was 87; round 196's forms at the end of this note): the shown count, element-address and index homes are permuted against retail's, retail reloads
 // score 87 (was 87): r275 unchanged. The shown count, element-address and index homes are permuted against retail's, retail reloads
+// MiniMax E (11-20): no new form, no lower score (87): re-read against retail, the frame agrees at 0x788 and the three
+// live pointers sit in the other homes (retail keeps the players array at -0xc, the element address at -8 and the player
+// record at -0x14, ours at -8, -0x18 and -0xc), so every later use of them pairs with the wrong row; the homes are not
+// reachable from the expression's spelling and moving them would mean steering the declaration order. The body stands.
+// score 87 (was 87): the shown count, element-address and index homes are permuted against retail's, retail reloads
 // players[i] after the 0x53b40 voice query (BLOCKED-BY that chain's helper shape in src/network_voice.cpp, held by
 // another lane this round), and the last loop keeps the screen in ebx where retail gives ebx to bitmap_a.
 // m3 lane 4 r224: dead initialised longs at the top, K = 1-6, 8, 10, 12, 14, 16, 20, 24, 28: 87 at every K (921 bytes,
