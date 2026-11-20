@@ -5255,7 +5255,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00179e80,290,game,speed,a16 pad,,,00142a60 00156b60 0017aec0,src/unknown_175bd0.cpp,matched
 00179fb0,966,game,speed,a16 pad,,,000b7880 00146320 0017ae50 0017aec0,src/unknown_175bd0.cpp,matched
 0017a380,1304,game,speed,a16 pad,,,000baf40 0011c120 0016a8e0 0017a8a0 0017ae50 0017aec0,src/unknown_175bd0.cpp,matched
-0017a8a0,1328,game,speed,a16 pad,,,000259a0 000259d0 000a7640 000a7870 000b7930 000b7b40 000bb950 000c0350 000d6660 000d6c80 001469f0 00172750 00177d10 00177f60 0017e670 00188dd0 00189060 001895f0 001ca290,src/unknown_175bd0.cpp,todo
+0017a8a0,1328,game,speed,a16 pad,,,000259a0 000259d0 000a7640 000a7870 000b7930 000b7b40 000bb950 000c0350 000d6660 000d6c80 001469f0 00172750 00177d10 00177f60 0017e670 00188dd0 00189060 001895f0 001ca290,src/unknown_175bd0.cpp,matched
 0017add0,119,game,unknown,a16,,,,src/unknown_175bd0.cpp,matched
 0017ae50,103,game,speed,a16 pad,,,0017ae50,src/unknown_175bd0.cpp,matched
 0017aec0,105,game,speed,a16 pad,,,001664da,src/unknown_175bd0.cpp,matched
@@ -9271,7 +9271,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00261280,326,game,speed,a16 pad,,,00260160 002605d0 002624d0 00262b40,src/unknown_261280.cpp,matched
 002613d0,314,game,speed,a16 pad,,,001caae0 001cab80 00260670 00261510 002623a0 002624d0 00262b40,src/unknown_261280.cpp,matched
 00261510,2059,game,speed,a16 pad,,,000baf80 0014a280 001caa40 001e1e50 001e1f20 001e3b00 001e4990 001e4a10 001e4a50 001e5280 00210850 0025d690 0025d740 00267840 0026c2d0,src/unknown_261280.cpp,matched
-00261d20,415,game,speed,a16 pad,,,00261ec0 002623a0 002624d0,src/unknown_261280.cpp,todo
+00261d20,415,game,speed,a16 pad,,,00261ec0 002623a0 002624d0,src/unknown_261280.cpp,matched
 00261ec0,695,game,speed,a16 pad,,,00261ec0 00262180,src/unknown_261280.cpp,matched
 00262180,530,game,speed,a16 pad,,,002623a0 002624d0 0029db90,src/unknown_261280.cpp,matched
 002623a0,295,game,speed,a16 pad,,,0003ea30 00210850 00262a30 00262b40,src/unknown_261280.cpp,todo
