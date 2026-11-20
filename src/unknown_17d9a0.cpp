@@ -501,6 +501,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax C (11-20): no new form, no lower score (535): the tag still spills at frame+0xb4 where retail has +0x94, the zero
+// counter and the constant one still sit eight bytes below retail's, and the entry still takes the object pointer in EDX and
+// the table global in ECX the other way round, so every later home is one slot off.
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
 // M3 lane 4 r230 (plain each; base 535, aligned 672, register/offset-masked 355). Retail keeps 1.0f (XMM0), 0.0f and the
 // three scaled axis components (XMM5-7) live from the normalize through the sign and the angle clamp: its equal-normals

@@ -79,6 +79,10 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax C (11-20): no new form, no lower score (125): the side point declared at function scope instead of inside the
+// corner block compiles to the same code, so the frame's homes are not set by the declaration order; the result, kind
+// and bitmap homes are still eight bytes above retail's; a permuter run with annealing (18 tries, 301 s, 1 confirming
+// build) reached 124, one point, and was not kept.
 // MiniMax B (11-20): no new form, no lower score (125): the result, kind and bitmap homes are still eight bytes
 // above retail's and the early across-axis product still has no retail spill at [ebp-8]; this build sinks the two
 // across products into the side computation, so they never get a stack home and the frame slots stay high. The

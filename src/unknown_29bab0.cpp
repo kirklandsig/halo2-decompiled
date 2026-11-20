@@ -72,6 +72,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // a planar vector 706 (frame moves); vector3f_add's operands swapped 489 and local_13 declared before local_11 489 (both
 // the same code); the side distance as an if/else assignment 489 and the flip as `local_21 = local_22 ? local_21 :
 // !local_21` 489 (both the same code). All match-only or worse; body unchanged.
+// MiniMax C (11-20): no new form, no lower score (489): the position and the sum still take each other's homes (the
+// position at +0x8c where retail has +0x80), and the normaliser still squares k, j, i where retail squares i, k, j;
+// that order is fixed in include/vector_products.h, which this lane may not edit.
 // MiniMax C (11-19): no new form, no lower score (489): the position and the sum still take each other's homes (the
 // position at +0x8c where retail has +0x80); neither declaring the position ahead of the sum nor hoisting the sum's
 // declaration to the top of the body moves that slot, and the normaliser still squares k, j, i where retail squares i, k, j.
