@@ -2192,6 +2192,10 @@ long function_1fa7f0(void);
 // 452 (1765 B); the outer loop as a `for` advancing `index = next` in its header, `next` declared ahead of it 400 (same
 // code); the outer loop as `do { } while (index < count)` (it always runs once: count > 1) 467 (1735 B); the edge
 // declared and set to 0xffff inside the untyped arm 481 (1769 B). Body unchanged.
+// M3 lane 4 r233 (h2m fast; aligned/slot/register-masked counts for the control 275/178/56): the forward scan as
+// `while (end < count && points[end].type == NONE) ++end;` then `if (end < count)` 475 (1765 B); `candidate + 1 == count` 400
+// (same code); no data as an early return at the top 457 (1747 B, 285/188/67); the `count <= 1` arm first 467 (1754 B);
+// `short type = step->type;` at the loop top with no store in the typed branch 456 at 1746 B (304/183/57).
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

@@ -734,6 +734,17 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // local_6 = field_48;` read once for the test and every later use) 667 (2852 B); the same with the positive test and the
 // block ending in the common return 664 (2863 B); the output cleared through vector3f_assign 521 (same code); `*arg_5 = 0.0f`
 // after the hit flags 521 (same code); the minimum declared after the hit flags 522. Stacked score lines merged into this note.
+// M3 lane 4 r232 (fast; control 521; all on lane 2 r113's 331 lead, re-measured 331 at 2896 B, 138 aligned rows): the
+// lead's first difference is the second cross only (retail loads each component of the global axis into a fresh register
+// and multiplies it by the cached input component; ours folds the global as the memory operand), and the block after it is
+// the same code two rows early. Redundant paren pairs on the plain reads ahead of it (the range, the input copies, the
+// output clears; one to three pairs) 331 each (same code: with no operator inside they shift nothing, and no arithmetic
+// precedes that cross). The private cross helper at the second site, the third, or both 331 (same code); cross3f at the
+// second 331 (one row moved), at the second and third 406 (2872 B). A one-use pointer local for the global axis at the
+// second cross 582 at 2886 B (retail's length, 138 aligned rows: every product then local-first, retail's are global-first,
+// and the listing runs four rows off from +0x91); that local declared ahead of the basis vectors 373 (2896 B), at the
+// function top 658, after the input copy 599, used for the up fallback as well 582 (same code); the forward pointer set
+// ahead of the crosses and passed to them 598 (2879 B). Body unchanged (the lead is not applied).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

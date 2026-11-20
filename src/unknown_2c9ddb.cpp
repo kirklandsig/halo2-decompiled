@@ -427,6 +427,13 @@ extern long g_55c154;
 // half, but `this` still takes EDI, so the constant is not what evicts it: `this` outranks `saved` in every two-arm
 // form, where retail gives `saved` EDI and `this` EBX); a variant local of its own for the second half 174; `saved` as
 // a dword 174; `saved` as a const local 174; `saved` read through a const reference in both arms 174 (all the same code).
+// M3 lane 4 r233 (h2m fast), at 61: two load arms re-measured 174 (595 B; there EBX holds the constant 1 through the first
+// half, the bit test, the flag_c store, the three controller masks and the dialog's 1, then `saved`, then the variant's
+// address, while `this` takes EDI and is spilled); two arms with all three copies as memcpy (0x2c4e9c's spelling) 174; two
+// arms ending in one shared request call with a mode local and a goto to the failure call (diagnostic) 92 (578 B); one load
+// with the create-default test straight after the load and the index store and copy in each arm 167 (576 B); that with the
+// ternary in the load's argument and `selected == NONE` tested again 173 (567 B); one load with `selected` set to `saved`
+// when it is NONE 76 (577 B).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
