@@ -1095,6 +1095,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Late result bindings for found/position, normal/fraction, entity indices (subsets 1 through 7):
 // 270/268/279/236/277/275/378. One final result binding 396. NOT kept: the entity-index binding
 // gains two at 1244 bytes and retains frame 0x40. The second-node slot and frame still differ.
+// M3 lane 16 r158 (fast with 0x1829b0, 0x1821d0, 0x182800, all MATCH; control 238), the 1..16 classifier helper's
+// body only: `limited = 1; if (limited <= value) { limited = 16; if (limited >= value) limited = value; }` 320 (1243 B:
+// retail's `mov ecx, 1` / `mov ecx, 0x10` preloads, but `cmp value, limited` where retail compares `limited, value`, and
+// still one data load); the same reading the data field at each compare 321; as early returns of the comparison 336
+// (1228 B); the tests as `!(limited > value)` / `!(limited < value)` 320, as empty-then arms 320 (the compare operands
+// stay value-first in every spelling).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

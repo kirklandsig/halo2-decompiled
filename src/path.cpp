@@ -934,6 +934,18 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // edge shift 344.
 // The 0xe4 prologue returns with indexed fill, but the completion flag still uses +0xf and the body grows.
 // The opening short scan and long link ordinal are restored.
+// M3 lane 16 r158 (fast with 0x270930, 0x210a30 and 0x26f3f0, which now MATCH, so the r122 BLOCKED-BY 0x26f3f0 reading is
+// gone; both builds end in `ret 0x24`): the two-flag lead re-applied from build/r154 is 2 again (only `mov ebp, [esp + 0x104]`
+// / `mov edx, [esp + 0x10]` at the scan latch). On that 2: the fill split into an edge loop then a step loop 385 (1405 B),
+// a step loop then an edge loop 368 (1404 B); the latch's `previous` stored before `previous_index` 4 (the two stores
+// swap, the pair stays); const on lookup/input, on the margin, on the origin pointer or on the link data pointer 2 each
+// (same code); the edge index read as `edge_indices[j]` at each test 2, and for the edge lookup too 2 (same code: extra
+// references of j do not move the pair); the previous point chosen after the step point 164; an exit test
+// `if (node->parent == NONE) break;` ahead of the latch statements 344 (1373 B), between them 344. Diagnostic (a probe
+// global, reverted): a test-and-store between the depth test's join and the latch statements gives retail's pair order
+// (312 with its own lines); after the latch statements, at the traversal's top or in the fill loop it does not.
+// Also on the lead: both step point copies as memcpy 2, only the previous-node copy 2, only the destination copy 2 (same
+// code each); the parent node pointer formed after the two cross-link stores (main's order) 237 (1392 B).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
