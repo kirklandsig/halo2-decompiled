@@ -482,6 +482,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax H (11-20): no new form, no lower score (23): the old team mask still reloads narrowly for the compare and
+// once more for the change block where retail reloads its word spill once into ECX ahead of the first jne and shares
+// that register with the OR for the store; a dword mask with a dword OR and a word store (33), the same with the
+// compare narrowed on the mask side (82-83), the word mask with the OR uncast on the present teams (24) and with the
+// present teams first (24), the word mask with the store written as one expression (77) and a dword mask stored
+// inline (82) all score worse, so the body stays as it is.
 // MiniMax G (11-19): 23 (was 32): the kept form was re-measured with a plain check (23, same 10774 matched) and the
 // mask's type was tried once more around it: a dword mask with a dword OR and a word store (33), the same with the
 // compare narrowed on the mask side (83), the same with the present teams cast to a word (83), the dword mask in one
