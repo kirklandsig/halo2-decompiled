@@ -1229,6 +1229,14 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax D (11-20): no new form, no lower score (14, 1034 bytes): retail's block after the 0x119bc0 call still differs
+// in the tail (retail spills the 0x119bc0 result to a stack byte in the dead definition pointer's slot and pushes the
+// containing dword, this build keeps the result in al) and in the copy's load order (retail hoists the source's first
+// component above the stores through the object pointer, this build does not).
+// A typed vector member at the object's +0x88 (its unknown88, with the old value90 read rewritten as that member's k)
+// and the copy written through the member give byte-identical code (14, 1034 bytes), so the copy's spelling is not what
+// differs; the hoist needs the source local's address known not to escape, and the 0x1c4b00 call makes it escape.
+// Still BLOCKED-BY 0x1c4b00 (bool formal and its 14 declarations, in other lanes' files), 0x1ec690 and 0x1eb6f0.
 // score 14 (was 14; 43 before): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
 // and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still

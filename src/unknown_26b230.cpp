@@ -1789,6 +1789,16 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax D (11-20): no new form, no lower score (87; 89 on this build's reduced image). The in-arm compare (126 at 480 B)
+// gives retail's x87 compare and retail's homes for the selection (+0x14), the score (+0x18) and the best (+0x1c), but ours
+// still keeps the walk's pool in memory and the selection in EDI (reloaded at the loop top), while retail hoists the pool into
+// EBX and keeps the selection on the stack only; the score local hoisted out of the team arm measures the same 126. Body
+// restored to the kept form.
+// MiniMax D (11-20, added): the two forms combined - the in-arm compare with the selection taken from
+// `groups.iterator.datum_index` instead of the walk's copy - measures 128 (480 B): the selection is memory-only and the pool
+// is hoisted, but into EDI rather than retail's EBX, the selection/best/score homes rotate to +0x1c/+0x18/+0x14 and the
+// walk's not-found step threads to the exit instead of keeping the null clump live in EAX. With the walk's copy the in-arm
+// form is 126 with the same two register differences, so neither reaches the kept form's 87. Body restored.
 // score 87 (was 87): Retail keeps the pool in EBX and the selected handle on the stack. The score comparison uses x87.
 // round 112 (m3 lane 12) note at the end.
 // M3 lane 6 r188 (fast with the file's functions and 0x1e46c0/0x268bb0/0x269580/0x2694d0/0x269250, control 87): on the
