@@ -1475,6 +1475,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // First field as output with the pixel returned by value, pointer/reference 352/352;
 // field readback on the original packer 352. NOT kept: the 301 form saves the color
 // pointer but adds a register copy between stores where retail uses the same packed register.
+// M3 lane 12 r163 (H2M_FAST with 0x42c50/0x42b20/0x43740 MATCH; control 351): case 0's edges written x, y, z (first then
+// second) 355; case 0's second edge before the first 459 (2580 bytes); the u step kept positive with `u -= u_step` in
+// the loop 611 (2592 bytes); the state clamp through PIN 356; the outer vertex as `vertex[1]` at each use (no `outer`
+// pointer) 662 (2552 bytes). Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

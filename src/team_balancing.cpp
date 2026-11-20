@@ -1037,6 +1037,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // (next_party then held in EAX through the copy loop); the copy first with the maximum as one ternary on the copy 75
 // (0x7e210 879); the strict test `next_party < party_indices[i] + 1` 35; `party_indices[i] >= next_party - 1` 53. The
 // player count still arrives in EDX in every form. All restored.
+// M3 lane 12 r163 (H2M_FAST with 0x91e30 MATCH, 0x7e210 871; control 34): `party_indices[i] + 1 >= next_party` 35; an
+// early `return false` after the count call with the clamp returned directly 63 (203 bytes); open_slots from
+// `player_count + extra_count` with total named after it 71; imbalance declared at the top 66; the equivalent test
+// `party_indices[i] >= next_party` 81 (169 bytes). The player count still arrives in EDX in each.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

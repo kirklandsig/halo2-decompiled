@@ -301,6 +301,10 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // flags in one declaration 439 (same code), declared after the best score 440, the evaluator loop's flag declared at the
 // function's top and set before the loop 439 (same code); on main's body the sorted index as `long index =
 // sorted_indices[i]` 619 (3085 bytes). The flags still take a dword each (+3 and +0xb against retail's +6/+7).
+// M3 lane 12 r163 (H2M_FAST with 0x2605d0/0x2613d0 MATCH; control 440): the range read once into `range` for the limit
+// test as well (main mixes the local and a field re-read) 810 (3113 B); the two flags' declarations exchanged 440 (same
+// code); `within_limit` alone declared just before the scoring loop 758 (3065 B), `finite_distance` alone there 615
+// (3081 B); the sort scratch declared at the top ahead of the result 440 (same code). Body unchanged.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

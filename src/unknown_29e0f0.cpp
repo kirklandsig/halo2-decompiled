@@ -79,7 +79,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 367 (was 329 with MiniMax C's hand-inverted loop, reverted at review; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
+// score 321 (was 367): the callee-saved roles are swapped from the entry on (ours EBP for the zone pointer and the
+// group index, EBX for the group table and the record; retail the reverse), and the pass scan's record index is
+// strength-reduced into a callee-saved register where retail recomputes it from the record base at the latch.
+// Earlier 367 (was 329 with MiniMax C's hand-inverted loop, reverted at review; 382 before MiniMax G's memset and bit-vector group form): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
 // M3 lane 4 r230 (fast with 0x29e730/0x29de20, both MATCH; control 367, difflib-aligned 323, register/offset-masked 135).
 // Retail's output loop indexes the output by the count each pass (`imul eax, eax, 0x1c`), walks a separate cursor (SI)
 // and keeps the group's record in EDI. The output written to `&arg_4->field_30[local_37]` with a `short` cursor copied
@@ -762,13 +765,24 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // while as well 418. MiniMax C's guarded do-while (367 -> 329, the bound test before the loop and again after its body)
 // is a hand-inverted loop and was kept by mistake at review: the scan is back to the plain while, 367 (0x29e730 and
 // 0x29de20 still MATCH); on that body distance3d raises it to 376. Lead for a match only: the 196 form.
+// M3 lane 12 r163 (H2M_FAST with 0x29e730 MATCH; plain-confirmed with 0x29e730/0x29de20 MATCH): kept 367 -> 321 at
+// 1575 bytes: the output loop walks a cursor copied from the selected point, its entries indexed by the count (retail's
+// per-pass imul, and its step compares the end with the unchanged selected point), and the end index local_2 is a
+// `short` (retail compares it as a word). Alone on the plain-while body: the cursor output 357 (1596 bytes), local_2
+// `short` 380 (1575 bytes); local_29 `short` 420, `long` 418, both `short` 420; cursor with both `short` 428. On 321:
+// local_29 `short` 428, `long` 412 (frame 0x68, but every callee-saved role is then retail's and the found flag takes
+// the dead argument slot; the record index then takes EBX as an induction variable and pushes the group index to a
+// slot of its own), distance3d for the three lengths 356, distance3d with local_29 `short` 414, the record base
+// local_20 `long` 321 (same code), with local_29 `long` 414, the record index `long` 465 (1547 bytes), with local_29
+// `long` 321 (1548 bytes), the step local_26 `long` 460 (1550 bytes), with local_29 `long` 319 (1551 bytes, under the
+// bar). Diagnostic only: `else local_4 = false` on 321 460 (1579 bytes).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
 {
     short local_0 = NONE;
     short local_1 = NONE;
-    long local_2 = NONE;
+    short local_2 = NONE;
     real best_distance = 3.402823466e38f;
     bool local_4 = false;
     s_29e0f3 *local_5 = (s_29e0f3 *)g_4e0348;
@@ -856,19 +870,18 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                     }
                     if (local_0 != NONE && local_1 != NONE && local_2 != NONE)
                     {
-                        s_29e0f8 *output = &arg_4->field_30[0];
                         short local_37 = 0;
+                        short point = local_1;
                         do
                         {
-                            function_29e64d(output, &local_11->field_44[local_0].field_4[local_1]);
-                            ++output;
+                            function_29e64d(&arg_4->field_30[local_37], &local_11->field_44[local_0].field_4[point]);
                             ++local_37;
-                            if (local_1 == local_2) break;
-                            local_1 += local_2 > local_1 ? 1 : -1;
+                            if (point == local_2) break;
+                            point += local_2 > local_1 ? 1 : -1;
                         } while (local_37 < 4);
                         if (local_37 < 4)
                         {
-                            function_29e64d(output, &marker_position);
+                            function_29e64d(&arg_4->field_30[local_37], &marker_position);
                             ++local_37;
                             arg_4->field_2c = true;
                         }

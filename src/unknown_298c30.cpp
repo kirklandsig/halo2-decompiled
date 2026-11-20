@@ -1494,6 +1494,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // fmulp); the first or the second distance passed straight into its trace call (no named local) 640 / 657 (the whole
 // allocation moves), with 1 to 7 unused locals 640 to 738. The exchanged homes: the rotated side's and the offset's names
 // swapped 108, the rotated side declared ahead of the offset 108, or at the top of the function 108 (all the same code).
+// M3 lane 12 r163 (H2M_FAST with 0x29a190 MATCH; control 569): the facing dot through dot_product2d 617 (3329 B, either
+// argument order); the angle dot through it 569 (same code, either order); both 718 (3332 B); the obstacle difference
+// normalised through normalize2d_fast (its result unused there) in place of the file's 0x298df3 copy 569 (same code);
+// the two side lengths through distance3d with the arguments reversed (same a - b deltas) 587, with the normaliser too
+// 587. Body unchanged.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

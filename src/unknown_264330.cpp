@@ -873,6 +873,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 402 (1620 B); `update` as a short 408 (1628 B); `update` read through a const reference at that test 404 (same code);
 // case 1's 0x25c820 call jumping to the release block's call with a short `old_state` 452 (1600 B, frame 0xa0); that with
 // `update && sample` 431 at retail's 1616 B. The actor index stays a stack argument in each. Body unchanged.
+// M3 lane 12 r163 (H2M_FAST with 0x263210/0x264330 MATCH, 0x1e34e0 25 throughout; control 404): the tail's 0x25d690
+// lookup through the loop's `node` instead of a second prop fetch 430 at 1616 B (frame still 0xa4: the saved prop handle
+// behind the extra slot feeds our expanded 0x25c820 at the release site, not the tail); with a `short` old_state 431;
+// with `update && sample` 431; the walk through 0x26be00/0x26be30 (0x263210's idiom) re-measured 443, with the node
+// tail lookup 452 (1600 B), with the iterator's index read at each use as well 452. Body unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
