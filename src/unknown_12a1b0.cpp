@@ -3725,6 +3725,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Clear path first for alternate/second/third/all 600/600/597/603.
 // All clear-first with both mask tests 619. NOT kept: the five-point reduction
 // shortens the body by seven bytes and leaves the early BL load.
+// Alternate request at record admission/update publication/retained-voice branch 760/780/780.
+// Direct bit at both consumers 788, shared bit test 788, rejection at track use 757,
+// admission at track use 757, track result from the complete test 745.
+// NOT kept: all grow the frame to 0x40 and raise the score. The early BL load and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
