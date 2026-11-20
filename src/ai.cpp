@@ -32,7 +32,7 @@ struct s_ai_capsule_view
 };
 
 // @retail 0x1c8940
-void function_1c8940(long value, long object_index, s_ai_capsule_view *capsule)
+inline void function_1c8940(long value, long object_index, s_ai_capsule_view *capsule)
 {
 	real height;
 	real radius;
@@ -40,7 +40,8 @@ void function_1c8940(long value, long object_index, s_ai_capsule_view *capsule)
 	*(volatile byte *)&capsule->active = height == 0.0f ? 1 : 0;
 	*(volatile real *)&capsule->value10 = 0.0f;
 	*(volatile real *)&capsule->value14 = 0.0f;
-	capsule->height = height;
+	real *capsule_height = &capsule->height;
+	*capsule_height = height;
 	capsule->radius = radius + 0.15f;
 	capsule->value1c = value;
 	capsule->object_index = object_index;
@@ -1227,22 +1228,6 @@ PRIVATE __forceinline s_prop_node_view *actor_next_prop(s_actor_prop_iterator *i
 
 long function_25d810(long object_index, long actor_index, bool create);
 
-PRIVATE __forceinline void ai_capsule_fill_1c89b0(long value, long object_index, s_ai_capsule_view *capsule)
-{
-	real height;
-	real radius;
-	function_df5f0(object_index, &capsule->center, &height, &radius);
-	capsule->active = height == 0.0f ? 1 : 0;
-	capsule->value10 = 0.0f;
-	capsule->value14 = 0.0f;
-	real *capsule_height = &capsule->height;
-	*capsule_height = height;
-	capsule->radius = radius + 0.15f;
-	capsule->value1c = value;
-	capsule->object_index = object_index;
-}
-
-
 // score 17 (was 17): the player loop keeps the player record and the object headers in the
 // other of esi and edi, with minor instruction ordering there, and the prop capsule call loads
 // its arguments in another order.
@@ -1251,8 +1236,9 @@ PRIVATE __forceinline void ai_capsule_fill_1c89b0(long value, long object_index,
 // with role names and direct table with role names: 18 each on reduced control 18 (plain 17).
 // Original complete executable body restored; prop-call setup and player/header register split remain.
 // Matched in a full build with stand-in SDK headers (was 17), without the volatile read: retail's player loop tail
-// (0x1c8cb2..0x1c8d0d) is function_1c8940's body inlined, so the loop uses a private copy of that body; the copy stores
-// the height through a one-use pointer, and function_1c8940 takes (value, object_index, capsule).
+// (0x1c8cb2..0x1c8d0d) is function_1c8940's body inlined. function_1c8940 is declared inline and called at all three
+// sites; the link expands it at the player loop's site only and calls it at the other two, as retail does. It stores
+// the height through a one-use pointer and takes (value, object_index, capsule).
 // @retail 0x1c89b0
 short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_capsule_view *capsules)
 {
@@ -1318,7 +1304,7 @@ short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_caps
      continue;
    }
    long prop_index = function_25d810(object_index, actor_index, false);
-   ai_capsule_fill_1c89b0(prop_index, player->unit_index, &capsules[(short)count]);
+   function_1c8940(prop_index, player->unit_index, &capsules[(short)count]);
    ++count;
   }
  }
