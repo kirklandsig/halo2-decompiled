@@ -5546,6 +5546,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // First staged cross: aggregate result 255; result members 255; member product differences 255;
 // left vector value 216, right 231, both 261; repeated left components read at first use 184, both inputs 184.
 // NOT kept: all lengthen the body. The first-cross load schedule and final x87 scale lifetime remain.
+// MiniMax R (11-20): re-checked, no new form and no lower score (169): the cross products use other xmm registers (xmm4, xmm5 and xmm7 here against xmm2 and xmm4 there) and multiply the operands in the other order, and the two branches near the entry land at different offsets.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

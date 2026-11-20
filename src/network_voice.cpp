@@ -2410,6 +2410,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // the mode query and then makes an extra call to 0x53be0 whose result it halves and masks to a bit, while this build
 // asks the mode query first and keeps the two bytes' test after it; the earlier rounds' 85 point forms need the
 // active and passive mode flags, which only a byte match would keep, so the control (64) stands.
+// MiniMax R (11-20): re-checked, no new form and no lower score (64): the inner loop runs the two port flag queries before the muted word bit where retail runs the muted word bit first and expands both port flag queries in place, and this build calls the second one out of line, so the body is twelve bytes short: BLOCKED-BY 0x53bb0's per site inlining.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

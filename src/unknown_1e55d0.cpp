@@ -384,6 +384,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // 319 each, shared payload with scoped state and countdown declared in the test 318.
 // NOT kept: the shared payload reaches 1164 bytes with at most a two-point gain and
 // keeps the entry register exchange.
+// MiniMax R (11-20): re-checked, no new form and no lower score (319): retail keeps the result pointer in ebx and the input pointer in edi while this build keeps the input pointer in ebx and the result pointer in edi, so every instruction from the prologue on differs, and the spilled address of the velocity field lands in [esp + 0x20] where this build uses [esp + 0x1c]; replacing the reference bound local with a pointer and reordering the aliases change nothing.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

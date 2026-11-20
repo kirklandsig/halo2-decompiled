@@ -604,6 +604,7 @@ void function_e5930(long unit_index);
 // byte branches 121. Explicit void return with byte setter/original branch 121/118.
 // Existing three-field reset helper 162. NOT kept: word setter gains five and the
 // reset dispatch still expands in every form.
+// MiniMax R (11-20): re-checked, no new form and no lower score (118): the reset dispatch expands at this call site, so the body is 413 bytes against retail's 343, and retail reads the definition's flags with a dword shift where this build folds the test to a byte: BLOCKED-BY 0xe5930.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -862,6 +863,7 @@ struct s_biped_flags_10a_view
 // 322/322. Before the parent query 318. Early signed relative offset 279.
 // NOT kept: early pointers push EBX before the component guard. The signed
 // offset restores the pool-offset slot but spills the offset alone at +0x20.
+// MiniMax R (11-20): re-checked, no new form and no lower score (222): the 0x111650 call sets its arguments up differently (retail keeps the object index in ecx, sign extends the word at +0x12a and writes the flags to [esp + 0x24], this build writes them to [esp + 0x20] and passes the index in esi) and the code after that call is laid out differently: BLOCKED-BY 0x111650.
 // @retail 0xdd360
 bool __stdcall function_dd360(long arg_159e6d)
 {
@@ -3852,6 +3854,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // score 324 (was 324): frame 0x48 against retail's 0x4c, so every home is four bytes out; the +0x34b state byte
 // zero-extended where retail sign-extends it, and the 0xe16b0 call's argument in a register where retail passes it
 // on the stack.
+// MiniMax R (11-20): re-checked, no new form and no lower score (324): the frame is 0x48 against retail's 0x4c, so every home is four bytes out, the biped index is read from [esp + 0x54] where retail reads it from [esp + 0x58], and the state byte at +0x34b is zero extended where retail sign extends it.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -5490,6 +5493,7 @@ void function_e4300(long arg_159e6d)
 // or constant pointer 1/1/1. Reference and shared object getter 11.
 // NOT kept: the one-point forms change the reset argument from EAX to ECX.
 // Scoped inline depth with the Boolean field test matched as a diagnostic.
+// MiniMax R (11-20): re-checked, no new form and no lower score (91): retail keeps the 0xe18d0 and 0xe5930 calls out of line (61 bytes) while this build expands the reset dispatch at the call site (113 bytes), so the prologue and the table lookup land in different registers: BLOCKED-BY 0xe5930.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {

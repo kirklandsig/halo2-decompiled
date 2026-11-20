@@ -1205,6 +1205,7 @@ real function_30bf0(vector3f *v);
 // still has one stack operand more (ret 0x2c against this build's ret 0x28) and spends EDX at entry on the gravity
 // value's address where this build keeps the time-scale pointer, so the parameter order is retail's to declare;
 // what is left of the body is retail's two x87 divisions by two_a and its rounding of the horizontal length.
+// MiniMax R (11-20): re-checked, no new form and no lower score (232): retail's stack arguments take 0x2c bytes where this build's take 0x28, so retail's signature carries one argument more than this one (both of its float arguments are four-byte floats there, so the extra four bytes are a further pointer argument), the frame is 0x28 against retail's 0x30, and the direction output arrives in esi, which this signature cannot express.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1526,6 +1527,7 @@ extern vector3f *g_4687ac;
 // build keeps the end point and the opposite end as locals of their own where retail computes the end in registers
 // only and lands the opposite end in the side's slots; the three ray queries still inline 0x16a040, whose defining
 // file is not this lane's: BLOCKED-BY 0x16a040.
+// MiniMax R (11-20): re-checked, no new form and no lower score (163): the frame is 0x48 against retail's 0x34, so every home is out by a different amount, and the tag table is loaded before the unit entry where retail loads it after: BLOCKED-BY 0x16a040.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -2016,6 +2018,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 // the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not
 // write out by hand, so the missing bytes stand; the first difference is in the prologue, where this build keeps the
 // global pointer in ebp and retail keeps it in edx: BLOCKED-BY 0xfbfd0.
+// MiniMax R (11-20): re-checked, no new form and no lower score (296): this build masks the index after loading the table base where retail masks it first and scales it with shl, and the flag is set with a load, an or and a store where retail sets it in place against [esi + 0x12c].
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2335,6 +2338,7 @@ real function_17c900(short function_type, real input);
 // MiniMax E (11-19): no new form, no lower score (348, baseline): the prologue still loads the two globals in the
 // opposite order (this build takes the unit table through ecx and edx, retail takes one through eax and the other
 // through ecx), and the shared normalizer still pins the rest of the body.
+// MiniMax R (11-20): re-checked, no new form and no lower score (348): retail reads the index from [esp + 0x34] and masks it before the prologue pushes while this build loads the two table pointers first and keeps the masked index in esi where retail keeps the unit entry there.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

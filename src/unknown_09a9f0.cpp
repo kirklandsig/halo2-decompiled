@@ -980,6 +980,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // difference at +0x3a (retail's whole head, `xor bl, bl` and both arguments re-read from their slots; what is left is only
 // the one shared lookup, 16 bytes short); `entity` so 70; all five so 65. So the uncached `e`/`f` and the BL result follow
 // from the two separate lookups, not the other way round.
+// MiniMax R (11-20): no new form, no lower score (8): the second lookup truncates its index with a word cast where
+// retail masks the full-width index, and the object index is stored again inside the branch where retail stores it
+// once; the shared mask form gives both lookups one index computation (42) and the store-free form moves the value's
+// stack home and adds a frame pointer (77).
 // MiniMax G (11-20): the second lookup's index is only independent of the header lookup with the word cast,
 // and that gives retail's `movzx ecx, ax` where retail has `mov ecx, eax; and ecx, 0xffff`; an unsigned-long
 // index folds to the same value as the header's, so both lookups share one index computation (42). What still
