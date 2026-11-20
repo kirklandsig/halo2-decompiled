@@ -1393,6 +1393,20 @@ static __forceinline long real_to_long(real value);
 // direction and both calls 458 (1910 B, frame 0x54), an actor-position pointer 448, an AI object pointer with the target
 // pointer 487 (1927 B), with both pointers 460 (1929 B), both pointers declared at the top of the far arm 422 (1906 B).
 // Body unchanged; the computed entry result still puts 0x25d740 under three tests, where our link expands it.
+// M3 lane 13 r123 (fast with 0x25d740, 0x25d690, 0x1a9d80, 0x1a9e00, all MATCH; control 382, aligned 155, masked 86; the
+// call count shows whether 0x25d740 stays a call, 21 = retail's). Entry forms that thread the false exit: the computed
+// result 508 (20 calls, 1921 B, re-measured); the result preset true and cleared by the three flags, then `if (local_2)`, 522
+// (20 calls, 1904 B), with magnitude3d for the object-speed root 522 (same code); the flag set in an if/else ahead of
+// `if (local_2)` 508 (20 calls); `bool local_2 = false;` with the three-flag chain as the condition and `local_2 = true;` in
+// the body 495 (21 calls, 1904 B, but the result folds into AL from the entry, frame 0x54, arg_0 in EDI), the chain as nested
+// ifs 495 (same code); the computed result with the first goto replaced by nesting (field_2c set in both arms, no near flag)
+// 487 (20 calls, 1913 B); `if (f13 || f14 || f2d) return false;` ahead of `bool local_2 = true;` 508 (21 calls, 1904 B,
+// masked 98, frame 0x54: the result byte folds away). 0x25d740's body written through the existing tracking_get with
+// `&tracking->view` (0x25d740 still matches): on this body 382 (21 calls, same code), with the computed result 508 (20 calls).
+// Reading: retail keeps a constant true in the result byte, so its false path merged into the return in the IL and was
+// cloned late (the threaded form), and the merge needs the computed test that warms this call site; matched 0x1b4560 needs
+// an inline-depth pragma for the same getter at a warm site, so our link expands 0x25d740 more readily than retail's did.
+// Still BLOCKED-BY 0x25d740's inlining. Body unchanged.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

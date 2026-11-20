@@ -912,6 +912,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // the final players lea, plus the folded mask read and the opening's second lea), with the mask read into a loop local
 // 100 (same code); a 600 s permuter run (context 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; without the callee
 // contexts its reduced image scores the body 137) 58 tries, best 22.
+// M3 lane 13 r125 (fast with 0x6e500, 0x72700, 0x6e910 and 0x5c5c0; control 22; the NULL-preset stored pair 46, aligned 51,
+// register-masked 2): on the preset pair, the player loop's index renamed `player_index` 46, the copy index `member_index`
+// 46, the pair renamed to sort first or last 46/46 (names do not move the session register); the member count bound by
+// `long const &` 46; the slot test ahead of the mask test 59 (479 B). The opening as an out-parameter getter in this
+// class's getter idiom (state range test, then the flag, the two addresses stored through the out pointers, bool result),
+// called as `!get(&machines, &players) || !machines || !players` 46, with a NULL preset and the result ignored 46, with
+// the live-state inline for the range test 46, without the range test 46 (the folded range test does not move it).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

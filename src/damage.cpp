@@ -552,6 +552,8 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 	return result;
 }
 
+/* the material word is stored through a pointer to its field: as a plain field store the NONE
+   constant is scheduled ahead of that store (retail stores it first, then loads the bsp index) */
 // score 3 (was 3): with the callers' image, only the schedule differs: ours puts `or eax, -1` right after the
 // load of g_47d8e0 (before that value's store at +0x7c); retail stores it first, loads g_4686c4, then does the
 // `or`. Tried: unknown22 assigned right after unknown7c (11), g_4686c4 in a local (3, same code), both globals
@@ -633,7 +635,8 @@ void function_d6660(s_type_1e6529 *data, long definition_index)
 {
 	memset(data, 0, sizeof(*data));
 	data->definition_index = definition_index;
-	data->unknown7c = g_47d8e0;
+	short *material = &data->unknown7c;
+	*material = g_47d8e0;
 	data->owner.object_index = NONE;
 	data->owner.player_index = NONE;
 	data->owner.team = NONE;
@@ -2445,6 +2448,13 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // New: the plain entry local in the guard's block with 0xdb090's first argument as `accumulator->field_4_2` 24 (871 B;
 // the load and every register are then retail's; left the [edx + eax + 4] address and that argument, `mov ecx,
 // [edi + 4]` for retail's `mov ecx, ebx`), so on the plain body too the flip follows `info` being that call's argument.
+// M3 lane 13 r125 (fast with 0xd6660 and the five matched callees): no `info` local, the field read at each of its uses
+// 248 (851 B), the same with the entry read into a local ahead of the guard 248; `info` declared in the damage block just
+// above the guard 158 (860 B: its read then follows the two calls); the index defaulted to NONE and set under `if (entry)`
+// inside `if (info)` 3, and defaulted to NONE, set under `if (info && entry)` with the range test after it 3 (both the same
+// code: the NONE path is threaded straight to the join, the entry load stays below the je). After 0xd6660 matched by
+// storing through a pointer to its field: the entry read through a two-use pointer to the accumulator field, declared at
+// the guard 3 or at the top 3, and `info` read through a pointer to its field 3 (all three the same code).
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

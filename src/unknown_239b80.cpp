@@ -821,6 +821,19 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // retail calls the CRT's memmove at 0x320890, as matched 0x18e470 does); `if (classifier != 2) return 0;` with the hull
 // count declared after it 237; `if (done) return hull_count;` ahead of the compaction in place of `if (!done)` 169 (763 B);
 // the heading declared and zeroed at function scope before the classifier call 121. Body unchanged.
+// M3 lane 13 r123 (fast with 0x239d50 and 0x239b80, both MATCH each time; main 144, difflib-aligned 137, register-masked 58).
+// What still keeps the count in EBX on the completion-flag form (match-only; `current = count` after the classifier call,
+// re-measured 216 at 791 B, aligned 84, masked 37: only the count's EBX against retail's home reads with the hull count
+// cached in EBX, the scan's EDX copy, and the exit and compaction epilogues differ). On it: the lowest scan through a
+// forced-inline helper taking the count by value 216 (same code), the candidate scan through one returning the next index
+// with the heading through a pointer 213 (784 B, aligned 95), both 213 (same code as the second: by-value copies of the
+// count fold back into it); the hull count as a one-member aggregate local (diagnostic) 216 (same code, scalar-replaced);
+// the count read through a `short const &` local for the pass test, the pass and candidate tests, every use after the
+// call, or bound inside the block 216 each (same code: the reference folds). Without the flag, re-measured: one hull
+// counter in `while ((short)hull_count < count)` with a bool departure flag and three returns 269 (747 B, aligned 143), with
+// main's gotos 265 (759 B, aligned 118), with a long flag 252 (752 B), with `return (short)hull_count` 269 (same code).
+// Reading: retail's hull count and count both behave as values the candidate scan's sqrt/atan2 may change (reloaded after
+// it, never held across it), which no folded spelling reproduces. Body unchanged.
 // M3 lane 2 r111 (fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 84, masked 36): the
 // completion-flag body (match-only; bool departure and done flags and the heading ahead of the lowest scan, one long
 // counter in `while (!done && (short)hull_count < count)`, positive closure, compaction under `if (!done)`) rebuilt 210

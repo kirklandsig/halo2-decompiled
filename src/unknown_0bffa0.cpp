@@ -1303,6 +1303,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // `entry->plane_offset` 558 (2816 B); the projection helper computing the up row (its depth) before the forward and
 // left rows, on main 491 (2812 B), on r195's form 484. Retail loads the left vector's component first in every product
 // of the forward cross; no helper or row order tried moves that. Body unchanged.
+// M3 lane 13 r125 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all MATCH; control 290, aligned 273, masked 114): the cone
+// plane through a file-private inline taking (plane, normal, point), as the code base's plane-through-a-point helper, re-measured
+// 563 (2795 B; listed above), with the dot's operands the other way 563, the same inline computing the point from the matrix
+// position and the offset itself 560 (2795 B); at the tail a frustum pointer named before the flag stores 479 (2814 B,
+// masked 111), the flags and both calls through a fresh `&entries[i]` 672 (2782 B). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

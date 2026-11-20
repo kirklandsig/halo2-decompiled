@@ -80,9 +80,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax I (11-19): no new form, no lower score (219): retail's two rotation copies take their complement products' operands on
 // different sides, which one shared helper cannot produce, and the jump table still sits four bytes earlier than retail's.
-// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax R (11-17): no new form, no lower score (219): retail keeps two separately scheduled rotation copies whose complement products take their operands on different sides, which one shared helper cannot produce, and the helper's body may not be written out by hand unless the function then matches.
 // MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
 // still hoist and spill the sine products where retail keeps them in registers, and the jump table
@@ -411,6 +411,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // global before copying it into `basis.up` 364 (1844 B). Body unchanged.
 // AC597: Paired sine/cosine storage passed as scalars, by value, by reference, or by pointer, each with
 // aggregate or field initialization: 252/252/366/366/252/252/252/252.
+// M3 lane 13 r125 (fast with 0x246cd0, 0x142eb0, 0x30bf0, 0x11d000 and 0x173ba0, all MATCH; control 219): sine and cosine
+// declared in two statements 219 (same code); cosine declared first 226; in the rotation helper the forward.i diagonal moved
+// right after the i sine product 357 (1820 B), the left.j diagonal right after the j square 350 (1764 B), the up.k diagonal
+// right after the i sine product 380 (1852 B). Body unchanged.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
