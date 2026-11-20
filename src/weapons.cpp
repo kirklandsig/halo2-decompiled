@@ -3238,6 +3238,12 @@ struct s_ammo_conversion_entry
 // pointer and leaves the definition pointer in EDI, and retail reads the definition table after the weapon lookup
 // where this build reads it before, so the saved-register set and the destination home differ before the first
 // case body; the frame size and the length still agree.
+// MiniMax R (11-20): no new form, no lower score (190, 731 bytes, retail 731): the frame and the length agree, and what
+// is left is the register colouring and one test - retail keeps the destination weapon in EBP and the other weapon in
+// EBX, sets the acquisition flag with setg on the clamped count and reaches the conversion entry without a nullable
+// test, while this build holds the destination in EDI, spills the other and tests the entry for null.
+// score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
+// Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
 // Earlier: frame 0x24 versus 0x20; destination/tag saved roles and conversion staging differ.
 // Frame 0x24 versus 0x20, destination/tag homes and conversion staging remain.

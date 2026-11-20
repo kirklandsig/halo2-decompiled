@@ -94,6 +94,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// MiniMax R (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the first difference is still the
+// register that carries the constant 1.0f, which this build loads into XMM1 where retail loads it into XMM2, and the
+// reciprocal copy and the two product registers follow that one choice, so the float register assignment of the whole
+// function turns on it; the near arm also keeps the cosine on the x87 stack where retail spills it to a float slot and
+// takes the y row in SSE, and the candidate count is a byte here against a short in retail. A permutation search over
+// the body (four tries in 399 s) reached 301 only by naming the constant and the index, a form not kept.
 // score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
 // MiniMax D (11-20): no new form, no lower score (305, 1732 bytes, retail 1732). The first difference is still the constant
 // 1.0f, which this build loads into XMM1 where retail loads it into XMM2; the reciprocal copy and the radius load then swap
