@@ -224,6 +224,11 @@ __forceinline long portal_path_gain(real distance, real range)
 // Packed entry read at both decodes 287, direct seed and search pointer 368. Computing
 // the ordinal from the table position recovers EBP but grows the body; both table
 // bases still need retail's per-visit loads.
+// Required index advanced after its store 287, after the gain 302, after the portal 301, or
+// after the cluster 294. Required cursor position 339, cursor end 352, position at the
+// latch 343. Named gain range 288; gain range through a sound pointer 288. NOT kept: the
+// position and end forms shrink the frame to 0x424 and move the length away from retail.
+// The starting-cluster register and both table reloads still differ.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -322,8 +327,8 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 305 (was 305; 315 before r118, 354 before that): Advancing the required index at the row latch brings the entry frame to 0x42c.
-// score 305 (was 354): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// score 305 (was 305): Advancing the required index at the row latch brings the entry frame to 0x42c.
+// Earlier scores were 315 and 354.
 // Round 192 (m3 lane 8; one-file harness with 0x14b240 from the reference-bound form and the callee files, counts
 // positional/aligned; on main 304/232): lane 13's r111 held form re-applied (lane 2's rebuilt patch) 15/16 at 1363 B,
 // the twin 244/17. Only the cluster pointer (ours EBX, retail EBP) and the widened portal index (ours EBP, retail
@@ -465,6 +470,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Selected sort key 681, cap-first empty arm 311, empty-first cap 310.
 // While with common latch 305, positive bound scope 310. The 0x42c frame and both
 // BSP table lifetimes remain.
+// Independent blocked flag bits 320; portal lookup before named ordinal 305; both distance declarations
+// at the iteration entry 305; named path eligibility 305. Shared squared power 305; separate curve
+// terms 305; curve subtraction assignment 305; pinned curve initializer 305. The 0x42c frame, starting
+// cluster in EBX and two cached table bases persist.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
